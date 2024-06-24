@@ -353,7 +353,7 @@ export class Player extends BaseGameObject {
         this.zoomDirty = true;
     }
 
-    private _scope = "1xscope";
+    private _scope = "4xscope";
 
     get scope() {
         return this._scope;
