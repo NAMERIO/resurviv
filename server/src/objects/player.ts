@@ -319,7 +319,7 @@ export class Player extends BaseGameObject {
         this.healthDirty = true;
     }
 
-    private _boost: number = 0;
+    private _boost: number = 100;
 
     get boost(): number {
         return this._boost;
