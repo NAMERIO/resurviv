@@ -4992,11 +4992,11 @@ input [type="image"]:focus {
     background: rgba(0, 0, 0, 0.5);
     cursor: pointer;
     display: inline-block;
-    height: 60px;
+    height: 72px;
     margin-left: 4px;
     margin-top: 44px;
     position: relative;
-    width: 60px;
+    width: 70px;
 }
 .modal-customize-cat-image {
     background-repeat: no-repeat;
@@ -5213,7 +5213,7 @@ input [type="image"]:focus {
     top: 50%;
     -webkit-transform: translateY(-50%);
     transform: translateY(-50%);
-    width: 660px;
+    width: 725px;
 }
 .modal-content-right {
     background: #83af50;
@@ -5235,10 +5235,14 @@ input [type="image"]:focus {
 }
 #modal-content-right-crosshair {
     height: 546px;
+    left: 750px;
 }
 #modal-content-right-emote {
     height: 464px;
+    left: 750px;
 }
+
+
 #modal-customize .modal-customize-text {
     margin-left: 8px;
     width: 320px;
