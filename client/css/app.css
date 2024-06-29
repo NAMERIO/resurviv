@@ -435,6 +435,11 @@ a:active {
     background-color: red;
     box-shadow: inset 0 -4px #8e0000;
 }
+.btn-github {
+    background-image: url(../public/img/icon_github.png);
+    background-color: #000;
+    box-shadow: inset 0 -4px #333;
+}
 .btn-instagram {
     background-image: url(/img/icon_instagram.png);
     background-color: #d93175;
