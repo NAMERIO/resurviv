@@ -262,7 +262,6 @@ export const ExplosionDefs: Record<string, ExplosionDef> = {
         },
         freezeAmount: 3,
         freezeDuration: 1,
-        },
         shrapnelCount: 0,
         shrapnelType: "",
         explosionEffectType: "water_balloon",
