@@ -260,6 +260,9 @@ export const ExplosionDefs: Record<string, ExplosionDef> = {
           min: 1.24,
           max: 1.25
         },
+        freezeAmount: 3,
+        freezeDuration: 1,
+        },
         shrapnelCount: 0,
         shrapnelType: "",
         explosionEffectType: "water_balloon",
