@@ -1074,13 +1074,13 @@ const BaseDefs: Record<string, MeleeDef> = {
             playerHit: "hammer_hit_01",
         },
         lootImg: {
-            sprite: 'loot-melee-lasr-sword-01.img',
+            sprite: "loot-melee-lasr-sword-01.img",
             tint: 0xffffff,
-            border: 'loot-circle-outer-02.img',
+            border: "loot-circle-outer-02.img",
             borderTint: 0xffffff,
             scale: 0.3,
             mirror: true,
-            rot: 0.0
+            rot: 0.0,
         },
         worldImg: {
             sprite: "lasr-sword-01.img",
@@ -1088,7 +1088,7 @@ const BaseDefs: Record<string, MeleeDef> = {
             rot: 0.0,
             scale: { x: 0.15, y: 0.15 },
             tint: 0xffffff,
-            leftHandOntop: true
+            leftHandOntop: true,
         },
     },
 };
