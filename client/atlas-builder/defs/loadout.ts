@@ -265,7 +265,6 @@ export const LoadoutAtlas: AtlasDef = {
         "gui/timer.svg",
         "gui/trash.svg",
         "gui/unlock.svg",
-
         "guns/gun-awc-01.svg",
         "guns/gun-awc-02.svg",
         "guns/gun-bugle-01.svg",
@@ -300,7 +299,6 @@ export const LoadoutAtlas: AtlasDef = {
         "guns/gun-m79-01.svg",
         "guns/gun-water-gun.svg",
         "guns/gun-m134-01.svg",
-        
 
         "loot/loot-ammo-box.svg",
         "loot/loot-chest-01.svg",
@@ -320,8 +318,6 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/loot-medical-heart.svg",
         "loot/loot-medical-pill.svg",
         "loot/loot-medical-soda.svg",
-
-
         "loot/loot-melee-bayonet-rugged.svg",
         "loot/loot-melee-bayonet-woodland.svg",
         "loot/loot-melee-bonesaw-healer.svg",
@@ -361,10 +357,6 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/lasr-sword-01.svg",
         "loot/lasr-sword-02.svg",
         "loot/lasr-sword-03.svg",
-
-
-
-
         "loot/loot-pack-00.svg",
         "loot/loot-pack-01.svg",
         "loot/loot-pack-02.svg",
@@ -412,14 +404,11 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/loot-perk-turkey_shoot.svg",
         "loot/loot-perk-windwalk.svg",
         "loot/loot-pulseBox.svg",
-
         "loot/loot-scope-00.svg",
         "loot/loot-scope-01.svg",
         "loot/loot-scope-02.svg",
         "loot/loot-scope-03.svg",
         "loot/loot-scope-04.svg",
-
-
         "loot/loot-shirt-01.svg",
         "loot/loot-shirt-calaca.svg",
         "loot/loot-shirt-christmastree.svg",
@@ -485,8 +474,6 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/loot-multi-tusking-outfit.svg",
         "loot/loot-max-attack-outfit.svg",
         "loot/loot-lustrous-paladin-outfit.svg",
-
-
         "loot/loot-throwable-frag-egg.svg",
         "loot/loot-throwable-frag.svg",
         "loot/loot-throwable-mirv.svg",
@@ -496,7 +483,6 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/loot-throwable-snowball.svg",
         "loot/loot-throwable-strobe.svg",
         "loot/loot-throwable-mine.svg",
-
         "loot/loot-weapon-ak.svg",
         "loot/loot-weapon-an94.svg",
         "loot/loot-weapon-awc.svg",
@@ -569,9 +555,6 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/loot-weapon-m79.svg",
         "loot/loot-weapon-water.svg",
         "loot/loot-weapon-m134.svg",
-    
-
-
         "loot/loot-xp-bone-01.svg",
         "loot/loot-xp-book-01.svg",
         "loot/loot-xp-book-02.svg",
@@ -674,7 +657,6 @@ export const LoadoutAtlas: AtlasDef = {
         "particles/map-beach-wet-particle-01.svg",
         "particles/map-beach-wet-particle-02.svg",
         "particles/map-beach-wet-particle-03.svg",
-
         "player/player-armor-base-01.svg",
         "player/player-base-01.svg",
         "player/player-base-02.svg",
@@ -851,7 +833,6 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-base-wood-fire.svg",
         "player/player-base-wooland.svg",
         "player/player-base-yin-yang.svg",
-
         "player/player-bullet-trail-02.svg",
         "player/player-bullet-trail-03.svg",
         "player/player-circle-base-01.svg",
@@ -1057,7 +1038,6 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-hands-yin-yang.svg",
         "player/player-hands-zebra.svg",
         "player/player-hands.svg",
-
         "player/player-mash-01.svg",
         "player/player-mash-02.svg",
         "player/player-mash-03.svg",
@@ -1068,7 +1048,6 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-snow-02.svg",
         "player/player-snow-03.svg",
         "player/player-wading-01.svg",
-
         "player/player-accessory-ahoy.svg",
         "player/player-accessory-bronco-saurus.svg",
         "player/player-accessory-buck-teeth.svg",
@@ -1103,11 +1082,7 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-accessory-they-see-me-rolling.svg",
         "player/player-accessory-village-ninja.svg",
         "player/outfit-chrome-accessory.svg",
-
         "player/player-back-village-ninja.svg",
-
-
-
         "proj/proj-bomb-iron-01.svg",
         "proj/proj-frag-nopin-01.svg",
         "proj/proj-frag-nopin-02.svg",
@@ -1135,6 +1110,6 @@ export const LoadoutAtlas: AtlasDef = {
         "proj/proj-wedge-01.svg",
         "proj/proj-mine-01.svg",
         "proj/proj-40mm-01.svg",
-        "proj/proj-water-balloon.svg"
+        "proj/proj-water-balloon.svg",
     ],
 };
