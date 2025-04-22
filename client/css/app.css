@@ -1,6 +1,5 @@
 @import url(deathmatch.css);
 
-
 :root {
   --side-pad: 12px;
 }
@@ -3349,16 +3348,16 @@ a:active {
 
 @keyframes may-pulse {
   from {
-    background-color: #56617A;
-    -webkit-box-shadow: 0 0 9px #56617A;
+    background-color: #56617a
+    -webkit-box-shadow: 0 0 9px #56617a;
   }
   50% {
     background-color: #7c85a3;
     -webkit-box-shadow: 0 0 18px #7c85a3;
   }
   to {
-    background-color: #56617A;
-    -webkit-box-shadow: 0 0 9px #56617A;
+    background-color: #56617a;
+    -webkit-box-shadow: 0 0 9px #56617a;
   }
 }
 @media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
