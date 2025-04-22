@@ -50,15 +50,14 @@ const mapDef: PartialMapDef = {
                 outhouse_01: 5,
                 loot_tier_1: 24,
                 loot_tier_beach: 4,
-                crate_23: 30
+                crate_23: 30,
             },
         ],
         randomSpawns: [],
         spawnReplacements: [
             {
                 tree_01: "tree_01m",
-                teahouse_complex_01su: "teahouse_complex_01m"
-
+                teahouse_complex_01su: "teahouse_complex_01m",
             },
         ],
     },
@@ -69,9 +68,9 @@ const mapDef: PartialMapDef = {
             { name: "lasr_swrd_03", count: 1, weight: 0.15 },
             { name: "lasr_gun", count: 1, weight: 0.27 },
             { name: "lasr_gun_dual", count: 1, weight: 0.16 },
-            { name: "pulseBox", count: 2, weight: 0.20},
-        ]
-    }
+            { name: "pulseBox", count: 2, weight: 0.2},
+        ],
+    },
 };
 
 export const May = util.mergeDeep({}, Main, mapDef);
