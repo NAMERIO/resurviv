@@ -3759,7 +3759,6 @@ export const GunDefs: Record<string, GunDef> = {
             scale: { x: 0.5, y: 0.5 },
             tint: 0xffffff,
             recoil: 2.5,
-            handBelow: true,
             leftHandOffset: {
             x: 15,
             y: -10
