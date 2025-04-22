@@ -71,7 +71,5 @@ export const MayAtlas: AtlasDef = {
         "map/map-planter-04.svg",
         "map/map-planter-05.svg",
         "map/map-planter-res-01.svg",
-
     ],
 };
-
