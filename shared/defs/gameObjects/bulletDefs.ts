@@ -946,7 +946,7 @@ const SkinDefs: Record<string, BulletDef> = {
         tracerColor: "50AE",
         tracerWidth: 0.22,
         tracerLength: 1,
-      },
+    },
 };
 
 export const BulletDefs: Record<string, BulletDef> = { ...BaseDefs, ...SkinDefs };
