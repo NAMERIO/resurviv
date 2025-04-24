@@ -934,6 +934,19 @@ const SkinDefs: Record<string, BulletDef> = {
         tracerLength: 2.5,
         onHit: "explosion_water_balloon",
     },
+    bullet_m82a1: {
+        type: "bullet",
+        damage: 200,
+        obstacleDamage: 5,
+        falloff: 0.99,
+        distance: 1000,
+        speed: 185,
+        variance: 0,
+        shrapnel: false,
+        tracerColor: "50AE",
+        tracerWidth: 0.22,
+        tracerLength: 1,
+      },
 };
 
 export const BulletDefs: Record<string, BulletDef> = { ...BaseDefs, ...SkinDefs };
