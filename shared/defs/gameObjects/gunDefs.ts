@@ -3815,7 +3815,7 @@ export const GunDefs: Record<string, GunDef> = {
             deploy: "deagle_switch_01",
         },
     },
-     m82a1: {
+    m82a1: {
         name: "Barrett M82A1",
         type: "gun",
         quality: 1,
@@ -3851,11 +3851,10 @@ export const GunDefs: Record<string, GunDef> = {
             scale: { x: 0.5, y: 0.5 },
             tint: 0xffffff,
             recoil: 2.5,
-            handBelow: true,
             leftHandOffset: {
-            x: 15,
-            y: -10
-          }
+                x: 15,
+                y: -10,
+            }
         },
         particle: { shellScale: 1.3, shellOffset: 0.575 },
         sound: {
