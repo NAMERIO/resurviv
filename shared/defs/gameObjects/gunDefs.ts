@@ -3840,7 +3840,7 @@ export const GunDefs: Record<string, GunDef> = {
         headshotMult: 1,
         speed: { equip: 0, attack: 0 },
         lootImg: {
-            sprite: "loot-weapon-m82a1.img,
+            sprite: "loot-weapon-m82a1.img",
             tint: 65280,
             border: "loot-circle-outer-01.img",
             borderTint: 0,
