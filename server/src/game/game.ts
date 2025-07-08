@@ -437,7 +437,7 @@ export class Game {
                 break;
             }
             case net.MsgType.DropItem: {
-                player.dropItem(msg as net.DropItemMsg);
+                player.customDropItem(msg as net.DropItemMsg);
                 break;
             }
             case net.MsgType.Spectate: {
