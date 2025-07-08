@@ -44,6 +44,7 @@ import type { DebugOptions } from "../config";
 import { debugLines } from "../debugLines";
 import { device } from "../device";
 import type { Ctx } from "../game";
+import { GameMod } from "../gameMod";
 import { helpers } from "../helpers";
 import type { InputHandler } from "../input";
 import type { InputBinds } from "./../inputBinds";
@@ -56,7 +57,6 @@ import type { Obstacle } from "./obstacle";
 import type { Emitter, ParticleBarn } from "./particles";
 import { halloweenSpriteMap } from "./projectile";
 import { createCasingParticle } from "./shot";
-import { GameMod } from "../gameMod";
 
 const gameMod = new GameMod();
 

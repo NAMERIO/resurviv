@@ -5,8 +5,8 @@ import { EmoteCategory, type EmoteDef } from "../../../shared/defs/gameObjects/e
 import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
 import { OutfitDefs } from "../../../shared/defs/gameObjects/outfitDefs";
 import {
-    type UnlockDef,
     privateOutfits,
+    type UnlockDef,
 } from "../../../shared/defs/gameObjects/unlockDefs";
 import { EmoteSlot, Rarity } from "../../../shared/gameConfig";
 import { util } from "../../../shared/utils/util";

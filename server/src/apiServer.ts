@@ -6,10 +6,10 @@ import { TeamMenu } from "./teamMenu";
 import { GIT_VERSION } from "./utils/gitRevision";
 import { Logger } from "./utils/logger";
 import {
-    HTTPRateLimit,
     cors,
     forbidden,
     getIp,
+    HTTPRateLimit,
     readPostedJSON,
     returnJson,
 } from "./utils/serverHelpers";
@@ -213,11 +213,7 @@ if (process.argv.includes("--api-server")) {
         });
         readPostedJSON(
             res,
-            (body: {
-                apiKey: string;
-                regionId: string;
-                data: RegionData;
-            }) => {
+            (body: { apiKey: string; regionId: string; data: RegionData }) => {
                 if (res.aborted) return;
                 if (body.apiKey !== Config.apiKey || !(body.regionId in server.regions)) {
                     forbidden(res);
