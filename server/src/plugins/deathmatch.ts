@@ -32,6 +32,12 @@ export function onPlayerJoin(data: Player) {
         }
     }
 }
+
+const perks = [
+    "broken_arrow", "steelskin", "leadership", "flak_jacket", "martyrdom", "fabricate", "explosive",
+    "tree_climbing", "windwalk", "splinter", "small_arms", "field_medic", "scavenger", "chambered",
+];
+
 export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
     if (data.player.game.aliveCount < 5) {
         data.player.game.playerBarn.emotes.push({
@@ -41,6 +47,13 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
             isPing: true,
             itemType: "",
         });
+    }
+
+    data.player.perks.length = 0;
+
+    if ( data.source?.__id !== data.player.__id && Math.random() < 0.5 ) {
+        const perk = perks[Math.floor(Math.random() * perks.length)];
+        data.player.game.lootBarn.addLoot(perk, data.player.pos, data.player.layer, 1);
     }
 
     let normalHelmet = ["helmet01", "helmet02", "helmet03"].includes(data.player.helmet);
@@ -87,10 +100,12 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
 
         killer.inventory["frag"] = Math.min(killer.inventory["frag"] + 3, 12);
         killer.inventory["mirv"] = Math.min(killer.inventory["mirv"] + 1, 4);
-        if (Math.random() < 0.2) {
-            const itemToGive = Math.random() < 0.5 ? "strobe" : "mine";
+        if (Config.modes[1].mapName ==="desert" || Math.random() < 0.2) {
+            const strobeChance = Config.modes[1].mapName === "desert" ? true : Math.random() < 0.6;
+            const itemToGive =  strobeChance ? "strobe" : "mine";
             killer.inventory[itemToGive] = Math.min(killer.inventory[itemToGive] + 1, 1);
         }
+
         if (Config.modes[1].mapName === "snow")
             killer.inventory["snowball"] = Math.min(killer.inventory["snowball"] + 4, 10);
         killer.inventoryDirty = true;

@@ -765,7 +765,7 @@ export const Main: MapDef = {
     /* STRIP_FROM_PROD_CLIENT:END */
 };
 
-type DeepPartial<T> = T extends object
+export type DeepPartial<T> = T extends object
     ? {
           [P in keyof T]?: DeepPartial<T[P]>;
       }

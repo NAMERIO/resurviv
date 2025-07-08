@@ -1,4 +1,5 @@
 import { getConfig } from "../../config";
+import { ConfigType, DeepPartial } from "../../configType";
 import { GameConfig, TeamMode } from "../../shared/gameConfig";
 import { util } from "../../shared/utils/util";
 
@@ -12,9 +13,12 @@ const BACKPACK_LEVEL = 3;
 util.mergeDeep(Config, {
     modes: [
         { mapName: "main", teamMode: TeamMode.Solo, enabled: false },
-        { mapName: "main", teamMode: TeamMode.Duo, enabled: true },
+        { mapName: "desert", teamMode: TeamMode.Duo, enabled: true },
         { mapName: "main", teamMode: TeamMode.Squad, enabled: false },
     ],
+    debug: {
+        spawnMode: process.env.NODE_ENV !== "production" ? "fixed" : "default",
+    },
     defaultItems: {
         backpack: "backpack03",
         helmet: "helmet03",
@@ -35,4 +39,4 @@ util.mergeDeep(Config, {
             "4xscope": 1,
         },
     },
-});
+} satisfies DeepPartial<ConfigType>);
