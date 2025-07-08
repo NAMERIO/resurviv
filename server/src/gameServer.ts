@@ -1,5 +1,5 @@
-import { randomUUID } from "crypto";
 import { App, SSLApp, type WebSocket } from "uWebSockets.js";
+import { randomUUID } from "crypto";
 import { version } from "../../package.json";
 import { GameConfig } from "../../shared/gameConfig";
 import * as net from "../../shared/net/net";
@@ -9,16 +9,16 @@ import { GameProcessManager } from "./game/gameProcessManager";
 import { GIT_VERSION } from "./utils/gitRevision";
 import { Logger } from "./utils/logger";
 import {
-    HTTPRateLimit,
-    WebSocketRateLimit,
     cors,
     fetchApiServer,
     forbidden,
     getIp,
+    HTTPRateLimit,
     isBehindProxy,
     logErrorToWebhook,
     readPostedJSON,
     returnJson,
+    WebSocketRateLimit,
 } from "./utils/serverHelpers";
 import {
     type FindGamePrivateBody,
@@ -51,7 +51,7 @@ class GameServer {
         if (!parsed.success || !parsed.data) {
             this.logger.warn("/api/find_game: Invalid body");
             return {
-                error: "full",
+                error: "failed_to_parse_body",
             };
         }
         const data = parsed.data;
@@ -64,7 +64,7 @@ class GameServer {
 
         if (data.region !== this.regionId) {
             return {
-                error: "full",
+                error: "invalid_region",
             };
         }
 
@@ -132,7 +132,7 @@ app.post("/api/find_game", async (res, req) => {
 
                 const parsed = zFindGamePrivateBody.safeParse(body);
                 if (!parsed.success || !parsed.data) {
-                    returnJson(res, { error: "full" });
+                    returnJson(res, { error: "failed_to_parse_body" });
                     return;
                 }
 

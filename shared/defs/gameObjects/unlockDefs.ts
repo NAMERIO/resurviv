@@ -191,6 +191,7 @@ const _allowedEmotes = [
     "emote_flagsingapore",
     "emote_flagtrinidad",
     "emote_flaguruguay",
+    "emote_flagpalestine",
     "emote_logoconch",
     "emote_pineapple",
     "emote_coconut",
@@ -241,7 +242,8 @@ export interface UnlockDef {
     free?: boolean;
 }
 
-export const UnlockDefs: Record<string, UnlockDef> = {
+type UnlockDefKey = "unlock_default" | "unlock_new_account";
+export const UnlockDefs: Record<UnlockDefKey, UnlockDef> = {
     unlock_default: {
         type: "unlock",
         name: "standard-issue",

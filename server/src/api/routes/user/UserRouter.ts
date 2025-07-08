@@ -1,5 +1,6 @@
-import { and, eq, inArray, ne } from "drizzle-orm";
+import { and, eq, inArray, ne, notInArray } from "drizzle-orm";
 import { Hono } from "hono";
+import { UnlockDefs } from "../../../../../shared/defs/gameObjects/unlockDefs";
 import {
     type GetPassResponse,
     type LoadoutResponse,
@@ -20,10 +21,10 @@ import { validateUserName } from "../../../utils/serverHelpers";
 import { server } from "../../apiServer";
 import {
     authMiddleware,
+    databaseEnabledMiddleware,
     rateLimitMiddleware,
     validateParams,
 } from "../../auth/middleware";
-import { databaseEnabledMiddleware } from "../../auth/middleware";
 import { db } from "../../db";
 import { itemsTable, matchDataTable, usersTable } from "../../db/schema";
 import type { Context } from "../../index";
@@ -65,6 +66,8 @@ UserRouter.post("/profile", async (c) => {
 
     const timeUntilNextChange = getTimeUntilNextUsernameChange(lastUsernameChangeTime);
 
+    const defaultUnlockItems = UnlockDefs["unlock_default"].unlocks;
+
     const items = await db
         .select({
             type: itemsTable.type,
@@ -73,7 +76,12 @@ UserRouter.post("/profile", async (c) => {
             status: itemsTable.status,
         })
         .from(itemsTable)
-        .where(eq(itemsTable.userId, user.id));
+        .where(
+            and(
+                eq(itemsTable.userId, user.id),
+                notInArray(itemsTable.type, defaultUnlockItems),
+            ),
+        );
 
     return c.json<ProfileResponse>(
         {

@@ -17,7 +17,7 @@ import { EmoteBarn } from "./emote";
 import { Gas } from "./gas";
 import { helpers } from "./helpers";
 import { type InputHandler, Key } from "./input";
-import type { InputBindUi, InputBinds } from "./inputBinds";
+import type { InputBinds, InputBindUi } from "./inputBinds";
 import type { SoundHandle } from "./lib/createJS";
 import { Map } from "./map";
 import { AirdropBarn } from "./objects/airdrop";
@@ -339,6 +339,7 @@ export class Game {
         // Process config
         this.m_camera.m_setShakeEnabled(this.m_config.get("screenShake")!);
         this.m_camera.m_setInterpEnabled(this.m_config.get("interpolation")!);
+        this.m_camera.m_setRotationEnabled(this.m_config.get("localRotation")!);
         this.m_playerBarn.anonPlayerNames = this.m_config.get("anonPlayerNames")!;
         this.initialized = true;
     }

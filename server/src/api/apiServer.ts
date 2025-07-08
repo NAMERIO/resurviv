@@ -5,7 +5,7 @@ import type { Info } from "../../../shared/types/api";
 import { Config } from "../config";
 import { TeamMenu } from "../teamMenu";
 import { GIT_VERSION } from "../utils/gitRevision";
-import { Logger, defaultLogger } from "../utils/logger";
+import { defaultLogger, Logger } from "../utils/logger";
 import type { FindGamePrivateBody, FindGamePrivateRes } from "../utils/types";
 
 class Region {
@@ -43,7 +43,7 @@ class Region {
     async findGame(body: FindGamePrivateBody): Promise<FindGamePrivateRes> {
         const data = await this.fetch<FindGamePrivateRes>("api/find_game", body);
         if (!data) {
-            return { error: "full" };
+            return { error: "find_game_failed" };
         }
         return data;
     }
@@ -112,7 +112,7 @@ export class ApiServer {
         if (body.region in this.regions) {
             return await this.regions[body.region].findGame(body);
         }
-        return { error: "full" };
+        return { error: "find_game_failed" };
     }
 }
 

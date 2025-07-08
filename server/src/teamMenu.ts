@@ -17,16 +17,16 @@ import {
 import { assert } from "../../shared/utils/util";
 import type { ApiServer } from "./api/apiServer";
 import { validateSessionToken } from "./api/auth";
-import { isBanned } from "./api/routes/private/ModerationRouter";
+import { hashIp, isBanned } from "./api/routes/private/ModerationRouter";
 import { Config } from "./config";
 import { Logger } from "./utils/logger";
 import {
-    HTTPRateLimit,
-    WebSocketRateLimit,
     getHonoIp,
+    HTTPRateLimit,
     isBehindProxy,
     validateUserName,
     verifyTurnsStile,
+    WebSocketRateLimit,
 } from "./utils/serverHelpers";
 
 interface SocketData {
@@ -64,12 +64,15 @@ class Player {
 
     disconnectTimeout: ReturnType<typeof setTimeout>;
 
+    encodedIp: string;
+
     constructor(
         public socket: WSContext<SocketData>,
         public teamMenu: TeamMenu,
         public userId: string | null,
         public ip: string,
     ) {
+        this.encodedIp = hashIp(ip);
         // disconnect if didn't join a room in 5 seconds
         this.disconnectTimeout = setTimeout(() => {
             if (!this.room) {
@@ -365,6 +368,8 @@ export class TeamMenu {
 
     logger = new Logger("TeamMenu");
 
+    playersByIp = new Map<string, Set<Player>>();
+
     constructor(public server: ApiServer) {
         setInterval(() => {
             for (const room of this.rooms.values()) {
@@ -424,12 +429,8 @@ export class TeamMenu {
                     closeReason = "behind_proxy";
                 }
 
-                try {
-                    if (await isBanned(ip!)) {
-                        closeReason = "banned";
-                    }
-                } catch (err) {
-                    this.logger.error("Failed to check if IP is banned", err);
+                if (await isBanned(ip!)) {
+                    closeReason = "banned";
                 }
 
                 wsRateLimit.ipConnected(ip!);
@@ -507,6 +508,13 @@ export class TeamMenu {
     onOpen(ws: WSContext<SocketData>, userId: string | null, ip: string) {
         const player = new Player(ws, this, userId, ip);
         ws.raw!.player = player;
+
+        let players = this.playersByIp.get(player.encodedIp);
+        if (!players) {
+            players = new Set();
+            this.playersByIp.set(player.encodedIp, players);
+        }
+        players.add(player);
     }
 
     onMsg(ws: WSContext<SocketData>, data: string) {
@@ -583,6 +591,14 @@ export class TeamMenu {
             return;
         }
 
+        const byIp = this.playersByIp.get(player.encodedIp);
+        if (byIp) {
+            byIp.delete(player);
+            if (byIp.size === 0) {
+                this.playersByIp.delete(player.encodedIp);
+            }
+        }
+
         // meh just to make sure we dont keep timeouts with references hanging
         // not like it matters because its 5 seconds...
         clearTimeout(player.disconnectTimeout);
@@ -605,5 +621,16 @@ export class TeamMenu {
 
     removeRoom(room: Room) {
         this.rooms.delete(room.id);
+    }
+
+    disconnectPlayers(encodedIp: string) {
+        const players = this.playersByIp.get(encodedIp);
+        if (!players) return;
+
+        for (const player of players) {
+            player.socket.close();
+        }
+        players.clear();
+        this.playersByIp.delete(encodedIp);
     }
 }
