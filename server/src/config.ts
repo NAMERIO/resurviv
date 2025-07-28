@@ -28,7 +28,7 @@ util.mergeDeep(Config, {
             frag: 3,
             smoke: 1,
             strobe: 1,
-            mine: 0,
+            mine: 5,
             mirv: 1,
             bandage: GameConfig.bagSizes["bandage"][BACKPACK_LEVEL],
             healthkit: GameConfig.bagSizes["healthkit"][BACKPACK_LEVEL],
