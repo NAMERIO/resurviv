@@ -12,8 +12,8 @@ const BACKPACK_LEVEL = 3;
 
 util.mergeDeep(Config, {
     modes: [
-        { mapName: "main", teamMode: TeamMode.Solo, enabled: false },
-        { mapName: "main", teamMode: TeamMode.Duo, enabled: true },
+        { mapName: "main", teamMode: TeamMode.Solo, enabled: true },
+        { mapName: "main", teamMode: TeamMode.Duo, enabled: false },
         { mapName: "main", teamMode: TeamMode.Squad, enabled: false },
     ],
     debug: {
