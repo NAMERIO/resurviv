@@ -161,6 +161,10 @@ export class ResourceManager {
         let atlasDefs = spritesheetDefs[this.textureRes] || spritesheetDefs.low;
 
         const atlasDef = atlasDefs[name];
+        if (!atlasDef) {
+            console.warn(`Atlas definition missing for '${name}' at resolution '${this.textureRes}'`);
+            return; // skip loading this atlas
+        }
         for (let i = 0; i < atlasDef.length; i++) {
             const atlas = loadSpritesheet(this.renderer, atlasDef[i]);
             this.atlases[name].spritesheets.push(atlas);
