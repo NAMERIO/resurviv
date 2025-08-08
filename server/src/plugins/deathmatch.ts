@@ -10,7 +10,12 @@ import { GamePlugin, type PlayerDamageEvent } from "../game/pluginManager";
 /**
  * Checks if an item is present in the player's loadout
  */
-export const isItemInLoadout = (item: string, category: string) => {
+export const isItemInLoadout = (
+    item: string,
+    category: string,
+    ownedItems?: Set<string>
+) => {
+    if (ownedItems && !ownedItems.has(item)) return false;
     if (!UnlockDefs.unlock_default.unlocks.includes(item)) return false;
 
     const def = GameObjectDefs[item];
