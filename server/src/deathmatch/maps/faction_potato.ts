@@ -54,6 +54,7 @@ const mapDef: PartialMapDef = {
             ],
             crates: [{ name: "airdrop_crate_03", weight: 1 }],
         },
+        roles: undefined
     },
     mapGen: {
         map: {

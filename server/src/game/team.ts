@@ -100,4 +100,28 @@ export class Team {
             this.isCaptainApplied = true;
         }
     }
+    checkAndApplyRandomRole() {
+        const roles = new Set([
+            "leader",
+            "captain",
+            "lieutenant",
+            "medic",
+            "marksman",
+            "recon",
+            "grenadier",
+            "bugler",
+        ]);
+
+        for ( const player of this.livingPlayers ) {
+            if (player.role != "" && roles.has(player.role)) {
+                roles.delete(player.role);
+            };
+        }
+        const playersWithoutRole = this.livingPlayers.filter(p => p.role == "");
+
+        for ( const role of roles ) {
+            const player = playersWithoutRole[util.randomInt(0, playersWithoutRole.length - 1)];
+            player.promoteToRole(role);
+        }
+    }
 }
