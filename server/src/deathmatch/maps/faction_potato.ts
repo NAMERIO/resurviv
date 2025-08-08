@@ -1,10 +1,10 @@
-import { v2 } from "../../../../shared/utils/v2";
-import { MapId } from "../../../../shared/defs/types/misc";
 import type { MapDef } from "../../../../shared/defs/mapDefs";
+import type { PartialMapDef } from "../../../../shared/defs/maps/baseDefs";
 import { Faction } from "../../../../shared/defs/maps/factionDefs";
-import type {  PartialMapDef } from "../../../../shared/defs/maps/baseDefs";
+import { MapId } from "../../../../shared/defs/types/misc";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { util } from "../../../../shared/utils/util";
+import { v2 } from "../../../../shared/utils/v2";
 
 export enum TeamColor {
     // NONE = 0, // can be used ambiguously with code that runs the same regardless of team color
@@ -54,7 +54,7 @@ const mapDef: PartialMapDef = {
             ],
             crates: [{ name: "airdrop_crate_03", weight: 1 }],
         },
-        roles: undefined
+        roles: undefined,
     },
     mapGen: {
         map: {
@@ -66,22 +66,22 @@ const mapDef: PartialMapDef = {
             placeSpawns: [],
         },
         densitySpawns: Faction.mapGen
-                    ? Faction.mapGen.densitySpawns.reduce(
-                          (array, item) => {
-                              let object: Record<string, number> = { potato_01: 75, potato_02: 75, potato_03: 75 };
-                              for (const [key, value] of Object.entries(item)) {
-                                  object[key] =
-                                      (value * config.spawnDensity.large) / 100;
-                              }
-                              array.push(object);
-                              return array;
-                          },
-                          [] as Record<string, number>[],
-                      )
-                    : [
-                        {
-                        }
-                    ], 
+            ? Faction.mapGen.densitySpawns.reduce(
+                  (array, item) => {
+                      let object: Record<string, number> = {
+                          potato_01: 75,
+                          potato_02: 75,
+                          potato_03: 75,
+                      };
+                      for (const [key, value] of Object.entries(item)) {
+                          object[key] = (value * config.spawnDensity.large) / 100;
+                      }
+                      array.push(object);
+                      return array;
+                  },
+                  [] as Record<string, number>[],
+              )
+            : [{}],
         fixedSpawns: [
             {
                 warehouse_01f: 1,

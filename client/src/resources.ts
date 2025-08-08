@@ -145,7 +145,9 @@ export class ResourceManager {
 
         const atlasDef = atlasDefs[name];
         if (!atlasDef) {
-            console.warn(`Atlas definition missing for '${name}' at resolution '${this.textureRes}'`);
+            console.warn(
+                `Atlas definition missing for '${name}' at resolution '${this.textureRes}'`,
+            );
             return; // skip loading this atlas
         }
         for (let i = 0; i < atlasDef.length; i++) {

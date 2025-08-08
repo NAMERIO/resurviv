@@ -21,8 +21,8 @@ import { v2 } from "../../shared/utils/v2";
 import { Config } from "./config";
 
 console.log({
-    gameServer: Config.gameServer
-})
+    gameServer: Config.gameServer,
+});
 const config = {
     address: Config.gameServer.apiServerUrl,
     region: Config.gameServer.thisRegion,

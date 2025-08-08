@@ -13,7 +13,7 @@ import { GamePlugin, type PlayerDamageEvent } from "../game/pluginManager";
 export const isItemInLoadout = (
     item: string,
     category: string,
-    ownedItems?: Set<string>
+    ownedItems?: Set<string>,
 ) => {
     if (ownedItems && !ownedItems.has(item)) return false;
     if (!UnlockDefs.unlock_default.unlocks.includes(item)) return false;
@@ -51,8 +51,20 @@ export function onPlayerJoin(data: Player) {
 }
 
 const perks = [
-    "broken_arrow", "steelskin", "leadership", "flak_jacket", "martyrdom", "fabricate", "explosive",
-    "tree_climbing", "windwalk", "splinter", "small_arms", "field_medic", "scavenger", "chambered",
+    "broken_arrow",
+    "steelskin",
+    "leadership",
+    "flak_jacket",
+    "martyrdom",
+    "fabricate",
+    "explosive",
+    "tree_climbing",
+    "windwalk",
+    "splinter",
+    "small_arms",
+    "field_medic",
+    "scavenger",
+    "chambered",
 ];
 
 export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
@@ -68,7 +80,7 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
 
     data.player.perks.length = 0;
 
-    if ( data.source?.__id !== data.player.__id && Math.random() < 0.2 ) {
+    if (data.source?.__id !== data.player.__id && Math.random() < 0.2) {
         const perk = perks[Math.floor(Math.random() * perks.length)];
         data.player.game.lootBarn.addLoot(perk, data.player.pos, data.player.layer, 1);
     }
@@ -118,9 +130,13 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
         killer.inventory["frag"] = Math.min(killer.inventory["frag"] + 3, 12);
         killer.inventory["mirv"] = Math.min(killer.inventory["mirv"] + 1, 4);
         if (Math.random() < 0.2) {
-            const strobeChance =  Math.random() < (Config.modes[1].mapName === "desert" ? 0.6 :  0.2);
-            const itemToGive =  strobeChance ? "strobe" : "mine";
-            killer.inventory[itemToGive] = Math.min(killer.inventory[itemToGive] + 1, itemToGive === "mine" ? 2 : 1);
+            const strobeChance =
+                Math.random() < (Config.modes[1].mapName === "desert" ? 0.6 : 0.2);
+            const itemToGive = strobeChance ? "strobe" : "mine";
+            killer.inventory[itemToGive] = Math.min(
+                killer.inventory[itemToGive] + 1,
+                itemToGive === "mine" ? 2 : 1,
+            );
         }
 
         if (Config.modes[1].mapName === "snow")

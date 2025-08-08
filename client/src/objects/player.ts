@@ -43,6 +43,7 @@ import type { Camera } from "../camera";
 import type { DebugOptions } from "../config";
 import { debugLines } from "../debugLines";
 import { device } from "../device";
+import { errorLogManager } from "../errorLogs";
 import type { Ctx } from "../game";
 import { GameMod } from "../gameMod";
 import { helpers } from "../helpers";
@@ -57,7 +58,6 @@ import type { Obstacle } from "./obstacle";
 import type { Emitter, ParticleBarn } from "./particles";
 import { halloweenSpriteMap } from "./projectile";
 import { createCasingParticle } from "./shot";
-import { errorLogManager } from "../errorLogs";
 
 const gameMod = new GameMod();
 

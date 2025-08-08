@@ -826,10 +826,7 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-base-outfitPolice.svg",
         "player/player-base-chewie-cheese.svg",
 
-
         "player/player-fists-police.svg",
-
-
 
         "player/player-base-pantera-onca.svg",
         "player/player-base-parma.svg",

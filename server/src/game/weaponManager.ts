@@ -117,7 +117,9 @@ export class WeaponManager {
 
             const swappingToGun = nextWeaponDef.type == "gun";
             const nerfDelay = Config.gameServer.thisRegion === "eu" ? 0.44 : 0.33;
-            effectiveSwitchDelay = swappingToGun ? nextWeaponDef.switchDelay * nerfDelay : 0;
+            effectiveSwitchDelay = swappingToGun
+                ? nextWeaponDef.switchDelay * nerfDelay
+                : 0;
 
             if (this.player.freeSwitchTimer < 0) {
                 effectiveSwitchDelay = GameConfig.player.baseSwitchDelay;
