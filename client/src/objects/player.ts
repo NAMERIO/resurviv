@@ -57,6 +57,7 @@ import type { Obstacle } from "./obstacle";
 import type { Emitter, ParticleBarn } from "./particles";
 import { halloweenSpriteMap } from "./projectile";
 import { createCasingParticle } from "./shot";
+import { errorLogManager } from "../errorLogs";
 
 const gameMod = new GameMod();
 
