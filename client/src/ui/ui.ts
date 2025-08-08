@@ -1012,12 +1012,12 @@ export class UiManager {
 
             // Add the inner dot sprite
             let texture = "player-map-inner.img";
-            if (customMapIcon) {
-                texture = roleDef.mapIcon!.alive;
+            if (customMapIcon && roleDef.mapIcon?.alive) {
+                texture = roleDef.mapIcon.alive;
             }
             if (playerStatus.dead) {
                 texture = "skull-outlined.img";
-                if (customMapIcon) {
+                if (roleDef?.mapIcon?.dead) {
                     texture = roleDef.mapIcon!.dead;
                 }
             } else if (playerStatus.downed) {

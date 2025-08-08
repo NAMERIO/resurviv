@@ -5,6 +5,7 @@ import { MapObjectDefs } from "../../../../shared/defs/mapObjectDefs";
 import type { ObstacleDef } from "../../../../shared/defs/mapObjectsTyping";
 import { SpecialAirdropConfig } from "../../../../shared/defs/maps/factionDefs";
 import { GameConfig } from "../../../../shared/gameConfig";
+import { Constants } from "../../../../shared/net/net";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
 import { type Collider, coldet } from "../../../../shared/utils/coldet";
 import { collider } from "../../../../shared/utils/collider";
@@ -105,7 +106,7 @@ export class PlaneBarn {
                         break;
                     }
                     case GameConfig.Plane.Airstrike: {
-                        assert(options.airstrikeZoneRad); //only option that MUST be defined
+                        assert(options.airstrikeZoneRad); // only option that MUST be defined
                         const rad = options.airstrikeZoneRad;
                         const timeBeforeStart = options.wait ?? 0;
                         const airstrikeInterval = options.delay ?? 1;
@@ -113,12 +114,12 @@ export class PlaneBarn {
                             ? util.weightedRandom(options.numPlanes).count
                             : 3;
 
-                        //airstrike zones should occur over high player density areas
-                        //will look for the highest density area until an area with at least 25% of the players is found
-                        let pos = v2.copy(this.game.gas.posNew); //defaults to center of safe zone
+                        // airstrike zones should occur over high player density areas
+                        // will look for the highest density area until an area with at least 25% of the players is found
+                        let pos = v2.copy(this.game.gas.posNew); // defaults to center of safe zone
                         const livingPlayers = this.game.playerBarn.livingPlayers;
                         let highestPlayerCount = 0;
-                        //if this is met, the zone is covering enough players and can break the loop
+                        // if this is met, the zone is covering enough players and can break the loop
                         const minPlayerCount = Math.floor(livingPlayers.length / 4);
                         for (let i = 0; i < livingPlayers.length; i++) {
                             const testPos = livingPlayers[i].pos;
@@ -137,7 +138,7 @@ export class PlaneBarn {
                             }
                         }
 
-                        pos = v2.add(pos, v2.mul(v2.randomUnit(), 7)); //randomize the point a bit
+                        pos = v2.add(pos, v2.mul(v2.randomUnit(), 7)); // randomize the point a bit
                         this.game.map.clampToMapBounds(pos);
 
                         this.addAirstrikeZone(
@@ -172,13 +173,16 @@ export class PlaneBarn {
         timeBeforeStart: number,
         airstrikeInterval: number,
     ) {
-        const timeToDropZone = 3; //takes 3 seconds from when a plane is called to reach its drop zone
-        const finishBuffer = 2; //2 second buffer after all planes are done
+        const timeToDropZone = 3; // takes 3 seconds from when a plane is called to reach its drop zone
+        const finishBuffer = 2; // 2 second buffer after all planes are done
         const duration =
             timeBeforeStart +
             timeToDropZone +
             planeCount * airstrikeInterval +
             finishBuffer;
+
+        assert(rad <= Constants.AirstrikeZoneMaxRad);
+        assert(duration <= Constants.AirstrikeZoneMaxDuration);
 
         this.newAirstrikeZones.push({
             pos,
@@ -208,16 +212,18 @@ export class PlaneBarn {
         const redAliveCount = red.livingPlayers.length;
         const blueAliveCount = blue.livingPlayers.length;
 
-        const maxAliveCount = Math.max(redAliveCount, blueAliveCount);
-        const minAliveCount = Math.min(redAliveCount, blueAliveCount);
+        const maxAliveCount = math.max(redAliveCount, blueAliveCount);
+        const minAliveCount = math.min(redAliveCount, blueAliveCount);
 
         const threshold =
             (maxAliveCount - minAliveCount) /
-            Math.max(red.highestAliveCount, blue.highestAliveCount);
+            math.max(red.highestAliveCount, blue.highestAliveCount);
         return threshold >= SpecialAirdropConfig.aliveCountThreshold;
     }
 
     addSpecialAirdrop(): void {
+        if (!this.game.playerBarn.teams.length) return;
+
         const losingTeam = this.game.playerBarn.teams.reduce((losingTeam, team) =>
             losingTeam.livingPlayers.length < team.livingPlayers.length
                 ? losingTeam
@@ -240,17 +246,20 @@ export class PlaneBarn {
         winningTeamMean.x /= winningTeam.livingPlayers.length;
         winningTeamMean.y /= winningTeam.livingPlayers.length;
 
-        const furthestLosingTeamPlayer = losingTeam.livingPlayers
-            .filter((p) => !p.disconnected && !this.game.gas.isInGas(p.pos))
-            .reduce((furthest, current) => {
-                return v2.distance(winningTeamMean, furthest.pos) >
-                    v2.distance(winningTeamMean, current.pos)
-                    ? furthest
-                    : current;
-            });
+        const players = losingTeam.livingPlayers.filter(
+            (p) => !p.disconnected && !this.game.gas.isInGas(p.pos),
+        );
+        if (!players.length) return;
+
+        const furthestLosingTeamPlayer = players.reduce((furthest, current) => {
+            return v2.distance(winningTeamMean, furthest.pos) >
+                v2.distance(winningTeamMean, current.pos)
+                ? furthest
+                : current;
+        }, players[0]);
 
         const pos = v2.add(furthestLosingTeamPlayer.pos, v2.mul(v2.randomUnit(), 5));
-        this.game.planeBarn.addAirdrop(pos, "airdrop_crate_04"); //golden airdrop
+        this.game.planeBarn.addAirdrop(pos, "airdrop_crate_04"); // golden airdrop
 
         this.specialAirdrop.dropped = true;
         this.specialAirdrop.canDrop = false;
@@ -416,7 +425,7 @@ export class PlaneBarn {
             return;
         }
 
-        //necessary since something like projectile.pos could get passed in which would keep the reference.
+        // necessary since something like projectile.pos could get passed in which would keep the reference.
         const posCopy = v2.copy(pos);
         const dirCopy = v2.copy(dir);
 
@@ -505,10 +514,10 @@ class AirstrikeZone {
             }
         }
 
-        //can't drop airstrikes until start ticker is finished
+        // can't drop airstrikes until start ticker is finished
         if (this.startTicker > 0) return;
 
-        //no more airstrikes left
+        // no more airstrikes left
         if (this.planesLeft <= 0) return;
 
         if (this.airstrikeTicker > 0) {
@@ -588,7 +597,7 @@ class AirStrikePlane extends Plane {
     startPos: Vec2;
     bombCount = 0;
     bombPositions: Vec2[];
-    //drop a bomb every 2 ticks
+    // drop a bomb every 2 ticks
     dropDelayCounter = 2;
 
     constructor(
@@ -631,8 +640,8 @@ class AirStrikePlane extends Plane {
 
         const startDir = v2.directionNormalized(this.targetPos, this.startPos);
         const currentDir = v2.directionNormalized(this.targetPos, this.pos);
-        //if dot product is -1, that means the direction vectors are pointing opposite to each other
-        //this can only happen if the plane has passed the targetPos meaning the drop zone has been reached
+        // if dot product is -1, that means the direction vectors are pointing opposite to each other
+        // this can only happen if the plane has passed the targetPos meaning the drop zone has been reached
         if (!this.reachedDropZone && math.eqAbs(v2.dot(startDir, currentDir), -1)) {
             this.reachedDropZone = true;
         }

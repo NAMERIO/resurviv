@@ -217,7 +217,7 @@ export class Gas {
 
         const r = v2.mul(v2.randomUnit(), 5);
         const pos = v2.add(v2.midpoint(redMean, blueMean), r);
-        this.game.planeBarn.addAirdrop(pos, "airdrop_crate_04"); //golden airdrop
+        this.game.planeBarn.addAirdrop(pos, "airdrop_crate_04"); // golden airdrop
     }
 
     advanceGasStage() {

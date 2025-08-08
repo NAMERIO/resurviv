@@ -187,6 +187,7 @@ export class Game {
                             break;
                         }
                         this.m_onMsg(type, msgStream.getStream());
+                        msgStream.stream.readAlignToNextByte();
                     }
                 };
                 this.m_ws.onclose = () => {

@@ -3,9 +3,11 @@ import {
     type BulletDef,
     BulletDefs,
 } from "../../../../shared/defs/gameObjects/bulletDefs";
+import { PerkProperties } from "../../../../shared/defs/gameObjects/perkDefs";
 import { MapObjectDefs } from "../../../../shared/defs/mapObjectDefs";
 import type { ObstacleDef } from "../../../../shared/defs/mapObjectsTyping";
 import { GameConfig } from "../../../../shared/gameConfig";
+import { Constants } from "../../../../shared/net/net";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
 import { coldet } from "../../../../shared/utils/coldet";
 import { collider } from "../../../../shared/utils/collider";
@@ -19,14 +21,6 @@ import { Player } from "./player";
 
 // NOTE: most of this code was copied from surviv client and bit heroes arena client
 // to get bullet collision the most accurate possible
-
-function transformSegment(p0: Vec2, p1: Vec2, pos: Vec2, dir: Vec2) {
-    const ang = Math.atan2(dir.y, dir.x);
-    return {
-        p0: v2.add(pos, v2.rotate(p0, ang)),
-        p1: v2.add(pos, v2.rotate(p1, ang)),
-    };
-}
 
 interface BulletCollision {
     type: "obstacle" | "player" | "pan";
@@ -53,6 +47,7 @@ export interface BulletParams {
     shotOffhand?: boolean;
     lastShot?: boolean;
     splinter?: boolean;
+    apRounds?: boolean;
     shotAlt?: boolean;
     trailSaturated?: boolean;
     trailSmall?: boolean;
@@ -158,6 +153,7 @@ export class Bullet {
     hasSpecialFx!: boolean;
     shotAlt!: boolean;
     splinter!: boolean;
+    apRounds!: boolean;
     trailSaturated!: boolean;
     trailSmall!: boolean;
     trailThick!: boolean;
@@ -237,12 +233,17 @@ export class Bullet {
         this.shotOffhand = params.shotOffhand ?? false;
         this.shotAlt = params.shotAlt ?? false;
         this.splinter = params.splinter ?? false;
+        this.apRounds = params.apRounds ?? false;
         this.trailSaturated = params.trailSaturated ?? false;
         this.trailSmall = params.trailSmall ?? false;
         this.trailThick = params.trailThick ?? false;
         this.varianceT = params.varianceT ?? 1;
         this.distAdjIdx = distAdjIdx;
-        this.distance = this.maxDistance = distance * variance + distAdj;
+        this.distance = this.maxDistance = math.clamp(
+            distance * variance + distAdj,
+            0,
+            Constants.MaxPosition,
+        );
         this.clipDistance = !!params.clipDistance;
         this.endPos = v2.add(params.pos, v2.mul(this.dir, this.distance));
         this.clientEndPos = v2.copy(this.endPos);
@@ -254,6 +255,7 @@ export class Bullet {
         this.hasSpecialFx =
             this.shotAlt ||
             this.splinter ||
+            this.apRounds ||
             this.trailSaturated ||
             this.trailSmall ||
             this.trailThick;
@@ -446,13 +448,13 @@ export class Bullet {
                 if (obj.hasActivePan()) {
                     const p = obj;
                     const panSeg = p.getPanSegment()!;
-                    const oldSegment = transformSegment(
+                    const oldSegment = math.transformSegment(
                         panSeg.p0,
                         panSeg.p1,
                         p.posOld,
                         p.dirOld,
                     );
-                    const newSegment = transformSegment(
+                    const newSegment = math.transformSegment(
                         panSeg.p0,
                         panSeg.p1,
                         p.pos,
@@ -567,6 +569,11 @@ export class Bullet {
                 const mapDef = MapObjectDefs[col.obstacleType!] as ObstacleDef;
 
                 const def = GameObjectDefs[this.bulletType] as BulletDef;
+                // AP Obstacle Multiplier Buff
+                let obstacleMult = def.obstacleDamage;
+                if (this.apRounds) {
+                    obstacleMult *= PerkProperties.ap_rounds.obstacleMult;
+                }
 
                 this.bulletManager.damages.push({
                     obj: col.obj!,
@@ -575,7 +582,7 @@ export class Bullet {
                     mapSourceType: this.mapSourceType,
                     damageType: this.damageType,
                     source: this.player,
-                    amount: finalDamage * def.obstacleDamage,
+                    amount: finalDamage * obstacleMult,
                     dir: this.dir,
                 });
 
@@ -605,6 +612,9 @@ export class Bullet {
                         amount: multiplier * finalDamage,
                         dir: this.dir,
                         isExplosion: this.isShrapnel,
+                        armorPenetration: this.apRounds
+                            ? PerkProperties.ap_rounds.armorPenetration
+                            : undefined,
                     });
                 }
                 hit = col.collidable;
@@ -651,6 +661,7 @@ export class Bullet {
             damageType: this.damageType,
             shotAlt: this.shotAlt,
             splinter: this.splinter,
+            apRounds: this.apRounds,
             trailSaturated: this.trailSaturated,
             trailSmall: this.trailSmall,
             trailThick: this.trailThick,

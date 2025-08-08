@@ -2525,6 +2525,9 @@ img {
 #ui-perk-2 {
   right: 60px;
 }
+#ui-perk-3 {
+  right: 120px;
+}
 
 .ui-perk-no-drop {
   border: 2px solid transparent;
@@ -4602,6 +4605,10 @@ span.ui-stats-header-value {
 
   #ui-perk-2 {
     right: 30px;
+  }
+
+  #ui-perk-3 {
+    right: 60px;
   }
 
   /**

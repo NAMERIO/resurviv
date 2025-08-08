@@ -60,6 +60,7 @@ const _allowedOutfits = [
     "outfitFireball",
     "outfitSpeedoSunburn",
     "outfitDev",
+    "outfitGD",
     "outfitMod",
     "outfitWheat",
     // "outfitNoir",

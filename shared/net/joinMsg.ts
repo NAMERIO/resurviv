@@ -17,35 +17,7 @@ export class JoinMsg implements AbstractMsg {
         heal: "",
         boost: "",
         emotes: [] as string[],
-        password: "",
     };
-
-    deserialize(s: BitStream) {
-        this.protocol = s.readUint32();
-        this.matchPriv = s.readString();
-        this.loadoutPriv = s.readString();
-        this.questPriv = s.readString();
-        this.name = s.readString(Constants.PlayerNameMaxLen);
-        this.useTouch = s.readBoolean();
-        this.isMobile = s.readBoolean();
-        this.bot = s.readBoolean();
-
-        this.loadout.outfit = s.readGameType();
-        this.loadout.melee = s.readGameType();
-        this.loadout.primary = s.readGameType();
-        this.loadout.secondary = s.readGameType();
-        this.loadout.heal = s.readGameType();
-        this.loadout.boost = s.readGameType();
-        this.loadout.password = s.readString(7);
-        this.loadout.emotes = [];
-        const count = s.readUint8();
-
-        for (let i = 0; i < count; i++) {
-            const emote = s.readGameType();
-            this.loadout.emotes.push(emote);
-        }
-        s.readAlignToNextByte();
-    }
 
     serialize(s: BitStream) {
         s.writeUint32(this.protocol);
@@ -63,12 +35,32 @@ export class JoinMsg implements AbstractMsg {
         s.writeGameType(this.loadout.secondary);
         s.writeGameType(this.loadout.heal);
         s.writeGameType(this.loadout.boost);
-        s.writeString(this.loadout.password, 7);
 
-        s.writeUint8(this.loadout.emotes.length);
-        for (const emote of this.loadout.emotes) {
+        s.writeArray(this.loadout.emotes, 8, (emote) => {
             s.writeGameType(emote);
-        }
-        s.writeAlignToNextByte();
+        });
+    }
+
+    deserialize(s: BitStream) {
+        this.protocol = s.readUint32();
+        this.matchPriv = s.readString();
+        this.loadoutPriv = s.readString();
+        this.questPriv = s.readString();
+
+        this.name = s.readString(Constants.PlayerNameMaxLen);
+        this.useTouch = s.readBoolean();
+        this.isMobile = s.readBoolean();
+        this.bot = s.readBoolean();
+
+        this.loadout.outfit = s.readGameType();
+        this.loadout.melee = s.readGameType();
+        this.loadout.primary = s.readGameType();
+        this.loadout.secondary = s.readGameType();
+        this.loadout.heal = s.readGameType();
+        this.loadout.boost = s.readGameType();
+
+        this.loadout.emotes = s.readArray(8, () => {
+            return s.readGameType();
+        });
     }
 }

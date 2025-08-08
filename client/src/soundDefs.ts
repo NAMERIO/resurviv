@@ -1806,6 +1806,11 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
             volume: 1.75,
             maxInstances: 1,
         },
+        captain_assigned_01: {
+            path: "audio/ui/captain_assigned_01.mp3",
+            volume: 2,
+            maxInstances: 1,
+        },
         lt_assigned_01: {
             path: "audio/ui/lt_assigned_01.mp3",
             volume: 1,

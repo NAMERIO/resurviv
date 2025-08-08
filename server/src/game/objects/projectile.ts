@@ -148,15 +148,15 @@ export class Projectile extends BaseGameObject {
 
         if (this.strobe.airstrikesLeft == 0) return;
 
-        //airstrikes cannot drop until the strobe ticker is finished
+        // airstrikes cannot drop until the strobe ticker is finished
         if (this.strobe.strobeTicker >= 0) return;
 
         if (this.strobe.airstrikeTicker > 0) {
             this.strobe.airstrikeTicker -= dt;
 
             if (this.strobe.airstrikeTicker <= 0) {
-                //the position can only be "past" the strobe
-                //meaning that the random direction can be a MAX of 90 degrees offset from the regular direction so it doesnt go backwards
+                // the position can only be "past" the strobe
+                // meaning that the random direction can be a MAX of 90 degrees offset from the regular direction so it doesnt go backwards
                 const randomDir = v2.rotate(
                     this.throwDir,
                     util.random(-Math.PI / 2, Math.PI / 2),
@@ -369,7 +369,7 @@ export class Projectile extends BaseGameObject {
         for (const obj of objs) {
             if (obj.__type != ObjectType.Building) continue;
             if (!util.sameLayer(obj.layer, this.layer)) continue;
-            if (obj.wallsToDestroy < Infinity) continue; //building is destructable and bomb irons can explode on it
+            if (obj.wallsToDestroy < Infinity) continue; // building is destructable and bomb irons can explode on it
             for (let i = 0; i < obj.zoomRegions.length; i++) {
                 const zoomRegion = obj.zoomRegions[i];
 

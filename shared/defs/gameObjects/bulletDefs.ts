@@ -68,7 +68,7 @@ export const BaseDefs: Record<string, BulletDef> = {
     },
     bullet_an94: {
         type: "bullet",
-        damage: 17.5,
+        damage: 20,
         obstacleDamage: 1,
         falloff: 0.94,
         distance: 300,
@@ -214,7 +214,7 @@ export const BaseDefs: Record<string, BulletDef> = {
     },
     bullet_garand: {
         type: "bullet",
-        damage: 35,
+        damage: 44,
         obstacleDamage: 1,
         falloff: 0.9,
         distance: 400,
@@ -696,7 +696,7 @@ export const BaseDefs: Record<string, BulletDef> = {
         maxFlareScale: 2,
         skipCollision: true,
     },
-    //used for guns that shoot projectiles since they still technically have to shoot a bullet of some kind
+    // used for guns that shoot projectiles since they still technically have to shoot a bullet of some kind
     bullet_invis: {
         type: "bullet",
         damage: 0,

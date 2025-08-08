@@ -7,10 +7,10 @@ import { Config } from "./config";
 import { SingleThreadGameManager } from "./game/gameManager";
 import { GameProcessManager } from "./game/gameProcessManager";
 import { GIT_VERSION } from "./utils/gitRevision";
-import { Logger } from "./utils/logger";
+import { ServerLogger } from "./utils/logger";
 import {
+    apiPrivateRouter,
     cors,
-    fetchApiServer,
     forbidden,
     getIp,
     HTTPRateLimit,
@@ -36,7 +36,7 @@ process.on("uncaughtException", async (err) => {
 });
 
 class GameServer {
-    readonly logger = new Logger("GameServer");
+    readonly logger = new ServerLogger("GameServer");
 
     readonly region = Config.regions[Config.gameServer.thisRegion];
     readonly regionId = Config.gameServer.thisRegion;
@@ -86,13 +86,38 @@ class GameServer {
         };
     }
 
-    sendData() {
-        fetchApiServer("private/update_region", {
-            data: {
-                playerCount: this.manager.getPlayerCount(),
-            },
-            regionId: Config.gameServer.thisRegion,
-        });
+    async sendData() {
+        try {
+            await apiPrivateRouter.update_region.$post({
+                json: {
+                    data: {
+                        playerCount: this.manager.getPlayerCount(),
+                    },
+                    regionId: Config.gameServer.thisRegion,
+                },
+            });
+        } catch (err) {
+            this.logger.error(`Failed to update region: `, err);
+        }
+    }
+
+    async isIpBanned(ip: string) {
+        try {
+            const apiRes = await apiPrivateRouter.moderation.is_ip_banned.$post({
+                json: {
+                    ip,
+                },
+            });
+
+            if (apiRes.ok) {
+                const body = await apiRes.json();
+                return body.banned;
+            }
+        } catch (err) {
+            this.logger.error(`Failed check if IP is banned: `, err);
+        }
+
+        return false;
     }
 }
 
@@ -114,7 +139,7 @@ app.options("/api/find_game", (res) => {
     res.end();
 });
 
-app.post("/api/find_game", async (res, req) => {
+app.post("/api/find_game", (res, req) => {
     res.onAborted(() => {
         res.aborted = true;
     });
@@ -142,6 +167,13 @@ app.post("/api/find_game", async (res, req) => {
             }
         },
         () => {
+            if (res.aborted) return;
+            res.cork(() => {
+                if (res.aborted) return;
+                res.writeStatus("500 Internal Server Error");
+                res.write("500 Internal Server Error");
+                res.end();
+            });
             server.logger.warn("/api/find_game: Error retrieving body");
         },
     );
@@ -191,8 +223,10 @@ app.ws<GameSocketData>("/play", {
         const socketId = randomUUID();
         let disconnectReason = "";
 
-        if (await isBehindProxy(ip)) {
+        if (await isBehindProxy(ip, 0)) {
             disconnectReason = "behind_proxy";
+        } else if (await server.isIpBanned(ip)) {
+            disconnectReason = "ip_banned";
         }
 
         if (res.aborted) return;
@@ -233,6 +267,7 @@ app.ws<GameSocketData>("/play", {
 
     message(socket: WebSocket<GameSocketData>, message) {
         if (gameWsRateLimit.isRateLimited(socket.getUserData().rateLimit)) {
+            server.logger.warn("Game websocket rate limited, closing socket.");
             socket.close();
             return;
         }
@@ -293,6 +328,7 @@ app.ws<pingSocketData>("/ptc", {
 
     message(socket: WebSocket<pingSocketData>, message) {
         if (pingWsRateLimit.isRateLimited(socket.getUserData().rateLimit)) {
+            server.logger.warn("Ping websocket rate limited, closing socket.");
             socket.close();
             return;
         }

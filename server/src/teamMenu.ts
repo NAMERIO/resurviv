@@ -19,7 +19,7 @@ import type { ApiServer } from "./api/apiServer";
 import { validateSessionToken } from "./api/auth";
 import { hashIp, isBanned } from "./api/routes/private/ModerationRouter";
 import { Config } from "./config";
-import { Logger } from "./utils/logger";
+import { ServerLogger } from "./utils/logger";
 import {
     getHonoIp,
     HTTPRateLimit,
@@ -352,13 +352,13 @@ class Room {
     }
 }
 
-const alphanumerics = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
-function randomString(len: number) {
+const teamCodeCharacters = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz123456789";
+function generateTeamCode(): string {
     let str = "";
-    let i = 0;
-    while (i < len) {
-        str += alphanumerics.charAt(Math.floor(Math.random() * alphanumerics.length));
-        i++;
+    for (let i = 0; i < 4; i++) {
+        str += teamCodeCharacters.charAt(
+            Math.floor(Math.random() * teamCodeCharacters.length),
+        );
     }
     return `${str}`;
 }
@@ -366,7 +366,7 @@ function randomString(len: number) {
 export class TeamMenu {
     rooms = new Map<string, Room>();
 
-    logger = new Logger("TeamMenu");
+    logger = new ServerLogger("TeamMenu");
 
     playersByIp = new Map<string, Set<Player>>();
 
@@ -386,7 +386,7 @@ export class TeamMenu {
                 // kick players that haven't sent a keep alive msg in over a minute
                 // client sends it every 45 seconds
                 for (const player of room.players) {
-                    if (player.lastMsgTime < Date.now() - 5 * 60 * 1000) {
+                    if (player.lastMsgTime < Date.now() - 8 * 60 * 1000) {
                         player.send("error", { type: "lost_conn" });
                         room.removePlayer(player);
                     }
@@ -407,8 +407,8 @@ export class TeamMenu {
     init(app: Hono, upgradeWebSocket: UpgradeWebSocket) {
         const teamMenu = this;
 
-        const httpRateLimit = new HTTPRateLimit(1, 2000);
-        const wsRateLimit = new WebSocketRateLimit(5, 1000, 5);
+        const httpRateLimit = new HTTPRateLimit(5, 2000);
+        const wsRateLimit = new WebSocketRateLimit(50, 1000, 5);
 
         app.get(
             "/team_v2",
@@ -416,17 +416,12 @@ export class TeamMenu {
                 const ip = getHonoIp(c, Config.apiServer.proxyIPHeader);
 
                 let closeReason: TeamMenuErrorType | undefined;
-
                 if (
                     !ip ||
                     httpRateLimit.isRateLimited(ip) ||
                     wsRateLimit.isIpRateLimited(ip)
                 ) {
                     closeReason = "rate_limited";
-                }
-
-                if (!closeReason && (await isBehindProxy(ip!))) {
-                    closeReason = "behind_proxy";
                 }
 
                 if (await isBanned(ip!)) {
@@ -452,6 +447,10 @@ export class TeamMenu {
                     }
                 }
 
+                if (!closeReason && (await isBehindProxy(ip!, userId ? 0 : 3))) {
+                    closeReason = "behind_proxy";
+                }
+
                 return {
                     onOpen(_event, ws) {
                         ws.raw = {
@@ -469,6 +468,7 @@ export class TeamMenu {
                                     },
                                 } satisfies TeamErrorMsg),
                             );
+                            teamMenu.logger.warn(`closed socket for ${closeReason}`);
                             ws.close();
                             return;
                         }
@@ -479,6 +479,7 @@ export class TeamMenu {
                         const data = ws.raw! as SocketData;
 
                         if (wsRateLimit.isRateLimited(data.rateLimit)) {
+                            teamMenu.logger.warn("Rate limited, closing socket.");
                             ws.close();
                             return;
                         }
@@ -524,6 +525,7 @@ export class TeamMenu {
             msg = JSON.parse(data);
             zTeamClientMsg.parse(msg);
         } catch {
+            this.logger.warn("Failed to parse message, closing socket.");
             ws.close();
             return;
         }
@@ -531,6 +533,7 @@ export class TeamMenu {
         const player = ws.raw?.player;
         // i really don't think this is necessary but /shrug
         if (!player) {
+            this.logger.warn("Player not found, closing socket.");
             ws.close();
             return;
         }
@@ -575,6 +578,7 @@ export class TeamMenu {
         // if we don't have a room at this point it meant both creation and joining failed
         // so close the socket
         if (!player.room) {
+            this.logger.debug("Player not in room, closing socket.");
             ws.close();
             return;
         }
@@ -587,6 +591,7 @@ export class TeamMenu {
         const player = ws.raw?.player;
 
         if (!player) {
+            this.logger.debug("Player not found, closing socket.");
             ws.close();
             return;
         }
@@ -609,9 +614,9 @@ export class TeamMenu {
     }
 
     createRoom(data: ClientRoomData) {
-        let roomUrl = randomString(4);
+        let roomUrl = generateTeamCode();
         while (this.rooms.has(roomUrl)) {
-            roomUrl = randomString(4);
+            roomUrl = generateTeamCode();
         }
 
         const room = new Room(this, roomUrl, data);

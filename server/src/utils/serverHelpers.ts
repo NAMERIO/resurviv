@@ -1,5 +1,6 @@
 import type { HttpRequest, HttpResponse } from "uWebSockets.js";
 import type { Context } from "hono";
+import { hc } from "hono/client";
 import { isIP } from "net";
 import {
     DataSet,
@@ -10,6 +11,7 @@ import {
 } from "obscenity";
 import ProxyCheck, { type IPAddressInfo } from "proxycheck-ts";
 import { Constants } from "../../../shared/net/net";
+import type { PrivateRouteApp } from "../api/routes/private/private";
 import { Config } from "../config";
 import { defaultLogger } from "./logger";
 
@@ -117,7 +119,12 @@ const badWordsdataSet = new DataSet<{ originalWord: string }>()
             .addPattern(pattern`faggot`),
     )
     .addPhrase((phrase) =>
-        phrase.setMetadata({ originalWord: "hitler" }).addPattern(pattern`hitler`),
+        phrase
+            .setMetadata({ originalWord: "hitler" })
+            .addPattern(pattern`hitler`)
+            .addPattern(pattern`hitla`)
+            .addPattern(pattern`hit.ler`)
+            .addPattern(pattern`hitlr`),
     )
     .addPhrase((phrase) =>
         phrase
@@ -126,6 +133,30 @@ const badWordsdataSet = new DataSet<{ originalWord: string }>()
             .addPattern(pattern`kill yourself`)
             .addPattern(pattern`hang yourself`)
             .addPattern(pattern`unalive yourself`),
+    )
+    .addPhrase((phrase) =>
+        phrase
+            .setMetadata({ originalWord: "nigger" })
+            .addPattern(pattern`nlgger`)
+            .addPattern(pattern`n1gga`)
+            .addPattern(pattern`nigg`)
+            .addPattern(pattern`nlgg`)
+            .addPattern(pattern`nl99er`)
+            .addPattern(pattern`nl99a`)
+            .addPattern(pattern`niggr`)
+            .addPattern(pattern`n1ggr`)
+            .addPattern(pattern`n199r`)
+            .addPattern(pattern`nl99r`)
+            .addPattern(pattern`nlggr`)
+            .addPattern(pattern`n199er`)
+            .addPattern(pattern`ni55a`)
+            .addPattern(pattern`ni55er`)
+            .addPattern(pattern`chigger`)
+            .addPattern(pattern`chigga`)
+            .addPattern(pattern`n199a`),
+    )
+    .addPhrase((phrase) =>
+        phrase.setMetadata({ originalWord: "dick" }).addPattern(pattern`dlck`),
     );
 
 const matcher = new RegExpMatcher({
@@ -332,7 +363,7 @@ const proxyCheckCache = new Map<
     }
 >();
 
-export async function isBehindProxy(ip: string): Promise<boolean> {
+export async function isBehindProxy(ip: string, vpn: 0 | 1 | 2 | 3): Promise<boolean> {
     if (!proxyCheck) return false;
 
     let info: IPAddressInfo | undefined = undefined;
@@ -342,7 +373,9 @@ export async function isBehindProxy(ip: string): Promise<boolean> {
     }
     if (!info) {
         try {
-            const proxyRes = await proxyCheck.checkIP(ip);
+            const proxyRes = await proxyCheck.checkIP(ip, {
+                vpn,
+            });
             switch (proxyRes.status) {
                 case "ok":
                 case "warning":
@@ -362,7 +395,7 @@ export async function isBehindProxy(ip: string): Promise<boolean> {
         }
     }
     if (!info) {
-        return true;
+        return false;
     }
     proxyCheckCache.set(ip, {
         info,
@@ -394,41 +427,19 @@ export async function verifyTurnsStile(token: string, ip: string): Promise<boole
     return true;
 }
 
-export async function fetchApiServer<
-    Body extends object = object,
-    Res extends object = object,
->(route: string, body: Body): Promise<Res | undefined> {
-    const url = `${Config.gameServer.apiServerUrl}/${route}`;
-
-    try {
-        const res = await fetch(url, {
-            method: "post",
-            headers: {
-                "content-type": "application/json",
-                "survev-api-key": Config.secrets.SURVEV_API_KEY,
-            },
-            body: JSON.stringify(body),
-            signal: AbortSignal.timeout(5000),
-        });
-
-        if (res.ok) {
-            return res as Res;
-        }
-
-        defaultLogger.warn(
-            `Error fetching API server ${route}`,
-            res.status,
-            res.statusText,
-        );
-    } catch (err) {
-        defaultLogger.error(`Error fetching API server ${route}`, err);
-    }
-
-    return undefined;
-}
+export const apiPrivateRouter = hc<PrivateRouteApp>(
+    `${Config.gameServer.apiServerUrl}/private`,
+    {
+        headers: {
+            "survev-api-key": Config.secrets.SURVEV_API_KEY,
+        },
+    },
+);
 
 export async function logErrorToWebhook(from: "server" | "client", ...messages: any[]) {
-    if (!Config.errorLoggingWebhook) return;
+    const url =
+        from === "server" ? Config.errorLoggingWebhook : Config.clientErrorLoggingWebhook;
+    if (!url) return;
 
     try {
         const msg = messages
@@ -437,25 +448,29 @@ export async function logErrorToWebhook(from: "server" | "client", ...messages: 
                     return `\`\`\`${msg.cause}\n${msg.stack}\`\`\``;
                 }
                 if (typeof msg == "object") {
-                    return `\`\`\`json\n${JSON.stringify(msg, null, 2)}\`\`\``;
+                    return `\`\`\`json\n${JSON.stringify(msg, null, 2).replaceAll("`", "\\`")}\`\`\``;
                 }
-                return `\`${msg}\``;
+                return `${msg}`;
             })
             .join("\n");
 
-        let content = `Error from: \`${from}\`
-Region: \`${Config.gameServer.thisRegion}\`
-Timestamp: \`${new Date().toISOString()}\`
-`;
-        content += msg;
-
-        await fetch(Config.errorLoggingWebhook, {
+        await fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                content,
+                embeds: [
+                    {
+                        color: 0xff0000,
+                        title: `${from} error`,
+                        timestamp: new Date().toISOString(),
+                        description: msg,
+                        footer: {
+                            text: `Region: ${Config.gameServer.thisRegion}`,
+                        },
+                    },
+                ],
             }),
         });
     } catch (err) {

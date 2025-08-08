@@ -299,6 +299,14 @@ export const math = {
         return area;
     },
 
+    transformSegment(p0: Vec2, p1: Vec2, pos: Vec2, dir: Vec2) {
+        const ang = Math.atan2(dir.y, dir.x);
+        return {
+            p0: v2.add(pos, v2.rotate(p0, ang)),
+            p1: v2.add(pos, v2.rotate(p1, ang)),
+        };
+    },
+
     // http://paulbourke.net/geometry/pointlineplane/javascript.txt
     lineIntersects(
         x1: number,

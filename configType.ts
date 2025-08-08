@@ -194,9 +194,14 @@ export interface ConfigType {
         errorLogs: boolean;
     };
     /**
-     * Webhook URL to log errors.
+     * Webhook URL to log server errors.
      */
     errorLoggingWebhook?: string;
+
+    /**
+     * Webhook URL to log client errors.
+     */
+    clientErrorLoggingWebhook?: string;
 
     /**
      * PostgreSQL Database configuration, this will enable features like accounts, IP bans, leaderboards etc.
@@ -280,6 +285,11 @@ export interface ConfigType {
         GOOGLE_SECRET_ID?: string;
 
         /**
+         * Discord bot token.
+         */
+        DISCORD_BOT_TOKEN?: string;
+
+        /**
          * Enables proxycheck.io to ban VPNs and proxies from connecting.
          *
          */
@@ -310,6 +320,16 @@ export interface ConfigType {
         AIP_PLACEMENT_ID?: string;
         GAMEMONETIZE_ID?: string;
     };
+
+    /**
+     * Role ID for users with moderation permissions
+     */
+    discordRoleId?: string;
+
+    /**
+     * Guild ID
+     */
+    discordGuildId?: string;
 
     /**
      * Enables caching some expensive API requests (like leaderboards) with Redis.

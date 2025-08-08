@@ -260,9 +260,9 @@ const mapDef: PartialMapDef = {
             { name: "ak47", count: 1, weight: 2.7 },
             { name: "scar", count: 1, weight: 0.01 },
             { name: "dp28", count: 1, weight: 0.5 },
+            { name: "bar", count: 1, weight: 0.05 },
             { name: "mosin", count: 1, weight: 0.1 },
             { name: "m39", count: 1, weight: 0.1 },
-            { name: "vss", count: 1, weight: 0.1 },
             { name: "mp5", count: 1, weight: 10 },
             { name: "mac10", count: 1, weight: 6 },
             { name: "ump9", count: 1, weight: 3 },
@@ -274,14 +274,15 @@ const mapDef: PartialMapDef = {
             { name: "m9", count: 1, weight: 19 },
             { name: "m93r", count: 1, weight: 5 },
             { name: "glock", count: 1, weight: 7 },
-            { name: "deagle", count: 1, weight: 0.05 },
+            { name: "deagle", count: 1, weight: 0.05, preload: true },
             { name: "vector", count: 1, weight: 0.01 },
             { name: "sv98", count: 1, weight: 0.01 },
             { name: "spas12", count: 1, weight: 1 },
             { name: "qbb97", count: 1, weight: 0.01 },
-            { name: "flare_gun", count: 1, weight: 0.1 },
+            { name: "flare_gun", count: 1, weight: 0.1, preload: true },
             { name: "groza", count: 1, weight: 0.8 },
             { name: "scout_elite", count: 1, weight: 0.05 },
+            { name: "vss", count: 1, weight: 0.1 }, // ?
         ],
         tier_toilet: [
             { name: "tier_guns", count: 1, weight: 0.1 },
@@ -330,6 +331,7 @@ const mapDef: PartialMapDef = {
         tier_airdrop_uncommon: [
             { name: "mk12", count: 1, weight: 2.5 },
             { name: "scar", count: 1, weight: 0.75 },
+            { name: "bar", count: 1, weight: 1 },
             { name: "mosin", count: 1, weight: 2.5 },
             { name: "m39", count: 1, weight: 2.5 },
             { name: "saiga", count: 1, weight: 1 },
@@ -339,6 +341,7 @@ const mapDef: PartialMapDef = {
             { name: "qbb97", count: 1, weight: 1.5 },
             { name: "m9", count: 1, weight: 0.01 },
             { name: "scout_elite", count: 1, weight: 1.5 },
+            { name: "vss", count: 1, weight: 2.5 }, // !
         ],
         tier_ghillie: [
             {
@@ -455,7 +458,6 @@ const mapDef: PartialMapDef = {
                 chest_03f: 1,
                 mil_crate_02: { odds: 1 },
                 tree_02: 3,
-                river_town_01: 1,
             },
         ],
         randomSpawns: [],

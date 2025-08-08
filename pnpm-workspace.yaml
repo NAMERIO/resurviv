@@ -2,7 +2,7 @@ packages:
   - server/
   - shared/
   - client/
-  - client/atlas-builder
+  - bot/
   - '!**dist/**'
 
 onlyBuiltDependencies:

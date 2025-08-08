@@ -28,6 +28,7 @@ export enum Action {
     ReloadAlt,
     UseItem,
     Revive,
+    Count,
 }
 
 export enum Rarity {
@@ -61,6 +62,7 @@ export enum Anim {
     CrawlForward,
     CrawlBackward,
     Revive,
+    Count,
 }
 
 export enum Plane {
@@ -73,6 +75,7 @@ export enum HasteType {
     Windwalk,
     Takedown,
     Inspire,
+    Count,
 }
 
 export enum Input {
@@ -120,7 +123,7 @@ export const GameConfig = {
     // the protocol we originated from was 78
     // remember to bump this every time a serialization function is changed
     // or a definition item added, removed or moved
-    protocolVersion: 1004,
+    protocolVersion: 1007,
     Input,
     EmoteSlot,
     WeaponSlot,
@@ -162,7 +165,7 @@ export const GameConfig = {
         bleedTickRate: 1,
         downedMoveSpeed: 4,
         downedRezMoveSpeed: 2,
-        downedDamageBuffer: 0.1, //time buffer after being downed where a player can't take damage
+        downedDamageBuffer: 0.1, // time buffer after being downed where a player can't take damage
         keepZoomWhileDowned: false,
         reviveDuration: 8,
         reviveRange: 5,
@@ -278,6 +281,7 @@ export const GameConfig = {
             regular: 0xfee2c6,
             saturated: 0xffd9b3,
             chambered: 0xff7f00,
+            apSaturated: 0xa54b0b,
             alphaRate: 0.92,
             alphaMin: 0.14,
         },
@@ -285,6 +289,7 @@ export const GameConfig = {
             regular: 0xfee2c6,
             saturated: 0xffd9b3,
             chambered: 0xff7f00,
+            apSaturated: 0xa54b0b,
             alphaRate: 0.96,
             alphaMin: 0.28,
         },
@@ -292,6 +297,7 @@ export const GameConfig = {
             regular: 0x130900,
             saturated: 0x130900,
             chambered: 0x130900,
+            apSaturated: 0x130900,
             alphaRate: 0.92,
             alphaMin: 0.14,
         },
@@ -299,6 +305,7 @@ export const GameConfig = {
             regular: 0xc5d6fe,
             saturated: 0xabc4ff,
             chambered: 0x4cff,
+            apSaturated: 0x0000c8,
             alphaRate: 0.94,
             alphaMin: 0.2,
         },
@@ -306,11 +313,13 @@ export const GameConfig = {
             regular: 0xfedcdc,
             saturated: 0xfedcdc,
             chambered: 0xff0000,
+            apSaturated: 0x9f0000,
         },
         "556mm": {
             regular: 0xa9ff92,
             saturated: 0xa9ff92,
             chambered: 0x36ff00,
+            apSaturated: 0x308000,
             alphaRate: 0.92,
             alphaMin: 0.14,
         },
@@ -318,11 +327,13 @@ export const GameConfig = {
             regular: 0xfff088,
             saturated: 0xfff088,
             chambered: 0xffdf00,
+            apSaturated: 0xff8000,
         },
         "308sub": {
             regular: 0x252b00,
             saturated: 0x465000,
             chambered: 0x131600,
+            apSaturated: 0x000a02,
             alphaRate: 0.92,
             alphaMin: 0.07,
         },
@@ -330,11 +341,13 @@ export const GameConfig = {
             regular: 0xe2e2e2,
             saturated: 0xe2e2e2,
             chambered: 0xc4c4c4,
+            apSaturated: 0xc4c4c4,
         },
         "45acp": {
             regular: 0xecbeff,
             saturated: 0xe7acff,
             chambered: 0xb500ff,
+            apSaturated: 0x470349,
         },
         laser: {
             regular: 0xff0000,
@@ -354,8 +367,8 @@ export const GameConfig = {
             alphaMin: 0.14,
         },
         shrapnel: { regular: 0x333333, saturated: 0x333333 },
-        frag: { regular: 0xcb0000, saturated: 0xcb0000 },
-        invis: { regular: 0, saturated: 0, chambered: 0 },
+        frag: { regular: 0xcb0000, saturated: 0xcb0000, apSaturated: 0xcb0000 },
+        invis: { regular: 0, saturated: 0, chambered: 0, apSaturated: 0 },
     },
     scopeZoomRadius: {
         desktop: {

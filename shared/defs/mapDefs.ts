@@ -142,7 +142,8 @@ export interface MapDef {
         };
         roles?: {
             timings: Array<{
-                role: string | (() => string);
+                type: string; // can either be a building with the door(s) to unlock OR the door itself, no support for structures yet
+                stagger: number; // only for buildings with multiple unlocks, will stagger the unlocks instead of doing them all at once
                 circleIdx: number;
                 wait: number;
             }>;
@@ -157,6 +158,7 @@ export interface MapDef {
             name: string;
             count: number;
             weight: number;
+            preload?: boolean;
         }>
     >;
     mapGen: {

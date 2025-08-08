@@ -1,26 +1,16 @@
 {
   "name": "bot",
-  "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.js",
+  "main": "index.js",
+  "type": "module",
   "scripts": {
-    "build": "tsc",
-    "test": "tsx src/test.ts", 
-    "dev": "tsx watch src/index.ts",
-    "start": "NODE_ENV=production node --enable-source-maps dist/bot/src/index.js"
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch --clear-screen=false --include '../server/src/api/routes/private/*' --include ../survev-config.hjson src/index.ts",
+    "register-commands": "tsx src/register-commands.ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "@libsql/client": "^0.14.0",
-    "better-sqlite3": "^11.8.1",
-    "discord.js": "^14.17.3",
-    "drizzle-orm": "^0.38.4"
-  },
-  "devDependencies": {
-    "@types/better-sqlite3": "^7.6.12",
-    "drizzle-kit": "^0.30.2",
-    "tsx": "^4.19.2"
+    "discord.js": "^14.21.0",
+    "hono": "^4.8.5",
+    "tsx": "^4.20.3",
+    "zod": "^3.25.76"
   }
 }

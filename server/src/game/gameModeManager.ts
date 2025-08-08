@@ -307,7 +307,7 @@ export class GameModeManager {
                         highestKiller.kills > p.kills ? highestKiller : p,
                 );
 
-                //if game ends before leaders are promoted, just show the player by himself
+                // if game ends before leaders are promoted, just show the player by himself
                 return !redLeader || !blueLeader
                     ? [player]
                     : [player, redLeader, blueLeader, highestKiller];

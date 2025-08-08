@@ -370,7 +370,7 @@ export class Player implements AbstractObject {
         m_healEffect: boolean;
         m_frozen: boolean;
         m_frozenOri: number;
-        m_hasteType: HasteType;
+        m_hasteType: Exclude<HasteType, HasteType.Count>;
         m_hasteSeq: number;
         m_actionItem: string;
         m_scale: number;
@@ -745,7 +745,27 @@ export class Player implements AbstractObject {
 
     m_getPanSegment() {
         const panSurface = this.m_netData.m_wearingPan ? "unequipped" : "equipped";
-        return (GameObjectDefs.pan as MeleeDef).reflectSurface?.[panSurface];
+        let surface = (GameObjectDefs.pan as MeleeDef).reflectSurface![panSurface];
+
+        const scale = this.m_netData.m_scale;
+
+        if (scale !== 1) {
+            if (panSurface === "unequipped") {
+                surface = {
+                    p0: v2.mul(surface.p0, scale),
+                    p1: v2.mul(surface.p1, scale),
+                };
+            } else {
+                const s = (scale - 1) * 0.75;
+                const off = v2.create(s, -s);
+                surface = {
+                    p0: v2.add(surface.p0, off),
+                    p1: v2.add(surface.p1, off),
+                };
+            }
+        }
+
+        return surface;
     }
 
     canInteract(map: Map) {
@@ -910,7 +930,12 @@ export class Player implements AbstractObject {
             this.posInterpTicker += dt;
             const posT = math.clamp(this.posInterpTicker / camera.m_interpInterval, 0, 1);
             this.m_visualPos = v2.lerp(posT, this.m_visualPosOld, this.m_pos);
-            if (!camera.m_localRotationEnabled) {
+            if (
+                !camera.m_localRotationEnabled ||
+                !isActivePlayer ||
+                isSpectating ||
+                displayingStats
+            ) {
                 this.dirInterpolationTicker += dt;
                 const dirT = math.clamp(
                     this.dirInterpolationTicker / camera.m_interpInterval,
@@ -1511,6 +1536,16 @@ export class Player implements AbstractObject {
                 const coll = this.getMeleeCollider();
                 debugLines.addCollider(coll, 0xff0000, 0.1);
             }
+            if (this.m_netData.m_wearingPan || this.m_netData.m_activeWeapon == "pan") {
+                const pan = this.m_getPanSegment();
+                const { p1, p0 } = math.transformSegment(
+                    pan.p0,
+                    pan.p1,
+                    this.m_pos,
+                    this.m_dir,
+                );
+                debugLines.addLine(p0, p1, 0xff00ff);
+            }
         }
     }
 
@@ -2060,7 +2095,8 @@ export class Player implements AbstractObject {
         }
         this.handLContainer.position.x -= this.gunRecoilL * 1.125;
         this.handRContainer.position.x -= this.gunRecoilR * 1.125;
-        //Local Rotation
+
+        // Local Rotation
         const mouseY = inputManager.mousePos.y;
         const mouseX = inputManager.mousePos.x;
         if (
@@ -2983,7 +3019,7 @@ export class PlayerBarn {
 
     updatePlayerStatus(
         teamId: number,
-        playerStatus: { players: PlayerStatus[] },
+        playerStatus: PlayerStatus[],
         factionMode: boolean,
     ) {
         // In factionMode, playerStatus refers to all playerIds in the game.
@@ -2991,16 +3027,16 @@ export class PlayerBarn {
         const team = this.getTeamInfo(teamId);
         const playerIds = factionMode ? this.playerIds : team.playerIds;
 
-        if (playerIds.length != playerStatus.players.length) {
-            console.error(
-                `PlayerIds and playerStatus.players out of sync. OurLen: ${playerIds.length} MsgLen: ${playerStatus.players.length} FactionMode: ${factionMode}`,
+        if (playerIds.length != playerStatus.length) {
+            errorLogManager.logError(
+                `PlayerIds and playerStatus out of sync. OurLen: ${playerIds.length} MsgLen: ${playerStatus.length} FactionMode: ${factionMode}`,
             );
             return;
         }
 
         for (let i = 0; i < playerIds.length; i++) {
             const playerId = playerIds[i];
-            const status = playerStatus.players[i];
+            const status = playerStatus[i];
             if (status.hasData) {
                 this.setPlayerStatus(playerId, status);
             }
@@ -3056,15 +3092,15 @@ export class PlayerBarn {
         return this.playerStatus[playerId];
     }
 
-    updateGroupStatus(groupId: number, groupStatus: { players: GroupStatus[] }) {
+    updateGroupStatus(groupId: number, groupStatus: GroupStatus[]) {
         const info = this.getGroupInfo(groupId);
-        if (info.playerIds.length != groupStatus.players.length) {
-            console.error("PlayerIds and groupStatus.players out of sync");
+        if (info.playerIds.length != groupStatus.length) {
+            errorLogManager.logError("PlayerIds and groupStatus out of sync");
             return;
         }
         for (let i = 0; i < info.playerIds.length; i++) {
             const playerId = info.playerIds[i];
-            const playerStatus = groupStatus.players[i];
+            const playerStatus = groupStatus[i];
 
             // Stash groupStatus values into playerStatus
             const status = this.getPlayerStatus(playerId);

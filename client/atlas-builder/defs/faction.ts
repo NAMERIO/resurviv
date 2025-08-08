@@ -1,4 +1,5 @@
-import type { AtlasDef } from "../atlasConfig.ts";
+import type { AtlasDef } from "../atlasDefs";
+import { BuildingSprites } from "./buildings";
 
 export const FactionAtlas: AtlasDef = {
     compress: true,
@@ -6,42 +7,29 @@ export const FactionAtlas: AtlasDef = {
         "map/map-airdrop-03.svg",
         "map/map-airdrop-04.svg",
         "map/map-building-bridge-xlg-floor.svg",
-        "map/map-building-greenhouse-ceiling-01.svg",
-        "map/map-building-greenhouse-floor-01.svg",
-        "map/map-bunker-chrys-chamber-ceiling-01.svg",
-        "map/map-bunker-chrys-chamber-floor-01a.svg",
-        "map/map-bunker-chrys-chamber-floor-01b.svg",
-        "map/map-bunker-chrys-compartment-ceiling-01a.svg",
-        "map/map-bunker-chrys-compartment-ceiling-01b.svg",
-        "map/map-bunker-chrys-compartment-ceiling-02a.svg",
-        "map/map-bunker-chrys-compartment-ceiling-02b.svg",
-        "map/map-bunker-chrys-compartment-ceiling-03a.svg",
-        "map/map-bunker-chrys-compartment-ceiling-03b.svg",
-        "map/map-bunker-chrys-compartment-floor-01a.svg",
-        "map/map-bunker-chrys-compartment-floor-01b.svg",
-        "map/map-bunker-chrys-compartment-floor-02a.svg",
-        "map/map-bunker-chrys-compartment-floor-02b.svg",
-        "map/map-bunker-chrys-compartment-floor-03a.svg",
-        "map/map-bunker-generic-ceiling-02.svg",
-        "map/map-bunker-generic-floor-03.svg",
+
+        ...BuildingSprites.greenhouse,
+        ...BuildingSprites.bunker_chrys,
+
         "map/map-chest-03f.svg",
-        "map/map-complex-warehouse-floor-01.svg",
-        "map/map-complex-warehouse-floor-02.svg",
-        "map/map-complex-warehouse-floor-03.svg",
+
+        ...BuildingSprites.warehouse_complex,
+        // 50v50 main bridge only
         "map/map-complex-warehouse-floor-04.svg",
+
         "map/map-crate-02f.svg",
+
         "map/map-crate-12.svg",
         "map/map-crate-13.svg",
         "map/map-crate-22.svg",
-        "map/map-planter-01.svg",
-        "map/map-planter-02.svg",
-        "map/map-planter-03.svg",
-        "map/map-planter-04.svg",
-        "map/map-planter-05.svg",
-        "map/map-planter-res-01.svg",
+
         "map/map-statue-01.svg",
         "map/map-statue-top-01.svg",
         "map/map-statue-top-02.svg",
+
+        "map/map-bush-01f.svg",
+        "map/map-tree-08f.svg",
+
         "map/map-stone-03f.svg",
         "map/map-stone-res-02f.svg",
     ],

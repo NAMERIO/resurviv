@@ -386,8 +386,8 @@ export class Editor {
         }
         this.zoom = math.clamp(this.zoom, 1.0, 255.0);
 
-        //layer changed naturally so need to update the state + ui
-        //used != instead of util.sameLayer() because we want every layer change not just ground-underground
+        // layer changed naturally so need to update the state + ui
+        // used != instead of util.sameLayer() because we want every layer change not just ground-underground
         if (!this.layerChangedByToggle && this.layer != player.layer) {
             this.layerChangedByToggle = false;
             this.layer = player.layer;

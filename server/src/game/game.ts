@@ -3,8 +3,8 @@ import * as net from "../../../shared/net/net";
 import { math } from "../../../shared/utils/math";
 import { v2 } from "../../../shared/utils/v2";
 import { Config } from "../config";
-import { Logger } from "../utils/logger";
-import { fetchApiServer } from "../utils/serverHelpers";
+import { ServerLogger } from "../utils/logger";
+import { apiPrivateRouter } from "../utils/serverHelpers";
 import {
     type FindGamePrivateBody,
     ProcessMsgType,
@@ -47,7 +47,6 @@ export class Game {
     stopped = false;
     allowJoin = false;
     over = false;
-    sentWinEMotes = false;
     startedTime = 0;
     stopTicker = 0;
     id: string;
@@ -104,7 +103,7 @@ export class Game {
     perfTicker = 0;
     tickTimes: number[] = [];
 
-    logger: Logger;
+    logger: ServerLogger;
 
     start = Date.now();
 
@@ -118,7 +117,7 @@ export class Game {
         readonly sendData?: (data: UpdateDataMsg) => void,
     ) {
         this.id = id;
-        this.logger = new Logger(`Game #${this.id.substring(0, 4)}`);
+        this.logger = new ServerLogger(`Game #${this.id.substring(0, 4)}`);
         this.logger.info("Creating");
 
         this.config = config;
@@ -482,8 +481,8 @@ export class Game {
 
             // send win emoji after 1 second
             this.playerBarn.sendWinEmoteTicker = 1;
-            // stop game after 2
-            this.stopTicker = 2;
+            // stop game after 1.8s
+            this.stopTicker = 1.8;
 
             this.updateData();
         }
@@ -580,16 +579,19 @@ export class Game {
         // to avoid blocking the game from being GC'd until this request is done
         // and opening a database in each process if it fails
         // etc
-        const res = await fetchApiServer<SaveGameBody, { error: string }>(
-            "private/save_game",
-            {
-                matchData: values,
-            },
-        );
+        let res: Response | undefined = undefined;
+        try {
+            res = await apiPrivateRouter.save_game.$post({
+                json: {
+                    matchData: values,
+                },
+            });
+        } catch (err) {
+            this.logger.error(`Failed to fetch API save game:`, err);
+        }
 
-        if (!res || res.error) {
+        if (!res || !res.ok) {
             this.logger.warn(`Failed to save game data, saving locally instead`);
-
             // we dump the game  to a local db if we failed to save;
             // avoid importing sqlite and creating the database at process startup
             // since this code should rarely run anyway
