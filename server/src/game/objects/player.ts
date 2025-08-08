@@ -20,7 +20,6 @@ import type { OutfitDef } from "../../../../shared/defs/gameObjects/outfitDefs";
 import { PerkProperties } from "../../../../shared/defs/gameObjects/perkDefs";
 import type { RoleDef } from "../../../../shared/defs/gameObjects/roleDefs";
 import type { ThrowableDef } from "../../../../shared/defs/gameObjects/throwableDefs";
-import { isItemInLoadout } from "../../../../shared/defs/gameObjects/unlockDefs";
 import {
     type Action,
     type Anim,
@@ -37,7 +36,7 @@ import { math } from "../../../../shared/utils/math";
 import { assert, util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import { Config } from "../../config";
-import { onPlayerJoin, onPlayerKill } from "../../plugins/deathmatch";
+import { isItemInLoadout, onPlayerJoin, onPlayerKill } from "../../plugins/deathmatch";
 import { IDAllocator } from "../../utils/IDAllocator";
 import { setLoadout } from "../../utils/loadoutHelpers";
 import { validateUserName } from "../../utils/serverHelpers";
@@ -3926,6 +3925,7 @@ export class Player extends BaseGameObject {
 
         const lootToAddDef = GameObjectDefs[lootToAdd] as LootDef;
         if (
+            def.type !== "perk" &&
             removeLoot &&
             amountLeft > 0 &&
             lootToAdd !== "" &&

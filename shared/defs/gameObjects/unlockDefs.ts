@@ -1,20 +1,7 @@
 import { allowedGuns } from "../../deathmatch/loadoutItems";
-import { GameObjectDefs } from "../gameObjectDefs";
 import { CrosshairDefs } from "./crosshairDefs";
 import { HealEffectDefs } from "./healEffectDefs";
 import { PassDefs } from "./passDefs";
-
-/**
- * Checks if an item is present in the player's loadout
- */
-export const isItemInLoadout = (item: string, category: string) => {
-    if (!UnlockDefs.unlock_default.unlocks.includes(item)) return false;
-
-    const def = GameObjectDefs[item];
-    if (!def || def.type !== category) return false;
-
-    return true;
-};
 
 export const privateOutfits = [
     "outfitToilet",
@@ -47,13 +34,13 @@ const _allowedMeleeSkins = [
     // "lasr_swrd_03"
 ];
 const _allowedOutfits = [
-    "outfitLustrousPaladin",
-    "outfitMaxAttack",
-    "outfitMultiTusking",
-    "outfitChromesis",
-    "outfitVillageNinja",
-    "outfitDragonTails",
-    "outfitGreenTeaRex",
+        // "outfitLustrousPaladin",
+        // "outfitMaxAttack",
+        // "outfitMultiTusking",
+        // "outfitChromesis",
+        // "outfitVillageNinja",
+        // "outfitDragonTails",
+        // "outfitGreenTeaRex",
     "outfitBase",
     "outfitTurkey",
     "outfitGrich",
@@ -63,32 +50,32 @@ const _allowedOutfits = [
     "outfitGD",
     "outfitMod",
     "outfitWheat",
-    // "outfitNoir",
-    // "outfitRedLeaderAged",
-    // "outfitBlueLeaderAged",
+    "outfitNoir",
+    "outfitRedLeaderAged",
+    "outfitBlueLeaderAged",
     "outfitSpetsnaz",
-    // "outfitWoodsCloak",
-    // "outfitElf",
-    // "outfitImperial",
+    "outfitWoodsCloak",
+    "outfitElf",
+    "outfitImperial",
     "outfitLumber",
-    // "outfitVerde",
-    // "outfitPineapple",
-    // "outfitTarkhany",
-    // "outfitWaterElem",
+    "outfitVerde",
+    "outfitPineapple",
+    "outfitTarkhany",
+    "outfitWaterElem",
     "outfitHeaven",
-    // "outfitMeteor",
-    // "outfitIslander",
-    // "outfitAqua",
-    // "outfitCoral",
-    // "outfitKhaki",
+    "outfitMeteor",
+    "outfitIslander",
+    "outfitAqua",
+    "outfitCoral",
+    "outfitKhaki",
     "outfitParma",
     "outfitParmaPrestige",
     "outfitCasanova",
-    // "outfitPrisoner",
-    // "outfitJester",
+    "outfitPrisoner",
+    "outfitJester",
     "outfitWoodland",
     "outfitRoyalFortune",
-    // "outfitKeyLime",
+    "outfitKeyLime",
     "outfitCobaltShell",
     "outfitCarbonFiber",
     "outfitDarkGloves",
@@ -98,7 +85,7 @@ const _allowedOutfits = [
     "outfitRed",
     "outfitWhite",
     "outfitPolice",
-    "outfitChewieCheese"
+    // "outfitChewieCheese"
 ];
 const _allowedEmotes = [
     "emote_thumbsup",

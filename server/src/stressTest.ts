@@ -11,10 +11,18 @@ import {
     ObjectType,
 } from "../../shared/net/objectSerializeFns";
 import type { LocalData } from "../../shared/net/updateMsg";
+import type {
+    FindGameBody,
+    FindGameMatchData,
+    FindGameResponse,
+} from "../../shared/types/api";
 import { util } from "../../shared/utils/util";
 import { v2 } from "../../shared/utils/v2";
 import { Config } from "./config";
 
+console.log({
+    gameServer: Config.gameServer
+})
 const config = {
     address: Config.gameServer.apiServerUrl,
     region: Config.gameServer.thisRegion,
@@ -151,7 +159,7 @@ class Bot {
 
     weapons: LocalData["weapons"] = [];
 
-    constructor(id: number, res: FindGameResponse["res"][0]) {
+    constructor(id: number, res: FindGameMatchData) {
         this.id = id;
 
         assert("gameId" in res);
@@ -296,7 +304,6 @@ class Bot {
             emotes: this.emotes,
             primary: "mosin",
             secondary: "mosin",
-            password: "",
         };
 
         joinMsg.matchPriv = this.data;
@@ -415,18 +422,23 @@ class Bot {
     }
 }
 
-void (async () => {
+void (() => {
     for (let i = 1; i <= config.botCount; i++) {
         setTimeout(async () => {
             const response = (await (
                 await fetch(`${config.address}/api/find_game`, {
                     method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
                     body: JSON.stringify({
                         region: config.region,
                         autoFill: true,
                         gameModeIdx: config.gameModeIdx,
                         playerCount: 1,
-                    }),
+                        version: GameConfig.protocolVersion,
+                        zones: [config.region],
+                    } satisfies FindGameBody),
                 })
             ).json()) as FindGameResponse;
             if ("error" in response || "banned" in response) {

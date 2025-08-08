@@ -1,11 +1,23 @@
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
-import { isItemInLoadout } from "../../../shared/defs/gameObjects/unlockDefs";
+import { UnlockDefs } from "../../../shared/defs/gameObjects/unlockDefs";
 import { WeaponSlot } from "../../../shared/gameConfig";
 import { ObjectType } from "../../../shared/net/objectSerializeFns";
 import { Config } from "../config";
 import type { Player } from "../game/objects/player";
 import { GamePlugin, type PlayerDamageEvent } from "../game/pluginManager";
+
+/**
+ * Checks if an item is present in the player's loadout
+ */
+export const isItemInLoadout = (item: string, category: string) => {
+    if (!UnlockDefs.unlock_default.unlocks.includes(item)) return false;
+
+    const def = GameObjectDefs[item];
+    if (!def || def.type !== category) return false;
+
+    return true;
+};
 
 export function onPlayerJoin(data: Player) {
     data.scope = "4xscope";
@@ -51,7 +63,7 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
 
     data.player.perks.length = 0;
 
-    if ( data.source?.__id !== data.player.__id && Math.random() < 0.5 ) {
+    if ( data.source?.__id !== data.player.__id && Math.random() < 0.2 ) {
         const perk = perks[Math.floor(Math.random() * perks.length)];
         data.player.game.lootBarn.addLoot(perk, data.player.pos, data.player.layer, 1);
     }
@@ -100,10 +112,10 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
 
         killer.inventory["frag"] = Math.min(killer.inventory["frag"] + 3, 12);
         killer.inventory["mirv"] = Math.min(killer.inventory["mirv"] + 1, 4);
-        if (Config.modes[1].mapName ==="desert" || Math.random() < 0.2) {
-            const strobeChance = Config.modes[1].mapName === "desert" ? true : Math.random() < 0.6;
+        if (Math.random() < 0.2) {
+            const strobeChance =  Math.random() < (Config.modes[1].mapName === "desert" ? 0.6 :  0.2);
             const itemToGive =  strobeChance ? "strobe" : "mine";
-            killer.inventory[itemToGive] = Math.min(killer.inventory[itemToGive] + 1, 1);
+            killer.inventory[itemToGive] = Math.min(killer.inventory[itemToGive] + 1, itemToGive === "mine" ? 2 : 1);
         }
 
         if (Config.modes[1].mapName === "snow")

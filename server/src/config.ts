@@ -1,5 +1,5 @@
 import { getConfig } from "../../config";
-import { ConfigType, DeepPartial } from "../../configType";
+import type { ConfigType, DeepPartial } from "../../configType";
 import { GameConfig, TeamMode } from "../../shared/gameConfig";
 import { util } from "../../shared/utils/util";
 
@@ -12,12 +12,12 @@ const BACKPACK_LEVEL = 3;
 
 util.mergeDeep(Config, {
     modes: [
-        { mapName: "main", teamMode: TeamMode.Solo, enabled: true },
+        { mapName: "faction", teamMode: TeamMode.Solo, enabled: true },
         { mapName: "main", teamMode: TeamMode.Duo, enabled: false },
         { mapName: "main", teamMode: TeamMode.Squad, enabled: false },
     ],
     debug: {
-        spawnMode: process.env.NODE_ENV !== "production" ? "fixed" : "default",
+        spawnMode: "default",
     },
     defaultItems: {
         backpack: "backpack03",
@@ -28,7 +28,7 @@ util.mergeDeep(Config, {
             frag: 3,
             smoke: 1,
             strobe: 1,
-            mine: 5,
+            mine: 1,
             mirv: 1,
             bandage: GameConfig.bagSizes["bandage"][BACKPACK_LEVEL],
             healthkit: GameConfig.bagSizes["healthkit"][BACKPACK_LEVEL],

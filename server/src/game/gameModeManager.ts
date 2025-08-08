@@ -353,10 +353,11 @@ export class GameModeManager {
         if (this.isSolo) return [];
 
         const players: Player[] = this.getPlayerStatusPlayers(player)!;
+        // const visible = p.teamId === player.teamId || p.timeUntilHidden > 0
         return players.map((p) => ({
             hasData: p.playerStatusDirty,
             pos: p.pos,
-            visible: p.teamId === player.teamId || p.timeUntilHidden > 0,
+            visible: true,
             dead: p.dead,
             downed: p.downed,
             role: p.role,
