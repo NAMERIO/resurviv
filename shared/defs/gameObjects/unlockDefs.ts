@@ -26,6 +26,7 @@ export const privateOutfits = [
     "outfitNotEnough",
     "outfitDev",
     "outfitTheSurvivor",
+    "outfitStepz",
 ];
 
 const _allowedHealEffects = Object.keys(HealEffectDefs);
@@ -98,7 +99,6 @@ const _allowedOutfits = [
     "outfitWhite",
     "outfitPolice",
     "outfitChewieCheese",
-    "outfitStepz"
 ];
 const _allowedEmotes = [
     "emote_thumbsup",
