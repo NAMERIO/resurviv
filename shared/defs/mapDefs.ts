@@ -147,6 +147,7 @@ export interface MapDef {
                 stagger: number; // only for buildings with multiple unlocks, will stagger the unlocks instead of doing them all at once
                 circleIdx: number;
                 wait: number;
+                role: string;
             }>;
         };
         bagSizes: Record<string, number[]>;

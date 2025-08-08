@@ -1,4 +1,5 @@
-import type { AtlasDef } from "../atlasConfig.ts";
+import type { AtlasDef } from "../atlasDefs";
+import { BuildingSprites } from "./buildings";
 
 export const MayAtlas: AtlasDef = {
     compress: true,
