@@ -486,6 +486,8 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/loot-multi-tusking-outfit.svg",
         "loot/loot-max-attack-outfit.svg",
         "loot/loot-lustrous-paladin-outfit.svg",
+        "loot/loot-Police.svg",
+        "loot/loot-chewie-cheese-outfit.svg",
 
         "loot/loot-throwable-frag-egg.svg",
         "loot/loot-throwable-frag.svg",
@@ -808,6 +810,14 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-base-outfitWhiteDay.svg",
         "player/player-base-outfitWinter.svg",
         "player/player-base-outfitZebra.svg",
+        "player/player-base-outfitPolice.svg",
+        "player/player-base-chewie-cheese.svg",
+
+
+        "player/player-fists-police.svg",
+
+
+
         "player/player-base-pantera-onca.svg",
         "player/player-base-parma.svg",
         "player/player-base-parrot.svg",

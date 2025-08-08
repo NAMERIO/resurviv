@@ -96,6 +96,8 @@ const _allowedOutfits = [
     "outfitCamo",
     "outfitRed",
     "outfitWhite",
+    "outfitPolice",
+    "outfitChewieCheese"
 ];
 const _allowedEmotes = [
     "emote_thumbsup",

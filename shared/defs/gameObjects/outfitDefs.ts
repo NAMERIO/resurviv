@@ -260,6 +260,49 @@ const SkinDefs: Record<string, OutfitDef> = {
         rarity: 3,
         lore: "For those who wield the power of the pan.",
     }),
+    outfitPolice: defineOutfitSkin("outfitBase", {
+        name: "Police",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitPolice.img",
+            handTint: 0xffffff,
+            handSprite: "player-fists-police.img",
+            footTint: 0xffffff,
+            backpackTint: 0xffffff,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            sprite: "loot-Police.img",
+            tint: 0xffffff,
+        },
+        rarity: 3,
+        lore: "For those who wield the power of the pan.",
+    }),
+
+    outfitChewieCheese: defineOutfitSkin("outfitBase", {
+        name: "Chewie Cheese",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 12266256,
+            baseSprite: "player-base-01.img",
+            handTint: 0xf8c574,
+            handSprite: "player-hands-01.img",
+            footTint: 0xf8c574,
+            footSprite: "player-hands-01.img",
+            backpackTint: 13644309,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-base-chewie-cheese.img",
+        },
+        lootImg: {
+            sprite: "loot-chewie-cheese-outfit.img",
+            tint: 0xffffff,
+        },
+        rarity: 3,
+        lore: "For those who wield the power of the pan.",
+    }),
+
     outfitFireball: defineOutfitSkin("outfitBase", {
         name: "Fireball",
         noDropOnDeath: true,
