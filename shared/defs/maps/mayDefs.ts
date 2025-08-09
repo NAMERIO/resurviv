@@ -10,7 +10,7 @@ const mapDef: PartialMapDef = {
     },
     assets: {
         audio: [],
-        atlases: ["gradient", "loadout", "shared", "may"],
+        atlases: ["gradient", "loadout", "shared", /*"may"*/],
     },
     biome: {
         colors: {

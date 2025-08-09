@@ -10,7 +10,6 @@ import type { Vec2 } from "../utils/v2";
 import { Faction } from "./maps/factionDefs";
 import { MainSpring } from "./maps/mainSpringDefs";
 import { MainSummer } from "./maps/mainSummerDefs";
-import { May } from "./maps/mayDefs";
 import { Potato } from "./maps/potatoDefs";
 import { PotatoSpring } from "./maps/potatoSpringDefs";
 import { Savannah } from "./maps/savannahDefs";
@@ -37,7 +36,7 @@ export const MapDefs = {
     savannah: Savannah,
     cobalt: DeatchmatchCobalt,
     turkey: Turkey,
-    may: May,
+    // may: May,
 } satisfies Record<string, MapDef>;
 
 export type Atlas =
@@ -53,7 +52,7 @@ export type Atlas =
     | "woods"
     | "cobalt"
     | "savannah"
-    | "may";
+    // | "may";
 
 export interface MapDef {
     mapId: number;
@@ -147,6 +146,7 @@ export interface MapDef {
                 stagger: number; // only for buildings with multiple unlocks, will stagger the unlocks instead of doing them all at once
                 circleIdx: number;
                 wait: number;
+                role: string;
             }>;
         };
         bagSizes: Record<string, number[]>;
