@@ -51,8 +51,8 @@ export type Atlas =
     | "snow"
     | "woods"
     | "cobalt"
-    | "savannah"
-    // | "may";
+    | "savannah";
+// | "may";
 
 export interface MapDef {
     mapId: number;

@@ -15,7 +15,6 @@ const config = {
     spawnDensity: { large: 44, small: 37 },
 } as const;
 
-
 export enum TeamColor {
     // NONE = 0, // can be used ambiguously with code that runs the same regardless of team color
     Red = 1,
@@ -28,7 +27,6 @@ export const SpecialAirdropConfig = {
 };
 
 const mapDef: PartialMapDef = {
-
     desc: {
         name: "50v50",
         icon: "img/gui/star.svg",

@@ -118,12 +118,14 @@ export class Team {
             }
         }
         for (const role of roles) {
-            const playersWithoutRole = this.livingPlayers.filter((p) => p.role == "" && !p.dead && !p.disconnected); 
+            const playersWithoutRole = this.livingPlayers.filter(
+                (p) => p.role == "" && !p.dead && !p.disconnected,
+            );
 
             const player =
                 playersWithoutRole[util.randomInt(0, playersWithoutRole.length - 1)];
-            
-            if ( player instanceof Player) {   
+
+            if (player instanceof Player) {
                 player.promoteToRole(role);
             }
         }
