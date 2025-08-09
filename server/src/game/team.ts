@@ -102,8 +102,8 @@ export class Team {
     }
     checkAndApplyRandomRole() {
         const roles = new Set([
-            "leader",
-            "captain",
+            // "leader",
+            // "captain",
             "lieutenant",
             "medic",
             "marksman",
@@ -117,11 +117,11 @@ export class Team {
                 roles.delete(player.role);
             }
         }
-        const playersWithoutRole = this.livingPlayers.filter((p) => p.role == "");
-
         for (const role of roles) {
+            const playersWithoutRole = this.livingPlayers.filter((p) => p.role == "");
             const player =
                 playersWithoutRole[util.randomInt(0, playersWithoutRole.length - 1)];
+            
             player.promoteToRole(role);
         }
     }
