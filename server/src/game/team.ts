@@ -2,7 +2,7 @@ import { GameConfig } from "../../../shared/gameConfig";
 import { util } from "../../../shared/utils/util";
 import type { Game } from "./game";
 import type { Group } from "./group";
-import type { Player } from "./objects/player";
+import { Player } from "./objects/player";
 
 export class Team {
     players: Player[] = [];
@@ -118,11 +118,14 @@ export class Team {
             }
         }
         for (const role of roles) {
-            const playersWithoutRole = this.livingPlayers.filter((p) => p.role == "");
+            const playersWithoutRole = this.livingPlayers.filter((p) => p.role == "" && !p.dead && !p.disconnected); 
+
             const player =
                 playersWithoutRole[util.randomInt(0, playersWithoutRole.length - 1)];
             
-            player.promoteToRole(role);
+            if ( player instanceof Player) {   
+                player.promoteToRole(role);
+            }
         }
     }
 }
