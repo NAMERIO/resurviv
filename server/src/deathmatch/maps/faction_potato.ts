@@ -1,20 +1,26 @@
 import type { MapDef } from "../../../../shared/defs/mapDefs";
-import type { PartialMapDef } from "../../../../shared/defs/maps/baseDefs";
+import { Main, type PartialMapDef } from "../../../../shared/defs/maps/baseDefs";
 import { Faction } from "../../../../shared/defs/maps/factionDefs";
 import { MapId } from "../../../../shared/defs/types/misc";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { util } from "../../../../shared/utils/util";
 import { v2 } from "../../../../shared/utils/v2";
 
+const switchToSmallMap = false;
+
+const config = {
+    mapSize: switchToSmallMap ? "small" : "large",
+    places: 3,
+    mapWidth: { large: 280, small: 240 },
+    spawnDensity: { large: 44, small: 37 },
+} as const;
+
+
 export enum TeamColor {
     // NONE = 0, // can be used ambiguously with code that runs the same regardless of team color
     Red = 1,
     Blue = 2,
 }
-
-const config = {
-    spawnDensity: { large: 44, small: 37 },
-} as const;
 export const SpecialAirdropConfig = {
     startCircle: 1,
     endCircle: 3,
@@ -22,8 +28,71 @@ export const SpecialAirdropConfig = {
 };
 
 const mapDef: PartialMapDef = {
+
+    desc: {
+        name: "50v50",
+        icon: "img/gui/star.svg",
+        buttonCss: "btn-mode-faction",
+        buttonText: "50v50",
+    },
     assets: {
         audio: [
+            {
+                name: "lt_assigned_01",
+                channel: "ui",
+            },
+            {
+                name: "medic_assigned_01",
+                channel: "ui",
+            },
+            {
+                name: "marksman_assigned_01",
+                channel: "ui",
+            },
+            {
+                name: "recon_assigned_01",
+                channel: "ui",
+            },
+            {
+                name: "grenadier_assigned_01",
+                channel: "ui",
+            },
+            {
+                name: "bugler_assigned_01",
+                channel: "ui",
+            },
+            {
+                name: "last_man_assigned_01",
+                channel: "ui",
+            },
+            {
+                name: "ping_leader_01",
+                channel: "ui",
+            },
+            {
+                name: "bugle_01",
+                channel: "activePlayer",
+            },
+            {
+                name: "bugle_02",
+                channel: "activePlayer",
+            },
+            {
+                name: "bugle_03",
+                channel: "activePlayer",
+            },
+            {
+                name: "bugle_01",
+                channel: "otherPlayers",
+            },
+            {
+                name: "bugle_02",
+                channel: "otherPlayers",
+            },
+            {
+                name: "bugle_03",
+                channel: "otherPlayers",
+            },
             { name: "potato_01", channel: "sfx" },
             { name: "potato_02", channel: "sfx" },
             { name: "potato_pickup_01", channel: "ui" },
@@ -31,15 +100,23 @@ const mapDef: PartialMapDef = {
         atlases: ["gradient", "loadout", "shared", "faction", "potato"],
     },
     biome: {
+        colors: {
+            background: 0x51624,
+            water: 0x71b36,
+            waterRipple: 0xb3f0ff,
+            beach: 0x8e5632,
+            riverbank: 0x653313,
+            grass: 0x4e6128,
+            underground: 0x1b0d03,
+            playerSubmerge: 0x123049,
+            playerGhillie: 0x4c6024,
+        },
         particles: {
             camera: "falling_potato",
         },
         frozenSprites: ["player-mash-01.img", "player-mash-02.img", "player-mash-03.img"],
     },
     gameMode: {
-        maxPlayers: 100,
-        factionMode: true,
-        factions: 2,
         potatoMode: true,
     },
     /* STRIP_FROM_PROD_CLIENT:START */
@@ -58,8 +135,12 @@ const mapDef: PartialMapDef = {
     },
     mapGen: {
         map: {
-            baseWidth: 250,
-            baseHeight: 250,
+            baseWidth: config.mapWidth[config.mapSize],
+            baseHeight: config.mapWidth[config.mapSize],
+            shoreInset: 40,
+            rivers: {
+                weights: [],
+            },
         },
         customSpawnRules: {
             locationSpawns: [],
@@ -102,7 +183,7 @@ const mapDef: PartialMapDef = {
                 bunker_structure_01: { odds: 1 },
                 bunker_structure_03: 1,
                 bunker_structure_04: 1,
-                warehouse_complex_01: 1,
+                // warehouse_complex_01: 1,
                 chest_01: 1,
                 chest_03f: 1,
                 mil_crate_02: { odds: 1 },
@@ -120,17 +201,17 @@ const mapDef: PartialMapDef = {
             },
         ],
         importantSpawns: [
-            "river_town_01",
-            // "police_01",
-            // "bank_01",
-            "mansion_structure_01",
-            "warehouse_complex_01",
+            // "river_town_01",
+            "police_01",
+            "bank_01",
+            // "mansion_structure_01",
+            // "warehouse_complex_01",
         ],
     },
     /* STRIP_FROM_PROD_CLIENT:END */
 };
 
-export const FactionPotato = util.mergeDeep({}, Faction, mapDef) as MapDef;
+export const FactionPotato = util.mergeDeep({}, Main, mapDef) as MapDef;
 
 FactionPotato["lootTable"] = {
     tier_mansion_floor: [{ name: "outfitCasanova", count: 1, weight: 1 }],
