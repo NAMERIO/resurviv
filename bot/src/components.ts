@@ -132,17 +132,10 @@ export async function createDiscordPlayerInfoCardUI({
             const selectedPlayer = matchingPlayers[playerIndex];
             const executorId = interaction.user.id;
 
-            const { ipBanDuration, banReason } = interaction.customId.startsWith(
-                BUTTON_PREFIXES.BAN_FOR_CHEATING,
-            )
-                ? {
-                      banReason: "Banned for cheating",
-                      ipBanDuration: 30,
-                  }
-                : {
-                      banReason: "Banned for bad name",
-                      ipBanDuration: 7,
-                  };
+            const { ipBanDuration, banReason } = {
+                banReason: "Banned for cheating",
+                ipBanDuration: 1,
+            };
 
             if (selectedPlayer.slug) {
                 const res = await honoClient.moderation.ban_account.$post({
