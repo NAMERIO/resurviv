@@ -137,7 +137,7 @@ export async function createDiscordPlayerInfoCardUI({
             )
                 ? {
                       banReason: "Banned for cheating",
-                      ipBanDuration: 1,
+                      ipBanDuration: 7,
                   }
                 : {
                       banReason: "Banned for bad name",
