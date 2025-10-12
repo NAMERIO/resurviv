@@ -76,3 +76,8 @@ export const allowedGuns = [
     // "waterGun",
     // "rainbow_blaster",
 ];
+
+export const restrictedGuns = [
+  "awc",
+  "sv98",
+];
