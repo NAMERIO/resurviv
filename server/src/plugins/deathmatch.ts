@@ -16,7 +16,8 @@ export const isItemInLoadout = (
     ownedItems?: Set<string>,
 ) => {
     if (ownedItems && !ownedItems.has(item)) return false;
-    if (!UnlockDefs.unlock_default.unlocks.includes(item)) return false;
+    // Commented out to allow restricted items to work
+    // if (!UnlockDefs.unlock_default.unlocks.includes(item)) return false;
 
     const def = GameObjectDefs[item];
     if (!def || def.type !== category) return false;
