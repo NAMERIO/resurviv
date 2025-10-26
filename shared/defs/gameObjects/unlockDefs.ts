@@ -35,13 +35,13 @@ const _allowedMeleeSkins = [
     // "lasr_swrd_03"
 ];
 const _allowedOutfits = [
-    // "outfitLustrousPaladin",
-    // "outfitMaxAttack",
-    // "outfitMultiTusking",
-    // "outfitChromesis",
-    // "outfitVillageNinja",
-    // "outfitDragonTails",
-    // "outfitGreenTeaRex",
+    "outfitLustrousPaladin",
+    "outfitMaxAttack",
+    "outfitMultiTusking",
+    "outfitChromesis",
+    "outfitVillageNinja",
+    "outfitDragonTails",
+    "outfitGreenTeaRex",
     "outfitBase",
     "outfitTurkey",
     "outfitGrich",
