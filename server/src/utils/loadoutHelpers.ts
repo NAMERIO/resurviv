@@ -66,7 +66,8 @@ export function setLoadout(joinMsg: JoinMsg, player: Player) {
      * Checks if an item is present in the player's loadout
      */
     const isItemInLoadout = (item: string, category: string) => {
-        if (!UnlockDefs.unlock_default.unlocks.includes(item)) return false;
+        //
+        // if (!UnlockDefs.unlock_default.unlocks.includes(item)) return false;
 
         const def = GameObjectDefs[item];
         if (!def || def.type !== category) return false;
