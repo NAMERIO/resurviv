@@ -17,7 +17,6 @@ export type ProfileResponse =
               usernameChangeTime: number;
           };
           loadout: Loadout;
-          loadoutPriv: string;
           items: Item[];
       };
 
@@ -38,7 +37,6 @@ export const zLoadoutRequest = z.object({ loadout: loadoutSchema });
 export type LoadoutRequest = z.infer<typeof zLoadoutRequest>;
 export type LoadoutResponse = {
     loadout: Loadout;
-    loadoutPriv: string;
 };
 
 export const zSetItemStatusRequest = z.object({

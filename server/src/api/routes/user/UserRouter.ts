@@ -16,7 +16,6 @@ import {
     zUsernameRequest,
 } from "../../../../../shared/types/user";
 import loadout from "../../../../../shared/utils/loadout";
-import { encryptLoadout } from "../../../utils/loadoutHelpers";
 import { validateUserName } from "../../../utils/serverHelpers";
 import { server } from "../../apiServer";
 import {
@@ -94,7 +93,6 @@ UserRouter.post("/profile", async (c) => {
                 usernameChangeTime: timeUntilNextChange,
             },
             loadout,
-            loadoutPriv: encryptLoadout(loadout),
             items: items,
         },
         200,
@@ -177,7 +175,6 @@ UserRouter.post("/loadout", validateParams(zLoadoutRequest), async (c) => {
     return c.json<LoadoutResponse>(
         {
             loadout: validatedLoadout,
-            loadoutPriv: encryptLoadout(validatedLoadout),
         },
         200,
     );

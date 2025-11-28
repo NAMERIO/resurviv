@@ -9,6 +9,7 @@ const mapDef: PartialMapDef = {
         name: "Halloween",
         icon: "img/gui/pumpkin-play.svg",
         buttonCss: "btn-mode-halloween",
+        backgroundImg: "img/main_splash_halloween.png",
     },
     assets: {
         audio: [
@@ -239,7 +240,7 @@ const mapDef: PartialMapDef = {
                 barn_01h: 1,
                 cache_03: 36,
                 cache_01: 1,
-                cache_02: 1,
+                cache_02h: 1,
                 mansion_structure_02: 1,
                 bunker_structure_01: 1,
                 bunker_structure_03: 1,
@@ -264,8 +265,6 @@ const mapDef: PartialMapDef = {
                 tree_01: "tree_07",
                 stone_03: "stone_01",
                 cabin_01: "cabin_02",
-                house_red_01: "house_red_01b",
-                house_red_02: "house_red_01b",
             },
         ],
     },

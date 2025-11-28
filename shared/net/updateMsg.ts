@@ -633,7 +633,7 @@ export class UpdateMsg implements AbstractMsg {
                 if (emote.isPing) {
                     emote.pos = s.readMapPos();
                 }
-                s.readBits(3);
+                s.readAlignToNextByte();
                 return emote;
             });
         }

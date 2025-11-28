@@ -10,6 +10,7 @@ const mapDef: PartialMapDef = {
         name: "Desert",
         icon: "img/loot/loot-weapon-flare-gun.svg",
         buttonCss: "btn-mode-desert",
+        backgroundImg: "img/main_splash_desert_01.png",
     },
     assets: {
         audio: [
@@ -225,6 +226,7 @@ const mapDef: PartialMapDef = {
             {
                 name: "Blood Gulch",
                 pos: v2.create(0.51, 0.5),
+                dontSpawnObjects: true,
             },
             {
                 name: "Southhaven",
@@ -248,7 +250,7 @@ const mapDef: PartialMapDef = {
                     retryOnFailure: false,
                 },
             ],
-            placeSpawns: ["desert_town_01", "desert_town_02"],
+            placeSpawns: ["desert_town_02", "desert_town_01"],
         },
         densitySpawns: [
             {
@@ -280,7 +282,7 @@ const mapDef: PartialMapDef = {
                 barn_01: 1,
                 barn_02d: 1,
                 cache_01: 1,
-                cache_02: 1,
+                cache_02d: 1,
                 bunker_structure_01: { odds: 0.05 },
                 bunker_structure_03: 1,
                 chest_01: 1,

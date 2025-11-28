@@ -1,5 +1,8 @@
+import fs from "node:fs";
+import path from "node:path";
 import { TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
+import type { Loadout } from "../../../shared/utils/loadout";
 import { math } from "../../../shared/utils/math";
 import { v2 } from "../../../shared/utils/v2";
 import { Config } from "../config";
@@ -35,6 +38,7 @@ export interface JoinTokenData {
     expiresAt: number;
     userId: string | null;
     findGameIp: string;
+    loadout?: Loadout;
     groupData: {
         autoFill: boolean;
         playerCount: number;
@@ -166,13 +170,13 @@ export class Game {
         this.updateData();
     }
 
-    update(): void {
+    update(dt?: number): void {
         if (!this.allowJoin) return;
         this.profiler.flush();
 
         const now = performance.now();
         if (!this.now) this.now = now;
-        const dt = math.clamp((now - this.now) / 1000, 0.001, 1 / 8);
+        dt ??= math.clamp((now - this.now) / 1000, 0.001, 1 / 8);
 
         this.now = now;
 
@@ -461,7 +465,7 @@ export class Game {
         player.disconnected = true;
         player.group?.checkPlayers();
         player.spectating = undefined;
-        player.dir = v2.create(0, 0);
+        player.dirNew = v2.create(1, 0);
         player.setPartDirty();
         if (player.canDespawn() || true) {
             player.game.playerBarn.removePlayer(player);
@@ -505,6 +509,7 @@ export class Game {
                 userId: token.userId,
                 groupData,
                 findGameIp: token.ip,
+                loadout: token.loadout,
             });
         }
     }
@@ -545,6 +550,15 @@ export class Game {
          */
         const teamTotal = new Set(players.map(({ player }) => player.teamId)).size;
 
+        const teamKills = players.reduce(
+            (acc, curr) => {
+                acc[curr.player.teamId] =
+                    (acc[curr.player.teamId] ?? 0) + curr.player.kills;
+                return acc;
+            },
+            {} as Record<string, number>,
+        );
+
         const values: SaveGameBody["matchData"] = players.map(({ player, rank }) => {
             return {
                 // *NOTE: userId is optional; we save the game stats for non logged users too
@@ -553,12 +567,13 @@ export class Game {
                 username: player.name,
                 playerId: player.matchDataId,
                 teamMode: this.teamMode,
-                teamCount: player.group?.totalCount ?? 1,
+                teamCount: player.group?.players.length ?? 1,
                 teamTotal: teamTotal,
                 teamId: player.teamId,
                 timeAlive: Math.round(player.timeAlive),
                 died: player.dead,
                 kills: player.kills,
+                team_kills: teamKills[player.groupId] ?? 0,
                 damageDealt: Math.round(player.damageDealt),
                 damageTaken: Math.round(player.damageTaken),
                 killerId: player.killedBy?.matchDataId || 0,
@@ -591,27 +606,33 @@ export class Game {
         }
 
         if (!res || !res.ok) {
-            this.logger.warn(`Failed to save game data, saving locally instead`);
-            // we dump the game  to a local db if we failed to save;
-            // avoid importing sqlite and creating the database at process startup
-            // since this code should rarely run anyway
-            const sqliteDb = (await import("better-sqlite3")).default(
-                "lost_game_data.db",
+            const region = Config.gameServer.thisRegion.toUpperCase();
+            this.logger.error(
+                `[${region}] Failed to save game data, saving locally instead`,
             );
 
-            sqliteDb
-                .prepare(`
-                    CREATE TABLE IF NOT EXISTS lost_game_data (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        data TEXT NOT NULL,
-                        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-                    )
-                `)
-                .run();
+            const dir = path.resolve("lost_game_data");
+            if (!fs.existsSync(dir)) {
+                fs.mkdirSync(dir);
+            }
+            fs.writeFileSync(
+                path.join(dir, `${this.id}.json`),
+                JSON.stringify(values),
+                "utf8",
+            );
+        }
+    }
 
-            sqliteDb
-                .prepare("INSERT INTO lost_game_data (data) VALUES (?)")
-                .run(JSON.stringify(values));
+    /**
+     * Steps the game X seconds in the future
+     * This is done in smaller steps of 0.1 seconds
+     * To make sure everything updates properly
+     *
+     * Used for unit tests, don't call this on actual game code :p
+     */
+    step(seconds: number) {
+        for (let i = 0, steps = seconds * 10; i < steps; i++) {
+            this.update(0.1);
         }
     }
 }

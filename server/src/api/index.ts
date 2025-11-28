@@ -10,7 +10,7 @@ import { z } from "zod";
 import { version } from "../../../package.json";
 import {
     type FindGameResponse,
-    type Info,
+    type SiteInfoRes,
     zFindGameBody,
 } from "../../../shared/types/api";
 import { Config } from "../config";
@@ -80,7 +80,7 @@ app.route("/private/", PrivateRouter);
 server.init(app, upgradeWebSocket);
 
 app.get("/api/site_info", (c) => {
-    return c.json<Info>(server.getSiteInfo(), 200);
+    return c.json<SiteInfoRes>(server.getSiteInfo(), 200);
 });
 
 // not using the middleware here to not add extra indentation... smh
@@ -108,30 +108,30 @@ app.post("/api/find_game", validateParams(zFindGameBody), async (c) => {
     }
 
     const token = randomUUID();
-    let userId: string | null = null;
+    let user: UsersTableSelect | null = null;
 
     const sessionId = getCookie(c, "session") ?? null;
 
     if (sessionId) {
         try {
             const account = await validateSessionToken(sessionId);
-            userId = account.user?.id || null;
+            user = account.user;
 
             if (account.user?.banned) {
-                userId = null;
+                user = null;
             }
         } catch (err) {
             server.logger.error("/api/find_game: Failed to validate session", err);
-            userId = null;
+            user = null;
         }
     }
 
-    if (await isBehindProxy(ip, userId ? 0 : 3)) {
+    if (await isBehindProxy(ip, user ? 0 : 3)) {
         return c.json<FindGameResponse>({ error: "behind_proxy" });
     }
 
     const body = c.req.valid("json");
-    if (server.captchaEnabled && !userId) {
+    if (server.captchaEnabled && !user) {
         if (!body.turnstileToken) {
             return c.json<FindGameResponse>({ error: "invalid_captcha" });
         }
@@ -160,8 +160,9 @@ app.post("/api/find_game", validateParams(zFindGameBody), async (c) => {
         playerData: [
             {
                 token,
-                userId,
+                userId: user?.id || null,
                 ip,
+                loadout: user?.loadout,
             },
         ],
     });

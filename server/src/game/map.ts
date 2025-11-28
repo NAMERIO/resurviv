@@ -21,13 +21,12 @@ import { assert, util } from "../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../shared/utils/v2";
 import { Config } from "../config";
 import type { Game } from "./game";
-import type { Group } from "./group";
+import type { Group, Team } from "./group";
 import { Building } from "./objects/building";
 import { Obstacle } from "./objects/obstacle";
 import type { Player } from "./objects/player";
 import { Structure } from "./objects/structure";
 import { RiverCreator } from "./riverCreator";
-import type { Team } from "./team";
 
 // most of this logic is based on the `renderMapBuildingBounds` from client debugHelpers
 // which was found on BHA leak
@@ -70,8 +69,8 @@ function getBuildingBounds(type: string, layer = 0, pos: Vec2, rot: number) {
         for (let i = 0; i < def.mapObjects.length; i++) {
             const mapObj = def.mapObjects[i];
             let mt = mapObj.type!;
-            if (typeof mt === "function") {
-                mt = mt();
+            if (typeof mt === "object") {
+                mt = util.weightedRandomObject(mt);
             }
 
             const childDef = MapObjectDefs[mt];
@@ -345,19 +344,19 @@ export class GameMap {
         this.placeSpawns = [...this.mapDef.mapGen.customSpawnRules.placeSpawns];
         this.msg.places = [...this.mapDef.mapGen.places];
 
-        this.placesToSpawn = this.mapDef.mapGen.places.map((place) => {
-            return v2.create(
-                place.pos.x * this.width,
-                // places Y axis is inverted lol
-                Math.abs(place.pos.y - 1) * this.height,
-            );
-        });
+        this.placesToSpawn = this.mapDef.mapGen.places
+            .filter((p) => !p.dontSpawnObjects)
+            .map((place) => {
+                return v2.create(
+                    place.pos.x * this.width,
+                    // places Y axis is inverted lol
+                    Math.abs(place.pos.y - 1) * this.height,
+                );
+            });
 
         this.riverMasks = [];
 
-        this.timerStart();
         this.generateRiverMasks();
-        this.timerEnd("Generating river masks");
 
         if (this.factionMode) {
             this.factionModeSplitOri = util.randomInt(0, 1) as 0 | 1;
@@ -525,7 +524,7 @@ export class GameMap {
 
                 // building
                 const unlockables = unlockObject.childObjects.filter(
-                    (o) => o instanceof Obstacle && o.door && o.door.locked,
+                    (o) => o.__type === ObjectType.Obstacle && o.door && o.door.locked,
                 ) as Obstacle[];
                 this.unlocks.push({
                     unlockables: unlockables,
@@ -582,6 +581,10 @@ export class GameMap {
     }
 
     generateRiverMasks() {
+        if (!this.mapDef.mapGen.map.rivers.masks.length) return;
+
+        this.timerStart();
+
         const rand = util.seededRand(this.seed);
 
         for (const mask of this.mapDef.mapGen.map.rivers.masks) {
@@ -626,6 +629,7 @@ export class GameMap {
                 });
             }
         }
+        this.timerEnd("Generating river masks");
     }
 
     generateTerrain(): void {
@@ -768,7 +772,7 @@ export class GameMap {
                 const pos = v2.add(util.randomPointInCircle(customSpawnRule.rad), center);
 
                 if (!this.canSpawn(customSpawnRule.type, pos, ori)) return false;
-                this.genAuto(customSpawnRule.type, pos);
+                this.genAuto(customSpawnRule.type, pos, 0, ori);
                 return true;
             });
         }
@@ -778,8 +782,7 @@ export class GameMap {
         const fixedSpawns = { ...mapDef.mapGen.fixedSpawns[0] };
         const importantSpawns = mapDef.mapGen.importantSpawns;
 
-        const randomSpawns = mapDef.mapGen.randomSpawns[0];
-        if (randomSpawns) {
+        for (const randomSpawns of mapDef.mapGen.randomSpawns) {
             const spawns = [...randomSpawns.spawns];
             for (let i = 0; i < randomSpawns.choose; i++) {
                 const idx = util.randomInt(0, spawns.length - 1);
@@ -1032,7 +1035,6 @@ export class GameMap {
                             undefined,
                             0,
                             undefined,
-                            undefined,
                             item.preload === true,
                             "map",
                         );
@@ -1061,7 +1063,7 @@ export class GameMap {
         maxAttempts?: number,
         logOnFailure = true,
     ): boolean {
-        maxAttempts ??= this.mapDef.mapGen.importantSpawns.includes(type) ? 2000 : 500;
+        maxAttempts ??= this.mapDef.mapGen.importantSpawns.includes(type) ? 5000 : 500;
         let attempts = 0;
         while (attempts < maxAttempts) {
             if (cb()) {
@@ -1095,10 +1097,11 @@ export class GameMap {
             }
         }
 
-        if (def.type == "building" || def.type === "structure") {
-            const colliders = getBuildingBounds(type, 0, pos, rot);
-            for (let i = 0; i < colliders.length; i++) {
-                const coll = colliders[i];
+        let buildingBounds: ReturnType<typeof getBuildingBounds> | undefined = undefined;
+        if (def.type === "building" || def.type === "structure") {
+            buildingBounds = getBuildingBounds(type, 0, pos, rot);
+            for (let i = 0; i < buildingBounds.length; i++) {
+                const coll = buildingBounds[i];
                 const gridColls = this.grid.intersectCollider(coll.collision);
 
                 for (let j = 0; j < gridColls.length; j++) {
@@ -1160,19 +1163,8 @@ export class GameMap {
                         1,
                     ) as AABB;
 
-                    // check all 4 corners + center of the AABB
-                    const points = collider.getPoints(bound);
-                    points.push(
-                        v2.create(
-                            bound.min.x + (bound.max.x - bound.min.x) / 2,
-                            bound.min.y + (bound.max.y - bound.min.y) / 2,
-                        ),
-                    );
-
-                    for (let j = 0; j < points.length; j++) {
-                        if (this.isOnWater(points[j], 0)) {
-                            return false;
-                        }
+                    if (this.isAabbOnWater(bound)) {
+                        return false;
                     }
                 }
             }
@@ -1204,33 +1196,34 @@ export class GameMap {
         }
 
         if (!def.terrain?.river && !def.terrain?.bridge) {
-            const boundCollider = collider.transform(
-                mapHelpers.getBoundingCollider(type),
-                pos,
-                rot,
-                scale,
-            );
+            let bounds = buildingBounds;
+            if (!bounds) {
+                bounds = [
+                    {
+                        layer: 0,
+                        collision: collider.transform(
+                            mapHelpers.getBoundingCollider(type),
+                            pos,
+                            rot,
+                            scale,
+                        ),
+                    },
+                ];
+            }
 
-            const aabb = collider.toAabb(boundCollider);
-            for (let i = 0; i < this.terrain.rivers.length; i++) {
-                const river = this.terrain.rivers[i];
+            for (let i = 0; i < bounds.length; i++) {
+                const bound = bounds[i];
+                if (bound.layer !== 0) continue;
+                const aabb = collider.toAabb(bound.collision);
 
-                if (!coldet.test(boundCollider, river.aabb)) continue;
-
-                if (
-                    !def.terrain?.riverShore &&
-                    (math.pointInsidePolygon(pos, river.shorePoly) ||
-                        coldet.testAabbPolygon(aabb.min, aabb.max, river.shorePoly))
-                ) {
-                    return false;
-                }
-
-                if (math.pointInsidePolygon(pos, river.waterPoly)) {
-                    return false;
-                }
-
-                if (coldet.testAabbPolygon(aabb.min, aabb.max, river.waterPoly)) {
-                    return false;
+                if (def.terrain?.riverShore) {
+                    if (this.isAabbOnRiverWater(aabb)) {
+                        return false;
+                    }
+                } else {
+                    if (this.isAabbOnRiverShore(aabb)) {
+                        return false;
+                    }
                 }
             }
         }
@@ -1346,25 +1339,32 @@ export class GameMap {
 
     genOnGrass(type: string) {
         const bounds = collider.toAabb(mapHelpers.getBoundingCollider(type));
-
-        let width = bounds.max.x - bounds.min.x;
-        let height = bounds.max.y - bounds.min.y;
-
         const def = MapObjectDefs[type];
-        if (!def.terrain?.beach) {
-            width += this.grassInset;
-            height += this.grassInset;
-        }
 
-        let getPos = () => {
-            const spawnMin = v2.create(this.shoreInset + width, this.shoreInset + height);
-            const spawnMax = v2.create(
-                this.width - this.shoreInset - width,
-                this.height - this.shoreInset - height,
+        const getSpawnAabb = (ori: number, scale: number) => {
+            const rot = math.oriToRad(ori);
+            const bound = collider.transform(bounds, v2.create(0, 0), rot, scale) as AABB;
+
+            let width = bound.max.x - bound.min.x;
+            let height = bound.max.y - bound.min.y;
+            if (!def.terrain?.beach) {
+                width += this.grassInset;
+                height += this.grassInset;
+            }
+            const dims = v2.create(width, height);
+
+            const mapAabb = collider.createAabb(
+                v2.create(this.shoreInset, this.shoreInset),
+                v2.create(this.width - this.shoreInset, this.height - this.shoreInset),
             );
 
-            const spawnAabb = collider.createAabb(spawnMin, spawnMax);
+            mapAabb.min = v2.add(mapAabb.min, dims);
+            mapAabb.max = v2.sub(mapAabb.max, dims);
 
+            return mapAabb;
+        };
+
+        let getPos = (spawnAabb: AABB) => {
             if (this.factionMode) {
                 // obstacles, buildings, and structures that need to spawn on either team's side
                 // doesn't matter which team, just as long as theyre grouped with the team specific buildings
@@ -1418,6 +1418,17 @@ export class GameMap {
                     const placeIdx = Math.floor(Math.random() * this.placeSpawns.length);
                     const place = this.placesToSpawn[placeIdx];
 
+                    const { ori, scale } = this.getOriAndScale(type);
+                    const rot = math.oriToRad(ori);
+                    const bound = collider.transform(
+                        bounds,
+                        v2.create(0, 0),
+                        rot,
+                        scale,
+                    ) as AABB;
+
+                    const width = bound.max.x - bound.min.x;
+                    const height = bound.max.y - bound.min.y;
                     const placePos = v2.add(
                         place,
                         v2.mulElems(
@@ -1434,7 +1445,6 @@ export class GameMap {
                             this.height - this.shoreInset - height,
                         ),
                     );
-                    const { ori, scale } = this.getOriAndScale(type);
 
                     if (!this.canSpawn(type, pos, ori, scale)) return false;
                     this.genAuto(type, pos, 0, ori, scale);
@@ -1457,7 +1467,8 @@ export class GameMap {
 
         this.trySpawn(type, () => {
             const { ori, scale } = this.getOriAndScale(type);
-            const pos = getPos();
+            const spawnAabb = getSpawnAabb(ori, scale);
+            const pos = getPos(spawnAabb);
 
             if (!this.canSpawn(type, pos, ori, scale)) return false;
             this.genAuto(type, pos, 0, ori, scale);
@@ -1817,7 +1828,9 @@ export class GameMap {
     ): Building {
         const def = MapObjectDefs[type] as BuildingDef;
 
-        ori = ori ?? def.ori ?? util.randomInt(0, 3);
+        if (ori === undefined) {
+            ori = this.getOriAndScale(type).ori;
+        }
 
         const building = new Building(this.game, type, pos, ori, layer, parentId);
 
@@ -1843,8 +1856,8 @@ export class GameMap {
         for (const mapObject of def.mapObjects ?? []) {
             let partType = mapObject.type;
 
-            if (typeof partType !== "string") {
-                partType = partType?.();
+            if (typeof partType === "object") {
+                partType = util.weightedRandomObject(partType);
             }
             if (!partType) continue;
 
@@ -2025,7 +2038,7 @@ export class GameMap {
             if (this.factionMode && team) {
                 const rad = math.oriToRad(this.factionModeSplitOri ^ 1);
                 const vec = v2.create(Math.cos(rad), Math.sin(rad));
-                const idx = team.teamId - 1;
+                const idx = team.id - 1;
 
                 // farthest fifth from the center of the team's half. 1/5 * 1/2 = 1/10 hence the 10 divisions
                 const divisions = 10;
@@ -2061,8 +2074,8 @@ export class GameMap {
 
                 for (let i = 0; i < this.game.playerBarn.livingPlayers.length; i++) {
                     const player = this.game.playerBarn.livingPlayers[i];
-                    if (group && player.groupId === group.groupId) continue;
-                    if (team && player.teamId === team.teamId) continue;
+                    if (group && player.groupId === group.id) continue;
+                    if (team && player.teamId === team.id) continue;
 
                     if (v2.distance(player.pos, pos) < GameConfig.player.minSpawnRad) {
                         return false;
@@ -2083,8 +2096,8 @@ export class GameMap {
                     if (projectile.layer !== 0) continue;
                     const player = this.game.objectRegister.getById(projectile.playerId);
                     if (player?.__type !== ObjectType.Player) continue;
-                    if (group && player.groupId === group.groupId) continue;
-                    if (team && player.teamId === team.teamId) continue;
+                    if (group && player.groupId === group.id) continue;
+                    if (team && player.teamId === team.id) continue;
 
                     if (v2.distance(projectile.pos, pos) < 16) {
                         return false;
@@ -2311,5 +2324,67 @@ export class GameMap {
         }
 
         return true;
+    }
+
+    isAabbOnWater(aabb: AABB): boolean {
+        if (
+            !coldet.aabbInsideAabb(
+                aabb.min,
+                aabb.max,
+                this.beachBounds.min,
+                this.beachBounds.max,
+            )
+        ) {
+            return true;
+        }
+        if (this.isAabbOnRiverWater(aabb)) return true;
+
+        return false;
+    }
+
+    isAabbOnRiverWater(aabb: AABB): boolean {
+        for (let i = 0; i < this.terrain.rivers.length; i++) {
+            const river = this.terrain.rivers[i];
+            if (
+                !coldet.testAabbAabb(river.aabb.min, river.aabb.max, aabb.min, aabb.max)
+            ) {
+                continue;
+            }
+            const points = collider.getPoints(aabb);
+            for (let j = 0; j < points.length; j++) {
+                if (math.pointInsidePolygon(points[j], river.waterPoly)) {
+                    return true;
+                }
+            }
+
+            if (coldet.testAabbPolygon(aabb.min, aabb.max, river.waterPoly)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    isAabbOnRiverShore(aabb: AABB): boolean {
+        for (let i = 0; i < this.terrain.rivers.length; i++) {
+            const river = this.terrain.rivers[i];
+            if (
+                !coldet.testAabbAabb(river.aabb.min, river.aabb.max, aabb.min, aabb.max)
+            ) {
+                continue;
+            }
+            const points = collider.getPoints(aabb);
+
+            for (let j = 0; j < points.length; j++) {
+                if (math.pointInsidePolygon(points[j], river.shorePoly)) {
+                    return true;
+                }
+            }
+            if (coldet.testAabbPolygon(aabb.min, aabb.max, river.shorePoly)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -28,7 +28,8 @@
         "noDoubleEquals": "off",
         "noExplicitAny": "off",
         "noPrototypeBuiltins": "off",
-        "useAwait": "warn"
+        "useAwait": "warn",
+        "noFallthroughSwitchClause": "warn"
       }
     },
     "includes": ["**", "!**/drizzle/**/*"]

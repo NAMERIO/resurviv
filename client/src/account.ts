@@ -63,47 +63,12 @@ export class Account {
     };
 
     loadout = loadouts.defaultLoadout();
-    loadoutPriv = "";
     items: Array<{ type: string; status: ItemStatus }> = [];
     quests = [];
     questPriv = "";
     pass = {};
 
-    constructor(public config: ConfigManager) {
-        window.login = () => {
-            this.login();
-        };
-        window.deleteAccount = () => {
-            this.deleteAccount();
-        };
-        window.deleteItems = () => {
-            this.ajaxRequest("/api/user/delete_items", {}, (_e, _t) => {
-                this.loadProfile();
-            });
-        };
-        window.unlock = (type) => {
-            console.log(`Unlocking ${type}`);
-            this.unlock(type);
-        };
-        window.setQuest = (questType, idx = 0) => {
-            this.ajaxRequest(
-                "/api/user/set_quest",
-                {
-                    questType,
-                    idx,
-                },
-                (_e, _t) => {
-                    this.getPass();
-                },
-            );
-        };
-        window.refreshQuest = (idx) => {
-            this.refreshQuest(idx);
-        };
-        window.setPassUnlock = (unlockType) => {
-            this.setPassUnlock(unlockType);
-        };
-    }
+    constructor(public config: ConfigManager) {}
 
     ajaxRequest(url: string, data: DataOrCallback, cb?: (err: any, res?: any) => void) {
         if (typeof data === "function") {
@@ -215,7 +180,6 @@ export class Account {
             this.loggingIn = false;
             this.loggedIn = false;
             this.profile = {} as this["profile"];
-            this.loadoutPriv = "";
             this.items = [];
             if (err) {
                 console.error("account", "load_profile_error");
@@ -224,7 +188,6 @@ export class Account {
             } else if (data.success) {
                 this.loggedIn = true;
                 this.profile = data.profile;
-                this.loadoutPriv = data.loadoutPriv;
                 this.items = data.items;
                 const profile = this.config.get("profile") || { slug: "" };
                 profile.slug = data.profile.slug;
@@ -293,29 +256,23 @@ export class Account {
         this.loadout = loadout;
         this.emit("loadout", this.loadout);
         this.config.set("loadout", loadout);
-        /* this.ajaxRequest(
-                "/api/user/loadout",
-                {
-                    loadout: {}
-                },
-                (e, a) => {
-                    if (e) {
-                        console.error(
-                            "account",
-                            "set_loadout_error"
-                        );
-                        this.emit("error", "server_error");
-                    }
-                    if (e || !a.loadout) {
-                        this.loadout = r;
-                    } else {
-                        this.loadout = a.loadout;
-                        this.loadoutPriv = a.loadoutPriv;
-                    }
-                    this.emit("loadout", this.loadout);
-                }
-            );
-        */
+
+        if (!helpers.getCookie("app-data")) return;
+        const args: LoadoutRequest = {
+            loadout: loadout,
+        };
+        this.ajaxRequest("/api/user/loadout", args, (err, res: LoadoutResponse) => {
+            if (err) {
+                errorLogManager.storeGeneric("account", "set_loadout_error");
+                this.emit("error", "server_error");
+            }
+            if (err || !res.loadout) {
+                this.loadout = loadoutPrev;
+            } else {
+                this.loadout = res.loadout;
+            }
+            this.emit("loadout", this.loadout);
+        });
     }
 
     setItemStatus(status: ItemStatus, itemTypes: string[]) {

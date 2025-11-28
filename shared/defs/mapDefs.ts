@@ -7,12 +7,17 @@ import { DeatchmatchMain } from "../../server/src/deathmatch/maps/main";
 import { DeatchmatchSnow } from "../../server/src/deathmatch/maps/snow";
 import { DeatchmatchWoods as Woods } from "../../server/src/deathmatch/maps/woods";
 import type { Vec2 } from "../utils/v2";
+import { Main } from "./maps/baseDefs";
+import { Birthday } from "./maps/birthdayDefs";
+import { Cobalt } from "./maps/cobaltDefs";
+import { Desert } from "./maps/desertDefs";
 import { Faction } from "./maps/factionDefs";
 import { MainSpring } from "./maps/mainSpringDefs";
 import { MainSummer } from "./maps/mainSummerDefs";
 import { Potato } from "./maps/potatoDefs";
 import { PotatoSpring } from "./maps/potatoSpringDefs";
 import { Savannah } from "./maps/savannahDefs";
+import { testFaction, testNormal } from "./maps/testDefs";
 import { Turkey } from "./maps/turkeyDefs";
 import { WoodsSnow } from "./maps/woodsSnowDefs";
 import { WoodsSpring } from "./maps/woodsSpringDefs";
@@ -52,7 +57,31 @@ export type Atlas =
     | "woods"
     | "cobalt"
     | "savannah";
-// | "may";
+
+export const MapDefs = {
+    main: Main,
+    main_spring: MainSpring,
+    main_summer: MainSummer,
+    desert: Desert,
+    faction: Faction,
+    halloween: Halloween,
+    potato: Potato,
+    potato_spring: PotatoSpring,
+    snow: Snow,
+    woods: Woods,
+    woods_snow: WoodsSnow,
+    woods_spring: WoodsSpring,
+    woods_summer: WoodsSummer,
+    savannah: Savannah,
+    cobalt: Cobalt,
+    turkey: Turkey,
+    birthday: Birthday,
+
+    /* STRIP_FROM_PROD_CLIENT:START */
+    test_normal: testNormal,
+    test_faction: testFaction,
+    /* STRIP_FROM_PROD_CLIENT:END */
+} satisfies Record<string, MapDef>;
 
 export interface MapDef {
     mapId: number;
@@ -61,6 +90,7 @@ export interface MapDef {
         icon: string;
         buttonCss: string;
         buttonText?: string;
+        backgroundImg: string;
     };
     assets: {
         audio: Array<{
@@ -199,6 +229,7 @@ export interface MapDef {
         places: Array<{
             name: string;
             pos: Vec2;
+            dontSpawnObjects?: boolean;
         }>;
         bridgeTypes: {
             medium: string;
@@ -214,15 +245,15 @@ export interface MapDef {
             }>;
             placeSpawns: string[];
         };
-        densitySpawns: Array<Record<string, number>>;
-        fixedSpawns: Array<
-            Record<string, number | { odds: number } | { small: number; large: number }>
-        >;
+        densitySpawns: [Record<string, number>];
+        fixedSpawns: [
+            Record<string, number | { odds: number } | { small: number; large: number }>,
+        ];
         randomSpawns: Array<{
             spawns: string[];
             choose: number;
         }>;
-        spawnReplacements: Array<Record<string, string>>;
+        spawnReplacements: [Record<string, string>];
         importantSpawns: string[];
     };
 }

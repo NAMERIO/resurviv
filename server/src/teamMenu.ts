@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { inArray } from "drizzle-orm";
 import type { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 import type { UpgradeWebSocket, WSContext } from "hono/ws";
@@ -14,9 +15,12 @@ import {
     type TeamPlayGameMsg,
     zTeamClientMsg,
 } from "../../shared/types/team";
+import type { Loadout } from "../../shared/utils/loadout";
 import { assert } from "../../shared/utils/util";
 import type { ApiServer } from "./api/apiServer";
 import { validateSessionToken } from "./api/auth";
+import { db } from "./api/db";
+import { usersTable } from "./api/db/schema";
 import { hashIp, isBanned } from "./api/routes/private/ModerationRouter";
 import { Config } from "./config";
 import { ServerLogger } from "./utils/logger";
@@ -28,6 +32,7 @@ import {
     verifyTurnsStile,
     WebSocketRateLimit,
 } from "./utils/serverHelpers";
+import type { FindGamePrivateBody } from "./utils/types";
 
 interface SocketData {
     rateLimit: Record<symbol, number>;
@@ -248,7 +253,19 @@ class Room {
 
         const tokenMap = new Map<Player, string>();
 
-        const groupHash = this.data.roomUrl;
+        const userIds = this.players.map((p) => p.userId).filter((p) => p !== null);
+
+        let loadouts: Array<{ userId: string; loadout: Loadout }> = [];
+        if (userIds.length > 0) {
+            loadouts = await db
+                .select({
+                    userId: usersTable.id,
+                    loadout: usersTable.loadout,
+                })
+                .from(usersTable)
+                .where(inArray(usersTable.id, userIds));
+        }
+
         const playerData = this.players.map((p) => {
             const token = randomUUID();
             tokenMap.set(p, token);
@@ -256,7 +273,8 @@ class Room {
                 token,
                 userId: p.userId,
                 ip: p.ip,
-            };
+                loadout: loadouts.find((l) => l.userId == p.userId)?.loadout,
+            } satisfies FindGamePrivateBody["playerData"][0];
         });
 
         const mode = this.teamMenu.server.modes[this.data.gameModeIdx];

@@ -11,12 +11,6 @@ export enum TeamColor {
     Blue = 2,
 }
 
-export const SpecialAirdropConfig = {
-    startCircle: 1,
-    endCircle: 3,
-    aliveCountThreshold: 0.2,
-};
-
 const mapDef: PartialMapDef = {
     mapId: MapId.Faction,
     desc: {
@@ -24,11 +18,16 @@ const mapDef: PartialMapDef = {
         icon: "img/gui/star.svg",
         buttonCss: "btn-mode-faction",
         buttonText: "50v50",
+        backgroundImg: "img/main_splash_0_7_0.png",
     },
     assets: {
         audio: [
             {
                 name: "lt_assigned_01",
+                channel: "ui",
+            },
+            {
+                name: "captain_assigned_01",
                 channel: "ui",
             },
             {
@@ -447,7 +446,7 @@ const mapDef: PartialMapDef = {
                 shack_03b: 3,
                 greenhouse_01: 1,
                 cache_01: 1,
-                cache_02: 1,
+                cache_02f: 1,
                 cache_07: 1,
                 mansion_structure_01: 1,
                 bunker_structure_01: { odds: 1 },
