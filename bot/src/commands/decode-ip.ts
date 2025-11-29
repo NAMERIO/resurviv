@@ -9,7 +9,7 @@ export default {
             option.setName("ip").setDescription("The IP to decode").setRequired(true),
         ),
     async execute(interaction: ChatInputCommandInteraction) {
-        const message = interaction.options.getString("ip");
+        const _message = interaction.options.getString("ip");
         const result = "Not implemeted"; // decodeIP(message!);
         await interaction.reply(JSON.stringify(result, null, 2));
     },

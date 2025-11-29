@@ -156,7 +156,7 @@ export class InventoryManager {
      * Empties all items in the inventory
      */
     emptyAll() {
-        for ( const item of Object.keys(this._items)) {
+        for (const item of Object.keys(this._items)) {
             this._items[item as InventoryItem] = 0;
         }
         this.player.inventoryDirty = true;

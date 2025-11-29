@@ -108,9 +108,8 @@ export async function createDiscordPlayerInfoCardUI({
     //     .setLabel("Ban For Bad Name")
     //     .setStyle(ButtonStyle.Secondary);
 
-    const row = new ActionRowBuilder<ButtonBuilder>()
-        .addComponents(banPlayerForCheating)
-        // .addComponents(banPlayerForBadName);
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(banPlayerForCheating);
+    // .addComponents(banPlayerForBadName);
 
     const response = await interaction.editReply({
         embeds: [embed],

@@ -106,24 +106,30 @@ export const ModerationRouter = new Hono()
             200,
         );
     })
-    .post("/kick_player_by_ip", validateParams(z.object({
-        encodedIp: z.string(),
-    })), async (c) => {
-        const { encodedIp } = c.req.valid("json");
-
-        fetch(`http://localhost:8001/api/kick_player_by_ip`, {
-            method: "POST",
-            headers: {
-                "content-type": "application/json",
-                "survev-api-key": Config.secrets.SURVEV_API_KEY,
-            },
-            body: JSON.stringify({
-                encodedIp,
+    .post(
+        "/kick_player_by_ip",
+        validateParams(
+            z.object({
+                encodedIp: z.string(),
             }),
-        });
+        ),
+        async (c) => {
+            const { encodedIp } = c.req.valid("json");
 
-        return c.json({ message: "kicked" }, 200);  
-    })
+            fetch(`http://localhost:8001/api/kick_player_by_ip`, {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json",
+                    "survev-api-key": Config.secrets.SURVEV_API_KEY,
+                },
+                body: JSON.stringify({
+                    encodedIp,
+                }),
+            });
+
+            return c.json({ message: "kicked" }, 200);
+        },
+    )
     .post("/unban_account", validateParams(zUnbanAccountParams), async (c) => {
         const { slug } = c.req.valid("json");
 

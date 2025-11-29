@@ -53,26 +53,25 @@ export const mapDef: PartialMapDef = {
         },
         places: Main.mapGen
             ? Array(config.places)
-                .fill(false)
-                .map(() => {
-                    return Main.mapGen?.places[
-                        Math.floor(Math.random() * Main.mapGen.places.length)
-                    ];
-                })
+                  .fill(false)
+                  .map(() => {
+                      return Main.mapGen?.places[
+                          Math.floor(Math.random() * Main.mapGen.places.length)
+                      ];
+                  })
             : [],
         densitySpawns: Main.mapGen
             ? Main.mapGen.densitySpawns.reduce(
-                (array, item) => {
-                    let object: Record<string, number> = {};
-                    for (const [key, value] of Object.entries(item)) {
-                        object[key] =
-                            (value * config.spawnDensity) / 100;
-                    }
-                    array.push(object);
-                    return array;
-                },
-                [] as Record<string, number>[],
-            )
+                  (array, item) => {
+                      let object: Record<string, number> = {};
+                      for (const [key, value] of Object.entries(item)) {
+                          object[key] = (value * config.spawnDensity) / 100;
+                      }
+                      array.push(object);
+                      return array;
+                  },
+                  [] as Record<string, number>[],
+              )
             : [],
         fixedSpawns: [
             {
@@ -102,7 +101,7 @@ export const mapDef: PartialMapDef = {
                 tree_02: 3,
                 teahouse_complex_01su: 1,
                 shack_03b: 3,
-                shack_01: 2
+                shack_01: 2,
             },
         ],
         randomSpawns: [
@@ -118,11 +117,11 @@ export const mapDef: PartialMapDef = {
         ],
         spawnReplacements: [
             {
-            "tree_01": "tree_01tw",
-            }],
+                tree_01: "tree_01tw",
+            },
+        ],
     },
 };
-
 
 export const DeatchmatchMain: MapDef = util.mergeDeep(Main, mapDef);
 

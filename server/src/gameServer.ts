@@ -1,8 +1,8 @@
-import { Cron } from "croner";
-import { randomUUID } from "crypto";
+import { App, SSLApp, type WebSocket } from "uWebSockets.js";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { App, SSLApp, type WebSocket } from "uWebSockets.js";
+import { Cron } from "croner";
+import { randomUUID } from "crypto";
 import z from "zod";
 import { version } from "../../package.json";
 import { GameConfig } from "../../shared/gameConfig";
@@ -187,7 +187,7 @@ app.options("/api/disconnect_player", (res) => {
 });
 
 app.post("/api/kick_player_by_ip", (res, req) => {
- res.onAborted(() => {
+    res.onAborted(() => {
         res.aborted = true;
     });
 
@@ -226,7 +226,7 @@ app.post("/api/kick_player_by_ip", (res, req) => {
             server.logger.warn("/api/kick_player_by_ip: Error retrieving body");
         },
     );
-})
+});
 
 app.options("/api/find_game", (res) => {
     cors(res);

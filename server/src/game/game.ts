@@ -1,13 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
-import { MapDefs } from "../../../shared/defs/mapDefs";
+import type { MapDefs } from "../../../shared/defs/mapDefs";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import type { Loadout } from "../../../shared/utils/loadout";
 import { math } from "../../../shared/utils/math";
 import { v2 } from "../../../shared/utils/v2";
-import { IpLogsTableInsert } from "../api/db/schema";
-import { hashIp } from "../api/routes/private/ModerationRouter";
+import type { IpLogsTableInsert } from "../api/db/schema";
 import { Config } from "../config";
 import { ServerLogger } from "../utils/logger";
 import { apiPrivateRouter } from "../utils/serverHelpers";
@@ -31,7 +30,7 @@ import { Gas } from "./objects/gas";
 import { LootBarn } from "./objects/loot";
 import { MapIndicatorBarn } from "./objects/mapIndicator";
 import { PlaneBarn } from "./objects/plane";
-import { Player, PlayerBarn } from "./objects/player";
+import { type Player, PlayerBarn } from "./objects/player";
 import { ProjectileBarn } from "./objects/projectile";
 import { SmokeBarn } from "./objects/smoke";
 import { PluginManager } from "./pluginManager";
@@ -58,7 +57,7 @@ export class Game {
     stopTicker = 0;
     id: string;
     teamMode: TeamMode;
-    mapName:  keyof typeof MapDefs;
+    mapName: keyof typeof MapDefs;
     isTeamMode: boolean;
     config: ServerGameConfig;
     pluginManager = new PluginManager(this);
@@ -471,8 +470,7 @@ export class Game {
         player.dirNew = v2.create(1, 0);
         player.setPartDirty();
         if (player.canDespawn() || true) {
-            if ( player.health < GameConfig.player.reviveHealth
-                && player.lastDamagedBy ) {
+            if (player.health < GameConfig.player.reviveHealth && player.lastDamagedBy) {
                 player.lastDamagedBy.health += GameConfig.player.reviveHealth;
             }
             player.kill({
@@ -651,8 +649,7 @@ export class Game {
                 username: player.name,
                 userId: player.userId,
                 teamMode: this.teamMode,
-                gameId: this.id
-
+                gameId: this.id,
             };
 
             // we don't await

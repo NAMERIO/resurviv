@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { generateUsername } from "unique-username-generator";
 import {
     GameObjectDefs,
     type LootDef,
@@ -39,10 +40,11 @@ import type { Loadout } from "../../../../shared/utils/loadout";
 import { math } from "../../../../shared/utils/math";
 import { assert, util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
+import { hashIp } from "../../api/routes/private/ModerationRouter";
 import { Config } from "../../config";
 import { isItemInLoadout, onPlayerJoin, onPlayerKill } from "../../plugins/deathmatch";
 import { IDAllocator } from "../../utils/IDAllocator";
-import { apiPrivateRouter, validateUserName } from "../../utils/serverHelpers";
+import { validateUserName } from "../../utils/serverHelpers";
 import type { Game, JoinTokenData } from "../game";
 import { Group, Team } from "../group";
 import { InventoryManager } from "../inventoryManager";
@@ -52,9 +54,6 @@ import { BaseGameObject, type DamageParams, type GameObject } from "./gameObject
 import type { Loot } from "./loot";
 import type { MapIndicator } from "./mapIndicator";
 import type { Obstacle } from "./obstacle";
-import { generateUsername } from "unique-username-generator";
-import { IpLogsTable } from "../../api/db/schema";
-import { hashIp } from "../../api/routes/private/ModerationRouter";
 
 function generateTempUsername() {
     return generateUsername("-", 0, net.Constants.PlayerNameMaxLen, "random");
@@ -348,7 +347,7 @@ export class PlayerBarn {
 
                     const randomPlayer =
                         promotablePlayers[
-                        util.randomInt(0, promotablePlayers.length - 1)
+                            util.randomInt(0, promotablePlayers.length - 1)
                         ];
                     randomPlayer.promoteToRole(scheduledRole.role);
                 }
@@ -488,9 +487,9 @@ export class PlayerBarn {
 
     getGroupAndTeam({ groupData }: JoinTokenData):
         | {
-            group?: Group;
-            team?: Team;
-        }
+              group?: Group;
+              team?: Team;
+          }
         | undefined {
         if (!this.game.isTeamMode) return undefined;
 
@@ -1357,7 +1356,7 @@ export class Player extends BaseGameObject {
     // about logging find_game IP's
     findGameIp: string;
     findGameEncodedIp: string;
-    
+
     constructor(
         game: Game,
         pos: Vec2,
@@ -1381,7 +1380,7 @@ export class Player extends BaseGameObject {
         this.ip = ip;
         this.findGameIp = findGameIp;
         this.encodedIp = hashIp(ip);
-        this.findGameEncodedIp = hashIp(findGameIp)
+        this.findGameEncodedIp = hashIp(findGameIp);
         this.userId = userId;
 
         this.isMobile = joinMsg.isMobile;
@@ -1454,7 +1453,7 @@ export class Player extends BaseGameObject {
         this.weaponManager.showNextThrowable();
         this.recalculateScale();
 
-        this.game.logPlayerIp(this)
+        this.game.logPlayerIp(this);
     }
 
     update(dt: number): void {
@@ -1984,7 +1983,7 @@ export class Player extends BaseGameObject {
                         if (
                             this.invManager.isValid(closestLoot.type) &&
                             this.invManager.get(closestLoot.type) >=
-                            this.invManager.getMaxCapacity(closestLoot.type)
+                                this.invManager.getMaxCapacity(closestLoot.type)
                         ) {
                             break;
                         }
@@ -3755,7 +3754,7 @@ export class Player extends BaseGameObject {
                 isDual: false,
                 cause:
                     this.activeWeapon === obj.type ||
-                        newGunDef.dualWieldType === this.weapons[this.curWeapIdx].type
+                    newGunDef.dualWieldType === this.weapons[this.curWeapIdx].type
                         ? net.PickupMsgType.AlreadyOwned
                         : net.PickupMsgType.Success,
             };
@@ -4109,9 +4108,9 @@ export class Player extends BaseGameObject {
             string,
             GunDef | ThrowableDef | MeleeDef,
         ]) => boolean = this.hasPerk("rare_potato")
-                ? ([_type, def]) =>
-                    !def.noPotatoSwap && def.quality == PerkProperties.rare_potato.quality
-                : ([_type, def]) => !def.noPotatoSwap;
+            ? ([_type, def]) =>
+                  !def.noPotatoSwap && def.quality == PerkProperties.rare_potato.quality
+            : ([_type, def]) => !def.noPotatoSwap;
 
         const weaponChoices = enumerableDefs.filter(filterCb);
         const [chosenWeaponType, chosenWeaponDef] =

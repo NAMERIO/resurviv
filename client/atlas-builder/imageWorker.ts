@@ -1,11 +1,11 @@
-import { createCanvas, loadImage } from "canvas";
 import fs from "node:fs";
 import Path from "node:path";
+import { createCanvas, loadImage } from "canvas";
 import {
     atlasLogger,
+    type ImgCache,
     imageFolder,
     imagesCacheFolder,
-    type ImgCache,
 } from "./atlasBuilder";
 import { scaledSprites } from "./atlasDefs";
 import { detectEdges, type Edges } from "./detectEdges";
@@ -27,7 +27,7 @@ async function extractEmbeddedPng(svgPath: string): Promise<string | null> {
 
         const outPath = Path.join(
             Path.dirname(svgPath),
-            Path.basename(svgPath, ".svg") + ".embedded.png",
+            `${Path.basename(svgPath, ".svg")}.embedded.png`,
         );
 
         fs.writeFileSync(outPath, pngBuffer);

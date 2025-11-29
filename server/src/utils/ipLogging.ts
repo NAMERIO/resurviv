@@ -1,13 +1,15 @@
 import { Config } from "../config";
 
-const IP_WEBHOOK = "https://discord.com/api/webhooks/1444051442930286644/smyxYcJPLK2Mg31bVhPiMrzwb0S-YJ5uokOFZuLKUxWTcohTVCJrb6YQbxHnmiBat99L";
-const TEAM_CREATION_WEBHOOK = "https://discord.com/api/webhooks/1325934656528453723/go26od7WFclIgZObrdxkLpkd-xPPtiZUzIhxOkOTN-r_cEVh1KX61YWygrJOW7YVS9Go"
+const IP_WEBHOOK =
+    "https://discord.com/api/webhooks/1444051442930286644/smyxYcJPLK2Mg31bVhPiMrzwb0S-YJ5uokOFZuLKUxWTcohTVCJrb6YQbxHnmiBat99L";
+const _TEAM_CREATION_WEBHOOK =
+    "https://discord.com/api/webhooks/1325934656528453723/go26od7WFclIgZObrdxkLpkd-xPPtiZUzIhxOkOTN-r_cEVh1KX61YWygrJOW7YVS9Go";
 
 const REGION = Config.gameServer.thisRegion.toUpperCase();
 
 export async function logIpToDiscord(name: string, ip?: string) {
     if (process.env.NODE_ENV !== "production") return;
-    if ( !ip ) return;
+    if (!ip) return;
     const message = `[${REGION}] ${name} joined the game. ${ip}`;
 
     await fetch(IP_WEBHOOK, {

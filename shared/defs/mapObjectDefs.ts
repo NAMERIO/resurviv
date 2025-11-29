@@ -10669,7 +10669,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         img: { sprite: "map-tree-03cb.img" },
     } as unknown as Partial<ObstacleDef>),
     tree_01tw: createTree({
-        img: { tint: 0x1a181c, sprite: "map-tree-07sp.img", },
+        img: { tint: 0x1a181c, sprite: "map-tree-07sp.img" },
         map: { color: 0x1a181c },
     } as unknown as Partial<ObstacleDef>),
     tree_01sv: createTree({

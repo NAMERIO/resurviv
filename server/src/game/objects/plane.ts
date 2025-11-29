@@ -96,16 +96,16 @@ export class PlaneBarn {
                             this.game.map.width - shoreInset,
                             this.game.map.height - shoreInset,
                         );
-                        
+
                         const offset = util.randomPointInCircle(this.game.gas.radNew);
                         let dropPos = v2.add(this.game.gas.posNew, offset);
-                        
+
                         // clam it
                         dropPos = v2.create(
                             Math.max(spawnMin.x, Math.min(spawnMax.x, dropPos.x)),
                             Math.max(spawnMin.y, Math.min(spawnMax.y, dropPos.y)),
                         );
-                        
+
                         this.addAirdrop(dropPos, options.airdropType);
                         break;
                     }

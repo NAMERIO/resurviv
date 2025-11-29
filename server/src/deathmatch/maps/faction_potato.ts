@@ -1,10 +1,8 @@
 import type { MapDef } from "../../../../shared/defs/mapDefs";
 import { Main, type PartialMapDef } from "../../../../shared/defs/maps/baseDefs";
 import { Faction } from "../../../../shared/defs/maps/factionDefs";
-import { MapId } from "../../../../shared/defs/types/misc";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { util } from "../../../../shared/utils/util";
-import { v2 } from "../../../../shared/utils/v2";
 
 const switchToSmallMap = false;
 
@@ -145,19 +143,17 @@ const mapDef: PartialMapDef = {
             placeSpawns: [],
         },
         densitySpawns: Faction.mapGen
-            ? Faction.mapGen.densitySpawns.map(
-                  (item) => {
-                      let object: Record<string, number> = {
-                          potato_01: 75,
-                          potato_02: 75,
-                          potato_03: 75,
-                      };
-                      for (const [key, value] of Object.entries(item)) {
-                          object[key] = (value * config.spawnDensity.large) / 100;
-                      }
-                      return object;
-                  },
-                )
+            ? Faction.mapGen.densitySpawns.map((item) => {
+                  let object: Record<string, number> = {
+                      potato_01: 75,
+                      potato_02: 75,
+                      potato_03: 75,
+                  };
+                  for (const [key, value] of Object.entries(item)) {
+                      object[key] = (value * config.spawnDensity.large) / 100;
+                  }
+                  return object;
+              })
             : [],
         fixedSpawns: [
             {

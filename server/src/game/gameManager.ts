@@ -1,9 +1,5 @@
 import type { WebSocket } from "uWebSockets.js";
-import type {
-    FindGamePrivateBody,
-    GameData,
-    GameSocketData
-} from "../utils/types";
+import type { FindGamePrivateBody, GameData, GameSocketData } from "../utils/types";
 
 export abstract class GameManager {
     abstract sockets: Map<string, WebSocket<GameSocketData>>;

@@ -1,7 +1,7 @@
 import { TeamColor } from "../../../shared/defs/maps/factionDefs";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
 import { ObjectType } from "../../../shared/net/objectSerializeFns";
-import { PlayerStatus } from "../../../shared/net/updateMsg";
+import type { PlayerStatus } from "../../../shared/net/updateMsg";
 import { collider } from "../../../shared/utils/collider";
 import { util } from "../../../shared/utils/util";
 import { v2 } from "../../../shared/utils/v2";
@@ -364,5 +364,4 @@ export class GameModeManager {
             }
         }
     }
-
 }

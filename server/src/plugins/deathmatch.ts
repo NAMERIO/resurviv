@@ -1,4 +1,3 @@
-import { kill } from "process";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
 import { UnlockDefs } from "../../../shared/defs/gameObjects/unlockDefs";
@@ -7,7 +6,6 @@ import { ObjectType } from "../../../shared/net/objectSerializeFns";
 import { Config } from "../config";
 import type { Player } from "../game/objects/player";
 import { GamePlugin, type PlayerDamageEvent } from "../game/pluginManager";
-import { MapId } from "../../../shared/defs/types/misc";
 
 /**
  * Checks if an item is present in the player's loadout
@@ -64,8 +62,8 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
     }
 
     // remove al perks
-    data.player.perks.forEach(perk => {
-        data.player.removePerk(perk.type)
+    data.player.perks.forEach((perk) => {
+        data.player.removePerk(perk.type);
     });
 
     // drop a new perk
@@ -78,9 +76,9 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
     data.player.backpack = "backpack00";
     data.player.scope = "1xscope";
     data.player.helmet = normalHelmet ? "" : data.player.helmet;
-    data.player.chest = ""; 
+    data.player.chest = "";
 
-    if (isItemInLoadout(data.player.outfit, "outfit")){
+    if (isItemInLoadout(data.player.outfit, "outfit")) {
         data.player.outfit = "outfitBase";
     }
 
@@ -121,17 +119,24 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
         if (Math.random() < 0.2) {
             const strobeChance =
                 Math.random() < (Config.modes[1].mapName === "desert" ? 0.6 : 0.2);
-            if ( strobeChance ) {
-                killer.invManager.set("strobe", Math.min(killer.inventory["strobe"] + 1, 1));
+            if (strobeChance) {
+                killer.invManager.set(
+                    "strobe",
+                    Math.min(killer.inventory["strobe"] + 1, 1),
+                );
             } else {
                 killer.invManager.set("mine", Math.min(killer.inventory["mine"] + 1, 2));
             }
         }
 
-        if (data.player.game.mapName === "snow"
-            || data.player.game.mapName === "woods_snow"
+        if (
+            data.player.game.mapName === "snow" ||
+            data.player.game.mapName === "woods_snow"
         ) {
-            killer.invManager.set("snowball", Math.min(killer.inventory["snowball"] + 3, 8));
+            killer.invManager.set(
+                "snowball",
+                Math.min(killer.inventory["snowball"] + 3, 8),
+            );
         }
         killer.inventoryDirty = true;
         killer.weapsDirty = true;

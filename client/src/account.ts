@@ -1,12 +1,12 @@
 import $ from "jquery";
+import type { LoadoutRequest, LoadoutResponse } from "../../shared/types/user";
+import loadouts, { type ItemStatus, type Loadout } from "../../shared/utils/loadout";
 import { util } from "../../shared/utils/util";
 import { api } from "./api";
 import type { ConfigManager } from "./config";
-import { proxy } from "./proxy";
-import loadouts, { type ItemStatus, type Loadout } from "../../shared/utils/loadout";
-import { helpers } from "./helpers";
-import { LoadoutRequest, LoadoutResponse } from "../../shared/types/user";
 import { errorLogManager } from "./errorLogs";
+import { helpers } from "./helpers";
+import { proxy } from "./proxy";
 
 type DataOrCallback =
     | Record<string, unknown>

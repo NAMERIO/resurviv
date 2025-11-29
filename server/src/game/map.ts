@@ -968,7 +968,7 @@ export class GameMap {
             } else if (def.terrain?.grass) {
                 try {
                     this.genOnGrass(type);
-                } catch (error) {
+                } catch (_error) {
                     console.log(`failed to generate ${type}`);
                 }
             } else if (def.terrain?.beach) {
@@ -2023,7 +2023,7 @@ export class GameMap {
         }
 
         let getPos: () => Vec2;
-        
+
         if (this.game.gas.mode == GasMode.Moving) {
             getPos = () => {
                 return v2.add(
@@ -2031,8 +2031,8 @@ export class GameMap {
                     util.randomPointInCircle(
                         this.game.gas.currentRad * 0.7,
                         Math.random,
-                        3
-                    )
+                        3,
+                    ),
                 );
             };
         } else if (!group?.spawnPosition) {
