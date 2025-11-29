@@ -145,6 +145,12 @@ export function getConfig(isProduction: boolean, dir: string) {
         config.secrets.DISCORD_CLIENT_ID && config.secrets.DISCORD_CLIENT_ID
     );
 
+    config.proxies.default ??= {
+        google: googleLogin,
+        discord: discordLogin,
+        mock: config.debug.allowMockAccount,
+        ...(config.proxies[baseUrl.hostname] ?? {}),
+    };
     config.proxies[baseUrl.hostname] = {
         google: googleLogin,
         discord: discordLogin,

@@ -14,7 +14,6 @@ export interface Loadout {
     melee: string;
     emotes: string[];
     crosshair: Crosshair;
-    password: string;
 }
 
 export enum ItemStatus {
@@ -83,7 +82,6 @@ const loadout = {
                 ).toFixed(2) as unknown as number,
             },
             emotes: [] as string[],
-            password: "",
         };
 
         const defaultEmotes = GameConfig.defaultEmoteLoadout.slice();

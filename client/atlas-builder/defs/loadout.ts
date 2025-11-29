@@ -630,7 +630,6 @@ export const LoadoutAtlas: AtlasDef = {
         "particles/part-airdrop-04.svg",
         "particles/part-aura-circle-01.svg",
         "particles/part-aura-circle-02.svg",
-        "particles/part-pulse-01.svg",
         "particles/part-blossom-01.svg",
         "particles/part-blossom-02.svg",
         "particles/part-blossom-03.svg",
@@ -708,8 +707,6 @@ export const LoadoutAtlas: AtlasDef = {
         "particles/part-teleport-04.svg",
 
         "player/player-armor-base-01.svg",
-        "player/player-base-01.svg",
-        "player/player-base-02.svg",
         "player/player-base-01.svg",
         "player/player-base-02.svg",
         "player/player-base-ahoy.svg",
@@ -832,7 +829,6 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-base-outfitWinter.svg",
         "player/player-base-outfitZebra.svg",
         "player/player-base-outfitPolice.svg",
-        "player/player-base-chewie-cheese.svg",
 
         "player/player-fists-police.svg",
 

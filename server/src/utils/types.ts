@@ -88,6 +88,7 @@ export enum ProcessMsgType {
     AddJoinToken,
     SocketMsg,
     SocketClose,
+    KickPlayerByIP,
 }
 
 export interface CreateGameMsg {
@@ -112,6 +113,11 @@ export interface AddJoinTokenMsg {
     type: ProcessMsgType.AddJoinToken;
     autoFill: boolean;
     tokens: FindGamePrivateBody["playerData"];
+}
+
+export interface KickPlayerByIPMsg {
+    type: ProcessMsgType.KickPlayerByIP;
+    encodedIp: string;
 }
 
 /**
@@ -145,5 +151,6 @@ export type ProcessMsg =
     | KeepAliveMsg
     | UpdateDataMsg
     | AddJoinTokenMsg
+    | KickPlayerByIPMsg
     | SocketMsgsMsg
     | SocketCloseMsg;

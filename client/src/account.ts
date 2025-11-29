@@ -3,7 +3,10 @@ import { util } from "../../shared/utils/util";
 import { api } from "./api";
 import type { ConfigManager } from "./config";
 import { proxy } from "./proxy";
-import loadouts, { type ItemStatus, type Loadout } from "./ui/loadouts";
+import loadouts, { type ItemStatus, type Loadout } from "../../shared/utils/loadout";
+import { helpers } from "./helpers";
+import { LoadoutRequest, LoadoutResponse } from "../../shared/types/user";
+import { errorLogManager } from "./errorLogs";
 
 type DataOrCallback =
     | Record<string, unknown>
@@ -252,7 +255,7 @@ export class Account {
     }
 
     setLoadout(loadout: Loadout) {
-        const _r = this.loadout;
+        const loadoutPrev = this.loadout;
         this.loadout = loadout;
         this.emit("loadout", this.loadout);
         this.config.set("loadout", loadout);

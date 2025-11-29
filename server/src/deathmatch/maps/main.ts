@@ -1,5 +1,5 @@
 import type { MapDef } from "../../../../shared/defs/mapDefs";
-import { Main } from "../../../../shared/defs/maps/baseDefs";
+import { Main, type PartialMapDef } from "../../../../shared/defs/maps/baseDefs";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { util } from "../../../../shared/utils/util";
 
@@ -9,12 +9,26 @@ const config = {
     mapSize: switchToSmallMap ? "small" : "large",
     places: 3,
     mapWidth: { large: 280, small: 240 },
-    spawnDensity: { large: 44, small: 37 },
+    spawnDensity: 77,
 } as const;
 
-export const DeatchmatchMain: MapDef = util.mergeDeep(structuredClone(Main), {
+export const mapDef: PartialMapDef = {
     biome: {
+        colors: {
+            background: 0x4a3a5c,
+            water: 0x2a1a3c,
+            waterRipple: 0x6a5a7c,
+            beach: 0x3a3540,
+            riverbank: 0x2a2530,
+            grass: 0x4a4550,
+            underground: 0x1a1520,
+            playerSubmerge: 0x8a7a9c,
+            playerGhillie: 0x4a4550,
+        },
         particles: { camera: "falling_leaf_spring" },
+    },
+    assets: {
+        atlases: ["gradient", "loadout", "shared", "main"],
     },
     gameConfig: {
         planes: {
@@ -29,66 +43,66 @@ export const DeatchmatchMain: MapDef = util.mergeDeep(structuredClone(Main), {
     },
     mapGen: {
         map: {
-            baseWidth: config.mapWidth[config.mapSize],
-            baseHeight: config.mapWidth[config.mapSize],
-            shoreInset: 40,
+            baseWidth: 290,
+            baseHeight: 290,
+            shoreInset: 30,
+            grassInset: 10,
             rivers: {
                 weights: [],
             },
         },
         places: Main.mapGen
             ? Array(config.places)
-                  .fill(false)
-                  .map(() => {
-                      return Main.mapGen?.places[
-                          Math.floor(Math.random() * Main.mapGen.places.length)
-                      ];
-                  })
-            : {},
+                .fill(false)
+                .map(() => {
+                    return Main.mapGen?.places[
+                        Math.floor(Math.random() * Main.mapGen.places.length)
+                    ];
+                })
+            : [],
         densitySpawns: Main.mapGen
             ? Main.mapGen.densitySpawns.reduce(
-                  (array, item) => {
-                      let object: Record<string, number> = {};
-                      for (const [key, value] of Object.entries(item)) {
-                          object[key] =
-                              (value * config.spawnDensity[config.mapSize]) / 100;
-                      }
-                      array.push(object);
-                      return array;
-                  },
-                  [] as Record<string, number>[],
-              )
-            : {},
+                (array, item) => {
+                    let object: Record<string, number> = {};
+                    for (const [key, value] of Object.entries(item)) {
+                        object[key] =
+                            (value * config.spawnDensity) / 100;
+                    }
+                    array.push(object);
+                    return array;
+                },
+                [] as Record<string, number>[],
+            )
+            : [],
         fixedSpawns: [
             {
                 club_complex_01: 1,
                 // small is spawn count for solos and duos, large is spawn count for squads
                 warehouse_01: { odds: 0.5 },
-                house_red_01: config.mapSize === "large" ? 1 : { odds: 0.5 },
-                // house_red_02: 1,
-                // barn_01: { small: 1, large: 3 },
-                // barn_02: 1,
-                hut_01: 2,
-                hut_02: 1, // spas hut
-                hut_03: 1, // scout hut
+                house_red_01: { odds: 0.5 },
+                house_red_02: 1,
+                barn_02: 1,
+                barn_01: { odds: 0.5 },
                 greenhouse_01: 1,
                 cache_01: 1,
                 cache_02: { odds: 0.8 }, // mosin tree
                 cache_07: 1,
-                // bunker_structure_01: { odds: 0.05 },
-                bunker_structure_02: config.mapSize === "large" ? 1 : 0,
-                // bunker_structure_03: 1,
-                // bunker_structure_04: 1,
-                // bunker_structure_05: 1,
+                bunker_structure_01: 1,
+                bunker_structure_02: 1,
+                bunker_structure_03: 1,
+                bunker_structure_04: 1,
+                bunker_structure_05: 1,
                 // warehouse_complex_01: 1,
                 chest_01: 1,
                 chest_03: { odds: 0.2 },
-                mil_crate_02: { odds: 0.4 },
-                mil_crate_03: config.mapSize === "large" ? { odds: 0.4 } : 0,
-                stone_04: 1,
+                mil_crate_02: { odds: 0.5 },
+                mil_crate_03: { odds: 0.5 },
+                stone_04: 2,
+                stone_05: 2,
                 tree_02: 3,
                 teahouse_complex_01su: 1,
-                // stone_04: 1,
+                shack_03b: 3,
+                shack_01: 2
             },
         ],
         randomSpawns: [
@@ -102,8 +116,15 @@ export const DeatchmatchMain: MapDef = util.mergeDeep(structuredClone(Main), {
                 choose: config.mapSize === "large" ? 2 : 1,
             },
         ],
+        spawnReplacements: [
+            {
+            "tree_01": "tree_01tw",
+            }],
     },
-});
+};
+
+
+export const DeatchmatchMain: MapDef = util.mergeDeep(Main, mapDef);
 
 DeatchmatchMain["lootTable"] = {
     tier_mansion_floor: [{ name: "outfitCasanova", count: 1, weight: 1 }],

@@ -3,22 +3,20 @@ import $ from "jquery";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { EmoteCategory, type EmoteDef } from "../../../shared/defs/gameObjects/emoteDefs";
 import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
-import { OutfitDefs } from "../../../shared/defs/gameObjects/outfitDefs";
-import {
-    privateOutfits,
-    type UnlockDef,
-} from "../../../shared/defs/gameObjects/unlockDefs";
+import { privateOutfits, type UnlockDef } from "../../../shared/defs/gameObjects/unlockDefs";
 import { EmoteSlot, Rarity } from "../../../shared/gameConfig";
+import type { ItemStatus } from "../../../shared/utils/loadout";
+import { type Crosshair, type Loadout, loadout } from "../../../shared/utils/loadout";
 import { util } from "../../../shared/utils/util";
 import type { Account } from "../account";
-import type { ConfigManager } from "../config";
-import { type Crosshair, crosshair } from "../crosshair";
+import { crosshair } from "../crosshair";
 import { device } from "../device";
 import { helpers } from "../helpers";
-import loadout, { type ItemStatus, type Loadout } from "./loadouts";
 import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
 import type { LoadoutDisplay } from "./opponentDisplay";
+import { ConfigManager } from "../config";
+import { OutfitDefs } from "../../../shared/defs/gameObjects/outfitDefs";
 
 function emoteSlotToDomElem(e: Exclude<EmoteSlot, EmoteSlot.Count>) {
     const emoteSlotToDomId = {

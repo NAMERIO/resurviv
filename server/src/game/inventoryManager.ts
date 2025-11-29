@@ -153,6 +153,16 @@ export class InventoryManager {
     }
 
     /**
+     * Empties all items in the inventory
+     */
+    emptyAll() {
+        for ( const item of Object.keys(this._items)) {
+            this._items[item as InventoryItem] = 0;
+        }
+        this.player.inventoryDirty = true;
+    }
+
+    /**
      * Runs only when an item drops to 0
      */
     private _onItemRemoved(item: InventoryItem) {

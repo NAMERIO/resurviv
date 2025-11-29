@@ -145,8 +145,8 @@ const mapDef: PartialMapDef = {
             placeSpawns: [],
         },
         densitySpawns: Faction.mapGen
-            ? Faction.mapGen.densitySpawns.reduce(
-                  (array, item) => {
+            ? Faction.mapGen.densitySpawns.map(
+                  (item) => {
                       let object: Record<string, number> = {
                           potato_01: 75,
                           potato_02: 75,
@@ -155,12 +155,10 @@ const mapDef: PartialMapDef = {
                       for (const [key, value] of Object.entries(item)) {
                           object[key] = (value * config.spawnDensity.large) / 100;
                       }
-                      array.push(object);
-                      return array;
+                      return object;
                   },
-                  [] as Record<string, number>[],
-              )
-            : [{}],
+                )
+            : [],
         fixedSpawns: [
             {
                 warehouse_01f: 1,

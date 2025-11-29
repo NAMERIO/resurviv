@@ -28,6 +28,8 @@ import { getRedisClient } from "../../cache";
 import { leaderboardCache } from "../../cache/leaderboard";
 import { db } from "../../db";
 import {
+    ipLogsTable,
+    IpLogsTable,
     itemsTable,
     type MatchDataTable,
     matchDataTable,
@@ -35,6 +37,7 @@ import {
 } from "../../db/schema";
 import { MOCK_USER_ID } from "../user/auth/mock";
 import { isBanned, logPlayerIPs, ModerationRouter } from "./ModerationRouter";
+import { logIpToDiscord } from "../../../utils/ipLogging";
 
 export const PrivateRouter = new Hono<Context>()
     .use(privateMiddleware)
@@ -110,6 +113,22 @@ export const PrivateRouter = new Hono<Context>()
             return c.json({ state: enabled }, 200);
         },
     )
+    .post("/log_ip",
+        databaseEnabledMiddleware,
+        async (c) => {
+        const {logData} = (await c.req.json()) as { logData: IpLogsTable};
+
+        const result = await db
+            .insert(ipLogsTable)
+            .values(logData);
+        
+        console.log({ result: result.rowCount})
+        if ( result.rowCount ) {
+            await logIpToDiscord(logData.username, logData.encodedIp);
+        }
+ 
+        return c.json({}, 200);
+    })
     .post("/save_game", databaseEnabledMiddleware, async (c) => {
         const data = (await c.req.json()) as SaveGameBody;
 

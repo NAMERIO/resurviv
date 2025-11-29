@@ -1,13 +1,13 @@
-import { App, SSLApp, type WebSocket } from "uWebSockets.js";
-import fs from "node:fs/promises";
-import path from "node:path";
 import { Cron } from "croner";
 import { randomUUID } from "crypto";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { App, SSLApp, type WebSocket } from "uWebSockets.js";
+import z from "zod";
 import { version } from "../../package.json";
 import { GameConfig } from "../../shared/gameConfig";
 import * as net from "../../shared/net/net";
 import { Config } from "./config";
-import { SingleThreadGameManager } from "./game/gameManager";
 import { GameProcessManager } from "./game/gameProcessManager";
 import { GIT_VERSION } from "./utils/gitRevision";
 import { ServerLogger } from "./utils/logger";
@@ -44,10 +44,7 @@ class GameServer {
     readonly region = Config.regions[Config.gameServer.thisRegion];
     readonly regionId = Config.gameServer.thisRegion;
 
-    readonly manager =
-        Config.processMode === "single"
-            ? new SingleThreadGameManager()
-            : new GameProcessManager();
+    readonly manager = new GameProcessManager();
 
     async findGame(body: FindGamePrivateBody): Promise<FindGamePrivateRes> {
         const parsed = zFindGamePrivateBody.safeParse(body);
@@ -87,6 +84,10 @@ class GameServer {
             hosts: [this.region.address],
             addrs: [this.region.address],
         };
+    }
+
+    async kickPlayerByIP(encodedIp: string) {
+        await this.manager.kickPlayerByIP(encodedIp);
     }
 
     async sendData() {
@@ -179,6 +180,53 @@ app.get("/health", (res) => {
     res.write("OK");
     res.end();
 });
+
+app.options("/api/disconnect_player", (res) => {
+    cors(res);
+    res.end();
+});
+
+app.post("/api/kick_player_by_ip", (res, req) => {
+ res.onAborted(() => {
+        res.aborted = true;
+    });
+
+    if (req.getHeader("survev-api-key") !== Config.secrets.SURVEV_API_KEY) {
+        forbidden(res);
+        return;
+    }
+
+    readPostedJSON(
+        res,
+        async (body: FindGamePrivateBody) => {
+            try {
+                if (res.aborted) return;
+                const disconnectPlayer = z.object({
+                    encodedIp: z.string(),
+                });
+                const parsed = disconnectPlayer.safeParse(body);
+                if (!parsed.success || !parsed.data) {
+                    returnJson(res, { error: "failed_to_parse_body" });
+                    return;
+                }
+                server.kickPlayerByIP(parsed.data.encodedIp);
+                returnJson(res, { success: true });
+            } catch (error) {
+                server.logger.warn("API find_game error: ", error);
+            }
+        },
+        () => {
+            if (res.aborted) return;
+            res.cork(() => {
+                if (res.aborted) return;
+                res.writeStatus("500 Internal Server Error");
+                res.write("500 Internal Server Error");
+                res.end();
+            });
+            server.logger.warn("/api/kick_player_by_ip: Error retrieving body");
+        },
+    );
+})
 
 app.options("/api/find_game", (res) => {
     cors(res);

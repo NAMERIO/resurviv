@@ -10668,11 +10668,14 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         map: { color: 0x2c4362 },
         img: { sprite: "map-tree-03cb.img" },
     } as unknown as Partial<ObstacleDef>),
+    tree_01tw: createTree({
+        img: { tint: 0x1a181c, sprite: "map-tree-07sp.img", },
+        map: { color: 0x1a181c },
+    } as unknown as Partial<ObstacleDef>),
     tree_01sv: createTree({
         map: { color: 0x435119 },
         img: { sprite: "map-tree-03sv.img" },
     } as unknown as Partial<ObstacleDef>),
-
     tree_01m: createTree({
         map: { color: 10306003 },
         img: { sprite: "lasr_swrds_tree_01.img" },
@@ -10726,7 +10729,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     tree_03: createTree({
         map: { display: false },
         img: { tint: 0xb1b1b1 },
-        loot: [tierLoot("tier_surviv", 2, 3), autoLoot("mosin", 1)],
+        loot: [tierLoot("tier_surviv", 2, 3), autoLoot("m1014", 1)],
     }),
     // savannah cache
     tree_03sv: createTree({

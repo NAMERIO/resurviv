@@ -1,3 +1,4 @@
+import { kill } from "process";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
 import { UnlockDefs } from "../../../shared/defs/gameObjects/unlockDefs";
@@ -6,6 +7,7 @@ import { ObjectType } from "../../../shared/net/objectSerializeFns";
 import { Config } from "../config";
 import type { Player } from "../game/objects/player";
 import { GamePlugin, type PlayerDamageEvent } from "../game/pluginManager";
+import { MapId } from "../../../shared/defs/types/misc";
 
 /**
  * Checks if an item is present in the player's loadout
@@ -17,7 +19,7 @@ export const isItemInLoadout = (
 ) => {
     if (ownedItems && !ownedItems.has(item)) return false;
     // Commented out to allow restricted items to work
-    // if (!UnlockDefs.unlock_default.unlocks.includes(item)) return false;
+    if (!UnlockDefs.unlock_default.unlocks.includes(item)) return false;
 
     const def = GameObjectDefs[item];
     if (!def || def.type !== category) return false;
@@ -31,24 +33,6 @@ export function onPlayerJoin(data: Player) {
     data.weaponManager.setCurWeapIndex(WeaponSlot.Primary);
     data.addPerk("endless_ammo", false);
     if (!data.game.map.perkMode) data.addPerk("takedown", false);
-
-    switch (data.outfit) {
-        case "outfitToilet": {
-            data.setOutfit("outfitToilet");
-            break;
-        }
-        case "outfitDarkGloves": {
-            data.chest = "";
-            data.helmet = "";
-            break;
-        }
-        case "outfitNotEnough": {
-            data.helmet = "";
-            data.backpack = "backpack00";
-            data.addPerk("trick_size");
-            break;
-        }
-    }
 }
 
 const perks = [
@@ -79,33 +63,34 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
         });
     }
 
-    data.player.perks.length = 0;
+    // remove al perks
+    data.player.perks.forEach(perk => {
+        data.player.removePerk(perk.type)
+    });
 
+    // drop a new perk
     if (data.source?.__id !== data.player.__id && Math.random() < 0.2) {
         const perk = perks[Math.floor(Math.random() * perks.length)];
         data.player.game.lootBarn.addLoot(perk, data.player.pos, data.player.layer, 1);
     }
 
     let normalHelmet = ["helmet01", "helmet02", "helmet03"].includes(data.player.helmet);
-    // clear inventory to prevent loot from dropping;
-    data.player.inventory = {};
     data.player.backpack = "backpack00";
     data.player.scope = "1xscope";
     data.player.helmet = normalHelmet ? "" : data.player.helmet;
-    data.player.chest = "";
+    data.player.chest = ""; 
 
-    // don't drop the melee weapon if it's selected from the loadout
-    if (isItemInLoadout(data.player.weapons[WeaponSlot.Melee].type, "melee")) {
-        data.player.weapons[WeaponSlot.Melee].type = "fists";
-    }
-
-    if (isItemInLoadout(data.player.outfit, "outfit")) {
+    if (isItemInLoadout(data.player.outfit, "outfit")){
         data.player.outfit = "outfitBase";
     }
 
     data.player.weaponManager.setCurWeapIndex(WeaponSlot.Melee);
 
     {
+        // don't drop the melee weapon if it's selected from the loadout
+        if (isItemInLoadout(data.player.weapons[WeaponSlot.Melee].type, "melee")) {
+            data.player.weapons[WeaponSlot.Melee].type = "fists";
+        }
         const primary = data.player.weapons[WeaponSlot.Primary];
         if (isItemInLoadout(primary.type, "gun")) {
             primary.type = "";
@@ -121,27 +106,33 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
         }
     }
 
+    // clear inventory to prevent loot from dropping;
+    data.player.invManager.emptyAll();
+
     // give the killer nades and gun ammo and inventory ammo
     if (data.source?.__type === ObjectType.Player) {
         const killer = data.source;
         if (killer.inventory["frag"] == 0) {
             killer.weapons[WeaponSlot.Throwable].type = "frag";
         }
+        killer.invManager.set("frag", Math.min(killer.inventory["frag"] + 3, 9));
+        killer.invManager.set("mirv", Math.min(killer.inventory["mirv"] + 1, 3));
 
-        killer.inventory["frag"] = Math.min(killer.inventory["frag"] + 3, 12);
-        killer.inventory["mirv"] = Math.min(killer.inventory["mirv"] + 1, 4);
         if (Math.random() < 0.2) {
             const strobeChance =
                 Math.random() < (Config.modes[1].mapName === "desert" ? 0.6 : 0.2);
-            const itemToGive = strobeChance ? "strobe" : "mine";
-            killer.inventory[itemToGive] = Math.min(
-                killer.inventory[itemToGive] + 1,
-                itemToGive === "mine" ? 2 : 1,
-            );
+            if ( strobeChance ) {
+                killer.invManager.set("strobe", Math.min(killer.inventory["strobe"] + 1, 1));
+            } else {
+                killer.invManager.set("mine", Math.min(killer.inventory["mine"] + 1, 2));
+            }
         }
 
-        if (Config.modes[1].mapName === "snow")
-            killer.inventory["snowball"] = Math.min(killer.inventory["snowball"] + 4, 10);
+        if (data.player.game.mapName === "snow"
+            || data.player.game.mapName === "woods_snow"
+        ) {
+            killer.invManager.set("snowball", Math.min(killer.inventory["snowball"] + 3, 8));
+        }
         killer.inventoryDirty = true;
         killer.weapsDirty = true;
 
@@ -164,7 +155,6 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
 export default class DeathMatchPlugin extends GamePlugin {
     protected override initListeners(): void {
         this.on("playerJoin", onPlayerJoin);
-
         this.on("playerKill", onPlayerKill);
     }
 }

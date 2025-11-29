@@ -8,7 +8,7 @@ import { device } from "./device";
 import type { Localization } from "./ui/localization";
 
 export class SiteInfo {
-    info: Info = {} as SiteInfoRes;
+    info: SiteInfoRes = {} as SiteInfoRes;
     loaded = false;
 
     constructor(

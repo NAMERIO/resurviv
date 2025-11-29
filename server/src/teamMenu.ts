@@ -111,14 +111,12 @@ class Room {
         findingGame: false,
         lastError: "",
         region: "",
-        autoFill: false,
+        autoFill: true,
         enabledGameModeIdxs: [],
         gameModeIdx: 1,
         maxPlayers: 4,
         captchaEnabled: false,
     };
-
-    groupHash: string = "";
 
     constructor(
         public teamMenu: TeamMenu,
@@ -173,8 +171,8 @@ class Room {
                 break;
             }
             case "playGame": {
-                // if (!player.isLeader) break;
-                this.findGame(player, msg.data);
+                if (!player.isLeader) break;
+                this.findGame(msg.data);
                 break;
             }
         }
@@ -200,7 +198,7 @@ class Room {
         this.data.gameModeIdx = gameModeIdx;
 
         this.data.maxPlayers = modes[gameModeIdx].teamMode;
-        this.data.autoFill = false; //  props.autoFill;
+        this.data.autoFill = props.autoFill;
 
         // kick players that don't fit on the new max players
         while (this.players.length > this.data.maxPlayers) {
@@ -236,11 +234,11 @@ class Room {
 
     findGameCooldown = 0;
 
-    async findGame(player: Player, data: TeamPlayGameMsg["data"]) {
+    async findGame(data: TeamPlayGameMsg["data"]) {
         if (this.data.findingGame) return;
-        // if (this.players.some((p) => p.inGame)) return;
+        if (this.players.some((p) => p.inGame)) return;
         const roomLeader = this.players[0];
-        // if (!roomLeader) return;
+        if (!roomLeader) return;
 
         this.data.findingGame = true;
         this.sendState();
@@ -309,7 +307,6 @@ class Room {
             autoFill: this.data.autoFill,
             region: region,
             version: data.version,
-            groupHash,
             playerData,
         });
 
@@ -333,24 +330,24 @@ class Room {
 
         this.data.lastError = "";
 
-        // for (const player of this.players) {
-        player.inGame = true;
-        const token = tokenMap.get(player);
+        for (const player of this.players) {
+            player.inGame = true;
+            const token = tokenMap.get(player);
 
-        if (!token) {
-            this.teamMenu.logger.warn(`Missing token for player ${player.name}`);
-            // continue;
+            if (!token) {
+                this.teamMenu.logger.warn(`Missing token for player ${player.name}`);
+                continue;
+            }
+
+            player.send("joinGame", {
+                zone: "",
+                data: token,
+                gameId: res.gameId,
+                addrs: res.addrs,
+                hosts: res.hosts,
+                useHttps: res.useHttps,
+            });
         }
-
-        player.send("joinGame", {
-            zone: "",
-            data: token!,
-            gameId: res.gameId,
-            addrs: res.addrs,
-            hosts: res.hosts,
-            useHttps: res.useHttps,
-        });
-        // }
 
         this.sendState();
     }

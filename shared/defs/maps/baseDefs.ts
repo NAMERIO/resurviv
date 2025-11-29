@@ -1,7 +1,7 @@
 import { GameConfig } from "../../gameConfig";
-import type { DeepPartial } from "../../utils/util";
 import { v2 } from "../../utils/v2";
 import type { MapDef } from "../mapDefs";
+import { MapId } from "../types/misc";
 
 // @NOTE: Entries defined as single-element arrays, like fixedSpawns: [{ }],
 // are done this way so that util.mergeDeep(...) will function as expected
@@ -798,7 +798,8 @@ export const Main: MapDef = {
                 choose: 2,
             },
         ],
-        spawnReplacements: [{}],
+        spawnReplacements: [{
+        }],
         importantSpawns: ["club_complex_01"],
     },
     /* STRIP_FROM_PROD_CLIENT:END */

@@ -202,6 +202,16 @@ export class GameProcessManager implements GameManager {
         }, 5000);
     }
 
+    async kickPlayerByIP(encodedIp: string) {
+        for (const gameProc of this.processes) {
+            if (gameProc.aliveCount > 0 && !gameProc.stopped) {
+                gameProc.send({
+                    type: ProcessMsgType.KickPlayerByIP,
+                    encodedIp,
+                });
+            }
+        }
+    }
     getPlayerCount(): number {
         return this.processes.reduce((a, b) => {
             return a + b.aliveCount;

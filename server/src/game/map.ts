@@ -2023,8 +2023,19 @@ export class GameMap {
         }
 
         let getPos: () => Vec2;
-
-        if (!group?.spawnPosition) {
+        
+        if (this.game.gas.mode == GasMode.Moving) {
+            getPos = () => {
+                return v2.add(
+                    this.game.gas.currentPos,
+                    util.randomPointInCircle(
+                        this.game.gas.currentRad * 0.7,
+                        Math.random,
+                        3
+                    )
+                );
+            };
+        } else if (!group?.spawnPosition) {
             const spawnMin = v2.create(this.shoreInset, this.shoreInset);
             const spawnMax = v2.create(
                 this.width - this.shoreInset,

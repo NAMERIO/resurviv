@@ -165,13 +165,11 @@ export class LoadoutDisplay {
             curWeapIdx: 0,
             weapons: [
                 {
-                    type: "",
-                        type: "spas12",
+                    type: "spas12",
                     ammo: 0,
                 },
                 {
-                    type: "",
-                        type: "mosin",
+                    type: "mosin",
                     ammo: 0,
                 },
                 {

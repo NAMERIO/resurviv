@@ -12,16 +12,32 @@ import { Birthday } from "./maps/birthdayDefs";
 import { Cobalt } from "./maps/cobaltDefs";
 import { Desert } from "./maps/desertDefs";
 import { Faction } from "./maps/factionDefs";
+import { Halloween } from "./maps/halloweenDefs";
 import { MainSpring } from "./maps/mainSpringDefs";
 import { MainSummer } from "./maps/mainSummerDefs";
 import { Potato } from "./maps/potatoDefs";
 import { PotatoSpring } from "./maps/potatoSpringDefs";
 import { Savannah } from "./maps/savannahDefs";
+import { Snow } from "./maps/snowDefs";
 import { testFaction, testNormal } from "./maps/testDefs";
 import { Turkey } from "./maps/turkeyDefs";
 import { WoodsSnow } from "./maps/woodsSnowDefs";
 import { WoodsSpring } from "./maps/woodsSpringDefs";
 import { WoodsSummer } from "./maps/woodsSummerDefs";
+
+export type Atlas =
+    | "gradient"
+    | "loadout"
+    | "shared"
+    | "main"
+    | "desert"
+    | "faction"
+    | "halloween"
+    | "potato"
+    | "snow"
+    | "woods"
+    | "cobalt"
+    | "savannah";
 
 export const MapDefs = {
     main: DeatchmatchMain,
@@ -40,40 +56,6 @@ export const MapDefs = {
     woods_summer: WoodsSummer,
     savannah: Savannah,
     cobalt: DeatchmatchCobalt,
-    turkey: Turkey,
-    // may: May,
-} satisfies Record<string, MapDef>;
-
-export type Atlas =
-    | "gradient"
-    | "loadout"
-    | "shared"
-    | "main"
-    | "desert"
-    | "faction"
-    | "halloween"
-    | "potato"
-    | "snow"
-    | "woods"
-    | "cobalt"
-    | "savannah";
-
-export const MapDefs = {
-    main: Main,
-    main_spring: MainSpring,
-    main_summer: MainSummer,
-    desert: Desert,
-    faction: Faction,
-    halloween: Halloween,
-    potato: Potato,
-    potato_spring: PotatoSpring,
-    snow: Snow,
-    woods: Woods,
-    woods_snow: WoodsSnow,
-    woods_spring: WoodsSpring,
-    woods_summer: WoodsSummer,
-    savannah: Savannah,
-    cobalt: Cobalt,
     turkey: Turkey,
     birthday: Birthday,
 
@@ -162,21 +144,19 @@ export interface MapDef {
                 weight: number;
             }>;
         };
-        unlocks?: {
+        roles?: {
             timings: Array<{
-                type: string;
-                stagger: number;
+                role: string | (() => string);
                 circleIdx: number;
                 wait: number;
             }>;
         };
-        roles?: {
+        unlocks?: {
             timings: Array<{
                 type: string; // can either be a building with the door(s) to unlock OR the door itself, no support for structures yet
                 stagger: number; // only for buildings with multiple unlocks, will stagger the unlocks instead of doing them all at once
                 circleIdx: number;
                 wait: number;
-                role: string;
             }>;
         };
         bagSizes: Record<string, number[]>;

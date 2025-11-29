@@ -42,7 +42,7 @@ import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import { Config } from "../../config";
 import { isItemInLoadout, onPlayerJoin, onPlayerKill } from "../../plugins/deathmatch";
 import { IDAllocator } from "../../utils/IDAllocator";
-import { validateUserName } from "../../utils/serverHelpers";
+import { apiPrivateRouter, validateUserName } from "../../utils/serverHelpers";
 import type { Game, JoinTokenData } from "../game";
 import { Group, Team } from "../group";
 import { InventoryManager } from "../inventoryManager";
@@ -52,6 +52,13 @@ import { BaseGameObject, type DamageParams, type GameObject } from "./gameObject
 import type { Loot } from "./loot";
 import type { MapIndicator } from "./mapIndicator";
 import type { Obstacle } from "./obstacle";
+import { generateUsername } from "unique-username-generator";
+import { IpLogsTable } from "../../api/db/schema";
+import { hashIp } from "../../api/routes/private/ModerationRouter";
+
+function generateTempUsername() {
+    return generateUsername("-", 0, net.Constants.PlayerNameMaxLen, "random");
+}
 
 type MoveObjsMode = {
     enabled: boolean;
@@ -191,17 +198,9 @@ export class PlayerBarn {
         let finalName = originalName;
 
         if (Config.uniqueInGameNames) {
-            let count = 0;
-            const loggedOutPlayers = this.game.playerBarn.players.filter(
-                (p) => !p.userId,
-            );
+            const loggedOutPlayers = this.game.playerBarn.players;
             while (loggedOutPlayers.find((p) => p.name === finalName)) {
-                const postFix = `-${++count}`;
-                const trimmed = originalName.substring(
-                    0,
-                    net.Constants.PlayerNameMaxLen - postFix.length,
-                );
-                finalName = trimmed + postFix;
+                finalName = generateTempUsername();
             }
         }
 
@@ -349,7 +348,7 @@ export class PlayerBarn {
 
                     const randomPlayer =
                         promotablePlayers[
-                            util.randomInt(0, promotablePlayers.length - 1)
+                        util.randomInt(0, promotablePlayers.length - 1)
                         ];
                     randomPlayer.promoteToRole(scheduledRole.role);
                 }
@@ -489,9 +488,9 @@ export class PlayerBarn {
 
     getGroupAndTeam({ groupData }: JoinTokenData):
         | {
-              group?: Group;
-              team?: Team;
-          }
+            group?: Group;
+            team?: Team;
+        }
         | undefined {
         if (!this.game.isTeamMode) return undefined;
 
@@ -509,7 +508,7 @@ export class PlayerBarn {
         // but keeping it just in case
         // since more than 4 players in a group crashes the client
         if (!group || group.players.length >= this.game.teamMode) {
-            group = this.addGroup(groupData.groupHashToJoin, groupData.autoFill);
+            group = this.addGroup(groupData.autoFill);
         }
 
         // only reserve slots on the first time this join token is used
@@ -530,9 +529,10 @@ export class PlayerBarn {
         return { group, team };
     }
 
-    addGroup(hash: string, autoFill: boolean) {
+    addGroup(autoFill: boolean) {
         // not using nodejs crypto because i want it to run in the browser too
         // and doesn't need to be cryptographically secure lol
+        const hash = Math.random().toString(16).slice(2);
         const groupId = this.groupIdAllocator.getNextId();
         const group = new Group(hash, groupId, autoFill, this.game.teamMode);
         this.groups.push(group);
@@ -1352,10 +1352,12 @@ export class Player extends BaseGameObject {
 
     userId: string | null = null;
     ip: string;
+    encodedIp: string;
     // see comment on server/src/api/schema.ts
     // about logging find_game IP's
     findGameIp: string;
-
+    findGameEncodedIp: string;
+    
     constructor(
         game: Game,
         pos: Vec2,
@@ -1378,6 +1380,8 @@ export class Player extends BaseGameObject {
         this.socketId = socketId;
         this.ip = ip;
         this.findGameIp = findGameIp;
+        this.encodedIp = hashIp(ip);
+        this.findGameEncodedIp = hashIp(findGameIp)
         this.userId = userId;
 
         this.isMobile = joinMsg.isMobile;
@@ -1449,6 +1453,8 @@ export class Player extends BaseGameObject {
 
         this.weaponManager.showNextThrowable();
         this.recalculateScale();
+
+        this.game.logPlayerIp(this)
     }
 
     update(dt: number): void {
@@ -1978,7 +1984,7 @@ export class Player extends BaseGameObject {
                         if (
                             this.invManager.isValid(closestLoot.type) &&
                             this.invManager.get(closestLoot.type) >=
-                                this.invManager.getMaxCapacity(closestLoot.type)
+                            this.invManager.getMaxCapacity(closestLoot.type)
                         ) {
                             break;
                         }
@@ -2774,7 +2780,6 @@ export class Player extends BaseGameObject {
 
         // lone survivr can be given on knock or kill
         if (this.game.map.factionMode) {
-            this.team?.checkAndApplyRandomRole();
             // this.team!.checkAndApplyLastMan();
             // this.team!.checkAndApplyCaptain();
         }
@@ -2890,7 +2895,6 @@ export class Player extends BaseGameObject {
 
         if (this.game.map.factionMode) {
             // lone survivr can be given on knock or kill
-            this.team?.checkAndApplyRandomRole();
             // this.team!.checkAndApplyLastMan();
             // this.team!.checkAndApplyCaptain();
 
@@ -3751,7 +3755,7 @@ export class Player extends BaseGameObject {
                 isDual: false,
                 cause:
                     this.activeWeapon === obj.type ||
-                    newGunDef.dualWieldType === this.weapons[this.curWeapIdx].type
+                        newGunDef.dualWieldType === this.weapons[this.curWeapIdx].type
                         ? net.PickupMsgType.AlreadyOwned
                         : net.PickupMsgType.Success,
             };
@@ -4105,9 +4109,9 @@ export class Player extends BaseGameObject {
             string,
             GunDef | ThrowableDef | MeleeDef,
         ]) => boolean = this.hasPerk("rare_potato")
-            ? ([_type, def]) =>
-                  !def.noPotatoSwap && def.quality == PerkProperties.rare_potato.quality
-            : ([_type, def]) => !def.noPotatoSwap;
+                ? ([_type, def]) =>
+                    !def.noPotatoSwap && def.quality == PerkProperties.rare_potato.quality
+                : ([_type, def]) => !def.noPotatoSwap;
 
         const weaponChoices = enumerableDefs.filter(filterCb);
         const [chosenWeaponType, chosenWeaponDef] =
@@ -4396,6 +4400,39 @@ export class Player extends BaseGameObject {
             }
 
             this.loadout.emotes[i] = emote;
+        }
+
+        // Normal mode: Initialize primary weapon
+        if (isItemInLoadout(loadout.primary, "gun")) {
+            const slot = GameConfig.WeaponSlot.Primary;
+            this.weapons[slot].type = loadout.primary;
+            const gunDef = GameObjectDefs[this.weapons[slot].type] as GunDef;
+            this.weapons[slot].ammo = gunDef.maxClip;
+        }
+
+        // Normal mode: Initialize secondary weapon
+        if (isItemInLoadout(loadout.secondary, "gun")) {
+            const slot = GameConfig.WeaponSlot.Secondary;
+            this.weapons[slot].type = loadout.secondary;
+
+            // Disable dual spas in normal mode
+            if (
+                this.weapons[GameConfig.WeaponSlot.Primary].type === "spas12" &&
+                this.weapons[slot].type === "spas12"
+            ) {
+                this.weapons[slot].type = "mosin";
+            }
+
+            const gunDef = GameObjectDefs[this.weapons[slot].type] as GunDef;
+            this.weapons[slot].ammo = gunDef.maxClip;
+        }
+
+        // Add "inspiration" perk if using "bugle"
+        if (
+            this.weapons[GameConfig.WeaponSlot.Primary].type == "bugle" ||
+            this.weapons[GameConfig.WeaponSlot.Secondary].type == "bugle"
+        ) {
+            this.addPerk("inspiration", false);
         }
     }
 
@@ -4809,7 +4846,7 @@ export class Player extends BaseGameObject {
         this.game.sendSocketMsg(this.socketId, buffer);
     }
 
-    usePulseItem(item: string): void {
+    usePulseItem(item: InventoryItem): void {
         const itemDef = GameObjectDefs[item];
         if (!itemDef || itemDef.type !== "boost") return;
         if (!this.inventory[item]) return;

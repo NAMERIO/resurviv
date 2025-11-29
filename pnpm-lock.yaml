@@ -76,6 +76,9 @@ importers:
         specifier: ^1.6.6
         version: 1.6.6
     devDependencies:
+      '@tweakpane/core':
+        specifier: ^2.0.5
+        version: 2.0.5
       '@types/jquery':
         specifier: ^3.5.33
         version: 3.5.33
@@ -1219,9 +1222,6 @@ packages:
 
   '@types/earcut@2.1.4':
     resolution: {integrity: sha512-qp3m9PPz4gULB9MhjGID7wpo3gJ4bTGXm7ltNDsmOvsPduTeHp8wSW9YckBj3mljeOh4F0m2z/0JKAALRKbmLQ==}
-
-  '@types/ejs@3.1.5':
-    resolution: {integrity: sha512-nv+GSx77ZtXiJzwKdsASqi+YQ5Z7vwHsTP0JY2SiQgjGckkBRKZnk8nIM+7oUZ1VCtuTz0+By4qVR7fqzp/Dfg==}
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
@@ -3024,8 +3024,6 @@ snapshots:
   '@types/deep-eql@4.0.2': {}
 
   '@types/earcut@2.1.4': {}
-
-  '@types/ejs@3.1.5': {}
 
   '@types/estree@1.0.8': {}
 

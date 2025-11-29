@@ -90,13 +90,23 @@ export class PlaneBarn {
                 const options = scheduledPlane.options;
                 switch (options.type) {
                     case GameConfig.Plane.Airdrop: {
-                        this.addAirdrop(
-                            v2.add(
-                                this.game.gas.posNew,
-                                util.randomPointInCircle(this.game.gas.radNew),
-                            ),
-                            options.airdropType,
+                        const shoreInset = this.game.map.shoreInset + 50;
+                        const spawnMin = v2.create(shoreInset, shoreInset);
+                        const spawnMax = v2.create(
+                            this.game.map.width - shoreInset,
+                            this.game.map.height - shoreInset,
                         );
+                        
+                        const offset = util.randomPointInCircle(this.game.gas.radNew);
+                        let dropPos = v2.add(this.game.gas.posNew, offset);
+                        
+                        // clam it
+                        dropPos = v2.create(
+                            Math.max(spawnMin.x, Math.min(spawnMax.x, dropPos.x)),
+                            Math.max(spawnMin.y, Math.min(spawnMax.y, dropPos.y)),
+                        );
+                        
+                        this.addAirdrop(dropPos, options.airdropType);
                         break;
                     }
                     case GameConfig.Plane.Airstrike: {

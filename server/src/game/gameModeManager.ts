@@ -1,6 +1,7 @@
 import { TeamColor } from "../../../shared/defs/maps/factionDefs";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
 import { ObjectType } from "../../../shared/net/objectSerializeFns";
+import { PlayerStatus } from "../../../shared/net/updateMsg";
 import { collider } from "../../../shared/utils/collider";
 import { util } from "../../../shared/utils/util";
 import { v2 } from "../../../shared/utils/v2";
@@ -314,7 +315,6 @@ export class GameModeManager {
             role: p.role,
         }));
     }
-
     handlePlayerDeath(player: Player, params: DamageParams): void {
         if (this.isSolo) {
             player.kill(params);
@@ -352,61 +352,17 @@ export class GameModeManager {
             const allDowned = group.checkAllDowned(player);
             const groupHasSelfRevive = group.checkSelfRevive();
 
-                    if (!groupHasSelfRevive && (allDeadOrDisconnected || allDowned)) {
-                        group.allDeadOrDisconnected = true; // must set before any kill() calls so the gameovermsgs are accurate
-                        player.kill(params);
-                        if (allDowned) {
-                            group.killAllTeammates();
-                        }
-                    } else {
-                        player.kill(params);
-                        // player.down(params);
-                    }
+            if (!groupHasSelfRevive && (allDeadOrDisconnected || allDowned)) {
+                group.allDeadOrDisconnected = true; // must set before any kill() calls so the gameovermsgs are accurate
+                player.kill(params);
+                if (allDowned) {
+                    group.killAllTeammates();
                 }
-                break;
-            case GameMode.Faction:
-                {
-                    const sourceIsPlayer = params.source?.__type === ObjectType.Player;
-                    const team = player.team!;
-                    if (player.downed) {
-                        const finishedByTeammate =
-                            player.downedBy &&
-                            sourceIsPlayer &&
-                            player.downedBy.teamId === (params.source as Player).teamId;
-
-                        const bledOut =
-                            player.downedBy &&
-                            params.damageType == GameConfig.DamageType.Bleeding;
-
-                        if (finishedByTeammate || bledOut) {
-                            params.source = player.downedBy;
-                        }
-
-                        player.kill(params);
-                        // special case that only happens when the player has self_revive since the teammates wouldnt have previously been finished off
-                        if (team.checkAllDowned(player)) {
-                            team.killAllTeammates();
-                        }
-                        return;
-                    }
-
-                    const teamHasSelfRevive = team.livingPlayers.find((p) =>
-                        p.hasPerk("self_revive"),
-                    );
-                    const allDead = team.checkAllDead(player);
-                    const allDowned = team.checkAllDowned(player);
-
-                    if (!teamHasSelfRevive && (allDead || allDowned)) {
-                        player.kill(params);
-                        if (allDowned) {
-                            team.killAllTeammates();
-                        }
-                    } else {
-                        player.kill(params);
-                        // player.down(params);
-                    }
-                }
-                break;
+            } else {
+                player.kill(params);
+                // player.down(params);
+            }
         }
     }
+
 }
