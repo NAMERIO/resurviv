@@ -8,11 +8,15 @@ const switchToSmallMap = false;
 const config = {
     mapSize: switchToSmallMap ? "small" : "large",
     places: 3,
-    mapWidth: { large: 280, small: 240 },
+    mapWidth: 280,
     spawnDensity: 77,
 } as const;
 
 export const mapDef: PartialMapDef = {
+    desc: {
+        icon: "img/loot/loot-perk-phoenix.svg",
+        buttonCss: "btn-mode-twighlight",
+    },
     biome: {
         colors: {
             background: 0x4a3a5c,
@@ -43,12 +47,18 @@ export const mapDef: PartialMapDef = {
     },
     mapGen: {
         map: {
-            baseWidth: 290,
-            baseHeight: 290,
-            shoreInset: 30,
+            baseWidth: config.mapWidth,
+            baseHeight: config.mapWidth,
+            shoreInset: 20,
             grassInset: 10,
             rivers: {
-                weights: [],
+                lakes: [],
+                weights: [
+                    { weight: 1, widths: [2.7, 2] },
+                ],
+                smoothness: 0.8,
+                spawnCabins: false,
+                masks: [],
             },
         },
         places: Main.mapGen
@@ -84,11 +94,11 @@ export const mapDef: PartialMapDef = {
                 barn_01: { odds: 0.5 },
                 greenhouse_01: 1,
                 cache_01: 1,
-                cache_02: { odds: 0.8 }, // mosin tree
+                cache_02: 1, // mosin tree
                 cache_07: 1,
                 bunker_structure_01: 1,
-                bunker_structure_02: 1,
-                bunker_structure_03: 1,
+                bunker_structure_02: { odds: 0.5 },
+                bunker_structure_03: { odds: 0.5 },
                 bunker_structure_04: 1,
                 bunker_structure_05: 1,
                 // warehouse_complex_01: 1,
@@ -98,6 +108,7 @@ export const mapDef: PartialMapDef = {
                 mil_crate_03: { odds: 0.5 },
                 stone_04: 2,
                 stone_05: 2,
+                stone_03: 5,
                 tree_02: 3,
                 teahouse_complex_01su: 1,
                 shack_03b: 3,
@@ -118,6 +129,7 @@ export const mapDef: PartialMapDef = {
         spawnReplacements: [
             {
                 tree_01: "tree_01tw",
+                stone_03: "stone_03tw",
             },
         ],
     },

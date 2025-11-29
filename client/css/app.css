@@ -3262,6 +3262,33 @@ a:active {
     -webkit-box-shadow: 0 0 9px #8f5827;
   }
 }
+@keyframes twighlight-pulse {
+  from {
+    background-color: #2a1a3c;
+    -webkit-box-shadow: 0 0 9px #2a1a3c;
+  }
+  50% {
+    background-color: #3b1d5f;
+    -webkit-box-shadow: 0 0 18px #3b1d5f;
+  }
+  to {
+    background-color: #2a1a3c;
+    -webkit-box-shadow: 0 0 9px #2a1a3c;
+  }
+}
+
+.btn-mode-twighlight {
+  animation-name: twighlight-pulse;
+  border-bottom: 4px solid #2a1a3c !important;
+  box-shadow: inset 0 -2px #2a1a3c !important;
+}
+
+@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+  .btn-mode-twighlight {
+    border-bottom: 2px solid #2a1a3c !important;
+  }
+}
+
 @keyframes desert-pulse {
   from {
     background-color: #d45500;
@@ -3276,7 +3303,6 @@ a:active {
     -webkit-box-shadow: 0 0 9px #d45500;
   }
 }
-
 .btn-mode-desert {
   animation-name: desert-pulse;
   border-bottom: 4px solid #853500 !important;

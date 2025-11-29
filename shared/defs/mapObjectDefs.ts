@@ -10394,7 +10394,14 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         },
         loot: [tierLoot("tier_surviv", 2, 3), autoLoot("ak47", 1)],
     }),
-    stone_03: createRiverStone({}),
+    stone_03: createRiverStone({
+    }),
+    stone_03tw: createRiverStone({
+        img: {
+            sprite: "map-stone-03tw.img",
+            residue: "map-stone-res-02tw.img",
+        },
+    }),
     stone_03b: createRiverStone({
         img: {
             sprite: "map-stone-03b.img",
@@ -13069,10 +13076,10 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 inheritOri: false,
             },
         ],
-        map: { displayType: "tree_01" },
+        map: { displayType: "tree_01m" },
     }),
     cache_02sv: createCache({
-        mapObjects: [
+        mapObjects: [   
             {
                 type: "tree_03sv",
                 pos: v2.create(0, 0),
@@ -25458,11 +25465,12 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     bunker_structure_04: {
         type: "structure",
         terrain: {
-            waterEdge: {
-                dir: v2.create(-1, 0),
-                distMin: 15,
-                distMax: 16,
-            },
+            grass: true,
+            // waterEdge: {
+            //     dir: v2.create(-1, 0),
+            //     distMin: 15,
+            //     distMax: 16,
+            // },
         },
         mapObstacleBounds: [
             collider.createAabbExtents(v2.create(21, 3.5), v2.create(9.5, 8)),

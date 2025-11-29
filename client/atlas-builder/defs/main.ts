@@ -12,5 +12,10 @@ export const MainAtlas: AtlasDef = {
 
         "map/map-tree-07sp.svg",
         "map/map-tree-08sp.svg",
+
+        "map/lasr_swrds_tree_01.svg",
+
+        "map/map-stone-03tw.svg",
+        "map/map-stone-res-02tw.svg",
     ],
 };
