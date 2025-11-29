@@ -25551,7 +25551,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             surfaces: [],
             imgs: [
                 {
-                    sprite: "map-bunker-crossing-floor-01.img",
+                    sprite: "map-bunker-crossing-floor-01tw.img",
                     pos: v2.create(0, 0),
                     scale: 0.5,
                     alpha: 1,
@@ -26294,9 +26294,9 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         type: "structure",
         terrain: {
             grass: true,
-            beach: false,
-            bridge: { nearbyWidthMult: 1.2 },
-            spawnPriority: 100,
+            // beach: false,
+            // bridge: { nearbyWidthMult: 1.2 },
+            // spawnPriority: 100,
         },
         mapObstacleBounds: [
             collider.createAabbExtents(v2.create(35.5, 28.5), v2.create(6, 6)),

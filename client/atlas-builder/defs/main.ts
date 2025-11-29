@@ -17,5 +17,6 @@ export const MainAtlas: AtlasDef = {
 
         "map/map-stone-03tw.svg",
         "map/map-stone-res-02tw.svg",
+        "map/map-bunker-crossing-floor-01tw.svg",
     ],
 };

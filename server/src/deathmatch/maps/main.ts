@@ -8,7 +8,7 @@ const switchToSmallMap = false;
 const config = {
     mapSize: switchToSmallMap ? "small" : "large",
     places: 3,
-    mapWidth: 280,
+    mapWidth: 270,
     spawnDensity: 77,
 } as const;
 
@@ -32,7 +32,7 @@ export const mapDef: PartialMapDef = {
         particles: { camera: "falling_leaf_spring" },
     },
     assets: {
-        atlases: ["gradient", "loadout", "shared", "main"],
+        atlases: ["gradient", "loadout", "shared", "main", "cobalt"],
     },
     gameConfig: {
         planes: {
@@ -68,6 +68,7 @@ export const mapDef: PartialMapDef = {
                       ];
                   })
             : [],
+        // @ts-expect-error figure me out later 
         densitySpawns: Main.mapGen
             ? Main.mapGen.densitySpawns.reduce(
                   (array, item) => {
@@ -84,21 +85,14 @@ export const mapDef: PartialMapDef = {
         fixedSpawns: [
             {
                 club_complex_01: 1,
-                // small is spawn count for solos and duos, large is spawn count for squads
                 warehouse_01: { odds: 0.5 },
                 house_red_01: { odds: 0.5 },
-                house_red_02: 1,
                 barn_02: 1,
                 barn_01: { odds: 0.5 },
-                greenhouse_01: 1,
                 cache_01: 1,
                 cache_02: 1, // mosin tree
                 cache_07: 1,
-                bunker_structure_01: 1,
-                bunker_structure_02: { odds: 0.5 },
-                bunker_structure_03: { odds: 0.5 },
-                bunker_structure_04: 1,
-                bunker_structure_05: 1,
+                bunker_structure_02: 1,
                 // warehouse_complex_01: 1,
                 chest_01: 1,
                 chest_03: { odds: 0.2 },
@@ -113,9 +107,6 @@ export const mapDef: PartialMapDef = {
                 shack_01: 2,
             },
         ],
-        importantSpawns: [
-            "house_red_02",
-        ],
         randomSpawns: [
             {
                 spawns: [
@@ -126,11 +117,42 @@ export const mapDef: PartialMapDef = {
                 ],
                 choose: 2,
             },
+            {
+                spawns: [
+                    // vector bunker
+                    "bunker_structure_03",
+                    // ak bunker
+                    "bunker_structure_01",
+                ],
+                choose: 1,
+            },
+            {
+                spawns: [
+                    
+                    "greenhouse_01",
+                    "house_red_02",
+                ],
+                choose: 1,
+            }, {
+                spawns: [
+                    "bunker_structure_04",
+                    "bunker_structure_05",
+                    "bunker_structure_05",
+                    "bunker_structure_05",
+                    "bunker_structure_05",
+                    "bunker_structure_05",
+                    "bunker_structure_05",
+                ],
+                choose: 1,
+            }
         ],
         spawnReplacements: [
             {
                 tree_01: "tree_01tw",
                 stone_03: "stone_03tw",
+                stone_01: "stone_01cb",
+                bush_01: "bush_01cb",
+                bush_04: "bush_04cb",
             },
         ],
     },

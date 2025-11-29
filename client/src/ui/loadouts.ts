@@ -1,7 +1,7 @@
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import type { UnlockDefs } from "../../../shared/defs/gameObjects/unlockDefs";
 import { GameConfig } from "../../../shared/gameConfig";
-import type { Crosshair } from "../crosshair";
+import type { Crosshair } from "../../../shared/utils/loadout";
 import { deepEqual } from "../lib/deepEqual";
 
 export interface Loadout {
@@ -75,11 +75,11 @@ const loadout = {
                 size: getFloat(
                     mergedLoadout.crosshair.size as unknown as string,
                     1,
-                ).toFixed(2) as unknown as number,
+                ).toFixed(2),
                 stroke: getFloat(
                     mergedLoadout.crosshair.stroke as unknown as string,
                     0,
-                ).toFixed(2) as unknown as number,
+                ).toFixed(2),
             },
             emotes: [] as string[],
         };

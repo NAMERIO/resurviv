@@ -142,6 +142,7 @@ const mapDef: PartialMapDef = {
             locationSpawns: [],
             placeSpawns: [],
         },
+        // @ts-expect-error figure me out later
         densitySpawns: Faction.mapGen
             ? Faction.mapGen.densitySpawns.map((item) => {
                   let object: Record<string, number> = {
