@@ -4422,6 +4422,13 @@ export class Player extends BaseGameObject {
                 this.weapons[slot].type = "mosin";
             }
 
+            if (
+                this.weapons[GameConfig.WeaponSlot.Primary].type === "bugle" &&
+                this.weapons[slot].type === "bugle"
+            ) {
+                this.weapons[slot].type = "mosin";
+            }
+
             const gunDef = GameObjectDefs[this.weapons[slot].type] as GunDef;
             this.weapons[slot].ammo = gunDef.maxClip;
         }
