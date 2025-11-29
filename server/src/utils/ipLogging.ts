@@ -10,7 +10,8 @@ const REGION = Config.gameServer.thisRegion.toUpperCase();
 export async function logIpToDiscord(name: string, ip?: string) {
     if (process.env.NODE_ENV !== "production") return;
     if (!ip) return;
-    const message = `[${REGION}] ${name} joined the game. ${ip}`;
+    const formattedName = name.replaceAll("@", "(at)");
+    const message = `[${REGION}] ${formattedName} joined the game. ${ip}`;
 
     await fetch(IP_WEBHOOK, {
         method: "POST",
