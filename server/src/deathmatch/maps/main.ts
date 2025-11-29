@@ -55,7 +55,7 @@ export const mapDef: PartialMapDef = {
                 lakes: [],
                 weights: [{ weight: 1, widths: [2.7, 2] }],
                 smoothness: 0.8,
-                spawnCabins: false,
+                spawnCabins: true,
                 masks: [],
             },
         },
@@ -113,6 +113,9 @@ export const mapDef: PartialMapDef = {
                 shack_01: 2,
             },
         ],
+        importantSpawns: [
+            "house_red_02",
+        ],
         randomSpawns: [
             {
                 spawns: [
@@ -122,12 +125,6 @@ export const mapDef: PartialMapDef = {
                     "bank_01",
                 ],
                 choose: 2,
-            },
-            {
-                spawns: [
-                    "house_red_02"
-                ],
-                choose: 1,
             },
         ],
         spawnReplacements: [
