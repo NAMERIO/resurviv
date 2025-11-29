@@ -8,7 +8,7 @@ const switchToSmallMap = false;
 const config = {
     mapSize: switchToSmallMap ? "small" : "large",
     places: 3,
-    mapWidth: 270,
+    mapWidth: 250,
     spawnDensity: 77,
 } as const;
 
@@ -55,7 +55,7 @@ export const mapDef: PartialMapDef = {
                 lakes: [],
                 weights: [{ weight: 1, widths: [2.7, 2] }],
                 smoothness: 0.8,
-                spawnCabins: true,
+                spawnCabins: false,
                 masks: [],
             },
         },
