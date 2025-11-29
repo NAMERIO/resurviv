@@ -657,6 +657,8 @@ export class Game {
                 json: {
                     logData,
                 },
+            }).catch((err) => {
+                this.logger.error(`Failed to fetch API save game:`, err);
             });
         } catch (err) {
             this.logger.error(`Failed to fetch API save game:`, err);

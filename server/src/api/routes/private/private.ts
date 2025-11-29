@@ -118,7 +118,6 @@ export const PrivateRouter = new Hono<Context>()
 
         const result = await db.insert(ipLogsTable).values(logData);
 
-        console.log({ result: result.rowCount });
         if (result.rowCount) {
             await logIpToDiscord(logData.username, logData.encodedIp);
         }

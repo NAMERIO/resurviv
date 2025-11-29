@@ -53,9 +53,10 @@ export const mapDef: PartialMapDef = {
             grassInset: 10,
             rivers: {
                 lakes: [],
-                weights: [{ weight: 1, widths: [2.7, 2] }],
-                smoothness: 0.8,
-                spawnCabins: false,
+                weights: [],
+                // weights: [{ weight: 1, widths: [2.7, 2] }],
+                // smoothness: 0.8,
+                // spawnCabins: false,
                 masks: [],
             },
         },

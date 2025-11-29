@@ -148,9 +148,9 @@ export class RiverCreator {
             (this.map.shoreInset + this.map.grassInset) / 9,
             3,
         );
-        const mapSize = Math.min(this.map.width, this.map.height);
-        const sizeScale = Math.max(mapSize / 512, 0.5);
-        maxPointsOutside = Math.ceil(maxPointsOutside / sizeScale);
+        // const mapSize = Math.min(this.map.width, this.map.height);
+        // const sizeScale = Math.max(mapSize / 512, 0.5);
+        // maxPointsOutside = Math.ceil(maxPointsOutside / sizeScale);
         if (isFactionRiver) maxPointsOutside *= 2;
         for (let i = 0, pointsOutsideGrass = 0; i < riverPoints.length; i++) {
             if (
