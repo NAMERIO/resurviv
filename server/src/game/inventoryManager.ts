@@ -68,6 +68,10 @@ export class InventoryManager {
     }
 
     getMaxCapacity(item: InventoryItem): number {
+        if (!this.isValid(item)) {
+            this.player.game.logger.warn(`Invalid item type: ${item}`);
+            return 0;
+        }   
         const bagLevel = this.player.getGearLevel(this.player.backpack);
         return this.bagSizes[item][bagLevel];
     }
@@ -128,6 +132,13 @@ export class InventoryManager {
         added: number;
         remaining: number;
     } {
+        if (!this.isValid(item)) {
+            this.player.game.logger.warn(`Invalid item type: ${item}`);
+            return {
+                added: 0,
+                remaining: 0,
+            };
+        }
         const result = this.give(item, amount);
 
         if (result.remaining > 0 && item !== "1xscope") {

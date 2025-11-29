@@ -84,6 +84,9 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
 
     data.player.weaponManager.setCurWeapIndex(WeaponSlot.Melee);
 
+    // clear inventory to prevent loot from dropping;
+    data.player.invManager.emptyAll();
+
     {
         // don't drop the melee weapon if it's selected from the loadout
         if (isItemInLoadout(data.player.weapons[WeaponSlot.Melee].type, "melee")) {
@@ -103,9 +106,6 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
             secondary.cooldown = 0;
         }
     }
-
-    // clear inventory to prevent loot from dropping;
-    data.player.invManager.emptyAll();
 
     // give the killer nades and gun ammo and inventory ammo
     if (data.source?.__type === ObjectType.Player) {
