@@ -121,7 +121,13 @@ export const mapDef: PartialMapDef = {
                     "police_01",
                     "bank_01",
                 ],
-                choose: config.mapSize === "large" ? 2 : 1,
+                choose: 2,
+            },
+            {
+                spawns: [
+                    "house_red_02"
+                ],
+                choose: 1,
             },
         ],
         spawnReplacements: [
