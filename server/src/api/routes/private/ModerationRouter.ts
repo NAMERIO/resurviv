@@ -116,7 +116,7 @@ export const ModerationRouter = new Hono()
         async (c) => {
             const { encodedIp } = c.req.valid("json");
 
-            fetch(`http://localhost:8001/api/kick_player_by_ip`, {
+            await fetch(`http://localhost:8001/api/kick_player_by_ip`, {
                 method: "POST",
                 headers: {
                     "content-type": "application/json",

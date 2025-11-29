@@ -10394,8 +10394,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         },
         loot: [tierLoot("tier_surviv", 2, 3), autoLoot("ak47", 1)],
     }),
-    stone_03: createRiverStone({
-    }),
+    stone_03: createRiverStone({}),
     stone_03tw: createRiverStone({
         img: {
             sprite: "map-stone-03tw.img",
@@ -13079,7 +13078,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         map: { displayType: "tree_01m" },
     }),
     cache_02sv: createCache({
-        mapObjects: [   
+        mapObjects: [
             {
                 type: "tree_03sv",
                 pos: v2.create(0, 0),

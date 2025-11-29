@@ -198,7 +198,7 @@ app.post("/api/kick_player_by_ip", (res, req) => {
 
     readPostedJSON(
         res,
-        async (body: FindGamePrivateBody) => {
+        (body: FindGamePrivateBody) => {
             try {
                 if (res.aborted) return;
                 const disconnectPlayer = z.object({

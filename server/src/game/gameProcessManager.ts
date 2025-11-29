@@ -202,7 +202,7 @@ export class GameProcessManager implements GameManager {
         }, 5000);
     }
 
-    async kickPlayerByIP(encodedIp: string) {
+    kickPlayerByIP(encodedIp: string) {
         for (const gameProc of this.processes) {
             if (gameProc.aliveCount > 0 && !gameProc.stopped) {
                 gameProc.send({
