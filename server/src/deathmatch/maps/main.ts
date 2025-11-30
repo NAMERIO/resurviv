@@ -8,7 +8,7 @@ const switchToSmallMap = false;
 const config = {
     mapSize: switchToSmallMap ? "small" : "large",
     places: 3,
-    mapWidth: 245,
+    mapWidth: 240,
     spawnDensity: 60,
 } as const;
 
@@ -32,7 +32,7 @@ export const mapDef: PartialMapDef = {
         particles: { camera: "falling_leaf_spring" },
     },
     assets: {
-        atlases: ["gradient", "loadout", "shared", "main", "cobalt"],
+        atlases: ["gradient", "loadout", "shared", "main", "cobalt", "woods"],
     },
     gameConfig: {
         planes: {
@@ -85,15 +85,11 @@ export const mapDef: PartialMapDef = {
             : [],
         fixedSpawns: [
             {
-                club_complex_01: 1,
-                warehouse_01: { odds: 0.5 },
-                house_red_01: { odds: 0.5 },
                 cache_01: 1,
                 cache_02: 1, // mosin tree
                 cache_07: 1,
                 bunker_structure_02: 1,
                 bunker_structure_05: 1,
-                // warehouse_complex_01: 1,
                 chest_01: 1,
                 chest_03: { odds: 0.2 },
                 stone_04: 2,
@@ -103,20 +99,25 @@ export const mapDef: PartialMapDef = {
                 teahouse_complex_01su: 1,
                 shack_03b: 3,
                 shack_01: 2,
+                mansion_structure_01: 1,
+                police_01: 1,
+                bank_01: 1,
+                greenhouse_01: 1,
+                house_red_02: 1,
             },
         ],
         importantSpawns: [
-            "bunker_structure_05",
+            "logging_complex_01tw",
+            "club_complex_01",
         ],
+        customSpawnRules: {
+            locationSpawns: [
+            ],
+        },
         randomSpawns: [
             {
-                spawns: [
-                    "mansion_structure_01",
-                    // "warehouse_complex_01",
-                    "police_01",
-                    "bank_01",
-                ],
-                choose: 2,
+                spawns: ["logging_complex_01tw",                     "club_complex_01"],
+                choose: 1,
             },
             {
                 spawns: [
@@ -129,8 +130,8 @@ export const mapDef: PartialMapDef = {
             },
             {
                 spawns: [
-                    "greenhouse_01",
-                    "house_red_02",
+                    "warehouse_01",
+                    "house_red_01",
                 ],
                 choose: 1,
             },
@@ -151,6 +152,7 @@ export const mapDef: PartialMapDef = {
         ],
         spawnReplacements: [
             {
+                tree_07: "tree_01tw",
                 tree_01: "tree_01tw",
                 stone_03: "stone_03tw",
                 stone_01: "stone_01cb",

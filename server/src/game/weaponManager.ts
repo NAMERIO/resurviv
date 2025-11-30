@@ -150,7 +150,7 @@ export class WeaponManager {
                 | ThrowableDef;
 
             const swappingToGun = nextWeaponDef.type == "gun";
-            const nerfDelay = Config.gameServer.thisRegion === "eu" ? 0.44 : 0.33;
+            const nerfDelay = 0.33;
             effectiveSwitchDelay = swappingToGun
                 ? nextWeaponDef.switchDelay * nerfDelay
                 : 0;
@@ -268,7 +268,8 @@ export class WeaponManager {
             this.weapons[i].recoilTime -= dt;
         }
 
-        if (this.weapons[this.curWeapIdx].cooldown <= 0 && this.scheduledReload) {
+        // if (this.weapons[this.curWeapIdx].cooldown <= 0 && this.scheduledReload) {
+        if (this.scheduledReload) {
             this.scheduledReload = false;
             this.tryReload();
         }

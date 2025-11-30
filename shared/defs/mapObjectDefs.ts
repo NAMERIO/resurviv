@@ -14344,6 +14344,10 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         teamId: 2,
     },
     logging_complex_01: createLoggingComplex({}),
+    logging_complex_01tw: createLoggingComplex({
+        groundTintLt: 0x2a2530,
+        groundTintDk: 0x1e1a21,
+    }),
     logging_complex_01sp: createLoggingComplex({
         groundTintLt: 0x334a0e,
         groundTintDk: 0x253210,
