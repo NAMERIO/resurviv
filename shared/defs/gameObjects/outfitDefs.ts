@@ -565,6 +565,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     }),
     outfitPreacher: defineOutfitSkin("outfitBase", {
         name: "Preacher",
+        noDropOnDeath: true,
         skinImg: {
             baseTint: 9586810,
             baseSprite: "player-base-02.img",
