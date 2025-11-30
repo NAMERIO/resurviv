@@ -584,6 +584,24 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+    outfitPreacher: defineOutfitSkin("outfitBase", {
+        name: "Preacher",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 9586810,
+            baseSprite: "player-base-02.img",
+            handTint: 9586810,
+            handSprite: "player-hands-02.img",
+            footTint: 9586810,
+            footSprite: "player-feet-02.img",
+            backpackTint: 9586810,
+            backpackSprite: "player-circle-base-02.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-01.img",
+            tint: 9586810,
+        },
+    }),
     outfitNoir: defineOutfitSkin("outfitBase", {
         name: "Neo Noir",
         skinImg: {

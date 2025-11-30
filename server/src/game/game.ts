@@ -6,7 +6,6 @@ import * as net from "../../../shared/net/net";
 import type { Loadout } from "../../../shared/utils/loadout";
 import { math } from "../../../shared/utils/math";
 import { v2 } from "../../../shared/utils/v2";
-import type { IpLogsTableInsert } from "../api/db/schema";
 import { Config } from "../config";
 import { ServerLogger } from "../utils/logger";
 import { apiPrivateRouter } from "../utils/serverHelpers";
@@ -30,7 +29,7 @@ import { Gas } from "./objects/gas";
 import { LootBarn } from "./objects/loot";
 import { MapIndicatorBarn } from "./objects/mapIndicator";
 import { PlaneBarn } from "./objects/plane";
-import { type Player, PlayerBarn } from "./objects/player";
+import { PlayerBarn } from "./objects/player";
 import { ProjectileBarn } from "./objects/projectile";
 import { SmokeBarn } from "./objects/smoke";
 import { PluginManager } from "./pluginManager";
@@ -634,36 +633,6 @@ export class Game {
                 JSON.stringify(values),
                 "utf8",
             );
-        }
-    }
-
-    logPlayerIp(player: Player) {
-        try {
-            const logData: IpLogsTableInsert = {
-                ip: player.ip,
-                findGameIp: player.findGameIp,
-                encodedIp: player.encodedIp,
-                findGameEncodedIp: player.findGameEncodedIp,
-                mapId: this.map.mapId,
-                region: Config.gameServer.thisRegion,
-                username: player.name,
-                userId: player.userId,
-                teamMode: this.teamMode,
-                gameId: this.id,
-            };
-
-            // we don't await
-            apiPrivateRouter.log_ip
-                .$post({
-                    json: {
-                        logData,
-                    },
-                })
-                .catch((err) => {
-                    this.logger.error(`Failed to fetch API save game:`, err);
-                });
-        } catch (err) {
-            this.logger.error(`Failed to fetch API save game:`, err);
         }
     }
 

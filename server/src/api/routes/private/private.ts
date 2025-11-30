@@ -10,7 +10,6 @@ import {
     zRemoveItemParams,
 } from "../../../../../shared/types/moderation";
 import { serverConfigPath } from "../../../config";
-import { logIpToDiscord } from "../../../utils/ipLogging";
 import { isBehindProxy } from "../../../utils/serverHelpers";
 import {
     type SaveGameBody,
@@ -29,8 +28,6 @@ import { getRedisClient } from "../../cache";
 import { leaderboardCache } from "../../cache/leaderboard";
 import { db } from "../../db";
 import {
-    type IpLogsTable,
-    ipLogsTable,
     itemsTable,
     type MatchDataTable,
     matchDataTable,
@@ -113,17 +110,6 @@ export const PrivateRouter = new Hono<Context>()
             return c.json({ state: enabled }, 200);
         },
     )
-    .post("/log_ip", databaseEnabledMiddleware, async (c) => {
-        const { logData } = (await c.req.json()) as { logData: IpLogsTable };
-
-        const result = await db.insert(ipLogsTable).values(logData);
-
-        if (result.rowCount) {
-            await logIpToDiscord(logData.username, logData.encodedIp);
-        }
-
-        return c.json({}, 200);
-    })
     .post("/save_game", databaseEnabledMiddleware, async (c) => {
         const data = (await c.req.json()) as SaveGameBody;
 

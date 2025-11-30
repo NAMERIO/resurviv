@@ -216,7 +216,7 @@ FactionPotato["lootTable"] = {
         // { name: "tier_katanas", count: 1, weight: 3 },
         { name: "naginata", count: 1, weight: 1 },
         { name: "m134", count: 1, weight: 1 },
-        { name: "rainbow_blaster", count: 1, weight: 1.3 },
+        // { name: "rainbow_blaster", count: 1, weight: 1.3 },
         { name: "potato_cannon", count: 1, weight: 1 },
         { name: "potato_smg", count: 1, weight: 1 },
     ],

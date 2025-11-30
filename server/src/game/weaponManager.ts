@@ -15,7 +15,6 @@ import { collisionHelpers } from "../../../shared/utils/collisionHelpers";
 import { math } from "../../../shared/utils/math";
 import { assert, util } from "../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../shared/utils/v2";
-import { Config } from "../config";
 import type { BulletParams } from "../game/objects/bullet";
 import type { GameObject } from "../game/objects/gameObject";
 import type { Player } from "../game/objects/player";
@@ -150,7 +149,7 @@ export class WeaponManager {
                 | ThrowableDef;
 
             const swappingToGun = nextWeaponDef.type == "gun";
-            const nerfDelay = Config.gameServer.thisRegion === "eu" ? 0.44 : 0.33;
+            const nerfDelay = 0.33;
             effectiveSwitchDelay = swappingToGun
                 ? nextWeaponDef.switchDelay * nerfDelay
                 : 0;
@@ -268,7 +267,8 @@ export class WeaponManager {
             this.weapons[i].recoilTime -= dt;
         }
 
-        if (this.weapons[this.curWeapIdx].cooldown <= 0 && this.scheduledReload) {
+        // if (this.weapons[this.curWeapIdx].cooldown <= 0 && this.scheduledReload) {
+        if (this.scheduledReload) {
             this.scheduledReload = false;
             this.tryReload();
         }

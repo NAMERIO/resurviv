@@ -8,8 +8,8 @@ const switchToSmallMap = false;
 const config = {
     mapSize: switchToSmallMap ? "small" : "large",
     places: 3,
-    mapWidth: 250,
-    spawnDensity: 77,
+    mapWidth: 225,
+    spawnDensity: 60,
 } as const;
 
 export const mapDef: PartialMapDef = {
@@ -32,7 +32,7 @@ export const mapDef: PartialMapDef = {
         particles: { camera: "falling_leaf_spring" },
     },
     assets: {
-        atlases: ["gradient", "loadout", "shared", "main", "cobalt"],
+        atlases: ["gradient", "loadout", "shared", "main", "cobalt", "woods"],
     },
     gameConfig: {
         planes: {
@@ -85,20 +85,13 @@ export const mapDef: PartialMapDef = {
             : [],
         fixedSpawns: [
             {
-                club_complex_01: 1,
-                warehouse_01: { odds: 0.5 },
-                house_red_01: { odds: 0.5 },
-                barn_02: 1,
-                barn_01: { odds: 0.5 },
                 cache_01: 1,
                 cache_02: 1, // mosin tree
                 cache_07: 1,
                 bunker_structure_02: 1,
-                // warehouse_complex_01: 1,
+                bunker_structure_05: 1,
                 chest_01: 1,
                 chest_03: { odds: 0.2 },
-                mil_crate_02: { odds: 0.5 },
-                mil_crate_03: { odds: 0.5 },
                 stone_04: 2,
                 stone_05: 2,
                 stone_03: 5,
@@ -106,17 +99,21 @@ export const mapDef: PartialMapDef = {
                 teahouse_complex_01su: 1,
                 shack_03b: 3,
                 shack_01: 2,
+                mansion_structure_01: 1,
+                police_01: 1,
+                bank_01: 1,
+                greenhouse_01: 1,
+                house_red_02: 1,
             },
         ],
+        importantSpawns: ["logging_complex_01tw", "club_complex_01"],
+        customSpawnRules: {
+            locationSpawns: [],
+        },
         randomSpawns: [
             {
-                spawns: [
-                    "mansion_structure_01",
-                    // "warehouse_complex_01",
-                    "police_01",
-                    "bank_01",
-                ],
-                choose: 2,
+                spawns: ["logging_complex_01tw", "club_complex_01"],
+                choose: 1,
             },
             {
                 spawns: [
@@ -128,24 +125,21 @@ export const mapDef: PartialMapDef = {
                 choose: 1,
             },
             {
-                spawns: ["greenhouse_01", "house_red_02"],
+                spawns: ["warehouse_01", "house_red_01"],
                 choose: 1,
             },
             {
-                spawns: [
-                    "bunker_structure_04",
-                    "bunker_structure_05",
-                    "bunker_structure_05",
-                    "bunker_structure_05",
-                    "bunker_structure_05",
-                    "bunker_structure_05",
-                    "bunker_structure_05",
-                ],
+                spawns: ["mil_crate_02", "mil_crate_03"],
+                choose: 1,
+            },
+            {
+                spawns: ["barn_02", "barn_01"],
                 choose: 1,
             },
         ],
         spawnReplacements: [
             {
+                tree_07: "tree_01tw",
                 tree_01: "tree_01tw",
                 stone_03: "stone_03tw",
                 stone_01: "stone_01cb",
@@ -168,7 +162,7 @@ DeatchmatchMain["lootTable"] = {
         // { name: "tier_katanas", count: 1, weight: 3 },
         { name: "naginata", count: 1, weight: 1 },
         { name: "m134", count: 1, weight: 1 },
-        { name: "rainbow_blaster", count: 1, weight: 1.3 },
+        // { name: "rainbow_blaster", count: 1, weight: 1.3 },
     ],
     tier_police: [
         { name: "saiga", count: 1, weight: 1 },
