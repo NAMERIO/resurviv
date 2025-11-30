@@ -8,7 +8,7 @@ const switchToSmallMap = false;
 const config = {
     mapSize: switchToSmallMap ? "small" : "large",
     places: 3,
-    mapWidth: 240,
+    mapWidth: 225,
     spawnDensity: 60,
 } as const;
 
