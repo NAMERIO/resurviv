@@ -295,7 +295,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             aboveHand: false,
         },
         lootImg: {
-            sprite: "loot-shirt-01.img",
+            sprite: "loot-kxr-outfit.img",
             tint: 0x6a8854,
         },
         rarity: 3,
