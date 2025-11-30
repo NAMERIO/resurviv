@@ -62,26 +62,26 @@ export const mapDef: PartialMapDef = {
         },
         places: Main.mapGen
             ? Array(config.places)
-                .fill(false)
-                .map(() => {
-                    return Main.mapGen?.places[
-                        Math.floor(Math.random() * Main.mapGen.places.length)
-                    ];
-                })
+                  .fill(false)
+                  .map(() => {
+                      return Main.mapGen?.places[
+                          Math.floor(Math.random() * Main.mapGen.places.length)
+                      ];
+                  })
             : [],
-        // @ts-expect-error figure me out later 
+        // @ts-expect-error figure me out later
         densitySpawns: Main.mapGen
             ? Main.mapGen.densitySpawns.reduce(
-                (array, item) => {
-                    let object: Record<string, number> = {};
-                    for (const [key, value] of Object.entries(item)) {
-                        object[key] = (value * config.spawnDensity) / 100;
-                    }
-                    array.push(object);
-                    return array;
-                },
-                [] as Record<string, number>[],
-            )
+                  (array, item) => {
+                      let object: Record<string, number> = {};
+                      for (const [key, value] of Object.entries(item)) {
+                          object[key] = (value * config.spawnDensity) / 100;
+                      }
+                      array.push(object);
+                      return array;
+                  },
+                  [] as Record<string, number>[],
+              )
             : [],
         fixedSpawns: [
             {
@@ -106,17 +106,13 @@ export const mapDef: PartialMapDef = {
                 house_red_02: 1,
             },
         ],
-        importantSpawns: [
-            "logging_complex_01tw",
-            "club_complex_01",
-        ],
+        importantSpawns: ["logging_complex_01tw", "club_complex_01"],
         customSpawnRules: {
-            locationSpawns: [
-            ],
+            locationSpawns: [],
         },
         randomSpawns: [
             {
-                spawns: ["logging_complex_01tw",                     "club_complex_01"],
+                spawns: ["logging_complex_01tw", "club_complex_01"],
                 choose: 1,
             },
             {
@@ -129,26 +125,17 @@ export const mapDef: PartialMapDef = {
                 choose: 1,
             },
             {
-                spawns: [
-                    "warehouse_01",
-                    "house_red_01",
-                ],
+                spawns: ["warehouse_01", "house_red_01"],
                 choose: 1,
             },
             {
-                spawns: [
-                    "mil_crate_02",
-                    "mil_crate_03"
-                ],
+                spawns: ["mil_crate_02", "mil_crate_03"],
                 choose: 1,
             },
             {
-                spawns: [
-                    "barn_02",
-                    "barn_01",
-                ],
+                spawns: ["barn_02", "barn_01"],
                 choose: 1,
-            }
+            },
         ],
         spawnReplacements: [
             {

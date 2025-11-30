@@ -40,10 +40,12 @@ import type { Loadout } from "../../../../shared/utils/loadout";
 import { math } from "../../../../shared/utils/math";
 import { assert, util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
+import type { IpLogsTableInsert } from "../../api/db/schema";
 import { hashIp } from "../../api/routes/private/ModerationRouter";
 import { Config } from "../../config";
 import { isItemInLoadout, onPlayerJoin, onPlayerKill } from "../../plugins/deathmatch";
 import { IDAllocator } from "../../utils/IDAllocator";
+import { logIpToDiscord } from "../../utils/ipLogging";
 import { validateUserName } from "../../utils/serverHelpers";
 import type { Game, JoinTokenData } from "../game";
 import { Group, Team } from "../group";
@@ -54,8 +56,6 @@ import { BaseGameObject, type DamageParams, type GameObject } from "./gameObject
 import type { Loot } from "./loot";
 import type { MapIndicator } from "./mapIndicator";
 import type { Obstacle } from "./obstacle";
-import type { IpLogsTableInsert } from "../../api/db/schema";
-import { logIpToDiscord } from "../../utils/ipLogging";
 
 function generateTempUsername() {
     return generateUsername("-", 0, net.Constants.PlayerNameMaxLen, "random");
@@ -4861,7 +4861,7 @@ export class Player extends BaseGameObject {
             };
 
             // we don't await
-            logIpToDiscord(logData.username, logData.encodedIp)
+            logIpToDiscord(logData.username, logData.encodedIp);
         } catch (err) {
             game.logger.error(`Failed to fetch API save game:`, err);
         }

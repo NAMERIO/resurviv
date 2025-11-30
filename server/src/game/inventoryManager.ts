@@ -71,7 +71,7 @@ export class InventoryManager {
         if (!this.isValid(item)) {
             this.player.game.logger.warn(`Invalid item type: ${item}`);
             return 0;
-        }   
+        }
         const bagLevel = this.player.getGearLevel(this.player.backpack);
         return this.bagSizes[item][bagLevel];
     }
@@ -183,7 +183,7 @@ export class InventoryManager {
             this.player.game.logger.warn(`Item definition not found for: ${item}`);
             return;
         }
-        
+
         switch (def.type) {
             case "scope": {
                 // switch to a lower scope if the scope dropped is the equipped one

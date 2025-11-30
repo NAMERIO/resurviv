@@ -10,7 +10,6 @@ import {
     zRemoveItemParams,
 } from "../../../../../shared/types/moderation";
 import { serverConfigPath } from "../../../config";
-import { logIpToDiscord } from "../../../utils/ipLogging";
 import { isBehindProxy } from "../../../utils/serverHelpers";
 import {
     type SaveGameBody,
@@ -29,8 +28,6 @@ import { getRedisClient } from "../../cache";
 import { leaderboardCache } from "../../cache/leaderboard";
 import { db } from "../../db";
 import {
-    type IpLogsTable,
-    ipLogsTable,
     itemsTable,
     type MatchDataTable,
     matchDataTable,
