@@ -280,6 +280,27 @@ const SkinDefs: Record<string, OutfitDef> = {
         rarity: 3,
         lore: "For those who wield the power of the pan.",
     }),
+    outfitKxrLogo: defineOutfitSkin("outfitBase", {
+        name: "KxrClient's logo skin",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0x567042,
+            baseSprite: "player-base-kxr.img",
+            handTint: 0x6a8854,
+            handSprite: "player-hands-01.img",
+            footTint: 0x4a6038,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x62804c,
+            backpackSprite: "player-circle-base-01.img",
+            aboveHand: false,
+        },
+        lootImg: {
+            sprite: "loot-kxr-outfit.img",
+            tint: 0x6a8854,
+        },
+        rarity: 3,
+        lore: "For those who uses KxrClient :3",
+    }),
     outfitPolice: defineOutfitSkin("outfitBase", {
         name: "Police",
         noDropOnDeath: true,
