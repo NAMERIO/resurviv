@@ -179,6 +179,11 @@ export class InventoryManager {
     private _onItemRemoved(item: InventoryItem) {
         const def = GameObjectDefs[item];
 
+        if (!def) {
+            this.player.game.logger.warn(`Item definition not found for: ${item}`);
+            return;
+        }
+        
         switch (def.type) {
             case "scope": {
                 // switch to a lower scope if the scope dropped is the equipped one
@@ -207,6 +212,11 @@ export class InventoryManager {
      */
     private _onItemAdded(item: InventoryItem) {
         const def = GameObjectDefs[item];
+
+        if (!def) {
+            this.player.game.logger.warn(`Item definition not found for: ${item}`);
+            return;
+        }
 
         switch (def.type) {
             case "scope": {
