@@ -69,7 +69,7 @@ export const mapDef: PartialMapDef = {
                       ];
                   })
             : [],
-        // @ts-expect-error figure me out later 
+        // @ts-expect-error figure me out later
         densitySpawns: Main.mapGen
             ? Main.mapGen.densitySpawns.reduce(
                   (array, item) => {
@@ -128,13 +128,10 @@ export const mapDef: PartialMapDef = {
                 choose: 1,
             },
             {
-                spawns: [
-                    
-                    "greenhouse_01",
-                    "house_red_02",
-                ],
+                spawns: ["greenhouse_01", "house_red_02"],
                 choose: 1,
-            }, {
+            },
+            {
                 spawns: [
                     "bunker_structure_04",
                     "bunker_structure_05",
@@ -145,7 +142,7 @@ export const mapDef: PartialMapDef = {
                     "bunker_structure_05",
                 ],
                 choose: 1,
-            }
+            },
         ],
         spawnReplacements: [
             {

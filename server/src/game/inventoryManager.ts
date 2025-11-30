@@ -71,7 +71,7 @@ export class InventoryManager {
         if (!this.isValid(item)) {
             this.player.game.logger.warn(`Invalid item type: ${item}`);
             return 0;
-        }   
+        }
         const bagLevel = this.player.getGearLevel(this.player.backpack);
         return this.bagSizes[item][bagLevel];
     }

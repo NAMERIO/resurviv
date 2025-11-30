@@ -653,13 +653,15 @@ export class Game {
             };
 
             // we don't await
-            apiPrivateRouter.log_ip.$post({
-                json: {
-                    logData,
-                },
-            }).catch((err) => {
-                this.logger.error(`Failed to fetch API save game:`, err);
-            });
+            apiPrivateRouter.log_ip
+                .$post({
+                    json: {
+                        logData,
+                    },
+                })
+                .catch((err) => {
+                    this.logger.error(`Failed to fetch API save game:`, err);
+                });
         } catch (err) {
             this.logger.error(`Failed to fetch API save game:`, err);
         }
