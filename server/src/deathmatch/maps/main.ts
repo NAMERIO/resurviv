@@ -8,8 +8,8 @@ const switchToSmallMap = false;
 const config = {
     mapSize: switchToSmallMap ? "small" : "large",
     places: 3,
-    mapWidth: 250,
-    spawnDensity: 77,
+    mapWidth: 245,
+    spawnDensity: 60,
 } as const;
 
 export const mapDef: PartialMapDef = {
@@ -62,43 +62,40 @@ export const mapDef: PartialMapDef = {
         },
         places: Main.mapGen
             ? Array(config.places)
-                  .fill(false)
-                  .map(() => {
-                      return Main.mapGen?.places[
-                          Math.floor(Math.random() * Main.mapGen.places.length)
-                      ];
-                  })
+                .fill(false)
+                .map(() => {
+                    return Main.mapGen?.places[
+                        Math.floor(Math.random() * Main.mapGen.places.length)
+                    ];
+                })
             : [],
         // @ts-expect-error figure me out later 
         densitySpawns: Main.mapGen
             ? Main.mapGen.densitySpawns.reduce(
-                  (array, item) => {
-                      let object: Record<string, number> = {};
-                      for (const [key, value] of Object.entries(item)) {
-                          object[key] = (value * config.spawnDensity) / 100;
-                      }
-                      array.push(object);
-                      return array;
-                  },
-                  [] as Record<string, number>[],
-              )
+                (array, item) => {
+                    let object: Record<string, number> = {};
+                    for (const [key, value] of Object.entries(item)) {
+                        object[key] = (value * config.spawnDensity) / 100;
+                    }
+                    array.push(object);
+                    return array;
+                },
+                [] as Record<string, number>[],
+            )
             : [],
         fixedSpawns: [
             {
                 club_complex_01: 1,
                 warehouse_01: { odds: 0.5 },
                 house_red_01: { odds: 0.5 },
-                barn_02: 1,
-                barn_01: { odds: 0.5 },
                 cache_01: 1,
                 cache_02: 1, // mosin tree
                 cache_07: 1,
                 bunker_structure_02: 1,
+                bunker_structure_05: 1,
                 // warehouse_complex_01: 1,
                 chest_01: 1,
                 chest_03: { odds: 0.2 },
-                mil_crate_02: { odds: 0.5 },
-                mil_crate_03: { odds: 0.5 },
                 stone_04: 2,
                 stone_05: 2,
                 stone_03: 5,
@@ -107,6 +104,9 @@ export const mapDef: PartialMapDef = {
                 shack_03b: 3,
                 shack_01: 2,
             },
+        ],
+        importantSpawns: [
+            "bunker_structure_05",
         ],
         randomSpawns: [
             {
@@ -129,20 +129,22 @@ export const mapDef: PartialMapDef = {
             },
             {
                 spawns: [
-                    
                     "greenhouse_01",
                     "house_red_02",
                 ],
                 choose: 1,
-            }, {
+            },
+            {
                 spawns: [
-                    "bunker_structure_04",
-                    "bunker_structure_05",
-                    "bunker_structure_05",
-                    "bunker_structure_05",
-                    "bunker_structure_05",
-                    "bunker_structure_05",
-                    "bunker_structure_05",
+                    "mil_crate_02",
+                    "mil_crate_03"
+                ],
+                choose: 1,
+            },
+            {
+                spawns: [
+                    "barn_02",
+                    "barn_01",
                 ],
                 choose: 1,
             }
