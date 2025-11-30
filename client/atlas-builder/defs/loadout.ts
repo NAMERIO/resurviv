@@ -890,6 +890,7 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-base-underbrush.svg",
         "player/player-base-venom.svg",
         "player/player-base-village-ninja.svg",
+        "player/player-base-kxs.img",
         "player/player-base-viper.svg",
         "player/player-base-wood-fire.svg",
         "player/player-base-wooland.svg",
