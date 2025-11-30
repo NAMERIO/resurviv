@@ -171,7 +171,7 @@ DeatchmatchMain["lootTable"] = {
         // { name: "tier_katanas", count: 1, weight: 3 },
         { name: "naginata", count: 1, weight: 1 },
         { name: "m134", count: 1, weight: 1 },
-        { name: "rainbow_blaster", count: 1, weight: 1.3 },
+        // { name: "rainbow_blaster", count: 1, weight: 1.3 },
     ],
     tier_police: [
         { name: "saiga", count: 1, weight: 1 },
