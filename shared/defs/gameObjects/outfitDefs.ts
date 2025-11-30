@@ -285,7 +285,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         noDropOnDeath: true,
         skinImg: {
             baseTint: 0x567042,
-            baseSprite: "player-base-kxs.img",
+            baseSprite: "player-base-kxr.img",
             handTint: 0x6a8854,
             handSprite: "player-hands-01.img",
             footTint: 0x4a6038,
