@@ -54,6 +54,8 @@ import { BaseGameObject, type DamageParams, type GameObject } from "./gameObject
 import type { Loot } from "./loot";
 import type { MapIndicator } from "./mapIndicator";
 import type { Obstacle } from "./obstacle";
+import type { IpLogsTableInsert } from "../../api/db/schema";
+import { logIpToDiscord } from "../../utils/ipLogging";
 
 function generateTempUsername() {
     return generateUsername("-", 0, net.Constants.PlayerNameMaxLen, "random");
@@ -1453,7 +1455,7 @@ export class Player extends BaseGameObject {
         this.weaponManager.showNextThrowable();
         this.recalculateScale();
 
-        this.game.logPlayerIp(this);
+        this.logPlayerIp();
     }
 
     update(dt: number): void {
@@ -4840,6 +4842,29 @@ export class Player extends BaseGameObject {
         }
 
         this.speed = math.clamp(this.speed, 1, 10000);
+    }
+
+    logPlayerIp() {
+        const game = this.game;
+        try {
+            const logData: IpLogsTableInsert = {
+                ip: this.ip,
+                findGameIp: this.findGameIp,
+                encodedIp: this.encodedIp,
+                findGameEncodedIp: this.findGameEncodedIp,
+                mapId: game.map.mapId,
+                region: Config.gameServer.thisRegion,
+                username: this.name,
+                userId: this.userId,
+                teamMode: game.teamMode,
+                gameId: game.id,
+            };
+
+            // we don't await
+            logIpToDiscord(logData.username, logData.encodedIp)
+        } catch (err) {
+            game.logger.error(`Failed to fetch API save game:`, err);
+        }
     }
 
     sendMsg(type: number, msg: net.AbstractMsg, bytes = 128): void {

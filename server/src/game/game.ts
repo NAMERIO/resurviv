@@ -637,34 +637,6 @@ export class Game {
         }
     }
 
-    logPlayerIp(player: Player) {
-        try {
-            const logData: IpLogsTableInsert = {
-                ip: player.ip,
-                findGameIp: player.findGameIp,
-                encodedIp: player.encodedIp,
-                findGameEncodedIp: player.findGameEncodedIp,
-                mapId: this.map.mapId,
-                region: Config.gameServer.thisRegion,
-                username: player.name,
-                userId: player.userId,
-                teamMode: this.teamMode,
-                gameId: this.id,
-            };
-
-            // we don't await
-            apiPrivateRouter.log_ip.$post({
-                json: {
-                    logData,
-                },
-            }).catch((err) => {
-                this.logger.error(`Failed to fetch API save game:`, err);
-            });
-        } catch (err) {
-            this.logger.error(`Failed to fetch API save game:`, err);
-        }
-    }
-
     /**
      * Steps the game X seconds in the future
      * This is done in smaller steps of 0.1 seconds
