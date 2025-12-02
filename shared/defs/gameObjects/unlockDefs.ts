@@ -45,6 +45,7 @@ const _allowedOutfits = [
     "outfitBase",
     "outfitTurkey",
     "outfitGrich",
+    "outfitSnowman",
     "outfitFireball",
     "outfitSpeedoSunburn",
     "outfitDev",
