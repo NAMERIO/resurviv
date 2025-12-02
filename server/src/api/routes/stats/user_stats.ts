@@ -107,7 +107,7 @@ async function userStatsSqlQuery(
             slug: usersTable.slug,
             username: usersTable.username,
             banned: usersTable.banned,
-            player_icon: sql`JSON_EXTRACT_PATH(ANY_VALUE(${usersTable.loadout}), 'player_icon')`,
+            player_icon: sql`JSON_EXTRACT_PATH(MAX(${usersTable.loadout}::jsonb), 'player_icon')`,
             games: sql`COALESCE(SUM("mode_stats".games), 0)`,
             wins: sql`COALESCE(SUM("mode_stats".wins), 0)`,
             kills: sql`COALESCE(SUM("mode_stats".kills), 0)`,
