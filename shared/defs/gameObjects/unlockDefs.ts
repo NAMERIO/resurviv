@@ -89,7 +89,9 @@ const _allowedOutfits = [
     "outfitPolice",
     "outfitKxrLogo",
     "outfitThePro",
-    // "outfitChewieCheese"
+    // "outfitChewieCheese",
+    // "outfitChemisTree",
+    // "outfitWinter",
 ];
 const _allowedEmotes = [
     "emote_thumbsup",

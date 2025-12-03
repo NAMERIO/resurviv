@@ -174,6 +174,10 @@ export class ExplosionBarn {
             if (explosion.type === "explosion_potato_smgshot") {
                 obj.incrementFat();
             }
+
+            if (explosion.type === "explosion_snow_cannonball") {
+                obj.dropRandomLoot();
+            }
         }
 
         if (obj.__type === ObjectType.Obstacle) {
