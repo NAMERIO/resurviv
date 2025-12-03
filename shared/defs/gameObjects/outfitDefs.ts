@@ -384,6 +384,26 @@ const SkinDefs: Record<string, OutfitDef> = {
         rarity: 3,
         lore: "Custom outfit for Stepz for winning tournament.",
     }),
+    outfitThePro: defineOutfitSkin("outfitBase", {
+        name: "The Pro",
+        noDropOnDeath: true,
+        rarity: Rarity.Rare,
+        lore: "For those who wear their wins",
+        skinImg: {
+            baseTint: 0xedc078,
+            baseSprite: "player-base-01.img",
+            handTint: 0x325c62,
+            handSprite: "player-hands-01.img",
+            footTint: 0x325c62,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x274659,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitThePro.img",
+            tint: 0xffffff,
+        },
+    }),
 
     outfitFireball: defineOutfitSkin("outfitBase", {
         name: "Fireball",

@@ -88,6 +88,7 @@ const _allowedOutfits = [
     "outfitWhite",
     "outfitPolice",
     "outfitKxrLogo",
+    "outfitThePro",
     // "outfitChewieCheese"
 ];
 const _allowedEmotes = [
