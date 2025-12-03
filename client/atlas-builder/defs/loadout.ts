@@ -519,6 +519,7 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/loot-stepz-outfit.svg",
         "loot/loot-kxr-outfit.svg",
         "loot/loot-snowman-outfit.svg",
+        "loot/loot-shirt-outfitThePro.svg",
 
         "loot/loot-throwable-frag-egg.svg",
         "loot/loot-throwable-frag.svg",
