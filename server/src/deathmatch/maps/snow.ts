@@ -167,35 +167,28 @@ const mapDef = {
                     : [],
         fixedSpawns: [
             {
-                // club_complex_01: 1,
-                // small is spawn count for solos and duos, large is spawn count for squads
-                warehouse_01: { odds: 0.5 },
-                house_red_01: config.mapSize === "large" ? 1 : { odds: 0.5 },
-                // house_red_02: 1,
-                // barn_01: { small: 1, large: 3 },
-                // barn_02: 1,
+                cache_01: 1,
+                cache_02: 1, // mosin tree
+                cache_07: 1,
+                bunker_structure_02: 1,
+                bunker_structure_05: 1,
+                chest_01: 1,
+                chest_03: { odds: 0.2 },
+                stone_04: 2,
+                stone_05: 2,
+                stone_03: 5,
+                tree_02: 3,
+                teahouse_complex_01su: 1,
+                shack_03b: 3,
+                shack_01: 2,
+                mansion_structure_01: 1,
+                police_01: 1,
+                bank_01: 1,
+                greenhouse_01: 1,
+                house_red_02: 1,
                 hut_01: 2,
                 hut_02: 1, // spas hut
                 hut_03: 1, // scout hut
-                greenhouse_01: 1,
-                cache_01: 1,
-                cache_02: { odds: 0.8 }, // mosin tree
-                cache_07: 1,
-                // bunker_structure_01: { odds: 0.05 },
-                bunker_structure_02: config.mapSize === "large" ? 1 : 0,
-                // bunker_structure_03: 1,
-                // bunker_structure_04: 1,
-                // bunker_structure_05: 1,
-                // warehouse_complex_01: 1,
-                chest_01: 1,
-                chest_03: { odds: 0.2 },
-                mil_crate_02: { odds: 0.4 },
-                mil_crate_03: config.mapSize === "large" ? { odds: 0.4 } : 0,
-                stone_04: 1,
-                tree_02: 3,
-                tree_01: 50,
-                teahouse_complex_01su: { odds: 0.5 },
-                // stone_04: 1,
             },
         ],
         importantSpawns: ["logging_complex_01sn", "club_complex_01"],
@@ -204,7 +197,7 @@ const mapDef = {
         },
         randomSpawns: [
             {
-                spawns: ["logging_complex_01sn"],
+                spawns: ["logging_complex_01sn", "club_complex_01"],
                 choose: 1,
             },
             {
