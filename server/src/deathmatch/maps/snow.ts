@@ -186,9 +186,8 @@ const mapDef = {
                 bank_01: 1,
                 greenhouse_01: 1,
                 house_red_02: 1,
-                hut_01: 2,
-                hut_02: 1, // spas hut
-                hut_03: 1, // scout hut
+                bush_01: 15,
+                crate_03x: 7,
             },
         ],
         importantSpawns: ["logging_complex_01sn", "club_complex_01"],
