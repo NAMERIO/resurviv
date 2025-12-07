@@ -17,6 +17,7 @@ const mapDef = {
         name: "Snow",
         icon: "img/loot/loot-throwable-snowball.svg",
         buttonCss: "btn-mode-snow",
+        backgroundImg: "img/main_splash_0_6_11.png",
     },
     assets: {
         audio: [
