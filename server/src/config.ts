@@ -11,8 +11,9 @@ export const Config = getConfig(isProd, serverConfigPath);
 const BACKPACK_LEVEL = 3;
 
 util.mergeDeep(Config, {
+    clientTheme: "snow",
     modes: [
-        { mapName: "main", teamMode: TeamMode.Solo, enabled: true },
+        { mapName: "snow", teamMode: TeamMode.Solo, enabled: true },
         { mapName: "main", teamMode: TeamMode.Duo, enabled: false },
         { mapName: "main", teamMode: TeamMode.Squad, enabled: false },
     ],
@@ -30,7 +31,7 @@ util.mergeDeep(Config, {
             strobe: 1,
             mine: 1,
             mirv: 1,
-            snow: 3,
+            snowball: 3,
             bandage: GameConfig.bagSizes["bandage"][BACKPACK_LEVEL],
             healthkit: GameConfig.bagSizes["healthkit"][BACKPACK_LEVEL],
             soda: GameConfig.bagSizes["soda"][BACKPACK_LEVEL],
