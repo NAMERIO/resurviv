@@ -176,7 +176,16 @@ export class ExplosionBarn {
             }
 
             if (explosion.type === "explosion_snow_cannonball") {
-                obj.dropRandomLoot();
+                const source = explosion.damageParams.source;
+
+                const isSelfHit =
+                    source &&
+                    source.__type === ObjectType.Player &&
+                    source === obj;
+
+                if (!isSelfHit) {
+                    obj.dropRandomLoot();
+                }
             }
         }
 
