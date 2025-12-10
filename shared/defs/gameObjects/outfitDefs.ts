@@ -1213,7 +1213,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     }),
     outfitCarbonFiber: defineOutfitSkin("outfitBase", {
         name: "Carbon Fiber",
-        noDropOnDeath: true,
+        // noDropOnDeath: true,
         rarity: Rarity.Uncommon,
         lore: "Military-grade, fine spun filament.",
         skinImg: {
@@ -1233,7 +1233,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     }),
     outfitDarkGloves: defineOutfitSkin("outfitBase", {
         name: "The Professional",
-        noDropOnDeath: true,
+        // noDropOnDeath: true,
         rarity: Rarity.Uncommon,
         lore: "True survivrs wear the dark gloves.",
         skinImg: {
@@ -1328,7 +1328,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     }),
     outfitRed: defineOutfitSkin("outfitBase", {
         name: "Target Practice",
-        noDropOnDeath: true,
+        // noDropOnDeath: true,
         rarity: Rarity.Common,
         lore: "On the plus side, they won't see you bleed.",
         skinImg: {
@@ -1348,7 +1348,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     }),
     outfitWhite: defineOutfitSkin("outfitBase", {
         name: "Arctic Avenger",
-        noDropOnDeath: true,
+        // noDropOnDeath: true,
         rarity: Rarity.Common,
         lore: "No business like snow business.",
         skinImg: {

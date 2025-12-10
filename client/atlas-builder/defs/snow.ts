@@ -8,6 +8,9 @@ export const SnowAtlas: AtlasDef = {
         ...BuildingSprites.bunker_hydra,
         ...BuildingSprites.greenhouse_aged,
         ...BuildingSprites.bunker_chrys_aged,
+        ...BuildingSprites.bunker_crossing,
+
+        "map/map-plane-01x.svg",
 
         "map/map-airdrop-01x.svg",
         "map/map-airdrop-02x.svg",
@@ -19,6 +22,9 @@ export const SnowAtlas: AtlasDef = {
         "map/map-crate-01x.svg",
         "map/map-crate-02x.svg",
         "map/map-crate-03x.svg",
+
+        "map/map-case-meteor-01.svg",
+        "map/map-case-meteor-res-01.svg",
 
         "map/map-snow-01.svg",
         "map/map-snow-02.svg",
