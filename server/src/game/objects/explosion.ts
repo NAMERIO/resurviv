@@ -174,6 +174,17 @@ export class ExplosionBarn {
             if (explosion.type === "explosion_potato_smgshot") {
                 obj.incrementFat();
             }
+
+            if (explosion.type === "explosion_snow_cannonball") {
+                const source = explosion.damageParams.source;
+
+                const isSelfHit =
+                    source && source.__type === ObjectType.Player && source === obj;
+
+                if (!isSelfHit) {
+                    obj.dropRandomLoot();
+                }
+            }
         }
 
         if (obj.__type === ObjectType.Obstacle) {

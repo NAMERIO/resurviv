@@ -45,6 +45,7 @@ const _allowedOutfits = [
     "outfitBase",
     "outfitTurkey",
     "outfitGrich",
+    "outfitSnowman",
     "outfitFireball",
     "outfitSpeedoSunburn",
     "outfitDev",
@@ -86,7 +87,11 @@ const _allowedOutfits = [
     "outfitRed",
     "outfitWhite",
     "outfitPolice",
-    // "outfitChewieCheese"
+    "outfitKxrLogo",
+    "outfitThePro",
+    "outfitChewieCheese",
+    "outfitChemisTree",
+    "outfitWinter",
 ];
 const _allowedEmotes = [
     "emote_thumbsup",

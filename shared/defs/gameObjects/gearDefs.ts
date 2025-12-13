@@ -623,6 +623,22 @@ const AmmoDefs: Record<string, AmmoDef> = {
             pickup: "ammo_pickup_01",
         },
     },
+    snow_ammo: {
+        name: "Snow Ammo",
+        type: "ammo",
+        special: true,
+        hideUi: true,
+        minStackSize: 10,
+        lootImg: {
+            sprite: "loot-ammo-box.img",
+            scale: 0.2,
+            tint: 0xa7d8ff,
+            tintDark: 0x7fcaff,
+        },
+        sound: {
+            pickup: "ammo_pickup_01",
+        },
+    },
 };
 
 const BaseDefs = {

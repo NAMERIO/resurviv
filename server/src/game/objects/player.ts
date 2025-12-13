@@ -14,7 +14,6 @@ import {
     type HealDef,
     type HelmetDef,
     SCOPE_LEVELS,
-    type ScopeDef,
 } from "../../../../shared/defs/gameObjects/gearDefs";
 import type { GunDef } from "../../../../shared/defs/gameObjects/gunDefs";
 import type { MeleeDef } from "../../../../shared/defs/gameObjects/meleeDefs";
@@ -943,21 +942,17 @@ export class Player extends BaseGameObject {
             // for non faction modes where teamId > 2, just cycles between blue and red teamId
             const clampedTeamId = ((this.teamId - 1) % 2) + 1;
 
-            // inventory and scope
-            for (const [key, value] of Object.entries(roleDef.defaultItems.inventory) as [
-                InventoryItem,
-                number,
-            ][]) {
-                if (value == 0) continue; // prevents overwriting existing inventory
-
-                // only sets scope if scope in inventory is higher than current scope
-                const invDef = GameObjectDefs[key];
-                const currScope = GameObjectDefs[this.scope] as ScopeDef;
-                if (invDef.type == "scope" && invDef.level > currScope.level) {
-                    this.scope = key;
+            // give backpack before heals/ammos
+            if (roleDef.defaultItems.backpack) {
+                if (this.backpack) {
+                    this.dropBackPackCopy(this.backpack);
                 }
+                this.backpack = roleDef.defaultItems.backpack;
+            }
 
-                this.invManager.giveAndDrop(key, value);
+            // inventory and scope
+            for (const [key, value] of Object.entries(roleDef.defaultItems.inventory)) {
+                this.invManager.giveAndDrop(key as InventoryItem, value);
             }
 
             // outfit
@@ -994,12 +989,6 @@ export class Player extends BaseGameObject {
                     this.dropArmor(this.chest);
                 }
                 this.chest = roleDef.defaultItems.chest;
-            }
-            if (roleDef.defaultItems.backpack) {
-                if (this.backpack) {
-                    this.dropBackPackCopy(this.backpack);
-                }
-                this.backpack = roleDef.defaultItems.backpack;
             }
 
             // weapons

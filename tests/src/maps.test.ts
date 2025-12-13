@@ -1,6 +1,6 @@
 import "./testHelpers";
 import { describe, expect, test } from "vitest";
-
+import { Atlases } from "../../client/atlas-builder/atlasDefs";
 import { type MapDef, MapDefs } from "../../shared/defs/mapDefs";
 import { Constants } from "../../shared/net/net";
 
@@ -91,6 +91,19 @@ describe.for(maps)("Map %s", (map) => {
 
         test.for(mapGen.importantSpawns)("Important Spawn $0", (spawn) => {
             expect(spawn).toBeValidMapObj();
+        });
+    });
+
+    describe("No duplicated sprites", () => {
+        const sprites = new Set<string>();
+
+        test.for(mapDef.assets.atlases)("Atlas $0", (atlas) => {
+            const atlasDef = Atlases[atlas];
+            for (const sprite of atlasDef.images) {
+                expect(sprites.has(sprite), `Duplicated sprite ${sprite}`).toBeFalsy();
+
+                sprites.add(sprite);
+            }
         });
     });
 });

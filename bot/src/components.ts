@@ -103,13 +103,14 @@ export async function createDiscordPlayerInfoCardUI({
         .setLabel("Ban For Cheating")
         .setStyle(ButtonStyle.Secondary);
 
-    // const banPlayerForBadName = new ButtonBuilder()
-    //     .setCustomId(`${BUTTON_PREFIXES.BAN_FOR_BAD_NAME}${playerIdx}`)
-    //     .setLabel("Ban For Bad Name")
-    //     .setStyle(ButtonStyle.Secondary);
+    const banPlayerForBadName = new ButtonBuilder()
+        .setCustomId(`${BUTTON_PREFIXES.BAN_FOR_BAD_NAME}${playerIdx}`)
+        .setLabel("Ban For Bad Name")
+        .setStyle(ButtonStyle.Secondary);
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(banPlayerForCheating);
-    // .addComponents(banPlayerForBadName);
+    const row = new ActionRowBuilder<ButtonBuilder>()
+        .addComponents(banPlayerForCheating)
+        .addComponents(banPlayerForBadName);
 
     const response = await interaction.editReply({
         embeds: [embed],
@@ -141,7 +142,7 @@ export async function createDiscordPlayerInfoCardUI({
                   }
                 : {
                       banReason: "Banned for bad name",
-                      ipBanDuration: 0,
+                      ipBanDuration: 1,
                   };
 
             if (selectedPlayer.slug) {

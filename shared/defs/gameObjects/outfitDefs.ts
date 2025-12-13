@@ -280,6 +280,48 @@ const SkinDefs: Record<string, OutfitDef> = {
         rarity: 3,
         lore: "For those who wield the power of the pan.",
     }),
+    outfitSnowman: defineOutfitSkin("outfitBase", {
+        name: "Snowman",
+        noDropOnDeath: true,
+        rarity: 4,
+        lore: "",
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-snowman.img",
+            handTint: 0xc02727,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xc02727,
+            frontSpritePos: { x: 3, y: 0 },
+            frontSprite: "player-accessory-snowman.img",
+        },
+        lootImg: {
+            sprite: "loot-snowman-outfit.img",
+            tint: 0xffffff,
+        },
+    }),
+    outfitKxrLogo: defineOutfitSkin("outfitBase", {
+        name: "KxrClient's logo skin",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0x567042,
+            baseSprite: "player-base-kxr.img",
+            handTint: 0x6a8854,
+            handSprite: "player-hands-01.img",
+            footTint: 0x4a6038,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x62804c,
+            backpackSprite: "player-circle-base-01.img",
+            aboveHand: false,
+        },
+        lootImg: {
+            sprite: "loot-kxr-outfit.img",
+            tint: 0x6a8854,
+        },
+        rarity: 3,
+        lore: "For those who uses KxrClient :3",
+    }),
     outfitPolice: defineOutfitSkin("outfitBase", {
         name: "Police",
         noDropOnDeath: true,
@@ -341,6 +383,66 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
         rarity: 3,
         lore: "Custom outfit for Stepz for winning tournament.",
+    }),
+    outfitThePro: defineOutfitSkin("outfitBase", {
+        name: "The Pro",
+        noDropOnDeath: true,
+        rarity: Rarity.Rare,
+        lore: "For those who wear their wins",
+        skinImg: {
+            baseTint: 0xedc078,
+            baseSprite: "player-base-01.img",
+            handTint: 0x325c62,
+            handSprite: "player-hands-01.img",
+            footTint: 0x325c62,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x274659,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitThePro.img",
+            tint: 0xffffff,
+        },
+    }),
+    outfitChemisTree: defineOutfitSkin("outfitBase", {
+        name: "Chemis-tree",
+        noDropOnDeath: true,
+        rarity: 3,
+        lore: "",
+        skinImg: {
+            baseTint: 16777215,
+            baseSprite: "player-base-chemis-tree.img",
+            handTint: 16777215,
+            handSprite: "player-hands-chemis-tree.img",
+            footTint: 16777215,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x274659,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            sprite: "loot-chemis-tree-outfit.img",
+            tint: 0xffffff,
+        },
+    }),
+    outfitWinter: defineOutfitSkin("outfitBase", {
+        name: "Winter Onesie",
+        noDropOnDeath: true,
+        rarity: 3,
+        lore: "Sleep Well.",
+        skinImg: {
+            baseTint: 16777215,
+            baseSprite: "player-base-outfitWinter.img",
+            handTint: 16777215,
+            handSprite: "player-hands-winter.img",
+            footTint: 4168127,
+            footSprite: "player-feet-02.img",
+            backpackTint: 4032425,
+            backpackSprite: "player-circle-base-02.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitWinter.img",
+            tint: 0xffffff,
+        },
     }),
 
     outfitFireball: defineOutfitSkin("outfitBase", {
@@ -1111,7 +1213,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     }),
     outfitCarbonFiber: defineOutfitSkin("outfitBase", {
         name: "Carbon Fiber",
-        noDropOnDeath: true,
+        // noDropOnDeath: true,
         rarity: Rarity.Uncommon,
         lore: "Military-grade, fine spun filament.",
         skinImg: {
@@ -1131,7 +1233,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     }),
     outfitDarkGloves: defineOutfitSkin("outfitBase", {
         name: "The Professional",
-        noDropOnDeath: true,
+        // noDropOnDeath: true,
         rarity: Rarity.Uncommon,
         lore: "True survivrs wear the dark gloves.",
         skinImg: {
@@ -1226,7 +1328,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     }),
     outfitRed: defineOutfitSkin("outfitBase", {
         name: "Target Practice",
-        noDropOnDeath: true,
+        // noDropOnDeath: true,
         rarity: Rarity.Common,
         lore: "On the plus side, they won't see you bleed.",
         skinImg: {
@@ -1246,7 +1348,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     }),
     outfitWhite: defineOutfitSkin("outfitBase", {
         name: "Arctic Avenger",
-        noDropOnDeath: true,
+        // noDropOnDeath: true,
         rarity: Rarity.Common,
         lore: "No business like snow business.",
         skinImg: {

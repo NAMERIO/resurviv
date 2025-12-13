@@ -8,11 +8,17 @@ const switchToSmallMap = false;
 const config = {
     mapSize: switchToSmallMap ? "small" : "large",
     places: 3,
-    mapWidth: { large: 270, small: 230 },
-    spawnDensity: { large: 37, small: 27 },
+    mapWidth: 225,
+    spawnDensity: 60,
 } as const;
 
 const mapDef = {
+    desc: {
+        name: "Snow",
+        icon: "img/loot/loot-throwable-snowball.svg",
+        buttonCss: "btn-mode-snow",
+        backgroundImg: "img/main_splash_0_6_11.png",
+    },
     assets: {
         audio: [
             { name: "snowball_01", channel: "sfx" },
@@ -21,7 +27,7 @@ const mapDef = {
             { name: "bells_01", channel: "ui" },
             { name: "snowball_pickup_01", channel: "ui" },
         ],
-        atlases: ["gradient", "loadout", "shared", "snow"],
+        atlases: ["gradient", "loadout", "shared", "snow", "woods", "cobalt", "desert"],
     },
     biome: {
         colors: {
@@ -125,11 +131,17 @@ const mapDef = {
     },
     mapGen: {
         map: {
-            baseWidth: config.mapWidth[config.mapSize],
-            baseHeight: config.mapWidth[config.mapSize],
-            shoreInset: 40,
+            baseWidth: config.mapWidth,
+            baseHeight: config.mapWidth,
+            shoreInset: 20,
+            grassInset: 10,
             rivers: {
+                lakes: [],
                 weights: [],
+                // weights: [{ weight: 1, widths: [2.7, 2] }],
+                // smoothness: 0.8,
+                // spawnCabins: false,
+                masks: [],
             },
         },
         places: Main.mapGen
@@ -146,56 +158,66 @@ const mapDef = {
                   (array, item) => {
                       let object: Record<string, number> = {};
                       for (const [key, value] of Object.entries(item)) {
-                          object[key] =
-                              (value * config.spawnDensity[config.mapSize]) / 100;
+                          object[key] = (value * config.spawnDensity) / 100;
                       }
                       array.push(object);
                       return array;
                   },
                   [] as Record<string, number>[],
               )
-            : {},
+            : [],
         fixedSpawns: [
             {
-                club_complex_01: 1,
-                // small is spawn count for solos and duos, large is spawn count for squads
-                warehouse_01: { odds: 0.5 },
-                house_red_01: config.mapSize === "large" ? 1 : { odds: 0.5 },
-                // house_red_02: 1,
-                // barn_01: { small: 1, large: 3 },
-                // barn_02: 1,
-                hut_01: 2,
-                hut_02: 1, // spas hut
-                hut_03: 1, // scout hut
-                greenhouse_01: 1,
                 cache_01: 1,
-                cache_02: { odds: 0.8 }, // mosin tree
+                cache_02: 1, // mosin tree
                 cache_07: 1,
-                // bunker_structure_01: { odds: 0.05 },
-                bunker_structure_02: config.mapSize === "large" ? 1 : 0,
-                // bunker_structure_03: 1,
-                // bunker_structure_04: 1,
-                // bunker_structure_05: 1,
-                // warehouse_complex_01: 1,
+                bunker_structure_02: 1,
+                bunker_structure_05: 1,
                 chest_01: 1,
                 chest_03: { odds: 0.2 },
-                mil_crate_02: { odds: 0.4 },
-                mil_crate_03: config.mapSize === "large" ? { odds: 0.4 } : 0,
-                stone_04: 1,
+                stone_04: 2,
+                stone_05: 2,
+                stone_03: 5,
                 tree_02: 3,
-                teahouse_complex_01su: { odds: 0.5 },
-                // stone_04: 1,
+                teahouse_complex_01su: 2,
+                shack_03b: 3,
+                shack_01: 2,
+                mansion_structure_01: 1,
+                police_01: 1,
+                greenhouse_01: 1,
+                house_red_02: 1,
+                bush_01: 15,
+                crate_03x: 7,
             },
         ],
+        customSpawnRules: {
+            locationSpawns: [],
+        },
         randomSpawns: [
             {
+                spawns: ["logging_complex_01sn", "desert_town_01sn"],
+                choose: 1,
+            },
+            {
                 spawns: [
-                    "mansion_structure_01",
-                    // "warehouse_complex_01",
-                    "police_01x",
-                    "bank_01x",
+                    // vector bunker
+                    "bunker_structure_03",
+                    // ak bunker
+                    "bunker_structure_01",
                 ],
-                choose: config.mapSize === "large" ? 2 : 1,
+                choose: 1,
+            },
+            {
+                spawns: ["warehouse_01", "house_red_01"],
+                choose: 1,
+            },
+            {
+                spawns: ["mil_crate_02", "mil_crate_03"],
+                choose: 1,
+            },
+            {
+                spawns: ["barn_02", "barn_01"],
+                choose: 1,
             },
         ],
         spawnReplacements: [
@@ -227,6 +249,7 @@ const mapDef = {
                 table_03: "table_03x",
                 tree_01: "tree_10",
                 mil_crate_02: "mil_crate_03",
+                tree_07: "tree_10",
             },
         ],
     },

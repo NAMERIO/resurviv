@@ -1885,6 +1885,23 @@ const ParticleDefs: Record<string, ParticleDef> = {
         },
         color: 0xffffff,
     },
+    snow_ammo: {
+        image: ["part-wedge-01.img"],
+        life: new Range(0.5, 0.75),
+        drag: new Range(3, 4),
+        rotVel: new Range(Math.PI * 3, Math.PI * 3),
+        scale: {
+            start: 0.07,
+            end: 0.04,
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 1,
+            end: 0,
+            lerp: new Range(0.95, 1),
+        },
+        color: 0xffffff,
+    },
     rainbow_ammo: {
         image: [
             "part-rainbow-1.img",
@@ -2088,6 +2105,23 @@ const ParticleDefs: Record<string, ParticleDef> = {
             lerp: new Range(0.75, 1),
         },
         color: 0xad661a,
+    },
+    explosionSnow: {
+        image: ["part-frag-burst-01.img"],
+        life: 0.5,
+        drag: 0,
+        rotVel: 0,
+        scale: {
+            start: 1,
+            end: 4,
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 1,
+            end: 0,
+            lerp: new Range(0.75, 1),
+        },
+        color: 0xc8eaff,
     },
     explosionPotatoSMG: {
         image: ["part-frag-burst-01.img"],
@@ -2661,6 +2695,25 @@ const ParticleDefs: Record<string, ParticleDef> = {
     },
     potato_impact: {
         image: ["part-potato-01.img"],
+        life: new Range(0.5, 1),
+        drag: new Range(0, 0),
+        rotVel: new Range(Math.PI * 0.25, Math.PI * 0.5),
+        scale: {
+            start: new Range(0.13, 0.23),
+            end: new Range(0.07, 0.14),
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 1,
+            end: 0,
+            lerp: new Range(0.9, 1),
+        },
+        color: function () {
+            return util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.9, 0.95)));
+        },
+    },
+    snow_impact: {
+        image: ["part-snow-02.img"],
         life: new Range(0.5, 1),
         drag: new Range(0, 0),
         rotVel: new Range(Math.PI * 0.25, Math.PI * 0.5),

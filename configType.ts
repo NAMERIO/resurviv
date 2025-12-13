@@ -198,6 +198,21 @@ export interface ConfigType {
     clientErrorLoggingWebhook?: string;
 
     /**
+     * Custom webhook URLs
+     */
+    webhooks?: {
+        /**
+         * Webhook URL to log player IPs when they join.
+         */
+        ipLog?: string;
+
+        /**
+         * Webhook URL to log team creation events.
+         */
+        teamCreation?: string;
+    };
+
+    /**
      * PostgreSQL Database configuration, this will enable features like accounts, IP bans, leaderboards etc.
      */
     database: {

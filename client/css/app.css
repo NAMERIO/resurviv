@@ -3469,6 +3469,34 @@ a:active {
   }
 }
 
+@keyframes snowPulse {
+  /* for pulse */
+  from {
+    background-color: #a7e3ff;
+    -webkit-box-shadow: 0 0 9px #b0d1d8;
+  }
+  50% {
+    background-color: #a7e3ff;
+    -webkit-box-shadow: 0 0 18px #b0d1d8;
+  }
+  to {
+    background-color: #a7e3ff;
+    -webkit-box-shadow: 0 0 9px #b0d1d8;
+  }
+}
+.btn-mode-snow {
+  /* for desktop */
+  animation-name: snowPulse;
+  border-bottom: 4px solid #90cfec;
+}
+
+@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+  /* for phone */
+  .btn-mode-snow {
+    border-bottom: 2px solid #90cfec;
+  }
+}
+
 #btns-quick-start {
   display: flex;
 }

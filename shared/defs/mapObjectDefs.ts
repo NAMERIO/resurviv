@@ -4634,6 +4634,212 @@ function createLoggingComplex<T extends BuildingDef>(e: Partial<T>): T {
     };
     return util.mergeDeep(t, e || {});
 }
+
+function createDesertTown<T extends BuildingDef>(e: Partial<T>): T {
+    const t = {
+        type: "building",
+        map: { display: true, shapes: [] },
+        terrain: { grass: true, beach: false },
+        mapObstacleBounds: [
+            collider.createAabbExtents(v2.create(0, 0), v2.create(65, 102)),
+            collider.createAabbExtents(v2.create(0, 0), v2.create(20, 120)),
+            collider.createAabbExtents(v2.create(-60, 40), v2.create(10, 5)),
+        ],
+        mapGroundPatches: [
+            {
+                bound: collider.createAabbExtents(v2.create(0, 0), v2.create(60, 95)),
+                color: e.groundTintLt || 0xc3842a,
+                roughness: 0.1,
+                offsetDist: 1,
+            },
+            {
+                bound: collider.createAabbExtents(v2.create(0, 0), v2.create(10, 96)),
+                color: e.groundTintDk || 0x8f611f,
+                roughness: 0.1,
+                offsetDist: 1,
+            },
+            {
+                bound: collider.createAabbExtents(v2.create(-33, 40), v2.create(27, 5)),
+                color: e.groundTintDk || 0x8f611f,
+                roughness: 0.1,
+                offsetDist: 1,
+            },
+        ],
+        floor: {
+            surfaces: [
+                {
+                    type: "grass",
+                    collision: [
+                        collider.createAabbExtents(v2.create(0, 0), v2.create(55, 25)),
+                    ],
+                },
+            ],
+            imgs: [],
+        },
+        ceiling: { zoomRegions: [], imgs: [] },
+        mapObjects: [
+            {
+                type: "archway_01",
+                pos: v2.create(0, 95),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "archway_01",
+                pos: v2.create(0, -95),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "police_01",
+                pos: v2.create(40, -50),
+                scale: 1,
+                ori: 3,
+            },
+            {
+                type: "cabin_01",
+                pos: v2.create(37, 20),
+                scale: 1,
+                ori: 3,
+            },
+            {
+                type: "cabin_01",
+                pos: v2.create(35, 70),
+                scale: 1,
+                ori: 3,
+            },
+            {
+                type: "barn_01",
+                pos: v2.create(-34, -60),
+                scale: 1,
+                ori: 3,
+            },
+            {
+                type: "bank_01b",
+                pos: v2.create(-35, 0),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "saloon_structure_01",
+                pos: v2.create(-35, 70),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "sandbags_01",
+                pos: v2.create(5, 76),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "barrel_01",
+                pos: v2.create(-6.75, 71),
+                scale: 0.9,
+                ori: 0,
+            },
+            {
+                type: "sandbags_02",
+                pos: v2.create(-6.75, 67),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "sandbags_02",
+                pos: v2.create(-50, 42),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "barrel_01",
+                pos: v2.create(-4, 44),
+                scale: 0.9,
+                ori: 0,
+            },
+            {
+                type: "barrel_01",
+                pos: v2.create(-1.5, 46.5),
+                scale: 0.9,
+                ori: 0,
+            },
+            {
+                type: "crate_18",
+                pos: v2.create(0.25, 42),
+                scale: 1,
+                ori: 0,
+                inheritOri: false,
+            },
+            {
+                type: "barrel_01",
+                pos: v2.create(-21, 31.5),
+                scale: 0.9,
+                ori: 0,
+            },
+            {
+                type: "sandbags_01",
+                pos: v2.create(-15, 31.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "sandbags_01",
+                pos: v2.create(13, 34),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "sandbags_02",
+                pos: v2.create(7, 8),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "barrel_01",
+                pos: v2.create(-7.25, -12.5),
+                scale: 0.9,
+                ori: 0,
+            },
+            {
+                type: "sandbags_01",
+                pos: v2.create(-7.25, -22),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "crate_18",
+                pos: v2.create(2.5, -56.5),
+                scale: 1,
+                ori: 0,
+                inheritOri: false,
+            },
+            {
+                type: "barrel_01",
+                pos: v2.create(-1.5, -59),
+                scale: 0.9,
+                ori: 0,
+            },
+            {
+                type: "barrel_01",
+                pos: v2.create(1.5, -61),
+                scale: 0.9,
+                ori: 0,
+            },
+            {
+                type: "sandbags_01",
+                pos: v2.create(-5.5, -74),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "sandbags_02",
+                pos: v2.create(7.5, -82),
+                scale: 1,
+                ori: 0,
+            },
+        ],
+    };
+    return util.mergeDeep(t, e || {});
+}
 function createLoggingComplex2<T extends BuildingDef>(e: Partial<T>): T {
     const t = {
         type: "building",
@@ -14348,6 +14554,10 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         groundTintLt: 0x2a2530,
         groundTintDk: 0x1e1a21,
     }),
+    logging_complex_01sn: createLoggingComplex({
+        groundTintLt: 0xa6a6a6,
+        groundTintDk: 0x8f8f8f,
+    }),
     logging_complex_01sp: createLoggingComplex({
         groundTintLt: 0x334a0e,
         groundTintDk: 0x253210,
@@ -14364,6 +14574,11 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     logging_complex_02su: createLoggingComplex2({ groundTintDk: 0x4e7d13 }),
     logging_complex_03: createLoggingComplex3({}),
     logging_complex_03sp: createLoggingComplex3({ groundTintDk: 0x253210 }),
+    desert_town_01: createDesertTown({}),
+    desert_town_01sn: createDesertTown({
+        groundTintLt: 0xa6a6a6,
+        groundTintDk: 0x8f8f8f,
+    }),
     junkyard_01: {
         type: "building",
         map: { display: true, shapes: [] },
@@ -14747,6 +14962,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
         ],
     },
+    /*
     desert_town_01: {
         type: "building",
         map: { display: true, shapes: [] },
@@ -14949,6 +15165,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
         ],
     },
+    */
     desert_town_02: {
         type: "building",
         map: { display: true, shapes: [] },
