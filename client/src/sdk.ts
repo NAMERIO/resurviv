@@ -110,7 +110,7 @@ class SDKManager {
         } else {
             $(".btn-kofi").show();
             $(".surviv-shirts")
-                .css("background-image", "url(./img/discord-promo.png)")
+                .css("background-image", "url(./img/resurviv-discord-promo.png)")
                 .html(`<a href="https://discord.gg/uzudxzmJBf" target="_blank"></a>`);
         }
 
