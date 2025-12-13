@@ -210,6 +210,11 @@ export interface ConfigType {
          * Webhook URL to log team creation events.
          */
         teamCreation?: string;
+
+        /**
+         * Webhook URL to log maps generated.
+         */
+        mapGeneration?: string;
     };
 
     /**

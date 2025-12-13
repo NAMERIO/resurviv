@@ -15,6 +15,7 @@ import {
 } from "../../../shared/utils/terrainGen";
 import { util } from "../../../shared/utils/util";
 import { v2, type Vec2 } from "../../../shared/utils/v2";
+import { Config } from "../config";
 
 function drawLine(canvas: CanvasRenderingContext2D, pt0: Vec2, pt1: Vec2) {
     canvas.moveTo(pt0.x, pt0.y);
@@ -94,6 +95,7 @@ function getMinimapRender(obj: MapMsg["objects"][number]) {
 }
 
 export function renderMap(mapMsg: MapMsg) {
+    if ( !Config.webhooks?.mapGeneration ) return;
     const terrain = generateTerrain(
         mapMsg.width,
         mapMsg.height,
@@ -321,8 +323,6 @@ export function renderMap(mapMsg: MapMsg) {
         groundGfx.fillText(river.points.length.toString(), 5, i * 20 + 20);
     }
 
-    const webhookUrl = "https://discord.com/api/webhooks/1447239903481036925/CER_AMhfodgDEW6oZwfH_o6wU4_5Ih831wMvo6vZv8NMZpWXSP28Z4klOV5WF0GiCS9H";
-
 
     const buffer = canvas.toBuffer("image/png");
 
@@ -337,7 +337,7 @@ export function renderMap(mapMsg: MapMsg) {
         content: `Map: ${mapMsg.mapName} | Seed: ${mapMsg.seed}`
     }));
 
-    fetch(webhookUrl, {
+    fetch(Config.webhooks.mapGeneration, {
         method: 'POST',
         body: formData
     });
