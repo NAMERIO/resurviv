@@ -280,26 +280,26 @@ const SkinDefs: Record<string, OutfitDef> = {
         rarity: 3,
         lore: "For those who wield the power of the pan.",
     }),
-    outfitSnowman: defineOutfitSkin('outfitBase', {
-        name: 'Snowman',
+    outfitSnowman: defineOutfitSkin("outfitBase", {
+        name: "Snowman",
         noDropOnDeath: true,
         rarity: 4,
-        lore: '',
+        lore: "",
         skinImg: {
             baseTint: 0xffffff,
-            baseSprite: 'player-base-snowman.img',
-            handTint: 0xC02727,
-            handSprite: 'player-hands-01.img',
+            baseSprite: "player-base-snowman.img",
+            handTint: 0xc02727,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
-            footSprite: 'player-feet-01.img',
-            backpackTint: 0xC02727,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xc02727,
             frontSpritePos: { x: 3, y: 0 },
             frontSprite: "player-accessory-snowman.img",
         },
         lootImg: {
-            sprite: 'loot-snowman-outfit.img',
-            tint: 0xffffff
-        }
+            sprite: "loot-snowman-outfit.img",
+            tint: 0xffffff,
+        },
     }),
     outfitKxrLogo: defineOutfitSkin("outfitBase", {
         name: "KxrClient's logo skin",
@@ -417,7 +417,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             footTint: 16777215,
             footSprite: "player-feet-01.img",
             backpackTint: 0x274659,
-            backpackSprite: "player-circle-base-01.img"
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
             sprite: "loot-chemis-tree-outfit.img",
@@ -437,7 +437,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             footTint: 4168127,
             footSprite: "player-feet-02.img",
             backpackTint: 4032425,
-            backpackSprite: "player-circle-base-02.img"
+            backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
             sprite: "loot-shirt-outfitWinter.img",

@@ -154,18 +154,18 @@ const mapDef = {
                   })
             : {},
         densitySpawns: Main.mapGen
-                    ? Main.mapGen.densitySpawns.reduce(
-                        (array, item) => {
-                            let object: Record<string, number> = {};
-                            for (const [key, value] of Object.entries(item)) {
-                                object[key] = (value * config.spawnDensity) / 100;
-                            }
-                            array.push(object);
-                            return array;
-                        },
-                        [] as Record<string, number>[],
-                    )
-                    : [],
+            ? Main.mapGen.densitySpawns.reduce(
+                  (array, item) => {
+                      let object: Record<string, number> = {};
+                      for (const [key, value] of Object.entries(item)) {
+                          object[key] = (value * config.spawnDensity) / 100;
+                      }
+                      array.push(object);
+                      return array;
+                  },
+                  [] as Record<string, number>[],
+              )
+            : [],
         fixedSpawns: [
             {
                 cache_01: 1,

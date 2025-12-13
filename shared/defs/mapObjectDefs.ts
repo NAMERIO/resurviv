@@ -14555,8 +14555,8 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         groundTintDk: 0x1e1a21,
     }),
     logging_complex_01sn: createLoggingComplex({
-        groundTintLt: 0xA6A6A6,
-        groundTintDk: 0x8F8F8F,
+        groundTintLt: 0xa6a6a6,
+        groundTintDk: 0x8f8f8f,
     }),
     logging_complex_01sp: createLoggingComplex({
         groundTintLt: 0x334a0e,
@@ -14574,10 +14574,10 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     logging_complex_02su: createLoggingComplex2({ groundTintDk: 0x4e7d13 }),
     logging_complex_03: createLoggingComplex3({}),
     logging_complex_03sp: createLoggingComplex3({ groundTintDk: 0x253210 }),
-    desert_town_01: createDesertTown ({}),
-    desert_town_01sn: createDesertTown ({
-        groundTintLt: 0xA6A6A6,
-        groundTintDk: 0x8F8F8F,
+    desert_town_01: createDesertTown({}),
+    desert_town_01sn: createDesertTown({
+        groundTintLt: 0xa6a6a6,
+        groundTintDk: 0x8f8f8f,
     }),
     junkyard_01: {
         type: "building",

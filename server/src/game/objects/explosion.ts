@@ -179,9 +179,7 @@ export class ExplosionBarn {
                 const source = explosion.damageParams.source;
 
                 const isSelfHit =
-                    source &&
-                    source.__type === ObjectType.Player &&
-                    source === obj;
+                    source && source.__type === ObjectType.Player && source === obj;
 
                 if (!isSelfHit) {
                     obj.dropRandomLoot();
