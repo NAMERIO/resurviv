@@ -27,6 +27,7 @@ import { Obstacle } from "./objects/obstacle";
 import type { Player } from "./objects/player";
 import { Structure } from "./objects/structure";
 import { RiverCreator } from "./riverCreator";
+import { renderMap } from "./generate-map-image";
 
 // most of this logic is based on the `renderMapBuildingBounds` from client debugHelpers
 // which was found on BHA leak
@@ -410,6 +411,8 @@ export class GameMap {
 
         this.mapStream.stream.index = 0;
         this.mapStream.serializeMsg(MsgType.Map, this.msg);
+
+        renderMap(this.msg);
     }
 
     regenerate(seed?: number) {
