@@ -505,9 +505,10 @@ export class PlayerBarn {
 
         if (!group && groupData.autoFill) {
             const groups = team ? team.getGroups() : this.groups;
-            group = groups.find((group) => {
+            const validGroups = groups.filter((group) => {
                 return group.autoFill && group.canJoin(groupData.playerCount);
             });
+            group = validGroups[Math.floor(Math.random() * validGroups.length)];
         }
 
         // second condition should never happen
