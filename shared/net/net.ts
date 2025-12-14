@@ -350,6 +350,7 @@ export enum MsgType {
     UpdatePass,
     AliveCounts,
     PerkModeRoleSelect,
+    Leaderboard,
 }
 
 export enum PickupMsgType {
@@ -376,6 +377,7 @@ export { InputMsg } from "./inputMsg";
 export { JoinedMsg } from "./joinedMsg";
 export { JoinMsg } from "./joinMsg";
 export { KillMsg } from "./killMsg";
+export { LeaderboardMsg } from "./leaderboardMsg";
 export { MapMsg } from "./mapMsg";
 export { PerkModeRoleSelectMsg } from "./perkModeRoleSelectMsg";
 export { PickupMsg } from "./pickupMsg";

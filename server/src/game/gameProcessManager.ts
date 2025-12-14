@@ -310,7 +310,7 @@ export class GameProcessManager implements GameManager {
             });
         }
 
-        const autoFill = game.aliveCount < 1 ? false : body.autoFill;
+        const autoFill = game.aliveCount <= 1 ? false : body.autoFill;
         // if the game has not finished creating
         // wait for it to be created to send the find game response
         if (!game.created) {

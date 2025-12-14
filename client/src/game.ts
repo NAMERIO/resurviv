@@ -1303,6 +1303,13 @@ export class Game {
                 }
                 break;
             }
+            case net.MsgType.Leaderboard: {
+                const msg = new net.LeaderboardMsg();
+                msg.deserialize(stream);
+                console.log({ leaderboard: msg });
+                this.m_uiManager.updateLeaderboard(msg.players);
+                break;
+            }
             case net.MsgType.Update: {
                 const msg = new net.UpdateMsg();
                 msg.deserialize(stream, this.m_objectCreator);

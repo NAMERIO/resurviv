@@ -5,6 +5,7 @@ import { PingDefs } from "../../../shared/defs/gameObjects/pingDefs";
 import { type RoleDef, RoleDefs } from "../../../shared/defs/gameObjects/roleDefs";
 import type { MapDef } from "../../../shared/defs/mapDefs";
 import { Action, GameConfig, GasMode, TeamMode } from "../../../shared/gameConfig";
+import type { LeaderboardMsg } from "../../../shared/net/leaderboardMsg";
 import type { PlayerStatsMsg } from "../../../shared/net/playerStatsMsg";
 import type { MapIndicator, PlayerStatus } from "../../../shared/net/updateMsg";
 import { coldet } from "../../../shared/utils/coldet";
@@ -1086,6 +1087,21 @@ export class UiManager {
             return 1;
         }
         return 4;
+    }
+
+    updateLeaderboard(players: LeaderboardMsg["players"]) {
+        if (!players.length) return;
+
+        const container = $("#ui-kill-leaderboard");
+
+        container.empty();
+
+        players.forEach((p) => {
+            const item = $("<div>").addClass("leaderboard-item");
+            $("<div>").text(p.name).appendTo(item);
+            $("<div>").text(p.kills).appendTo(item);
+            container.append(item);
+        });
     }
 
     createPing(

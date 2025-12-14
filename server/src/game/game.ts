@@ -62,6 +62,16 @@ export class Game {
     pluginManager = new PluginManager(this);
     modeManager: GameModeManager;
 
+    leaderboard = new Map<
+        string,
+        {
+            kills: number;
+            name: string;
+        }
+    >();
+    sortedLeaderboardPlayers: Array<{ name: string; kills: number }> = [];
+    leaderboardDirty = false;
+
     tickTimeWarnThreshold = (1000 / Config.gameTps) * 4;
     gameTickWarnings = 0;
 
@@ -299,6 +309,8 @@ export class Game {
         this.objectRegister.serializeObjs();
         this.playerBarn.sendMsgs();
 
+        this.leaderboardDirty = false;
+
         //
         // reset stuff
         //
@@ -504,7 +516,7 @@ export class Game {
     addJoinTokens(tokens: FindGamePrivateBody["playerData"], autoFill: boolean) {
         const groupData = {
             playerCount: tokens.length,
-            groupHashToJoin: tokens[0].roomId,
+            groupHashToJoin: tokens[0].roomId ?? "",
             autoFill,
         };
 

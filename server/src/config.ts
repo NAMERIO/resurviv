@@ -18,7 +18,7 @@ util.mergeDeep(Config, {
         { mapName: "snow", teamMode: TeamMode.Squad, enabled: false },
     ],
     debug: {
-        spawnMode: "default",
+        spawnMode: process.env.NODE_ENV === "production" ? "default" : "fixed",
     },
     defaultItems: {
         backpack: "backpack03",

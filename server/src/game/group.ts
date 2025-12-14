@@ -156,10 +156,7 @@ export class Group extends BasePlayerGroup {
     }
 
     canJoin(players: number) {
-        return (
-            this.maxPlayers - players >= 0 &&
-            !this.allDeadOrDisconnected
-        );
+        return this.maxPlayers - players >= 0 && !this.allDeadOrDisconnected;
     }
 }
 

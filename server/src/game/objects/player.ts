@@ -266,6 +266,16 @@ export class PlayerBarn {
         this.aliveCountDirty = true;
         // this.game.pluginManager.emit("playerJoin", player);
         onPlayerJoin(player);
+
+        // update leaderboard entry
+        if (player.userId) {
+            const data = this.game.leaderboard.get(player.userId) ?? {
+                name: player.name,
+                kills: 0,
+            };
+            this.game.leaderboard.set(player.userId, { ...data, name: player.name });
+        }
+
         this.game.updateData();
     }
 
@@ -540,12 +550,7 @@ export class PlayerBarn {
         // not using nodejs crypto because i want it to run in the browser too
         // and doesn't need to be cryptographically secure lol
         const groupId = this.groupIdAllocator.getNextId();
-        const group = new Group(
-            hash ,
-            groupId,
-            autoFill,
-            this.game.teamMode,
-        );
+        const group = new Group(hash, groupId, autoFill, this.game.teamMode);
         this.groups.push(group);
         this.groupsByHash.set(hash, group);
         return group;
@@ -2296,6 +2301,9 @@ export class Player extends BaseGameObject {
             joinedMsg.emotes = this.loadout.emotes;
             this.sendMsg(net.MsgType.Joined, joinedMsg);
 
+            const leaderboardMsg = this.getKillsLeaderboardMsg();
+            this.sendMsg(net.MsgType.Leaderboard, leaderboardMsg);
+
             const mapStream = game.map.mapStream.stream;
 
             msgStream.stream.writeBytes(mapStream, 0, mapStream.byteIndex);
@@ -2556,11 +2564,10 @@ export class Player extends BaseGameObject {
     spectate(spectateMsg: net.SpectateMsg): void {
         // livingPlayers is used here instead of a more "efficient" option because its sorted while other options are not
         const spectatablePlayers = this.game.playerBarn.livingPlayers.filter(
-            (p) =>
-                this != p
-                // !p.disconnected &&
-                // (this.game.modeManager.getPlayerAlivePlayersContext(this).length === 0 ||
-                //     p.teamId == this.teamId),
+            (p) => this != p,
+            // !p.disconnected &&
+            // (this.game.modeManager.getPlayerAlivePlayersContext(this).length === 0 ||
+            //     p.teamId == this.teamId),
         );
 
         let playerToSpec: Player | undefined;
@@ -2789,6 +2796,23 @@ export class Player extends BaseGameObject {
     killedBy: Player | undefined;
     killedIds: number[] = [];
 
+    private getKillsLeaderboardMsg() {
+        const killLeaderboardPlayers = Array.from(this.game.leaderboard.entries())
+            .map(([userId, value]) => ({ userId, value }))
+            .sort((a, b) => {
+                if (b.value.kills !== a.value.kills) {
+                    return a.value.kills - b.value.kills;
+                }
+                return a.value.name.localeCompare(b.value.name);
+            })
+            .splice(0, 6);
+
+        const leaderboradMsg = new net.LeaderboardMsg();
+        leaderboradMsg.players = killLeaderboardPlayers.map(({ value }) => value);
+
+        return leaderboradMsg;
+    }
+
     kill(params: DamageParams): void {
         if (this.dead) return;
         if (this.downed) this.downed = false;
@@ -2849,6 +2873,17 @@ export class Player extends BaseGameObject {
                 if (killCreditSource.isKillLeader) {
                     this.game.playerBarn.killLeaderDirty = true;
                 }
+
+                if (killCreditSource.userId) {
+                    const original = this.game.leaderboard.get(killCreditSource.userId)!;
+                    this.game.leaderboard.set(killCreditSource.userId, {
+                        ...original,
+                        kills: original.kills + 1,
+                    });
+                }
+
+                const leaderboradMsg = this.getKillsLeaderboardMsg();
+                this.game.broadcastMsg(net.MsgType.Leaderboard, leaderboradMsg);
 
                 if (killCreditSource.hasPerk("takedown")) {
                     killCreditSource.health += 25;
