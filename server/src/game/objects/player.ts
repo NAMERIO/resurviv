@@ -268,13 +268,11 @@ export class PlayerBarn {
         onPlayerJoin(player);
 
         // update leaderboard entry
-        if (player.userId) {
-            const data = this.game.leaderboard.get(player.userId) ?? {
-                name: player.name,
-                kills: 0,
-            };
-            this.game.leaderboard.set(player.userId, { ...data, name: player.name });
-        }
+        const data = this.game.leaderboard.get(player.encodedIp) ?? {
+            name: player.name,
+            kills: 0,
+        };
+        this.game.leaderboard.set(player.encodedIp, { ...data, name: player.name });
 
         this.game.updateData();
     }
@@ -2801,7 +2799,7 @@ export class Player extends BaseGameObject {
             .map(([userId, value]) => ({ userId, value }))
             .sort((a, b) => {
                 if (b.value.kills !== a.value.kills) {
-                    return a.value.kills - b.value.kills;
+                    return b.value.kills - a.value.kills;
                 }
                 return a.value.name.localeCompare(b.value.name);
             })
@@ -2874,13 +2872,11 @@ export class Player extends BaseGameObject {
                     this.game.playerBarn.killLeaderDirty = true;
                 }
 
-                if (killCreditSource.userId) {
-                    const original = this.game.leaderboard.get(killCreditSource.userId)!;
-                    this.game.leaderboard.set(killCreditSource.userId, {
-                        ...original,
-                        kills: original.kills + 1,
-                    });
-                }
+                const original = this.game.leaderboard.get(killCreditSource.encodedIp)!;
+                this.game.leaderboard.set(killCreditSource.encodedIp, {
+                    ...original,
+                    kills: original.kills + 1,
+                });
 
                 const leaderboradMsg = this.getKillsLeaderboardMsg();
                 this.game.broadcastMsg(net.MsgType.Leaderboard, leaderboradMsg);

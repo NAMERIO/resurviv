@@ -1096,9 +1096,9 @@ export class UiManager {
 
         container.empty();
 
-        players.forEach((p) => {
+        players.forEach((p, index) => {
             const item = $("<div>").addClass("leaderboard-item");
-            $("<div>").text(p.name).appendTo(item);
+            $("<div>").text(`${index + 1}. ${p.name}`).appendTo(item);
             $("<div>").text(p.kills).appendTo(item);
             container.append(item);
         });
