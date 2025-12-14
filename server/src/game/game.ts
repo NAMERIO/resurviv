@@ -504,7 +504,7 @@ export class Game {
     addJoinTokens(tokens: FindGamePrivateBody["playerData"], autoFill: boolean) {
         const groupData = {
             playerCount: tokens.length,
-            groupHashToJoin: "",
+            groupHashToJoin: tokens[0].roomId,
             autoFill,
         };
 
@@ -550,6 +550,7 @@ export class Game {
             }
         }
         this.logger.info("Game Ended");
+        this.joinTokens.clear();
         this.updateData();
         this._saveGameToDatabase();
     }

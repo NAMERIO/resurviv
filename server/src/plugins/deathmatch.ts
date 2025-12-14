@@ -1,7 +1,7 @@
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
 import { UnlockDefs } from "../../../shared/defs/gameObjects/unlockDefs";
-import { WeaponSlot } from "../../../shared/gameConfig";
+import { GameConfig, WeaponSlot } from "../../../shared/gameConfig";
 import { ObjectType } from "../../../shared/net/objectSerializeFns";
 import { Config } from "../config";
 import type { Player } from "../game/objects/player";
@@ -67,7 +67,11 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
     });
 
     // drop a new perk
-    if (data.source?.__id !== data.player.__id && Math.random() < 0.2) {
+    if (
+        data.source?.__id !== data.player.__id &&
+        data.damageType !== GameConfig.DamageType.Bleeding &&
+        Math.random() < 0.2
+    ) {
         const perk = perks[Math.floor(Math.random() * perks.length)];
         data.player.game.lootBarn.addLoot(perk, data.player.pos, data.player.layer, 1);
     }

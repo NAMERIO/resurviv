@@ -13,9 +13,9 @@ const BACKPACK_LEVEL = 3;
 util.mergeDeep(Config, {
     clientTheme: "snow",
     modes: [
-        { mapName: "snow", teamMode: TeamMode.Solo, enabled: true },
-        { mapName: "main", teamMode: TeamMode.Duo, enabled: false },
-        { mapName: "main", teamMode: TeamMode.Squad, enabled: false },
+        { mapName: "snow", teamMode: TeamMode.Solo, enabled: false },
+        { mapName: "snow", teamMode: TeamMode.Duo, enabled: true },
+        { mapName: "snow", teamMode: TeamMode.Squad, enabled: false },
     ],
     debug: {
         spawnMode: "default",

@@ -1,5 +1,4 @@
 import { type CanvasRenderingContext2D, createCanvas } from "canvas";
-import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { type MapDef, MapDefs } from "../../../shared/defs/mapDefs";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import type { BuildingDef, ObstacleDef } from "../../../shared/defs/mapObjectsTyping";
@@ -14,7 +13,7 @@ import {
     generateTerrain,
 } from "../../../shared/utils/terrainGen";
 import { util } from "../../../shared/utils/util";
-import { v2, type Vec2 } from "../../../shared/utils/v2";
+import { type Vec2, v2 } from "../../../shared/utils/v2";
 import { Config } from "../config";
 
 function drawLine(canvas: CanvasRenderingContext2D, pt0: Vec2, pt1: Vec2) {
@@ -59,8 +58,7 @@ function traceGroundPatch(
 
 function getMinimapRender(obj: MapMsg["objects"][number]) {
     const def = MapObjectDefs[obj.type] as ObstacleDef | BuildingDef;
-    const zIdx =
-        def.type == "building" ? 750 + (def.zIdx || 0) : def.img.zIdx || 0;
+    const zIdx = def.type == "building" ? 750 + (def.zIdx || 0) : def.img.zIdx || 0;
     let shapes: Array<{
         scale?: number;
         color: number;
@@ -77,8 +75,8 @@ function getMinimapRender(obj: MapMsg["objects"][number]) {
                     ? def.collision
                     : def.ceiling.zoomRegions.length > 0 &&
                         def.ceiling.zoomRegions[0].zoomIn
-                        ? def.ceiling.zoomRegions[0].zoomIn
-                        : mapHelpers.getBoundingCollider(obj.type))
+                      ? def.ceiling.zoomRegions[0].zoomIn
+                      : mapHelpers.getBoundingCollider(obj.type))
         ) {
             shapes.push({
                 collider: collider.copy(col) as Circle,
@@ -95,7 +93,7 @@ function getMinimapRender(obj: MapMsg["objects"][number]) {
 }
 
 export function renderMap(mapMsg: MapMsg) {
-    if ( !Config.webhooks?.mapGeneration ) return;
+    if (!Config.webhooks?.mapGeneration) return;
     const terrain = generateTerrain(
         mapMsg.width,
         mapMsg.height,
@@ -256,13 +254,7 @@ export function renderMap(mapMsg: MapMsg) {
             groundGfx.beginPath();
             switch (col.type) {
                 case collider.Type.Circle:
-                    groundGfx.arc(
-                        col.pos.x,
-                        col.pos.y,
-                        col.rad * scale,
-                        0,
-                        Math.PI * 2,
-                    );
+                    groundGfx.arc(col.pos.x, col.pos.y, col.rad * scale, 0, Math.PI * 2);
                     break;
                 case collider.Type.Aabb: {
                     let A = v2.mul(v2.sub(col.max, col.min), 0.5);
@@ -280,7 +272,11 @@ export function renderMap(mapMsg: MapMsg) {
     for (let i = 0; i < mapMsg.places.length; i++) {
         const place = mapMsg.places[i];
         groundGfx.fillStyle = "white";
-        groundGfx.fillText(place.name, place.pos.x * mapMsg.width, place.pos.y * mapMsg.height)
+        groundGfx.fillText(
+            place.name,
+            place.pos.x * mapMsg.width,
+            place.pos.y * mapMsg.height,
+        );
     }
     groundGfx.save();
     groundGfx.scale(1, -1);
@@ -311,34 +307,36 @@ export function renderMap(mapMsg: MapMsg) {
             groundGfx.globalAlpha = 1;
         }
 
-        groundGfx.fillText(river.points.length.toString(), 5, i * 10 + 10)
+        groundGfx.fillText(river.points.length.toString(), 5, i * 10 + 10);
     }
     groundGfx.restore();
 
     for (let i = 0; i < mapMsg.rivers.length; i++) {
         const river = mapMsg.rivers[i];
         groundGfx.strokeStyle = "white";
-        groundGfx.font = "18px serif"
+        groundGfx.font = "18px serif";
         groundGfx.strokeText(river.points.length.toString(), 5, i * 20 + 20);
         groundGfx.fillText(river.points.length.toString(), 5, i * 20 + 20);
     }
-
 
     const buffer = canvas.toBuffer("image/png");
 
     const formData = new FormData();
 
     // @ts-expect-error shut the fuck up
-    const blob = new Blob([buffer], { type: 'image/png' });
-    formData.append('file', blob, `${mapMsg.mapName}-${mapMsg.seed}.png`);
+    const blob = new Blob([buffer], { type: "image/png" });
+    formData.append("file", blob, `${mapMsg.mapName}-${mapMsg.seed}.png`);
 
     // Optional message
-    formData.append('payload_json', JSON.stringify({
-        content: `Map: ${mapMsg.mapName} | Seed: ${mapMsg.seed}`
-    }));
+    formData.append(
+        "payload_json",
+        JSON.stringify({
+            content: `Map: ${mapMsg.mapName} | Seed: ${mapMsg.seed}`,
+        }),
+    );
 
     fetch(Config.webhooks.mapGeneration, {
-        method: 'POST',
-        body: formData
+        method: "POST",
+        body: formData,
     });
 }

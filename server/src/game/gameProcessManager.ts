@@ -310,18 +310,19 @@ export class GameProcessManager implements GameManager {
             });
         }
 
+        const autoFill = game.aliveCount < 1 ? false : body.autoFill;
         // if the game has not finished creating
         // wait for it to be created to send the find game response
         if (!game.created) {
             return await new Promise((resolve) => {
                 game.onCreatedCbs.push((game) => {
-                    game.addJoinTokens(body.playerData, body.autoFill);
+                    game.addJoinTokens(body.playerData, autoFill);
                     resolve(game.id);
                 });
             });
         }
 
-        game.addJoinTokens(body.playerData, body.autoFill);
+        game.addJoinTokens(body.playerData, autoFill);
 
         return game.id;
     }

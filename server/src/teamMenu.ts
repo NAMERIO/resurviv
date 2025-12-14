@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 import type { UpgradeWebSocket, WSContext } from "hono/ws";
@@ -171,8 +171,8 @@ class Room {
                 break;
             }
             case "playGame": {
-                if (!player.isLeader) break;
-                this.findGame(msg.data);
+                // if (!player.isLeader) break;
+                this.findGame(msg.data, player);
                 break;
             }
         }
@@ -234,11 +234,11 @@ class Room {
 
     findGameCooldown = 0;
 
-    async findGame(data: TeamPlayGameMsg["data"]) {
+    async findGame(data: TeamPlayGameMsg["data"], player: Player) {
         if (this.data.findingGame) return;
-        if (this.players.some((p) => p.inGame)) return;
-        const roomLeader = this.players[0];
-        if (!roomLeader) return;
+        // if (this.players.some((p) => p.inGame)) return;
+        // const roomLeader = this.players[0];
+        // if (!roomLeader) return;
 
         this.data.findingGame = true;
         this.sendState();
@@ -251,23 +251,25 @@ class Room {
 
         const tokenMap = new Map<Player, string>();
 
-        const userIds = this.players.map((p) => p.userId).filter((p) => p !== null);
+        // const userIds = this.players.map((p) => p.userId).filter((p) => p !== null);
+        const userId = player.userId;
 
         let loadouts: Array<{ userId: string; loadout: Loadout }> = [];
-        if (userIds.length > 0) {
+        if (userId) {
             loadouts = await db
                 .select({
                     userId: usersTable.id,
                     loadout: usersTable.loadout,
                 })
                 .from(usersTable)
-                .where(inArray(usersTable.id, userIds));
+                .where(eq(usersTable.id, userId));
         }
 
-        const playerData = this.players.map((p) => {
+        const playerData = [player].map((p) => {
             const token = randomUUID();
             tokenMap.set(p, token);
             return {
+                roomId: this.id,
                 token,
                 userId: p.userId,
                 ip: p.ip,
@@ -288,7 +290,7 @@ class Room {
             }
 
             try {
-                if (!(await verifyTurnsStile(data.turnstileToken, roomLeader.ip))) {
+                if (!(await verifyTurnsStile(data.turnstileToken, player.ip))) {
                     this.data.lastError = "find_game_invalid_captcha";
                     this.sendState();
                     return;
@@ -330,24 +332,22 @@ class Room {
 
         this.data.lastError = "";
 
-        for (const player of this.players) {
-            player.inGame = true;
-            const token = tokenMap.get(player);
+        player.inGame = true;
+        const token = tokenMap.get(player);
 
-            if (!token) {
-                this.teamMenu.logger.warn(`Missing token for player ${player.name}`);
-                continue;
-            }
-
-            player.send("joinGame", {
-                zone: "",
-                data: token,
-                gameId: res.gameId,
-                addrs: res.addrs,
-                hosts: res.hosts,
-                useHttps: res.useHttps,
-            });
+        if (!token) {
+            this.teamMenu.logger.warn(`Missing token for player ${player.name}`);
+            return;
         }
+
+        player.send("joinGame", {
+            zone: "",
+            data: token,
+            gameId: res.gameId,
+            addrs: res.addrs,
+            hosts: res.hosts,
+            useHttps: res.useHttps,
+        });
 
         this.sendState();
     }

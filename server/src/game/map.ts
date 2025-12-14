@@ -21,13 +21,13 @@ import { assert, util } from "../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../shared/utils/v2";
 import { Config } from "../config";
 import type { Game } from "./game";
+import { renderMap } from "./generate-map-image";
 import type { Group, Team } from "./group";
 import { Building } from "./objects/building";
 import { Obstacle } from "./objects/obstacle";
 import type { Player } from "./objects/player";
 import { Structure } from "./objects/structure";
 import { RiverCreator } from "./riverCreator";
-import { renderMap } from "./generate-map-image";
 
 // most of this logic is based on the `renderMapBuildingBounds` from client debugHelpers
 // which was found on BHA leak

@@ -144,14 +144,19 @@ export class PlayerBarn {
     addPlayer(socketId: string, joinMsg: net.JoinMsg, ip: string) {
         const joinData = this.game.joinTokens.get(joinMsg.matchPriv);
 
-        if (!joinData || joinData.expiresAt < Date.now()) {
-            this.game.closeSocket(socketId);
-            if (joinData) {
-                this.game.joinTokens.delete(joinMsg.matchPriv);
-            }
+        if (!joinData) {
+            this.game.logger.info(`No join data.`);
             return;
         }
-        this.game.joinTokens.delete(joinMsg.matchPriv);
+
+        // if (!joinData || joinData.expiresAt < Date.now()) {
+        //     this.game.closeSocket(socketId);
+        //     if (joinData) {
+        //         this.game.joinTokens.delete(joinMsg.matchPriv);
+        //     }
+        //     return;
+        // }
+        // this.game.joinTokens.delete(joinMsg.matchPriv);
 
         if (Config.rateLimitsEnabled) {
             const count = this.livingPlayers.filter(
@@ -495,6 +500,7 @@ export class PlayerBarn {
         if (!this.game.isTeamMode) return undefined;
 
         let group = this.groupsByHash.get(groupData.groupHashToJoin);
+
         let team = this.game.map.factionMode ? this.getSmallestTeam() : undefined;
 
         if (!group && groupData.autoFill) {
@@ -508,15 +514,15 @@ export class PlayerBarn {
         // but keeping it just in case
         // since more than 4 players in a group crashes the client
         if (!group || group.players.length >= this.game.teamMode) {
-            group = this.addGroup(groupData.autoFill);
+            group = this.addGroup(groupData.autoFill, groupData.groupHashToJoin);
         }
 
         // only reserve slots on the first time this join token is used
         // since the playerCount counts for other people from the team menu
         // using the same token
-        if (group.hash !== groupData.groupHashToJoin) {
-            group.reservedSlots += groupData.playerCount;
-        }
+        // if (group.hash !== groupData.groupHashToJoin) {
+        //     group.reservedSlots += groupData.playerCount;
+        // }
 
         // groupData.groupHashToJoin = group.hash;
 
@@ -529,12 +535,16 @@ export class PlayerBarn {
         return { group, team };
     }
 
-    addGroup(autoFill: boolean) {
+    addGroup(autoFill: boolean, hash = Math.random().toString(16).slice(2)) {
         // not using nodejs crypto because i want it to run in the browser too
         // and doesn't need to be cryptographically secure lol
-        const hash = Math.random().toString(16).slice(2);
         const groupId = this.groupIdAllocator.getNextId();
-        const group = new Group(hash, groupId, autoFill, this.game.teamMode);
+        const group = new Group(
+            hash ,
+            groupId,
+            autoFill,
+            this.game.teamMode,
+        );
         this.groups.push(group);
         this.groupsByHash.set(hash, group);
         return group;
@@ -2546,10 +2556,10 @@ export class Player extends BaseGameObject {
         // livingPlayers is used here instead of a more "efficient" option because its sorted while other options are not
         const spectatablePlayers = this.game.playerBarn.livingPlayers.filter(
             (p) =>
-                this != p &&
-                !p.disconnected &&
-                (this.game.modeManager.getPlayerAlivePlayersContext(this).length === 0 ||
-                    p.teamId == this.teamId),
+                this != p
+                // !p.disconnected &&
+                // (this.game.modeManager.getPlayerAlivePlayersContext(this).length === 0 ||
+                //     p.teamId == this.teamId),
         );
 
         let playerToSpec: Player | undefined;

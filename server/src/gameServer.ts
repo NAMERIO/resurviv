@@ -255,6 +255,9 @@ app.post("/api/find_game", (res, req) => {
                     return;
                 }
 
+                console.log({
+                    findGameParseBody: parsed.data,
+                })
                 returnJson(res, await server.findGame(parsed.data));
             } catch (error) {
                 server.logger.warn("API find_game error: ", error);

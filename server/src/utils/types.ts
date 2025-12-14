@@ -61,6 +61,7 @@ export const zFindGamePrivateBody = z.object({
     groupHash: z.string().optional(),
     playerData: z.array(
         z.object({
+            roomId: z.string().optional(),
             token: z.string(),
             userId: z.string().nullable(),
             ip: z.string(),
