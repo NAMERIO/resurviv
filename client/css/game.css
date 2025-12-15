@@ -696,7 +696,7 @@ img {
 .ui-right-center-tablet {
   height: initial;
   left: initial;
-  top: 12px !important;
+  top: 160px !important;
   transform: scale(0.8);
   transform-origin: top right;
   right: 6px;
