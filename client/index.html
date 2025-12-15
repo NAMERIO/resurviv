@@ -1243,18 +1243,25 @@
                 <div class="customize-item-image customize-crosshair-image" draggable="false"></div>
               </div>
               <div id="customize-crosshair-sliders">
-                <div class="crosshair-hex-outer">
-                  <span>#</span><input type="text" id="color-picker-hex">
-                </div>
-                <section id="color-picker"></section>
-                <div class="crosshair-slider-container">
-                  <p class="" data-l10n="loadout-size">Size</p>
-                  <input type="range" min="0.25" max="1.0" value="0.5" step="0.025" class="crosshair-slider" id="crosshair-size">
-                </div>
-                <div class="crosshair-slider-container">
-                  <p class="" data-l10n="loadout-stroke">Stroke</p>
-                  <input type="range" min="0.0" max="1.5" value="0.0" step="0.025" class="crosshair-slider" id="crosshair-stroke">
-                </div>
+                  <div id="custom-crosshair-upload-container" style="display: none; margin-bottom: 16px; padding: 12px; background-color: rgba(0, 0, 0, 0.3); border-radius: 5px;">
+                    <p style="color: #fff; margin-bottom: 8px; font-size: 14px; font-weight: 700;" data-l10n="loadout-custom-image">Custom Image</p>
+                    <input type="file" id="custom-crosshair-upload" accept="image/*" style="display: none;">
+                    <button id="custom-crosshair-upload-btn" class="btn-green" style="width: 100%; margin-bottom: 8px; font-size: 14px; height: 32px; line-height: 30px;" data-l10n="loadout-upload-image">Upload Image</button>
+                    <button id="custom-crosshair-clear-btn" class="btn-brown" s style="width: 100%; font-size: 14px; height: 32px; line-height: 30px; display: none; background-color: #af0000d8; color: white;">Clear Image</button>
+                    <p id="custom-crosshair-error" style="color: red; font-size: 12px; margin-top: 8px; display: none;"></p>
+                  </div>
+                  <div class="crosshair-hex-outer">
+                    <span>#</span><input type="text" id="color-picker-hex">
+                  </div>
+                  <section id="color-picker"></section>
+                  <div class="crosshair-slider-container">
+                    <p class="" data-l10n="loadout-size">Size</p>
+                    <input type="range" min="0.25" max="1.0" value="0.5" step="0.025" class="crosshair-slider" id="crosshair-size">
+                  </div>
+                  <div class="crosshair-slider-container">
+                    <p class="" data-l10n="loadout-stroke">Stroke</p>
+                    <input type="range" min="0.0" max="1.5" value="0.0" step="0.025" class="crosshair-slider" id="crosshair-stroke">
+                  </div>
               </div>
             </div>
           </div>

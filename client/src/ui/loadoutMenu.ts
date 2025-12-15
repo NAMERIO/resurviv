@@ -14,7 +14,12 @@ import { type Crosshair, type Loadout, loadout } from "../../../shared/utils/loa
 import { util } from "../../../shared/utils/util";
 import type { Account } from "../account";
 import type { ConfigManager } from "../config";
-import { crosshair } from "../crosshair";
+import {
+    crosshair,
+    getCrosshairDims,
+    getCustomCrosshairImage,
+    setCustomCrosshairImage,
+} from "../crosshair";
 import { device } from "../device";
 import { helpers } from "../helpers";
 import type { Localization } from "./localization";
@@ -370,6 +375,74 @@ export class LoadoutMenu {
             colorCode.onpaste = updateColor;
             colorCode.onkeyup = updateColor;
             colorCode.oninput = updateColor;
+            $("#custom-crosshair-upload-btn").on("click", () => {
+                $("#custom-crosshair-upload").click();
+            });
+
+            $("#custom-crosshair-upload").on("change", (e) => {
+                const file = (e.target as HTMLInputElement).files?.[0];
+                if (!file) return;
+                if (!file.type.startsWith("image/")) {
+                    $("#custom-crosshair-error")
+                        .text("Please select an image file")
+                        .css("display", "block");
+                    return;
+                }
+                if (file.size > 2 * 1024 * 1024) {
+                    $("#custom-crosshair-error")
+                        .text("Image size must be less than 2MB")
+                        .css("display", "block");
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    const imageDataUrl = event.target?.result as string;
+                    if (imageDataUrl) {
+                        try {
+                            await setCustomCrosshairImage(imageDataUrl);
+                            $("#custom-crosshair-error").css("display", "none");
+                            $("#custom-crosshair-clear-btn").css("display", "block");
+                            if (
+                                this.loadout?.crosshair &&
+                                this.loadout.crosshair.type === "crosshair_custom_image"
+                            ) {
+                                this.setSelectedCrosshair();
+                                this.updateLoadoutFromDOM();
+                                crosshair.setGameCrosshair(this.loadout.crosshair);
+                            }
+                        } catch (e) {
+                            $("#custom-crosshair-error")
+                                .text(
+                                    "Failed to process image: " +
+                                        (e instanceof Error
+                                            ? e.message
+                                            : "Unknown error"),
+                                )
+                                .css("display", "block");
+                        }
+                    }
+                };
+                reader.onerror = () => {
+                    $("#custom-crosshair-error")
+                        .text("Failed to load image")
+                        .css("display", "block");
+                };
+                reader.readAsDataURL(file);
+            });
+
+            $("#custom-crosshair-clear-btn").on("click", () => {
+                localStorage.removeItem("customCrosshairImage");
+                $("#custom-crosshair-clear-btn").css("display", "none");
+                $("#custom-crosshair-upload").val("");
+                if (
+                    this.loadout?.crosshair &&
+                    this.loadout.crosshair.type === "crosshair_custom_image"
+                ) {
+                    this.setSelectedCrosshair();
+                    this.updateLoadoutFromDOM();
+                }
+            });
+
             this.initialized = true;
         }
     }
@@ -847,6 +920,8 @@ export class LoadoutMenu {
             }
         }
         this.loadout = loadout.validate(this.loadout);
+        this.config.set("loadout", this.loadout);
+        crosshair.setGameCrosshair(this.loadout.crosshair);
         if (this.loadoutDisplay?.initialized) {
             this.loadoutDisplay.setLoadout(this.loadout);
         }
@@ -963,6 +1038,37 @@ export class LoadoutMenu {
                 $("#modal-content-right-crosshair").css("display", "block");
                 this.picker.exit();
                 this.picker.enter();
+            }
+
+            if (this.selectedItem.type === "crosshair_custom_image") {
+                $("#custom-crosshair-upload-container").css("display", "block");
+                $(".crosshair-hex-outer, #color-picker").css("display", "none");
+                $("#crosshair-stroke")
+                    .closest(".crosshair-slider-container")
+                    .css("display", "none");
+                $("#crosshair-size")
+                    .closest(".crosshair-slider-container")
+                    .css("display", "block");
+                $("#customize-crosshair-sliders").css("display", "block");
+                const customImage = localStorage.getItem("customCrosshairImage");
+                if (customImage) {
+                    $("#custom-crosshair-clear-btn").css("display", "block");
+                } else {
+                    $("#custom-crosshair-clear-btn").css("display", "none");
+                }
+            } else {
+                $("#custom-crosshair-upload-container").css("display", "none");
+                $(".crosshair-hex-outer, #color-picker").css("display", "block");
+                $("#crosshair-stroke")
+                    .closest(".crosshair-slider-container")
+                    .css("display", "block");
+                $("#crosshair-size")
+                    .closest(".crosshair-slider-container")
+                    .css("display", "block");
+                $(".crosshair-hex-outer, #color-picker, .crosshair-slider-container").css(
+                    "display",
+                    "block",
+                );
             }
         }
 
@@ -1302,11 +1408,30 @@ export class LoadoutMenu {
 
     setSelectedCrosshair() {
         const crosshairDef = this.loadout.crosshair;
-        $("#customize-crosshair-selected")
-            .find(".customize-item-image")
-            .css({
+        const previewElem = $("#customize-crosshair-selected").find(
+            ".customize-item-image",
+        );
+
+        if (crosshairDef.type === "crosshair_custom_image") {
+            const customImageUrl = getCustomCrosshairImage();
+            if (customImageUrl) {
+                const dims = getCrosshairDims(crosshairDef);
+                previewElem.css({
+                    "background-image": `url("${customImageUrl}")`,
+                    "background-size": `${dims.width}px ${dims.height}px`,
+                    "background-position": "center center",
+                });
+            } else {
+                previewElem.css({
+                    "background-image": "none",
+                });
+            }
+        } else {
+            previewElem.css({
                 "background-image": crosshair.getCursorURL(crosshairDef),
+                "background-size": "auto",
             });
+        }
         crosshair.setElemCrosshair($("#customize-crosshair-selected"), crosshairDef);
     }
 }

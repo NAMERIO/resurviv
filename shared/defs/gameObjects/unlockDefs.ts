@@ -250,7 +250,9 @@ export const UnlockDefs: Record<UnlockDefKey, UnlockDef> = {
                 ..._allowedMeleeSkins,
                 ..._allowedEmotes,
                 ..._allowedHealEffects,
-                ...Object.keys(CrosshairDefs),
+                ...Object.keys(CrosshairDefs).filter(
+                    (key) => key !== "crosshair_custom_image",
+                ),
                 ...PassDefs.pass_survivr1.items.map((item) => item.item),
                 ...allowedGuns,
             ]),

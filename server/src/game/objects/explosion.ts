@@ -175,10 +175,7 @@ export class ExplosionBarn {
                 obj.incrementFat();
             }
 
-            if (
-                explosion.type === "explosion_snow_cannonball" &&
-                !isSourceTeammate
-            ) {
+            if (explosion.type === "explosion_snow_cannonball" && !isSourceTeammate) {
                 obj.dropRandomLoot();
             }
         }

@@ -77,11 +77,14 @@ export const loadout = {
             primary: getGameType("gun", mergedLoadout.primary, "mosin"),
             secondary: getGameType("gun", mergedLoadout.secondary, "mosin"),
             crosshair: {
-                type: getGameType(
-                    "crosshair",
-                    mergedLoadout.crosshair.type,
-                    "crosshair_default",
-                ),
+                type:
+                    mergedLoadout.crosshair.type === "crosshair_custom_image"
+                        ? "crosshair_custom_image"
+                        : getGameType(
+                              "crosshair",
+                              mergedLoadout.crosshair.type,
+                              "crosshair_default",
+                          ),
                 color:
                     parseInt(mergedLoadout.crosshair.color as unknown as string) ||
                     0xffffff,
@@ -133,7 +136,10 @@ export const loadout = {
             newLoadout[item] = checkTypeExists(newLoadout[item]);
         });
 
-        newLoadout.crosshair.type = checkTypeExists(newLoadout.crosshair.type);
+        if (newLoadout.crosshair.type === "crosshair_custom_image") {
+        } else {
+            newLoadout.crosshair.type = checkTypeExists(newLoadout.crosshair.type);
+        }
 
         newLoadout.emotes = newLoadout.emotes.map((emote) => checkTypeExists(emote));
 
@@ -155,6 +161,12 @@ export const loadout = {
                 ackd: loadout.ItemStatus.Ackd,
             });
         }
+        items.push({
+            type: "crosshair_custom_image",
+            source: "custom",
+            timeAcquired: 0,
+            ackd: loadout.ItemStatus.Ackd,
+        });
         for (let i = 0; i < heroItems.length; i++) {
             items.push(heroItems[i]);
         }

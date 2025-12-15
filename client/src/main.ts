@@ -14,6 +14,7 @@ import { Ambiance } from "./ambiance";
 import { api } from "./api";
 import { AudioManager } from "./audioManager";
 import { ConfigManager, type ConfigType } from "./config";
+import { crosshair } from "./crosshair";
 import { device } from "./device";
 import { errorLogManager } from "./errorLogs";
 import { Game } from "./game";
@@ -313,6 +314,10 @@ class Application {
                 this.onResize();
                 this.findGameAttempts = 0;
                 this.ambience.onGameStart();
+                const currentLoadout = this.config.get("loadout");
+                if (currentLoadout?.crosshair) {
+                    crosshair.setGameCrosshair(currentLoadout.crosshair);
+                }
             };
             const onQuit = (errMsg?: string) => {
                 if (this.game!.m_updatePass) {
@@ -394,6 +399,14 @@ class Application {
     }
 
     setAppActive(active: boolean) {
+        if (!active) {
+            const currentLoadout = this.config.get("loadout");
+            if (currentLoadout?.crosshair) {
+                setTimeout(() => {
+                    crosshair.setGameCrosshair(currentLoadout.crosshair);
+                }, 100);
+            }
+        }
         this.active = active;
         this.quickPlayPendingModeIdx = -1;
         this.refreshUi();
@@ -513,6 +526,13 @@ class Application {
 
         if (key === "debugHUD") {
             this.game?.debugHUD?.onConfigModified();
+        }
+
+        if (key === "loadout" || key === undefined) {
+            const currentLoadout = this.config.get("loadout");
+            if (currentLoadout?.crosshair) {
+                crosshair.setGameCrosshair(currentLoadout.crosshair);
+            }
         }
     }
 
