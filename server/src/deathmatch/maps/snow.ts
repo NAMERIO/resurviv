@@ -297,8 +297,16 @@ DeatchmatchSnow["lootTable"] = {
         { name: "tier_katanas", count: 1, weight: 3 },
         { name: "stonehammer", count: 1, weight: 1 },
     ],
-    tier_airdrop_uncommon: [{ name: "outfitGhillie", count: 1, weight: 1 }],
-    tier_airdrop_rare: [{ name: "outfitGhillie", count: 1, weight: 1 }],
+    tier_airdrop_uncommon: [
+        { name: "sv98", count: 1, weight: 0.9 },
+        { name: "outfitGhillie", count: 1, weight: 0.1 },
+        { name: "ap_rounds", count: 1, weight: 1 },
+    ],
+    tier_airdrop_rare: [
+        { name: "sv98", count: 1, weight: 0.9 },
+        { name: "outfitGhillie", count: 1, weight: 0.1 },
+        { name: "ap_rounds", count: 1, weight: 1 },
+    ],
     tier_throwables: [
         { name: "frag", count: 2, weight: 1 },
         { name: "smoke", count: 1, weight: 1 },
