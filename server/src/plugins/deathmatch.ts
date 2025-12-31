@@ -50,6 +50,8 @@ const perks = [
     "chambered",
 ];
 
+const droppablePerks = ["ap_rounds"];
+
 export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
     if (data.player.game.aliveCount < 5) {
         data.player.game.playerBarn.emotes.push({
@@ -61,8 +63,11 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
         });
     }
 
-    // remove al perks
+    // remove all perks but drop droppable ones
     data.player.perks.forEach((perk) => {
+        if (droppablePerks.includes(perk.type)) {
+            data.player.game.lootBarn.addLoot(perk.type, data.player.pos, data.player.layer, 1);
+        }
         data.player.removePerk(perk.type);
     });
 
