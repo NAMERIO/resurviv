@@ -12,6 +12,7 @@ export interface Loadout {
     secondary: string;
     boost: string;
     melee: string;
+    perk: string;
     emotes: string[];
     crosshair: Crosshair;
 }
@@ -52,6 +53,7 @@ const loadout = {
                     stroke: 0,
                 },
                 emotes: [],
+                perk: "",
             },
             ...userLoadout,
         } as Loadout;
@@ -63,6 +65,7 @@ const loadout = {
             player_icon: getGameType("emote", mergedLoadout.player_icon, ""),
             primary: getGameType("gun", mergedLoadout.primary, "mosin"),
             secondary: getGameType("gun", mergedLoadout.secondary, "mosin"),
+            perk: getGameType("perk", mergedLoadout.perk, ""),
             crosshair: {
                 type:
                     mergedLoadout.crosshair.type === "crosshair_custom_image"

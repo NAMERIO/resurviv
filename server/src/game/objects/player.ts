@@ -4434,6 +4434,11 @@ export class Player extends BaseGameObject {
             this.loadout.emotes[i] = emote;
         }
 
+        // Apply loadout perk if specified
+        if (loadout.perk && loadout.perk !== "" && isItemInLoadout(loadout.perk, "perk")) {
+            this.addPerk(loadout.perk, false);
+        }
+
         // Normal mode: Initialize primary weapon
         if (isItemInLoadout(loadout.primary, "gun")) {
             const slot = GameConfig.WeaponSlot.Primary;

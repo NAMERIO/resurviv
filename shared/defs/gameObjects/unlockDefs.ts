@@ -232,6 +232,12 @@ const _allowedEmotes = [
     "emote_logotwins",
 ];
 
+const _allowedPerks = [
+    "leadership",
+    "steelskin",
+
+];
+
 export interface UnlockDef {
     readonly type: "unlock";
     name: string;
@@ -250,6 +256,7 @@ export const UnlockDefs: Record<UnlockDefKey, UnlockDef> = {
                 ..._allowedMeleeSkins,
                 ..._allowedEmotes,
                 ..._allowedHealEffects,
+                ..._allowedPerks,
                 ...Object.keys(CrosshairDefs).filter(
                     (key) => key !== "crosshair_custom_image",
                 ),

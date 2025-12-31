@@ -301,6 +301,7 @@ class Bot {
             outfit: outfits[util.randomInt(0, outfits.length - 1)],
             heal: "heal_basic",
             boost: "boost_basic",
+            perk: "",
             emotes: this.emotes,
             primary: "mosin",
             secondary: "mosin",

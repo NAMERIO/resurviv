@@ -180,6 +180,11 @@ export class LoadoutMenu {
             gameType: "boost_effect",
             categoryImage: "img/gui/loadout-boost.svg",
         },
+        {
+            loadoutType: "perk",
+            gameType: "perk",
+            categoryImage: "img/loot/loot-perk-leadership.svg",
+        },
     ];
 
     selectedItem: {

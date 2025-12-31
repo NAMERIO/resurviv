@@ -21,6 +21,7 @@ export const loadoutSchema = z.object({
     player_icon: z.string(),
     primary: z.string(),
     secondary: z.string(),
+    perk: z.string(),
     crosshair: z.object({
         type: z.string(),
         color: z.number(),
@@ -76,6 +77,7 @@ export const loadout = {
             player_icon: getGameType("emote", mergedLoadout.player_icon, ""),
             primary: getGameType("gun", mergedLoadout.primary, "mosin"),
             secondary: getGameType("gun", mergedLoadout.secondary, "mosin"),
+            perk: getGameType("perk", mergedLoadout.perk, ""),
             crosshair: {
                 type:
                     mergedLoadout.crosshair.type === "crosshair_custom_image"
@@ -130,6 +132,7 @@ export const loadout = {
             "heal",
             "boost",
             "player_icon",
+            "perk",
         ] as const;
 
         itemsToCheck.forEach((item) => {
