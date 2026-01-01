@@ -4,6 +4,7 @@ import { FactionPotato } from "../../server/src/deathmatch/maps/faction_potato";
 import { gun_game } from "../../server/src/deathmatch/maps/gun_game";
 import { DeatchmatchHalloween } from "../../server/src/deathmatch/maps/halloween";
 import { DeatchmatchMain } from "../../server/src/deathmatch/maps/main";
+import { DeatchmatchPerks } from "../../server/src/deathmatch/maps/perks";
 import { DeatchmatchSnow } from "../../server/src/deathmatch/maps/snow";
 import { DeatchmatchWoods as Woods } from "../../server/src/deathmatch/maps/woods";
 import type { Vec2 } from "../utils/v2";
@@ -53,6 +54,7 @@ export const MapDefs = {
     cobalt: DeatchmatchCobalt,
     turkey: Turkey,
     birthday: Birthday,
+    perks: DeatchmatchPerks,
 
     /* STRIP_FROM_PROD_CLIENT:START */
     test_normal: testNormal,
