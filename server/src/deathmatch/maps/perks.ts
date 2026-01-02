@@ -116,6 +116,7 @@ const mapDef = {
         fixedSpawns: [
             {
                 police_01p: 1,
+                reactor_01: 1,
             },
         ]
     },

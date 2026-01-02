@@ -7095,6 +7095,67 @@ function createPoliceStation<T extends BuildingDef>(e: Partial<T>): T {
     };
     return util.mergeDeep(t, e || {});
 }
+function createReactor<T extends ExtendedBuildingDef>(e: Partial<T>): T {
+    const t = {
+        type: "building",
+        map: { display: true, color: 0x621c1c, scale: 1 },
+        terrain: { grass: true, beach: false },
+        mapObstacleBounds: [
+            collider.createAabbExtents(v2.create(0, 0), v2.create(19, 17.5)),
+        ],
+        zIdx: 1,
+        floor: {
+            surfaces: [
+                {
+                    type: "house",
+                    collision: [
+                        collider.createAabbExtents(v2.create(0, 0), v2.create(23.85, 19.8)),
+                    ],
+                },
+            ],
+            imgs: [ 
+                {
+                    sprite: "map-building-reactor.img",
+                    pos: v2.create(0, 0),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+            ],
+        },
+        ceiling: {
+            zoomRegions: [
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(0, 0),
+                        v2.create(14.5, 13),
+                    ),
+                    zoomOut: collider.createAabbExtents(
+                        v2.create(0, 0),
+                        v2.create(16.5, 15),
+                    ),
+                },
+            ],
+            vision: {
+                dist: 5.5,
+                width: 2.75,
+                linger: 0.5,
+                fadeRate: 6,
+            },
+            imgs: [
+                {
+                    sprite: "map-building-reactor-ceiling-01.img",
+                    pos: v2.create(0, 0),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+            ],
+        },
+        mapObjects: [],
+    };
+    return util.mergeDeep(t, e || {});
+}
 function createHouseRed<T extends ExtendedBuildingDef>(e: Partial<T>): T {
     const t = {
         type: "building",
@@ -17907,6 +17968,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         porch_01: "cache_pumpkin_02",
         stand: "stand_01",
     }),
+    reactor_01: createReactor({}),
     house_red_01x: createHouseRed({
         ceiling: {
             imgs: [
