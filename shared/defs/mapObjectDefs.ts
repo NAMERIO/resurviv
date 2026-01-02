@@ -17815,6 +17815,51 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             ],
         },
     } as unknown as Partial<BuildingDef>),
+    police_01p: createPoliceStation({
+        ceiling: {
+            imgs: [
+                {
+                    sprite: "map-building-police-ceiling-01p.img",
+                    pos: v2.create(-21.5, 8.5),
+                    scale: 0.667,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+                {
+                    sprite: "map-building-police-ceiling-02p.img",
+                    pos: v2.create(10.5, 0),
+                    scale: 0.667,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+                {
+                    sprite: "map-building-police-ceiling-03p.img",
+                    pos: v2.create(31.96, 12.5),
+                    scale: 0.667,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+            ],
+        },
+        floor: {
+            imgs: [
+                {
+                    sprite: "map-building-police-floor-01p.img",
+                    pos: v2.create(-9.5, 0),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+                {
+                    sprite: "map-building-police-floor-02p.img",
+                    pos: v2.create(33, 0),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+            ],
+        },
+    } as unknown as Partial<BuildingDef>),
     house_wall_int_4: createWall({
         material: "wood",
         extents: v2.create(0.5, 2),

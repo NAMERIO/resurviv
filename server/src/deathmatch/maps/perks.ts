@@ -113,6 +113,11 @@ const mapDef = {
               )
             : [],
         
+        fixedSpawns: [
+            {
+                police_01p: 1,
+            },
+        ]
     },
     /* STRIP_FROM_PROD_CLIENT:END */
 };

@@ -1,0 +1,1390 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="704.07874"
+   height="1439.9321"
+   version="1.1"
+   id="svg29"
+   sodipodi:docname="map-building-police-ceiling-02x.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview29"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.35355339"
+     inkscape:cx="189.50462"
+     inkscape:cy="1101.6724"
+     inkscape:current-layer="svg29"
+     inkscape:window-width="1920"
+     inkscape:window-height="991"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1" />
+  <defs
+     id="defs18">
+    <pattern
+       xlink:href="#a"
+       id="T"
+       patternTransform="translate(2112.022 1040.948)" />
+    <pattern
+       xlink:href="#b"
+       id="a"
+       patternTransform="translate(2112.022 1040.948)" />
+    <pattern
+       xlink:href="#c"
+       id="S"
+       patternTransform="translate(403.126 209.445) scale(.26458)" />
+    <pattern
+       xlink:href="#d"
+       id="c"
+       patternTransform="translate(403.126 209.445) scale(.26458)" />
+    <pattern
+       xlink:href="#e"
+       id="d"
+       patternTransform="translate(2112 1088)" />
+    <pattern
+       xlink:href="#f"
+       id="R"
+       patternTransform="translate(403.13 209.449) scale(.26458)" />
+    <pattern
+       xlink:href="#g"
+       id="f"
+       patternTransform="translate(2112.018 1088.014)" />
+    <pattern
+       xlink:href="#h"
+       id="g"
+       patternTransform="translate(403.13 209.449) scale(.26458)" />
+    <pattern
+       xlink:href="#i"
+       id="h"
+       patternTransform="translate(542.835 230.59) scale(.26458)" />
+    <pattern
+       xlink:href="#j"
+       id="i"
+       patternTransform="translate(2640.035 1167.92)" />
+    <pattern
+       xlink:href="#k"
+       id="Q"
+       patternTransform="translate(326.962 217.839) scale(.26458)" />
+    <pattern
+       xlink:href="#l"
+       id="k"
+       patternTransform="translate(1824.139 1119.724)" />
+    <pattern
+       xlink:href="#m"
+       id="P"
+       patternTransform="translate(403.126 268.712) scale(.26458)" />
+    <pattern
+       xlink:href="#n"
+       id="m"
+       patternTransform="translate(2112 1312)" />
+    <pattern
+       xlink:href="#o"
+       id="n"
+       patternTransform="translate(403.126 268.712) scale(.26458)" />
+    <pattern
+       xlink:href="#p"
+       id="b"
+       patternTransform="translate(2112.022 1040.948)" />
+    <pattern
+       xlink:href="#q"
+       id="p"
+       patternTransform="translate(2320 1311.993)" />
+    <pattern
+       xlink:href="#r"
+       id="O"
+       patternTransform="translate(428.458 217.973) scale(.26458)" />
+    <pattern
+       xlink:href="#s"
+       id="r"
+       patternTransform="translate(2207.744 1120.233)" />
+    <pattern
+       xlink:href="#t"
+       id="s"
+       patternTransform="translate(428.458 217.973) scale(.26458)" />
+    <pattern
+       xlink:href="#u"
+       id="t"
+       patternTransform="translate(2239.744 1088.233)" />
+    <pattern
+       xlink:href="#v"
+       id="j"
+       patternTransform="translate(542.835 230.59) scale(.26458)" />
+    <pattern
+       xlink:href="#w"
+       id="v"
+       patternTransform="translate(2720.07 1311.956)" />
+    <pattern
+       xlink:href="#x"
+       id="l"
+       patternTransform="translate(326.962 217.839) scale(.26458)" />
+    <pattern
+       xlink:href="#y"
+       id="x"
+       patternTransform="translate(1824.139 1215.67)" />
+    <pattern
+       xlink:href="#z"
+       id="o"
+       patternTransform="translate(420.06 260.245) scale(.26458)" />
+    <pattern
+       xlink:href="#A"
+       id="z"
+       patternTransform="translate(2176 1280)" />
+    <pattern
+       xlink:href="#B"
+       id="y"
+       patternTransform="translate(326.963 243.224) scale(.26458)" />
+    <pattern
+       xlink:href="#C"
+       id="B"
+       patternTransform="translate(1760.07 1295.826)" />
+    <pattern
+       xlink:href="#D"
+       id="u"
+       patternTransform="translate(436.925 209.506) scale(.26458)" />
+    <pattern
+       xlink:href="#E"
+       id="D"
+       patternTransform="translate(2255.744 1088.233)" />
+    <pattern
+       xlink:href="#F"
+       id="E"
+       patternTransform="translate(441.158 209.506) scale(.26458)" />
+    <pattern
+       xlink:href="#G"
+       id="q"
+       patternTransform="translate(458.16 268.71) scale(.26458)" />
+    <pattern
+       xlink:href="#H"
+       id="G"
+       patternTransform="translate(2160 1247.993)" />
+    <pattern
+       xlink:href="#F"
+       id="H"
+       patternTransform="translate(415.826 251.776) scale(.26458)" />
+    <pattern
+       xlink:href="#I"
+       id="C"
+       patternTransform="translate(310.01 264.432) scale(.26458)" />
+    <pattern
+       xlink:href="#J"
+       id="I"
+       patternTransform="translate(1920.139 1167.993)" />
+    <pattern
+       xlink:href="#F"
+       id="J"
+       patternTransform="translate(352.363 230.61) scale(.26458)" />
+    <pattern
+       xlink:href="#K"
+       id="w"
+       patternTransform="translate(564.01 268.7) scale(.26458)" />
+    <pattern
+       xlink:href="#L"
+       id="K"
+       patternTransform="translate(2240.07 1119.715)" />
+    <pattern
+       xlink:href="#F"
+       id="L"
+       patternTransform="translate(437.01 217.836) scale(.26458)" />
+    <pattern
+       xlink:href="#M"
+       id="A"
+       patternTransform="translate(420.06 260.245) scale(.26458)" />
+    <pattern
+       xlink:href="#N"
+       id="M"
+       patternTransform="translate(2208 1198)" />
+    <pattern
+       xlink:href="#F"
+       id="N"
+       patternTransform="translate(428.526 238.55) scale(.26458)" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="160"
+       height="160"
+       patternTransform="translate(403.126 209.445) scale(.26458)"
+       id="F">
+      <path
+         fill="none"
+         stroke-width="1.89"
+         d="M0 0h160v160H0z"
+         id="path1" />
+      <path
+         fill="#665a4e"
+         stroke-width="18.898"
+         stroke-miterlimit="10"
+         d="M0 0h160v160H0z"
+         id="path2" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M40 0h2v160h-2zM0 0h2v160H0z"
+         id="path3" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M0-40h2v38H0zm120-40h2v38h-2z"
+         id="path4" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M80 0h2v160h-2zm40 0h2v160h-2z"
+         id="path5" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M40-120h2v38h-2zm40-40h2v38h-2z"
+         id="path6" />
+    </pattern>
+    <clipPath
+       id="X">
+      <path
+         d="M 589.392,116.312 547.06,31.645 589.393,-53.022 Z"
+         fill="url(#O)"
+         stroke-width="2.117"
+         id="path7" />
+    </clipPath>
+    <clipPath
+       id="Y">
+      <path
+         d="m 199.926,378.778 93.142,-42.295 93.124,42.295 z"
+         fill="url(#P)"
+         stroke-width="2.206"
+         id="path8" />
+    </clipPath>
+    <clipPath
+       id="Z">
+      <path
+         d="m 216.84,285.701 0.038,-254.112 -93.127,-84.646 -0.025,380.962 z"
+         fill="url(#Q)"
+         stroke-width="2.661"
+         id="path9" />
+    </clipPath>
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="160"
+       height="160"
+       patternTransform="translate(403.126 209.445) scale(.26458)"
+       id="e">
+      <path
+         fill="none"
+         stroke-width="1.89"
+         d="M0 0h160v160H0z"
+         id="path10" />
+      <path
+         fill="#665a4e"
+         stroke-width="18.898"
+         stroke-miterlimit="10"
+         d="M0 0h160v160H0z"
+         id="path11" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M40 0h2v160h-2zM0 0h2v160H0z"
+         id="path12" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M0-40h2v38H0zm120-40h2v38h-2z"
+         id="path13" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M80 0h2v160h-2zm40 0h2v160h-2z"
+         id="path14" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M40-120h2v38h-2zm40-40h2v38h-2z"
+         id="path15" />
+    </pattern>
+    <clipPath
+       id="W">
+      <path
+         d="m 293.045,23.199 v 254.025 l 93.152,42.291 V 107.852 Z m 25.414,93.113 h 8.467 v 8.466 h 8.466 v 21.167 h 8.467 v 25.4 h -8.467 v 12.7 H 318.46 v -8.467 h -8.467 v -16.933 h 8.467 v -12.7 h -8.467 v -16.933 h 8.467 z"
+         fill="url(#R)"
+         stroke-width="2.661"
+         id="path16" />
+    </clipPath>
+    <clipPath
+       id="V">
+      <path
+         d="m 1343.947,64.078 352,320 h 864.008 l 159.992,-320 z M 2000,112 h 64 v 32 h 32 v 64 h -48 v 32 h -96 v -32 h -48 v -32 h 32 v -32 h 64 z"
+         fill="url(#S)"
+         stroke-width="8"
+         id="path17" />
+    </clipPath>
+    <clipPath
+       id="U">
+      <path
+         d="m 2048.019,656.956 -352.074,-319.951 864.08,-0.064 159.996,320.004 z"
+         fill="url(#T)"
+         stroke-width="8.001"
+         id="path18" />
+    </clipPath>
+    <pattern
+       xlink:href="#pattern4"
+       patternTransform="translate(2112.022 1040.948)"
+       id="pattern1016" />
+    <pattern
+       xlink:href="#q-0"
+       patternTransform="translate(2320 1311.993)"
+       id="pattern4" />
+    <pattern
+       xlink:href="#G-9"
+       id="q-0"
+       patternTransform="translate(458.16 268.71) scale(.26458)" />
+    <pattern
+       xlink:href="#H-4"
+       id="G-9"
+       patternTransform="translate(2160 1247.993)" />
+    <pattern
+       xlink:href="#F-8"
+       id="H-4"
+       patternTransform="translate(415.826 251.776) scale(.26458)" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="160"
+       height="160"
+       patternTransform="translate(403.126 209.445) scale(.26458)"
+       id="F-8">
+      <path
+         fill="none"
+         stroke-width="1.89"
+         d="M0 0h160v160H0z"
+         id="path1-8" />
+      <path
+         fill="#665a4e"
+         stroke-width="18.898"
+         stroke-miterlimit="10"
+         d="M0 0h160v160H0z"
+         id="path2-2"
+         style="fill-opacity:1.0;fill:#4d5a73" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M40 0h2v160h-2zM0 0h2v160H0z"
+         id="path3-4" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M0-40h2v38H0zm120-40h2v38h-2z"
+         id="path4-5" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M80 0h2v160h-2zm40 0h2v160h-2z"
+         id="path5-5" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M40-120h2v38h-2zm40-40h2v38h-2z"
+         id="path6-1" />
+    </pattern>
+    <clipPath
+       id="Z-7">
+      <path
+         d="m 2048.019,656.956 -352.074,-319.951 864.08,-0.064 159.996,320.004 z"
+         fill="url(#T)"
+         stroke-width="8.001"
+         id="path22-1"
+         style="fill:url(#pattern6714)" />
+    </clipPath>
+    <pattern
+       xlink:href="#a-1"
+       patternTransform="translate(2112.022 1040.948)"
+       id="pattern6714" />
+    <pattern
+       xlink:href="#b-5"
+       id="a-1"
+       patternTransform="translate(2112.022 1040.948)" />
+    <pattern
+       xlink:href="#p-2"
+       id="b-5"
+       patternTransform="translate(2112.022 1040.948)" />
+    <pattern
+       xlink:href="#q-0"
+       id="p-2"
+       patternTransform="translate(2320 1311.993)" />
+    <pattern
+       xlink:href="#G-9"
+       id="pattern1"
+       patternTransform="translate(458.16 268.71) scale(.26458)" />
+    <pattern
+       xlink:href="#H-4"
+       id="pattern2"
+       patternTransform="translate(2160 1247.993)" />
+    <pattern
+       xlink:href="#F-8"
+       id="pattern3"
+       patternTransform="translate(415.826 251.776) scale(.26458)" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="160"
+       height="160"
+       patternTransform="translate(403.126 209.445) scale(.26458)"
+       id="pattern12">
+      <path
+         fill="none"
+         stroke-width="1.89"
+         d="M0 0h160v160H0z"
+         id="path7-7" />
+      <path
+         fill="#665a4e"
+         stroke-width="18.898"
+         stroke-miterlimit="10"
+         d="M0 0h160v160H0z"
+         id="path8-6"
+         style="fill-opacity:1.0;fill:#4d5a73" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M40 0h2v160h-2zM0 0h2v160H0z"
+         id="path9-1" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M0-40h2v38H0zm120-40h2v38h-2z"
+         id="path10-4" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M80 0h2v160h-2zm40 0h2v160h-2z"
+         id="path11-2" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M40-120h2v38h-2zm40-40h2v38h-2z"
+         id="path12-3" />
+    </pattern>
+    <pattern
+       xlink:href="#pattern7384"
+       patternTransform="translate(2112 1088)"
+       id="pattern3678" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="160"
+       height="160"
+       patternTransform="translate(403.126 209.445) scale(.26458)"
+       id="pattern7384">
+      <path
+         fill="none"
+         stroke-width="1.89"
+         d="M0 0h160v160H0z"
+         id="path10-1" />
+      <path
+         fill="#665a4e"
+         stroke-width="18.898"
+         stroke-miterlimit="10"
+         d="M0 0h160v160H0z"
+         id="path11-1"
+         style="fill-opacity:1.0;fill:#4d5a73" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M40 0h2v160h-2zM0 0h2v160H0z"
+         id="path12-1-1" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M0-40h2v38H0zm120-40h2v38h-2z"
+         id="path13-1" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M80 0h2v160h-2zm40 0h2v160h-2z"
+         id="path14-1" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M40-120h2v38h-2zm40-40h2v38h-2z"
+         id="path15-1-1" />
+    </pattern>
+    <clipPath
+       id="aa">
+      <path
+         d="m 1343.947,64.078 352,320 h 864.008 l 159.992,-320 z M 2000,112 h 64 v 32 h 32 v 64 h -48 v 32 h -96 v -32 h -48 v -32 h 32 v -32 h 64 z"
+         fill="url(#S)"
+         stroke-width="8"
+         id="path17-2"
+         style="fill:url(#pattern575)" />
+    </clipPath>
+    <pattern
+       xlink:href="#c-2"
+       patternTransform="translate(403.126 209.445) scale(.26458)"
+       id="pattern575" />
+    <pattern
+       xlink:href="#d-1"
+       id="c-2"
+       patternTransform="translate(403.126 209.445) scale(.26458)" />
+    <pattern
+       xlink:href="#e-6"
+       id="d-1"
+       patternTransform="translate(2112 1088)" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="160"
+       height="160"
+       patternTransform="translate(403.126 209.445) scale(.26458)"
+       id="e-6">
+      <path
+         fill="none"
+         stroke-width="1.89"
+         d="M0 0h160v160H0z"
+         id="path13-8" />
+      <path
+         fill="#665a4e"
+         stroke-width="18.898"
+         stroke-miterlimit="10"
+         d="M0 0h160v160H0z"
+         id="path14-5"
+         style="fill-opacity:1.0;fill:#4d5a73" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M40 0h2v160h-2zM0 0h2v160H0z"
+         id="path15-7" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M0-40h2v38H0zm120-40h2v38h-2z"
+         id="path16-6" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M80 0h2v160h-2zm40 0h2v160h-2z"
+         id="path18-1" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M40-120h2v38h-2zm40-40h2v38h-2z"
+         id="path19-8" />
+    </pattern>
+    <pattern
+       xlink:href="#pattern9600"
+       patternTransform="translate(403.13 209.449) scale(.26458)"
+       id="pattern4855" />
+    <pattern
+       xlink:href="#i-9"
+       patternTransform="translate(542.835 230.59) scale(.26458)"
+       id="pattern9600" />
+    <pattern
+       xlink:href="#j-2"
+       id="i-9"
+       patternTransform="translate(2640.035 1167.92)" />
+    <pattern
+       xlink:href="#v-7"
+       id="j-2"
+       patternTransform="translate(542.835 230.59) scale(.26458)" />
+    <pattern
+       xlink:href="#w-9"
+       id="v-7"
+       patternTransform="translate(2720.07 1311.956)" />
+    <pattern
+       xlink:href="#K-5"
+       id="w-9"
+       patternTransform="translate(564.01 268.7) scale(.26458)" />
+    <pattern
+       xlink:href="#L-4"
+       id="K-5"
+       patternTransform="translate(2240.07 1119.715)" />
+    <pattern
+       xlink:href="#F-8"
+       id="L-4"
+       patternTransform="translate(437.01 217.836) scale(.26458)" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="160"
+       height="160"
+       patternTransform="translate(403.126 209.445) scale(.26458)"
+       id="pattern26">
+      <path
+         fill="none"
+         stroke-width="1.89"
+         d="M0 0h160v160H0z"
+         id="path20-3" />
+      <path
+         fill="#665a4e"
+         stroke-width="18.898"
+         stroke-miterlimit="10"
+         d="M0 0h160v160H0z"
+         id="path21-1"
+         style="fill-opacity:1.0;fill:#4d5a73" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M40 0h2v160h-2zM0 0h2v160H0z"
+         id="path23-2" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M0-40h2v38H0zm120-40h2v38h-2z"
+         id="path24-3" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M80 0h2v160h-2zm40 0h2v160h-2z"
+         id="path25-3" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M40-120h2v38h-2zm40-40h2v38h-2z"
+         id="path26-4" />
+    </pattern>
+    <clipPath
+       id="ab">
+      <path
+         d="m 293.045,23.199 v 254.025 l 93.152,42.291 V 107.852 Z m 25.414,93.113 h 8.467 v 8.466 h 8.466 v 21.167 h 8.467 v 25.4 h -8.467 v 12.7 H 318.46 v -8.467 h -8.467 v -16.933 h 8.467 v -12.7 h -8.467 v -16.933 h 8.467 z"
+         fill="url(#R)"
+         stroke-width="2.661"
+         id="path27-1"
+         style="fill:url(#pattern9401)" />
+    </clipPath>
+    <pattern
+       xlink:href="#f-1"
+       patternTransform="translate(403.13 209.449) scale(.26458)"
+       id="pattern9401" />
+    <pattern
+       xlink:href="#g-3"
+       id="f-1"
+       patternTransform="translate(2112.018 1088.014)" />
+    <pattern
+       xlink:href="#h-8"
+       id="g-3"
+       patternTransform="translate(403.13 209.449) scale(.26458)" />
+    <pattern
+       xlink:href="#i-9"
+       id="h-8"
+       patternTransform="translate(542.835 230.59) scale(.26458)" />
+    <pattern
+       xlink:href="#j-2"
+       id="pattern27"
+       patternTransform="translate(2640.035 1167.92)" />
+    <pattern
+       xlink:href="#v-7"
+       id="pattern28"
+       patternTransform="translate(542.835 230.59) scale(.26458)" />
+    <pattern
+       xlink:href="#w-9"
+       id="pattern29"
+       patternTransform="translate(2720.07 1311.956)" />
+    <pattern
+       xlink:href="#K-5"
+       id="pattern30"
+       patternTransform="translate(564.01 268.7) scale(.26458)" />
+    <pattern
+       xlink:href="#L-4"
+       id="pattern31"
+       patternTransform="translate(2240.07 1119.715)" />
+    <pattern
+       xlink:href="#F-8"
+       id="pattern32"
+       patternTransform="translate(437.01 217.836) scale(.26458)" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="160"
+       height="160"
+       patternTransform="translate(403.126 209.445) scale(.26458)"
+       id="pattern37">
+      <path
+         fill="none"
+         stroke-width="1.89"
+         d="M0 0h160v160H0z"
+         id="path32" />
+      <path
+         fill="#665a4e"
+         stroke-width="18.898"
+         stroke-miterlimit="10"
+         d="M0 0h160v160H0z"
+         id="path33"
+         style="fill-opacity:1.0;fill:#4d5a73" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M40 0h2v160h-2zM0 0h2v160H0z"
+         id="path34" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M0-40h2v38H0zm120-40h2v38h-2z"
+         id="path35" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M80 0h2v160h-2zm40 0h2v160h-2z"
+         id="path36" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M40-120h2v38h-2zm40-40h2v38h-2z"
+         id="path37" />
+    </pattern>
+    <pattern
+       xlink:href="#pattern8080"
+       patternTransform="translate(428.458 217.973) scale(.26458)"
+       id="pattern8871" />
+    <pattern
+       xlink:href="#u-7"
+       patternTransform="translate(2239.744 1088.233)"
+       id="pattern8080" />
+    <pattern
+       xlink:href="#D-4"
+       id="u-7"
+       patternTransform="translate(436.925 209.506) scale(.26458)" />
+    <pattern
+       xlink:href="#E-2"
+       id="D-4"
+       patternTransform="translate(2255.744 1088.233)" />
+    <pattern
+       xlink:href="#F-8"
+       id="E-2"
+       patternTransform="translate(441.158 209.506) scale(.26458)" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="160"
+       height="160"
+       patternTransform="translate(403.126 209.445) scale(.26458)"
+       id="pattern43">
+      <path
+         fill="none"
+         stroke-width="1.89"
+         d="M0 0h160v160H0z"
+         id="path38" />
+      <path
+         fill="#665a4e"
+         stroke-width="18.898"
+         stroke-miterlimit="10"
+         d="M0 0h160v160H0z"
+         id="path39"
+         style="fill-opacity:1.0;fill:#4d5a73" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M40 0h2v160h-2zM0 0h2v160H0z"
+         id="path40" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M0-40h2v38H0zm120-40h2v38h-2z"
+         id="path41" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M80 0h2v160h-2zm40 0h2v160h-2z"
+         id="path42" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M40-120h2v38h-2zm40-40h2v38h-2z"
+         id="path43" />
+    </pattern>
+    <clipPath
+       id="ac">
+      <path
+         d="M 589.392,116.312 547.06,31.645 589.393,-53.022 Z"
+         fill="url(#O)"
+         stroke-width="2.117"
+         id="path44"
+         style="fill:url(#pattern6425)" />
+    </clipPath>
+    <pattern
+       xlink:href="#r-7"
+       patternTransform="translate(428.458 217.973) scale(.26458)"
+       id="pattern6425" />
+    <pattern
+       xlink:href="#s-7"
+       id="r-7"
+       patternTransform="translate(2207.744 1120.233)" />
+    <pattern
+       xlink:href="#t-9"
+       id="s-7"
+       patternTransform="translate(428.458 217.973) scale(.26458)" />
+    <pattern
+       xlink:href="#u-7"
+       id="t-9"
+       patternTransform="translate(2239.744 1088.233)" />
+    <pattern
+       xlink:href="#D-4"
+       id="pattern44"
+       patternTransform="translate(436.925 209.506) scale(.26458)" />
+    <pattern
+       xlink:href="#E-2"
+       id="pattern45"
+       patternTransform="translate(2255.744 1088.233)" />
+    <pattern
+       xlink:href="#F-8"
+       id="pattern46"
+       patternTransform="translate(441.158 209.506) scale(.26458)" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="160"
+       height="160"
+       patternTransform="translate(403.126 209.445) scale(.26458)"
+       id="pattern51">
+      <path
+         fill="none"
+         stroke-width="1.89"
+         d="M0 0h160v160H0z"
+         id="path46" />
+      <path
+         fill="#665a4e"
+         stroke-width="18.898"
+         stroke-miterlimit="10"
+         d="M0 0h160v160H0z"
+         id="path47"
+         style="fill-opacity:1.0;fill:#4d5a73" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M40 0h2v160h-2zM0 0h2v160H0z"
+         id="path48" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M0-40h2v38H0zm120-40h2v38h-2z"
+         id="path49" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M80 0h2v160h-2zm40 0h2v160h-2z"
+         id="path50" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M40-120h2v38h-2zm40-40h2v38h-2z"
+         id="path51" />
+    </pattern>
+    <pattern
+       xlink:href="#pattern7466"
+       patternTransform="translate(403.126 268.712) scale(.26458)"
+       id="pattern387" />
+    <pattern
+       xlink:href="#z-3"
+       patternTransform="translate(420.06 260.245) scale(.26458)"
+       id="pattern7466" />
+    <pattern
+       xlink:href="#A-1"
+       id="z-3"
+       patternTransform="translate(2176 1280)" />
+    <pattern
+       xlink:href="#M-9"
+       id="A-1"
+       patternTransform="translate(420.06 260.245) scale(.26458)" />
+    <pattern
+       xlink:href="#N-8"
+       id="M-9"
+       patternTransform="translate(2208 1198)" />
+    <pattern
+       xlink:href="#F-8"
+       id="N-8"
+       patternTransform="translate(428.526 238.55) scale(.26458)" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="160"
+       height="160"
+       patternTransform="translate(403.126 209.445) scale(.26458)"
+       id="pattern57">
+      <path
+         fill="none"
+         stroke-width="1.89"
+         d="M0 0h160v160H0z"
+         id="path52" />
+      <path
+         fill="#665a4e"
+         stroke-width="18.898"
+         stroke-miterlimit="10"
+         d="M0 0h160v160H0z"
+         id="path53"
+         style="fill-opacity:1.0;fill:#4d5a73" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M40 0h2v160h-2zM0 0h2v160H0z"
+         id="path54" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M0-40h2v38H0zm120-40h2v38h-2z"
+         id="path55" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M80 0h2v160h-2zm40 0h2v160h-2z"
+         id="path56" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M40-120h2v38h-2zm40-40h2v38h-2z"
+         id="path57" />
+    </pattern>
+    <clipPath
+       id="ad">
+      <path
+         d="m 199.926,378.778 93.142,-42.295 93.124,42.295 z"
+         fill="url(#P)"
+         stroke-width="2.206"
+         id="path58"
+         style="fill:url(#pattern8879)" />
+    </clipPath>
+    <pattern
+       xlink:href="#m-6"
+       patternTransform="translate(403.126 268.712) scale(.26458)"
+       id="pattern8879" />
+    <pattern
+       xlink:href="#n-5"
+       id="m-6"
+       patternTransform="translate(2112 1312)" />
+    <pattern
+       xlink:href="#o-0"
+       id="n-5"
+       patternTransform="translate(403.126 268.712) scale(.26458)" />
+    <pattern
+       xlink:href="#z-3"
+       id="o-0"
+       patternTransform="translate(420.06 260.245) scale(.26458)" />
+    <pattern
+       xlink:href="#A-1"
+       id="pattern58"
+       patternTransform="translate(2176 1280)" />
+    <pattern
+       xlink:href="#M-9"
+       id="pattern59"
+       patternTransform="translate(420.06 260.245) scale(.26458)" />
+    <pattern
+       xlink:href="#N-8"
+       id="pattern60"
+       patternTransform="translate(2208 1198)" />
+    <pattern
+       xlink:href="#F-8"
+       id="pattern61"
+       patternTransform="translate(428.526 238.55) scale(.26458)" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="160"
+       height="160"
+       patternTransform="translate(403.126 209.445) scale(.26458)"
+       id="pattern66">
+      <path
+         fill="none"
+         stroke-width="1.89"
+         d="M0 0h160v160H0z"
+         id="path61" />
+      <path
+         fill="#665a4e"
+         stroke-width="18.898"
+         stroke-miterlimit="10"
+         d="M0 0h160v160H0z"
+         id="path62"
+         style="fill-opacity:1.0;fill:#4d5a73" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M40 0h2v160h-2zM0 0h2v160H0z"
+         id="path63" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M0-40h2v38H0zm120-40h2v38h-2z"
+         id="path64" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M80 0h2v160h-2zm40 0h2v160h-2z"
+         id="path65" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M40-120h2v38h-2zm40-40h2v38h-2z"
+         id="path66" />
+    </pattern>
+    <pattern
+       xlink:href="#pattern6171"
+       patternTransform="translate(326.962 217.839) scale(.26458)"
+       id="pattern8254" />
+    <pattern
+       xlink:href="#y-2"
+       patternTransform="translate(1824.139 1215.67)"
+       id="pattern6171" />
+    <pattern
+       xlink:href="#B-8"
+       id="y-2"
+       patternTransform="translate(326.963 243.224) scale(.26458)" />
+    <pattern
+       xlink:href="#C-6"
+       id="B-8"
+       patternTransform="translate(1760.07 1295.826)" />
+    <pattern
+       xlink:href="#I-0"
+       id="C-6"
+       patternTransform="translate(310.01 264.432) scale(.26458)" />
+    <pattern
+       xlink:href="#J-2"
+       id="I-0"
+       patternTransform="translate(1920.139 1167.993)" />
+    <pattern
+       xlink:href="#F-8"
+       id="J-2"
+       patternTransform="translate(352.363 230.61) scale(.26458)" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="160"
+       height="160"
+       patternTransform="translate(403.126 209.445) scale(.26458)"
+       id="pattern72">
+      <path
+         fill="none"
+         stroke-width="1.89"
+         d="M0 0h160v160H0z"
+         id="path67" />
+      <path
+         fill="#665a4e"
+         stroke-width="18.898"
+         stroke-miterlimit="10"
+         d="M0 0h160v160H0z"
+         id="path68"
+         style="fill-opacity:1.0;fill:#4d5a73" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M40 0h2v160h-2zM0 0h2v160H0z"
+         id="path69" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M0-40h2v38H0zm120-40h2v38h-2z"
+         id="path70" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M80 0h2v160h-2zm40 0h2v160h-2z"
+         id="path71" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M40-120h2v38h-2zm40-40h2v38h-2z"
+         id="path72" />
+    </pattern>
+    <clipPath
+       id="ae">
+      <path
+         d="m 216.84,285.701 0.038,-254.112 -93.127,-84.646 -0.025,380.962 z"
+         fill="url(#Q)"
+         stroke-width="2.661"
+         id="path73"
+         style="fill:url(#pattern1261)" />
+    </clipPath>
+    <pattern
+       xlink:href="#k-4"
+       patternTransform="translate(326.962 217.839) scale(.26458)"
+       id="pattern1261" />
+    <pattern
+       xlink:href="#l-8"
+       id="k-4"
+       patternTransform="translate(1824.139 1119.724)" />
+    <pattern
+       xlink:href="#x-6"
+       id="l-8"
+       patternTransform="translate(326.962 217.839) scale(.26458)" />
+    <pattern
+       xlink:href="#y-2"
+       id="x-6"
+       patternTransform="translate(1824.139 1215.67)" />
+    <pattern
+       xlink:href="#B-8"
+       id="pattern73"
+       patternTransform="translate(326.963 243.224) scale(.26458)" />
+    <pattern
+       xlink:href="#C-6"
+       id="pattern74"
+       patternTransform="translate(1760.07 1295.826)" />
+    <pattern
+       xlink:href="#I-0"
+       id="pattern75"
+       patternTransform="translate(310.01 264.432) scale(.26458)" />
+    <pattern
+       xlink:href="#J-2"
+       id="pattern76"
+       patternTransform="translate(1920.139 1167.993)" />
+    <pattern
+       xlink:href="#F-8"
+       id="pattern77"
+       patternTransform="translate(352.363 230.61) scale(.26458)" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="160"
+       height="160"
+       patternTransform="translate(403.126 209.445) scale(.26458)"
+       id="pattern82">
+      <path
+         fill="none"
+         stroke-width="1.89"
+         d="M0 0h160v160H0z"
+         id="path77" />
+      <path
+         fill="#665a4e"
+         stroke-width="18.898"
+         stroke-miterlimit="10"
+         d="M0 0h160v160H0z"
+         id="path78"
+         style="fill-opacity:1.0;fill:#4d5a73" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M40 0h2v160h-2zM0 0h2v160H0z"
+         id="path79" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M0-40h2v38H0zm120-40h2v38h-2z"
+         id="path80" />
+      <path
+         fill-opacity=".354"
+         stroke-width="6.158"
+         stroke-miterlimit="10"
+         d="M80 0h2v160h-2zm40 0h2v160h-2z"
+         id="path81" />
+      <path
+         transform="rotate(90)"
+         fill-opacity=".354"
+         stroke-width="3.001"
+         stroke-miterlimit="10"
+         d="M40-120h2v38h-2zm40-40h2v38h-2z"
+         id="path82" />
+    </pattern>
+  </defs>
+  <path
+     clip-path="url(#U)"
+     d="m 2048.019,656.956 -352.074,-319.951 864.08,-0.064 159.996,320.004 z"
+     transform="translate(-1343.9986,-16.934969)"
+     fill="url(#b)"
+     stroke="#000000"
+     stroke-width="8"
+     id="path19" />
+  <path
+     transform="translate(-1343.9986,-64.076969)"
+     d="m 1343.947,64.078 352,320 h 864.008 l 159.992,-320 z M 2000,112 h 64 v 32 h 32 v 64 h -48 v 32 h -96 v -32 h -48 v -32 h 32 v -32 h 64 z"
+     clip-path="url(#V)"
+     fill="url(#d)"
+     stroke="#000000"
+     stroke-width="8"
+     id="path20" />
+  <path
+     d="m 293.045,23.199 v 254.025 l 93.152,42.291 V 107.852 Z m 25.414,93.113 h 8.467 v 8.466 h 8.466 v 21.167 h 8.467 v 25.4 h -8.467 v 12.7 H 318.46 v -8.467 h -8.467 v -16.933 h 8.467 v -12.7 h -8.467 v -16.933 h 8.467 z"
+     clip-path="url(#W)"
+     transform="matrix(3.77956,0,0,3.77956,-755.6346,232.38803)"
+     fill="url(#g)"
+     stroke="#000000"
+     stroke-width="2.117"
+     id="path21" />
+  <path
+     d="m 352.0144,320.00204 352.007,320.00399 V 1440.01 l -352.006,-160 z"
+     fill-opacity="0.235"
+     id="path22" />
+  <path
+     clip-path="url(#X)"
+     d="M 589.392,116.312 547.06,31.645 589.393,-53.022 Z"
+     transform="matrix(3.77956,0,0,3.77956,-851.6166,200.39803)"
+     fill="url(#s)"
+     stroke="#000000"
+     stroke-width="2.117"
+     id="path23" />
+  <path
+     clip-path="url(#Y)"
+     d="m 199.926,378.778 93.142,-42.295 93.124,42.295 z"
+     transform="matrix(3.77956,0,0,3.77956,-755.6346,8.3250313)"
+     fill="url(#n)"
+     stroke="#000000"
+     stroke-width="2.117"
+     id="path24" />
+  <path
+     clip-path="url(#Z)"
+     d="m 216.84,285.701 0.038,-254.112 -93.127,-84.646 -0.025,380.962 z"
+     transform="matrix(3.77956,0,0,3.77956,-467.6886,200.60903)"
+     fill="url(#l)"
+     stroke="#000000"
+     stroke-width="2.117"
+     id="path25" />
+  <path
+     d="m 351.9844,1280.256 352.055,159.826 H 0.03140625 Z"
+     fill-opacity="0.353"
+     id="path26" />
+  <path
+     d="m 448.0154,928.00904 h 64.003 v -48 h 31.998 v -96.002 h -31.998 v -80.002 h -32 v -32 h -32.003 v 48 h -31.998 v 64.003 h 31.998 v 48 h -31.998 v 64 h 31.998 z M 752.0204,143.99903 V 80.000031 h -32 v -32.002 h -64 v 32.002 h -64.004 v 32.001009 h -31.997 v 31.99799 h 48 v 32.002 h 96 v -32.002 z"
+     fill="#665a4e"
+     fill-opacity="0.4"
+     id="path27" />
+  <path
+     d="M 1216.0264,320.00204 1376.0294,-0.00196875 V 640.00604 Z"
+     fill-opacity="0.353"
+     id="path28" />
+  <path
+     d="m 703.9994,639.07604 -352.074,-319.95 864.08,-0.065 159.996,320.004 z"
+     fill-opacity="0.235"
+     id="path29" />
+  <path
+     clip-path="url(#Z-7)"
+     d="m 2048.019,656.956 -352.074,-319.951 864.08,-0.064 159.996,320.004 z"
+     fill="url(#b)"
+     stroke="#000"
+     stroke-width="8"
+     transform="translate(-1343.9988,-16.935)"
+     id="path83"
+     style="fill:url(#pattern1016);stroke:#000000;stroke-opacity:1" />
+  <path
+     transform="translate(-1343.9988,-64.077)"
+     d="m 1343.947,64.078 352,320 h 864.008 l 159.992,-320 z M 2000,112 h 64 v 32 h 32 v 64 h -48 v 32 h -96 v -32 h -48 v -32 h 32 v -32 h 64 z"
+     clip-path="url(#aa)"
+     fill="url(#d)"
+     stroke="#000"
+     stroke-width="8"
+     id="path84"
+     style="fill:url(#pattern3678);stroke:#000000;stroke-opacity:1" />
+  <path
+     d="m 293.045,23.199 v 254.025 l 93.152,42.291 V 107.852 Z m 25.414,93.113 h 8.467 v 8.466 h 8.466 v 21.167 h 8.467 v 25.4 h -8.467 v 12.7 H 318.46 v -8.467 h -8.467 v -16.933 h 8.467 v -12.7 h -8.467 v -16.933 h 8.467 z"
+     clip-path="url(#ab)"
+     transform="matrix(3.77956,0,0,3.77956,-755.63484,232.388)"
+     fill="url(#g)"
+     stroke="#000"
+     stroke-width="2.117"
+     id="path85"
+     style="fill:url(#pattern4855);stroke:#000000;stroke-opacity:1" />
+  <path
+     d="m 352.01416,320.002 352.006,320.004 v 800.004 l -352.006,-160 z"
+     fill-opacity="0.235"
+     id="path86" />
+  <path
+     clip-path="url(#ac)"
+     d="M 589.392,116.312 547.06,31.645 589.393,-53.022 Z"
+     transform="matrix(3.77956,0,0,3.77956,-851.61684,200.398)"
+     fill="url(#s)"
+     stroke="#000"
+     stroke-width="2.117"
+     id="path87"
+     style="fill:url(#pattern8871);stroke:#000000;stroke-opacity:1" />
+  <path
+     clip-path="url(#ad)"
+     d="m 199.926,378.778 93.142,-42.295 93.124,42.295 z"
+     transform="matrix(3.77956,0,0,3.77956,-755.63484,8.325)"
+     fill="url(#n)"
+     stroke="#000"
+     stroke-width="2.117"
+     id="path88"
+     style="fill:url(#pattern387);stroke:#000000;stroke-opacity:1" />
+  <path
+     clip-path="url(#ae)"
+     d="m 216.84,285.701 0.038,-254.112 -93.127,-84.646 -0.025,380.962 z"
+     transform="matrix(3.77956,0,0,3.77956,-467.68884,200.609)"
+     fill="url(#l)"
+     stroke="#000"
+     stroke-width="2.117"
+     id="path89"
+     style="fill:url(#pattern8254);stroke:#000000;stroke-opacity:1" />
+  <path
+     d="m 351.98416,1280.256 352.055,159.826 H 0.03115944 Z"
+     fill-opacity="0.353"
+     id="path90" />
+  <path
+     d="m 448.01516,928.009 h 64.003 v -48 h 31.998 v -96.002 h -31.998 v -80.002 h -32.001 v -32 h -32.002 v 48 h -31.998 v 64.003 h 31.998 v 48 h -31.998 v 64 h 31.998 z m 304.005,-784.01 V 80 h -32.001 V 47.998 h -64 V 80 h -64.003 v 32.001 h -31.997 v 31.998 h 48 v 32.002 h 96 v -32.002 z"
+     fill="#665a4e"
+     fill-opacity=".4"
+     id="path45"
+     style="opacity:0.727418;fill:#4d5a73;fill-opacity:1" />
+  <path
+     d="M 1216.0262,320.002 1376.0292,-0.002 V 640.006 Z"
+     fill-opacity="0.353"
+     id="path91" />
+  <path
+     d="m 703.99916,639.076 -352.074,-319.95 864.08004,-0.065 159.996,320.004 z"
+     fill-opacity="0.235"
+     id="path92" />
+</svg>

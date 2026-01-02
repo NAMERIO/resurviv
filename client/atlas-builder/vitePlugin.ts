@@ -45,18 +45,10 @@ export function atlasBuilderPlugin(): Plugin[] {
 
         if (changedAtlases.length) {
             atlasLogger.info(
-                `Building atlases ${changedAtlases.map((a) => a.name).join(", ")}`,
+                `Skipping atlas build for ${changedAtlases.map((a) => a.name).join(", ")} - using cached versions`,
             );
-            await atlasManager.buildAtlases(changedAtlases);
-
-            // meh
-            // cache building up your storage is only an issue if you rebuild atlases frequently
-            // and if you rebuild them frequently this is surely going to run at some point... right?
-            if (Math.random() < 0.1) {
-                atlasManager.cleanOldFiles();
-            }
         } else {
-            atlasLogger.info("No atlases to build :)");
+            atlasLogger.info("Loading pre-built atlases");
         }
     };
 
@@ -149,6 +141,8 @@ export function atlasBuilderPlugin(): Plugin[] {
                 buildPromise = build();
                 await buildPromise;
 
+                // Uncomment below to enable auto-rebuild during development
+                /*
                 let rebuildTimeout: ReturnType<typeof setTimeout>;
 
                 // when e.g switching branches that change a bunch of sprites, the filesystem watcher can trigger a bunch of changes
@@ -174,6 +168,7 @@ export function atlasBuilderPlugin(): Plugin[] {
                 };
                 server.watcher.on("add", watchCb);
                 server.watcher.on("change", watchCb);
+                */
             },
             resolveId,
             load,

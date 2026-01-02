@@ -320,8 +320,11 @@ export const BuildingSprites = {
     ],
 
     reactor: [
-        "map/map-building-police-floor-09.svg",
-        "map/map-building-police-ceiling-09.svg",
+        "map/map-building-police-ceiling-01p.svg",
+        "map/map-building-police-ceiling-02p.svg",
+        "map/map-building-police-ceiling-03p.svg",
+        "map/map-building-police-floor-01p.svg",
+        "map/map-building-police-floor-02p.svg",
         "map/map-building-reactor.svg",
         "map/map-building-reactor-ceiling-01.svg",
     ],
