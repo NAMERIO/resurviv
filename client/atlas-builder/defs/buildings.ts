@@ -318,4 +318,11 @@ export const BuildingSprites = {
         "map/map-bunker-chrys-compartment-floor-02c.svg",
         "map/map-bunker-chrys-compartment-floor-03a.svg",
     ],
+
+    reactor: [
+        "map/map-building-police-floor-09.svg",
+        "map/map-building-police-ceiling-09.svg",
+        "map/map-building-reactor.svg",
+        "map/map-building-reactor-ceiling-01.svg",
+    ],
 };

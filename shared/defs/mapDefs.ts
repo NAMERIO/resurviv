@@ -33,7 +33,8 @@ export type Atlas =
     | "woods"
     | "cobalt"
     | "savannah"
-    | "turkey";
+    | "turkey"
+    | "perks";
 
 export const MapDefs = {
     main: DeatchmatchMain,

@@ -14,7 +14,7 @@ util.mergeDeep(Config, {
     clientTheme: "snow",
     modes: [
         { mapName: "snow", teamMode: TeamMode.Solo, enabled: false },
-        { mapName: "snow", teamMode: TeamMode.Duo, enabled: true },
+        { mapName: "perks", teamMode: TeamMode.Duo, enabled: true },
         { mapName: "snow", teamMode: TeamMode.Squad, enabled: false },
     ],
     debug: {

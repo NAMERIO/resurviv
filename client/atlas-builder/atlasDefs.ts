@@ -12,6 +12,7 @@ import { SharedAtlas } from "./defs/shared";
 import { SnowAtlas } from "./defs/snow";
 import { TurkeyAtlas } from "./defs/turkey";
 import { WoodsAtlas } from "./defs/woods";
+import { PerksAtlas } from "./defs/perks";
 // import { MayAtlas } from "./defs/may";
 
 export interface AtlasDef {
@@ -44,6 +45,7 @@ export const Atlases: Record<Atlas, AtlasDef> = {
     savannah: SavannahAtlas,
     // may: MayAtlas,
     turkey: TurkeyAtlas,
+    perks: PerksAtlas,
 };
 export type AtlasRes = "high" | "low";
 
