@@ -1,8 +1,10 @@
 import type { AtlasDef } from "../atlasDefs";
+import { BuildingSprites } from "./buildings";
 
 export const PerksAtlas: AtlasDef = {
     compress: true,
     images: [
+        ...BuildingSprites.reactor,
         "map/map-silo-09.svg",
         "map/map-gun-lasr.svg",
         "map/map-gun-mount-lasr.svg",

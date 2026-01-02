@@ -87,6 +87,34 @@ export class ImageManager {
         }
     }
 
+    cleanImageCache() {
+        if (!fs.existsSync(imagesCacheFolder)) {
+            fs.mkdirSync(imagesCacheFolder, { recursive: true });
+            atlasLogger.info("Created image cache folder");
+            return;
+        }
+        
+        const files = fs.readdirSync(imagesCacheFolder);
+        let deletedCount = 0;
+        
+        for (const file of files) {
+            if (file.endsWith('.png')) {
+                try {
+                    fs.unlinkSync(Path.join(imagesCacheFolder, file));
+                    deletedCount++;
+                } catch (error) {
+                    atlasLogger.warn(`Failed to delete cached file ${file}:`, error);
+                }
+            }
+        }
+        
+        if (deletedCount > 0) {
+            atlasLogger.info(`Cleaned ${deletedCount} cached images`);
+        }
+        
+        this.cache = {};
+    }
+
     writeToDisk() {
         fs.writeFileSync(imgCacheFilePath, JSON.stringify(this.cache));
     }
@@ -198,6 +226,34 @@ export class AtlasManager {
         this.imageCache.writeToDisk();
     }
 
+    cleanAtlasCache() {
+        if (!fs.existsSync(atlasesCacheFolder)) {
+            fs.mkdirSync(atlasesCacheFolder, { recursive: true });
+            atlasLogger.info("Created atlas cache folder");
+            return;
+        }
+        
+        const folders = fs.readdirSync(atlasesCacheFolder);
+        let deletedCount = 0;
+        
+        for (const folder of folders) {
+            try {
+                const folderPath = Path.join(atlasesCacheFolder, folder);
+                fs.rmSync(folderPath, { recursive: true });
+                deletedCount++;
+            } catch (error) {
+                atlasLogger.warn(`Failed to delete cached atlas ${folder}:`, error);
+            }
+        }
+        
+        if (deletedCount > 0) {
+            atlasLogger.info(`Cleaned ${deletedCount} cached atlases`);
+        }
+
+        this.atlasCache = {};
+    }
+
+
     async getAtlas(atlas: Atlas): Promise<AtlasData> {
         const hash = this.atlasCache[atlas];
         const folder = this.getAtlasFolderPath(atlas, hash);
@@ -254,6 +310,10 @@ export class AtlasManager {
     }
 
     getChangedAtlases() {
+        // Clean BOTH caches FIRST, before any hashing
+        this.imageCache.cleanImageCache();
+        this.cleanAtlasCache();
+        
         const changedAtlases: { name: Atlas; hash: string }[] = [];
 
         for (const atlas of Object.keys(Atlases) as Atlas[]) {
