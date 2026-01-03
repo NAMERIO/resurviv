@@ -4434,8 +4434,13 @@ export class Player extends BaseGameObject {
             this.loadout.emotes[i] = emote;
         }
 
-        // Apply loadout perk if specified
-        if (loadout.perk && loadout.perk !== "" && isItemInLoadout(loadout.perk, "perk")) {
+        // Only allow perks if the current map supports perkMode
+        if (
+            loadout.perk &&
+            loadout.perk !== "" &&
+            isItemInLoadout(loadout.perk, "perk") &&
+            (this.game.map.perkMode || !!this.game.map.mapDef.gameMode.allowLoadoutPerks)
+        ) {
             this.addPerk(loadout.perk, false);
         }
 

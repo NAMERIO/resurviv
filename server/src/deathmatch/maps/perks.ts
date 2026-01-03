@@ -53,7 +53,7 @@ const mapDef = {
             airdropImg: "airdrop_crate",
         },
     },
-    gameMode: { maxPlayers: 80, woodsMode: true },
+    gameMode: { maxPlayers: 80, allowLoadoutPerks: true, },
     gameConfig: {
         /* STRIP_FROM_PROD_CLIENT:START */
         gameConfig: {

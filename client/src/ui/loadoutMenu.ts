@@ -22,6 +22,7 @@ import {
 } from "../crosshair";
 import { device } from "../device";
 import { helpers } from "../helpers";
+import { MapDefs } from "../../../shared/defs/mapDefs";
 import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
 import type { LoadoutDisplay } from "./opponentDisplay";
@@ -228,6 +229,7 @@ export class LoadoutMenu {
     droppableSlots!: JQuery<HTMLElement>;
     highlightedSlots!: JQuery<HTMLElement>;
     itemSelected!: boolean;
+    perkOverlay: JQuery<HTMLElement> | null = null;
 
     highlightOpacityMin!: number;
     constructor(
@@ -693,6 +695,43 @@ export class LoadoutMenu {
             }
         }
         return null;
+    }
+
+    isPerkSelectionEnabled(): boolean {
+        const modeIdx = (this.config.get("gameModeIdx") || 0) as number;
+        const modeBtn = $(`#btn-start-mode-${modeIdx}`);
+        if (modeBtn.length) {
+            const classes = (modeBtn.attr("class") || "").split(/\s+/);
+            const btnClass = classes.find((c) => c.startsWith("btn-mode-"));
+            if (btnClass) {
+                const mapDef = Object.values(MapDefs).find(
+                    (m) => m.desc && m.desc.buttonCss === btnClass,
+                );
+                if (
+                    mapDef &&
+                    mapDef.gameMode &&
+                    (mapDef.gameMode.allowLoadoutPerks || mapDef.gameMode.perkMode)
+                ) {
+                    return true;
+                }
+            }
+        }
+
+        const gameModes = helpers.getGameModes();
+        const selectedMode = gameModes[modeIdx];
+        if (selectedMode) {
+            const mapDef = Object.values(MapDefs).find(
+                (m) => m.mapId == selectedMode.mapId,
+            );
+            if (
+                mapDef &&
+                mapDef.gameMode &&
+                (mapDef.gameMode.allowLoadoutPerks || mapDef.gameMode.perkMode)
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     clearConfirmItemModal() {
@@ -1311,6 +1350,61 @@ export class LoadoutMenu {
         }
         this.modalCustomizeList.html("");
         this.modalCustomizeList.append(listItems);
+        if (category.loadoutType == "perk") {
+            const perkEnabled = this.isPerkSelectionEnabled();
+            if (!perkEnabled) {
+                this.modalCustomizeList.css("filter", "blur(4px)");
+                if (!this.perkOverlay) {
+                    this.perkOverlay = $("<div/>", {
+                        id: "modal-perk-disabled",
+                        class: "modal-perk-disabled",
+                        html:
+                            this.localization.translate("loadout-perks-disabled") ||
+                            "Perks are only enabled in Perks mode",
+                        css: {
+                            position: "absolute",
+                            left: "0",
+                            right: "0",
+                            top: "0",
+                            bottom: "0",
+                            display: "flex",
+                            "align-items": "center",
+                            "justify-content": "center",
+                            "pointer-events": "none",
+                            "font-weight": "bold",
+                            color: "#FFD700",
+                            "text-shadow": "0 1px 3px rgba(0,0,0,0.8)",
+                        },
+                    });
+                    this.modalCustomizeList.parent().css("position", "relative");
+                    this.modalCustomizeList.parent().append(this.perkOverlay);
+                }
+                for (let i = 0; i < this.selectedCatItems.length; i++) {
+                    this.selectedCatItems[i].outerDiv?.addClass(
+                        "customize-list-item-locked",
+                    );
+                }
+            } else {
+                this.modalCustomizeList.css("filter", "");
+                if (this.perkOverlay) {
+                    this.perkOverlay.remove();
+                    this.perkOverlay = null;
+                }
+                for (let i = 0; i < this.selectedCatItems.length; i++) {
+                    this.selectedCatItems[i].outerDiv?.removeClass(
+                        "customize-list-item-locked",
+                    );
+                }
+                $("#modal-customize-cat-title").css("color", "#FFD700");
+            }
+        } else {
+            this.modalCustomizeList.css("filter", "");
+            if (this.perkOverlay) {
+                this.perkOverlay.remove();
+                this.perkOverlay = null;
+            }
+            $("#modal-customize-cat-title").css("color", "");
+        }
         if (window.self === window.top) {
             this.modalCustomizeList.scrollTop(0);
         }
