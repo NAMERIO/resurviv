@@ -1395,7 +1395,6 @@ export class LoadoutMenu {
                         "customize-list-item-locked",
                     );
                 }
-                $("#modal-customize-cat-title").css("color", "#FFD700");
             }
         } else {
             this.modalCustomizeList.css("filter", "");
