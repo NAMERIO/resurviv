@@ -167,6 +167,11 @@ export class LoadoutMenu {
             categoryImage: "img/loot/loot-weapon-ak.svg",
         },
         {
+            loadoutType: "perk",
+            gameType: "perk",
+            categoryImage: "img/loot/loot-perk-splinter.svg",
+        },
+        {
             loadoutType: "emote",
             gameType: "emote",
             categoryImage: "img/gui/loadout-emote.svg",
@@ -180,11 +185,6 @@ export class LoadoutMenu {
             loadoutType: "boost",
             gameType: "boost_effect",
             categoryImage: "img/gui/loadout-boost.svg",
-        },
-        {
-            loadoutType: "perk",
-            gameType: "perk",
-            categoryImage: "img/loot/loot-perk-leadership.svg",
         },
     ];
 
