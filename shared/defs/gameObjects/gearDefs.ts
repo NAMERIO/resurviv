@@ -623,6 +623,22 @@ const AmmoDefs: Record<string, AmmoDef> = {
             pickup: "ammo_pickup_01",
         },
     },
+    flux_rifle_ammo: {
+        name: "Potato Ammo",
+        type: "ammo",
+        special: true,
+        hideUi: true,
+        minStackSize: 10,
+        lootImg: {
+            sprite: "loot-ammo-box.img",
+            scale: 0.2,
+            tint: 0x00ffff,
+            tintDark: 0x00ffff,
+        },
+        sound: {
+            pickup: "ammo_pickup_01",
+        },
+    },
     snow_ammo: {
         name: "Snow Ammo",
         type: "ammo",

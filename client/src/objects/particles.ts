@@ -1885,6 +1885,23 @@ const ParticleDefs: Record<string, ParticleDef> = {
         },
         color: 0xffffff,
     },
+    flux_rifle_ammo: {
+        image: ["part-wedge-01.img"],
+        life: new Range(0.5, 0.75),
+        drag: new Range(3, 4),
+        rotVel: new Range(Math.PI * 3, Math.PI * 3),
+        scale: {
+            start: 0.07,
+            end: 0.04,
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 1,
+            end: 0,
+            lerp: new Range(0.95, 1),
+        },
+        color: 0x00ffff,
+    },
     snow_ammo: {
         image: ["part-wedge-01.img"],
         life: new Range(0.5, 0.75),

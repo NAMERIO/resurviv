@@ -235,6 +235,8 @@ const _allowedEmotes = [
 const _allowedPerks = [
     "leadership",
     "steelskin",
+    "splinter",
+    "ap_rounds",
 
 ];
 
