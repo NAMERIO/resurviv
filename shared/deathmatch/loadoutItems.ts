@@ -75,5 +75,6 @@ export const allowedGuns = [
     // "m79",
     // "waterGun",
     // "rainbow_blaster",
+    // "flux_rifle"
     "snow_cannon",
 ];
