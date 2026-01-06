@@ -3497,6 +3497,35 @@ a:active {
   }
 }
 
+@keyframes perksPulse {
+  /* for pulse */
+  from {
+    background-color: #326881;
+    -webkit-box-shadow: 0 0 9px #44afc7;
+  }
+  50% {
+    background-color: #326881;
+    -webkit-box-shadow: 0 0 18px #44afc7;
+  }
+  to {
+    background-color: #326881;
+    -webkit-box-shadow: 0 0 9px #44afc7;
+  }
+}
+.btn-mode-perks {
+  /* for desktop */
+  animation-name: perksPulse;
+  border-bottom: 4px solid #247297;
+}
+
+@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+  /* for phone */
+  .btn-mode-perks {
+    border-bottom: 2px solid #247297;
+  }
+}
+
+
 #btns-quick-start {
   display: flex;
 }

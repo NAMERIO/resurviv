@@ -16,9 +16,9 @@ const config = {
 const mapDef = {
     desc: {
         name: "Perks",
-        icon: "img/loot/loot-perk-phoenix.svg",
+        icon: "img/loot/loot-perk-armor_master.svg",
         buttonCss: "btn-mode-perks",
-        backgroundImg: "img/main_splash_cobalt.png",
+        backgroundImg: "img/main_splash_perks_01.png",
     },
     assets: {
         audio: [
