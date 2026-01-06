@@ -233,11 +233,11 @@ const _allowedEmotes = [
 ];
 
 const _allowedPerks = [
-    "leadership",
-    "steelskin",
-    "splinter",
-    "ap_rounds",
-
+    "melee_runner",
+    "armor_master",
+    "quick_reload",
+    "melee_striker",
+    "gun_master",
 ];
 
 export interface UnlockDef {

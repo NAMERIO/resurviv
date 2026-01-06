@@ -50,6 +50,21 @@ export const PerkProperties = {
     tree_climbing: {
         waterSpeedBoost: 2,
     },
+    melee_runner: {
+        meleeSpeedMult: 1.25,
+    },
+    melee_striker: {
+        meleeDamageMult: 1.5,
+    },
+    gun_master: {
+        gunDamageMult: 1.1,
+    },
+    armor_master: {
+        armorBonus: 0.1,
+    },
+    quick_reload: {
+        reloadTimeMult: 0.7,
+    },
     bonus_9mm: {
         spreadMul: 1.1,
     },
@@ -70,6 +85,7 @@ export const PerkProperties = {
 export interface PerkDef {
     readonly type: "perk";
     name: string;
+    lore?: string;
     lootImg: {
         sprite: string;
         tint: number;
@@ -684,6 +700,81 @@ export const PerkDefs: Record<string, PerkDef> = {
         emoteOnPickup: "emote_turkeyanimal",
         lootImg: {
             sprite: "loot-perk-turkey_shoot.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    melee_runner: {
+        name: "Melee Runner",
+        type: "perk",
+        lore: "Move faster while your melee is equipped.",
+        lootImg: {
+            sprite: "loot-perk-melee-runner.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    melee_striker: {
+        name: "Melee Striker",
+        type: "perk",
+        lore: "Your melee attacks deal 50% more damage.",
+        lootImg: {
+            sprite: "loot-perk-melee-striker.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    gun_master: {
+        name: "Gun Master",
+        type: "perk",
+        lore: "Your guns deal 10% more damage.",
+        lootImg: {
+            sprite: "loot-perk-gun-master.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    armor_master: {
+        name: "Armor Master",
+        type: "perk",
+        lore: "Your helmet and chest reduce 10% more damage.",
+        lootImg: {
+            sprite: "loot-perk-armor_master.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    quick_reload: {
+        name: "Quick Reload",
+        type: "perk",
+        lore: "Reloads 30% faster.",
+        lootImg: {
+            sprite: "loot-perk-quick-reload.img",
             tint: 0xffffff,
             border: "loot-circle-outer-03.img",
             borderTint: 0xffffff,

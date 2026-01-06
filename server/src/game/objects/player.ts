@@ -2672,12 +2672,20 @@ export class Player extends BaseGameObject {
 
             const chest = GameObjectDefs[this.chest] as ChestDef;
             if (chest && !isHeadShot) {
-                reduceDamage(chest.damageReduction);
+                let chestReduction = chest.damageReduction;
+                if (this.hasPerk("armor_master")) {
+                    chestReduction *= 1 + (PerkProperties.armor_master?.armorBonus ?? 0);
+                }
+                reduceDamage(chestReduction);
             }
 
             const helmet = GameObjectDefs[this.helmet] as HelmetDef;
             if (helmet) {
-                reduceDamage(helmet.damageReduction * (isHeadShot ? 1 : 0.3));
+                let helmetReduction = helmet.damageReduction * (isHeadShot ? 1 : 0.3);
+                if (this.hasPerk("armor_master")) {
+                    helmetReduction *= 1 + (PerkProperties.armor_master?.armorBonus ?? 0);
+                }
+                reduceDamage(helmetReduction);
             }
         }
 
@@ -4881,6 +4889,13 @@ export class Player extends BaseGameObject {
         if (hasFieldMedic && this.actionType == GameConfig.Action.UseItem) {
             this.speed += PerkProperties.field_medic.speedBoost;
         }
+
+        // melee_runner perk: increase movement speed by multiplier while holding a melee weapon
+        if ((weaponDef as any).type === "melee" && this.hasPerk("melee_runner")) {
+            const mult = PerkProperties.melee_runner.meleeSpeedMult as number;
+            if (mult && mult > 0) this.speed *= mult;
+        }
+        
 
         this.speed = math.clamp(this.speed, 1, 10000);
     }

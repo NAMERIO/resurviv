@@ -488,6 +488,15 @@ export class WeaponManager {
             action = GameConfig.Action.ReloadAlt;
         }
 
+        if (this.player.hasPerk("quick_reload")) {
+            const mult = PerkProperties.quick_reload?.reloadTimeMult as
+                | number
+                | undefined;
+            if (typeof mult === "number" && isFinite(mult) && mult > 0) {
+                duration = duration * mult;
+            }
+        }
+
         this.player.doAction(this.activeWeapon, action, duration);
     }
 
@@ -765,6 +774,13 @@ export class WeaponManager {
         let damageMult = 1;
         if (hasSplinter) {
             damageMult *= PerkProperties.splinter.mainDamageMult;
+        }
+
+        if (this.player.hasPerk("gun_master")) {
+            const gmult = PerkProperties.gun_master?.gunDamageMult as number | undefined;
+            if (typeof gmult === "number" && isFinite(gmult) && gmult > 0) {
+                damageMult *= gmult;
+            }
         }
 
         const saturated = this.isBulletSaturated(itemDef.ammo);
@@ -1091,7 +1107,11 @@ export class WeaponManager {
                 if (obj.interactable) obj.interact(this.player);
             } else if (obj.__type === ObjectType.Player) {
                 obj.damage({
-                    amount: meleeDef.damage,
+                        amount:
+                            meleeDef.damage *
+                            (this.player.hasPerk("melee_striker")
+                                ? (PerkProperties.melee_striker?.meleeDamageMult as number) ?? 1
+                                : 1),
                     gameSourceType: this.activeWeapon,
                     damageType: GameConfig.DamageType.Player,
                     source: this.player,

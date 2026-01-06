@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="128"
+   height="128"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="loot-perk-armor_master.svg"
+   xml:space="preserve"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+     id="defs1" /><sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="3.1679688"
+     inkscape:cx="16.887793"
+     inkscape:cy="99.274969"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" /><path
+     d="M 53.112614,4.8934063 49.129951,23.128262 24.594723,27.140501 65.060617,38.719635 105.5265,27.140501 80.991284,23.128262 77.008622,4.8934063 70.22116,10.073244 67.233663,23.750242 H 62.887578 L 59.900075,10.07296 Z M 18.607532,30.712824 5.3206069,45.92212 17.268606,64.156978 23.683194,56.814597 30.309106,34.061769 Z m 92.906168,0 -11.701573,3.348661 6.626163,22.752827 6.41434,7.34238 11.94799,-18.234857 z m -76.844818,4.596323 -5.008949,17.200315 3.43754,15.740672 29.722894,18.900994 V 43.36525 Z m 60.783474,0 L 67.30087,43.36525 V 87.151128 L 97.023512,68.250134 100.46106,52.509462 Z M 37.181948,76.713674 v 16.044965 l 25.638419,8.726241 v -8.467535 z m 55.757344,0 L 67.30087,93.01763 v 8.46725 L 92.939292,92.758639 Z M 37.181948,98.236506 v 16.066044 l 25.638419,4.1923 v -11.53268 z m 55.757344,0 -25.638422,8.725664 v 11.53297 l 25.638422,-4.1923 z"
+     fill="#ffffff"
+     fill-opacity="1"
+     id="path2-3"
+     style="fill:#ffffff;fill-opacity:1;stroke-width:0.266311" /></svg>
