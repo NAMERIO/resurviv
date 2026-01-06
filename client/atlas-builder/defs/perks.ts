@@ -7,7 +7,6 @@ export const PerksAtlas: AtlasDef = {
         ...BuildingSprites.reactor,
         "map/map-silo-09.svg",
         "map/map-gun-lasr.svg",
-        "map/map-gun-mount-lasr.svg",
         "map/map-vat-eye.svg",
         "map/map-vat-h20.svg",
         "map/map-vat-space-snout.svg",

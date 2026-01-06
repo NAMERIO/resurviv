@@ -1458,6 +1458,37 @@ function createSilo<T extends ObstacleDef>(e: Partial<T>): T {
     };
     return util.mergeDeep(t, e || {});
 }
+function createReactorSilo<T extends ObstacleDef>(e: Partial<T>): T {
+    const t = {
+        type: "obstacle",
+        scale: { createMin: 1, createMax: 1, destroy: 1 },
+        collision: collider.createCircle(v2.create(0, 0), 5.5),
+        height: 7,
+        collidable: true,
+        destructible: false,
+        health: 300,
+        hitParticle: "barrelChip",
+        explodeParticle: "barrelBreak",
+        reflectBullets: true,
+        loot: [],
+        map: { display: true, color: 0x3e3e3e, scale: 1 },
+        terrain: { grass: true, beach: false },
+        img: {
+            sprite: "map-silo-09.img",
+            scale: 0.5,
+            alpha: 1,
+            tint: 0xffffff,
+            zIdx: 10,
+        },
+        sound: {
+            bullet: "silo_bullet",
+            punch: "silo_bullet",
+            explode: "barrel_break_01",
+            enter: "none",
+        },
+    };
+    return util.mergeDeep(t, e || {});
+}
 function createStone<T extends ObstacleDef>(e: Partial<T>): T {
     const t = {
         type: "obstacle",
@@ -7098,10 +7129,81 @@ function createPoliceStation<T extends BuildingDef>(e: Partial<T>): T {
 function createReactor<T extends ExtendedBuildingDef>(e: Partial<T>): T {
     const t = {
         type: "building",
-        map: { display: true, color: 0x621c1c, scale: 1 },
+        map: {
+            display: true,
+            shapes: [
+                {
+                    collider: collider.createAabbExtents(v2.create(-11.5, 0), v2.create(10, 21)),
+                    color: 2791335,
+                },
+                {
+                    collider: collider.createAabbExtents(v2.create(-11.5, 0), v2.create(20, 11)),
+                    color: 2791335,
+                },
+                {
+                    collider: collider.createAabbExtents(v2.create(-0.9, 0), v2.create(5.5, 18.5)),
+                    color: 2791335,
+                },
+                {
+                    collider: collider.createAabbExtents(v2.create(-22, 0), v2.create(5.5, 18.5)),
+                    color: 2791335,
+                },
+                {
+                    collider: collider.createAabbExtents(v2.create(19.5, 14), v2.create(12, 11)),
+                    color: 1192276,
+                },
+                {
+                    collider: collider.createAabbExtents(v2.create(19, -14), v2.create(12, 11)),
+                    color: 1192276,
+                },
+                {
+                    collider: collider.createAabbExtents(v2.create(7.6, 0), v2.create(4.5, 8)),
+                    color: 2791335,
+                },
+                {
+                    collider: collider.createAabbExtents(v2.create(14.5, 0), v2.create(5.5, 8)),
+                    color: 1192276,
+                },
+                {
+                    collider: collider.createCircle(v2.create(-11, 0), 5),
+                    color: 0x2a2a2a,
+                },
+            ],
+        },
         terrain: { grass: true, beach: false },
         mapObstacleBounds: [
-            collider.createAabbExtents(v2.create(0, 0), v2.create(19, 17.5)),
+            collider.createAabbExtents(
+                v2.create(7.5, 0),
+                v2.create(4.5, 8),
+            ),
+            collider.createAabbExtents(
+                v2.create(-0.9, 0),
+                v2.create(5.5, 18.5),
+            ),
+            collider.createAabbExtents(
+                v2.create(-22, 0),
+                v2.create(5.5, 18.5),
+            ),
+            collider.createAabbExtents(
+                v2.create(-11.5, 0),
+                v2.create(10, 21),
+            ),
+            collider.createAabbExtents(
+                v2.create(-11.5, 0),
+                v2.create(20, 11),
+            ),
+            collider.createAabbExtents(
+                v2.create(19, 14),
+                v2.create(12, 11),
+            ),
+            collider.createAabbExtents(
+                v2.create(19, -14),
+                v2.create(12, 11),
+            ),
+            collider.createAabbExtents(
+                v2.create(14.5, 0),
+                v2.create(5.5, 8),
+            ),
         ],
         zIdx: 1,
         floor: {
@@ -7109,17 +7211,36 @@ function createReactor<T extends ExtendedBuildingDef>(e: Partial<T>): T {
                 {
                     type: "house",
                     collision: [
-                        collider.createAabbExtents(v2.create(0, 0), v2.create(23.85, 19.8)),
+                        collider.createAabbExtents(v2.create(19, 14), v2.create(9, 8.5)),
+                        collider.createAabbExtents(v2.create(19, -14), v2.create(9, 8.5)),
+                        collider.createAabbExtents(v2.create(14.5, 0), v2.create(3.8, 6)),
+                    ],
+                },
+                {
+                    type: "warehouse",
+                    collision: [
+                        collider.createAabbExtents(v2.create(7.5, 0), v2.create(3, 6)),
+                        collider.createAabbExtents(v2.create(-11.5, 0), v2.create(7, 17)),
+                        collider.createAabbExtents(v2.create(-11.5, 0), v2.create(16, 8)),
+                        collider.createAabbExtents(v2.create(-0.9, 0), v2.create(3.7, 15)),
+                        collider.createAabbExtents(v2.create(-22, 0), v2.create(3.7, 15)), 
                     ],
                 },
             ],
-            imgs: [ 
+            imgs: [
+                {
+                    sprite: "map-building-dock-floor-01a.img",
+                    pos: v2.create(-24.5, 0),
+                    scale: 1.2,
+                    alpha: 1,
+                    tint: 3618632,
+                },
                 {
                     sprite: "map-building-reactor.img",
                     pos: v2.create(0, 0),
                     scale: 0.5,
                     alpha: 1,
-                    tint: 0xffffff,
+                    tint: 16777215,
                 },
             ],
         },
@@ -7127,12 +7248,58 @@ function createReactor<T extends ExtendedBuildingDef>(e: Partial<T>): T {
             zoomRegions: [
                 {
                     zoomIn: collider.createAabbExtents(
-                        v2.create(0, 0),
-                        v2.create(14.5, 13),
+                        v2.create(7.5, 0),
+                        v2.create(3, 6),
+                    ),
+                     zoomOut: collider.createAabbExtents(
+                        v2.create(-28, 0),
+                        v2.create(4, 8),
+                    ),
+                },
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(-0.9, 0),
+                        v2.create(3.7, 15),
                     ),
                     zoomOut: collider.createAabbExtents(
-                        v2.create(0, 0),
-                        v2.create(16.5, 15),
+                        v2.create(20, 0),
+                        v2.create(3, 6),
+                    ),
+                },
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(-22, 0),
+                        v2.create(3.7, 15),
+                    ),
+                },
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(-11.5, 0),
+                        v2.create(7, 17),
+                    ),
+                },
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(-11.5, 0),
+                        v2.create(16, 8),
+                    ),
+                },
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(19, 14),
+                        v2.create(9, 8.5),
+                    ),
+                },
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(19, -14),
+                        v2.create(9, 8.5),
+                    ),
+                },
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(14.5, 0),
+                        v2.create(3.8, 6),
                     ),
                 },
             ],
@@ -7152,7 +7319,106 @@ function createReactor<T extends ExtendedBuildingDef>(e: Partial<T>): T {
                 },
             ],
         },
-        mapObjects: [],
+        mapObjects: [
+            { type: "metal_wall_ext_13", pos: v2.create(17.5, 21.8), scale: 1, ori: 1 },
+            { type: "metal_wall_ext_13", pos: v2.create(17.5, -21.9), scale: 1, ori: 1 },
+
+            { type: "locker_03", pos: v2.create(17.3, -21.7), scale: 1, ori: 10 },
+            { type: "locker_02", pos: v2.create(13.3, -21.7), scale: 1, ori: 10 },
+            { type: "locker_01", pos: v2.create(21.4, -21.7), scale: 1, ori: 10 },
+
+            { type: "locker_03", pos: v2.create(17.3, 21.7), scale: 1, ori: 0 },
+            { type: "locker_02", pos: v2.create(13.3, 21.7), scale: 1, ori: 0 },
+            { type: "locker_01", pos: v2.create(21.4, 21.7), scale: 1, ori: 0 },
+            { type: "locker_01", pos: v2.create(25.4, 21.7), scale: 1, ori: 0 },
+            { type: "locker_01", pos: v2.create(25.1, -21.7), scale: 1, ori: 10 },
+
+            { type: "vat_brain", pos: v2.create(-1.3, 10.5), scale: 1, ori: 2.5 },
+            { type: "vat_eye", pos: v2.create(-21.5, 10.7), scale: 1, ori: -8.5 },
+
+            { type: "vat_revive", pos: v2.create(-1.3, -10.5), scale: 1, ori: 2.5 },
+            { type: "vat_space_snout", pos: v2.create(-21.5, -10.7), scale: 1, ori: 8.5 },
+
+            { type: "gun_mount_lasr_swrd", pos: v2.create(11.7, 13), scale: 1, ori: 1 },
+            { type: "gun_mount_flux_rifle", pos: v2.create(11.7, -13), scale: 1, ori: 1 },
+
+            { type: "house_window_01", pos: v2.create(-11.8, 17), scale: 1, ori: 3 },
+            { type: "house_window_01", pos: v2.create(-11.6, -17.15), scale: 1, ori: 3 },
+
+            { type: "reactor_wall_1", pos: v2.create(7.6, -6), scale: 1, ori: 1 },
+            { type: "reactor_wall_1", pos: v2.create(7.6, 5.8), scale: 1, ori: 1 },
+
+            { type: "reactor_wall_2", pos: v2.create(10.5, 14), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_18", pos: v2.create(19, 22.9), scale: 1, ori: 1 },
+            { type: "reactor_wall_2", pos: v2.create(27.5, 14.5), scale: 1, ori: 1 },
+
+            { type: "brick_wall_ext_3", pos: v2.create(26.5, 6), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_3", pos: v2.create(19.9, 6), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_3", pos: v2.create(19.7, -6), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_3", pos: v2.create(26.5, -6), scale: 1, ori: 1 },
+
+            { type: "brick_wall_ext_5", pos: v2.create(18.75, 4.15), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_5", pos: v2.create(18.75, -4.15), scale: 1, ori: 0 },
+
+            { type: "brick_wall_ext_4", pos: v2.create(10.5, 3.8), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_4", pos: v2.create(10.5, -3.9), scale: 1, ori: 0 },
+
+            { type: "brick_wall_ext_18", pos: v2.create(19, -22.9), scale: 1, ori: 1 },
+            { type: "reactor_wall_2", pos: v2.create(27.5, -14.5), scale: 1, ori: 1 },
+            { type: "reactor_wall_2", pos: v2.create(10.5, -14.3), scale: 1, ori: 1 },
+
+            { type: "brick_wall_ext_3", pos: v2.create(4.9, -7), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_3", pos: v2.create(4.9, 6.8), scale: 1, ori: 0 },
+
+            { type: "brick_wall_ext_2", pos: v2.create(3.5, 7.85), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_2", pos: v2.create(3.5, -7.95), scale: 1, ori: 1 },
+
+            { type: "brick_wall_ext_8", pos: v2.create(3, 11.37), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_8", pos: v2.create(3, -11.37), scale: 1, ori: 0 },
+
+            { type: "brick_wall_ext_8", pos: v2.create(-1, -14.9), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_8", pos: v2.create(-1, 14.9), scale: 1, ori: 1 },
+
+            { type: "brick_wall_ext_2", pos: v2.create(-4.5, -16.3), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_2", pos: v2.create(-4.5, 16.15), scale: 1, ori: 0 },
+
+            { type: "brick_wall_ext_6", pos: v2.create(-7.4, 16.65), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_5", pos: v2.create(-15.7, 16.65), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_6", pos: v2.create(-7.2, -16.79), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_5", pos: v2.create(-15.6, -16.85), scale: 1, ori: 1 },
+
+            { type: "brick_wall_ext_2", pos: v2.create(-18.1, 16.15), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_2", pos: v2.create(-18.1, -16.15), scale: 1, ori: 0 },
+
+            { type: "brick_wall_ext_8", pos: v2.create(-21.6, -14.99), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_8", pos: v2.create(-21.6, 14.99), scale: 1, ori: 1 },
+
+            { type: "brick_wall_ext_8", pos: v2.create(-25.59, -11.5), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_8", pos: v2.create(-25.59, 11.5), scale: 1, ori: 0 },
+
+            { type: "brick_wall_ext_3", pos: v2.create(-26.5, 7.8), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_3", pos: v2.create(-26.5, -7.9), scale: 1, ori: 1 },
+
+            { type: "brick_wall_ext_3", pos: v2.create(-27.5, -6.9), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_3", pos: v2.create(-27.5, 6.9), scale: 1, ori: 0 },
+
+            { type: "house_window_01", pos: v2.create(23.3, 5.5), scale: 1, ori: 1 },
+            { type: "house_window_01", pos: v2.create(23.1, -5.5), scale: 1, ori: 1 },
+
+            { type: "house_door_01", pos: v2.create(18.7, -2), scale: 1, ori: 0 },
+            { type: "house_door_02", pos: v2.create(10.5, -2.11), scale: 1, ori: 0 },
+
+            { type: "silo_09", pos: v2.create(-11.5, 0.3), scale: 1, ori: 1 },
+
+            { type: "sandbags_01", pos: v2.create(23.2, 14), scale: 1, ori: 0 },
+            { type: "sandbags_01", pos: v2.create(23.2, -13.5), scale: 1, ori: 0 },
+
+            { type: "barrel_01", pos: v2.create(-7.5, -14.4), scale: 1, ori: 0 },
+            { type: "barrel_01", pos: v2.create(-15.5, 14.2), scale: 1, ori: 0 },
+            { type: "barrel_02", pos: v2.create(-15.5, -14.4), scale: 1, ori: 0 },
+            { type: "barrel_02", pos: v2.create(-7.5, 14.2), scale: 1, ori: 0 },
+        ],
+
     };
     return util.mergeDeep(t, e || {});
 }
@@ -10249,6 +10515,14 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         loot: [autoLoot("m1100", 1)],
         img: { sprite: "map-gun-mount-05.img" },
     }),
+    gun_mount_flux_rifle: createGunMount({
+        loot: [autoLoot("flux_rifle", 1)],
+        img: { sprite: "map-gun-flux-rifle.img" },
+    }),
+    gun_mount_lasr_swrd: createGunMount({
+        loot: [autoLoot("lasr_swrd_03", 1)],
+        img: { sprite: "map-gun-mount-lasr.img" },
+    }),
     locker_01: createLocker({
         img: { sprite: "map-locker-01.img" },
         loot: [tierLoot("tier_world", 1, 1)],
@@ -10537,6 +10811,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         img: { sprite: "map-sandbags-02.img" },
     }),
     silo_01: createSilo({}),
+    silo_09: createReactorSilo({}),
     silo_01po: createSilo({
         scale: { createMin: 1, createMax: 1, destroy: 0.9 },
         destructible: true,
@@ -11381,6 +11656,180 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         terrain: { grass: true, beach: false },
         img: {
             sprite: "map-vat-02.img",
+            residue: "map-vat-res.img",
+            scale: 0.5,
+            alpha: 1,
+            tint: 0xffffff,
+            zIdx: 10,
+        },
+        sound: {
+            bullet: "glass_bullet",
+            punch: "glass_bullet",
+            explode: "window_break_01",
+            enter: "none",
+        },
+    },
+    vat_brain: {
+        type: "obstacle",
+        scale: { createMin: 1, createMax: 1, destroy: 0.9 },
+        collision: collider.createCircle(v2.create(0, 0), 2),
+        height: 0.5,
+        collidable: true,
+        destructible: true,
+        health: 250,
+        reflectBullets: false,
+        hitParticle: "glassChip",
+        explodeParticle: "windowBreak",
+        loot: [],
+        map: { display: true, color: 0xb3b3b3, scale: 1 },
+        terrain: { grass: false, beach: false },
+        img: {
+            sprite: "map-vat-brain.img",
+            residue: "map-vat-res.img",
+            scale: 0.5,
+            alpha: 1,
+            tint: 0xffffff,
+            zIdx: 10,
+        },
+        sound: {
+            bullet: "glass_bullet",
+            punch: "glass_bullet",
+            explode: "window_break_01",
+            enter: "none",
+        },
+    },
+    vat_cosmic_blue: {
+        type: "obstacle",
+        scale: { createMin: 1, createMax: 1, destroy: 0.9 },
+        collision: collider.createCircle(v2.create(0, 0), 2),
+        height: 0.5,
+        collidable: true,
+        destructible: true,
+        health: 250,
+        reflectBullets: false,
+        hitParticle: "glassChip",
+        explodeParticle: "windowBreak",
+        loot: [],
+        map: { display: true, color: 0xb3b3b3, scale: 1 },
+        terrain: { grass: false, beach: false },
+        img: {
+            sprite: "map-vat-cosmic-blue.img",
+            residue: "map-vat-res.img",
+            scale: 0.5,
+            alpha: 1,
+            tint: 0xffffff,
+            zIdx: 10,
+        },
+        sound: {
+            bullet: "glass_bullet",
+            punch: "glass_bullet",
+            explode: "window_break_01",
+            enter: "none",
+        },
+    },
+    vat_eye: {
+        type: "obstacle",
+        scale: { createMin: 1, createMax: 1, destroy: 0.9 },
+        collision: collider.createCircle(v2.create(0, 0), 2),
+        height: 0.5,
+        collidable: true,
+        destructible: true,
+        health: 250,
+        reflectBullets: false,
+        hitParticle: "glassChip",
+        explodeParticle: "windowBreak",
+        loot: [],
+        map: { display: true, color: 0xb3b3b3, scale: 1 },
+        terrain: { grass: false, beach: false },
+        img: {
+            sprite: "map-vat-eye.img",
+            residue: "map-vat-res.img",
+            scale: 0.5,
+            alpha: 1,
+            tint: 0xffffff,
+            zIdx: 10,
+        },
+        sound: {
+            bullet: "glass_bullet",
+            punch: "glass_bullet",
+            explode: "window_break_01",
+            enter: "none",
+        },
+    },
+    vat_h20: {
+        type: "obstacle",
+        scale: { createMin: 1, createMax: 1, destroy: 0.9 },
+        collision: collider.createCircle(v2.create(0, 0), 2),
+        height: 0.5,
+        collidable: true,
+        destructible: true,
+        health: 250,
+        reflectBullets: false,
+        hitParticle: "glassChip",
+        explodeParticle: "windowBreak",
+        loot: [],
+        map: { display: true, color: 0xb3b3b3, scale: 1 },
+        terrain: { grass: false, beach: false },
+        img: {
+            sprite: "map-vat-h20.img",
+            residue: "map-vat-res.img",
+            scale: 0.5,
+            alpha: 1,
+            tint: 0xffffff,
+            zIdx: 10,
+        },
+        sound: {
+            bullet: "glass_bullet",
+            punch: "glass_bullet",
+            explode: "window_break_01",
+            enter: "none",
+        },
+    },
+    vat_revive: {
+        type: "obstacle",
+        scale: { createMin: 1, createMax: 1, destroy: 0.9 },
+        collision: collider.createCircle(v2.create(0, 0), 2),
+        height: 0.5,
+        collidable: true,
+        destructible: true,
+        health: 250,
+        reflectBullets: false,
+        hitParticle: "glassChip",
+        explodeParticle: "windowBreak",
+        loot: [autoLoot("self_revive", 1)],
+        map: { display: true, color: 0xb3b3b3, scale: 1 },
+        terrain: { grass: false, beach: false },
+        img: {
+            sprite: "map-vat-revive.img",
+            residue: "map-vat-res.img",
+            scale: 0.5,
+            alpha: 1,
+            tint: 0xffffff,
+            zIdx: 10,
+        },
+        sound: {
+            bullet: "glass_bullet",
+            punch: "glass_bullet",
+            explode: "window_break_01",
+            enter: "none",
+        },
+    },
+    vat_space_snout: {
+        type: "obstacle",
+        scale: { createMin: 1, createMax: 1, destroy: 0.9 },
+        collision: collider.createCircle(v2.create(0, 0), 2),
+        height: 0.5,
+        collidable: true,
+        destructible: true,
+        health: 250,
+        reflectBullets: false,
+        hitParticle: "glassChip",
+        explodeParticle: "windowBreak",
+        loot: [],
+        map: { display: true, color: 0xb3b3b3, scale: 1 },
+        terrain: { grass: false, beach: false },
+        img: {
+            sprite: "map-vat-space-snout.img",
             residue: "map-vat-res.img",
             scale: 0.5,
             alpha: 1,
@@ -17877,6 +18326,75 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         },
     } as unknown as Partial<BuildingDef>),
     police_01p: createPoliceStation({
+        map: {
+            display: true,
+            shapes: [
+                {
+                    collider: collider.createAabbExtents(
+                        v2.create(-21, -8),
+                        v2.create(21.25, 14),
+                    ),
+                    color: 0x595959,
+                },
+                {
+                    collider: collider.createAabbExtents(
+                        v2.create(-24.5, 8.5),
+                        v2.create(17.75, 9.75),
+                    ),
+                    color: 926528,
+                },
+                {
+                    collider: collider.createAabbExtents(
+                        v2.create(-3.5, 12),
+                        v2.create(3.5, 6.25),
+                    ),
+                    color: 0x41495c,
+                },
+                {
+                    collider: collider.createAabbExtents(
+                        v2.create(10.35, 0),
+                        v2.create(10.5, 22),
+                    ),
+                    color: 926528,
+                },
+                {
+                    collider: collider.createAabbExtents(
+                        v2.create(31.25, 12.5),
+                        v2.create(10.75, 9.5),
+                    ),
+                    color: 926528,
+                },
+                {
+                    collider: collider.createAabbExtents(
+                        v2.create(-3.5, 2.5),
+                        v2.create(2.25, 2.25),
+                    ),
+                    color: 0x604a40,
+                },
+                {
+                    collider: collider.createCircle(v2.create(-30.5, -18), 1.5),
+                    color: 0x7a7a7a,
+                },
+                {
+                    collider: collider.createCircle(v2.create(-20.5, -10.5), 1.5),
+                    color: 0x7a7a7a,
+                },
+                {
+                    collider: collider.createAabbExtents(
+                        v2.create(-38.5, -7),
+                        v2.create(1.4, 3.1),
+                    ),
+                    color: 0xca9c63,
+                },
+                {
+                    collider: collider.createAabbExtents(
+                        v2.create(-7.5, -19.5),
+                        v2.create(3.1, 1.4),
+                    ),
+                    color: 0xca9c63,
+                },
+            ],
+        },
         ceiling: {
             imgs: [
                 {
@@ -17969,6 +18487,14 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         stand: "stand_01",
     }),
     reactor_01: createReactor({}),
+    reactor_wall_1: createWall({
+        material: "brick",
+        extents: v2.create(0.5, 2.5),
+    }),
+    reactor_wall_2: createWall({
+        material: "brick",
+        extents: v2.create(8.5, 0.5),
+    }),
     house_red_01x: createHouseRed({
         ceiling: {
             imgs: [
