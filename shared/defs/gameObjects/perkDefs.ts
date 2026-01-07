@@ -829,7 +829,7 @@ export const PerkDefs: Record<string, PerkDef> = {
     quick_reload: {
         name: "Quick Reload",
         type: "perk",
-        lore: "Reloads non-shotgun weapons 30% faster",
+        lore: "Reloads weapons 30% faster (does not affect SPAS-12, M1100, or M1014)",
         lootImg: {
             sprite: "loot-perk-quick-reload.img",
             tint: 0xffffff,
