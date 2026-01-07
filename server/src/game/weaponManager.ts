@@ -488,7 +488,7 @@ export class WeaponManager {
             action = GameConfig.Action.ReloadAlt;
         }
 
-        if (this.player.hasPerk("quick_reload")) {
+        if (this.player.hasPerk("quick_reload") && weaponDef.ammo !== "12gauge") {
             const mult = PerkProperties.quick_reload?.reloadTimeMult as
                 | number
                 | undefined;
