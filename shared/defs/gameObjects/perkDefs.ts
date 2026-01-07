@@ -59,6 +59,10 @@ export const PerkProperties = {
     gun_master: {
         gunDamageMult: 1.1,
     },
+    first_hit: {
+        firstShieldReduction: 0.25,
+        firstShieldBreakMs: 300,
+    },
     armor_master: {
         armorBonus: 0.1,
     },
@@ -712,7 +716,7 @@ export const PerkDefs: Record<string, PerkDef> = {
     melee_runner: {
         name: "Melee Runner",
         type: "perk",
-        lore: "Move faster while your melee is equipped.",
+        lore: "Move 20% faster while your melee is equipped.",
         lootImg: {
             sprite: "loot-perk-melee-runner.img",
             tint: 0xffffff,
@@ -745,6 +749,21 @@ export const PerkDefs: Record<string, PerkDef> = {
         lore: "Your guns deal 10% more damage.",
         lootImg: {
             sprite: "loot-perk-gun-master.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    first_hit: {
+        name: "First Shield",
+        type: "perk",
+        lore: "When at full health, the first hit you take deals 25% less damage.",
+        lootImg: {
+            sprite: "loot-perk-shield.img",
             tint: 0xffffff,
             border: "loot-circle-outer-03.img",
             borderTint: 0xffffff,

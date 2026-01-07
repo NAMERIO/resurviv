@@ -628,6 +628,7 @@ export class Player extends BaseGameObject {
 
     pushBack: Vec2 = v2.create(0, 0);
     pushBackTime: number = 0;
+    private _firstShieldBrokenUntil: number = 0;
 
     posOld = v2.create(0, 0);
 
@@ -2687,6 +2688,19 @@ export class Player extends BaseGameObject {
                 }
                 reduceDamage(helmetReduction);
             }
+        }
+
+        if (
+            this.hasPerk("first_hit") &&
+            this._health === GameConfig.player.health &&
+            this.game.now > (this._firstShieldBrokenUntil || 0)
+        ) {
+            const red = PerkProperties.first_hit?.firstShieldReduction ?? 0.25;
+            if (typeof red === "number" && red > 0 && red < 1) {
+                finalDamage -= finalDamage * red;
+            }
+            const breakMs = PerkProperties.first_hit?.firstShieldBreakMs ?? 300;
+            this._firstShieldBrokenUntil = this.game.now + breakMs;
         }
 
         if (this._health - finalDamage < 0) finalDamage = this.health;
