@@ -642,6 +642,8 @@
   "game-enter-game": "ENTER GAME",
   "game-leadership": "Leadership",
   "game-leadership-desc": "Max adrenaline.</br>Increased size.",
+  "game-leadership2": "Leadership II",
+  "game-leadership2-desc": "Max adrenaline all time.",
   "game-assume_leadership": "Assume Leadership",
   "game-assume_leadership-desc": "Half-full adrenaline.</br>Slightly increased size.",
   "game-firepower": "Firepower",

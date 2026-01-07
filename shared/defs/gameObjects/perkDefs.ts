@@ -3,6 +3,9 @@ export const PerkProperties = {
         minBoost: 100,
         scale: 0.25,
     },
+    leadership2: {
+        minBoost: 100,
+    },
     assume_leadership: {
         minBoost: 50,
         scale: 0.15,
@@ -118,6 +121,21 @@ export const PerkDefs: Record<string, PerkDef> = {
     leadership: {
         name: "Leadership",
         lore: "Max adrenaline. But you increased size.",
+        type: "perk",
+        lootImg: {
+            sprite: "loot-perk-leadership.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    leadership2: {
+        name: "Leadership",
+        lore: "Max adrenaline all time.",
         type: "perk",
         lootImg: {
             sprite: "loot-perk-leadership.img",
