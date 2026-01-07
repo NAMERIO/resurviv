@@ -730,7 +730,7 @@
   "game-armor_master": "Armor Master",
   "game-armor_master-desc": "Your helmet and chest reduce 10% more damage.",
   "game-quick_reload": "Quick Reload",
-  "game-quick_reload-desc": "Reloads 30% faster.",
+  "game-quick_reload-desc": "Reloads non-shotgun weapons 30% faster",
   "game-melee_striker": "Melee Striker",
   "game-melee_striker-desc": "Your melee attacks deal 50% more damage.",
   "game-gun_master": "Gun Master",
