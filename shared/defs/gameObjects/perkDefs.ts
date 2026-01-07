@@ -43,6 +43,11 @@ export const PerkProperties = {
     throw_slow: {
         slowDuration: 1.0,
     },
+    low_hp_surge: {
+        speedMult: 1.3,
+        duration: 1.5,
+        threshold: 30,
+    },
     gotw: {
         scale: 0.25,
         healthRegen: 0.5, // per second
@@ -737,6 +742,21 @@ export const PerkDefs: Record<string, PerkDef> = {
         lore: "Your throwables briefly slow enemies they hit.",
         lootImg: {
             sprite: "loot-perk-sticky-throw.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    low_hp_surge: {
+        name: "Last Stand",
+        type: "perk",
+        lore: "Gain a short burst of speed when you drop below 30 HP.",
+        lootImg: {
+            sprite: "loot-perk-low-hp-surge.img",
             tint: 0xffffff,
             border: "loot-circle-outer-03.img",
             borderTint: 0xffffff,

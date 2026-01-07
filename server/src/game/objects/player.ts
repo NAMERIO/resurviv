@@ -708,6 +708,7 @@ export class Player extends BaseGameObject {
     moveVel = v2.create(0, 0);
 
     shotSlowdownTimer: number = 0;
+    lowHpSurgeTicker: number = 0;
 
     freeSwitchTimer: number = 0;
 
@@ -2224,6 +2225,10 @@ export class Player extends BaseGameObject {
         if (this.shotSlowdownTimer <= 0) {
             this.shotSlowdownTimer = 0;
         }
+        this.lowHpSurgeTicker -= dt;
+        if (this.lowHpSurgeTicker <= 0) {
+            this.lowHpSurgeTicker = 0;
+        }
     }
 
     moveObjUpdate(occupiedBuilding?: Building): void {
@@ -2622,6 +2627,8 @@ export class Player extends BaseGameObject {
                 ? (params.source as Player)
                 : undefined;
 
+        const preHealth = this._health;
+
         // teammates can't deal damage to each other
         if (playerSource && params.source !== this) {
             if (playerSource.teamId === this.teamId && !this.disconnected) {
@@ -2716,6 +2723,15 @@ export class Player extends BaseGameObject {
         }
 
         this.health -= finalDamage;
+
+        if (this.hasPerk("low_hp_surge")) {
+            const props = PerkProperties.low_hp_surge as any;
+            const threshold = props?.threshold ?? 30;
+            const dur = props?.duration ?? 1.5;
+            if (preHealth >= threshold && this._health < threshold) {
+                this.lowHpSurgeTicker = Math.max(this.lowHpSurgeTicker, dur);
+            }
+        }
 
         if (this.game.isTeamMode) {
             this.setGroupStatuses();
@@ -4907,6 +4923,12 @@ export class Player extends BaseGameObject {
         // melee_runner perk: increase movement speed by multiplier while holding a melee weapon
         if ((weaponDef as any).type === "melee" && this.hasPerk("melee_runner")) {
             const mult = PerkProperties.melee_runner.meleeSpeedMult as number;
+            if (mult && mult > 0) this.speed *= mult;
+        }
+        
+        // low HP surge perk
+        if (this.lowHpSurgeTicker > 0 && this.hasPerk("low_hp_surge")) {
+            const mult = (PerkProperties.low_hp_surge as any)?.speedMult ?? 1.3;
             if (mult && mult > 0) this.speed *= mult;
         }
         

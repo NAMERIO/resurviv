@@ -240,6 +240,7 @@ const _allowedPerks = [
     "gun_master",
     "first_hit",
     "throw_slow",
+    "low_hp_surge",
 ];
 
 export interface UnlockDef {

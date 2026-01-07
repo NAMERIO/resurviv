@@ -725,6 +725,8 @@
   "game-melee_runner-desc": "You gain speed when you hold your melee out.",
   "game-throw_slow": "Sticky Throw",
   "game-throw_slow-desc": "Your throwables briefly slow enemies they hit.",
+  "game-low_hp_surge": "Last Stand",
+  "game-low_hp_surge-desc": "Gain 30% speed for 1.5s when your health drops below 30.",
   "game-armor_master": "Armor Master",
   "game-armor_master-desc": "Your helmet and chest reduce 10% more damage.",
   "game-quick_reload": "Quick Reload",
