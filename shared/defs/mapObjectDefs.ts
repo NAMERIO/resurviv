@@ -7475,7 +7475,7 @@ function createReactor<T extends ExtendedBuildingDef>(e: Partial<T>): T {
             { type: "vat_brain", pos: v2.create(-1.3, 10.5), scale: 1, ori: 2.5 },
             { type: "vat_eye", pos: v2.create(-21.5, 10.7), scale: 1, ori: -8.5 },
 
-            { type: "vat_revive", pos: v2.create(-1.3, -10.5), scale: 1, ori: 2.5 },
+            { type: "vat_explosive", pos: v2.create(-1.3, -10.5), scale: 1, ori: 3 },
             { type: "vat_space_snout", pos: v2.create(-21.5, -10.7), scale: 1, ori: 8.5 },
 
             { type: "gun_mount_lasr_swrd", pos: v2.create(11.7, 13), scale: 1, ori: 1 },
@@ -12034,7 +12034,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             enter: "none",
         },
     },
-    vat_revive: {
+    vat_explosive: {
         type: "obstacle",
         scale: { createMin: 1, createMax: 1, destroy: 0.9 },
         collision: collider.createCircle(v2.create(0, 0), 2),
@@ -12049,7 +12049,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         map: { display: true, color: 0xb3b3b3, scale: 1 },
         terrain: { grass: false, beach: false },
         img: {
-            sprite: "map-vat-revive.img",
+            sprite: "map-vat-explosive.img",
             residue: "map-vat-res.img",
             scale: 0.5,
             alpha: 1,
