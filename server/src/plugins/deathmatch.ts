@@ -50,7 +50,7 @@ const perks = [
     "chambered",
 ];
 
-const droppablePerks = ["ap_rounds"];
+const droppablePerks = ["ap_rounds", "self_revive"];
 
 export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
     if (data.player.game.aliveCount < 5) {
