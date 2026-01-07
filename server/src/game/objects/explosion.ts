@@ -6,6 +6,8 @@ import { math } from "../../../../shared/utils/math";
 import { assert, util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import type { Game } from "../game";
+import type { Player } from "./player";
+import { PerkProperties } from "../../../../shared/defs/gameObjects/perkDefs";
 import type { DamageParams, GameObject } from "./gameObject";
 import { EXPLOSION_LOOT_PUSH_FORCE } from "./loot";
 
@@ -168,6 +170,18 @@ export class ExplosionBarn {
                 }
                 if (def.dropRandomLoot) {
                     obj.dropRandomLoot();
+                }
+
+                const src = explosion.damageParams.source;
+                if (src && src.__type === ObjectType.Player) {
+                    const srcPlayer = src as Player;
+                    if (srcPlayer.hasPerk("throw_slow")) {
+                        const slowDur = (PerkProperties.throw_slow?.slowDuration as number) ?? 1.0;
+                        (obj as Player).shotSlowdownTimer = Math.max(
+                            (obj as Player).shotSlowdownTimer,
+                            slowDur,
+                        );
+                    }
                 }
             }
 

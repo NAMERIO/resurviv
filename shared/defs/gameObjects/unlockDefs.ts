@@ -239,6 +239,7 @@ const _allowedPerks = [
     "melee_striker",
     "gun_master",
     "first_hit",
+    "throw_slow",
 ];
 
 export interface UnlockDef {

@@ -40,6 +40,9 @@ export const PerkProperties = {
         refillInterval: 12, // means refill every x seconds
         giveInterval: 0.08, // interval between each grenade being given until the backpack is full
     },
+    throw_slow: {
+        slowDuration: 1.0,
+    },
     gotw: {
         scale: 0.25,
         healthRegen: 0.5, // per second
@@ -719,6 +722,21 @@ export const PerkDefs: Record<string, PerkDef> = {
         lore: "Move 20% faster while your melee is equipped.",
         lootImg: {
             sprite: "loot-perk-melee-runner.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    throw_slow: {
+        name: "Sticky Throw",
+        type: "perk",
+        lore: "Your throwables briefly slow enemies they hit.",
+        lootImg: {
+            sprite: "loot-perk-sticky-throw.img",
             tint: 0xffffff,
             border: "loot-circle-outer-03.img",
             borderTint: 0xffffff,
