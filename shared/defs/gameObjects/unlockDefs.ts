@@ -243,6 +243,7 @@ const _allowedPerks = [
     "low_hp_surge",
     "leadership",
     "chambered",
+    "mine_master"
 ];
 
 export interface UnlockDef {

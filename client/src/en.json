@@ -731,6 +731,8 @@
   "game-armor_master-desc": "Your helmet and chest reduce 10% more damage.",
   "game-quick_reload": "Quick Reload",
   "game-quick_reload-desc": "Reloads weapons 30% faster (does not apply to SPAS-12, M1100, or M1014)",
+  "game-mine_master": "Mine Master",
+  "game-mine_master-desc": "Take 80% less damage from mines and gain an extra mine when you kill someone with a mine.",
   "game-melee_striker": "Melee Striker",
   "game-melee_striker-desc": "Your melee attacks deal 50% more damage.",
   "game-gun_master": "Gun Master",

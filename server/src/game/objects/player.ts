@@ -2637,6 +2637,16 @@ export class Player extends BaseGameObject {
         }
 
         let finalDamage = params.amount!;
+        if (
+            params.isExplosion &&
+            params.gameSourceType === "mine" &&
+            this.hasPerk("mine_master")
+        ) {
+            const mult = (PerkProperties as any).mine_master?.mineDamageMult as number | undefined;
+            if (typeof mult === "number" && isFinite(mult) && mult >= 0) {
+                finalDamage = finalDamage * mult;
+            }
+        }
 
         const reduceDamage = (multi: number) => {
             if (params.armorPenetration !== undefined) {
@@ -2923,6 +2933,14 @@ export class Player extends BaseGameObject {
                     killCreditSource.health += 25;
                     killCreditSource.boost += 25;
                     killCreditSource.giveHaste(GameConfig.HasteType.Takedown, 3);
+                }
+
+                if (
+                    params.gameSourceType === "mine" &&
+                    killCreditSource.hasPerk("mine_master")
+                ) {
+                    const killer = killCreditSource as Player;
+                    killer.invManager.give("mine", 1);
                 }
 
                 if (killCreditSource.role === "woods_king") {

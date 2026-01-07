@@ -48,6 +48,9 @@ export const PerkProperties = {
         duration: 1.5,
         threshold: 30,
     },
+    mine_master: {
+        mineDamageMult: 0.2,
+    },
     gotw: {
         scale: 0.25,
         healthRegen: 0.5, // per second
@@ -834,6 +837,21 @@ export const PerkDefs: Record<string, PerkDef> = {
         lore: "Reloads weapons 30% faster (does not affect SPAS-12, M1100, or M1014)",
         lootImg: {
             sprite: "loot-perk-quick-reload.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    mine_master: {
+        name: "Mine Master",
+        type: "perk",
+        lore: "Take 80% less damage from mines and gain an extra mine when you kill someone with a mine.",
+        lootImg: {
+            sprite: "loot-perk-mine-master.img",
             tint: 0xffffff,
             border: "loot-circle-outer-03.img",
             borderTint: 0xffffff,
