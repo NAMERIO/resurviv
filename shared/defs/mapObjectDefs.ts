@@ -7472,11 +7472,11 @@ function createReactor<T extends ExtendedBuildingDef>(e: Partial<T>): T {
             { type: "locker_01", pos: v2.create(25.4, 21.7), scale: 1, ori: 0 },
             { type: "locker_01", pos: v2.create(25.1, -21.7), scale: 1, ori: 10 },
 
-            { type: "vat_brain", pos: v2.create(-1.3, 10.5), scale: 1, ori: 2.5 },
-            { type: "vat_eye", pos: v2.create(-21.5, 10.7), scale: 1, ori: -8.5 },
+            { type: "vat_brain", pos: v2.create(-1.3, 10.8), scale: 1, ori: 2.5 },
+            { type: "vat_eye", pos: v2.create(-21.5, 11), scale: 1, ori: -8.5 },
 
-            { type: "vat_explosive", pos: v2.create(-1.3, -10.5), scale: 1, ori: 3 },
-            { type: "vat_space_snout", pos: v2.create(-21.5, -10.7), scale: 1, ori: 8.5 },
+            { type: "vat_explosive", pos: v2.create(-1.3, -11), scale: 1, ori: 3 },
+            { type: "vat_cosmic_blue", pos: v2.create(-21.5, -10.8), scale: 1, ori: 8.5 },
 
             { type: "gun_mount_lasr_swrd", pos: v2.create(11.7, 13), scale: 1, ori: 1 },
             { type: "gun_mount_flux_rifle", pos: v2.create(11.7, -13), scale: 1, ori: 1 },
@@ -12016,7 +12016,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         reflectBullets: false,
         hitParticle: "glassChip",
         explodeParticle: "windowBreak",
-        loot: [autoLoot("self_revive", 1)],
+        loot: [autoLoot("explosive", 1)],
         map: { display: true, color: 0xb3b3b3, scale: 1 },
         terrain: { grass: false, beach: false },
         img: {
