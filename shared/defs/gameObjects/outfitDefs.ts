@@ -280,6 +280,63 @@ const SkinDefs: Record<string, OutfitDef> = {
         rarity: 3,
         lore: "For those who wield the power of the pan.",
     }),
+    outfitEyes_t: defineOutfitSkin("outfitBase", {
+        name: "Eyes-T",
+        noDropOnDeath: false, // for now
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-eyes-t.img",
+            handTint: 16777215,
+            handSprite: "player-hands-01.img",
+            footTint: 16777215,
+            footSprite: "player-feet-01.img",
+            backpackTint: 16777215,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            sprite: "loot-eyes-t-outfit.img",
+            tint: 0xffffff,
+        },
+        rarity: 5,
+    }),
+    outfitCosmicBlue: defineOutfitSkin("outfitBase", {
+        name: "Eyes-T",
+        noDropOnDeath: false, // for now
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-cosmic-blue.img",
+            handTint: 2755133,
+            handSprite: "player-hands-02.img",
+            footTint: 2755133,
+            footSprite: "player-feet-02.img",
+            backpackTint: 12002083,
+            backpackSprite: "player-circle-base-02.img",
+        },
+        lootImg: {
+            sprite: "loot-cosmic-blue-outfit.img",
+            tint: 0xffffff,
+        },
+        rarity: 5,
+    }),
+    outfitBraaains: defineOutfitSkin("outfitBase", {
+        name: "Braaains",
+        noDropOnDeath: false, // for now
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-braaains.img",
+            handTint: 6842472,
+            handSprite: "player-hands-01.img",
+            footTint: 6842472,
+            footSprite: "player-feet-01.img",
+            backpackTint: 65535,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            sprite: "loot-braaains-outfit.img",
+            tint: 0xffffff,
+        },
+        rarity: 5,
+    }),
     outfitSnowman: defineOutfitSkin("outfitBase", {
         name: "Snowman",
         noDropOnDeath: true,

@@ -15,7 +15,7 @@ export const PerksAtlas: AtlasDef = {
         "map/map-vat-space-snout.svg",
         "map/map-vat-cosmic-blue.svg",
         "map/map-vat-brain.svg",
-        "map-vat-explosive.svg",
+        "map/map-vat-explosive.svg",
         "map/map-airdrop-01-perk.svg",
         "map/map-airdrop-02-perk.svg",
         "map/map-chute-01-perk.svg",
