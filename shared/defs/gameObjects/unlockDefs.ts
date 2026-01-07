@@ -241,6 +241,8 @@ const _allowedPerks = [
     "first_hit",
     "throw_slow",
     "low_hp_surge",
+    "leadership",
+    "chambered",
 ];
 
 export interface UnlockDef {

@@ -114,6 +114,7 @@ export interface PerkDef {
 export const PerkDefs: Record<string, PerkDef> = {
     leadership: {
         name: "Leadership",
+        lore: "Max adrenaline. But you increased size.",
         type: "perk",
         lootImg: {
             sprite: "loot-perk-leadership.img",
@@ -366,6 +367,7 @@ export const PerkDefs: Record<string, PerkDef> = {
     },
     chambered: {
         name: "One In The Chamber",
+        lore: "First and last round in each magazine deal bonus damage. Does not apply to shotguns.",
         type: "perk",
         lootImg: {
             sprite: "loot-perk-chambered.img",
