@@ -5,6 +5,11 @@ export const PerksAtlas: AtlasDef = {
     compress: true,
     images: [
         ...BuildingSprites.reactor,
+        ...BuildingSprites.bunker_chrys,
+        ...BuildingSprites.bunker_crossing,
+        ...BuildingSprites.bunker_hydra,
+        ...BuildingSprites.warehouse_complex,
+        ...BuildingSprites.bunker_twins,
         ...BuildingSprites.saloon,
         ...BuildingSprites.greenhouse_aged,
         ...BuildingSprites.bunker_chrys_aged,
