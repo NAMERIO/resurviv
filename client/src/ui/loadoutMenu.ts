@@ -996,6 +996,11 @@ export class LoadoutMenu {
             return;
         }
 
+        const raw = localStorage.getItem("surviv_config");
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.serverPerkMode) return true;
+        }
         // Deselect this emote if it's already selected
         if (
             selectedItem.type == this.selectedItem.type &&
