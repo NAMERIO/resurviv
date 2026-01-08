@@ -1281,6 +1281,7 @@ export class Game {
                     this.m_canvasMode,
                     this.m_particleBarn,
                 );
+                this.m_config.set("serverPerkMode", !!this.m_map.perkMode);
                 this.m_resourceManager.loadMapAssets(this.m_map.mapName);
                 this.m_map.renderMap(this.m_pixi.renderer, this.m_canvasMode);
                 this.m_bulletBarn.onMapLoad(this.m_map);

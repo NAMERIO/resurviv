@@ -698,6 +698,9 @@ export class LoadoutMenu {
     }
 
     isPerkSelectionEnabled(): boolean {
+        if ((this as any).config && (this as any).config.get("serverPerkMode")) {
+            return true;
+        }
         const modeIdx = (this.config.get("gameModeIdx") || 0) as number;
         const modeBtn = $(`#btn-start-mode-${modeIdx}`);
         if (modeBtn.length) {
