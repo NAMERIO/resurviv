@@ -280,6 +280,57 @@ export class LoadoutMenu {
         account.addEventListener("loadout", this.onLoadout.bind(this));
         account.addEventListener("items", this.onItems.bind(this));
         account.addEventListener("pass", this.onPass.bind(this));
+        this.config.addModifiedListener((key?: string) => {
+            if (!key || key === "perkSelectionUnlocked") {
+                const perkEnabled = this.isPerkSelectionEnabled();
+                if (this.modalCustomizeList && this.modalCustomizeList.length) {
+                    if (!perkEnabled) {
+                        this.modalCustomizeList.css("filter", "blur(4px)");
+                        if (!this.perkOverlay) {
+                            this.perkOverlay = $("<div/>", {
+                                id: "modal-perk-disabled",
+                                class: "modal-perk-disabled",
+                                html:
+                                    this.localization.translate("loadout-perks-disabled") ||
+                                    "Perks are only enabled in Perks mode",
+                                css: {
+                                    position: "absolute",
+                                    left: "0",
+                                    right: "0",
+                                    top: "0",
+                                    bottom: "0",
+                                    display: "flex",
+                                    "align-items": "center",
+                                    "justify-content": "center",
+                                    "pointer-events": "none",
+                                    "font-weight": "bold",
+                                    color: "#FFD700",
+                                    "text-shadow": "0 1px 3px rgba(0,0,0,0.8)",
+                                },
+                            });
+                            this.modalCustomizeList.parent().css("position", "relative");
+                            this.modalCustomizeList.parent().append(this.perkOverlay);
+                        }
+                        for (let i = 0; i < this.selectedCatItems.length; i++) {
+                            this.selectedCatItems[i].outerDiv?.addClass(
+                                "customize-list-item-locked",
+                            );
+                        }
+                    } else {
+                        this.modalCustomizeList.css("filter", "");
+                        if (this.perkOverlay) {
+                            this.perkOverlay.remove();
+                            this.perkOverlay = null;
+                        }
+                        for (let i = 0; i < this.selectedCatItems.length; i++) {
+                            this.selectedCatItems[i].outerDiv?.removeClass(
+                                "customize-list-item-locked",
+                            );
+                        }
+                    }
+                }
+            }
+        });
         if (device.editorEnabled) {
             this.mountEditor();
         }
@@ -698,43 +749,8 @@ export class LoadoutMenu {
     }
 
     isPerkSelectionEnabled(): boolean {
-        if ((this as any).config && (this as any).config.get("serverPerkMode")) {
-            return true;
-        }
-        const modeIdx = (this.config.get("gameModeIdx") || 0) as number;
-        const modeBtn = $(`#btn-start-mode-${modeIdx}`);
-        if (modeBtn.length) {
-            const classes = (modeBtn.attr("class") || "").split(/\s+/);
-            const btnClass = classes.find((c) => c.startsWith("btn-mode-"));
-            if (btnClass) {
-                const mapDef = Object.values(MapDefs).find(
-                    (m) => m.desc && m.desc.buttonCss === btnClass,
-                );
-                if (
-                    mapDef &&
-                    mapDef.gameMode &&
-                    (mapDef.gameMode.allowLoadoutPerks || mapDef.gameMode.perkMode)
-                ) {
-                    return true;
-                }
-            }
-        }
-
-        const gameModes = helpers.getGameModes();
-        const selectedMode = gameModes[modeIdx];
-        if (selectedMode) {
-            const mapDef = Object.values(MapDefs).find(
-                (m) => m.mapId == selectedMode.mapId,
-            );
-            if (
-                mapDef &&
-                mapDef.gameMode &&
-                (mapDef.gameMode.allowLoadoutPerks || mapDef.gameMode.perkMode)
-            ) {
-                return true;
-            }
-        }
-        return false;
+        // Always allow perk selection in the loadout UI — behave like other sections.
+        return true;
     }
 
     clearConfirmItemModal() {
@@ -996,10 +1012,8 @@ export class LoadoutMenu {
             return;
         }
 
-        const raw = localStorage.getItem("surviv_config");
-        if (raw) {
-            const parsed = JSON.parse(raw);
-            if (parsed && parsed.serverPerkMode) return true;
+        if (selectedItem.loadoutType == "perk" && !this.isPerkSelectionEnabled()) {
+            return;
         }
         // Deselect this emote if it's already selected
         if (
