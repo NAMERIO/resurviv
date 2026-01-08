@@ -300,7 +300,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         rarity: 5,
     }),
     outfitCosmicBlue: defineOutfitSkin("outfitBase", {
-        name: "Eyes-T",
+        name: "Cosmic Blue",
         noDropOnDeath: false, // for now
         skinImg: {
             baseTint: 0xffffff,

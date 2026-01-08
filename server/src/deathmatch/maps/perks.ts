@@ -38,7 +38,7 @@ const mapDef = {
             beach: 4213882,
             riverbank: 4016234,
             grass: 3818586,
-            underground: 3818586,
+            underground: 0x1a1520,
             playerSubmerge: 4016234,
             playerGhillie: 3818586,
         },
