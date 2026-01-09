@@ -38,7 +38,7 @@ export class ProjectileBarn {
         layer: number,
         vel: Vec2,
         fuseTime: number,
-        damageType: number,
+        damageType: DamageType,
         throwDir?: Vec2,
         weaponSourceType?: string,
     ): Projectile {

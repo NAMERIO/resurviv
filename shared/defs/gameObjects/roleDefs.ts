@@ -34,6 +34,7 @@ type DefaultItems = {
     helmet: string | ((teamcolor: TeamColor) => string);
     chest: string;
     outfit: string | ((teamcolor: TeamColor) => string);
+    noDropOutfit?: boolean;
     inventory: Partial<Record<InventoryItem, number>>;
 };
 
@@ -157,6 +158,7 @@ export const RoleDefs: Record<string, RoleDef> = {
                     [TeamColor.Red]: "outfitRedLeader",
                     [TeamColor.Blue]: "outfitBlueLeader",
                 })[teamcolor],
+            noDropOutfit: true,
             inventory: {
                 "8xscope": 1,
                 bandage: 10,
@@ -188,6 +190,7 @@ export const RoleDefs: Record<string, RoleDef> = {
                     [TeamColor.Red]: "outfitRedLeader",
                     [TeamColor.Blue]: "outfitBlueLeader",
                 })[teamcolor],
+            noDropOutfit: true,
             inventory: {
                 "8xscope": 1,
                 bandage: 10,

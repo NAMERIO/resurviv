@@ -1,4 +1,3 @@
-import { tinyint } from "drizzle-orm/mysql-core";
 import type { MapDef } from "../../../../shared/defs/mapDefs";
 import { Main } from "../../../../shared/defs/maps/baseDefs";
 import { GameConfig } from "../../../../shared/gameConfig";
@@ -55,7 +54,7 @@ const mapDef = {
             tint: 0xffffff,
         },
     },
-    gameMode: { maxPlayers: 80, allowLoadoutPerks: true, },
+    gameMode: { maxPlayers: 80, allowLoadoutPerks: true },
     gameConfig: {
         /* STRIP_FROM_PROD_CLIENT:START */
         gameConfig: {
@@ -184,7 +183,7 @@ const mapDef = {
                 bush_04: "bush_07p",
                 tree_06: "tree_01p",
                 crate_18: "crate_02p",
-                carte_02: "crate_02p"
+                carte_02: "crate_02p",
             },
         ],
     },
@@ -271,14 +270,14 @@ DeatchmatchPerks["lootTable"] = {
         { name: "lasr_gun", count: 1, weight: 1 },
         { name: "m9", count: 1, weight: 1 },
         { name: "flux_rifle", count: 1, weight: 0.4 },
-        { name: "sv98", count: 1, weight: 0.009},
+        { name: "sv98", count: 1, weight: 0.009 },
         { name: "small_arms", count: 1, weight: 0.04 },
-        { name: "splinter", count: 1, weight: 0.01},
+        { name: "splinter", count: 1, weight: 0.01 },
         { name: "small_arms", count: 1, weight: 0.04 },
-        { name: "splinter", count: 1, weight: 0.01},
-        { name: "lasr_swrd", count: 1, weight: 0.1},
+        { name: "splinter", count: 1, weight: 0.01 },
+        { name: "lasr_swrd", count: 1, weight: 0.1 },
         { name: "lasr_swrd_02", count: 1, weight: 0.09 },
-        { name: "lasr_swrd_03", count: 1, weight: 0.07},
+        { name: "lasr_swrd_03", count: 1, weight: 0.07 },
     ],
     tier_toilet: [
         { name: "tier_guns", count: 1, weight: 0.1 },

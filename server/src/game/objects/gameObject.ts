@@ -1,3 +1,4 @@
+import type { DamageType } from "../../../../shared/gameConfig";
 import { BitStream } from "../../../../shared/net/net";
 import {
     ObjectSerializeFns,
@@ -33,7 +34,7 @@ export type GameObject =
 
 export interface DamageParams {
     amount?: number;
-    damageType: number;
+    damageType: DamageType;
     dir: Vec2;
     gameSourceType?: string;
     mapSourceType?: string;

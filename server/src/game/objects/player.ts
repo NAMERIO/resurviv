@@ -28,6 +28,7 @@ import {
     EmoteSlot,
     GameConfig,
     type HasteType,
+    type Input,
     type InventoryItem,
 } from "../../../../shared/gameConfig";
 import * as net from "../../../../shared/net/net";
@@ -2039,20 +2040,18 @@ export class Player extends BaseGameObject {
                     util.sameLayer(this.layer, obj.layer) &&
                     !this.game.gas.isInGas(this.pos) // heal regions don't work in gas
                 ) {
-                    const effectiveHealRegions = obj.healRegions.filter((hr) => {
-                        return coldet.testPointAabb(
-                            this.pos,
-                            hr.collision.min,
-                            hr.collision.max,
-                        );
-                    });
+                    let totalHeal = 0;
+                    const c = collider.createCircle(this.pos, 0.1);
 
-                    if (effectiveHealRegions.length != 0) {
-                        const totalHealRate = effectiveHealRegions.reduce(
-                            (total, hr) => total + hr.healRate,
-                            0,
-                        );
-                        this.health += totalHealRate * dt;
+                    for (let j = 0; j < obj.healRegions.length; j++) {
+                        const hr = obj.healRegions[j];
+                        if (coldet.test(c, hr.collision)) {
+                            totalHeal += hr.healRate;
+                        }
+                    }
+
+                    if (totalHeal) {
+                        this.health += totalHeal * dt;
                         this.healEffect = true;
                     }
                 }
@@ -2642,7 +2641,9 @@ export class Player extends BaseGameObject {
             params.gameSourceType === "mine" &&
             this.hasPerk("mine_master")
         ) {
-            const mult = (PerkProperties as any).mine_master?.mineDamageMult as number | undefined;
+            const mult = (PerkProperties as any).mine_master?.mineDamageMult as
+                | number
+                | undefined;
             if (typeof mult === "number" && isFinite(mult) && mult >= 0) {
                 finalDamage = finalDamage * mult;
             }
@@ -2664,11 +2665,7 @@ export class Player extends BaseGameObject {
             const gameSourceDef = GameObjectDefs[params.gameSourceType ?? ""];
             let isHeadShot = false;
 
-            if (
-                gameSourceDef &&
-                gameSourceDef.type != "melee" &&
-                "headshotMult" in gameSourceDef
-            ) {
+            if (gameSourceDef && "headshotMult" in gameSourceDef && !params.isExplosion) {
                 isHeadShot = Math.random() < GameConfig.player.headshotChance;
 
                 if (isHeadShot) {
@@ -3475,7 +3472,7 @@ export class Player extends BaseGameObject {
     toMouseLen = 0;
     mousePos = v2.create(1, 0);
 
-    shouldAcceptInput(input: number): boolean {
+    shouldAcceptInput(input: Input): boolean {
         return (
             !this.downed ||
             input === GameConfig.Input.Interact || // Players can interact with obstacles while downed.
@@ -3669,31 +3666,7 @@ export class Player extends BaseGameObject {
                     break;
                 }
                 case GameConfig.Input.SwapWeapSlots: {
-                    const primary = {
-                        ...this.weapons[GameConfig.WeaponSlot.Primary],
-                    };
-                    const secondary = {
-                        ...this.weapons[GameConfig.WeaponSlot.Secondary],
-                    };
-
-                    this.weapons[GameConfig.WeaponSlot.Primary] = secondary;
-                    this.weapons[GameConfig.WeaponSlot.Secondary] = primary;
-
-                    // curWeapIdx's setter method already sets dirty.weapons
-                    if (
-                        this.curWeapIdx == GameConfig.WeaponSlot.Primary ||
-                        this.curWeapIdx == GameConfig.WeaponSlot.Secondary
-                    ) {
-                        this.weaponManager.setCurWeapIndex(
-                            this.curWeapIdx ^ 1,
-                            false,
-                            false,
-                            false,
-                            false,
-                        );
-                    } else {
-                        this.weapsDirty = true;
-                    }
+                    this.weaponManager.swapWeaponSlots();
                     break;
                 }
             }
@@ -3899,6 +3872,11 @@ export class Player extends BaseGameObject {
                 }
                 break;
             case "melee":
+                if (this.weapons[GameConfig.WeaponSlot.Melee].type === obj.type) {
+                    pickupMsg.type = net.PickupMsgType.AlreadyEquipped;
+                    amountLeft = 1;
+                    break;
+                }
                 this.weaponManager.dropMelee();
                 this.weaponManager.setWeapon(GameConfig.WeaponSlot.Melee, obj.type, 0);
                 break;
@@ -3915,6 +3893,17 @@ export class Player extends BaseGameObject {
                         return;
                     }
 
+                    const oldWeapDef = GameObjectDefs[this.weapons[newGunIdx].type] as
+                        | GunDef
+                        | undefined;
+                    if (
+                        oldWeapDef &&
+                        (oldWeapDef.noDrop || !this.weaponManager.canDropFlare(newGunIdx))
+                    ) {
+                        this.pickupTicker = 0;
+                        return;
+                    }
+
                     // if "preloaded" gun add ammo to inventory
                     if (obj.isPreloadedGun) {
                         this.invManager.giveAndDrop(
@@ -3926,17 +3915,6 @@ export class Player extends BaseGameObject {
                     if (freeGunSlot.cause === net.PickupMsgType.AlreadyOwned) {
                         amountLeft = 1;
                         break;
-                    }
-
-                    const oldWeapDef = GameObjectDefs[this.weapons[newGunIdx].type] as
-                        | GunDef
-                        | undefined;
-                    if (
-                        oldWeapDef &&
-                        (oldWeapDef.noDrop || !this.weaponManager.canDropFlare(newGunIdx))
-                    ) {
-                        this.pickupTicker = 0;
-                        return;
                     }
 
                     this.pickupTicker = 0.2;
@@ -4047,12 +4025,21 @@ export class Player extends BaseGameObject {
                 }
                 break;
             case "outfit":
-                const outfit = GameObjectDefs[this.outfit] as OutfitDef;
-                if (outfit.noDrop) {
+                if (this.role) {
+                    const roleDef = GameObjectDefs[this.role] as RoleDef;
+                    if (roleDef.defaultItems?.noDropOutfit) {
+                        amountLeft = 1;
+                        pickupMsg.type = net.PickupMsgType.BetterItemEquipped;
+                        break;
+                    }
+                }
+
+                if (this.outfit === obj.type) {
+                    pickupMsg.type = net.PickupMsgType.AlreadyEquipped;
                     amountLeft = 1;
-                    pickupMsg.type = net.PickupMsgType.BetterItemEquipped;
                     break;
                 }
+
                 amountLeft = 1;
                 lootToAdd = this.outfit;
                 pickupMsg.type = net.PickupMsgType.Success;
@@ -4555,6 +4542,7 @@ export class Player extends BaseGameObject {
             if (this.debug.teleportToPings) {
                 v2.set(this.pos, msg.pos);
                 this.setPartDirty();
+                this.game.grid.updateObject(this);
             }
 
             if (emoteDef.type !== "ping") {
@@ -4943,13 +4931,12 @@ export class Player extends BaseGameObject {
             const mult = PerkProperties.melee_runner.meleeSpeedMult as number;
             if (mult && mult > 0) this.speed *= mult;
         }
-        
+
         // low HP surge perk
         if (this.lowHpSurgeTicker > 0 && this.hasPerk("low_hp_surge")) {
             const mult = (PerkProperties.low_hp_surge as any)?.speedMult ?? 1.3;
             if (mult && mult > 0) this.speed *= mult;
         }
-        
 
         this.speed = math.clamp(this.speed, 1, 10000);
     }
@@ -4977,7 +4964,7 @@ export class Player extends BaseGameObject {
         }
     }
 
-    sendMsg(type: number, msg: net.AbstractMsg, bytes = 128): void {
+    sendMsg(type: net.MsgType, msg: net.AbstractMsg, bytes = 128): void {
         const stream = new net.MsgStream(new ArrayBuffer(bytes));
         stream.serializeMsg(type, msg);
         this.sendData(stream.getBuffer());

@@ -1,4 +1,4 @@
-import { GameConfig, HasteType } from "../gameConfig";
+import { type Action, type Anim, GameConfig, HasteType } from "../gameConfig";
 import type { Vec2 } from "../utils/v2";
 import { BitSizes, type BitStream, Constants } from "./net";
 
@@ -77,10 +77,10 @@ export interface ObjectsFullData {
         dead: boolean;
         downed: boolean;
 
-        animType: number;
+        animType: Anim;
         animSeq: number;
 
-        actionType: number;
+        actionType: Action;
         actionSeq: number;
 
         wearingPan: boolean;
@@ -89,7 +89,7 @@ export interface ObjectsFullData {
         frozen: boolean;
         frozenOri: number;
 
-        hasteType: number;
+        hasteType: Exclude<HasteType, HasteType.Count>;
         hasteSeq: number;
 
         actionItem: string;

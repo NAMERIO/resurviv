@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js-legacy";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import type { OutfitDef } from "../../../shared/defs/gameObjects/outfitDefs";
-import { GameConfig } from "../../../shared/gameConfig";
+import { type Action, type Anim, GameConfig } from "../../../shared/gameConfig";
 import type { MapMsg } from "../../../shared/net/mapMsg";
 import { type ObjectData, ObjectType } from "../../../shared/net/objectSerializeFns";
 import { collider } from "../../../shared/utils/collider";
@@ -241,10 +241,10 @@ export class LoadoutDisplay {
 
     updateCharDisplay(
         options = {} as Partial<{
-            animType: number;
+            animType: Anim;
             animSeq: number;
             actionSeq: number;
-            actionType: number;
+            actionType: Action;
             actionItem: string;
         }>,
     ) {

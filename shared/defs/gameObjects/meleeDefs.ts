@@ -11,7 +11,6 @@ export interface MeleeDef {
     damage: number;
     obstacleDamage: number;
     cleave?: boolean;
-    headshotMult: number;
     attack: {
         offset: Vec2;
         rad: number;
@@ -89,7 +88,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 24,
         obstacleDamage: 1,
-        headshotMult: 1,
         attack: {
             offset: {
                 x: 1.35,
@@ -126,7 +124,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 24,
         obstacleDamage: 1,
-        headshotMult: 1,
         noPotatoSwap: true,
         noDropOnDeath: true,
         attack: {
@@ -183,7 +180,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 24,
         obstacleDamage: 1,
-        headshotMult: 1,
         noPotatoSwap: true,
         noDropOnDeath: true,
         attack: {
@@ -239,7 +235,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 24,
         obstacleDamage: 1,
-        headshotMult: 1,
         noPotatoSwap: true,
         noDropOnDeath: true,
         attack: {
@@ -294,7 +289,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 24,
         obstacleDamage: 1,
-        headshotMult: 1,
         noPotatoSwap: true,
         noDropOnDeath: true,
         attack: {
@@ -349,7 +343,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 24,
         obstacleDamage: 1,
-        headshotMult: 1,
         noPotatoSwap: true,
         noDropOnDeath: true,
         attack: {
@@ -405,7 +398,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 33,
         obstacleDamage: 1,
-        headshotMult: 1,
         noPotatoSwap: true,
         attack: {
             offset: {
@@ -460,7 +452,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 44,
         obstacleDamage: 1,
-        headshotMult: 1,
         noPotatoSwap: true,
         attack: {
             offset: {
@@ -517,7 +508,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 36,
         obstacleDamage: 1.92,
-        headshotMult: 1,
         attack: {
             offset: {
                 x: 1.35,
@@ -573,7 +563,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 44,
         obstacleDamage: 2.4,
-        headshotMult: 1,
         attack: {
             offset: {
                 x: 1.35,
@@ -630,7 +619,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 40,
         obstacleDamage: 1.5,
-        headshotMult: 1,
         attack: {
             offset: {
                 x: 1.75,
@@ -687,7 +675,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 56,
         obstacleDamage: 1.92,
-        headshotMult: 1,
         attack: {
             offset: {
                 x: 3.5,
@@ -744,7 +731,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 60,
         obstacleDamage: 1.92,
-        headshotMult: 1,
         attack: {
             offset: {
                 x: 1.35,
@@ -791,6 +777,62 @@ const BaseDefs: Record<string, MeleeDef> = {
             leftHandOntop: true,
         },
     },
+    iceaxe: {
+        name: "Ice Axe",
+        type: "melee",
+        quality: 1,
+        armorPiercing: true,
+        stonePiercing: true,
+        autoAttack: false,
+        switchDelay: 0.25,
+        damage: 44,
+        obstacleDamage: 2.4,
+        attack: {
+            offset: {
+                x: 1.4,
+                y: 0,
+            },
+            rad: 1.3,
+            damageTimes: [0.21],
+            cooldownTime: 0.4,
+        },
+        speed: {
+            equip: 1,
+        },
+        lootImg: {
+            sprite: "loot-melee-ice_pick.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-02.img",
+            borderTint: 0xffffff,
+            scale: 0.3,
+            mirror: true,
+            rot: 2.35619,
+        },
+        worldImg: {
+            sprite: "loot-melee-ice_pick.img",
+            pos: {
+                x: -12.5,
+                y: -10,
+            },
+            rot: 1.2,
+            scale: {
+                x: 0.4,
+                y: 0.4,
+            },
+            tint: 0xffffff,
+            leftHandOntop: true,
+        },
+        anim: {
+            idlePose: "meleeTwoHanded",
+            attackAnims: ["axeSwing"],
+        },
+        sound: {
+            pickup: "heavy_pickup_01",
+            swing: "medium_swing_01",
+            deploy: "stow_weapon_01",
+            playerHit: "knife_hit_01",
+        },
+    },
     hook: {
         name: "Hook",
         type: "melee",
@@ -799,7 +841,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 18,
         obstacleDamage: 1,
-        headshotMult: 1,
         attack: {
             offset: {
                 x: 1.5,
@@ -853,7 +894,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 60,
         obstacleDamage: 0.8,
-        headshotMult: 1,
         attack: {
             offset: {
                 x: 2,
@@ -943,7 +983,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 40,
         obstacleDamage: 1,
-        headshotMult: 1,
         noPotatoSwap: true,
         attack: {
             offset: {
@@ -998,7 +1037,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 33,
         obstacleDamage: 1.4,
-        headshotMult: 1,
         noPotatoSwap: true,
         attack: {
             offset: {

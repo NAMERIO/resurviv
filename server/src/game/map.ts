@@ -1257,6 +1257,12 @@ export class GameMap {
             }
         }
 
+        if (def.terrain?.beach && !def.terrain.grass) {
+            if (this.getGroundSurface(pos, 0).type === "grass") {
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -1482,25 +1488,25 @@ export class GameMap {
 
     genOnBeach(type: string) {
         const aabb = collider.toAabb(mapHelpers.getBoundingCollider(type));
-        const width = aabb.max.x - aabb.min.x;
-        const height = aabb.max.y - aabb.min.y;
+
+        const objSize = math.max(aabb.max.x - aabb.min.x, aabb.max.y - aabb.min.y) / 2;
+
+        const beachSize = this.grassInset - GameConfig.map.grassVariation * 2;
 
         this.trySpawn(type, () => {
             const { ori, scale } = this.getOriAndScale(type);
             const side = util.randomInt(0, 3);
             const rot = math.oriToRad(side);
 
-            const min = v2.create(
-                this.shoreInset + width,
-                this.shoreInset + width + this.grassInset,
+            let min = v2.create(this.shoreInset + objSize, this.shoreInset + objSize);
+
+            let max = v2.create(
+                min.x + beachSize,
+                this.height - this.shoreInset - objSize,
             );
-            const max = v2.create(min.x, this.height - this.shoreInset - height);
 
             // generate a position and rotate it based on the orientation and map center
-            const tempPos = {
-                x: util.random(min.x, max.x),
-                y: util.random(min.y, max.y),
-            };
+            const tempPos = util.randomPointInAabb({ min, max });
             const offset = v2.sub(this.center, tempPos);
             const pos = v2.add(this.center, v2.rotate(offset, rot));
 

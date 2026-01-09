@@ -66,7 +66,12 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
     // remove all perks but drop droppable ones
     data.player.perks.forEach((perk) => {
         if (droppablePerks.includes(perk.type)) {
-            data.player.game.lootBarn.addLoot(perk.type, data.player.pos, data.player.layer, 1);
+            data.player.game.lootBarn.addLoot(
+                perk.type,
+                data.player.pos,
+                data.player.layer,
+                1,
+            );
         }
         data.player.removePerk(perk.type);
     });

@@ -3,7 +3,7 @@ import { Rarity } from "../../gameConfig";
 export interface HealEffectDef {
     readonly type: "heal_effect" | "boost_effect";
     name: string;
-    rarity: number;
+    rarity: Rarity;
     texture: string;
     emitter: string;
 }

@@ -283,8 +283,8 @@ export class Obstacle extends BaseGameObject {
         for (let i = 0; i < objs.length; i++) {
             const obj = objs[i];
             if (obj.__type !== ObjectType.Player) continue;
-            if (obj.dead) return false;
-            if (!util.sameLayer(this.layer, obj.layer)) return false;
+            if (obj.dead) continue;
+            if (!util.sameLayer(this.layer, obj.layer)) continue;
 
             const res = collider.intersectCircle(
                 closedColl,

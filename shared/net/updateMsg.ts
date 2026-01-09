@@ -1,4 +1,4 @@
-import { GameConfig } from "../gameConfig";
+import { GameConfig, type Plane as PlaneType } from "../gameConfig";
 import { type Vec2, v2 } from "./../utils/v2";
 import { type AbstractMsg, BitSizes, type BitStream, Constants } from "./net";
 import {
@@ -747,7 +747,7 @@ export interface Plane {
     planeDir: Vec2;
     pos: Vec2;
     actionComplete: boolean;
-    action: number;
+    action: PlaneType;
     id: number;
 }
 

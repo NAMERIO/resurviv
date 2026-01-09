@@ -3,7 +3,7 @@ import type { ThrowableDef } from "../../../../shared/defs/gameObjects/throwable
 import type { MapDef } from "../../../../shared/defs/mapDefs";
 import { MapObjectDefs } from "../../../../shared/defs/mapObjectDefs";
 import type { ObstacleDef } from "../../../../shared/defs/mapObjectsTyping";
-import { GameConfig } from "../../../../shared/gameConfig";
+import { GameConfig, type Plane as PlaneType } from "../../../../shared/gameConfig";
 import { Constants } from "../../../../shared/net/net";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
 import { type Collider, coldet } from "../../../../shared/utils/coldet";
@@ -604,7 +604,7 @@ abstract class Plane {
     config: typeof GameConfig.airdrop | typeof GameConfig.airstrike;
     pos: Vec2;
     targetPos: Vec2;
-    action: number;
+    action: PlaneType;
     id: number;
     planeDir: Vec2;
     rad: number;
@@ -613,7 +613,7 @@ abstract class Plane {
     constructor(
         game: Game,
         id: number,
-        action: number,
+        action: PlaneType,
         pos: Vec2,
         targetPos: Vec2,
         dir: Vec2,

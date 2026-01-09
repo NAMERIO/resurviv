@@ -93,12 +93,12 @@ export class ImageManager {
             atlasLogger.info("Created image cache folder");
             return;
         }
-        
+
         const files = fs.readdirSync(imagesCacheFolder);
         let deletedCount = 0;
-        
+
         for (const file of files) {
-            if (file.endsWith('.png')) {
+            if (file.endsWith(".png")) {
                 try {
                     fs.unlinkSync(Path.join(imagesCacheFolder, file));
                     deletedCount++;
@@ -107,11 +107,11 @@ export class ImageManager {
                 }
             }
         }
-        
+
         if (deletedCount > 0) {
             atlasLogger.info(`Cleaned ${deletedCount} cached images`);
         }
-        
+
         this.cache = {};
     }
 
@@ -203,7 +203,7 @@ export class ImageManager {
         const files = fs.readdirSync(imagesCacheFolder);
 
         const validCachedImages = new Set<string>(
-            Object.values(this.cache).map((i) => i.hash)
+            Object.values(this.cache).map((i) => i.hash),
         );
 
         let filesRemoved = 0;
@@ -251,7 +251,9 @@ export class AtlasManager {
     loadAtlasCache() {
         const atlasCacheFilePath = Path.join(cacheFolder, "atlas-cache.json");
         if (fs.existsSync(atlasCacheFilePath)) {
-            this.atlasCache = JSON.parse(fs.readFileSync(atlasCacheFilePath).toString("utf8"));
+            this.atlasCache = JSON.parse(
+                fs.readFileSync(atlasCacheFilePath).toString("utf8"),
+            );
         } else {
             this.atlasCache = {};
         }
@@ -268,10 +270,10 @@ export class AtlasManager {
             atlasLogger.info("Created atlas cache folder");
             return;
         }
-        
+
         const folders = fs.readdirSync(atlasesCacheFolder);
         let deletedCount = 0;
-        
+
         for (const folder of folders) {
             try {
                 const folderPath = Path.join(atlasesCacheFolder, folder);
@@ -281,7 +283,7 @@ export class AtlasManager {
                 atlasLogger.warn(`Failed to delete cached atlas ${folder}:`, error);
             }
         }
-        
+
         if (deletedCount > 0) {
             atlasLogger.info(`Cleaned ${deletedCount} cached atlases`);
         }
@@ -293,12 +295,12 @@ export class AtlasManager {
         if (!fs.existsSync(atlasesCacheFolder)) {
             return;
         }
-        
+
         const folders = fs.readdirSync(atlasesCacheFolder);
         let deletedCount = 0;
 
         const prefix = `${atlasName}-`;
-        
+
         for (const folder of folders) {
             if (folder.startsWith(prefix)) {
                 const folderPath = Path.join(atlasesCacheFolder, folder);
@@ -311,29 +313,31 @@ export class AtlasManager {
                 }
             }
         }
-        
+
         if (deletedCount > 0) {
-            atlasLogger.info(`Cleaned ${deletedCount} old folder(s) for atlas: ${atlasName}`);
+            atlasLogger.info(
+                `Cleaned ${deletedCount} old folder(s) for atlas: ${atlasName}`,
+            );
         }
     }
 
     cleanChangedAtlasImages(changedAtlases: { name: Atlas; hash: string }[]) {
         const imagesToClean = new Set<string>();
-        
+
         for (const changedAtlas of changedAtlases) {
             const atlasDef = Atlases[changedAtlas.name];
             for (const file of atlasDef.images) {
                 imagesToClean.add(file);
             }
         }
-        
+
         let deletedCount = 0;
         for (const imageFile of imagesToClean) {
             if (this.imageCache.removeImageFromCache(imageFile)) {
                 deletedCount++;
             }
         }
-        
+
         if (deletedCount > 0) {
             atlasLogger.info(`Cleaned ${deletedCount} cached images for changed atlases`);
         }
@@ -399,8 +403,8 @@ export class AtlasManager {
 
         for (const atlas of Object.keys(Atlases) as Atlas[]) {
             const hash = this.hashAtlas(atlas);
-            
-            const oldHash = this.atlasCache[atlas];
+
+            const _oldHash = this.atlasCache[atlas];
             const atlasPath = Path.join(
                 this.getAtlasFolderPath(atlas, hash),
                 "data.json",
@@ -412,9 +416,11 @@ export class AtlasManager {
             }
             this.atlasCache[atlas] = hash;
         }
-        
+
         if (changedAtlases.length > 0) {
-            atlasLogger.info(`Detected ${changedAtlases.length} changed atlas(es), rebuilding...`);
+            atlasLogger.info(
+                `Detected ${changedAtlases.length} changed atlas(es), rebuilding...`,
+            );
             this.cleanChangedAtlasImages(changedAtlases);
             for (const changedAtlas of changedAtlases) {
                 const atlas = changedAtlas.name;
@@ -490,9 +496,9 @@ export class AtlasManager {
         atlasLogger.info(`Rendering ${originalCount} atlases`, `with ${workers} workers`);
 
         await Promise.all(promises);
-        
+
         this.saveAtlasCache();
-        
+
         const end = Date.now();
         atlasLogger.info(`Built all atlases after ${end - start}ms`);
     }

@@ -18,7 +18,7 @@ function getBaseURL(crosshairDef: Crosshair) {
     if (crosshairDef.type === "crosshair_custom_image") {
         const customImageUrl = getCustomCrosshairImage();
         if (customImageUrl) {
-            const dims = getCrosshairDims(crosshairDef);
+            const _dims = getCrosshairDims(crosshairDef);
             return `url('${customImageUrl}')`;
         }
         return `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 16.933 16.933"><path fill="white" paint-order="fill markers stroke" d="M7.938 4.233h1.058V12.7H7.938z"/><path fill="white" paint-order="fill markers stroke" d="M12.7 7.937v1.058H4.233V7.937z"/></svg>')`;
@@ -38,7 +38,7 @@ export function getCustomCrosshairImage(): string | null {
     try {
         const stored = localStorage.getItem("customCrosshairImage");
         return stored || null;
-    } catch (e) {
+    } catch (_e) {
         return null;
     }
 }
@@ -87,17 +87,17 @@ export async function setCustomCrosshairImage(imageDataUrl: string): Promise<voi
     try {
         const resizedImage = await resizeImageToStandardSize(imageDataUrl, 64);
         localStorage.setItem("customCrosshairImage", resizedImage);
-    } catch (e) {
+    } catch (_e) {
         try {
             localStorage.setItem("customCrosshairImage", imageDataUrl);
-        } catch (e2) {}
+        } catch (_e2) {}
     }
 }
 
 export function clearCustomCrosshairImage(): void {
     try {
         localStorage.removeItem("customCrosshairImage");
-    } catch (e) {}
+    } catch (_e) {}
 }
 function getCursorCSS(crosshairDef: Crosshair) {
     const dims = getCrosshairDims(crosshairDef);

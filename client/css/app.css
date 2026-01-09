@@ -3236,6 +3236,33 @@ a:active {
   display: inline-block;
 }
 
+@keyframes snow-pulse {
+  from {
+    background-color: #acd5f3;
+    -webkit-box-shadow: 0 0 9px #7da2ac;
+  }
+  50% {
+    background-color: #7bacd4;
+    -webkit-box-shadow: 0 0 18px #668b95;
+  }
+  to {
+    background-color: #acd5f3;
+    -webkit-box-shadow: 0 0 9px #7da2ac;
+  }
+}
+
+.btn-mode-snow {
+  animation-name: snow-pulse;
+  background-image: url(/img/loot/loot-throwable-snowball.svg);
+  border-bottom: 4px solid #668b95 !important;
+}
+
+@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+  .btn-mode-snow {
+    border-bottom: 2px solid #668b95 !important;
+  }
+}
+
 .btn-mode-potato {
   animation-name: potato-pulse;
   background-image: url(/img/loot/loot-throwable-potato.svg);
@@ -3524,7 +3551,6 @@ a:active {
     border-bottom: 2px solid #247297;
   }
 }
-
 
 #btns-quick-start {
   display: flex;

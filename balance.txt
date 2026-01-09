@@ -53,7 +53,7 @@ Other:
 + Lone Survivr split perk odds have been adjusted.
 + Last Breath adjusted (overall buff).
 
-Cobalt Loot Changes 10/22:
+Cobalt Loot Changes 10/22/2025:
 + Medic Common: Added VSS (weight 1).
 + Scout Common: Added Dual M93R and single DEagle (weights 1, 0.2).
 + Demo Common: Added MP220 (weight 1).
@@ -63,7 +63,17 @@ Cobalt Loot Changes 10/22:
 + Demo Rare: Removed MP220, Saiga weight 0.5 -> 1, M1014 added (weight 0.1).
 + Tank Rare: QBB weight 1 -> 1.3, M249 weight 0.05 -> 0.2.
 
-Turkey Cache Changes 11/1: 
+Turkey Cache Changes 11/1/2025: 
 + 50 Leafpile Loot Caches
 - 12 Berry Bush Caches (cache removed from mode)
 - 30 Turkey Leafpiles (non-cache piles)
+
+Winter Changes 12/30/2025:
++ Hardstone Block amount increased from 1 --> 3 (reskinned to iced hardstone block)
++ Tier Eye Block (Snow): Removed Peacemaker, .45 ACP, Pills, M4A1-S, & M249
++ Tier Eye Block (Snow): Added SVD, 7.62 mm, Snowball, SCAR-H, SV (weights of 1.5, 1, 1, 1.5, & 1 respectively)
++ Tier Eye block (Snow): Adjusted Dual OTs-38, Flare Gun, AWM-S, & PKP weights (1 --> 1.5, 1 --> 1.5, 1 --> 0.75, & 1 --> 0.75 respectively)
++ Sledgehammer replaced with Ice Axe
++ Tier Airdrop Melee (Snow): Added Ice Axe (weight of 1).
++ Tier Airdrop Melee (Snow): Adjusted no drop weight (19 --> 18).
++ Tier Throwables (Snow): Adjusted Snowball weight (0.5 --> 1).

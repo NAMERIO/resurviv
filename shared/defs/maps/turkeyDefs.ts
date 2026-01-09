@@ -52,7 +52,7 @@ const mapDef: PartialMapDef = {
                 crate_02: 3,
                 crate_03: 7,
                 bush_06tr: 70, // leaf pile turkey (without loot)
-                cache_03: 50, // leaf pile with loot
+                cache_03tr: 50, // leaf pile with loot
                 tree_07: 20,
                 tree_08: 170,
                 tree_08b: 4,
@@ -107,7 +107,7 @@ const mapDef: PartialMapDef = {
             },
         ],
     },
-    gameMode: { turkeyMode: 1 },
+    gameMode: { turkeyMode: true },
 };
 
 export const Turkey = util.mergeDeep({}, Main, mapDef);

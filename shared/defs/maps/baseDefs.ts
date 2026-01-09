@@ -233,7 +233,7 @@ export const Main: MapDef = {
             { name: "awc", count: 1, weight: 0.1 },
             { name: "pkp", count: 1, weight: 0.1 },
         ],
-        tier_sledgehammer: [{ name: "sledgehammer", count: 1, weight: 1 }],
+        tier_barn_melee: [{ name: "sledgehammer", count: 1, weight: 1 }],
         tier_chest_04: [
             { name: "p30l", count: 1, weight: 40 }, // ?
             { name: "p30l_dual", count: 1, weight: 1 }, // ?

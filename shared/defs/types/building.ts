@@ -136,7 +136,7 @@ export interface BuildingDef {
         volume: number;
     }>;
     healRegions?: Array<{
-        collision: AABB;
+        collision: Collider;
         healRate: number;
     }>;
     center_loot?: string;

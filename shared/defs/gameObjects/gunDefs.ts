@@ -1,3 +1,4 @@
+import { type DeepPartial, util } from "../../utils/util";
 import type { Vec2 } from "../../utils/v2";
 
 export interface GunDef {
@@ -113,7 +114,11 @@ export interface GunDef {
     burstSounds?: number;
 }
 
-export const GunDefs: Record<string, GunDef> = {
+function defineGunSkin(baseType: string, params: DeepPartial<GunDef>): GunDef {
+    return util.mergeDeep({}, BaseDefs[baseType], params);
+}
+
+export const BaseDefs: Record<string, GunDef> = {
     mp5: {
         name: "MP5",
         type: "gun",
@@ -659,7 +664,7 @@ export const GunDefs: Record<string, GunDef> = {
         reloadTime: 2.9,
         fireDelay: 0.19,
         switchDelay: 0.75,
-        barrelLength: 3.25,
+        barrelLength: 3.7,
         barrelOffset: 0,
         recoilTime: 1e10,
         moveSpread: 3.5,
@@ -676,10 +681,10 @@ export const GunDefs: Record<string, GunDef> = {
             scale: 0.3,
         },
         worldImg: {
-            sprite: "gun-long-01.img",
-            scale: { x: 0.5, y: 0.46 },
-            tint: 0xdcc8a7,
-            leftHandOffset: { x: -3, y: 0 },
+            sprite: "gun-l86-01.img",
+            scale: { x: 0.5, y: 0.5 },
+            tint: 0xffffff,
+            leftHandOffset: { x: 2, y: 0 },
             recoil: 1.66,
         },
         particle: { shellScale: 1.3, shellOffset: 0.55 },
@@ -1558,7 +1563,7 @@ export const GunDefs: Record<string, GunDef> = {
         fireDelay: 1.5,
         switchDelay: 1,
         pullDelay: 0.8,
-        barrelLength: 3.5,
+        barrelLength: 4.1,
         barrelOffset: 0,
         recoilTime: 1e10,
         moveSpread: 2.5,
@@ -1575,10 +1580,10 @@ export const GunDefs: Record<string, GunDef> = {
             scale: 0.3,
         },
         worldImg: {
-            sprite: "gun-long-01.img",
-            scale: { x: 0.5, y: 0.4925 },
-            tint: 0x658947,
-            leftHandOffset: { x: 2.8, y: 0 },
+            sprite: "gun-sv98-01.img",
+            scale: { x: 0.5, y: 0.5 },
+            tint: 0xffffff,
+            leftHandOffset: { x: 10, y: 0 },
             recoil: 2.33,
         },
         particle: { shellScale: 1.6, shellOffset: 0.6 },
@@ -1706,7 +1711,7 @@ export const GunDefs: Record<string, GunDef> = {
         reloadTime: 2.5,
         fireDelay: 0.25,
         switchDelay: 0.75,
-        barrelLength: 4,
+        barrelLength: 4.2,
         barrelOffset: 0,
         recoilTime: 1e10,
         moveSpread: 4.5,
@@ -1723,9 +1728,9 @@ export const GunDefs: Record<string, GunDef> = {
             scale: 0.3,
         },
         worldImg: {
-            sprite: "gun-long-01.img",
-            scale: { x: 0.5, y: 0.56 },
-            tint: 0x1c1c1c,
+            sprite: "gun-svd-01.img",
+            scale: { x: 0.5, y: 0.5 },
+            tint: 0xffffff,
             leftHandOffset: { x: 8, y: 0 },
             recoil: 2,
         },
@@ -3928,3 +3933,29 @@ export const GunDefs: Record<string, GunDef> = {
         },
     },
 };
+
+const SkinDefs: Record<string, GunDef> = {
+    svd_winter: defineGunSkin("svd", {
+        name: "SVD-63",
+        noPotatoSwap: true,
+        worldImg: {
+            sprite: "gun-svd-02.img",
+        },
+    }),
+    sv98_winter: defineGunSkin("sv98", {
+        name: "SV-98",
+        noPotatoSwap: true,
+        worldImg: {
+            sprite: "gun-sv98-02.img",
+        },
+    }),
+    awc_winter: defineGunSkin("awc", {
+        name: "AWM-S",
+        noPotatoSwap: true,
+        worldImg: {
+            sprite: "gun-awc-02.img",
+        },
+    }),
+};
+
+export const GunDefs: Record<string, GunDef> = { ...BaseDefs, ...SkinDefs };

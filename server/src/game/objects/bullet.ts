@@ -6,7 +6,7 @@ import {
 import { PerkProperties } from "../../../../shared/defs/gameObjects/perkDefs";
 import { MapObjectDefs } from "../../../../shared/defs/mapObjectDefs";
 import type { ObstacleDef } from "../../../../shared/defs/mapObjectsTyping";
-import { GameConfig } from "../../../../shared/gameConfig";
+import { type DamageType, GameConfig } from "../../../../shared/gameConfig";
 import { Constants } from "../../../../shared/net/net";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
 import { coldet } from "../../../../shared/utils/coldet";
@@ -42,7 +42,7 @@ export interface BulletParams {
     dir: Vec2;
     layer: number;
     damageMult: number;
-    damageType: number;
+    damageType: DamageType;
     shotFx?: boolean;
     shotOffhand?: boolean;
     lastShot?: boolean;
@@ -164,7 +164,7 @@ export class Bullet {
     damageMult!: number;
     onHitFx?: string;
     hasOnHitFx!: boolean;
-    damageType!: number;
+    damageType!: DamageType;
     isShrapnel!: boolean;
     skipCollision!: boolean;
     reflected!: boolean;

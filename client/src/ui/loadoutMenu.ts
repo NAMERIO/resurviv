@@ -22,7 +22,6 @@ import {
 } from "../crosshair";
 import { device } from "../device";
 import { helpers } from "../helpers";
-import { MapDefs } from "../../../shared/defs/mapDefs";
 import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
 import type { LoadoutDisplay } from "./opponentDisplay";
@@ -291,8 +290,9 @@ export class LoadoutMenu {
                                 id: "modal-perk-disabled",
                                 class: "modal-perk-disabled",
                                 html:
-                                    this.localization.translate("loadout-perks-disabled") ||
-                                    "Perks are only enabled in Perks mode",
+                                    this.localization.translate(
+                                        "loadout-perks-disabled",
+                                    ) || "Perks are only enabled in Perks mode",
                                 css: {
                                     position: "absolute",
                                     left: "0",

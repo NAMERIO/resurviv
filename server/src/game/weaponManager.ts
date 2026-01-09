@@ -204,6 +204,31 @@ export class WeaponManager {
         this.player.weapsDirty = true;
     }
 
+    swapWeaponSlots() {
+        const primary = {
+            ...this.weapons[WeaponSlot.Primary],
+        };
+        const secondary = {
+            ...this.weapons[WeaponSlot.Secondary],
+        };
+
+        this.weapons[WeaponSlot.Primary] = secondary;
+        this.weapons[WeaponSlot.Secondary] = primary;
+
+        if (
+            this.curWeapIdx == WeaponSlot.Primary ||
+            this.curWeapIdx == WeaponSlot.Secondary
+        ) {
+            const newIdx = this.curWeapIdx ^ 1;
+
+            this.lastWeaponIdx = this._curWeapIdx;
+            assert(this.weapons[newIdx].type);
+            this._curWeapIdx = newIdx;
+        }
+
+        this.player.weapsDirty = true;
+    }
+
     setWeapon(idx: number, type: string, ammo: number) {
         const weaponDef = GameObjectDefs[type];
         const isMelee = idx === WeaponSlot.Melee;
@@ -1110,11 +1135,12 @@ export class WeaponManager {
                 if (obj.interactable) obj.interact(this.player);
             } else if (obj.__type === ObjectType.Player) {
                 obj.damage({
-                        amount:
-                            meleeDef.damage *
-                            (this.player.hasPerk("melee_striker")
-                                ? (PerkProperties.melee_striker?.meleeDamageMult as number) ?? 1
-                                : 1),
+                    amount:
+                        meleeDef.damage *
+                        (this.player.hasPerk("melee_striker")
+                            ? ((PerkProperties.melee_striker
+                                  ?.meleeDamageMult as number) ?? 1)
+                            : 1),
                     gameSourceType: this.activeWeapon,
                     damageType: GameConfig.DamageType.Player,
                     source: this.player,

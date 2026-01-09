@@ -1,3 +1,4 @@
+import type { Input } from "../gameConfig";
 import { v2 } from "../utils/v2";
 import { type AbstractMsg, type BitStream, Constants } from "./net";
 
@@ -15,10 +16,10 @@ export class InputMsg implements AbstractMsg {
     touchMoveLen = 255;
     toMouseDir = v2.create(1, 0);
     toMouseLen = 0;
-    inputs: number[] = [];
+    inputs: Input[] = [];
     useItem = "";
 
-    addInput(input: number) {
+    addInput(input: Input) {
         if (this.inputs.length < 7 && !this.inputs.includes(input)) {
             this.inputs.push(input);
         }

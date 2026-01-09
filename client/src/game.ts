@@ -1268,6 +1268,11 @@ export class Game {
                         channel: "ui",
                     });
                 }
+                if (IS_DEV) {
+                    if (this.editor.enabled) {
+                        this.editor.sendMsg = true;
+                    }
+                }
 
                 SDK.gamePlayStart();
                 break;

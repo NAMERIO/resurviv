@@ -3,7 +3,7 @@ import { Rarity } from "../../gameConfig";
 export interface CrosshairDef {
     readonly type: "crosshair";
     name: string;
-    rarity: number;
+    rarity: Rarity;
     cursor?: string;
     texture: string;
     code: string;

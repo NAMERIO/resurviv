@@ -118,7 +118,7 @@ export interface MapDef {
         perkMode?: boolean;
         perkModeRoles?: string[];
         allowLoadoutPerks?: boolean;
-        turkeyMode?: number;
+        turkeyMode?: boolean;
         spookyKillSounds?: boolean;
     };
     gameConfig: {

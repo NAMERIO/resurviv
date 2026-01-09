@@ -228,6 +228,8 @@ const _allowedEmotes = [
     "emote_flaglatvia",
     "emote_flaguae",
     "emote_flagdominicanrepublic",
+    "emote_flaglibya",
+    "emote_flagbosnia",
     "emote_logocloud",
     "emote_logotwins",
 ];
@@ -243,7 +245,7 @@ const _allowedPerks = [
     "low_hp_surge",
     "chambered",
     "mine_master",
-    "leadership2"
+    "leadership2",
 ];
 
 export interface UnlockDef {
