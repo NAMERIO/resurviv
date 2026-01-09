@@ -1092,7 +1092,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 60,
         obstacleDamage: 1.5,
-        headshotMult: 1,
         attack: {
             offset: { x: 2, y: 0 },
             rad: 2.1,
