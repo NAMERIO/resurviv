@@ -98,6 +98,8 @@ export interface ObjectsFullData {
 
         role: string;
 
+        wearingLasrSwrd: boolean;
+
         perks: Array<{
             type: string;
             droppable: boolean;

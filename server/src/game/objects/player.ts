@@ -1259,6 +1259,21 @@ export class Player extends BaseGameObject {
         );
     }
 
+    getLasrSwrdReflectArea() {
+        const meleeDef = GameObjectDefs[this.activeWeapon] as MeleeDef;
+        if (!meleeDef.reflectArea) {
+            return collider.createCircle(this.pos, 0);
+        }
+        const ang = Math.atan2(this.dir.y, this.dir.x);
+        const off = v2.add(
+            meleeDef.reflectArea.offset,
+            v2.mul(v2.create(1, 0), this.scale - 1)
+        );
+        const pos = v2.add(this.pos, v2.rotate(off, ang));
+        const rad = meleeDef.reflectArea.rad;
+        return collider.createCircle(pos, rad);
+    }
+
     getPanSegment() {
         const panSurface = this.wearingPan ? "unequipped" : "equipped";
         let surface = (GameObjectDefs.pan as MeleeDef).reflectSurface![panSurface];

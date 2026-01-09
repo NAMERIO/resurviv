@@ -24,6 +24,7 @@ export interface MeleeDef {
     anim: {
         idlePose: string;
         attackAnims: string[];
+        poseAnims?: string[];
     };
     sound: Record<string, string>;
     //  {
@@ -63,6 +64,10 @@ export interface MeleeDef {
     };
     armorPiercing?: boolean;
     stonePiercing?: boolean;
+    reflectArea?: {
+        offset: Vec2;
+        rad: number;
+    };
 }
 
 export interface Img {
@@ -1104,12 +1109,13 @@ const BaseDefs: Record<string, MeleeDef> = {
         anim: {
             idlePose: "meleeLasrSwrd",
             attackAnims: ["lasrSwrdSwing"],
+            poseAnims: ["lasrSwrd_pose_1", "lasrSwrd_pose_2", "lasrSwrd_pose_3"]
         },
         sound: {
-            pickup: "heavy_pickup_01",
-            swing: "heavy_swing_01",
+            pickup: "frag_pickup_01",
+            swing: "lasr_swing_01",
             deploy: "stow_weapon_01",
-            playerHit: "hammer_hit_01",
+            playerHit: "lasr_hit_01"
         },
         lootImg: {
             sprite: "loot-melee-lasr-sword-01.img",
@@ -1128,6 +1134,10 @@ const BaseDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
             leftHandOntop: true,
         },
+        reflectArea: {
+            offset: { x: 1.75, y: 0.0 },
+            rad: 1.1
+        }
     },
 };
 

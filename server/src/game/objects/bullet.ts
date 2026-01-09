@@ -23,7 +23,7 @@ import type { Player } from "./player";
 // to get bullet collision the most accurate possible
 
 interface BulletCollision {
-    type: "obstacle" | "player" | "pan";
+    type: "obstacle" | "player" | "pan" | "lasr_swrd";
     obj?: Player | Obstacle;
     obstacleType?: string;
     collidable: boolean;
@@ -445,6 +445,7 @@ export class Bullet {
                 }
 
                 let panCollision = null;
+                let lasrCollision: { point: Vec2; normal: Vec2 } | null = null;
                 if (obj.hasActivePan()) {
                     const p = obj;
                     const panSeg = p.getPanSegment()!;
@@ -485,6 +486,21 @@ export class Bullet {
                             ),
                             normal: normal,
                         };
+                    }
+                }
+                if (
+                    obj.activeWeapon?.startsWith("lasr_swrd") &&
+                    obj.animType !== GameConfig.Anim.Melee
+                ) {
+                    const area = obj.getLasrSwrdReflectArea();
+                    const intersection = coldet.intersectSegmentCircle(
+                        posOld,
+                        this.pos,
+                        area.pos,
+                        area.rad,
+                    );
+                    if (intersection) {
+                        lasrCollision = { point: intersection.point, normal: intersection.normal };
                     }
                 }
                 const collision = coldet.intersectSegmentCircle(
@@ -532,8 +548,18 @@ export class Bullet {
                         collidable: true,
                         dist: v2.lengthSqr(v2.sub(panCollision.point, this.startPos)),
                     });
+                } else if (lasrCollision) {
+                    collisions.push({
+                        type: "lasr_swrd",
+                        obj: obj as Player,
+                        point: lasrCollision.point,
+                        normal: lasrCollision.normal,
+                        layer: obj.layer,
+                        collidable: true,
+                        dist: v2.lengthSqr(v2.sub(lasrCollision.point, this.startPos)),
+                    });
                 }
-                if (collision || panCollision) {
+                if (collision || panCollision || lasrCollision) {
                     break;
                 }
             }
@@ -619,6 +645,9 @@ export class Bullet {
                 }
                 hit = col.collidable;
             } else if (col.type == "pan") {
+                hit = col.collidable;
+                this.reflect(col.point, col.normal, col.obj?.__id ?? 0);
+            } else if (col.type == "lasr_swrd") {
                 hit = col.collidable;
                 this.reflect(col.point, col.normal, col.obj?.__id ?? 0);
             }

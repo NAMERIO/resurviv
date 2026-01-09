@@ -293,6 +293,7 @@ export class BulletBarn {
                         (player.__id != b.playerId || b.damageSelf)
                     ) {
                         let panCollision = null;
+                        let laserCollision: { point: Vec2; normal: Vec2 } | null = null;
                         if (player.m_hasActivePan()) {
                             const p = player;
                             const panSeg = p.m_getPanSegment()!;
@@ -331,18 +332,35 @@ export class BulletBarn {
                                 };
                             }
                         }
+                        if (player.m_hasActiveLasrSwrd()) {
+                            const p = player;
+                            const area = p.m_getLasrSwrdReflectArea();
+                            const intersection = coldet.intersectSegmentCircle(posOld, b.pos, area.pos, area.rad);
+
+                            if (intersection) {
+                                laserCollision = { point: intersection.point, normal: intersection.normal };
+                                p.changeLasrSwrdPose();
+                            }
+                        }
                         const collision = coldet.intersectSegmentCircle(
                             posOld,
                             b.pos,
                             player.m_pos,
                             player.m_rad,
                         );
-                        if (
-                            collision &&
-                            (!panCollision ||
-                                v2.length(v2.sub(collision.point, b.startPos)) <
-                                    v2.length(v2.sub(panCollision.point, b.startPos)))
-                        ) {
+                        const playerCollisionDist = collision
+                            ? v2.length(v2.sub(collision.point, b.startPos))
+                            : Infinity;
+                        const panCollisionDist = panCollision
+                            ? v2.length(v2.sub(panCollision.point, b.startPos))
+                            : Infinity;
+                        const laserCollisionDist = laserCollision
+                            ? v2.length(v2.sub(laserCollision.point, b.startPos))
+                            : Infinity;
+
+                        const minDist = Math.min(playerCollisionDist, panCollisionDist, laserCollisionDist);
+
+                        if (minDist === playerCollisionDist && collision) {
                             colObjs.push({
                                 type: "player",
                                 player,
@@ -354,16 +372,13 @@ export class BulletBarn {
                             if (player.m_hasPerk("steelskin")) {
                                 colObjs.push({
                                     type: "pan",
-                                    point: v2.add(
-                                        collision.point,
-                                        v2.mul(collision.normal, 0.1),
-                                    ),
+                                    point: v2.add(collision.point, v2.mul(collision.normal, 0.1)),
                                     normal: collision.normal,
                                     layer: player.layer,
                                     collidable: false,
                                 });
                             }
-                        } else if (panCollision) {
+                        } else if (minDist === panCollisionDist && panCollision) {
                             colObjs.push({
                                 type: "pan",
                                 point: panCollision.point,
@@ -371,8 +386,16 @@ export class BulletBarn {
                                 layer: player.layer,
                                 collidable: true,
                             });
+                        } else if (minDist === laserCollisionDist && laserCollision) {
+                            colObjs.push({
+                                type: "lasr_swrd",
+                                point: v2.add(laserCollision.point, v2.mul(laserCollision.normal, 0.1)),
+                                normal: laserCollision.normal,
+                                layer: player.layer,
+                                collidable: true,
+                            });
                         }
-                        if (collision || panCollision) {
+                        if (collision || panCollision || laserCollision) {
                             break;
                         }
                     }
@@ -452,6 +475,19 @@ export class BulletBarn {
                             col.layer!,
                             particleBarn,
                             audioManager,
+                        );
+                        hit = col.collidable;
+                    } else if (col.type == "lasr_swrd") {
+                        const lasrDef = GameObjectDefs.lasr_swrd as MeleeDef;
+                        audioManager.playGroup(lasrDef.sound.swing, {
+                            soundPos: col.point,
+                            layer: col.layer!,
+                        });
+                        particleBarn.addParticle(
+                            "barrelChip",
+                            col.layer!,
+                            col.point,
+                            col.normal,
                         );
                         hit = col.collidable;
                     }
