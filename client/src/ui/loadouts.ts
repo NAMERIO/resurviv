@@ -65,7 +65,7 @@ const loadout = {
             player_icon: getGameType("emote", mergedLoadout.player_icon, ""),
             primary: getGameType("gun", mergedLoadout.primary, "mosin"),
             secondary: getGameType("gun", mergedLoadout.secondary, "mosin"),
-            perk: getGameType("perk", mergedLoadout.perk, ""),
+            perk: getGameType("perk", mergedLoadout.perk, "quick_reload"),
             crosshair: {
                 type:
                     mergedLoadout.crosshair.type === "crosshair_custom_image"
