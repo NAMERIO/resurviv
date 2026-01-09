@@ -431,12 +431,21 @@ export class TeamMenu {
                 const ip = getHonoIp(c, Config.apiServer.proxyIPHeader);
 
                 let closeReason: TeamMenuErrorType | undefined;
+
                 if (
                     !ip ||
                     httpRateLimit.isRateLimited(ip) ||
                     wsRateLimit.isIpRateLimited(ip)
                 ) {
-                    closeReason = "rate_limited";
+                    if (!ip) {
+                        closeReason = "invalid_ip";
+                    } else {
+                        closeReason = "rate_limited";
+                    }
+                    console.log({
+                        closeReason,
+                    });
+                    closeReason = undefined;
                 }
 
                 if (await isBanned(ip!)) {

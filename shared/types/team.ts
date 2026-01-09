@@ -17,6 +17,7 @@ export type TeamMenuErrorType =
     | "kicked"
     | "banned"
     | "behind_proxy"
+    | "invalid_ip"
     | "rate_limited";
 
 export interface RoomData {
