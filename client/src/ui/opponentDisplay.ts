@@ -287,6 +287,7 @@ export class LoadoutDisplay {
             scale: 1,
             role: "",
             perks: [],
+            wearingLasrSwrd: false,
             pos: v2.create(50, 50),
             dir: v2.create(0, -1),
         };

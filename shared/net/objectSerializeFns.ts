@@ -245,6 +245,8 @@ export const ObjectSerializeFns: {
                 s.writeGameType(data.role);
             }
 
+            s.writeBoolean(!!data.wearingLasrSwrd);
+
             const hasPerks = data.perks.length > 0;
             s.writeBoolean(hasPerks);
             if (hasPerks) {
@@ -300,6 +302,9 @@ export const ObjectSerializeFns: {
 
             const hasRole = s.readBoolean();
             data.role = hasRole ? s.readGameType() : "";
+
+            // read laser sword wearing flag
+            data.wearingLasrSwrd = s.readBoolean();
 
             data.perks = [];
             const hasPerks = s.readBoolean();
