@@ -13,6 +13,7 @@ export enum MapId {
     Perks = 9,
 }
 
+export const teamModesStrings = ["solo", "duo", "squad"] as const;
 export const TeamModeToString = {
     [TeamMode.Solo]: "solo",
     [TeamMode.Duo]: "duo",
