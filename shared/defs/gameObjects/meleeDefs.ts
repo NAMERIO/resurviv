@@ -1095,7 +1095,7 @@ const BaseDefs: Record<string, MeleeDef> = {
         stonePiercing: true,
         autoAttack: false,
         switchDelay: 0.25,
-        damage: 60,
+        damage: 30, // 60
         obstacleDamage: 1.5,
         attack: {
             offset: { x: 2, y: 0 },
@@ -1104,7 +1104,7 @@ const BaseDefs: Record<string, MeleeDef> = {
             cooldownTime: 0.6,
         },
         speed: {
-            equip: 1,
+            equip: -7,
         },
         anim: {
             idlePose: "meleeLasrSwrd",
@@ -1136,7 +1136,7 @@ const BaseDefs: Record<string, MeleeDef> = {
         },
         reflectArea: {
             offset: { x: 1.75, y: 0.0 },
-            rad: 1.1
+            rad: 1
         }
     },
 };
