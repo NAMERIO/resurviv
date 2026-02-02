@@ -149,3 +149,92 @@ export const bannedIpsTable = pgTable("banned_ips", {
     reason: text("reason").notNull().default(""),
     bannedBy: text("banned_by").notNull().default("admin"),
 });
+
+//
+// CLANS
+//
+export const clansTable = pgTable("clans", {
+    id: uuid("id").notNull().primaryKey().defaultRandom(),
+    name: text("name").notNull().unique(),
+    slug: text("slug").notNull().unique(),
+    icon: text("icon").notNull(), // Emote type for clan icon
+    ownerId: text("owner_id")
+        .notNull()
+        .references(() => usersTable.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type ClansTableInsert = typeof clansTable.$inferInsert;
+export type ClansTableSelect = typeof clansTable.$inferSelect;
+
+export const clanMembersTable = pgTable(
+    "clan_members",
+    {
+        clanId: uuid("clan_id")
+            .notNull()
+            .references(() => clansTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        userId: text("user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        index("idx_clan_members_clan").on(table.clanId),
+        index("idx_clan_members_user").on(table.userId),
+    ],
+);
+
+export type ClanMembersTableInsert = typeof clanMembersTable.$inferInsert;
+export type ClanMembersTableSelect = typeof clanMembersTable.$inferSelect;
+
+// Track stats earned by members while in a clan
+export const clanMemberStatsTable = pgTable(
+    "clan_member_stats",
+    {
+        clanId: uuid("clan_id")
+            .notNull()
+            .references(() => clansTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        userId: text("user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        kills: integer("kills").notNull().default(0),
+        wins: integer("wins").notNull().default(0),
+    },
+    (table) => [
+        index("idx_clan_member_stats_clan").on(table.clanId),
+        index("idx_clan_member_stats_user").on(table.userId),
+    ],
+);
+
+export type ClanMemberStatsTableInsert = typeof clanMemberStatsTable.$inferInsert;
+export type ClanMemberStatsTableSelect = typeof clanMemberStatsTable.$inferSelect;
+
+// Track when users leave clans (for cooldown)
+export const clanLeaveHistoryTable = pgTable(
+    "clan_leave_history",
+    {
+        userId: text("user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        leftAt: timestamp("left_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [index("idx_clan_leave_history_user").on(table.userId)],
+);

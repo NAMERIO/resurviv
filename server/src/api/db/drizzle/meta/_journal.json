@@ -5,43 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1745172979186,
-      "tag": "0000_same_falcon",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1750964146027,
-      "tag": "0001_lovely_skrulls",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1751241098146,
-      "tag": "0002_brown_lizard",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1756778270320,
-      "tag": "0003_cool_skrulls",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1760380431165,
-      "tag": "0004_famous_mulholland_black",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1764364728614,
-      "tag": "0005_chilly_doctor_octopus",
+      "when": 1770011743308,
+      "tag": "0000_vengeful_speed_demon",
       "breakpoints": true
     }
   ]

@@ -1,1 +1,0 @@
-ALTER TABLE "banned_ips" RENAME COLUMN "expries_in" TO "expires_in";

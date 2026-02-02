@@ -6,6 +6,7 @@ import { device } from "../device";
 import { helpers } from "../helpers";
 import { proxy } from "../proxy";
 import { SDK } from "../sdk";
+import { ClanUi } from "./clanUi";
 import type { LoadoutMenu } from "./loadoutMenu";
 import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
@@ -96,6 +97,8 @@ export class ProfileUi {
 
     loginOptionsModalMobile!: MenuModal;
     modalMobileAccount!: MenuModal;
+    
+    clanUi: ClanUi | null = null;
 
     constructor(
         public account: Account,
@@ -334,6 +337,21 @@ export class ProfileUi {
         $("#btn-pass-locked").on("click", () => {
             this.showLoginMenu({
                 modal: true,
+            });
+            return false;
+        });
+        $("#btn-clans").on("click", () => {
+            this.waitOnLogin(() => {
+                if (this.account.loggedIn) {
+                    if (!this.clanUi) {
+                        this.clanUi = new ClanUi(this.account, this.localization);
+                    }
+                    this.clanUi.showMainModal();
+                } else {
+                    this.showLoginMenu({
+                        modal: true,
+                    });
+                }
             });
             return false;
         });

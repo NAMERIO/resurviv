@@ -776,6 +776,11 @@
                     <div class="account-link account-leaderboard-link"><span data-l10n="index-leaderboards">Leaderboards</span></div>
                   </div>
                 </div>
+                <div id="btn-clans" class="account-details-button-wrapper menu-option btn-darken">
+                  <div class="account-details-button">
+                    <div class="account-link"><span>Clans</span></div>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="account-overview">
@@ -1487,6 +1492,186 @@
               <h3 class="close close-footer" data-l10n="index-confirm">Confirm</h3>
               <h3 class='close close-footer' data-l10n='index-confirm-all' data-confirm-all="true">Confirm All</h3>
             </div>
+          </div>
+        </div>
+      </div>     
+      <!-- Clan Modals Striped from kong -->
+      <div id="modal-clan-main" class="modal">
+        <div class="modal-content">
+          <div class="modal-clans-header">
+            <div class="modal-clans-tab active" data-tab="hub">
+              <div class="tab-icon" style="background-image: url(img/gui/player-gui.svg);"></div>
+              Clans Hub
+            </div>
+            <div class="modal-clans-tab" id="btn-clan-my-clan">
+              <div class="tab-icon" style="background-image: url(img/gui/crown.svg);"></div>
+              My Clan
+            </div>
+            <div class="modal-clans-tab" id="btn-clan-leaderboard">
+              <div class="tab-icon" style="background-image: url(img/gui/star.svg);"></div>
+              Leaderboard
+            </div>
+            <div class="modal-clans-close close"></div>
+          </div>
+          <div class="modal-clans-body">
+            <div class="clan-column">
+              <div id="clan-create-card">
+                <div class="clan-column-header">Create New Clan</div>
+                <div class="clan-create-section">
+                  <div class="clan-logo-section">
+                    <div>
+                      <div id="clan-create-icon-preview" class="clan-logo-preview" style="background-image: url(img/gui/player-gui.svg);"></div>
+                      <div class="clan-logo-buttons">
+                        <div id="btn-clan-icon-reset" class="clan-btn-reset"></div>
+                        <div id="btn-clan-icon-edit" class="clan-btn-edit"></div>
+                      </div>
+                    </div>
+                    <div class="clan-properties-section">
+                      <input type="text" id="clan-create-name-input" class="clan-name-input" placeholder="Clan Name" maxlength="16" />
+                      <div id="clan-create-warning" class="clan-warning" style="display: none;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="clan-my-card" style="display: none;">
+                <div class="clan-column-header">My Clan</div>
+                <div class="clan-my-info">
+                  <div class="clan-my-header">
+                    <div id="clan-my-icon" class="clan-logo-preview" style="background-image: url(img/gui/player-gui.svg);"></div>
+                    <div class="clan-my-details">
+                      <div id="clan-my-name" class="clan-my-name">Clan Name</div>
+                      <div id="clan-my-members" class="clan-my-meta">0 / 20 Members</div>
+                    </div>
+                  </div>
+                  <div class="clan-my-stats">
+                    <div class="clan-my-stat">
+                      <span class="clan-my-stat-label">Kills:</span>
+                      <span id="clan-my-kills" class="clan-my-stat-value">0</span>
+                    </div>
+                    <div class="clan-my-stat">
+                      <span class="clan-my-stat-label">Wins:</span>
+                      <span id="clan-my-wins" class="clan-my-stat-value">0</span>
+                    </div>
+                  </div>
+                  <div class="clan-my-actions">
+                    <div id="btn-clan-view-details" class="clan-btn clan-btn-teal">View Details</div>
+                    <div id="btn-clan-leave-main" class="clan-btn clan-btn-red">Leave Clan</div>
+                    <div id="btn-clan-delete-main" class="clan-btn clan-btn-red" style="display: none;">Delete Clan</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="clan-column">
+              <div class="clan-column-header">Browse Clans</div>
+              <div class="clan-join-section">
+                <div class="clan-invite-input-group">
+                  <input type="text" id="clan-search-input" class="clan-invite-input" placeholder="Search clans..." />
+                  <div id="btn-clan-search" class="clan-search-btn"></div>
+                </div>
+                <div id="clan-list-container" class="clan-list-container"></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-clans-footer">
+            <div id="btn-clan-create-submit" class="clan-btn clan-btn-green">Create Clan</div>
+          </div>
+        </div>
+      </div>
+      <div id="modal-clan-icons" class="modal" style="z-index: 3;">
+        <div class="modal-content" style="width: 500px;">
+          <div class="modal-clans-header">
+            <div class="modal-clans-tab active">Select Icon</div>
+            <div class="modal-clans-close close btn-clan-icons-close"></div>
+          </div>
+          <div class="modal-clans-body">
+            <div id="clan-icon-selector" class="clan-icon-selector"></div>
+          </div>
+          <div class="modal-clans-footer">
+            <div id="btn-clan-icon-confirm" class="clan-btn clan-btn-green">Confirm</div>
+          </div>
+        </div>
+      </div>
+      <div id="modal-clan-page" class="modal">
+        <div class="modal-content">
+          <div class="modal-clans-header">
+            <div class="modal-clans-tab active" id="btn-clan-back-to-hub">
+              <div class="tab-icon" style="background-image: url(img/gui/return-arrow.svg);"></div>
+              Back
+            </div>
+            <div class="modal-clans-tab">
+              <div class="tab-icon" style="background-image: url(img/gui/crown.svg);"></div>
+              Clan Details
+            </div>
+            <div class="modal-clans-close close"></div>
+          </div>
+          <div class="modal-clans-body">
+            <div id="clan-page-detail" class="clan-column" style="flex: 1;">
+              <div class="clan-detail-header">
+                <div class="clan-detail-icon-wrapper">
+                  <div id="clan-detail-icon" class="clan-detail-icon" style="background-image: url(img/gui/player-gui.svg);"></div>
+                  <div id="btn-clan-edit-icon" class="clan-edit-icon-btn" style="display: none;" title="Change Icon"></div>
+                </div>
+                <div class="clan-detail-info">
+                  <div class="clan-detail-name-wrapper">
+                    <div id="clan-detail-name" class="clan-detail-name">Clan Name</div>
+                    <div id="btn-clan-edit-name" class="clan-edit-name-btn" style="display: none;" title="Edit Name"></div>
+                  </div>
+                  <div id="clan-detail-name-edit" class="clan-detail-name-edit" style="display: none;">
+                    <input type="text" id="clan-edit-name-input" class="clan-name-input" placeholder="Clan Name" maxlength="16" />
+                    <div id="btn-clan-save-name" class="clan-btn clan-btn-green clan-btn-small">Save</div>
+                    <div id="btn-clan-cancel-name" class="clan-btn clan-btn-grey clan-btn-small">Cancel</div>
+                  </div>
+                  <div id="clan-detail-members-count" class="clan-detail-meta">0 / 20 Members</div>
+                </div>
+              </div>
+              <div class="clan-detail-stats">
+                <div class="clan-stat-box games">
+                  <div class="clan-stat-label">Games</div>
+                  <div id="clan-detail-games" class="clan-stat-value">0</div>
+                </div>
+                <div class="clan-stat-box wins">
+                  <div class="clan-stat-label">Wins</div>
+                  <div id="clan-detail-wins" class="clan-stat-value">0</div>
+                </div>
+                <div class="clan-stat-box kills">
+                  <div class="clan-stat-label">Kills</div>
+                  <div id="clan-detail-kills" class="clan-stat-value">0</div>
+                </div>
+              </div>
+              <div class="clan-members-section">
+                <div class="clan-members-header">
+                  <div class="clan-members-title">Members</div>
+                  <div class="clan-members-count" id="clan-members-count">0 / 20</div>
+                </div>
+                <div id="clan-members-list" class="clan-members-list"></div>
+              </div>
+              <div id="clan-member-actions" class="clan-actions" style="display: none;">
+                <div id="btn-clan-leave" class="clan-btn clan-btn-red">Leave Clan</div>
+                <div id="btn-clan-delete" class="clan-btn clan-btn-red" style="display: none;">Delete Clan</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="modal-clan-leaderboard" class="modal">
+        <div class="modal-content">
+          <div class="modal-clans-header">
+            <div class="modal-clans-tab" id="btn-leaderboard-back">
+              <div class="tab-icon" style="background-image: url(img/gui/player-gui.svg);"></div>
+              Clans Hub
+            </div>
+            <div class="modal-clans-tab active">
+              <div class="tab-icon" style="background-image: url(img/gui/crown.svg);"></div>
+              Leaderboards
+            </div>
+            <div class="modal-clans-close close"></div>
+          </div>
+          <div class="modal-clans-body" style="flex-direction: column;">
+            <div class="clan-leaderboard-tabs">
+              <div class="clan-leaderboard-tab active" data-type="kills">Most Kills</div>
+              <div class="clan-leaderboard-tab" data-type="wins">Most Wins</div>
+            </div>
+            <div id="clan-leaderboard-list" class="clan-leaderboard-list"></div>
           </div>
         </div>
       </div>

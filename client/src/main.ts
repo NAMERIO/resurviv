@@ -101,12 +101,6 @@ class Application {
         this.account = new Account(this.config);
         this.loadoutMenu = new LoadoutMenu(this.account, this.localization, this.config);
         this.pass = new Pass(this.account, this.loadoutMenu, this.localization);
-        this.profileUi = new ProfileUi(
-            this.account,
-            this.localization,
-            this.loadoutMenu,
-            this.errorModal,
-        );
         this.siteInfo = new SiteInfo(this.config, this.localization);
 
         this.teamMenu = new TeamMenu(
@@ -150,6 +144,14 @@ class Application {
             this.siteInfo.load();
             this.localization.localizeIndex();
             this.account.init();
+            
+            // Initialize ProfileUi after DOM is ready
+            this.profileUi = new ProfileUi(
+                this.account,
+                this.localization,
+                this.loadoutMenu,
+                this.errorModal,
+            );
 
             this.nameInput.attr("maxLength", net.Constants.PlayerNameMaxLen);
 

@@ -31,6 +31,7 @@ import { PrivateRouter } from "./routes/private/private";
 import { StatsRouter } from "./routes/stats/StatsRouter";
 import { AuthRouter } from "./routes/user/AuthRouter";
 import { UserRouter } from "./routes/user/UserRouter";
+import { ClanRouter } from "./routes/clan/ClanRouter";
 
 export type Context = {
     Variables: {
@@ -74,6 +75,7 @@ app.use(
 
 app.route("/api/user/", UserRouter);
 app.route("/api/auth/", AuthRouter);
+app.route("/api/clan/", ClanRouter);
 app.route("/api/", StatsRouter);
 app.route("/private/", PrivateRouter);
 

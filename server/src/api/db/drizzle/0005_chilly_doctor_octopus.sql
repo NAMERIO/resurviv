@@ -1,1 +1,0 @@
-ALTER TABLE "users" ALTER COLUMN "loadout" SET DEFAULT '{"outfit":"outfitBase","melee":"fists","heal":"heal_basic","boost":"boost_basic","player_icon":"","primary":"mosin","secondary":"mosin","crosshair":{"type":"crosshair_default","color":16777215,"size":"1.00","stroke":"0.00"},"emotes":["emote_happyface","emote_thumbsup","emote_surviv","emote_sadface","",""]}'::json;

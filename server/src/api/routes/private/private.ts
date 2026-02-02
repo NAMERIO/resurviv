@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { saveConfig } from "../../../../../config";
@@ -28,6 +28,8 @@ import { getRedisClient } from "../../cache";
 import { leaderboardCache } from "../../cache/leaderboard";
 import { db } from "../../db";
 import {
+    clanMembersTable,
+    clanMemberStatsTable,
     itemsTable,
     type MatchDataTable,
     matchDataTable,
@@ -35,6 +37,63 @@ import {
 } from "../../db/schema";
 import { MOCK_USER_ID } from "../user/auth/mock";
 import { isBanned, logPlayerIPs, ModerationRouter } from "./ModerationRouter";
+
+// Helper function to update clan stats for players who are in clans
+async function updateClanStats(matchData: MatchDataTable[]) {
+    try {
+        for (const data of matchData) {
+            if (!data.userId) continue;
+
+            // Check if the player is in a clan
+            const membership = await db.query.clanMembersTable.findFirst({
+                where: eq(clanMembersTable.userId, data.userId),
+            });
+
+            if (!membership) continue;
+
+            // Check if this match was played after the player joined the clan
+            const matchTime = data.createdAt instanceof Date ? data.createdAt : new Date(data.createdAt!);
+            if (matchTime < membership.joinedAt) continue;
+
+            // Update the clan member's stats
+            const kills = data.kills || 0;
+            const wins = data.rank === 1 ? 1 : 0;
+
+            // Check if stats record exists
+            const existingStats = await db.query.clanMemberStatsTable.findFirst({
+                where: and(
+                    eq(clanMemberStatsTable.clanId, membership.clanId),
+                    eq(clanMemberStatsTable.userId, data.userId),
+                ),
+            });
+
+            if (existingStats) {
+                await db
+                    .update(clanMemberStatsTable)
+                    .set({
+                        kills: sql`${clanMemberStatsTable.kills} + ${kills}`,
+                        wins: sql`${clanMemberStatsTable.wins} + ${wins}`,
+                    })
+                    .where(
+                        and(
+                            eq(clanMemberStatsTable.clanId, membership.clanId),
+                            eq(clanMemberStatsTable.userId, data.userId),
+                        ),
+                    );
+            } else {
+                // Create new stats record
+                await db.insert(clanMemberStatsTable).values({
+                    clanId: membership.clanId,
+                    userId: data.userId,
+                    kills,
+                    wins,
+                });
+            }
+        }
+    } catch (err) {
+        server.logger.error("Error updating clan stats:", err);
+    }
+}
 
 export const PrivateRouter = new Hono<Context>()
     .use(privateMiddleware)
@@ -143,6 +202,10 @@ export const PrivateRouter = new Hono<Context>()
 
         await db.insert(matchDataTable).values(matchData);
         await logPlayerIPs(matchData);
+        
+        // Update clan stats for players who are in clans
+        await updateClanStats(matchData);
+        
         server.logger.info(`Saved game data for ${matchData[0].gameId}`);
         return c.json({}, 200);
     })
