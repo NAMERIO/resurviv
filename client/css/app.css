@@ -7223,7 +7223,7 @@ input [type="image"]:focus {
   transform: translate(-50%, -50%);
   animation-name: fadeIn;
   animation-duration: 0.2s;
-  width: 1100px;
+  width: 700px;
   max-width: 95vw;
 }
 
@@ -7234,8 +7234,20 @@ input [type="image"]:focus {
   transform: translate(-50%, -50%);
   animation-name: fadeIn;
   animation-duration: 0.2s;
-  width: 500px;
+  width: 480px;
   max-width: 95vw;
+}
+
+#modal-clan-icons .modal-clans-body {
+  min-height: auto;
+  padding: 10px;
+}
+
+#modal-clan-icons .clan-icon-selector {
+  width: 460px;
+  justify-content: flex-start;
+  max-height: 320px;
+  padding: 10px;
 }
 
 /* Modal Header - Tab Style */
@@ -8337,7 +8349,7 @@ input [type="image"]:focus {
   #modal-clan-create .modal-content,
   #modal-clan-page .modal-content,
   #modal-clan-leaderboard .modal-content {
-    width: 95vw;
+    width: 70vw;
     transform: translate(-50%, -50%) scale(0.9);
   }
 }
