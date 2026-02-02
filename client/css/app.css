@@ -8194,30 +8194,21 @@ input [type="image"]:focus {
   width: 50px;
   font-size: 26px;
   font-weight: bold;
-  color: #969B91;
+  color: #FFFFFF;
   text-align: center;
   text-shadow: 1px 1px 0px #000000;
 }
 
 .clan-leaderboard-item:nth-child(1) .clan-leaderboard-rank {
-  color: transparent;
-  background-image: linear-gradient(161.21deg, rgba(241, 242, 158, 0.81) 16.73%, rgba(228, 232, 75, 0.85) 23.35%, rgba(244, 244, 209, 0.84) 26.29%, rgba(206, 210, 0, 0.9) 49.44%, rgba(239, 239, 165, 0.9) 57.53%, rgba(196, 189, 59, 0.9) 65.25%, rgba(203, 184, 20, 0.9) 86.32%);
-  -webkit-background-clip: text;
-  background-clip: text;
+  color: #FFD700;
 }
 
 .clan-leaderboard-item:nth-child(2) .clan-leaderboard-rank {
-  color: transparent;
-  background-image: linear-gradient(161.21deg, rgba(255, 255, 255, 0.81) 16.73%, rgba(231, 231, 231, 0.85) 23.35%, rgba(112, 112, 112, 0.84) 26.29%, rgba(211, 211, 211, 0.9) 49.44%, rgba(228, 228, 228, 0.9) 57.53%, rgba(150, 150, 150, 0.9) 65.25%, rgba(99, 99, 99, 0.9) 86.32%);
-  -webkit-background-clip: text;
-  background-clip: text;
+  color: #C0C0C0;
 }
 
 .clan-leaderboard-item:nth-child(3) .clan-leaderboard-rank {
-  color: transparent;
-  background-image: linear-gradient(161.21deg, rgba(242, 204, 158, 0.81) 16.73%, rgba(232, 169, 75, 0.85) 23.35%, rgba(244, 232, 209, 0.84) 26.29%, rgba(210, 101, 0, 0.9) 49.44%, rgba(239, 218, 165, 0.9) 57.53%, rgba(196, 141, 59, 0.9) 65.25%, rgba(203, 141, 20, 0.9) 86.32%);
-  -webkit-background-clip: text;
-  background-clip: text;
+  color: #CD7F32;
 }
 
 .clan-leaderboard-icon {
