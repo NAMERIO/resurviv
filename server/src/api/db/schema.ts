@@ -10,6 +10,7 @@ import {
     timestamp,
     uuid,
 } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { TeamMode } from "../../../../shared/gameConfig";
 import { ItemStatus, type Loadout, loadout } from "../../../../shared/utils/loadout";
 
@@ -238,3 +239,41 @@ export const clanLeaveHistoryTable = pgTable(
     },
     (table) => [index("idx_clan_leave_history_user").on(table.userId)],
 );
+
+export const clansRelations = relations(clansTable, ({ one, many }) => ({
+    owner: one(usersTable, {
+        fields: [clansTable.ownerId],
+        references: [usersTable.id],
+    }),
+    members: many(clanMembersTable),
+    memberStats: many(clanMemberStatsTable),
+}));
+
+export const clanMembersRelations = relations(clanMembersTable, ({ one }) => ({
+    clan: one(clansTable, {
+        fields: [clanMembersTable.clanId],
+        references: [clansTable.id],
+    }),
+    user: one(usersTable, {
+        fields: [clanMembersTable.userId],
+        references: [usersTable.id],
+    }),
+}));
+
+export const clanMemberStatsRelations = relations(clanMemberStatsTable, ({ one }) => ({
+    clan: one(clansTable, {
+        fields: [clanMemberStatsTable.clanId],
+        references: [clansTable.id],
+    }),
+    user: one(usersTable, {
+        fields: [clanMemberStatsTable.userId],
+        references: [usersTable.id],
+    }),
+}));
+
+export const clanLeaveHistoryRelations = relations(clanLeaveHistoryTable, ({ one }) => ({
+    user: one(usersTable, {
+        fields: [clanLeaveHistoryTable.userId],
+        references: [usersTable.id],
+    }),
+}));
