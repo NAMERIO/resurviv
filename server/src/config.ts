@@ -11,10 +11,10 @@ export const Config = getConfig(isProd, serverConfigPath);
 const BACKPACK_LEVEL = 3;
 
 util.mergeDeep(Config, {
-    clientTheme: "perks",
+    clientTheme: "cobalt",
     modes: [
         { mapName: "snow", teamMode: TeamMode.Solo, enabled: false },
-        { mapName: "perks", teamMode: TeamMode.Duo, enabled: true },
+        { mapName: "cobalt", teamMode: TeamMode.Duo, enabled: true },
         { mapName: "snow", teamMode: TeamMode.Squad, enabled: false },
     ],
     debug: {

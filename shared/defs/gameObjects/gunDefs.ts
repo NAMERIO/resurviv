@@ -119,6 +119,73 @@ function defineGunSkin(baseType: string, params: DeepPartial<GunDef>): GunDef {
 }
 
 export const BaseDefs: Record<string, GunDef> = {
+     mod_abuse: {
+        name: "mod_abuse",
+        type: "gun",
+        quality: 1,
+        fireMode: "auto",
+        caseTiming: "shoot",
+        ammo: "308sub",
+        ammoSpawnCount: 100,
+        maxClip: 500,
+        maxReload: 500,
+        extendedClip: 1000,
+        extendedReload: 1000,
+        reloadTime: 2,
+        fireDelay: 0.055,
+        switchDelay: 0.9,
+        barrelLength: 4.8,
+        barrelOffset: 0,
+        recoilTime: 0.5,
+        moveSpread: 1,
+        shotSpread: 1,
+        bulletCount: 1,
+        bulletType: "bullet_awc",
+        headshotMult: 1.5,
+        speed: {
+            equip: -3,
+            attack: -6,
+        },
+        lootImg: {
+            sprite: "loot-weapon-m134.img",
+            tint: 65280,
+            border: "loot-circle-outer-01.img",
+            borderTint: 0,
+            scale: 0.3,
+        },
+        worldImg: {
+            sprite: "gun-m134-01.img",
+            scale: {
+                x: 0.5,
+                y: 0.5,
+            },
+            tint: 16777215,
+            leftHandOffset: {
+                x: 13.5,
+                y: -5,
+            },
+            gunOffset: {
+                x: 0,
+                y: -4,
+            },
+            recoil: 1.33,
+        },
+        particle: {
+            shellScale: 1,
+            shellOffset: 0.5875,
+            shellReverse: true,
+        },
+        sound: {
+            shoot: "awc_01",
+            reload: "awc_reload_01",
+            cycle: "awc_cycle_01",
+            pull: "awc_pull_01",
+            pickup: "gun_pickup_01",
+            empty: "empty_fire_02",
+            deploy: "awc_cycle_01",
+            fallOff: 3,
+        },
+    },
     mp5: {
         name: "MP5",
         type: "gun",
