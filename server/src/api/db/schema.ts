@@ -8,6 +8,7 @@ import {
     serial,
     text,
     timestamp,
+    uniqueIndex,
     uuid,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
@@ -191,6 +192,7 @@ export const clanMembersTable = pgTable(
     (table) => [
         index("idx_clan_members_clan").on(table.clanId),
         index("idx_clan_members_user").on(table.userId),
+        uniqueIndex("idx_clan_members_unique").on(table.clanId, table.userId),
     ],
 );
 
@@ -219,6 +221,7 @@ export const clanMemberStatsTable = pgTable(
     (table) => [
         index("idx_clan_member_stats_clan").on(table.clanId),
         index("idx_clan_member_stats_user").on(table.userId),
+        uniqueIndex("idx_clan_member_stats_unique").on(table.clanId, table.userId),
     ],
 );
 
