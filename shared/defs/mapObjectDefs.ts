@@ -16014,6 +16014,10 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         groundTintLt: 0x2a2530,
         groundTintDk: 0x1e1a21,
     }),
+    logging_complex_01v: createLoggingComplex({
+        groundTintLt: 0x6B9940,
+        groundTintDk: 0x5A8535,
+    }),
     logging_complex_01p: createLoggingComplex({
         groundTintLt: 4213882,
         groundTintDk: 4016234,
@@ -16061,6 +16065,28 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             {
                 bound: collider.createAabbExtents(v2.create(0, 2), v2.create(5, 50.5)),
                 color: 4016234,
+                roughness: 0.1,
+                offsetDist: 1,
+            },
+        ],
+    }),
+    desert_town_02v: createDesertTown2({
+        mapGroundPatches: [
+            {
+                bound: collider.createAabbExtents(v2.create(0, -3), v2.create(45, 55)),
+                color: 0x6B9940,
+                roughness: 0.1,
+                offsetDist: 1,
+            },
+            {
+                bound: collider.createAabbExtents(v2.create(0, 0), v2.create(46, 10)),
+                color: 0x5A8535,
+                roughness: 0.1,
+                offsetDist: 1,
+            },
+            {
+                bound: collider.createAabbExtents(v2.create(0, 2), v2.create(5, 50.5)),
+                color: 0x5A8535,
                 roughness: 0.1,
                 offsetDist: 1,
             },

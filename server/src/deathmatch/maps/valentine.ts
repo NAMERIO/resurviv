@@ -12,7 +12,7 @@ const valentineDef: PartialMapDef = {
     },
     assets: {
         audio: [],
-        atlases: ["gradient", "loadout", "shared", "valentine", "main"],
+        atlases: ["gradient", "loadout", "shared", "valentine", "main", "woods", "desert",],
     },
     biome: {
         colors: {
@@ -87,10 +87,10 @@ const mapDef = {
               )
             : {},
 
-        importantSpawns: ["logging_complex_01p", "desert_town_02p", "club_complex_01"],
+        importantSpawns: ["logging_complex_01v", "desert_town_02v", "club_complex_01"],
         randomSpawns: [
             {
-                spawns: ["logging_complex_01p", "desert_town_02p", "club_complex_01"],
+                spawns: ["logging_complex_01v", "desert_town_02v", "club_complex_01"],
                 choose: 2,
             },
             {
@@ -102,18 +102,18 @@ const mapDef = {
                 ],
                 choose: 1,
             },
-            // {
-            //     spawns: ["warehouse_01", "house_red_01"],
-            //     choose: 1,
-            // },
-            // {
-            //     spawns: ["mil_crate_02", "mil_crate_03"],
-            //     choose: 1,
-            // },
-            // {
-            //     spawns: ["barn_02", "barn_01"],
-            //     choose: 1,
-            // },
+            {
+                spawns: ["warehouse_01", "house_red_01"],
+                choose: 1,
+            },
+            {
+                spawns: ["mil_crate_02", "mil_crate_03"],
+                choose: 1,
+            },
+            {
+                spawns: ["barn_02", "barn_01"],
+                choose: 1,
+            },
         ],
         fixedSpawns: [
             {
@@ -127,12 +127,10 @@ const mapDef = {
                 crate_02: 2,
                 crate_03: 4,
                 bush_01: 28,
-                cache_06: 12,
+                cache_06: 1,
                 hedgehog_01: 4,
                 container_01: 1,
                 container_02: 1,
-                container_03: 1,
-                container_04: 1,
                 shack_01: 2,
                 outhouse_01: 2,
                 tree_01: 10,
@@ -145,7 +143,9 @@ const mapDef = {
             {
                 tree_01: "tree_13",
                 bush_07: "bush_rose",
-                bush_01: "bush_13"
+                bush_01: "bush_13",
+                tree_07: "tree_13",
+                tree_03sv: "tree_13",
             },
         ],
     },
