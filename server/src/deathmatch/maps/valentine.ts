@@ -9,6 +9,7 @@ const valentineDef: PartialMapDef = {
         name: "Valentine",
         icon: "img/gui/loot-medical-chocolateBox.svg",
         buttonCss: "btn-mode-valentine",
+        backgroundImg: "img/valentine_splash.png",
     },
     assets: {
         audio: [],
