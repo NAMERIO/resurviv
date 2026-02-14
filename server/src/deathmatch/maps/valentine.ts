@@ -87,10 +87,9 @@ const mapDef = {
               )
             : {},
 
-        importantSpawns: ["logging_complex_01v", "desert_town_02v", "club_complex_01"],
         randomSpawns: [
             {
-                spawns: ["logging_complex_01v", "desert_town_02v", "club_complex_01"],
+                spawns: ["logging_complex_01v", "desert_town_02v"],
                 choose: 2,
             },
             {
@@ -100,6 +99,10 @@ const mapDef = {
                     // ak bunker
                     "bunker_structure_01",
                 ],
+                choose: 1,
+            },
+            {
+                spawns: ["bank_01", "police_01"],
                 choose: 1,
             },
             {
@@ -134,8 +137,8 @@ const mapDef = {
                 shack_01: 2,
                 outhouse_01: 2,
                 tree_01: 10,
-                police_01: 1,
                 house_red_01: 1,
+                club_complex_01: 1,
             },
             
         ],
