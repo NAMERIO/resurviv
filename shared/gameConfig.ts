@@ -76,6 +76,7 @@ export enum HasteType {
     Windwalk,
     Takedown,
     Inspire,
+    HeartPull,
     Count,
 }
 

@@ -283,6 +283,12 @@ export class WeaponManager {
             return;
         }
 
+        if (player.shootDisabledTimer > 0) {
+            player.shootStart = false;
+            player.shootHold = false;
+            return;
+        }
+
         player.freeSwitchTimer -= dt;
 
         player.recoilTicker += dt;

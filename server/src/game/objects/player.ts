@@ -907,6 +907,7 @@ export class Player extends BaseGameObject {
     pullToSourcePos: Vec2 | null = null;
     pullToSourceTicker = 0;
     pullToSourceSpeed = 18;
+    shootDisabledTimer = 0;
 
     promoteToRole(role: string) {
         const roleDef = GameObjectDefs[role] as RoleDef;
@@ -2260,6 +2261,10 @@ export class Player extends BaseGameObject {
         this.shotSlowdownTimer -= dt;
         if (this.shotSlowdownTimer <= 0) {
             this.shotSlowdownTimer = 0;
+        }
+        this.shootDisabledTimer -= dt;
+        if (this.shootDisabledTimer <= 0) {
+            this.shootDisabledTimer = 0;
         }
         this.lowHpSurgeTicker -= dt;
         if (this.lowHpSurgeTicker <= 0) {

@@ -3191,6 +3191,28 @@ const ParticleDefs: Record<string, ParticleDef> = {
         },
         color: 13107200,
     },
+    heartPullStim: {
+        image: ["proj-heart-01.img"],
+        life: new Range(1.5, 2.5),
+        drag: 0,
+        rotVel: new Range(Math.PI * 0.25, Math.PI * 0.5),
+        scale: {
+            start: new Range(0.1, 0.14),
+            end: new Range(0.04, 0.06),
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 1,
+            end: 0,
+            lerp: new Range(0.6, 1),
+        },
+        alphaIn: {
+            start: 0,
+            end: 1,
+            lerp: new Range(0, 0.05),
+        },
+        color: 16711740,
+    },
     inspireStim: {
         image: ["part-note-01.img"],
         life: new Range(4, 5),
@@ -3532,6 +3554,15 @@ const EmitterDefs: Record<string, EmitterDef> = {
         speed: new Range(1, 1.5),
         angle: 0,
         rot: 0,
+        maxCount: Number.MAX_VALUE,
+    },
+    heart_pull: {
+        particle: "heartPullStim",
+        rate: new Range(0.08, 0.1),
+        radius: 1.5,
+        speed: new Range(1, 1.5),
+        angle: 0,
+        rot: new Range(0, Math.PI * 2),
         maxCount: Number.MAX_VALUE,
     },
     inspire: {
