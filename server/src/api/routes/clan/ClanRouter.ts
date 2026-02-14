@@ -626,7 +626,10 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
         })
         .from(clansTable)
         .where(search ? sql`${clansTable.name} ILIKE ${"%" + search + "%"}` : undefined)
-        .orderBy(desc(clansTable.createdAt))
+        .orderBy(sql`(
+            SELECT COUNT(*) FROM clan_members 
+            WHERE clan_members.clan_id = clans.id
+        ) DESC`)
         .limit(limit)
         .offset(offset);
 
