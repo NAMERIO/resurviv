@@ -157,3 +157,10 @@ const mapDef = {
 };
 
 export const DeatchmatchValentine = util.mergeDeep({}, Valentine, mapDef) as MapDef;
+
+DeatchmatchValentine["lootTable"] = {
+    ...DeatchmatchValentine["lootTable"],
+    tier_valentine_box: [
+        { name: "heart_cannon", count: 1, weight: 1 },
+    ],
+};

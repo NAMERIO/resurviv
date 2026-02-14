@@ -1306,6 +1306,23 @@ const ParticleDefs: Record<string, ParticleDef> = {
             return util.rgbToInt(util.hsvToRgb(0.02, 1, util.random(0.26, 0.28)));
         },
     },
+    strongRedPlank: {
+        image: ["part-plank-01.img"],
+        life: new Range(1.0, 1.5),
+        drag: new Range(1.0, 5.0),
+        rotVel: new Range(Math.PI * 3.0, Math.PI * 3.0),
+        scale: {
+            start: new Range(0.1, 0.2),
+            end: new Range(0.08, 0.18),
+            lerp: new Range(0.0, 1.0),
+        },
+        alpha: {
+            start: 1.0,
+            end: 0.0,
+            lerp: new Range(0.9, 1.0),
+        },
+        color: 0xcb0101,
+    },
     rockChip: {
         image: ["map-stone-01.img"],
         life: 0.5,

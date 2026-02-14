@@ -11810,7 +11810,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         obstacleType: "furniture",
         collision: collider.createAabbExtents(v2.create(0, 0), v2.create(7.0, 1.4)),
         loot: [tierLoot("tier_surviv", 0, 1)],
-        hitParticle: "candyChip",
+        hitParticle: "rockEyeChip",
         health: 150,
         collidable: true,
         destructible: false,
@@ -11854,8 +11854,8 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     candy_store_display_01: createTable({
         obstacleType: "furniture",
         collision: collider.createAabbExtents(v2.create(0, 0), v2.create(2.5, 4.0)),
-        loot: [tierLoot("tier_surviv", 2, 3), tierLoot("tier_valentine_box", 1, 2)],
-        hitParticle: "candyChip",
+        loot: [tierLoot("tier_surviv", 2, 3)],
+        hitParticle: "rockEyeChip",
         health: 150,
         collidable: true,
         img: {
@@ -11871,7 +11871,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         obstacleType: "furniture",
         collision: collider.createAabbExtents(v2.create(0, 0), v2.create(1.5, 4.1)),
         loot: [tierLoot("tier_surviv", 2, 3)],
-        hitParticle: "candyChip",
+        hitParticle: "rockEyeChip",
         health: 150,
         collidable: true,
         img: {
@@ -11887,7 +11887,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         obstacleType: "furniture",
         collision: collider.createAabbExtents(v2.create(0, 0), v2.create(1.5, 4.1)),
         loot: [tierLoot("tier_surviv", 2, 3)],
-        hitParticle: "candyChip",
+        hitParticle: "rockEyeChip",
         health: 150,
         collidable: true,
         img: {
@@ -11903,7 +11903,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         obstacleType: "furniture",
         collision: collider.createAabbExtents(v2.create(0, 0), v2.create(1.5, 4.1)),
         loot: [tierLoot("tier_surviv", 2, 3)],
-        hitParticle: "candyChip",
+        hitParticle: "rockEyeChip",
         health: 150,
         collidable: true,
         img: {
@@ -11918,8 +11918,8 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     candy_store_display_05: createTable({
         obstacleType: "furniture",
         collision: collider.createCircle(v2.create(0, 0), 2.6),
-        loot: [tierLoot("tier_surviv", 2, 3), tierLoot("tier_valentine_box", 1, 2)],
-        hitParticle: "candyChip",
+        loot: [tierLoot("tier_surviv", 2, 3)],
+        hitParticle: "rockEyeChip",
         health: 150,
         collidable: true,
         img: {
@@ -11939,7 +11939,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             tierLoot("tier_katanas", 1, 0.5),
             tierLoot("tier_guns", 1, 1),
         ],
-        hitParticle: "candyChip",
+        hitParticle: "rockEyeChip",
         health: 150,
         collidable: true,
         img: {
