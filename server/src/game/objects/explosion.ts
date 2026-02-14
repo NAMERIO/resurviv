@@ -190,6 +190,16 @@ export class ExplosionBarn {
                 obj.incrementFat();
             }
 
+            if (explosion.type === "explosion_heart_cannonball" && !isSourceTeammate) {
+                const src = explosion.damageParams.source;
+                if (src && src.__type === ObjectType.Player) {
+                    const dir = v2.sub(src.pos, obj.pos);
+                    const targetPos = v2.add(obj.pos, v2.mul(dir, 0.6));
+                    obj.pullToSourcePos = targetPos;
+                    obj.pullToSourceTicker = 1.5;
+                }
+            }
+
             if (explosion.type === "explosion_snow_cannonball" && !isSourceTeammate) {
                 obj.dropRandomLoot();
             }

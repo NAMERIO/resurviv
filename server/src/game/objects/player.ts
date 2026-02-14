@@ -903,6 +903,11 @@ export class Player extends BaseGameObject {
     fatModifier = 0;
     fatTicker = 0;
 
+    // heart cannon pull effect
+    pullToSourcePos: Vec2 | null = null;
+    pullToSourceTicker = 0;
+    pullToSourceSpeed = 18;
+
     promoteToRole(role: string) {
         const roleDef = GameObjectDefs[role] as RoleDef;
         if (!roleDef || roleDef.type !== "role") {
@@ -1851,6 +1856,23 @@ export class Player extends BaseGameObject {
                 this.fatModifier -= 0.2 * dt;
                 this.fatModifier = math.max(0, this.fatModifier);
                 this.recalculateScale();
+            }
+        }
+
+        if (this.pullToSourcePos && this.pullToSourceTicker > 0) {
+            this.pullToSourceTicker -= dt;
+            const dir = v2.sub(this.pullToSourcePos, this.pos);
+            const dist = v2.length(dir);
+            if (dist > 0.5) {
+                const pullDir = v2.normalize(dir);
+                const pullDist = math.min(this.pullToSourceSpeed * dt, dist * 0.4);
+                v2.set(this.pos, v2.add(this.pos, v2.mul(pullDir, pullDist)));
+                this.setPartDirty();
+                this.game.grid.updateObject(this);
+            }
+            if (this.pullToSourceTicker <= 0 || dist <= 0.4) {
+                this.pullToSourcePos = null;
+                this.pullToSourceTicker = 0;
             }
         }
 
