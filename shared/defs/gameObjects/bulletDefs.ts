@@ -709,6 +709,20 @@ export const BaseDefs: Record<string, BulletDef> = {
         maxFlareScale: 2,
         skipCollision: true,
     },
+    bullet_heart: {
+        type: "bullet",
+        damage: 0.0,
+        obstacleDamage: 1.0,
+        falloff: 1.0,
+        distance: 1.0,
+        speed: 100.0,
+        variance: 0.0,
+        shrapnel: false,
+        tracerColor: "heart",
+        tracerWidth: 0.0,
+        tracerLength: 1.2,
+        skipCollision: true,
+    },
     // used for guns that shoot projectiles since they still technically have to shoot a bullet of some kind
     bullet_invis: {
         type: "bullet",
