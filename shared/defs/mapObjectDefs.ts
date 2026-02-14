@@ -9236,6 +9236,196 @@ function createLowWall<T extends ObstacleDef>(e: Partial<T>): T {
     return util.mergeDeep(t, e || {});
 }
 
+function createCandyStore<T extends BuildingDef>(e: Partial<T>): T {
+    const t = {
+        type: "building",
+        map: {
+            display: true,
+            shapes: [
+                {
+                    collider: collider.createAabbExtents(v2.create(0, 0), v2.create(21.5, 15)),
+                    color: 0x4B5A6F,
+                },
+            ],
+        },
+        terrain: { grass: true, beach: false },
+        ori: 0,
+        zIdx: 1,
+        floor: {
+            surfaces: [
+                {
+                    type: "tile",
+                    collision: [
+                        collider.createAabbExtents(v2.create(0, 0), v2.create(21.5, 15)),
+                    ],
+                },
+            ],
+            imgs: [
+                {
+                    sprite: "map-candy-store-firstfloor.img",
+                    pos: v2.create(0, 0),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                    rot: 0,
+                },
+            ],
+        },
+        ceiling: {
+            zoomRegions: [
+                {
+                    zoomIn: collider.createAabbExtents(v2.create(0, 0), v2.create(21.5, 15)),
+                },
+            ],
+            vision: { dist: 5.5, width: 2.76, linger: 0.5, fadeRate: 6.0 },
+            imgs: [
+                {
+                    sprite: "map-candy-store-ceiling-01.img",
+                    pos: v2.create(0, 0.45),
+                    scale: 0.485,
+                    alpha: 1,
+                    tint: 0xffffff,
+                    rot: 0,
+                },
+            ],
+        },
+        mapObjects: [
+            // Walls
+            { type: "concrete_wallCandyStore_ext_1", pos: v2.create(-21.5, 0.35), scale: 1, ori: 0 },
+            { type: "concrete_wallCandyStore_ext_1", pos: v2.create(21.5, 0.35), scale: 1, ori: 0 },
+            { type: "concrete_wallCandyStore_ext_3", pos: v2.create(7.5, 15.4), scale: 1, ori: 1 },
+            { type: "concrete_wallCandyStore_ext_4", pos: v2.create(-16.5, 15.4), scale: 1, ori: 1 },
+            { type: "candy_store_door", pos: v2.create(-11.0, 15.8), scale: 1, ori: 3 },
+
+            // Bottom walls
+            { type: "concrete_wallCandyStore_ext_2", pos: v2.create(-17.5, -14.6), scale: 1, ori: 1 },
+            { type: "concrete_wallCandyStore_ext_2", pos: v2.create(-7.5, -14.6), scale: 1, ori: 1 },
+            { type: "concrete_wallCandyStore_ext_2", pos: v2.create(7.5, -14.6), scale: 1, ori: 1 },
+            { type: "concrete_wallCandyStore_ext_2", pos: v2.create(17.5, -14.6), scale: 1, ori: 1 },
+
+            // Windows & Doors
+            { type: "house_window_01", pos: v2.create(-12.5, -15.0), scale: 1, ori: 1 },
+            { type: "house_window_01", pos: v2.create(12.5, -15.0), scale: 1, ori: 1 },
+            { type: "candy_store_door", pos: v2.create(-4.0, -15.0), scale: 1, ori: 3 },
+            { type: "candy_store_door", pos: v2.create(4.0, -15.0), scale: 1, ori: 1 },
+
+            // Inner walls
+            { type: "concrete_wallCandyStore_ext_5", pos: v2.create(5.0, 7.5), scale: 1, ori: 1 },
+            { type: "concrete_wallCandyStore_ext_6", pos: v2.create(-18.0, 7.5), scale: 1, ori: 1 },
+            { type: "candy_store_door", pos: v2.create(-15.1, 7.45), scale: 1.05, ori: 3 },
+
+            // Furniture & decorations
+            { type: "bush_rose", pos: v2.create(-9.0, -19.0), scale: 1, ori: 1 },
+            { type: "bush_rose", pos: v2.create(9.0, -19.0), scale: 1, ori: 1 },
+            { type: "candy_store_front_desk", pos: v2.create(-14.0, 1.4), scale: 1, ori: 0 },
+            { type: "candy_store_basket", pos: v2.create(-6.0, 1.4), scale: 1, ori: 1 },
+            { type: "candy_store_basket", pos: v2.create(-7.5, -13.2), scale: 1, ori: 0 },
+            { type: "candy_store_basket", pos: v2.create(7.5, -13.2), scale: 1, ori: 0 },
+            { type: "candy_store_display_01", pos: v2.create(9.0, -3.0), scale: 1, ori: 0 },
+            { type: "candy_store_display_02", pos: v2.create(19.6, 2.0), scale: 1, ori: 0 },
+            { type: "candy_store_display_03", pos: v2.create(19.6, -7.0), scale: 1, ori: 0 },
+            { type: "candy_store_display_04", pos: v2.create(-19.5, -4.8), scale: 1, ori: 0 },
+            { type: "candy_store_display_05", pos: v2.create(-0.6, -3.3), scale: 1, ori: 0 },
+            { type: "candy_store_display_06", pos: v2.create(-10.0, -7.0), scale: 1, ori: 0 },
+            { type: "vending_01", pos: v2.create(-19.0, -11.5), scale: 1.3, ori: 1 },
+            { type: "control_panel_03", pos: v2.create(-19.5, 13.3), scale: 1, ori: 1 },
+            { type: "crate_02b", pos: v2.create(1.0, 10.5), scale: 1, ori: 0 },
+            { type: "crate_01", pos: v2.create(8.0, 12.5), scale: 1, ori: 0 },
+        ],
+    };
+
+    return util.mergeDeep(t, e || {});
+}
+
+function createCandyStoreBasement<T extends BuildingDef>(e: Partial<T>): T {
+    const t = {
+        type: "building",
+        map: {
+            display: true,
+            shapes: [
+                {
+                    collider: collider.createAabbExtents(
+                        v2.create(0, 0),
+                        v2.create(23, 16)
+                    ),
+                    color: 0xf85640,
+                },
+            ],
+        },
+        terrain: { grass: true, beach: false },
+        ori: 0,
+        zIdx: 2,
+        floor: {
+            surfaces: [
+                {
+                    type: "tile",
+                    collision: [
+                        collider.createAabbExtents(
+                            v2.create(0, 0),
+                            v2.create(22.5, 15.5)
+                        ),
+                    ],
+                },
+            ],
+            imgs: [
+                {
+                    sprite: "map-candy-store-basement-floor.img",
+                    pos: v2.create(0, 0),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                    rot: 0,
+                },
+            ],
+        },
+        ceiling: {
+            zoomRegions: [
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(0, 0),
+                        v2.create(23, 16)
+                    ),
+                },
+            ],
+            vision: { dist: 5.5, width: 2.75, linger: 0.5, fadeRate: 6.0 },
+            imgs: [],
+        },
+        mapObjects: [
+            // Walls
+            { type: "concrete_wallCandyStore_ext_1", pos: v2.create(-21.9, 0.3), scale: 1, ori: 0 },
+            { type: "concrete_wallCandyStore_ext_1", pos: v2.create(21.9, 0.3), scale: 1, ori: 0 },
+            { type: "basement_wallCandyStore_ext_2", pos: v2.create(0, 15), scale: 1, ori: 1 },
+            { type: "basement_wallCandyStore_ext_2", pos: v2.create(0, -15), scale: 1, ori: 1 },
+
+            // Inner sections
+            { type: "basement_wallCandyStore_ext_3", pos: v2.create(5, 11), scale: 1, ori: 0 },
+            { type: "basement_wallCandyStore_ext_3", pos: v2.create(-17, -10), scale: 1, ori: 1 },
+            { type: "basement_wallCandyStore_ext_1", pos: v2.create(-3, 6.9), scale: 1, ori: 1 },
+            { type: "candy_store_door_basement", pos: v2.create(-12.8, -10.5), scale: 1, ori: 2 },
+
+            // Furniture / Props
+            { type: "bookshelf_02", pos: v2.create(9, 5.5), scale: 1, ori: 2 },
+            { type: "candy_store_basket", pos: v2.create(4, 5.3), scale: 1, ori: 0 },
+            { type: "candy_store_basket", pos: v2.create(1.7, 4.9), scale: 1, ori: 1 },
+            { type: "bottle_02", pos: v2.create(-3.5, 4.8), scale: 1, ori: 0 },
+            { type: "bottle_01", pos: v2.create(-4.6, 5.0), scale: 1, ori: 0 },
+            { type: "bottle_01", pos: v2.create(-4.3, 3.8), scale: 1, ori: 0 },
+            { type: "bottle_01", pos: v2.create(-5.4, 4.2), scale: 1, ori: 0 },
+            { type: "bed_sm_01", pos: v2.create(-9.5, 5.0), scale: 1, ori: 1 },
+            { type: "crate_01", pos: v2.create(-18.0, 3.0), scale: 1, ori: 0 },
+            { type: "toilet_01", pos: v2.create(-18.0, -12.3), scale: 1, ori: 1 },
+            { type: "crate_01", pos: v2.create(2.8, -4.6), scale: 1, ori: 0 },
+            { type: "crate_01", pos: v2.create(9.0, -9.5), scale: 1, ori: 0 },
+            { type: "crate_02b", pos: v2.create(8.3, -4.8), scale: 1, ori: 0 },
+            { type: "crate_02b", pos: v2.create(2.7, -9.8), scale: 1, ori: 0 },
+            { type: "crate_frenemies_metal", pos: v2.create(-17.0, -8.0), scale: 1, ori: 0 },
+        ],
+    };
+
+    return util.mergeDeep(t, e || {});
+}
+
+
 const MaterialDefs = {
     metal: {
         destructible: false,
@@ -9528,6 +9718,14 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             residue: "map-bush-res-06.img",
         },
     }),
+    bush_13: createBush({
+        collision: collider.createCircle(v2.create(0, 0), 2.5),
+        map: { display: true, color: 14853306, scale: 1 },
+        img: {
+            sprite: "map-bush-13.img",
+            residue: "map-bush-res-13.img",
+        },
+    }),
     bush_06b: createBush({
         scale: { createMin: 1, createMax: 1 },
         collision: collider.createCircle(v2.create(0, 0), 1.75),
@@ -9572,6 +9770,24 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         },
         sound: { enter: "bush_enter_02" },
     }),
+    bush_rose: createBush({
+        hitParticle: "leafRiver",
+        explodeParticle: "leafRiver",
+        img: {
+            sprite: "bush-rose.img",
+            residue: "bush-res-rose.img",
+            alpha: 1.0,
+            scale: 0.5,
+        },
+        sound: {
+            enter: "bush_enter_02",
+        },
+        map: {
+            display: true,
+            color: 0x004d00,
+            scale: 1.5,
+        },
+    } as unknown as Partial<ObstacleDef>),
     bush_07sp: createBush({
         hitParticle: "leafRiver",
         explodeParticle: "leafRiver",
@@ -10367,6 +10583,54 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         terrain: { grass: true, beach: false },
         img: { sprite: "map-crate-22.img" },
         sound: { explode: "crate_break_01" },
+    }),
+    crate_02b: createCrate({
+        obstacleType: "crate",
+        health: 140,
+        loot: [
+            tierLoot("tier_world", 3, 5),
+            tierLoot("tier_valentine_box", 1, 2),
+        ],
+        map: { display: false },
+        terrain: { grass: true, beach: false },
+        collidable: true,
+        destructible: true,
+        hitParticle: "woodChip",
+        explodeParticle: "woodChip",
+        img: {
+            sprite: "map-crate-02b.img",
+            residue: "map-crate-res.img",
+            scale: 0.5,
+            alpha: 1.0,
+            tint: 0xffffff,
+            zIdx: 50,
+        },
+        sound: {
+            bullet: "wood_bullet",
+            punch: "wood_punch",
+            explode: "crate_break_01",
+            enter: "none",
+        },
+    } as unknown as Partial<ObstacleDef>),
+    crate_frenemies_metal: createCrate({
+        health: 350,
+        reflectBullets: true,
+        hitParticle: "woodChip",
+        explodeParticle: "woodPlank",
+        collision: collider.createAabbExtents(v2.create(0, 0), v2.create(3.3, 1.4)),
+        loot: [tierLoot("tier_world", 3, 5), tierLoot("tier_guns", 1, 1)],
+        map: { display: false },
+        terrain: { grass: true, beach: false },
+        img: {
+            sprite: "map-crate-frenemies-metal.img",
+            residue: "map-metal-crate-frenemies-res.img",
+        },
+        sound: {
+            bullet: "wall_bullet",
+            punch: "metal_punch",
+            explode: "metal_crate_break_01",
+            enter: "none",
+        },
     }),
     airdrop_crate_01: createAirdrop({
         button: {
@@ -11542,6 +11806,151 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             enter: "none",
         },
     }),
+    candy_store_front_desk: createTable({
+        obstacleType: "furniture",
+        collision: collider.createAabbExtents(v2.create(0, 0), v2.create(7.0, 1.4)),
+        loot: [tierLoot("tier_surviv", 0, 1)],
+        hitParticle: "candyChip",
+        health: 150,
+        collidable: true,
+        destructible: false,
+        img: {
+            sprite: "map-candy-store-front-desk.img",
+            residue: "map-table-res.img",
+            scale: 0.5,
+            alpha: 1.0,
+            tint: 0xffffff,
+            zIdx: 60,
+        },
+        sound: {
+            bullet: "wood_bullet",
+            punch: "wood_punch",
+            explode: "none",
+            enter: "none",
+        },
+    } as unknown as Partial<ObstacleDef>),
+    candy_store_basket: createTable({
+        obstacleType: "furniture",
+        collision: collider.createAabbExtents(v2.create(0, 0), v2.create(1.2, 0.8)),
+        loot: [tierLoot("tier_surviv", 0, 1)],
+        explodeParticle: "strongRedPlank",
+        health: 90,
+        collidable: true,
+        img: {
+            sprite: "map-candy-store-basket.img",
+            residue: "map-candy-store-basket-res.img",
+            scale: 0.5,
+            alpha: 1.0,
+            tint: 0xffffff,
+            zIdx: 60,
+        },
+        sound: {
+            bullet: "wood_bullet",
+            punch: "wood_punch",
+            explode: "wood_break_01",
+            enter: "none",
+        },
+    } as unknown as Partial<ObstacleDef>),
+    candy_store_display_01: createTable({
+        obstacleType: "furniture",
+        collision: collider.createAabbExtents(v2.create(0, 0), v2.create(2.5, 4.0)),
+        loot: [tierLoot("tier_surviv", 2, 3), tierLoot("tier_valentine_box", 1, 2)],
+        hitParticle: "candyChip",
+        health: 150,
+        collidable: true,
+        img: {
+            sprite: "map-candy-store-display-01.img",
+            residue: "map-displays-res.img",
+            scale: 0.5,
+            alpha: 1.0,
+            tint: 0xffffff,
+            zIdx: 60,
+        },
+    } as unknown as Partial<ObstacleDef>),
+    candy_store_display_02: createTable({
+        obstacleType: "furniture",
+        collision: collider.createAabbExtents(v2.create(0, 0), v2.create(1.5, 4.1)),
+        loot: [tierLoot("tier_surviv", 2, 3)],
+        hitParticle: "candyChip",
+        health: 150,
+        collidable: true,
+        img: {
+            sprite: "map-candy-store-display-02.img",
+            residue: "map-displays-res.img",
+            scale: 0.5,
+            alpha: 1.0,
+            tint: 0xffffff,
+            zIdx: 60,
+        },
+    } as unknown as Partial<ObstacleDef>),
+    candy_store_display_03: createTable({
+        obstacleType: "furniture",
+        collision: collider.createAabbExtents(v2.create(0, 0), v2.create(1.5, 4.1)),
+        loot: [tierLoot("tier_surviv", 2, 3)],
+        hitParticle: "candyChip",
+        health: 150,
+        collidable: true,
+        img: {
+            sprite: "map-candy-store-display-03.img",
+            residue: "map-displays-res.img",
+            scale: 0.5,
+            alpha: 1.0,
+            tint: 0xffffff,
+            zIdx: 60,
+        },
+    } as unknown as Partial<ObstacleDef>),
+    candy_store_display_04: createTable({
+        obstacleType: "furniture",
+        collision: collider.createAabbExtents(v2.create(0, 0), v2.create(1.5, 4.1)),
+        loot: [tierLoot("tier_surviv", 2, 3)],
+        hitParticle: "candyChip",
+        health: 150,
+        collidable: true,
+        img: {
+            sprite: "map-candy-store-display-04.img",
+            residue: "map-displays-res.img",
+            scale: 0.5,
+            alpha: 1.0,
+            tint: 0xffffff,
+            zIdx: 60,
+        },
+    } as unknown as Partial<ObstacleDef>),
+    candy_store_display_05: createTable({
+        obstacleType: "furniture",
+        collision: collider.createCircle(v2.create(0, 0), 2.6),
+        loot: [tierLoot("tier_surviv", 2, 3), tierLoot("tier_valentine_box", 1, 2)],
+        hitParticle: "candyChip",
+        health: 150,
+        collidable: true,
+        img: {
+            sprite: "map-candy-store-display-05.img",
+            residue: "map-displays-res.img",
+            scale: 0.5,
+            alpha: 1.0,
+            tint: 0xffffff,
+            zIdx: 60,
+        },
+    } as unknown as Partial<ObstacleDef>),
+    candy_store_display_06: createTable({
+        obstacleType: "furniture",
+        collision: collider.createCircle(v2.create(0, 0), 2.5),
+        loot: [
+            tierLoot("tier_surviv", 2, 3),
+            tierLoot("tier_katanas", 1, 0.5),
+            tierLoot("tier_guns", 1, 1),
+        ],
+        hitParticle: "candyChip",
+        health: 150,
+        collidable: true,
+        img: {
+            sprite: "map-candy-store-display-06.img",
+            residue: "map-displays-res.img",
+            scale: 0.5,
+            alpha: 1.0,
+            tint: 0xffffff,
+            zIdx: 60,
+        },
+    } as unknown as Partial<ObstacleDef>),
     table_01: createTable({}),
     table_01x: createTable({ img: { sprite: "map-table-01x.img" } }),
     table_02: createTable({
@@ -12086,6 +12495,16 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         },
     } as unknown as Partial<ObstacleDef>),
     tree_13: createTree({
+        height: 10,
+        collidable: true,
+        destructible: true,
+        health: 175,
+        hitParticle: "woodChip",
+        explodeParticle: "woodLog",
+        reflectBullets: false,
+        isTree: true,
+        loot: [],
+        map: { display: true, color: 0xffe4e1, scale: 2.5 },
         img: {
             sprite: "map-tree-13.img",
             tint: 0xffffff,
@@ -12409,6 +12828,18 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         material: "wood",
         hinge: v2.create(0, 2),
         extents: v2.create(0.3, 2),
+    }),
+    candy_store_door: createDoor({
+        material: "wood",
+        hinge: v2.create(0, 2),
+        extents: v2.create(0.3, 2),
+        img: { tint: 0xDD6B6B }
+    }),
+    candy_store_door_basement: createDoor({
+        material: "wood",
+        hinge: v2.create(0, 2),
+        extents: v2.create(0.3, 2),
+        img: { tint: 0X663300 }
     }),
     house_door_02: createDoor({
         material: "metal",
@@ -16554,6 +16985,38 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         ],
         mask: [collider.createAabbExtents(v2.create(5.7, 0), v2.create(4, 4))],
     },
+    candy_store_n_basement: {
+        type: "structure",
+        terrain: { grass: true, beach: false },
+        ori: 0,
+        mapObstacleBounds: [
+            collider.createAabbExtents(v2.create(2.0, 0.0), v2.create(30.0, 23.0)),
+        ],
+        layers: [
+            {
+                type: "candy_store_01",
+                pos: v2.create(0.0, 0.0),
+                ori: 0,
+            },
+            {
+                type: "candy_store_basement",
+                pos: v2.create(6.5, 0.46),
+                ori: 0,
+            },
+        ],
+        stairs: [
+            {
+                collision: collider.createAabbExtents(
+                    v2.create(16.7, 11.3),
+                    v2.create(2.3, 3.0)
+                ),
+                downDir: v2.create(1.0, 0.0),
+            },
+        ],
+        mask: [
+            collider.createAabbExtents(v2.create(7.3, 0.5), v2.create(25.0, 18.0)),
+        ],
+    },
     river_town_01: {
         type: "building",
         map: {
@@ -17823,6 +18286,42 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         material: "brick",
         extents: v2.create(1.5, 12),
     }),
+    concrete_wallCandyStore_ext_1: createWall({
+        material: "concrete",
+        extents: v2.create(0.5, 15.5),
+    }),
+    concrete_wallCandyStore_ext_2: createWall({
+        material: "concrete",
+        extents: v2.create(0.5, 3.5)
+    }),
+    concrete_wallCandyStore_ext_3: createWall({
+        material: "concrete",
+        extents: v2.create(0.5, 14.529999999999745)
+    }),
+    concrete_wallCandyStore_ext_4: createWall({
+        material: "concrete",
+        extents: v2.create(0.5, 5.550000000000182)
+    }),
+    concrete_wallCandyStore_ext_5: createWall({
+        material: "concrete",
+        extents: v2.create(0.5, 16)
+    }),
+    concrete_wallCandyStore_ext_6: createWall({
+        material: "concrete",
+        extents: v2.create(0.5, 3.100000000000364)
+    }),
+    basement_wallCandyStore_ext_1: createWall({
+        material: "concrete",
+        extents: v2.create(0.5, 18.5)
+    }),
+    basement_wallCandyStore_ext_2: createWall({
+        material: "concrete",
+        extents: v2.create(0.5, 22.5)
+    }),
+    basement_wallCandyStore_ext_3: createWall({
+        material: "concrete",
+        extents: v2.create(0.5, 4.5)
+    }),
     concrete_wall_ext_thin_6: createWall({
         material: "concrete",
         extents: v2.create(0.375, 3),
@@ -18756,6 +19255,12 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         material: "wood",
         extents: v2.create(0.5, 4),
         img: wallImg("map-wall-08-rounded.img", 0x79563e),
+    }),
+    candy_store_01: createCandyStore({
+        basement: "candy_store_basement",
+    }),
+    candy_store_basement: createCandyStoreBasement({
+        basement: "candy_store_01"
     }),
     bank_01: createBank({ teamId: 1 }),
     bank_01b: createBank({ vault: "vault_01b" }),
