@@ -25,6 +25,8 @@ export const ValentineAtlas: AtlasDef = {
         "map/map-tree-07sp.svg",
         "map/map-tree-08sp.svg",
         "map/map-bush-13.svg",
-        "map/map-bush-res-13.svg"
+        "map/map-bush-res-13.svg",
+        "map/map-candy-store-basement-floor.svg",
+        "map/vending_01v.svg"
     ],
 };

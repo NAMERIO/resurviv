@@ -10603,7 +10603,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
-            zIdx: 50,
+            zIdx: 10,
         },
         sound: {
             bullet: "wood_bullet",
@@ -11820,7 +11820,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
-            zIdx: 60,
+            zIdx: 10,
         },
         sound: {
             bullet: "wood_bullet",
@@ -11842,7 +11842,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
-            zIdx: 60,
+            zIdx: 10,
         },
         sound: {
             bullet: "wood_bullet",
@@ -11864,7 +11864,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
-            zIdx: 60,
+            zIdx: 10,
         },
     } as unknown as Partial<ObstacleDef>),
     candy_store_display_02: createTable({
@@ -11880,7 +11880,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
-            zIdx: 60,
+            zIdx: 10,
         },
     } as unknown as Partial<ObstacleDef>),
     candy_store_display_03: createTable({
@@ -11896,7 +11896,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
-            zIdx: 60,
+            zIdx: 10,
         },
     } as unknown as Partial<ObstacleDef>),
     candy_store_display_04: createTable({
@@ -11912,7 +11912,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
-            zIdx: 60,
+            zIdx: 10,
         },
     } as unknown as Partial<ObstacleDef>),
     candy_store_display_05: createTable({
@@ -11928,7 +11928,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
-            zIdx: 60,
+            zIdx: 10,
         },
     } as unknown as Partial<ObstacleDef>),
     candy_store_display_06: createTable({
@@ -11948,7 +11948,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
-            zIdx: 60,
+            zIdx: 10,
         },
     } as unknown as Partial<ObstacleDef>),
     table_01: createTable({}),
@@ -12756,6 +12756,50 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             terrain: { grass: true, beach: true },
             img: {
                 sprite: "map-vending-soda-01.img",
+                residue: "map-vending-res.img",
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
+                zIdx: 10,
+            },
+            sound: {
+                bullet: "wall_bullet",
+                punch: "metal_punch",
+                explode: "vending_break_01",
+                enter: "none",
+            },
+        };
+        return util.mergeDeep(t, {});
+    })(),
+    vending_01v: (function () {
+        const t = {
+            type: "obstacle",
+            obstacleType: "vending",
+            scale: {
+                createMin: 1,
+                createMax: 1,
+                destroy: 0.75,
+            },
+            collision: collider.createAabbExtents(
+                v2.create(0, 0.15),
+                v2.create(1.7, 1.25),
+            ),
+            height: 0.5,
+            collidable: true,
+            destructible: true,
+            health: 150,
+            hitParticle: "blueChip",
+            explodeParticle: ["windowBreak", "lockerBreak"],
+            reflectBullets: true,
+            loot: [tierLoot("tier_vending_soda", 1, 3), autoLoot("soda", 1)],
+            map: {
+                display: false,
+                color: 0x2aad,
+                scale: 0.875,
+            },
+            terrain: { grass: true, beach: true },
+            img: {
+                sprite: "vending_01v.img",
                 residue: "map-vending-res.img",
                 scale: 0.5,
                 alpha: 1,

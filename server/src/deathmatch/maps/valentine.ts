@@ -149,6 +149,7 @@ const mapDef = {
                 bush_01: "bush_13",
                 tree_07: "tree_13",
                 tree_03sv: "tree_13",
+                vending_01: "vending_01v"
             },
         ],
     },
