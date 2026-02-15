@@ -1,10 +1,11 @@
 import type { MapDef } from "../../../../shared/defs/mapDefs";
 import { Main, type PartialMapDef } from "../../../../shared/defs/maps/baseDefs";
+import { MapId } from "../../../../shared/defs/types/misc";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { util } from "../../../../shared/utils/util";
 
 const valentineDef: PartialMapDef = {
-    mapId: 5,
+    mapId: 19,
     desc: {
         name: "Valentine",
         icon: "img/gui/loot-medical-chocolateBox.svg",
