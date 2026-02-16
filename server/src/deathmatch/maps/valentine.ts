@@ -26,7 +26,7 @@ const valentineDef: PartialMapDef = {
             grass: 8433481,
             underground: 1772803,
             playerSubmerge: 12633565,
-            playerGhillie: 2118510,
+            playerGhillie: 8433481,
         },
         particles: {},
     },
