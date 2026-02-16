@@ -529,6 +529,7 @@ export class LoadoutMenu {
         this.tryBeginConfirmingItems();
         $("#start-bottom-right, #start-main").fadeOut(200);
         $("#background").hide();
+        $(".ad-rail").fadeOut(200);
     }
 
     onHide() {
@@ -542,6 +543,7 @@ export class LoadoutMenu {
         });
         $("#start-bottom-right, #start-main").fadeIn(200);
         $("#background").show();
+        $(".ad-rail").fadeIn(200);
     }
 
     onResize() {
