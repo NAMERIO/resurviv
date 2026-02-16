@@ -1,5 +1,20 @@
 @import url(deathmatch.css);
 
+
+#ad-block-left,
+  .ad-block-med-rect,
+  .ad-block-leaderboard-bottom,
+  .ad-block-loadouts-left,
+  .ad-block-top-leaderboard,
+  .ad-block-top-med-rect,
+  .ad-block-bot-med-rect,
+  .ui-stats-ad-container,
+  #ui-stats-ad-container-desktop,
+  [id^="surviv-io_"] {
+    outline: 3px solid red !important;
+    outline-offset: -3px;
+}
+
 :root {
   --side-pad: 12px;
 }
