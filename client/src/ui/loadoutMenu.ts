@@ -507,7 +507,6 @@ export class LoadoutMenu {
 
     show() {
         this.init();
-        helpers.refreshPageAds(["300x600"]);
         this.modal.show();
     }
 
