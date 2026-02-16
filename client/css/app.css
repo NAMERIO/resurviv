@@ -1,7 +1,7 @@
 @import url(deathmatch.css);
 
 
-#ad-block-left,
+/* #ad-block-left,
   .ad-block-med-rect,
   .ad-block-leaderboard-bottom,
   .ad-block-loadouts-left,
@@ -10,9 +10,36 @@
   .ad-block-bot-med-rect,
   .ui-stats-ad-container,
   #ui-stats-ad-container-desktop,
+  .ad-rail,
   [id^="surviv-io_"] {
     outline: 3px solid red !important;
     outline-offset: -3px;
+} */
+
+.ad-rail {
+  position: fixed;
+  width: 160px;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+#ad-rail-left {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 600px;
+}
+
+#ad-rail-right {
+  right: 0;
+  top: 220px;
+  height: 400px;
+}
+
+@media (max-width: 1400px) {
+  .ad-rail {
+    display: none !important;
+  }
 }
 
 :root {

@@ -559,6 +559,8 @@ class Application {
             !device.isLandscape && this.teamMenu.active ? "none" : "block",
         );
 
+        $(".ad-rail").css("display", this.active ? "block" : "none");
+
         // Warning
         const hasError = this.active && this.errorMessage != "";
         this.serverWarning.css({

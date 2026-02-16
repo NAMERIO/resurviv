@@ -1765,15 +1765,16 @@ export class UiManager {
     }
 
     setBannerAd(time: number, ui2: UiManager2) {
-        if (!window.aiptag) return;
         let delay = Math.max(time - 150, 0);
         setTimeout(() => {
             const bannerAd = $("#ui-stats-ad-container-desktop");
             bannerAd.css("display", "inline-block");
 
-            window.aiptag!.cmd.display.push(() => {
-                window.aipDisplayTag!.display(`${AIP_PLACEMENT_ID}_300x250_2`);
-            });
+            if (window.aiptag) {
+                window.aiptag!.cmd.display.push(() => {
+                    window.aipDisplayTag!.display(`${AIP_PLACEMENT_ID}_300x250_2`);
+                });
+            }
 
             ui2.hideKillMessage();
         }, delay);
