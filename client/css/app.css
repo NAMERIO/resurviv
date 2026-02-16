@@ -3434,6 +3434,32 @@ a:active {
   }
 }
 
+.btn-mode-valentine {
+  animation-name: valentinePulse;
+  border-bottom: 4px solid #ee5eca;
+}
+
+@keyframes valentinePulse {
+  from {
+    background-color: #b262b4;
+    -webkit-box-shadow: 0 0 9px #b262b4;
+  }
+  50% {
+    background-color: #e872ec;
+    -webkit-box-shadow: 0 0 18px #f066f5;
+  }
+  to {
+    background-color: #b262b4;
+    -webkit-box-shadow: 0 0 9px #b262b4;
+  }
+}
+
+@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+  .btn-mode-valentine {
+    border-bottom: 2px solid #d1a1cf;
+  }
+}
+
 .btn-mode-halloween {
   animation-name: bloodPulse;
   border-bottom: 4px solid #2d0000;

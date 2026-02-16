@@ -76,6 +76,7 @@ export enum HasteType {
     Windwalk,
     Takedown,
     Inspire,
+    HeartPull,
     Count,
 }
 
@@ -372,6 +373,13 @@ export const GameConfig = {
             saturated: 65535,
             chambered: 65535,
             apSaturated: 0x008080,
+            alphaRate: 0.92,
+            alphaMin: 0.14,
+        },
+        heart: {
+            regular: 0xfee2c6,
+            saturated: 0xffd9b3,
+            chambered: 0xff7f00,
             alphaRate: 0.92,
             alphaMin: 0.14,
         },

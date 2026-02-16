@@ -343,6 +343,16 @@ ClanRouter.post("/leave", async (c) => {
             ),
         );
 
+
+    await db
+        .delete(clanMemberStatsTable)
+        .where(
+            and(
+                eq(clanMemberStatsTable.clanId, membership.clanId),
+                eq(clanMemberStatsTable.userId, user.id),
+            ),
+        );
+
     await db.insert(clanLeaveHistoryTable).values({
         userId: user.id,
     });
@@ -403,6 +413,16 @@ ClanRouter.post("/kick", validateParams(zKickMemberRequest), async (c) => {
             and(
                 eq(clanMembersTable.clanId, clan.id),
                 eq(clanMembersTable.userId, memberId),
+            ),
+        );
+
+    // Remove the kicked player's stats for this clan so they don't get duplicated on rejoin
+    await db
+        .delete(clanMemberStatsTable)
+        .where(
+            and(
+                eq(clanMemberStatsTable.clanId, clan.id),
+                eq(clanMemberStatsTable.userId, memberId),
             ),
         );
 
@@ -606,7 +626,10 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
         })
         .from(clansTable)
         .where(search ? sql`${clansTable.name} ILIKE ${"%" + search + "%"}` : undefined)
-        .orderBy(desc(clansTable.createdAt))
+        .orderBy(sql`(
+            SELECT COUNT(*) FROM clan_members 
+            WHERE clan_members.clan_id = clans.id
+        ) DESC`)
         .limit(limit)
         .offset(offset);
 

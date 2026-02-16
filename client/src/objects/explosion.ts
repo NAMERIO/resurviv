@@ -614,6 +614,25 @@ const ExplosionEffectDefs: Record<string, ExplotionDef> = {
         shakeDur: 0.25,
         lifetime: 1.25,
     },
+    heart_cannonball: {
+        burst: {
+            particle: "explosionHeart",
+            scale: 0.75,
+            sound: {
+                grass: "explosion_05",
+                water: "explosion_02",
+            },
+        },
+        scatter: {
+            particle: "heart_impact",
+            count: 8,
+            speed: { min: 5.0, max: 25.0 },
+        },
+        rippleCount: 10,
+        shakeStr: 0.12,
+        shakeDur: 0.25,
+        lifetime: 1.25,
+    },
     snow_cannonball: {
         burst: {
             particle: "explosionSnow",

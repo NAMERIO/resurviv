@@ -1,6 +1,7 @@
 import { GameObjectDefs } from "../../../../shared/defs/gameObjectDefs";
 import type { ExplosionDef } from "../../../../shared/defs/gameObjects/explosionsDefs";
 import { PerkProperties } from "../../../../shared/defs/gameObjects/perkDefs";
+import { GameConfig } from "../../../../shared/gameConfig";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
 import { collider } from "../../../../shared/utils/collider";
 import { math } from "../../../../shared/utils/math";
@@ -188,6 +189,18 @@ export class ExplosionBarn {
 
             if (explosion.type === "explosion_potato_smgshot") {
                 obj.incrementFat();
+            }
+
+            if (explosion.type === "explosion_heart_cannonball" && !isSourceTeammate) {
+                const src = explosion.damageParams.source;
+                if (src && src.__type === ObjectType.Player) {
+                    const dir = v2.sub(src.pos, obj.pos);
+                    const targetPos = v2.add(obj.pos, v2.mul(dir, 0.6));
+                    obj.pullToSourcePos = targetPos;
+                    obj.pullToSourceTicker = 1.5;
+                    obj.giveHaste(GameConfig.HasteType.HeartPull, 1.5);
+                    obj.shootDisabledTimer = 0.5;
+                }
             }
 
             if (explosion.type === "explosion_snow_cannonball" && !isSourceTeammate) {

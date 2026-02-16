@@ -192,6 +192,17 @@ export const ExplosionDefs: Record<string, ExplosionDef> = {
         explosionEffectType: "potato_cannonball",
         decalType: "decal_frag_small_explosion",
     },
+    explosion_heart_cannonball: {
+        type: "explosion",
+        damage: 95,
+        obstacleDamage: 1.3,
+        teamDamage: false,
+        rad: { min: 3.5, max: 6.5 },
+        shrapnelCount: 0,
+        shrapnelType: "",
+        explosionEffectType: "heart_cannonball",
+        decalType: "decal_frag_small_explosion",
+    },
     explosion_snow_cannonball: {
         type: "explosion",
         damage: 50,
