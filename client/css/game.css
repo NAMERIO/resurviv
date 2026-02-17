@@ -3740,6 +3740,7 @@ span.ui-stats-header-value {
     top: 6px;
     left: 6px;
     display: block;
+    pointer-events: none;
   }
 
   .ui-bg-standard {
@@ -3750,6 +3751,7 @@ span.ui-stats-header-value {
   #ui-team {
     position: fixed;
     left: 128px;
+    pointer-events: none;
   }
 
   .ui-team-member {
@@ -3965,6 +3967,7 @@ span.ui-stats-header-value {
     top: 6px;
     left: 6px;
     display: flex;
+    pointer-events: none;
   }
 
   #ui-leaderboard {
@@ -4019,6 +4022,7 @@ span.ui-stats-header-value {
     top: 24px;
     left: 6px;
     right: initial;
+    pointer-events: none;
   }
 
   #ui-killfeed {
