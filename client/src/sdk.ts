@@ -96,6 +96,7 @@ class SDKManager {
     respawns: number[] = [];
 
     adCallback = () => {};
+    gamesPlayed = 0;
 
     constructor() {
         this.isAnySDK = this.isPoki || this.isCrazyGames || this.isGameMonetize;
@@ -152,9 +153,12 @@ class SDKManager {
     }
 
     requestMidGameAd(callback: () => void): void {
+        this.gamesPlayed++;
+        const showAd = this.gamesPlayed % 5 === 0;
+        
         if (this.isPoki) {
             this.requestPokiMidGameAd(callback);
-        } else if (this.isGameMonetize) {
+        } else if (this.isGameMonetize && showAd) {
             this.requestGameMonetizeMidgameAd(callback);
         } else if (this.isCrazyGames) {
             this.requestCrazyGamesMidGameAd(callback);
@@ -244,8 +248,8 @@ class SDKManager {
 
     private requestGameMonetizeMidgameAd(callback: () => void): void {
         if (window.sdk && window.sdk.showBanner) {
+            this.adCallback = callback;
             window.sdk.showBanner();
-            this.adCallback;
         } else {
             callback();
         }
