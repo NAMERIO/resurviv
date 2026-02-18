@@ -16,6 +16,7 @@ export default defineConfig(({ mode }) => {
     process.env.VITE_ADIN_PLAY_SCRIPT = "";
     process.env.VITE_AIP_PLACEMENT_ID = "";
     process.env.VITE_TURNSTILE_SCRIPT = "";
+    process.env.VITE_GAMEMONETIZE_ID = Config.secrets.GAMEMONETIZE_ID || "";
 
     if (Config.secrets.AIP_ID) {
         process.env.VITE_ADIN_PLAY_SCRIPT = `<script>

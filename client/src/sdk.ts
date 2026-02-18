@@ -54,6 +54,9 @@ if (window.self !== window.top) {
 }
 
 function isWithinGameMonetize(): boolean {
+    if (import.meta.env.VITE_GAMEMONETIZE_ID) {
+        return true;
+    }
     try {
         if (window !== window.parent && document.referrer) {
             const parentOrigin = new URL(document.referrer).origin;
