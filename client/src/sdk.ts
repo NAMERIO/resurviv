@@ -92,6 +92,7 @@ class SDKManager {
     isCrazyGames = isWithinCrazyGames();
     isGameMonetize = isWithinGameMonetize();
     isAnySDK: boolean;
+    isThirdPartyPlatform: boolean;
 
     respawns: number[] = [];
 
@@ -100,6 +101,7 @@ class SDKManager {
 
     constructor() {
         this.isAnySDK = this.isPoki || this.isCrazyGames || this.isGameMonetize;
+        this.isThirdPartyPlatform = this.isPoki || this.isCrazyGames;
     }
 
     async init() {

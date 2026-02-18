@@ -356,7 +356,7 @@ export class ProfileUi {
             return false;
         });
 
-        const loginSupported = !SDK.isAnySDK && proxy.anyLoginSupported();
+        const loginSupported = !SDK.isThirdPartyPlatform && proxy.anyLoginSupported();
 
         $(".account-block").toggle(loginSupported);
     }
