@@ -267,9 +267,9 @@ export class LoadoutDisplay {
             outfit: device.editorEnabled ? "outfitBase" : this.loadout.outfit,
             backpack: "backpack03",
             helmet: "",
-            chest: "chest03",
+            chest: "",
             activeWeapon:
-                this.view === "secondary" ? this.loadout.secondary : this.loadout.primary,
+                this.view === "melee" ? this.loadout.melee : this.loadout.melee,
             layer: 0,
             dead: false,
             downed: false,
