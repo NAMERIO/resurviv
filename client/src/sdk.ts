@@ -107,16 +107,11 @@ class SDKManager {
             $("#btn-start-fullscreen").hide();
 
             $("#left-column").show();
-            $("#btn-discord-top-right").show();
-            $(".surviv-shirts")
-                .css("background-image", "url(./img/survev-kofi.png)")
-                .html(`<a href="https://ko-fi.com/resurviv" target="_blank"></a>`);
-        } else {
-            $(".btn-kofi").show();
-            $(".surviv-shirts")
-                .css("background-image", "url(./img/resurviv-discord-promo.png)")
-                .html(`<a href="https://discord.gg/uzudxzmJBf" target="_blank"></a>`);
         }
+        $(".btn-kofi").show();
+        $(".surviv-shirts")
+            .css("background-image", "url(./img/resurviv-discord-promo.png)")
+            .html(`<a href="https://discord.gg/uzudxzmJBf" target="_blank"></a>`);
 
         if (this.isPoki) {
             await this.initPoki();
