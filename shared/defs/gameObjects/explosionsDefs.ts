@@ -194,7 +194,7 @@ export const ExplosionDefs: Record<string, ExplosionDef> = {
     },
     explosion_heart_cannonball: {
         type: "explosion",
-        damage: 95,
+        damage: 75,
         obstacleDamage: 1.3,
         teamDamage: false,
         rad: { min: 3.5, max: 6.5 },

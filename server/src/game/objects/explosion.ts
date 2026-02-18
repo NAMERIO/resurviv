@@ -199,7 +199,7 @@ export class ExplosionBarn {
                     obj.pullToSourcePos = targetPos;
                     obj.pullToSourceTicker = 1.5;
                     obj.giveHaste(GameConfig.HasteType.HeartPull, 1.5);
-                    obj.shootDisabledTimer = 0.5;
+                    // obj.shootDisabledTimer = 0.5;
                 }
             }
 
