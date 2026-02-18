@@ -156,19 +156,13 @@ class Application {
             this.nameInput.attr("maxLength", net.Constants.PlayerNameMaxLen);
 
             this.playMode0Btn.on("click", () => {
-                SDK.requestMidGameAd(() => {
-                    this.tryQuickStartGame(0);
-                });
+                this.tryQuickStartGame(0);
             });
             this.playMode1Btn.on("click", () => {
-                SDK.requestMidGameAd(() => {
-                    this.tryQuickStartGame(1);
-                });
+                this.tryQuickStartGame(1);
             });
             this.playMode2Btn.on("click", () => {
-                SDK.requestMidGameAd(() => {
-                    this.tryQuickStartGame(2);
-                });
+                this.tryQuickStartGame(2);
             });
 
             this.serverSelect.on("change", () => {

@@ -105,9 +105,7 @@ export class TeamMenu {
             this.setRoomProperty("autoFill", false);
         });
         this.playBtn.on("click", () => {
-            SDK.requestMidGameAd(() => {
-                this.tryStartGame();
-            });
+            this.tryStartGame();
         });
         $("#team-copy-url, #team-desc-text").on("click", (e) => {
             const t = $("<div/>", {

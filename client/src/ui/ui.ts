@@ -1575,7 +1575,9 @@ export class UiManager {
                 html: this.localization.translate("game-play-new-game"),
             });
             restartButton.on("click", () => {
-                this.quitGame();
+                SDK.requestMidGameAd(() => {
+                    this.quitGame();
+                });
             });
             this.statsOptions.append(restartButton);
             if (gameOver || this.waitingForPlayers) {
@@ -1724,7 +1726,9 @@ export class UiManager {
             html: this.localization.translate("game-play-new-game"),
         });
         a.on("click", () => {
-            this.quitGame();
+            SDK.requestMidGameAd(() => {
+                this.quitGame();
+            });
         });
         this.statsOptions.append(a);
         a.css({
