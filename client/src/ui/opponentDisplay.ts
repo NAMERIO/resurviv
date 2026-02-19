@@ -336,6 +336,7 @@ export class LoadoutDisplay {
         }
         const obj: ObjectData<ObjectType.Player> = {
             outfit: device.editorEnabled ? "outfitBase" : this.loadout.outfit,
+            meleeSkin: this.loadout.melee,
             backpack: "backpack03",
             helmet: "",
             chest: "chest03",
@@ -385,7 +386,6 @@ export class LoadoutDisplay {
                 death_effect: this.loadout.death_effect,
             },
         });
-        
         if (this.activePlayer) {
             this.activePlayer.m_setLocalData({
                 healthDirty: false,

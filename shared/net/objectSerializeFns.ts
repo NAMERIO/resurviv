@@ -69,6 +69,7 @@ export interface ObjectsFullData {
     [ObjectType.Invalid]: unknown;
     [ObjectType.Player]: {
         outfit: string;
+        meleeSkin: string;
         backpack: string;
         helmet: string;
         chest: string;
@@ -194,6 +195,7 @@ export const ObjectSerializeFns: {
         },
         serializeFull: (s, data) => {
             s.writeGameType(data.outfit);
+            s.writeGameType(data.meleeSkin);
             s.writeGameType(data.backpack);
             s.writeGameType(data.helmet);
             s.writeGameType(data.chest);
@@ -262,6 +264,7 @@ export const ObjectSerializeFns: {
         },
         deserializeFull: (s, data) => {
             data.outfit = s.readGameType();
+            data.meleeSkin = s.readGameType();
             data.backpack = s.readGameType();
             data.helmet = s.readGameType();
             data.chest = s.readGameType();

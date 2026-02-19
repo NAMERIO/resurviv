@@ -806,6 +806,7 @@ export class Player extends BaseGameObject {
     spectators = new Set<Player>();
 
     outfit = "outfitBase";
+    meleeSkin = "fists";
 
     setOutfit(outfit: string) {
         if (this.outfit === outfit) return;
@@ -1341,6 +1342,7 @@ export class Player extends BaseGameObject {
     groupId = 0;
 
     loadout = {
+        melee: "fists",
         heal: "heal_basic",
         boost: "boost_basic",
         death_effect: "death_basic",
@@ -4497,7 +4499,9 @@ export class Player extends BaseGameObject {
             this.setOutfit(loadout.outfit);
         }
 
-        if (isItemInLoadout(loadout.melee, "melee") && loadout.melee != "fists") {
+        if (isItemInLoadout(loadout.melee, "melee")) {
+            this.loadout.melee = loadout.melee;
+            this.meleeSkin = loadout.melee;
             this.weapons[GameConfig.WeaponSlot.Melee].type = loadout.melee;
         }
 

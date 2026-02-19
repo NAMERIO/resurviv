@@ -638,11 +638,20 @@ export class WeaponManager {
 
     dropMelee(): void {
         const slot = WeaponSlot.Melee;
-        if (this.weapons[slot].type != "fists") {
-            this.player.dropLoot(this.weapons[slot].type);
-            this.setWeapon(slot, "fists", 0);
-            if (slot === this.curWeapIdx) this.player.setDirty();
+        const curMeleeType = this.weapons[slot].type;
+        const loadoutMelee = this.player.loadout.melee;
+        if (curMeleeType === loadoutMelee) {
+            return;
         }
+        const curMeleeDef = GameObjectDefs[curMeleeType] as MeleeDef | undefined;
+        if (curMeleeDef?.handSprites || !curMeleeDef?.worldImg) {
+            this.setWeapon(slot, loadoutMelee, 0);
+            if (slot === this.curWeapIdx) this.player.setDirty();
+            return;
+        }
+        this.player.dropLoot(curMeleeType);
+        this.setWeapon(slot, loadoutMelee, 0);
+        if (slot === this.curWeapIdx) this.player.setDirty();
     }
 
     /**

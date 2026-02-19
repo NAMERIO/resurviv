@@ -359,6 +359,7 @@ export class Player implements AbstractObject {
         m_pos: Vec2;
         m_dir: Vec2;
         m_outfit: string;
+        m_meleeSkin: string;
         m_backpack: string;
         m_helmet: string;
         m_chest: string;
@@ -519,6 +520,7 @@ export class Player implements AbstractObject {
             m_pos: v2.create(0, 0),
             m_dir: v2.create(1, 0),
             m_outfit: "",
+            m_meleeSkin: "",
             m_backpack: "",
             m_helmet: "",
             m_chest: "",
@@ -596,6 +598,7 @@ export class Player implements AbstractObject {
 
         if (fullUpdate) {
             this.m_netData.m_outfit = data.outfit;
+            this.m_netData.m_meleeSkin = data.meleeSkin;
             this.m_netData.m_backpack = data.backpack;
             this.m_netData.m_helmet = data.helmet;
             this.m_netData.m_chest = data.chest;
@@ -1748,11 +1751,10 @@ export class Player implements AbstractObject {
             ? map.getMapDef().biome.colors.playerGhillie
             : outfitImg.handTint;
         
-        const meleeType = this.m_localData.m_weapons.length > 0
-            ? this.m_localData.m_weapons[GameConfig.WeaponSlot.Melee]?.type
-            : undefined;
-        const meleeDef = meleeType ? (GameObjectDefs[meleeType] as MeleeDef) : undefined;
-        const meleeHandSprites = meleeDef?.handSprites;
+        // Use meleeSkin for hand sprites (fist skins)
+        const meleeSkinType = this.m_netData.m_meleeSkin;
+        const meleeSkinDef = meleeSkinType ? (GameObjectDefs[meleeSkinType] as MeleeDef) : undefined;
+        const meleeHandSprites = meleeSkinDef?.handSprites;
         
         if (meleeHandSprites && !outfitDef.ghillie) {
             setHandSprite(this.handLSprite, meleeHandSprites.spriteL, 0xffffff);
