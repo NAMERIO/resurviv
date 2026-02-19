@@ -156,4 +156,6 @@ export const rotatedSprites: Record<string, number> = {
     // wrecked angle
     "player/player-fists-wrecked-angle-l.svg": 90,
     "player/player-fists-wrecked-angle-r.svg": 90,
+    // raptor
+    "player/player-hands-dinoclaws.svg": 90,
 };
