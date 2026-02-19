@@ -1747,8 +1747,20 @@ export class Player implements AbstractObject {
         const handTint = outfitDef.ghillie
             ? map.getMapDef().biome.colors.playerGhillie
             : outfitImg.handTint;
-        setHandSprite(this.handLSprite, outfitImg.handSprite, handTint);
-        setHandSprite(this.handRSprite, outfitImg.handSprite, handTint);
+        
+        const meleeType = this.m_localData.m_weapons.length > 0
+            ? this.m_localData.m_weapons[GameConfig.WeaponSlot.Melee]?.type
+            : undefined;
+        const meleeDef = meleeType ? (GameObjectDefs[meleeType] as MeleeDef) : undefined;
+        const meleeHandSprites = meleeDef?.handSprites;
+        
+        if (meleeHandSprites && !outfitDef.ghillie) {
+            setHandSprite(this.handLSprite, meleeHandSprites.spriteL, 0xffffff);
+            setHandSprite(this.handRSprite, meleeHandSprites.spriteR, 0xffffff);
+        } else {
+            setHandSprite(this.handLSprite, outfitImg.handSprite, handTint);
+            setHandSprite(this.handRSprite, outfitImg.handSprite, handTint);
+        }
 
         // Feet
         const setFootSprite = function (
@@ -1907,8 +1919,8 @@ export class Player implements AbstractObject {
                 this.bodyContainer.addChild(this.handRContainer);
             }
         }
-        if (R.type == "melee" && this.m_netData.m_activeWeapon != "fists") {
-            const V = R.worldImg!;
+        if (R.type == "melee" && this.m_netData.m_activeWeapon != "fists" && R.worldImg) {
+            const V = R.worldImg;
             this.meleeSprite.texture = PIXI.Texture.from(V.sprite);
             this.meleeSprite.pivot.set(-V.pos.x, -V.pos.y);
             this.meleeSprite.scale.set(V.scale.x / bodyScale, V.scale.y / bodyScale);

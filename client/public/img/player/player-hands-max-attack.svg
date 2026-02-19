@@ -1,5 +1,49 @@
-<svg width="77" height="78" viewBox="0 0 77 78" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M6.99999 39.4876C6.99999 56.6084 20.8792 70.4904 38 70.4938C55.1208 70.4972 69 56.6208 69 39.5C69 22.3792 55.1208 8.49723 38 8.49381C20.8792 8.49038 7 22.3668 6.99999 39.4876Z" fill="#A0D080"/>
-<path d="M46 39L46 8L31 8L31 39L46 39Z" fill="#FFF89F"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M63.7614 38.9977C63.7614 25.0483 52.4526 13.7359 38.5 13.7331C24.5474 13.7302 13.2386 25.0381 13.2386 38.9875C13.2386 52.9369 24.5474 64.2493 38.5 64.2521C52.4526 64.255 63.7614 52.9471 63.7614 38.9977ZM38.5 2.4926C58.6573 2.49669 75 18.8406 75 39C75 59.1594 58.6573 75.4967 38.5 75.4926C18.3427 75.4885 2 59.1447 2 38.9852C2 18.8258 18.3427 2.48852 38.5 2.4926Z" fill="black"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="77"
+   height="78"
+   viewBox="0 0 77 78"
+   fill="none"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="player-hands-max-attack.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs3" />
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="4.9551282"
+     inkscape:cx="25.831824"
+     inkscape:cy="40.866753"
+     inkscape:window-width="1920"
+     inkscape:window-height="991"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3" />
+  <path
+     d="M 38.372534,7.4889588 C 21.2529,7.2892159 7.20992,21.005524 7.0067773,38.125119 6.8036345,55.244715 20.517166,69.284862 37.636801,69.484605 54.756435,69.684348 68.799385,55.968049 69.002548,38.848454 69.20572,21.728859 55.492169,7.6887118 38.372534,7.4889588 Z"
+     fill="#a0d080"
+     id="path1" />
+  <path
+     d="m 38.4051,46.492003 30.997891,0.361667 0.175,-14.998979 -30.99789,-0.361667 z"
+     fill="#fff89f"
+     id="path2" />
+  <path
+     fill-rule="evenodd"
+     clip-rule="evenodd"
+     d="M 38.200184,64.252221 C 52.148634,64.414965 63.5922,53.238912 63.757781,39.287295 63.923461,25.335678 52.748267,13.895722 38.799816,13.732979 24.851366,13.570235 13.4078,24.746288 13.242219,38.697905 13.076539,52.649522 24.251733,64.089478 38.200184,64.252221 Z M 74.997516,39.418434 C 74.758257,59.574314 58.224795,75.725223 38.066767,75.49003 17.908739,75.254836 1.7632155,58.722646 2.0024841,38.566766 2.2417527,18.410886 18.775106,2.2599759 38.933233,2.4951705 59.091261,2.7303638 75.236764,19.262553 74.997516,39.418434 Z"
+     fill="#000000"
+     id="path3" />
 </svg>

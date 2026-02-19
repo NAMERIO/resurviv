@@ -91,3 +91,69 @@ export const scaledSprites: Record<string, number> = {
     "map/map-bunker-hydra-compartment-ceiling-02.svg": 0.5,
     "map/map-bunker-hydra-compartment-ceiling-03.svg": 0.5,
 };
+
+export const rotatedSprites: Record<string, number> = {
+    // bonkbonk
+    "player/player-fists-bonkbonk-l.svg": 90,
+    "player/player-fists-bonkbonk-r.svg": 90,
+    // cattle battle
+    "player/player-fists-cattle-battle-l.svg": 90,
+    "player/player-fists-cattle-battle-r.svg": 90,
+    // coco nut
+    "player/player-fists-coco-nut-l.svg": 90,
+    "player/player-fists-coco-nut-r.svg": 90,
+    // develop these rolls
+    "player/player-fists-develop-these-rolls-l.svg": 90,
+    "player/player-fists-develop-these-rolls-r.svg": 90,
+    // flashy
+    "player/player-fists-flashy-l.svg": 90,
+    "player/player-fists-flashy-r.svg": 90,
+    // fritter punch
+    "player/player-fists-fritter-punch-l.svg": 90,
+    "player/player-fists-fritter-punch-r.svg": 90,
+    // fuzzy hooves
+    "player/player-fists-fuzzy-hooves-l.svg": 90,
+    "player/player-fists-fuzzy-hooves-r.svg": 90,
+    // gold drops
+    "player/player-fists-gold-drops-l.svg": 90,
+    "player/player-fists-gold-drops-r.svg": 90,
+    // golden lobster
+    "player/player-fists-golden-lobster-l.svg": 90,
+    "player/player-fists-golden-lobster-r.svg": 90,
+    // milkshaked
+    "player/player-fists-milkshaked-l.svg": 90,
+    "player/player-fists-milkshaked-r.svg": 90,
+    // no pine no gain
+    "player/player-fists-no-pine-no-gain-l.svg": 90,
+    "player/player-fists-no-pine-no-gain-r.svg": 90,
+    // paddle
+    "player/player-fists-paddle-l.svg": 90,
+    "player/player-fists-paddle-r.svg": 90,
+    // paws
+    "player/player-hands-paws.svg": 90,
+    // pine fury
+    "player/player-hands-pineFury-left.svg": 90,
+    "player/player-hands-pineFury-right.svg": 90,
+    // poke
+    "player/player-hands-poke.svg": 90,
+    // q fist
+    "player/player-fists-q-fist-l.svg": 90,
+    "player/player-fists-q-fist-r.svg": 90,
+    // ranger
+    "player/player-hands-ranger.svg": 90,
+    // santa mittens
+    "player/player-fists-santa-l.svg": 90,
+    "player/player-fists-santa-r.svg": 90,
+    // stonedgy
+    "player/player-fists-stonedgy-l.svg": 90,
+    "player/player-fists-stonedgy-r.svg": 90,
+    // the other pong
+    "player/player-fists-the-other-pong-l.svg": 90,
+    "player/player-fists-the-other-pong-r.svg": 90,
+    // tiger seed
+    "player/player-fists-tiger-seed-l.svg": 90,
+    "player/player-fists-tiger-seed-r.svg": 90,
+    // wrecked angle
+    "player/player-fists-wrecked-angle-l.svg": 90,
+    "player/player-fists-wrecked-angle-r.svg": 90,
+};

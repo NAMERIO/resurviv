@@ -9,7 +9,7 @@ import type { ISpritesheetData } from "pixi.js-legacy";
 import type { Atlas } from "../../shared/defs/mapDefs";
 import { Logger } from "../../shared/utils/logger";
 import { util } from "../../shared/utils/util";
-import { Atlases, type AtlasRes, scaledSprites } from "./atlasDefs";
+import { Atlases, type AtlasRes, scaledSprites, rotatedSprites } from "./atlasDefs";
 import type { MainToWorkerMsg, WorkerToMainMsg } from "./atlasWorker";
 import type { Edges } from "./detectEdges";
 import type { ParentMsg } from "./imageWorker";
@@ -379,7 +379,8 @@ export class AtlasManager {
             const data = fs.readFileSync(imagePath);
 
             const scale = scaledSprites[file] ?? 1;
-            const hash = `${hashBuff(data)}-${100 * scale}`;
+            const rotation = rotatedSprites[file] ?? 0;
+            const hash = `${hashBuff(data)}-${100 * scale}-${rotation}`;
 
             if (
                 this.imageCache.get(file)?.hash !== hash ||

@@ -385,6 +385,32 @@ export class LoadoutDisplay {
                 death_effect: this.loadout.death_effect,
             },
         });
+        
+        if (this.activePlayer) {
+            this.activePlayer.m_setLocalData({
+                healthDirty: false,
+                boostDirty: false,
+                zoomDirty: false,
+                actionDirty: false,
+                inventoryDirty: false,
+                weapsDirty: true,
+                spectatorCountDirty: false,
+                curWeapIdx: 0,
+                weapons: [
+                    { type: this.loadout.primary, ammo: 0 },
+                    { type: this.loadout.secondary, ammo: 0 },
+                    { type: this.loadout.melee, ammo: 0 },
+                    { type: "", ammo: 0 },
+                ],
+                health: 100,
+                boost: 0,
+                zoom: 0,
+                scope: "1xscope",
+                inventory: {},
+                spectatorCount: 0,
+                action: { time: 0, duration: 0, targetId: 0 },
+            });
+        }
     }
 
     getCameraTargetZoom() {

@@ -8,7 +8,7 @@ import {
     imageFolder,
     imagesCacheFolder,
 } from "./atlasBuilder";
-import { scaledSprites } from "./atlasDefs";
+import { scaledSprites, rotatedSprites } from "./atlasDefs";
 import { detectEdges, type Edges } from "./detectEdges";
 
 const tmpCanvas = createCanvas(0, 0);
@@ -44,6 +44,7 @@ async function renderImage(path: string, hash: string) {
     const pngFileName = Path.join(imagesCacheFolder, `${hash}.png`);
     const fullPath = Path.join(imageFolder, path);
     const scale = scaledSprites[path] ?? 1;
+    const rotation = rotatedSprites[path] ?? 0;
     const isSvg = path.toLowerCase().endsWith(".svg");
 
     let edges: Edges;
@@ -52,13 +53,33 @@ async function renderImage(path: string, hash: string) {
         if (isSvg) {
             const svgBuffer = fs.readFileSync(fullPath);
             const metadata = await sharp(svgBuffer).metadata();
-            const width = Math.ceil((metadata.width || 256) * scale);
-            const height = Math.ceil((metadata.height || 256) * scale);
-            const pngBuffer = await sharp(svgBuffer)
-                .resize(width, height, {
+            const origWidth = metadata.width || 256;
+            const origHeight = metadata.height || 256;
+            
+            let sharpPipeline = sharp(svgBuffer);
+            if (rotation !== 0) {
+                const tempBuffer = await sharp(svgBuffer)
+                    .resize(Math.ceil(origWidth * scale), Math.ceil(origHeight * scale), {
+                        fit: "contain",
+                        background: { r: 0, g: 0, b: 0, alpha: 0 },
+                    })
+                    .png()
+                    .toBuffer();
+                
+                sharpPipeline = sharp(tempBuffer)
+                    .rotate(rotation, {
+                        background: { r: 0, g: 0, b: 0, alpha: 0 },
+                    });
+            } else {
+                const width = Math.ceil(origWidth * scale);
+                const height = Math.ceil(origHeight * scale);
+                sharpPipeline = sharpPipeline.resize(width, height, {
                     fit: "contain",
                     background: { r: 0, g: 0, b: 0, alpha: 0 },
-                })
+                });
+            }
+            
+            const pngBuffer = await sharpPipeline
                 .png({
                     quality: 100,
                     compressionLevel: 9,
@@ -73,9 +94,27 @@ async function renderImage(path: string, hash: string) {
             tmpCtx.drawImage(image, 0, 0);
         } else {
             const image = await loadImage(fullPath);
-            tmpCanvas.width = Math.ceil(image.width * scale);
-            tmpCanvas.height = Math.ceil(image.height * scale);
-            tmpCtx.drawImage(image, 0, 0, tmpCanvas.width, tmpCanvas.height);
+            const scaledWidth = Math.ceil(image.width * scale);
+            const scaledHeight = Math.ceil(image.height * scale);
+            if (rotation !== 0) {
+                const radians = (rotation * Math.PI) / 180;
+                const cos = Math.abs(Math.cos(radians));
+                const sin = Math.abs(Math.sin(radians));
+                const newWidth = Math.ceil(scaledWidth * cos + scaledHeight * sin);
+                const newHeight = Math.ceil(scaledWidth * sin + scaledHeight * cos);
+                
+                tmpCanvas.width = newWidth;
+                tmpCanvas.height = newHeight;
+                tmpCtx.save();
+                tmpCtx.translate(newWidth / 2, newHeight / 2);
+                tmpCtx.rotate(radians);
+                tmpCtx.drawImage(image, -scaledWidth / 2, -scaledHeight / 2, scaledWidth, scaledHeight);
+                tmpCtx.restore();
+            } else {
+                tmpCanvas.width = scaledWidth;
+                tmpCanvas.height = scaledHeight;
+                tmpCtx.drawImage(image, 0, 0, scaledWidth, scaledHeight);
+            }
 
             const buff = tmpCanvas.toBuffer("image/png");
             fs.writeFileSync(pngFileName, buff);
