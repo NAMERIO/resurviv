@@ -1,5 +1,6 @@
 import { type BulletDef, BulletDefs } from "./gameObjects/bulletDefs";
 import { type CrosshairDef, CrosshairDefs } from "./gameObjects/crosshairDefs";
+import { type DeathEffectDef, DeathEffectDefs } from "./gameObjects/deathEffectDefs";
 import { type EmoteDef, EmotesDefs } from "./gameObjects/emoteDefs";
 import { type ExplosionDef, ExplosionDefs } from "./gameObjects/explosionsDefs";
 import {
@@ -27,6 +28,7 @@ import { type XPDef, XPDefs } from "./gameObjects/xpDefs";
 
 export type GameObjectDef =
     | BulletDef
+    | DeathEffectDef
     | EmoteDef
     | CrosshairDef
     | HealEffectDef
@@ -68,6 +70,7 @@ export type LootDef =
 const ObjectDefsList: Array<Record<string, GameObjectDef>> = [
     BulletDefs,
     CrosshairDefs,
+    DeathEffectDefs,
     HealEffectDefs,
     EmotesDefs,
     ExplosionDefs,

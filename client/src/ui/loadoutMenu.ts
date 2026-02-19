@@ -185,6 +185,11 @@ export class LoadoutMenu {
             gameType: "boost_effect",
             categoryImage: "img/gui/loadout-boost.svg",
         },
+        {
+            loadoutType: "death_effect",
+            gameType: "death_effect",
+            categoryImage: "img/gui/skull.svg",
+        },
     ];
 
     selectedItem: {
@@ -1149,6 +1154,11 @@ export class LoadoutMenu {
                 .removeClass("account-alert account-alert-cat");
             this.localAckItems.splice(itemIdx, 1);
             this.setCategoryAlerts();
+        }
+
+        // Play death effect preview when selecting a death effect
+        if (this.selectedItem.loadoutType == "death_effect" && this.loadoutDisplay?.initialized) {
+            this.loadoutDisplay.playDeathEffectPreview(this.selectedItem.type);
         }
     }
 

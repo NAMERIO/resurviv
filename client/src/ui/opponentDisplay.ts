@@ -1,6 +1,8 @@
 import * as PIXI from "pixi.js-legacy";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
+import type { DeathEffectDef } from "../../../shared/defs/gameObjects/deathEffectDefs";
 import type { OutfitDef } from "../../../shared/defs/gameObjects/outfitDefs";
+import { util } from "../../../shared/utils/util";
 import { type Action, type Anim, GameConfig } from "../../../shared/gameConfig";
 import type { MapMsg } from "../../../shared/net/mapMsg";
 import { type ObjectData, ObjectType } from "../../../shared/net/objectSerializeFns";
@@ -239,6 +241,33 @@ export class LoadoutDisplay {
         this.view = view;
     }
 
+    playDeathEffectPreview(deathEffectType: string) {
+        if (!this.initialized || !this.activePlayer) return;
+
+        const deathEffectDef = GameObjectDefs[deathEffectType] as DeathEffectDef | undefined;
+        if (!deathEffectDef) return;
+
+        const particleType = deathEffectDef.particle ?? "deathSplash";
+        const particleCount = deathEffectDef.particleCount ?? 10;
+        
+        // Don't spawn particles if count is 0 (no effect)
+        if (particleCount === 0) return;
+
+        const numParticles = Math.floor(util.random(particleCount * 0.8, particleCount * 1.2));
+        for (let i = 0; i < numParticles; i++) {
+            const vel = {
+                x: (Math.random() - 0.5) * 10,
+                y: (Math.random() - 0.5) * 10,
+            };
+            this.particleBarn.addParticle(
+                particleType,
+                this.activePlayer.layer,
+                this.activePlayer.m_pos,
+                vel,
+            );
+        }
+    }
+
     updateCharDisplay(
         options = {} as Partial<{
             animType: Anim;
@@ -269,7 +298,11 @@ export class LoadoutDisplay {
             helmet: "",
             chest: "chest03",
             activeWeapon:
-                this.view === "secondary" ? this.loadout.secondary : this.loadout.primary,
+                this.view === "melee"
+                    ? this.loadout.melee
+                    : this.view === "secondary"
+                      ? this.loadout.secondary
+                      : this.loadout.primary,
             layer: 0,
             dead: false,
             downed: false,
@@ -307,6 +340,7 @@ export class LoadoutDisplay {
             loadout: {
                 heal: this.loadout.heal,
                 boost: this.loadout.boost,
+                death_effect: this.loadout.death_effect,
             },
         });
     }

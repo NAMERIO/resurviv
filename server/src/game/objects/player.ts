@@ -1343,6 +1343,7 @@ export class Player extends BaseGameObject {
     loadout = {
         heal: "heal_basic",
         boost: "boost_basic",
+        death_effect: "death_basic",
         emotes: [...GameConfig.defaultEmoteLoadout],
     };
 
@@ -4505,6 +4506,9 @@ export class Player extends BaseGameObject {
         }
         if (isItemInLoadout(loadout.boost, "boost_effect")) {
             this.loadout.boost = loadout.boost;
+        }
+        if (isItemInLoadout(loadout.death_effect, "death_effect")) {
+            this.loadout.death_effect = loadout.death_effect;
         }
 
         const emotes = loadout.emotes;

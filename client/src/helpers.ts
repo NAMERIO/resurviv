@@ -189,6 +189,8 @@ export const helpers = {
             case "heal_effect":
             case "boost_effect":
                 return `img/particles/${def.texture?.slice(0, -4)}.svg`;
+            case "death_effect":
+                return `img/loot/${def.texture?.slice(0, -4)}.svg`;
             case "emote":
                 return `img/emotes/${def.texture.slice(0, -4)}.svg`;
             case "crosshair":

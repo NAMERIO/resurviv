@@ -11,6 +11,7 @@ export interface Loadout {
     primary: string;
     secondary: string;
     boost: string;
+    death_effect: string;
     melee: string;
     perk: string;
     emotes: string[];
@@ -62,6 +63,7 @@ const loadout = {
             melee: getGameType("melee", mergedLoadout.melee, "fists"),
             heal: getGameType("heal_effect", mergedLoadout.heal, "heal_basic"),
             boost: getGameType("boost_effect", mergedLoadout.boost, "boost_basic"),
+            death_effect: getGameType("death_effect", mergedLoadout.death_effect, "death_basic"),
             player_icon: getGameType("emote", mergedLoadout.player_icon, ""),
             primary: getGameType("gun", mergedLoadout.primary, "mosin"),
             secondary: getGameType("gun", mergedLoadout.secondary, "mosin"),

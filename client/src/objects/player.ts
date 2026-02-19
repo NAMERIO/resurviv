@@ -1,5 +1,6 @@
 import * as PIXI from "pixi.js-legacy";
 import { GameObjectDefs, type LootDef } from "../../../shared/defs/gameObjectDefs";
+import type { DeathEffectDef } from "../../../shared/defs/gameObjects/deathEffectDefs";
 import type {
     BackpackDef,
     BoostDef,
@@ -3222,6 +3223,16 @@ export class PlayerBarn {
     ) {
         const target = this.getPlayerById(targetId);
         const killer = this.getPlayerById(killerId);
+        const targetInfo = this.getPlayerInfo(targetId);
+        
+        if (target) {
+            audioManager.playGroup("player_bullet_hit", {
+                soundPos: target.m_pos,
+                layer: target.layer,
+                muffled: true,
+            });
+        }
+        
         if (target && killer?.m_hasPerk("turkey_shoot")) {
             audioManager.playGroup("cluck", {
                 soundPos: target.m_pos,
@@ -3239,6 +3250,24 @@ export class PlayerBarn {
                 const vel = v2.mul(v2.randomUnit(), util.random(5, 15));
                 particleBarn.addParticle(
                     "turkeyFeathersDeath",
+                    target.layer,
+                    target.m_pos,
+                    vel,
+                );
+            }
+        } else if (target) {
+            // Get death effect from player's loadout
+            const deathEffectType = targetInfo?.loadout?.death_effect || "death_basic";
+            const deathEffectDef = GameObjectDefs[deathEffectType] as DeathEffectDef | undefined;
+            
+            const particleType = deathEffectDef?.particle ?? "deathSplash";
+            const particleCount = deathEffectDef?.particleCount ?? 10;
+            
+            const numParticles = Math.floor(util.random(particleCount * 0.8, particleCount * 1.2));
+            for (let i = 0; i < numParticles; i++) {
+                const vel = v2.mul(v2.randomUnit(), util.random(3, 8));
+                particleBarn.addParticle(
+                    particleType,
                     target.layer,
                     target.m_pos,
                     vel,
