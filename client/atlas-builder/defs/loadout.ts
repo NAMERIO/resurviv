@@ -170,6 +170,17 @@ export const LoadoutAtlas: AtlasDef = {
         "emotes/turkey-animal.svg",
         "emotes/whale.svg",
         "emotes/cake.svg",
+        // Animated face 67 emote frames
+        "emotes/face-67-1.svg",
+        "emotes/face-67-2.svg",
+        "emotes/face-67-3.svg",
+        "emotes/face-67-4.svg",
+        "emotes/face-67-5.svg",
+        "emotes/face-67-6.svg",
+        "emotes/face-67-7.svg",
+        "emotes/face-67-8.svg",
+        "emotes/face-67-9.svg",
+        "emotes/face-67-10.svg",
 
         "gui/audio-off.svg",
         "gui/audio-on.svg",
