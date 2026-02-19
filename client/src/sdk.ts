@@ -98,7 +98,7 @@ class SDKManager {
 
     adCallback = () => {};
     gamesPlayed = 0;
-    quitCount = 0;
+    quitCount = parseInt(sessionStorage.getItem("quitCount") || "0", 10);
 
     constructor() {
         this.isAnySDK = this.isPoki || this.isCrazyGames || this.isGameMonetize;
@@ -167,6 +167,7 @@ class SDKManager {
 
     requestQuitAd(callback: () => void): void {
         this.quitCount++;
+        sessionStorage.setItem("quitCount", this.quitCount.toString());
         const showAd = this.quitCount % 2 === 0;
         
         if (this.isPoki && showAd) {
