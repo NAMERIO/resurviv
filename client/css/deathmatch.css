@@ -3,13 +3,13 @@
 */
 
 #modal-content-left {
-  width: 873px !important;
-  left: -20% !important;
+  width: 880px !important;
+  left: -15% !important;
 }
 
 #modal-content-right-crosshair,
 #modal-content-right-emote {
-  margin-right: -120px;
+  margin-right: -140px;
 }
 
 @media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
