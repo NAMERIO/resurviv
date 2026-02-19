@@ -248,6 +248,8 @@ export class Player implements AbstractObject {
     handLContainer = new PIXI.Container();
     handRContainer = new PIXI.Container();
 
+    deathEffectSprite = new PIXI.AnimatedSprite([PIXI.Texture.EMPTY]);
+    deathEffectContainer = new PIXI.Container();
     soundLoadingInstance = null;
 
     footLContainer = new PIXI.Container();
@@ -3220,6 +3222,7 @@ export class PlayerBarn {
         killerId: number,
         audioManager: AudioManager,
         particleBarn: ParticleBarn,
+        renderer: Renderer,
     ) {
         const target = this.getPlayerById(targetId);
         const killer = this.getPlayerById(killerId);
@@ -3255,23 +3258,71 @@ export class PlayerBarn {
                     vel,
                 );
             }
-        } else if (target) {
-            // Get death effect from player's loadout
-            const deathEffectType = targetInfo?.loadout?.death_effect || "death_basic";
-            const deathEffectDef = GameObjectDefs[deathEffectType] as DeathEffectDef | undefined;
-            
-            const particleType = deathEffectDef?.particle ?? "deathSplash";
-            const particleCount = deathEffectDef?.particleCount ?? 10;
-            
-            const numParticles = Math.floor(util.random(particleCount * 0.8, particleCount * 1.2));
+        } else if (target && killer?.m_hasPerk("cupid")) {
+            const numParticles = Math.floor(util.random(30, 35));
             for (let i = 0; i < numParticles; i++) {
-                const vel = v2.mul(v2.randomUnit(), util.random(3, 8));
+                const vel = v2.mul(v2.randomUnit(), util.random(5, 15));
                 particleBarn.addParticle(
-                    particleType,
+                    "cupidDeath",
                     target.layer,
                     target.m_pos,
                     vel,
                 );
+            }
+        } else if (target) {
+            // Get death effect from player's loadout
+            const deathEffectType = targetInfo?.loadout?.death_effect || "death_basic";
+            const deathEffectDef = GameObjectDefs[deathEffectType] as DeathEffectDef | undefined;
+            if (deathEffectDef && deathEffectDef.isParticle === false && deathEffectDef.sprites && deathEffectDef.sprites.length > 0) {
+                const textures: PIXI.Texture[] = [];
+                for (let i = 0; i < deathEffectDef.sprites.length; i++) {
+                    const texture = PIXI.Texture.from(deathEffectDef.sprites[i]);
+                    textures.push(texture);
+                }
+                target.deathEffectSprite.textures = textures;
+                target.deathEffectContainer.position.set(
+                    target.container.position.x,
+                    target.container.position.y
+                );
+                target.deathEffectContainer.addChild(target.deathEffectSprite);
+                
+                target.deathEffectSprite.anchor.set(0.5, 0.5);
+                target.deathEffectSprite.scale.set(
+                    deathEffectDef.animationScale ?? 1.0,
+                    deathEffectDef.animationScale ?? 1.0
+                );
+                target.deathEffectSprite.animationSpeed = deathEffectDef.animationSpeed ?? 0.15;
+                target.deathEffectSprite.loop = false;
+                
+                target.deathEffectSprite.position.set(0, 0);
+                target.deathEffectSprite.visible = true;
+                target.deathEffectSprite.gotoAndPlay(0);
+                
+                renderer.addPIXIObj(target.deathEffectContainer, target.renderLayer, target.renderZOrd, target.renderZIdx);
+                
+                target.deathEffectSprite.onComplete = () => {
+                    target.deathEffectSprite.visible = false;
+                };
+            } else {
+                // Check if this is a "no effect" death (particleCount === 0)
+                if (deathEffectDef?.particleCount === 0) {
+                    return; 
+                }
+                
+                const particleType = deathEffectDef?.particle ?? "deathSplash";
+                const minParticles = deathEffectDef?.minParticles ?? 30;
+                const maxParticles = deathEffectDef?.maxParticles ?? 35;
+                
+                const numParticles = Math.floor(util.random(minParticles, maxParticles));
+                for (let i = 0; i < numParticles; i++) {
+                    const vel = v2.mul(v2.randomUnit(), util.random(5, 15));
+                    particleBarn.addParticle(
+                        particleType,
+                        target.layer,
+                        target.m_pos,
+                        vel,
+                    );
+                }
             }
         }
     }
