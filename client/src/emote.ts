@@ -195,6 +195,7 @@ export class EmoteBarn {
         circleOuter: PIXI.Sprite;
         baseScale: number;
         sprite: PIXI.Sprite;
+        spriteAnimated: PIXI.AnimatedSprite;
         posOffset: Vec2;
         isNew: boolean;
         type: string;
@@ -719,6 +720,10 @@ export class EmoteBarn {
                 e.sprite.anchor.set(0.5, 0.5);
                 e.container.addChild(e.sprite);
 
+                e.spriteAnimated = new PIXI.AnimatedSprite([PIXI.Texture.EMPTY]);
+                e.spriteAnimated.visible = false;
+                e.container.addChild(e.spriteAnimated);
+
                 e.sprite.scale.set(e.baseScale, e.baseScale);
                 e.posOffset = v2.create(0, 4);
                 e.container.scale.set(1, 1);
@@ -742,6 +747,28 @@ export class EmoteBarn {
             e.baseScale = 0.55;
             e.sound = emoteData.sound;
             e.channel = emoteData.channel;
+
+            // Handle animated emotes (surviv.io style)
+            if (emoteData.isAnimated && emoteData.sprites && emoteData.sprites.length > 0) {
+                const textures: PIXI.Texture[] = [];
+                for (let j = 0; j < emoteData.sprites.length; j++) {
+                    textures.push(PIXI.Texture.from(emoteData.sprites[j]));
+                }
+                e.spriteAnimated.textures = textures;
+                e.spriteAnimated.anchor.set(0.5, 0.5);
+                e.spriteAnimated.scale.set(
+                    emoteData.animationScale ?? 0.5,
+                    emoteData.animationScale ?? 0.5,
+                );
+                e.spriteAnimated.animationSpeed = emoteData.animationSpeed ?? 0.2;
+                e.spriteAnimated.position.set(0, 0);
+                e.spriteAnimated.play();
+                e.spriteAnimated.visible = true;
+                e.sprite.visible = false;
+            } else {
+                e.spriteAnimated.visible = false;
+                e.sprite.visible = true;
+            }
 
             // Rotate if it's loot and rotation defined
             if (emote.type == "emote_loot") {

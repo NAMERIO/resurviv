@@ -439,6 +439,15 @@ const _allowedEmotes = [
     "emote_flagbosnia",
     "emote_logocloud",
     "emote_logotwins",
+    "emote_chimpion",
+    "emote_rip",
+    "emote_pay_respects",
+    "emote_shur",
+    "emote_too_close",
+    "emote_fabulorn",
+    "emote_mr_sockey",
+    "emote_friend_ghost",
+    "emote_six_seven",
 ];
 
 const _allowedPerks = [
