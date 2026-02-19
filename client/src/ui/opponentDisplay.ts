@@ -241,30 +241,67 @@ export class LoadoutDisplay {
         this.view = view;
     }
 
+    deathEffectSprite: PIXI.AnimatedSprite = new PIXI.AnimatedSprite([PIXI.Texture.EMPTY]);
+    deathEffectContainer: PIXI.Container = new PIXI.Container();
+
     playDeathEffectPreview(deathEffectType: string) {
         if (!this.initialized || !this.activePlayer) return;
 
         const deathEffectDef = GameObjectDefs[deathEffectType] as DeathEffectDef | undefined;
         if (!deathEffectDef) return;
 
-        const particleType = deathEffectDef.particle ?? "deathSplash";
-        const particleCount = deathEffectDef.particleCount ?? 10;
-        
-        // Don't spawn particles if count is 0 (no effect)
-        if (particleCount === 0) return;
-
-        const numParticles = Math.floor(util.random(particleCount * 0.8, particleCount * 1.2));
-        for (let i = 0; i < numParticles; i++) {
-            const vel = {
-                x: (Math.random() - 0.5) * 10,
-                y: (Math.random() - 0.5) * 10,
-            };
-            this.particleBarn.addParticle(
-                particleType,
-                this.activePlayer.layer,
-                this.activePlayer.m_pos,
-                vel,
+        if (deathEffectDef.isParticle === false && deathEffectDef.sprites && deathEffectDef.sprites.length > 0) {
+            const textures: PIXI.Texture[] = [];
+            for (let i = 0; i < deathEffectDef.sprites.length; i++) {
+                const texture = PIXI.Texture.from(deathEffectDef.sprites[i]);
+                textures.push(texture);
+            }
+            
+            this.deathEffectSprite.textures = textures;
+            this.deathEffectContainer.position.set(
+                this.activePlayer.container.position.x,
+                this.activePlayer.container.position.y
             );
+            this.deathEffectContainer.addChild(this.deathEffectSprite);
+            
+            this.deathEffectSprite.anchor.set(0.5, 0.5);
+            this.deathEffectSprite.scale.set(
+                deathEffectDef.animationScale ?? 1.0,
+                deathEffectDef.animationScale ?? 1.0
+            );
+            this.deathEffectSprite.animationSpeed = deathEffectDef.animationSpeed ?? 0.15;
+            this.deathEffectSprite.loop = false;
+            
+            this.deathEffectSprite.position.set(0, 0);
+            this.deathEffectSprite.visible = true;
+            this.deathEffectSprite.gotoAndPlay(0);
+            
+            this.renderer.addPIXIObj(
+                this.deathEffectContainer, 
+                this.activePlayer.layer, 
+                20, 
+                0
+            );
+            
+            this.deathEffectSprite.onComplete = () => {
+                this.deathEffectSprite.visible = false;
+                this.deathEffectContainer.removeChild(this.deathEffectSprite);
+            };
+        } else {
+            const particleType = deathEffectDef.particle ?? "deathSplash";
+            const minParticles = deathEffectDef.minParticles ?? 30;
+            const maxParticles = deathEffectDef.maxParticles ?? 35;
+
+            const numParticles = Math.floor(util.random(minParticles, maxParticles));
+            for (let i = 0; i < numParticles; i++) {
+                const vel = v2.mul(v2.randomUnit(), util.random(5, 15));
+                this.particleBarn.addParticle(
+                    particleType,
+                    this.activePlayer.layer,
+                    this.activePlayer.m_pos,
+                    vel,
+                );
+            }
         }
     }
 

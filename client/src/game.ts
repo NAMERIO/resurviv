@@ -1416,6 +1416,7 @@ export class Game {
                         msg.killerId,
                         this.m_audioManager,
                         this.m_particleBarn,
+                        this.m_renderer,
                     );
                 }
 

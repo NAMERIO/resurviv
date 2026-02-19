@@ -1651,7 +1651,7 @@ const ParticleDefs: Record<string, ParticleDef> = {
             return 0xffffff;
         },
     },
-    potatoDeath: {
+    potatoBlastDeath: {
         image: ["potato-blast-death.img"],
         life: new Range(0.75, 1.5),
         drag: new Range(5.0, 15.0),
