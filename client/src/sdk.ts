@@ -151,7 +151,7 @@ class SDKManager {
 
     requestMidGameAd(callback: () => void): void {
         this.gamesPlayed++;
-        const showAd = this.gamesPlayed % 5 === 0;
+        const showAd = this.gamesPlayed % 3 === 0;
         
         if (this.isPoki) {
             this.requestPokiMidGameAd(callback);
