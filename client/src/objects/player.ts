@@ -3304,6 +3304,11 @@ export class PlayerBarn {
                     target.deathEffectSprite.visible = false;
                 };
             } else {
+                // Check if this is a "no effect" death (particleCount === 0)
+                if (deathEffectDef?.particleCount === 0) {
+                    return; 
+                }
+                
                 const particleType = deathEffectDef?.particle ?? "deathSplash";
                 const minParticles = deathEffectDef?.minParticles ?? 30;
                 const maxParticles = deathEffectDef?.maxParticles ?? 35;

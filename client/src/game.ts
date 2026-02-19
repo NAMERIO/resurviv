@@ -183,7 +183,13 @@ export class Game {
                     joinMessage.useTouch = device.touch;
                     joinMessage.isMobile = device.mobile || window.mobile!;
                     joinMessage.bot = false;
-                    joinMessage.loadout = this.m_config.get("loadout")!;
+                    const playerLoadout = this.m_config.get("loadout")!;
+                    joinMessage.loadout = {
+                        ...playerLoadout,
+                        death_effect: playerLoadout.death_effect || "death_basic",
+                        heal: playerLoadout.heal || "heal_basic",
+                        boost: playerLoadout.boost || "boost_basic",
+                    };
 
                     this.m_sendMessage(net.MsgType.Join, joinMessage, 8192);
                 };
