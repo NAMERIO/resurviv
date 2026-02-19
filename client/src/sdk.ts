@@ -98,6 +98,7 @@ class SDKManager {
 
     adCallback = () => {};
     gamesPlayed = 0;
+    quitCount = 0;
 
     constructor() {
         this.isAnySDK = this.isPoki || this.isCrazyGames || this.isGameMonetize;
@@ -158,6 +159,21 @@ class SDKManager {
         } else if (this.isGameMonetize && showAd) {
             this.requestGameMonetizeMidgameAd(callback);
         } else if (this.isCrazyGames) {
+            this.requestCrazyGamesMidGameAd(callback);
+        } else {
+            callback();
+        }
+    }
+
+    requestQuitAd(callback: () => void): void {
+        this.quitCount++;
+        const showAd = this.quitCount % 2 === 0;
+        
+        if (this.isPoki && showAd) {
+            this.requestPokiMidGameAd(callback);
+        } else if (this.isGameMonetize && showAd) {
+            this.requestGameMonetizeMidgameAd(callback);
+        } else if (this.isCrazyGames && showAd) {
             this.requestCrazyGamesMidGameAd(callback);
         } else {
             callback();

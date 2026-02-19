@@ -1411,9 +1411,11 @@ export class UiManager {
     }
 
     quitGame() {
-        this.game.m_gameOver = true;
-        this.refreshMainPageAds();
-        this.game.onQuit();
+        SDK.requestQuitAd(() => {
+            this.game.m_gameOver = true;
+            this.refreshMainPageAds();
+            this.game.onQuit();
+        });
     }
 
     showStats(
