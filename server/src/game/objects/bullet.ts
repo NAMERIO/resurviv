@@ -500,7 +500,10 @@ export class Bullet {
                         area.rad,
                     );
                     if (intersection) {
-                        lasrCollision = { point: intersection.point, normal: intersection.normal };
+                        lasrCollision = {
+                            point: intersection.point,
+                            normal: intersection.normal,
+                        };
                     }
                 }
                 const collision = coldet.intersectSegmentCircle(

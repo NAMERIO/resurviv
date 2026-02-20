@@ -2,12 +2,12 @@ import * as PIXI from "pixi.js-legacy";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import type { DeathEffectDef } from "../../../shared/defs/gameObjects/deathEffectDefs";
 import type { OutfitDef } from "../../../shared/defs/gameObjects/outfitDefs";
-import { util } from "../../../shared/utils/util";
 import { type Action, type Anim, GameConfig } from "../../../shared/gameConfig";
 import type { MapMsg } from "../../../shared/net/mapMsg";
 import { type ObjectData, ObjectType } from "../../../shared/net/objectSerializeFns";
 import { collider } from "../../../shared/utils/collider";
 import { math } from "../../../shared/utils/math";
+import { util } from "../../../shared/utils/util";
 import { v2 } from "../../../shared/utils/v2";
 import type { Account } from "../account";
 import type { AudioManager } from "../audioManager";
@@ -241,48 +241,56 @@ export class LoadoutDisplay {
         this.view = view;
     }
 
-    deathEffectSprite: PIXI.AnimatedSprite = new PIXI.AnimatedSprite([PIXI.Texture.EMPTY]);
+    deathEffectSprite: PIXI.AnimatedSprite = new PIXI.AnimatedSprite([
+        PIXI.Texture.EMPTY,
+    ]);
     deathEffectContainer: PIXI.Container = new PIXI.Container();
 
     playDeathEffectPreview(deathEffectType: string) {
         if (!this.initialized || !this.activePlayer) return;
 
-        const deathEffectDef = GameObjectDefs[deathEffectType] as DeathEffectDef | undefined;
+        const deathEffectDef = GameObjectDefs[deathEffectType] as
+            | DeathEffectDef
+            | undefined;
         if (!deathEffectDef) return;
 
-        if (deathEffectDef.isParticle === false && deathEffectDef.sprites && deathEffectDef.sprites.length > 0) {
+        if (
+            deathEffectDef.isParticle === false &&
+            deathEffectDef.sprites &&
+            deathEffectDef.sprites.length > 0
+        ) {
             const textures: PIXI.Texture[] = [];
             for (let i = 0; i < deathEffectDef.sprites.length; i++) {
                 const texture = PIXI.Texture.from(deathEffectDef.sprites[i]);
                 textures.push(texture);
             }
-            
+
             this.deathEffectSprite.textures = textures;
             this.deathEffectContainer.position.set(
                 this.activePlayer.container.position.x,
-                this.activePlayer.container.position.y
+                this.activePlayer.container.position.y,
             );
             this.deathEffectContainer.addChild(this.deathEffectSprite);
-            
+
             this.deathEffectSprite.anchor.set(0.5, 0.5);
             this.deathEffectSprite.scale.set(
                 deathEffectDef.animationScale ?? 1.0,
-                deathEffectDef.animationScale ?? 1.0
+                deathEffectDef.animationScale ?? 1.0,
             );
             this.deathEffectSprite.animationSpeed = deathEffectDef.animationSpeed ?? 0.15;
             this.deathEffectSprite.loop = false;
-            
+
             this.deathEffectSprite.position.set(0, 0);
             this.deathEffectSprite.visible = true;
             this.deathEffectSprite.gotoAndPlay(0);
-            
+
             this.renderer.addPIXIObj(
-                this.deathEffectContainer, 
-                this.activePlayer.layer, 
-                20, 
-                0
+                this.deathEffectContainer,
+                this.activePlayer.layer,
+                20,
+                0,
             );
-            
+
             this.deathEffectSprite.onComplete = () => {
                 this.deathEffectSprite.visible = false;
                 this.deathEffectContainer.removeChild(this.deathEffectSprite);
@@ -292,7 +300,7 @@ export class LoadoutDisplay {
             if (deathEffectDef.particleCount === 0) {
                 return;
             }
-            
+
             const particleType = deathEffectDef.particle ?? "deathSplash";
             const minParticles = deathEffectDef.minParticles ?? 30;
             const maxParticles = deathEffectDef.maxParticles ?? 35;

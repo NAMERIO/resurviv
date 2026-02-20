@@ -1117,13 +1117,13 @@ const BaseDefs: Record<string, MeleeDef> = {
         anim: {
             idlePose: "meleeLasrSwrd",
             attackAnims: ["lasrSwrdSwing"],
-            poseAnims: ["lasrSwrd_pose_1", "lasrSwrd_pose_2", "lasrSwrd_pose_3"]
+            poseAnims: ["lasrSwrd_pose_1", "lasrSwrd_pose_2", "lasrSwrd_pose_3"],
         },
         sound: {
             pickup: "frag_pickup_01",
             swing: "lasr_swing_01",
             deploy: "stow_weapon_01",
-            playerHit: "lasr_hit_01"
+            playerHit: "lasr_hit_01",
         },
         lootImg: {
             sprite: "loot-melee-lasr-sword-01.img",
@@ -1144,8 +1144,8 @@ const BaseDefs: Record<string, MeleeDef> = {
         },
         reflectArea: {
             offset: { x: 1.75, y: 0.0 },
-            rad: 1
-        }
+            rad: 1,
+        },
     },
 };
 

@@ -804,7 +804,7 @@ export class Player implements AbstractObject {
         }
         const off = v2.add(
             meleeDef.reflectArea.offset,
-            v2.mul(v2.create(1, 0), this.m_netData.m_scale - 1)
+            v2.mul(v2.create(1, 0), this.m_netData.m_scale - 1),
         );
 
         const pos = v2.add(this.m_pos, v2.rotate(off, ang));
@@ -1750,12 +1750,14 @@ export class Player implements AbstractObject {
         const handTint = outfitDef.ghillie
             ? map.getMapDef().biome.colors.playerGhillie
             : outfitImg.handTint;
-        
+
         // Use meleeSkin for hand sprites (fist skins)
         const meleeSkinType = this.m_netData.m_meleeSkin;
-        const meleeSkinDef = meleeSkinType ? (GameObjectDefs[meleeSkinType] as MeleeDef) : undefined;
+        const meleeSkinDef = meleeSkinType
+            ? (GameObjectDefs[meleeSkinType] as MeleeDef)
+            : undefined;
         const meleeHandSprites = meleeSkinDef?.handSprites;
-        
+
         if (meleeHandSprites && !outfitDef.ghillie) {
             setHandSprite(this.handLSprite, meleeHandSprites.spriteL, 0xffffff);
             setHandSprite(this.handRSprite, meleeHandSprites.spriteR, 0xffffff);
@@ -3241,7 +3243,7 @@ export class PlayerBarn {
         const target = this.getPlayerById(targetId);
         const killer = this.getPlayerById(killerId);
         const targetInfo = this.getPlayerInfo(targetId);
-        
+
         if (target) {
             audioManager.playGroup("player_bullet_hit", {
                 soundPos: target.m_pos,
@@ -3249,7 +3251,7 @@ export class PlayerBarn {
                 muffled: true,
             });
         }
-        
+
         if (target && killer?.m_hasPerk("turkey_shoot")) {
             audioManager.playGroup("cluck", {
                 soundPos: target.m_pos,
@@ -3276,18 +3278,20 @@ export class PlayerBarn {
             const numParticles = Math.floor(util.random(30, 35));
             for (let i = 0; i < numParticles; i++) {
                 const vel = v2.mul(v2.randomUnit(), util.random(5, 15));
-                particleBarn.addParticle(
-                    "cupidDeath",
-                    target.layer,
-                    target.m_pos,
-                    vel,
-                );
+                particleBarn.addParticle("cupidDeath", target.layer, target.m_pos, vel);
             }
         } else if (target) {
             // Get death effect from player's loadout
             const deathEffectType = targetInfo?.loadout?.death_effect || "death_basic";
-            const deathEffectDef = GameObjectDefs[deathEffectType] as DeathEffectDef | undefined;
-            if (deathEffectDef && deathEffectDef.isParticle === false && deathEffectDef.sprites && deathEffectDef.sprites.length > 0) {
+            const deathEffectDef = GameObjectDefs[deathEffectType] as
+                | DeathEffectDef
+                | undefined;
+            if (
+                deathEffectDef &&
+                deathEffectDef.isParticle === false &&
+                deathEffectDef.sprites &&
+                deathEffectDef.sprites.length > 0
+            ) {
                 const textures: PIXI.Texture[] = [];
                 for (let i = 0; i < deathEffectDef.sprites.length; i++) {
                     const texture = PIXI.Texture.from(deathEffectDef.sprites[i]);
@@ -3296,37 +3300,43 @@ export class PlayerBarn {
                 target.deathEffectSprite.textures = textures;
                 target.deathEffectContainer.position.set(
                     target.container.position.x,
-                    target.container.position.y
+                    target.container.position.y,
                 );
                 target.deathEffectContainer.addChild(target.deathEffectSprite);
-                
+
                 target.deathEffectSprite.anchor.set(0.5, 0.5);
                 target.deathEffectSprite.scale.set(
                     deathEffectDef.animationScale ?? 1.0,
-                    deathEffectDef.animationScale ?? 1.0
+                    deathEffectDef.animationScale ?? 1.0,
                 );
-                target.deathEffectSprite.animationSpeed = deathEffectDef.animationSpeed ?? 0.15;
+                target.deathEffectSprite.animationSpeed =
+                    deathEffectDef.animationSpeed ?? 0.15;
                 target.deathEffectSprite.loop = false;
-                
+
                 target.deathEffectSprite.position.set(0, 0);
                 target.deathEffectSprite.visible = true;
                 target.deathEffectSprite.gotoAndPlay(0);
-                
-                renderer.addPIXIObj(target.deathEffectContainer, target.renderLayer, target.renderZOrd, target.renderZIdx);
-                
+
+                renderer.addPIXIObj(
+                    target.deathEffectContainer,
+                    target.renderLayer,
+                    target.renderZOrd,
+                    target.renderZIdx,
+                );
+
                 target.deathEffectSprite.onComplete = () => {
                     target.deathEffectSprite.visible = false;
                 };
             } else {
                 // Check if this is a "no effect" death (particleCount === 0)
                 if (deathEffectDef?.particleCount === 0) {
-                    return; 
+                    return;
                 }
-                
+
                 const particleType = deathEffectDef?.particle ?? "deathSplash";
                 const minParticles = deathEffectDef?.minParticles ?? 30;
                 const maxParticles = deathEffectDef?.maxParticles ?? 35;
-                
+
                 const numParticles = Math.floor(util.random(minParticles, maxParticles));
                 for (let i = 0; i < numParticles; i++) {
                     const vel = v2.mul(v2.randomUnit(), util.random(5, 15));

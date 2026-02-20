@@ -36,8 +36,8 @@ import {
 import { db } from "../../db";
 import {
     clanLeaveHistoryTable,
-    clanMembersTable,
     clanMemberStatsTable,
+    clanMembersTable,
     clansTable,
     usersTable,
 } from "../../db/schema";
@@ -171,8 +171,7 @@ ClanRouter.post("/my_clan", async (c) => {
     return c.json<GetMyClanResponse>({
         success: true,
         clan,
-        cooldownUntil:
-            cooldownUntil && cooldownUntil > Date.now() ? cooldownUntil : null,
+        cooldownUntil: cooldownUntil && cooldownUntil > Date.now() ? cooldownUntil : null,
     });
 });
 
@@ -193,10 +192,7 @@ ClanRouter.post("/create", validateParams(zCreateClanRequest), async (c) => {
 
     const { validName, originalWasInvalid } = validateUserName(name);
     if (originalWasInvalid) {
-        return c.json<CreateClanResponse>(
-            { success: false, error: "invalid_name" },
-            400,
-        );
+        return c.json<CreateClanResponse>({ success: false, error: "invalid_name" }, 400);
     }
 
     const slug = sanitizeClanSlug(validName);
@@ -205,10 +201,7 @@ ClanRouter.post("/create", validateParams(zCreateClanRequest), async (c) => {
     });
 
     if (existingClan) {
-        return c.json<CreateClanResponse>(
-            { success: false, error: "name_taken" },
-            400,
-        );
+        return c.json<CreateClanResponse>({ success: false, error: "name_taken" }, 400);
     }
 
     const [newClan] = await db
@@ -277,10 +270,7 @@ ClanRouter.post("/join", validateParams(zJoinClanRequest), async (c) => {
     });
 
     if (!clan) {
-        return c.json<JoinClanResponse>(
-            { success: false, error: "clan_not_found" },
-            404,
-        );
+        return c.json<JoinClanResponse>({ success: false, error: "clan_not_found" }, 404);
     }
 
     const memberCount = await db
@@ -317,10 +307,7 @@ ClanRouter.post("/leave", async (c) => {
     });
 
     if (!membership) {
-        return c.json<LeaveClanResponse>(
-            { success: false, error: "not_in_clan" },
-            400,
-        );
+        return c.json<LeaveClanResponse>({ success: false, error: "not_in_clan" }, 400);
     }
 
     const clan = await db.query.clansTable.findFirst({
@@ -342,7 +329,6 @@ ClanRouter.post("/leave", async (c) => {
                 eq(clanMembersTable.userId, user.id),
             ),
         );
-
 
     await db
         .delete(clanMemberStatsTable)
@@ -369,10 +355,7 @@ ClanRouter.post("/kick", validateParams(zKickMemberRequest), async (c) => {
     });
 
     if (!membership) {
-        return c.json<KickMemberResponse>(
-            { success: false, error: "not_owner" },
-            403,
-        );
+        return c.json<KickMemberResponse>({ success: false, error: "not_owner" }, 403);
     }
 
     const clan = await db.query.clansTable.findFirst({
@@ -380,10 +363,7 @@ ClanRouter.post("/kick", validateParams(zKickMemberRequest), async (c) => {
     });
 
     if (!clan || clan.ownerId !== user.id) {
-        return c.json<KickMemberResponse>(
-            { success: false, error: "not_owner" },
-            403,
-        );
+        return c.json<KickMemberResponse>({ success: false, error: "not_owner" }, 403);
     }
 
     if (memberId === user.id) {
@@ -583,10 +563,7 @@ ClanRouter.post("/get", validateParams(zGetClanRequest), async (c) => {
     const clan = await getClanDetail(clanId);
 
     if (!clan) {
-        return c.json<GetClanResponse>(
-            { success: false, error: "clan_not_found" },
-            404,
-        );
+        return c.json<GetClanResponse>({ success: false, error: "clan_not_found" }, 404);
     }
 
     return c.json<GetClanResponse>({ success: true, clan });

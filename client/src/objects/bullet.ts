@@ -335,10 +335,18 @@ export class BulletBarn {
                         if (player.m_hasActiveLasrSwrd()) {
                             const p = player;
                             const area = p.m_getLasrSwrdReflectArea();
-                            const intersection = coldet.intersectSegmentCircle(posOld, b.pos, area.pos, area.rad);
+                            const intersection = coldet.intersectSegmentCircle(
+                                posOld,
+                                b.pos,
+                                area.pos,
+                                area.rad,
+                            );
 
                             if (intersection) {
-                                laserCollision = { point: intersection.point, normal: intersection.normal };
+                                laserCollision = {
+                                    point: intersection.point,
+                                    normal: intersection.normal,
+                                };
                                 p.changeLasrSwrdPose();
                             }
                         }
@@ -358,7 +366,11 @@ export class BulletBarn {
                             ? v2.length(v2.sub(laserCollision.point, b.startPos))
                             : Infinity;
 
-                        const minDist = Math.min(playerCollisionDist, panCollisionDist, laserCollisionDist);
+                        const minDist = Math.min(
+                            playerCollisionDist,
+                            panCollisionDist,
+                            laserCollisionDist,
+                        );
 
                         if (minDist === playerCollisionDist && collision) {
                             colObjs.push({
@@ -372,7 +384,10 @@ export class BulletBarn {
                             if (player.m_hasPerk("steelskin")) {
                                 colObjs.push({
                                     type: "pan",
-                                    point: v2.add(collision.point, v2.mul(collision.normal, 0.1)),
+                                    point: v2.add(
+                                        collision.point,
+                                        v2.mul(collision.normal, 0.1),
+                                    ),
                                     normal: collision.normal,
                                     layer: player.layer,
                                     collidable: false,
@@ -389,7 +404,10 @@ export class BulletBarn {
                         } else if (minDist === laserCollisionDist && laserCollision) {
                             colObjs.push({
                                 type: "lasr_swrd",
-                                point: v2.add(laserCollision.point, v2.mul(laserCollision.normal, 0.1)),
+                                point: v2.add(
+                                    laserCollision.point,
+                                    v2.mul(laserCollision.normal, 0.1),
+                                ),
                                 normal: laserCollision.normal,
                                 layer: player.layer,
                                 collidable: true,

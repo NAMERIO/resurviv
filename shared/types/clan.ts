@@ -34,7 +34,12 @@ export const zTransferOwnershipRequest = z.object({
 export type TransferOwnershipRequest = z.infer<typeof zTransferOwnershipRequest>;
 
 export const zUpdateClanRequest = z.object({
-    name: z.string().trim().min(ClanConstants.NameMinLen).max(ClanConstants.NameMaxLen).optional(),
+    name: z
+        .string()
+        .trim()
+        .min(ClanConstants.NameMinLen)
+        .max(ClanConstants.NameMaxLen)
+        .optional(),
     icon: z.string().min(1).optional(),
 });
 export type UpdateClanRequest = z.infer<typeof zUpdateClanRequest>;
@@ -92,11 +97,23 @@ export type ClanDetail = ClanInfo & {
 
 export type CreateClanResponse =
     | { success: true; clan: ClanInfo }
-    | { success: false; error: "name_taken" | "invalid_name" | "already_in_clan" | "server_error" };
+    | {
+          success: false;
+          error: "name_taken" | "invalid_name" | "already_in_clan" | "server_error";
+      };
 
 export type JoinClanResponse =
     | { success: true; clan: ClanInfo }
-    | { success: false; error: "clan_not_found" | "clan_full" | "already_in_clan" | "cooldown_active" | "server_error"; cooldownRemaining?: number };
+    | {
+          success: false;
+          error:
+              | "clan_not_found"
+              | "clan_full"
+              | "already_in_clan"
+              | "cooldown_active"
+              | "server_error";
+          cooldownRemaining?: number;
+      };
 
 export type LeaveClanResponse =
     | { success: true }
@@ -104,7 +121,10 @@ export type LeaveClanResponse =
 
 export type KickMemberResponse =
     | { success: true }
-    | { success: false; error: "not_owner" | "member_not_found" | "cannot_kick_self" | "server_error" };
+    | {
+          success: false;
+          error: "not_owner" | "member_not_found" | "cannot_kick_self" | "server_error";
+      };
 
 export type TransferOwnershipResponse =
     | { success: true }
@@ -112,7 +132,10 @@ export type TransferOwnershipResponse =
 
 export type UpdateClanResponse =
     | { success: true; clan: ClanDetail }
-    | { success: false; error: "not_owner" | "name_taken" | "invalid_name" | "server_error" };
+    | {
+          success: false;
+          error: "not_owner" | "name_taken" | "invalid_name" | "server_error";
+      };
 
 export type DeleteClanResponse =
     | { success: true }

@@ -12,8 +12,8 @@ import { SavannahAtlas } from "./defs/savannah";
 import { SharedAtlas } from "./defs/shared";
 import { SnowAtlas } from "./defs/snow";
 import { TurkeyAtlas } from "./defs/turkey";
-import { WoodsAtlas } from "./defs/woods";
 import { ValentineAtlas } from "./defs/valentine";
+import { WoodsAtlas } from "./defs/woods";
 // import { MayAtlas } from "./defs/may";
 
 export interface AtlasDef {

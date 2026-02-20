@@ -1157,7 +1157,10 @@ export class LoadoutMenu {
         }
 
         // Play death effect preview when selecting a death effect
-        if (this.selectedItem.loadoutType == "death_effect" && this.loadoutDisplay?.initialized) {
+        if (
+            this.selectedItem.loadoutType == "death_effect" &&
+            this.loadoutDisplay?.initialized
+        ) {
             this.loadoutDisplay.playDeathEffectPreview(this.selectedItem.type);
         }
     }

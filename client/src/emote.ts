@@ -749,7 +749,11 @@ export class EmoteBarn {
             e.channel = emoteData.channel;
 
             // Handle animated emotes (surviv.io style)
-            if (emoteData.isAnimated && emoteData.sprites && emoteData.sprites.length > 0) {
+            if (
+                emoteData.isAnimated &&
+                emoteData.sprites &&
+                emoteData.sprites.length > 0
+            ) {
                 const textures: PIXI.Texture[] = [];
                 for (let j = 0; j < emoteData.sprites.length; j++) {
                     textures.push(PIXI.Texture.from(emoteData.sprites[j]));

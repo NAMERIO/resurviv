@@ -144,7 +144,7 @@ class Application {
             this.siteInfo.load();
             this.localization.localizeIndex();
             this.account.init();
-            
+
             // Initialize ProfileUi after DOM is ready
             this.profileUi = new ProfileUi(
                 this.account,

@@ -63,7 +63,7 @@ export enum Anim {
     CrawlBackward,
     Revive,
     Count,
-    ChangePose
+    ChangePose,
 }
 
 export enum Plane {

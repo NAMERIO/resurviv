@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
     bigint,
     boolean,
@@ -11,7 +12,6 @@ import {
     uniqueIndex,
     uuid,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
 import { TeamMode } from "../../../../shared/gameConfig";
 import { ItemStatus, type Loadout, loadout } from "../../../../shared/utils/loadout";
 

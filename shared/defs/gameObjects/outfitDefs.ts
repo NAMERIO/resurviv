@@ -1601,7 +1601,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     }),
 
     // ============ GENERATED OUTFITS ============
-outfitWhiteDay: defineOutfitSkin("outfitBase", {
+    outfitWhiteDay: defineOutfitSkin("outfitBase", {
         name: "Marshmallow Suit",
         rarity: 0,
         skinImg: {
@@ -1613,7 +1613,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-02.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-white-day.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-whiteDay.img",
@@ -1624,10 +1623,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitGeometric: defineOutfitSkin("outfitBase", {
         name: "Geometric",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         lore: "What a square.",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-outfitGeometric.img",
@@ -1637,7 +1636,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-02.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-geometric.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitGeometric.img",
@@ -1648,10 +1646,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitMilitary: defineOutfitSkin("outfitBase", {
         name: "Military",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         lore: "Hide now.",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-outfitMilitary.img",
@@ -1661,7 +1659,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-02.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-military.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitMilitary.img",
@@ -1672,7 +1669,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitSunset: defineOutfitSkin("outfitBase", {
         name: "Sunset",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         skinImg: {
             baseTint: 0xffffff,
@@ -1683,7 +1680,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-sunset.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitSunset.img",
@@ -1694,7 +1690,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitDeepPurple: defineOutfitSkin("outfitBase", {
         name: "Deep Purple",
         noDropOnDeath: true,
-        
+
         rarity: 1,
         skinImg: {
             baseTint: 0xffffff,
@@ -1705,7 +1701,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-deep-purple.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitDeepPurple.img",
@@ -1716,7 +1711,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitSplotchfest: defineOutfitSkin("outfitBase", {
         name: "Splotchfest",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -1727,7 +1722,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-splotchfest.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitSplotchfest.img",
@@ -1738,7 +1732,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitClaymore: defineOutfitSkin("outfitBase", {
         name: "Clay More",
         noDropOnDeath: true,
-        
+
         rarity: 1,
         skinImg: {
             baseTint: 0xffffff,
@@ -1749,7 +1743,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-clay-more.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitClayMore.img",
@@ -1760,10 +1753,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitRusticSands: defineOutfitSkin("outfitBase", {
         name: "Rustic Sands",
         noDropOnDeath: true,
-        
+
         rarity: 1,
         lore: "Created by FrankzeeTank",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-rustic-sands.img",
@@ -1773,7 +1766,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-rustic-sands.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitRusticSands.img",
@@ -1784,10 +1776,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitWaves: defineOutfitSkin("outfitBase", {
         name: "Waves",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         lore: "Created by Fonpard",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-outfitWaves.img",
@@ -1797,7 +1789,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-waves.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitWaves.img",
@@ -1808,7 +1799,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitUrbanCamo: defineOutfitSkin("outfitBase", {
         name: "Urban Camo",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         skinImg: {
             baseTint: 0xffffff,
@@ -1819,7 +1810,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-urban-camo.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitUrbanCamo.img",
@@ -1830,10 +1820,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitNeonEyesore: defineOutfitSkin("outfitBase", {
         name: "Neon Eyesore",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         lore: "Created by Savage_Wuhan (Jerrie123)",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-neon.img",
@@ -1843,7 +1833,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-neon.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitNeonEyesore.img",
@@ -1854,7 +1843,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitGiraffe: defineOutfitSkin("outfitBase", {
         name: "Giraffe",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -1865,7 +1854,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-giraffe.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitGiraffe.img",
@@ -1876,7 +1864,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitCow: defineOutfitSkin("outfitBase", {
         name: "Cow",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -1887,7 +1875,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-cow.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitCow.img",
@@ -1898,7 +1885,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitMojo: defineOutfitSkin("outfitBase", {
         name: "Mojo",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -1909,7 +1896,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-mojo.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitMojo.img",
@@ -1920,7 +1906,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitZebra: defineOutfitSkin("outfitBase", {
         name: "Zebra",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -1931,7 +1917,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-zebra.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitZebra.img",
@@ -1942,7 +1927,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitAstronaut: defineOutfitSkin("outfitBase", {
         name: "Astronaut",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -1965,7 +1950,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitDiamondy: defineOutfitSkin("outfitBase", {
         name: "Diamondy",
         noDropOnDeath: true,
-        
+
         rarity: 5,
         skinImg: {
             baseTint: 0xffffff,
@@ -1988,7 +1973,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitMecha: defineOutfitSkin("outfitBase", {
         name: "Mecha",
         noDropOnDeath: true,
-        
+
         rarity: 5,
         skinImg: {
             baseTint: 0xffffff,
@@ -2029,7 +2014,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-speedo.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-speedo.img",
@@ -2040,7 +2024,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitBlueLava: defineOutfitSkin("outfitBase", {
         name: "BlueLava",
         noDropOnDeath: true,
-        
+
         rarity: 5,
         skinImg: {
             baseTint: 0xffffff,
@@ -2051,7 +2035,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-circle-base-outfitBlueLava.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitBlueLava.img",
@@ -2062,7 +2045,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitInfernoCamo: defineOutfitSkin("outfitBase", {
         name: "Inferno Camo",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -2073,7 +2056,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-magma-camo.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitInferno.img",
@@ -2084,10 +2066,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitMango: defineOutfitSkin("outfitBase", {
         name: "Mango",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         lore: "Created by Calieh",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-outfitMango.img",
@@ -2097,7 +2079,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-smoothie.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-outfitMango.img",
@@ -2108,10 +2089,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitParrot: defineOutfitSkin("outfitBase", {
         name: "Parrot",
         noDropOnDeath: true,
-        
+
         rarity: 1,
         lore: "Created by Mxstyc",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-parrot.img",
@@ -2121,7 +2102,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-parrot.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-parrot.img",
@@ -2132,10 +2112,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitCrusader: defineOutfitSkin("outfitBase", {
         name: "Crusader",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         lore: "Created by avika",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-crusader.img",
@@ -2145,7 +2125,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-crusader.img",
-            
         },
         lootImg: {
             sprite: "loot-crusader-outfit.img",
@@ -2156,7 +2135,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitLasrDisk: defineOutfitSkin("outfitBase", {
         name: "Lasr Disk",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -2167,7 +2146,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-lasr-disk.img",
-            
         },
         lootImg: {
             sprite: "loot-lasr-disk-outfit.img",
@@ -2178,7 +2156,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitBeachCamo: defineOutfitSkin("outfitBase", {
         name: "Beach Camo",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -2189,7 +2167,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-beach-camo.img",
-            
         },
         lootImg: {
             sprite: "loot-beach-camo-outfit.img",
@@ -2200,7 +2177,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitForest: defineOutfitSkin("outfitBase", {
         name: "Forest",
         noDropOnDeath: true,
-        
+
         rarity: 1,
         skinImg: {
             baseTint: 0xffffff,
@@ -2211,7 +2188,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-forest.img",
-            
         },
         lootImg: {
             sprite: "loot-forest-outfit.img",
@@ -2222,7 +2198,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitGingerbread: defineOutfitSkin("outfitBase", {
         name: "Gingerbread",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -2233,7 +2209,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-gingerbread.img",
-            
         },
         lootImg: {
             sprite: "loot-gingerbread-outfit.img",
@@ -2244,10 +2219,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitVenom: defineOutfitSkin("outfitBase", {
         name: "Venom",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         lore: "Created by CaptainPoultry",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-venom.img",
@@ -2257,7 +2232,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-venom.img",
-            
         },
         lootImg: {
             sprite: "loot-venom-outfit.img",
@@ -2268,7 +2242,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitBlueMecha: defineOutfitSkin("outfitBase", {
         name: "Blue Mecha",
         noDropOnDeath: true,
-        
+
         rarity: 5,
         skinImg: {
             baseTint: 0xffffff,
@@ -2279,7 +2253,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-blue-mecha.img",
-            
         },
         lootImg: {
             sprite: "loot-blue-mecha-outfit.img",
@@ -2290,10 +2263,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitEventHorizon: defineOutfitSkin("outfitBase", {
         name: "Event Horizon",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         lore: "Created by Roamer",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-event-horizon.img",
@@ -2303,7 +2276,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-event-horizon.img",
-            
         },
         lootImg: {
             sprite: "loot-event-horizon-outfit.img",
@@ -2323,7 +2295,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-christmas-tree.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-christmastree.img",
@@ -2345,7 +2316,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-yin-yang.img",
-            
         },
         lootImg: {
             sprite: "loot-yin-yang-outfit.img",
@@ -2356,7 +2326,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitTiki: defineOutfitSkin("outfitBase", {
         name: "Tiki",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -2367,7 +2337,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-tiki.img",
-            
         },
         lootImg: {
             sprite: "loot-tiki-outfit.img",
@@ -2378,7 +2347,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitMachoLucha2: defineOutfitSkin("outfitBase", {
         name: "Macho Lucha",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -2389,7 +2358,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "macho-lucha-back.img",
-            
         },
         lootImg: {
             sprite: "loot-macho-lucha-outfit.img",
@@ -2400,7 +2368,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitCalaca: defineOutfitSkin("outfitBase", {
         name: "Calaca",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -2411,7 +2379,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-calaca.img",
-            
         },
         lootImg: {
             sprite: "loot-shirt-calaca.img",
@@ -2422,10 +2389,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitSortaBlue: defineOutfitSkin("outfitBase", {
         name: "Sorta Blue",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         lore: "Created by StraightUpFoReal",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-sorta-blue.img",
@@ -2435,7 +2402,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-sorta-blue.img",
-            
         },
         lootImg: {
             sprite: "loot-sorta-blue-outfit.img",
@@ -2446,10 +2412,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitMellow: defineOutfitSkin("outfitBase", {
         name: "Mellow",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         lore: "Created by Jabari",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-mellow.img",
@@ -2459,7 +2425,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-mellow.img",
-            
         },
         lootImg: {
             sprite: "loot-mellow-outfit.img",
@@ -2470,7 +2435,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitBengal: defineOutfitSkin("outfitBase", {
         name: "Bengal",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -2481,7 +2446,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-bengal.img",
-            
         },
         lootImg: {
             sprite: "loot-bengal-outfit.img",
@@ -2492,10 +2456,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitUnderbrush: defineOutfitSkin("outfitBase", {
         name: "Underbrush",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         lore: "Created by Mxstyc",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-underbrush.img",
@@ -2505,7 +2469,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-underbrush.img",
-            
         },
         lootImg: {
             sprite: "loot-underbrush-outfit.img",
@@ -2516,7 +2479,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitMagmatic: defineOutfitSkin("outfitBase", {
         name: "Magmatic",
         noDropOnDeath: true,
-        
+
         rarity: 5,
         skinImg: {
             baseTint: 0xffffff,
@@ -2527,7 +2490,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-magmatic.img",
-            
         },
         lootImg: {
             sprite: "loot-magmatic-outfit.img",
@@ -2538,7 +2500,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitPurpleMecha: defineOutfitSkin("outfitBase", {
         name: "Purple Mecha",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -2549,7 +2511,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-purple-mecha.img",
-            
         },
         lootImg: {
             sprite: "loot-purple-mecha-outfit.img",
@@ -2560,10 +2521,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitRosePetals: defineOutfitSkin("outfitBase", {
         name: "Rose Petals",
         noDropOnDeath: true,
-        
+
         rarity: 1,
         lore: "Created by DotDot",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-rose-petals.img",
@@ -2573,7 +2534,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-rose-petals.img",
-            
         },
         lootImg: {
             sprite: "loot-rose-petals-outfit.img",
@@ -2584,7 +2544,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitViper: defineOutfitSkin("outfitBase", {
         name: "Viper",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         skinImg: {
             baseTint: 0xffffff,
@@ -2595,7 +2555,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-viper.img",
-            
         },
         lootImg: {
             sprite: "loot-viper-outfit.img",
@@ -2606,7 +2565,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitFullCircle: defineOutfitSkin("outfitBase", {
         name: "Full Circle",
         noDropOnDeath: true,
-        
+
         rarity: 1,
         skinImg: {
             baseTint: 0xffffff,
@@ -2617,7 +2576,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-full-circle.img",
-            
         },
         lootImg: {
             sprite: "loot-full-circle-outfit.img",
@@ -2628,7 +2586,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitPleasingPart: defineOutfitSkin("outfitBase", {
         name: "Pleasing Part",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         skinImg: {
             baseTint: 0xffffff,
@@ -2639,7 +2597,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-pleasing-part.img",
-            
         },
         lootImg: {
             sprite: "loot-pleasing-part-outfit.img",
@@ -2650,7 +2607,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitItJustMist: defineOutfitSkin("outfitBase", {
         name: "It Just Mist",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         skinImg: {
             baseTint: 0xffffff,
@@ -2661,7 +2618,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-it-just-mist.img",
-            
         },
         lootImg: {
             sprite: "loot-it-just-mist-outfit.img",
@@ -2672,7 +2628,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitOneInAMelon: defineOutfitSkin("outfitBase", {
         name: "One In A Melon",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -2683,7 +2639,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-one-in-a-melon.img",
-            
         },
         lootImg: {
             sprite: "loot-one-in-a-melon-outfit.img",
@@ -2694,7 +2649,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitColdestEdge: defineOutfitSkin("outfitBase", {
         name: "Coldest Edge",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -2705,7 +2660,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-coldest-edge.img",
-            
         },
         lootImg: {
             sprite: "loot-coldest-edge-outfit.img",
@@ -2716,7 +2670,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitRetroSunset: defineOutfitSkin("outfitBase", {
         name: "Retro Sunset",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -2727,7 +2681,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-retro-sunset.img",
-            
         },
         lootImg: {
             sprite: "loot-retro-sunset-outfit.img",
@@ -2738,7 +2691,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitBoet: defineOutfitSkin("outfitBase", {
         name: "Boet",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -2749,7 +2702,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-boet.img",
-            
         },
         lootImg: {
             sprite: "loot-boet-outfit.img",
@@ -2760,7 +2712,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitOldKumo: defineOutfitSkin("outfitBase", {
         name: "Old Kumo",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -2771,7 +2723,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-old-kumo.img",
-            
         },
         lootImg: {
             sprite: "loot-old-kumo-outfit.img",
@@ -2782,7 +2733,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitPanteraOnca: defineOutfitSkin("outfitBase", {
         name: "Pantera Onca",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         skinImg: {
             baseTint: 0xffffff,
@@ -2793,7 +2744,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-pantera-onca.img",
-            
         },
         lootImg: {
             sprite: "loot-pantera-onca-outfit.img",
@@ -2804,7 +2754,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitTipTheScales: defineOutfitSkin("outfitBase", {
         name: "Tip The Scales",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -2815,7 +2765,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-tip-the-scales.img",
-            
         },
         lootImg: {
             sprite: "loot-tip-the-scales-outfit.img",
@@ -2826,7 +2775,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitAvocadoh: defineOutfitSkin("outfitBase", {
         name: "Avocadoh",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -2837,7 +2786,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-avocadoh.img",
-            
         },
         lootImg: {
             sprite: "loot-avocadoh-outfit.img",
@@ -2848,7 +2796,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitEggnite: defineOutfitSkin("outfitBase", {
         name: "Eggnite",
         noDropOnDeath: true,
-        
+
         rarity: 5,
         skinImg: {
             baseTint: 0xffffff,
@@ -2859,7 +2807,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-eggnite.img",
-            
         },
         lootImg: {
             sprite: "loot-eggnite-outfit.img",
@@ -2870,7 +2817,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitSunburn: defineOutfitSkin("outfitBase", {
         name: "Sunburn",
         noDropOnDeath: true,
-        
+
         rarity: 1,
         skinImg: {
             baseTint: 0xffffff,
@@ -2881,7 +2828,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-sunburn.img",
-            
         },
         lootImg: {
             sprite: "loot-sunburn-outfit.img",
@@ -2892,7 +2838,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitElectricIce: defineOutfitSkin("outfitBase", {
         name: "Electric Ice",
         noDropOnDeath: true,
-        
+
         rarity: 1,
         skinImg: {
             baseTint: 0xffffff,
@@ -2903,7 +2849,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-electric-ice.img",
-            
         },
         lootImg: {
             sprite: "loot-electric-ice-outfit.img",
@@ -2914,10 +2859,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitBubblegum: defineOutfitSkin("outfitBase", {
         name: "Bubblegum",
         noDropOnDeath: true,
-        
+
         rarity: 1,
         lore: "Created by Thefatchicken",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-bubblegum.img",
@@ -2927,7 +2872,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-bubblegum.img",
-            
         },
         lootImg: {
             sprite: "loot-bubblegum-outfit.img",
@@ -2938,7 +2882,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitGaudisque: defineOutfitSkin("outfitBase", {
         name: "Gaudisque",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         skinImg: {
             baseTint: 0xffffff,
@@ -2949,7 +2893,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-gaudisque.img",
-            
         },
         lootImg: {
             sprite: "loot-gaudisque-outfit.img",
@@ -2960,10 +2903,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitStarflag: defineOutfitSkin("outfitBase", {
         name: "Starflag",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         lore: "Created by Saksham",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-starflag.img",
@@ -2973,7 +2916,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-starflag.img",
-            
         },
         lootImg: {
             sprite: "loot-starflag-outfit.img",
@@ -2984,10 +2926,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitGridflag: defineOutfitSkin("outfitBase", {
         name: "Gridflag",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         lore: "Created by Saksham",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-gridflag.img",
@@ -2997,7 +2939,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-gridflag.img",
-            
         },
         lootImg: {
             sprite: "loot-gridflag-outfit.img",
@@ -3008,10 +2949,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitToxicBarrel: defineOutfitSkin("outfitBase", {
         name: "Toxic Barrel",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         lore: "Created by gtFlamez",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-toxic-barrel.img",
@@ -3021,7 +2962,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-toxic-barrel.img",
-            
         },
         lootImg: {
             sprite: "loot-toxic-barrel-outfit.img",
@@ -3032,10 +2972,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitBlueZone: defineOutfitSkin("outfitBase", {
         name: "Blue Zone",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         lore: "Created by JFKWhite",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-blue-zone.img",
@@ -3045,7 +2985,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-blue-zone.img",
-            
         },
         lootImg: {
             sprite: "loot-blue-zone-outfit.img",
@@ -3056,7 +2995,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitStumpd: defineOutfitSkin("outfitBase", {
         name: "Stumpd",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -3067,7 +3006,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-stumpd.img",
-            
         },
         lootImg: {
             sprite: "loot-stumpd-outfit.img",
@@ -3078,7 +3016,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitDigiturt: defineOutfitSkin("outfitBase", {
         name: "Digiturt",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -3089,7 +3027,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-digiturt.img",
-            
         },
         lootImg: {
             sprite: "loot-digiturt-outfit.img",
@@ -3100,10 +3037,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitMelonWater: defineOutfitSkin("outfitBase", {
         name: "MelonWater",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         lore: "Created by Tyler I.",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-melonwater.img",
@@ -3113,7 +3050,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-melonwater.img",
-            
         },
         lootImg: {
             sprite: "loot-melonwater-outfit.img",
@@ -3124,7 +3060,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitStarryNight: defineOutfitSkin("outfitBase", {
         name: "Starry Night",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -3135,7 +3071,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-starry-night.img",
-            
         },
         lootImg: {
             sprite: "loot-starry-night-outfit.img",
@@ -3146,7 +3081,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitStreetArt: defineOutfitSkin("outfitBase", {
         name: "Street Art",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -3157,7 +3092,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-street-art.img",
-            
         },
         lootImg: {
             sprite: "loot-street-art-outfit.img",
@@ -3168,7 +3102,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitNorseCode: defineOutfitSkin("outfitBase", {
         name: "Norse Code",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -3179,7 +3113,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-norse-code.img",
-            
         },
         lootImg: {
             sprite: "loot-norse-code-outfit.img",
@@ -3190,10 +3123,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitILavaYou: defineOutfitSkin("outfitBase", {
         name: "I Lava You",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         lore: "Created by NeDmik",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-i-lava-you.img",
@@ -3215,10 +3148,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitKingGalaxy: defineOutfitSkin("outfitBase", {
         name: "King Galaxy",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         lore: "Created by AMBUSH",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-king-galaxy.img",
@@ -3240,7 +3173,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitJuleVerny: defineOutfitSkin("outfitBase", {
         name: "Jule Verny",
         noDropOnDeath: true,
-        
+
         rarity: 5,
         skinImg: {
             baseTint: 0xffffff,
@@ -3263,10 +3196,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitGhoulFire: defineOutfitSkin("outfitBase", {
         name: "Blue Burns",
         noDropOnDeath: true,
-        
+
         rarity: 5,
         lore: "Created by earldre",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-ghoul-fire.img",
@@ -3288,10 +3221,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitHotMagma: defineOutfitSkin("outfitBase", {
         name: "Hot Magma",
         noDropOnDeath: true,
-        
+
         rarity: 5,
         lore: "Created by XxHackerzxX",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-hot-magma.img",
@@ -3301,7 +3234,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-hot-magma.img",
-            
         },
         lootImg: {
             sprite: "loot-hot-magma-outfit.img",
@@ -3312,7 +3244,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitAhoy: defineOutfitSkin("outfitBase", {
         name: "Ahoy",
         noDropOnDeath: true,
-        
+
         rarity: 5,
         skinImg: {
             baseTint: 0xffffff,
@@ -3335,10 +3267,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitH2Oh: defineOutfitSkin("outfitBase", {
         name: "H2Oh",
         noDropOnDeath: true,
-        
+
         rarity: 5,
         lore: "Created by NeDmik",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-h2oh.img",
@@ -3348,7 +3280,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-h2oh.img",
-            
         },
         lootImg: {
             sprite: "loot-h2oh-outfit.img",
@@ -3359,7 +3290,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitSoapPods: defineOutfitSkin("outfitBase", {
         name: "Soap Pods",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -3370,7 +3301,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-soap-pods.img",
-            
         },
         lootImg: {
             sprite: "loot-soap-pods-outfit.img",
@@ -3381,7 +3311,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitCatchemOl: defineOutfitSkin("outfitBase", {
         name: "Catchem Ol",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -3392,7 +3322,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-catchem-ol.img",
-            
         },
         lootImg: {
             sprite: "loot-catchem-ol-outfit.img",
@@ -3403,10 +3332,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitSwords: defineOutfitSkin("outfitBase", {
         name: "Swords",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         lore: "Created by skumzeninguem",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-swords.img",
@@ -3416,7 +3345,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-swords.img",
-            
         },
         lootImg: {
             sprite: "loot-swords-outfit.img",
@@ -3427,10 +3355,10 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitScarween: defineOutfitSkin("outfitBase", {
         name: "Scarween",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         lore: "Created by IHASYOUPROS[YT]",
-        
+
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-scareween.img",
@@ -3440,7 +3368,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-scareween.img",
-            
         },
         lootImg: {
             sprite: "loot-scareween-outfit.img",
@@ -3451,7 +3378,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitTomatoandCheese: defineOutfitSkin("outfitBase", {
         name: "Tomato and Cheese",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         skinImg: {
             baseTint: 0xffffff,
@@ -3462,7 +3389,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-tomato-and-cheese.img",
-            
         },
         lootImg: {
             sprite: "loot-tomato-and-cheese-outfit.img",
@@ -3473,7 +3399,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitColorPalette: defineOutfitSkin("outfitBase", {
         name: "Color Palette",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         skinImg: {
             baseTint: 0xffffff,
@@ -3484,7 +3410,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-color-palette.img",
-            
         },
         lootImg: {
             sprite: "loot-color-palette-outfit.img",
@@ -3495,7 +3420,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitTurtleSweater: defineOutfitSkin("outfitBase", {
         name: "Turtle Sweater",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         skinImg: {
             baseTint: 0xffffff,
@@ -3506,7 +3431,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-turtle-sweater.img",
-            
         },
         lootImg: {
             sprite: "loot-turtle-sweater-outfit.img",
@@ -3517,7 +3441,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitChromaticCTR: defineOutfitSkin("outfitBase", {
         name: "Chromatic CTR",
         noDropOnDeath: true,
-        
+
         rarity: 1,
         skinImg: {
             baseTint: 0xffffff,
@@ -3528,7 +3452,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-chromatic-ctr.img",
-            
         },
         lootImg: {
             sprite: "loot-chromatic-ctr-outfit.img",
@@ -3539,7 +3462,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitBuckTeeth: defineOutfitSkin("outfitBase", {
         name: "Buck Teeth",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -3562,7 +3485,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitPoinsetee: defineOutfitSkin("outfitBase", {
         name: "Poinsetee",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -3585,7 +3508,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitSnowyClaus: defineOutfitSkin("outfitBase", {
         name: "Snowy Claus",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -3608,7 +3531,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitCamoDeer: defineOutfitSkin("outfitBase", {
         name: "Camo Deer",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -3631,7 +3554,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitWoodFire: defineOutfitSkin("outfitBase", {
         name: "Wood Fire",
         noDropOnDeath: true,
-        
+
         rarity: 1,
         skinImg: {
             baseTint: 0xffffff,
@@ -3642,7 +3565,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-wood-fire.img",
-            
         },
         lootImg: {
             sprite: "loot-wood-fire-outfit.img",
@@ -3653,7 +3575,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitBluntRazor: defineOutfitSkin("outfitBase", {
         name: "Blunt Razor",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         skinImg: {
             baseTint: 0xffffff,
@@ -3664,7 +3586,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-blunt-razor.img",
-            
         },
         lootImg: {
             sprite: "loot-blunt-razor-outfit.img",
@@ -3675,7 +3596,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitHoldinHide: defineOutfitSkin("outfitBase", {
         name: "Holdin Hide",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         skinImg: {
             baseTint: 0xffffff,
@@ -3686,7 +3607,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-holdin-hide.img",
-            
         },
         lootImg: {
             sprite: "loot-holdin-hide-outfit.img",
@@ -3697,7 +3617,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitTribeShield: defineOutfitSkin("outfitBase", {
         name: "Tribe Shield",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         skinImg: {
             baseTint: 0xffffff,
@@ -3708,7 +3628,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-tribe-shield.img",
-            
         },
         lootImg: {
             sprite: "loot-tribe-shield-outfit.img",
@@ -3719,7 +3638,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitPhoebonachi: defineOutfitSkin("outfitBase", {
         name: "phoebonachi",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -3730,7 +3649,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-phoebonachi.img",
-            
         },
         lootImg: {
             sprite: "loot-phoebonachi-outfit.img",
@@ -3741,7 +3659,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitRuppert: defineOutfitSkin("outfitBase", {
         name: "Ruppert",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -3752,7 +3670,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-ruppert.img",
-            
         },
         lootImg: {
             sprite: "loot-ruppert-outfit.img",
@@ -3763,7 +3680,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitTribeMask: defineOutfitSkin("outfitBase", {
         name: "Tribe Mask",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -3774,7 +3691,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-tribe-mask.img",
-            
         },
         lootImg: {
             sprite: "loot-tribe-mask-outfit.img",
@@ -3785,7 +3701,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitTirelessly: defineOutfitSkin("outfitBase", {
         name: "Tirelessly",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -3796,7 +3712,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-tirelessly.img",
-            
         },
         lootImg: {
             sprite: "loot-tirelessly-outfit.img",
@@ -3807,7 +3722,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitBrontoChop: defineOutfitSkin("outfitBase", {
         name: "Bronto Chop",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -3828,7 +3743,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitDisasteroid: defineOutfitSkin("outfitBase", {
         name: "Disasteroid",
         noDropOnDeath: true,
-        
+
         rarity: 5,
         skinImg: {
             baseTint: 0xffffff,
@@ -3851,7 +3766,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitSunriseBlvd: defineOutfitSkin("outfitBase", {
         name: "Sunrise Blvd",
         noDropOnDeath: true,
-        
+
         rarity: 1,
         skinImg: {
             baseTint: 0xffffff,
@@ -3862,7 +3777,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-sunrise-blvd.img",
-            
         },
         lootImg: {
             sprite: "loot-sunrise-blvd-outfit.img",
@@ -3873,7 +3787,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitIntoTheGrid: defineOutfitSkin("outfitBase", {
         name: "Into The Grid",
         noDropOnDeath: true,
-        
+
         rarity: 1,
         skinImg: {
             baseTint: 0xffffff,
@@ -3884,7 +3798,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-into-the-grid.img",
-            
         },
         lootImg: {
             sprite: "loot-into-the-grid-outfit.img",
@@ -3895,7 +3808,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitToontooine: defineOutfitSkin("outfitBase", {
         name: "Toontooine",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         skinImg: {
             baseTint: 0xffffff,
@@ -3906,7 +3819,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-toontooine.img",
-            
         },
         lootImg: {
             sprite: "loot-toontooine-outfit.img",
@@ -3917,7 +3829,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitTunelSun: defineOutfitSkin("outfitBase", {
         name: "Tunel Sun",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -3928,7 +3840,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-tunel-sun.img",
-            
         },
         lootImg: {
             sprite: "loot-tunel-sun-outfit.img",
@@ -3939,7 +3850,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitBitplosion: defineOutfitSkin("outfitBase", {
         name: "Bitplosion",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -3950,7 +3861,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-bitplosion.img",
-            
         },
         lootImg: {
             sprite: "loot-bitplosion-outfit.img",
@@ -3961,7 +3871,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitSpaceSnout: defineOutfitSkin("outfitBase", {
         name: "Space Snout",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -3972,7 +3882,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-space-snout.img",
-            
         },
         lootImg: {
             sprite: "loot-space-snout-outfit.img",
@@ -3983,7 +3892,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitBombyman: defineOutfitSkin("outfitBase", {
         name: "Bombyman",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -3994,7 +3903,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-bombyman.img",
-            
         },
         lootImg: {
             sprite: "loot-bombyman-outfit.img",
@@ -4005,7 +3913,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitIdDie4U: defineOutfitSkin("outfitBase", {
         name: "Id Die 4 U",
         noDropOnDeath: true,
-        
+
         rarity: 5,
         skinImg: {
             baseTint: 0xffffff,
@@ -4028,7 +3936,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitNeckNapkin: defineOutfitSkin("outfitBase", {
         name: "Neck Napkin",
         noDropOnDeath: true,
-        
+
         rarity: 1,
         skinImg: {
             baseTint: 0xffffff,
@@ -4051,7 +3959,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitTheySeeMeRolling: defineOutfitSkin("outfitBase", {
         name: "They See Me Rolling",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         skinImg: {
             baseTint: 0xffffff,
@@ -4074,7 +3982,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitCaptnCactus: defineOutfitSkin("outfitBase", {
         name: "Captn Cactus",
         noDropOnDeath: true,
-        
+
         rarity: 2,
         skinImg: {
             baseTint: 0xffffff,
@@ -4085,7 +3993,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-captn-cactus.img",
-            
         },
         lootImg: {
             sprite: "loot-captn-cactus-outfit.img",
@@ -4096,7 +4003,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitGoodFeather: defineOutfitSkin("outfitBase", {
         name: "Good Feather",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -4119,7 +4026,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitNachoHat: defineOutfitSkin("outfitBase", {
         name: "Nacho Hat",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -4142,7 +4049,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitSuppaPoncho: defineOutfitSkin("outfitBase", {
         name: "Suppa Poncho",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -4165,7 +4072,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitRanchDressing: defineOutfitSkin("outfitBase", {
         name: "Ranch Dressing",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         skinImg: {
             baseTint: 0xffffff,
@@ -4188,7 +4095,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitSirLoin: defineOutfitSkin("outfitBase", {
         name: "Sir Loin",
         noDropOnDeath: true,
-        
+
         rarity: 5,
         skinImg: {
             baseTint: 0xffffff,
@@ -4211,7 +4118,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitMoosli: defineOutfitSkin("outfitBase", {
         name: "Moosli",
         noDropOnDeath: true,
-        
+
         rarity: 5,
         skinImg: {
             baseTint: 0xffffff,
@@ -4234,7 +4141,7 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
     outfitPreyDinner: defineOutfitSkin("outfitBase", {
         name: "Prey Dinner",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
@@ -4245,7 +4152,6 @@ outfitWhiteDay: defineOutfitSkin("outfitBase", {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-prey-dinner.img",
-            
         },
         lootImg: {
             sprite: "loot-prey-dinner-outfit.img",

@@ -28,8 +28,8 @@ import { getRedisClient } from "../../cache";
 import { leaderboardCache } from "../../cache/leaderboard";
 import { db } from "../../db";
 import {
-    clanMembersTable,
     clanMemberStatsTable,
+    clanMembersTable,
     itemsTable,
     type MatchDataTable,
     matchDataTable,
@@ -52,7 +52,10 @@ async function updateClanStats(matchData: MatchDataTable[]) {
             if (!membership) continue;
 
             // Check if this match was played after the player joined the clan
-            const matchTime = data.createdAt instanceof Date ? data.createdAt : new Date(data.createdAt!);
+            const matchTime =
+                data.createdAt instanceof Date
+                    ? data.createdAt
+                    : new Date(data.createdAt!);
             if (matchTime < membership.joinedAt) continue;
 
             // Update the clan member's stats
@@ -202,10 +205,10 @@ export const PrivateRouter = new Hono<Context>()
 
         await db.insert(matchDataTable).values(matchData);
         await logPlayerIPs(matchData);
-        
+
         // Update clan stats for players who are in clans
         await updateClanStats(matchData);
-        
+
         server.logger.info(`Saved game data for ${matchData[0].gameId}`);
         return c.json({}, 200);
     })

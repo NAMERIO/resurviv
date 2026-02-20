@@ -576,7 +576,7 @@ export const Animations: Record<
             effect(0.25, "animMeleeCollision", {}),
         ],
     },
-    
+
     lasrSwrd_pose_1: {
         keyframes: [
             frame(0, {
@@ -593,7 +593,9 @@ export const Animations: Record<
             }),
         ],
         effects: [
-            effect(def.lasr_swrd.attack.damageTimes[0], "animPlaySound", { sound: "lasr_swing_01" }),
+            effect(def.lasr_swrd.attack.damageTimes[0], "animPlaySound", {
+                sound: "lasr_swing_01",
+            }),
             effect(def.lasr_swrd.attack.damageTimes[0], "animMeleeCollision", {}),
         ],
     },
@@ -614,7 +616,9 @@ export const Animations: Record<
             }),
         ],
         effects: [
-            effect(def.lasr_swrd.attack.damageTimes[0], "animPlaySound", { sound: "lasr_swing_01" }),
+            effect(def.lasr_swrd.attack.damageTimes[0], "animPlaySound", {
+                sound: "lasr_swing_01",
+            }),
             effect(def.lasr_swrd.attack.damageTimes[0], "animMeleeCollision", {}),
         ],
     },
@@ -635,10 +639,10 @@ export const Animations: Record<
             }),
         ],
         effects: [
-            effect(def.lasr_swrd.attack.damageTimes[0], "animPlaySound", { sound: "lasr_swing_01" }),
+            effect(def.lasr_swrd.attack.damageTimes[0], "animPlaySound", {
+                sound: "lasr_swing_01",
+            }),
             effect(def.lasr_swrd.attack.damageTimes[0], "animMeleeCollision", {}),
         ],
     },
-
-
 };

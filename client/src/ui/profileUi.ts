@@ -97,7 +97,7 @@ export class ProfileUi {
 
     loginOptionsModalMobile!: MenuModal;
     modalMobileAccount!: MenuModal;
-    
+
     clanUi: ClanUi | null = null;
 
     constructor(

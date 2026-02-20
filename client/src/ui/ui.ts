@@ -1416,7 +1416,7 @@ export class UiManager {
             this.refreshMainPageAds();
             this.game.onQuit();
         };
-        
+
         if (skipAd) {
             doQuit();
         } else {

@@ -155,7 +155,7 @@ class SDKManager {
     requestMidGameAd(callback: () => void): void {
         this.gamesPlayed++;
         const showAd = this.gamesPlayed % 3 === 0;
-        
+
         if (this.isPoki) {
             this.requestPokiMidGameAd(callback);
         } else if (this.isGameMonetize && showAd) {
@@ -171,7 +171,7 @@ class SDKManager {
         this.quitCount++;
         sessionStorage.setItem("quitCount", this.quitCount.toString());
         const showAd = this.quitCount % 2 === 0;
-        
+
         if (this.isPoki && showAd) {
             this.requestPokiMidGameAd(callback);
         } else if (this.isGameMonetize && showAd) {
@@ -268,7 +268,7 @@ class SDKManager {
             this.pendingAdCallback = callback;
             return;
         }
-        
+
         if (window.sdk && window.sdk.showBanner) {
             this.adCallback = callback;
             window.sdk.showBanner();
@@ -306,7 +306,9 @@ class SDKManager {
                         console.log("GameMonetize: Ad showing, game paused");
                         break;
                     case "SDK_READY":
-                        console.log("GameMonetize SDK Ready - Impressions should now track");
+                        console.log(
+                            "GameMonetize SDK Ready - Impressions should now track",
+                        );
                         this.isGameMonetizeReady = true;
                         if (this.pendingAdCallback) {
                             const cb = this.pendingAdCallback;

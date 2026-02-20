@@ -29,6 +29,6 @@ export const ValentineAtlas: AtlasDef = {
         "map/map-candy-store-basement-floor.svg",
         "map/vending_01v.svg",
         "map/map-displays-res.svg",
-        "map/map-candy-store-basket-res.svg"
+        "map/map-candy-store-basket-res.svg",
     ],
 };

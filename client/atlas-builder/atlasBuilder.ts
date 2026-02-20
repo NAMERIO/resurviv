@@ -9,7 +9,7 @@ import type { ISpritesheetData } from "pixi.js-legacy";
 import type { Atlas } from "../../shared/defs/mapDefs";
 import { Logger } from "../../shared/utils/logger";
 import { util } from "../../shared/utils/util";
-import { Atlases, type AtlasRes, scaledSprites, rotatedSprites } from "./atlasDefs";
+import { Atlases, type AtlasRes, rotatedSprites, scaledSprites } from "./atlasDefs";
 import type { MainToWorkerMsg, WorkerToMainMsg } from "./atlasWorker";
 import type { Edges } from "./detectEdges";
 import type { ParentMsg } from "./imageWorker";

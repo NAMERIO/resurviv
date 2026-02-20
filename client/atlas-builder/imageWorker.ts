@@ -8,7 +8,7 @@ import {
     imageFolder,
     imagesCacheFolder,
 } from "./atlasBuilder";
-import { scaledSprites, rotatedSprites } from "./atlasDefs";
+import { rotatedSprites, scaledSprites } from "./atlasDefs";
 import { detectEdges, type Edges } from "./detectEdges";
 
 const tmpCanvas = createCanvas(0, 0);
@@ -55,7 +55,7 @@ async function renderImage(path: string, hash: string) {
             const metadata = await sharp(svgBuffer).metadata();
             const origWidth = metadata.width || 256;
             const origHeight = metadata.height || 256;
-            
+
             let sharpPipeline = sharp(svgBuffer);
             if (rotation !== 0) {
                 const tempBuffer = await sharp(svgBuffer)
@@ -65,11 +65,10 @@ async function renderImage(path: string, hash: string) {
                     })
                     .png()
                     .toBuffer();
-                
-                sharpPipeline = sharp(tempBuffer)
-                    .rotate(rotation, {
-                        background: { r: 0, g: 0, b: 0, alpha: 0 },
-                    });
+
+                sharpPipeline = sharp(tempBuffer).rotate(rotation, {
+                    background: { r: 0, g: 0, b: 0, alpha: 0 },
+                });
             } else {
                 const width = Math.ceil(origWidth * scale);
                 const height = Math.ceil(origHeight * scale);
@@ -78,7 +77,7 @@ async function renderImage(path: string, hash: string) {
                     background: { r: 0, g: 0, b: 0, alpha: 0 },
                 });
             }
-            
+
             const pngBuffer = await sharpPipeline
                 .png({
                     quality: 100,
@@ -102,13 +101,19 @@ async function renderImage(path: string, hash: string) {
                 const sin = Math.abs(Math.sin(radians));
                 const newWidth = Math.ceil(scaledWidth * cos + scaledHeight * sin);
                 const newHeight = Math.ceil(scaledWidth * sin + scaledHeight * cos);
-                
+
                 tmpCanvas.width = newWidth;
                 tmpCanvas.height = newHeight;
                 tmpCtx.save();
                 tmpCtx.translate(newWidth / 2, newHeight / 2);
                 tmpCtx.rotate(radians);
-                tmpCtx.drawImage(image, -scaledWidth / 2, -scaledHeight / 2, scaledWidth, scaledHeight);
+                tmpCtx.drawImage(
+                    image,
+                    -scaledWidth / 2,
+                    -scaledHeight / 2,
+                    scaledWidth,
+                    scaledHeight,
+                );
                 tmpCtx.restore();
             } else {
                 tmpCanvas.width = scaledWidth;

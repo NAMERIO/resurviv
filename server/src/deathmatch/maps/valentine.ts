@@ -14,7 +14,15 @@ const valentineDef: PartialMapDef = {
     },
     assets: {
         audio: [],
-        atlases: ["gradient", "loadout", "shared", "valentine", "main", "woods", "desert",],
+        atlases: [
+            "gradient",
+            "loadout",
+            "shared",
+            "valentine",
+            "main",
+            "woods",
+            "desert",
+        ],
     },
     biome: {
         colors: {
@@ -142,7 +150,6 @@ const mapDef = {
                 house_red_01: 1,
                 club_complex_01: 1,
             },
-            
         ],
         spawnReplacements: [
             {
@@ -151,7 +158,7 @@ const mapDef = {
                 bush_01: "bush_13",
                 tree_07: "tree_13",
                 tree_03sv: "tree_13",
-                vending_01: "vending_01v"
+                vending_01: "vending_01v",
             },
         ],
     },
@@ -162,7 +169,5 @@ export const DeatchmatchValentine = util.mergeDeep({}, Valentine, mapDef) as Map
 
 DeatchmatchValentine["lootTable"] = {
     ...DeatchmatchValentine["lootTable"],
-    tier_valentine_box: [
-        { name: "heart_cannon", count: 1, weight: 1 },
-    ],
+    tier_valentine_box: [{ name: "heart_cannon", count: 1, weight: 1 }],
 };

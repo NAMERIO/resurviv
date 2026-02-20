@@ -1,6 +1,5 @@
 @import url(deathmatch.css);
 
-
 /* #ad-block-left,
   .ad-block-med-rect,
   .ad-block-leaderboard-bottom,
@@ -7253,9 +7252,9 @@ input [type="image"]:focus {
 /* Clans Button in Account Area */
 #btn-clans {
   cursor: pointer;
-  background-color: #D07017;
-  border-bottom: 2px solid #9D5411;
-  box-shadow: inset 0 -2px #9D5411;
+  background-color: #d07017;
+  border-bottom: 2px solid #9d5411;
+  box-shadow: inset 0 -2px #9d5411;
   background-image: url(../img/gui/player-gui.svg);
   background-repeat: no-repeat;
   background-size: 24px;
@@ -7330,7 +7329,7 @@ input [type="image"]:focus {
   padding: 18px 35px;
   font-size: 22px;
   font-weight: bold;
-  color: #969B91;
+  color: #969b91;
   cursor: pointer;
   background-color: #252525;
   border-radius: 5px 5px 0 0;
@@ -7345,7 +7344,7 @@ input [type="image"]:focus {
 }
 
 .modal-clans-tab.active {
-  background-color: #1E90FF;
+  background-color: #1e90ff;
   color: #fff;
 }
 
@@ -7378,7 +7377,7 @@ input [type="image"]:focus {
 
 /* Modal Body */
 .modal-clans-body {
-  background-color: #3A3A3A;
+  background-color: #3a3a3a;
   padding: 25px;
   display: flex;
   gap: 25px;
@@ -7512,17 +7511,17 @@ input [type="image"]:focus {
 }
 
 .clan-btn-reset {
-  background-color: #50AFAB;
-  box-shadow: inset 0 -2px #387C79;
-  border-bottom: 2px solid #387C79;
+  background-color: #50afab;
+  box-shadow: inset 0 -2px #387c79;
+  border-bottom: 2px solid #387c79;
   background-image: url(../img/gui/reload.svg);
   background-size: 60%;
 }
 
 .clan-btn-edit {
-  background-color: #1E90FF;
-  box-shadow: inset 0 -2px #1871C8;
-  border-bottom: 2px solid #1871C8;
+  background-color: #1e90ff;
+  box-shadow: inset 0 -2px #1871c8;
+  border-bottom: 2px solid #1871c8;
   background-image: url(../img/gui/cog.svg);
   background-size: 50%;
 }
@@ -7543,7 +7542,7 @@ input [type="image"]:focus {
   border-radius: 5px;
   padding: 0;
   text-align: center;
-  color: #C4C4C4;
+  color: #c4c4c4;
   font-size: 20px;
   line-height: 24px;
   width: 100%;
@@ -7565,9 +7564,9 @@ input [type="image"]:focus {
 .clan-region-selected {
   height: 50px;
   border-radius: 5px;
-  background-color: #50AFAB;
-  box-shadow: inset 0 -2px #387C79;
-  border-bottom: 2px solid #387C79;
+  background-color: #50afab;
+  box-shadow: inset 0 -2px #387c79;
+  border-bottom: 2px solid #387c79;
   display: flex;
   cursor: pointer;
 }
@@ -7618,7 +7617,7 @@ input [type="image"]:focus {
 .clan-property-selected {
   height: 50px;
   border-radius: 5px;
-  background-color: #874C90;
+  background-color: #874c90;
   box-shadow: inset 0 -2px #614066;
   border-bottom: 2px solid #614066;
   display: flex;
@@ -7677,11 +7676,11 @@ input [type="image"]:focus {
 }
 
 .clan-discord-input {
-  background-color: #1F1F1F;
+  background-color: #1f1f1f;
   font-style: italic;
   font-size: 18px;
   text-align: center;
-  color: #678EBB;
+  color: #678ebb;
   flex: 1;
   height: 37px;
   border: none;
@@ -7703,12 +7702,12 @@ input [type="image"]:focus {
 
 .clan-invite-input {
   flex: 1;
-  background-color: #1F1F1F;
+  background-color: #1f1f1f;
   border: none;
   border-radius: 5px;
   padding: 12px 15px;
   font-size: 18px;
-  color: #C4C4C4;
+  color: #c4c4c4;
 }
 
 .clan-invite-input::placeholder {
@@ -7717,9 +7716,9 @@ input [type="image"]:focus {
 }
 
 .clan-search-btn {
-  background-color: #1E90FF;
-  box-shadow: inset 0 -2px #1871C8;
-  border-bottom: 2px solid #1871C8;
+  background-color: #1e90ff;
+  box-shadow: inset 0 -2px #1871c8;
+  border-bottom: 2px solid #1871c8;
   border-radius: 3px;
   width: 50px;
   height: 47px;
@@ -7737,7 +7736,7 @@ input [type="image"]:focus {
 
 /* Clan Stats Display */
 .clan-stats-preview {
-  background-color: #1F1F1F;
+  background-color: #1f1f1f;
   border-radius: 5px;
   padding: 15px;
 }
@@ -7754,7 +7753,7 @@ input [type="image"]:focus {
 .clan-stats-row {
   display: flex;
   align-items: center;
-  background-color: #1F1F1F;
+  background-color: #1f1f1f;
   background-repeat: no-repeat;
   background-position: 10% center;
   height: 50px;
@@ -7791,7 +7790,7 @@ input [type="image"]:focus {
   font-size: 20px;
   font-weight: bold;
   text-align: center;
-  color: #FFE400;
+  color: #ffe400;
 }
 
 /* Buttons */
@@ -7817,39 +7816,39 @@ input [type="image"]:focus {
 }
 
 .clan-btn-green {
-  background-color: #80B251;
+  background-color: #80b251;
   box-shadow: inset 0 -2px #597c39;
-  border-bottom: 2px solid #597C39;
+  border-bottom: 2px solid #597c39;
 }
 
 .clan-btn-red {
-  background-color: #C61014;
-  box-shadow: inset 0 -2px #6F0000;
-  border-bottom: 2px solid #6F0000;
+  background-color: #c61014;
+  box-shadow: inset 0 -2px #6f0000;
+  border-bottom: 2px solid #6f0000;
 }
 
 .clan-btn-purple {
-  background-color: #874C90;
+  background-color: #874c90;
   box-shadow: inset 0 -2px #614066;
   border-bottom: 2px solid #614066;
 }
 
 .clan-btn-blue {
-  background-color: #1E90FF;
-  box-shadow: inset 0 -2px #1871C8;
-  border-bottom: 2px solid #1871C8;
+  background-color: #1e90ff;
+  box-shadow: inset 0 -2px #1871c8;
+  border-bottom: 2px solid #1871c8;
 }
 
 .clan-btn-teal {
-  background-color: #50AFAB;
-  box-shadow: inset 0 -2px #387C79;
-  border-bottom: 2px solid #387C79;
+  background-color: #50afab;
+  box-shadow: inset 0 -2px #387c79;
+  border-bottom: 2px solid #387c79;
 }
 
 .clan-btn-grey {
-  background-color: #6D6D6D;
+  background-color: #6d6d6d;
   box-shadow: inset 0 -2px #2c2c2c;
-  border-bottom: 2px solid #2C2C2C;
+  border-bottom: 2px solid #2c2c2c;
 }
 
 .clan-btn.disabled {
@@ -7868,7 +7867,7 @@ input [type="image"]:focus {
 
 .clan-list-empty {
   text-align: center;
-  color: #969B91;
+  color: #969b91;
   padding: 40px;
   font-size: 18px;
 }
@@ -7907,18 +7906,18 @@ input [type="image"]:focus {
 .clan-list-name {
   font-size: 20px;
   font-weight: bold;
-  color: #7CFC00;
+  color: #7cfc00;
   margin-bottom: 4px;
   text-shadow: 1px 1px 0px #000000;
 }
 
 .clan-list-members {
   font-size: 14px;
-  color: #C4C4C4;
+  color: #c4c4c4;
 }
 
 .clan-list-status {
-  color: #FF0000;
+  color: #ff0000;
   font-size: 14px;
   font-weight: bold;
   padding: 6px 12px;
@@ -7958,7 +7957,7 @@ input [type="image"]:focus {
   right: -5px;
   width: 28px;
   height: 28px;
-  background-color: #1E90FF;
+  background-color: #1e90ff;
   border-radius: 50%;
   cursor: pointer;
   background-image: url(../img/gui/cog.svg);
@@ -7993,7 +7992,7 @@ input [type="image"]:focus {
 .clan-edit-name-btn {
   width: 24px;
   height: 24px;
-  background-color: #1E90FF;
+  background-color: #1e90ff;
   border-radius: 4px;
   cursor: pointer;
   background-image: url(../img/gui/cog.svg);
@@ -8030,7 +8029,7 @@ input [type="image"]:focus {
 
 .clan-detail-meta {
   font-size: 16px;
-  color: #C4C4C4;
+  color: #c4c4c4;
 }
 
 .clan-detail-stats {
@@ -8041,7 +8040,7 @@ input [type="image"]:focus {
 
 .clan-stat-box {
   flex: 1;
-  background-color: #1F1F1F;
+  background-color: #1f1f1f;
   border-radius: 5px;
   padding: 15px;
   text-align: center;
@@ -8071,7 +8070,7 @@ input [type="image"]:focus {
 .clan-stat-value {
   font-size: 24px;
   font-weight: bold;
-  color: #FFE400;
+  color: #ffe400;
 }
 
 /* Members Section */
@@ -8099,7 +8098,7 @@ input [type="image"]:focus {
 
 .clan-members-count {
   font-size: 16px;
-  color: #C4C4C4;
+  color: #c4c4c4;
 }
 
 .clan-members-list {
@@ -8112,7 +8111,7 @@ input [type="image"]:focus {
   align-items: center;
   gap: 15px;
   padding: 10px;
-  background-color: #3A3A3A;
+  background-color: #3a3a3a;
   border-radius: 5px;
   margin-bottom: 6px;
 }
@@ -8151,17 +8150,17 @@ input [type="image"]:focus {
 .clan-member-name {
   font-size: 18px;
   font-weight: bold;
-  color: #7CFC00;
+  color: #7cfc00;
   margin-bottom: 3px;
 }
 
 .clan-member-name.owner {
-  color: #FFE400;
+  color: #ffe400;
 }
 
 .clan-member-stats {
   font-size: 13px;
-  color: #969B91;
+  color: #969b91;
 }
 
 .clan-member-controls {
@@ -8186,15 +8185,15 @@ input [type="image"]:focus {
 }
 
 .clan-btn-transfer {
-  background-color: #1E90FF;
-  box-shadow: inset 0 -2px #1871C8;
-  border-bottom: 2px solid #1871C8;
+  background-color: #1e90ff;
+  box-shadow: inset 0 -2px #1871c8;
+  border-bottom: 2px solid #1871c8;
 }
 
 .clan-btn-kick {
-  background-color: #C61014;
-  box-shadow: inset 0 -2px #6F0000;
-  border-bottom: 2px solid #6F0000;
+  background-color: #c61014;
+  box-shadow: inset 0 -2px #6f0000;
+  border-bottom: 2px solid #6f0000;
 }
 
 /* Clan Actions */
@@ -8223,7 +8222,7 @@ input [type="image"]:focus {
   cursor: pointer;
   font-size: 18px;
   font-weight: bold;
-  color: #C4C4C4;
+  color: #c4c4c4;
   text-shadow: 1px 1px 0px #000000;
 }
 
@@ -8233,9 +8232,9 @@ input [type="image"]:focus {
 }
 
 .clan-leaderboard-tab.active {
-  background-color: #80B251;
+  background-color: #80b251;
   box-shadow: inset 0 -2px #597c39;
-  border-bottom: 2px solid #597C39;
+  border-bottom: 2px solid #597c39;
   color: #fff;
 }
 
@@ -8249,7 +8248,7 @@ input [type="image"]:focus {
 
 .clan-leaderboard-empty {
   text-align: center;
-  color: #969B91;
+  color: #969b91;
   padding: 40px;
   font-size: 18px;
 }
@@ -8274,21 +8273,21 @@ input [type="image"]:focus {
   width: 50px;
   font-size: 26px;
   font-weight: bold;
-  color: #FFFFFF;
+  color: #ffffff;
   text-align: center;
   text-shadow: 1px 1px 0px #000000;
 }
 
 .clan-leaderboard-item:nth-child(1) .clan-leaderboard-rank {
-  color: #FFD700;
+  color: #ffd700;
 }
 
 .clan-leaderboard-item:nth-child(2) .clan-leaderboard-rank {
-  color: #C0C0C0;
+  color: #c0c0c0;
 }
 
 .clan-leaderboard-item:nth-child(3) .clan-leaderboard-rank {
-  color: #CD7F32;
+  color: #cd7f32;
 }
 
 .clan-leaderboard-icon {
@@ -8309,20 +8308,20 @@ input [type="image"]:focus {
 .clan-leaderboard-name {
   font-size: 20px;
   font-weight: bold;
-  color: #7CFC00;
+  color: #7cfc00;
   margin-bottom: 4px;
   text-shadow: 1px 1px 0px #000000;
 }
 
 .clan-leaderboard-members {
   font-size: 14px;
-  color: #C4C4C4;
+  color: #c4c4c4;
 }
 
 .clan-leaderboard-stat {
   font-size: 24px;
   font-weight: bold;
-  color: #FFE400;
+  color: #ffe400;
   min-width: 80px;
   text-align: right;
   text-shadow: 1px 1px 0px #000000;
@@ -8339,7 +8338,7 @@ input [type="image"]:focus {
 
 .clan-pagination-info {
   font-size: 16px;
-  color: #C4C4C4;
+  color: #c4c4c4;
 }
 
 /* Cooldown Notice */
@@ -8349,7 +8348,7 @@ input [type="image"]:focus {
   border-radius: 5px;
   margin-bottom: 15px;
   text-align: center;
-  color: #FF6B6B;
+  color: #ff6b6b;
   font-size: 16px;
   font-weight: bold;
 }
@@ -8361,14 +8360,14 @@ input [type="image"]:focus {
   border-radius: 5px;
   margin-bottom: 15px;
   text-align: center;
-  color: #7CFC00;
+  color: #7cfc00;
   font-size: 16px;
   font-weight: bold;
 }
 
 /* Warning Text */
 .clan-warning {
-  color: #FFD600;
+  color: #ffd600;
   font-size: 14px;
   margin-top: 10px;
   padding: 10px;
@@ -8385,7 +8384,7 @@ input [type="image"]:focus {
   max-height: 300px;
   overflow-y: auto;
   padding: 15px;
-  background-color: #1F1F1F;
+  background-color: #1f1f1f;
   border-radius: 5px;
 }
 
@@ -8402,12 +8401,12 @@ input [type="image"]:focus {
 }
 
 .clan-icon-option:hover {
-  border-color: #1E90FF;
+  border-color: #1e90ff;
   filter: brightness(120%);
 }
 
 .clan-icon-option.selected {
-  border-color: #80B251;
+  border-color: #80b251;
   box-shadow: 0 0 10px rgba(128, 178, 81, 0.5);
 }
 
@@ -8429,11 +8428,11 @@ input [type="image"]:focus {
   #modal-clan-leaderboard .modal-content {
     transform: translate(-50%, -50%) scale(0.7);
   }
-  
+
   .modal-clans-body {
     flex-direction: column;
   }
-  
+
   .modal-clans-tab {
     padding: 12px 20px;
     font-size: 16px;
