@@ -1,14 +1,5 @@
-Official surviv.io proxy sites
+Official resurviv.biz proxy sites
 
-http://surviv2.io
-https://surviv2.io
-http://2dbattleroyale.com
-https://2dbattleroyale.com
-http://2dbattleroyale.org
-https://2dbattleroyale.org
-http://piearesquared.info
-https://piearesquared.info
-http://thecircleisclosing.com
-https://thecircleisclosing.com
-http://parmainitiative.com
-https://parmainitiative.com
+https://resurviv.cloud/
+https://uno.cheap/
+https://resurviv.xyz
