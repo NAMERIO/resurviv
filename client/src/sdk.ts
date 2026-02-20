@@ -99,6 +99,8 @@ class SDKManager {
     adCallback = () => {};
     gamesPlayed = 0;
     quitCount = parseInt(sessionStorage.getItem("quitCount") || "0", 10);
+    isGameMonetizeReady = false;
+    pendingAdCallback: (() => void) | null = null;
 
     constructor() {
         this.isAnySDK = this.isPoki || this.isCrazyGames || this.isGameMonetize;
@@ -261,10 +263,17 @@ class SDKManager {
     }
 
     private requestGameMonetizeMidgameAd(callback: () => void): void {
+        if (!this.isGameMonetizeReady) {
+            console.warn("GameMonetize SDK not ready yet, queuing ad request");
+            this.pendingAdCallback = callback;
+            return;
+        }
+        
         if (window.sdk && window.sdk.showBanner) {
             this.adCallback = callback;
             window.sdk.showBanner();
         } else {
+            console.warn("GameMonetize SDK object not available");
             callback();
         }
     }
@@ -278,25 +287,44 @@ class SDKManager {
     }
 
     private initGameMonetize() {
-        const gameMonetizeScript = document.createElement("script");
-        gameMonetizeScript.src = "https://api.gamemonetize.com/sdk.js";
-        gameMonetizeScript.id = "gamemonetize-sdk";
-        document.head.appendChild(gameMonetizeScript);
-
+        const gameId = import.meta.env.VITE_GAMEMONETIZE_ID;
+        if (!gameId || gameId === "" || gameId === "undefined") {
+            console.error("GameMonetize: Invalid or missing gameId!", gameId);
+            return;
+        }
+        console.log("GameMonetize: Initializing with gameId:", gameId);
         window.SDK_OPTIONS = {
-            gameId: import.meta.env.VITE_GAMEMONETIZE_ID,
+            gameId: gameId,
             onEvent: (event: any) => {
+                console.log("GameMonetize Event:", event.name);
                 switch (event.name) {
                     case "SDK_GAME_START":
                         this.adCallback();
                         this.adCallback = () => {};
                         break;
+                    case "SDK_GAME_PAUSE":
+                        console.log("GameMonetize: Ad showing, game paused");
+                        break;
                     case "SDK_READY":
-                        console.log("Successfully loaded GameMonetize SDK"); // never happens for some reasons
+                        console.log("GameMonetize SDK Ready - Impressions should now track");
+                        this.isGameMonetizeReady = true;
+                        if (this.pendingAdCallback) {
+                            const cb = this.pendingAdCallback;
+                            this.pendingAdCallback = null;
+                            this.requestGameMonetizeMidgameAd(cb);
+                        }
+                        break;
+                    case "SDK_ERROR":
+                        console.error("GameMonetize SDK Error:", event);
                         break;
                 }
             },
         };
+
+        const gameMonetizeScript = document.createElement("script");
+        gameMonetizeScript.src = "https://api.gamemonetize.com/sdk.js";
+        gameMonetizeScript.id = "gamemonetize-sdk";
+        document.head.appendChild(gameMonetizeScript);
     }
 
     private initPoki(): Promise<void> {
