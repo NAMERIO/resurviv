@@ -1410,12 +1410,18 @@ export class UiManager {
         )} </span><span class="ui-stats-header-value">${teamKills}</span></div>`;
     }
 
-    quitGame() {
-        SDK.requestQuitAd(() => {
+    quitGame(skipAd = false) {
+        const doQuit = () => {
             this.game.m_gameOver = true;
             this.refreshMainPageAds();
             this.game.onQuit();
-        });
+        };
+        
+        if (skipAd) {
+            doQuit();
+        } else {
+            SDK.requestQuitAd(doQuit);
+        }
     }
 
     showStats(
@@ -1578,7 +1584,7 @@ export class UiManager {
             });
             restartButton.on("click", () => {
                 SDK.requestMidGameAd(() => {
-                    this.quitGame();
+                    this.quitGame(true);
                 });
             });
             this.statsOptions.append(restartButton);
@@ -1729,7 +1735,7 @@ export class UiManager {
         });
         a.on("click", () => {
             SDK.requestMidGameAd(() => {
-                this.quitGame();
+                this.quitGame(true);
             });
         });
         this.statsOptions.append(a);
