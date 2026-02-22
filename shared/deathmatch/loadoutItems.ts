@@ -11,7 +11,7 @@ export const allowedGuns = [
     "hud_glock_dual",
     "p30l",
     "p30l_dual",
-    // "ot38",
+    "ot38",
     // "ot38_dual",
     // "ots38_dual",
     // "ots38",
@@ -59,7 +59,7 @@ export const allowedGuns = [
     "hk416",
     "m4a1",
     "mk12",
-    // "scarssr",
+    "scarssr",
 
     //Light Machine Guns (LMG):
     "dp28",
@@ -75,6 +75,6 @@ export const allowedGuns = [
     // "m79",
     // "waterGun",
     // "rainbow_blaster",
-    // "flux_rifle"
+    "flux_rifle",
     "snow_cannon",
 ];
