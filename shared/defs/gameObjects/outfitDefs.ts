@@ -957,6 +957,43 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+    outfitSnow: defineOutfitSkin("outfitBase", {
+        name: "Snowed Over",
+        rarity: Rarity.Uncommon,
+        lore: "It's shirt weather!!",
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitSnow.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-outfitSnow.img",
+            footTint: 0xb2eaff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x77c4dd,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitSnow.img",
+            tint: 0xffffff,
+        },
+    }),
+    outfitBlackIce: defineOutfitSkin("outfitBase", {
+        name: "Black Ice",
+        rarity: Rarity.Common,
+        skinImg: {
+            baseTint: 0x686d6e,
+            baseSprite: "player-base-02.img",
+            handTint: 0x414753,
+            handSprite: "player-hands-01.img",
+            footTint: 0x33333d,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x5e6473,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-01.img",
+            tint: 0x5e6473,
+        },
+    }),
     outfitBeachCamo: defineOutfitSkin("outfitBase", {
         name: "Beach Shored",
         skinImg: {
