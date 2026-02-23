@@ -378,6 +378,16 @@ export const Main: MapDef = {
             { name: "bar", count: 1, weight: 1 }, // ?
             { name: "m9", count: 1, weight: 1 }, // ?
         ],
+        tier_safe: [
+            { name: "m9", count: 1, weight: 0.01 },
+            { name: "fabricate", count: 1, weight: 1 },
+            { name: "flak_jacket", count: 1, weight: 1 },
+            { name: "explosive", count: 1, weight: 1 },
+        ],
+        tier_safe_throwables: [
+            { name: "", count: 1, weight: 1 },
+            { name: "strobe", count: 1, weight: 1 },
+        ],
         tier_forest_helmet: [{ name: "helmet03_forest", count: 1, weight: 1 }],
         tier_outfits: [
             { name: "outfitCobaltShell", count: 1, weight: 0.2 }, // ?

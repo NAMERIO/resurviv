@@ -193,6 +193,13 @@ export const BuildingSprites = {
         "map/map-building-warehouse-floor-03.svg",
     ],
 
+    workshop: [
+        "map/map-building-workshop-floor-01.svg",
+        "map/map-building-workshop-floor-02.svg",
+        "map/map-building-workshop-ceiling-01.svg",
+        "map/map-building-workshop-ceiling-02.svg",
+    ],
+
     bunker_hydra: [
         "map/map-bunker-hydra-ceiling-01.svg",
         "map/map-bunker-hydra-chamber-ceiling-01.svg",
