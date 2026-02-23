@@ -3074,6 +3074,15 @@ const EmitterDefs: Record<string, EmitterDef> = {
         rot: new Range(0, Math.PI * 2),
         maxCount: Number.MAX_VALUE,
     },
+    campfire_smoke: {
+        particle: "cabinSmoke",
+        rate: new Range(2, 4),
+        radius: 0,
+        speed: new Range(1, 1.5),
+        angle: Math.PI * 0.1,
+        rot: new Range(0, Math.PI * 2),
+        maxCount: Number.MAX_VALUE,
+    },
     bathhouse_steam: {
         particle: "bathhouseSteam",
         rate: new Range(2, 3),

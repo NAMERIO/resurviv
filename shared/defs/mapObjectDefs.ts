@@ -427,6 +427,38 @@ function createBush<T extends ObstacleDef>(e: Partial<T>): T {
     };
     return util.mergeDeep(t, e || {});
 }
+
+function createCampfire<T extends ObstacleDef>(e: Partial<T>): T {
+    const t = {
+        type: "obstacle",
+        scale: { createMin: 0.5, createMax: 0.5 },
+        collision: collider.createCircle(v2.create(0, 0), 2.75),
+        height: 0.5,
+        collidable: true,
+        destructible: false,
+        hitParticle: "rockChip",
+        explodeParticle: "rockBreak",
+        reflectBullets: false,
+        loot: [],
+        map: { display: true, color: 6447714, scale: 1 },
+        terrain: { grass: true, beach: false },
+        img: {
+            sprite: "map-campfire-01.img",
+            scale: 0.375,
+            alpha: 1,
+            tint: 0xffffff,
+            zIdx: 10,
+        },
+        sound: {
+            bullet: "stone_bullet",
+            punch: "stone_bullet",
+            explode: "stone_break_01",
+            enter: "none",
+        },
+    };
+    return util.mergeDeep(t, e || {});
+}
+
 function createCache<T extends BuildingDef>(e: Partial<T>): T {
     const t = {
         type: "building",
@@ -1579,7 +1611,7 @@ function createTable<T extends ObstacleDef>(e: Partial<T>): T {
         terrain: { grass: true, beach: true },
         img: {
             sprite: "map-table-01.img",
-            residue: "map-table-res.img",
+            residue: "map-table-res-01.img",
             scale: 0.5,
             alpha: 1,
             tint: 0xffffff,
@@ -5056,6 +5088,147 @@ function createLoggingComplex3<T extends BuildingDef>(e: Partial<T>): T {
             {
                 type: "barrel_01",
                 pos: v2.create(-2.75, 2.25),
+                scale: 1,
+                ori: 0,
+            },
+        ],
+    };
+    return util.mergeDeep(t, e || {});
+}
+
+function createCamp<T extends BuildingDef>(e: Partial<T>): T {
+    const t = {
+        type: "building",
+        map: { display: true, shapes: [] },
+        terrain: { grass: true, beach: false },
+        mapObstacleBounds: [collider.createCircle(v2.create(0, 0), 22.5)],
+        mapGroundPatches: [
+            {
+                bound: collider.createAabbExtents(
+                    v2.create(10.5, 10),
+                    v2.create(5.75, 5.5),
+                ),
+                color: e.groundTintDk || 0x9e9e9e,
+                roughness: 0.1,
+                offsetDist: 0,
+            },
+            {
+                bound: collider.createAabbExtents(
+                    v2.create(-1, -15),
+                    v2.create(6.25, 4.25),
+                ),
+                color: e.groundTintDk || 0x9e9e9e,
+                roughness: 0.1,
+                offsetDist: 0,
+            },
+        ],
+        floor: {
+            surfaces: [{ type: "snow", collision: [] }],
+            imgs: [],
+        },
+        ceiling: {
+            zoomRegions: [
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(0, 0),
+                        v2.create(15, 15),
+                    ),
+                    zoom: 36,
+                },
+            ],
+            imgs: [],
+        },
+        occupiedEmitters: [
+            {
+                type: "campfire_smoke",
+                pos: v2.create(0, 0),
+                rot: 0,
+                scale: 1,
+                layer: 0,
+                parentToCeiling: true,
+            },
+        ],
+        healRegions: [
+            {
+                collision: collider.createCircle(v2.create(0, 0), 15),
+                healRate: 2,
+            },
+        ],
+        mapObjects: [
+            {
+                type: randomObstacleType({ barrel_01: 1, crate_03: 1 }),
+                pos: v2.create(3, -16.75),
+                scale: 1,
+                ori: 0,
+                inheritOri: false,
+            },
+            {
+                type: randomObstacleType({ bush_01: 3, cache_06: 1 }),
+                pos: v2.create(-14, -6),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "campfire_01",
+                pos: v2.create(0, 0),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "crate_01",
+                pos: v2.create(8, 12),
+                scale: 1,
+                ori: 0,
+                inheritOri: false,
+            },
+            {
+                type: "crate_01",
+                pos: v2.create(13, 10),
+                scale: 1,
+                ori: 0,
+                inheritOri: false,
+            },
+            {
+                type: "crate_03x",
+                pos: v2.create(8.5, 7.5),
+                scale: 1,
+                ori: 0,
+                inheritOri: false,
+            },
+            {
+                type: randomObstacleType({ tree_09: 3, tree_02: 6, tree_02h: 1 }),
+                pos: v2.create(-13.5, 7.5),
+                scale: 1,
+                ori: 0,
+                inheritOri: false,
+            },
+            {
+                type: "tree_09",
+                pos: v2.create(-7.5, -1.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: e.tree || "tree_10",
+                pos: v2.create(14, -6),
+                scale: 1.1,
+                ori: 0,
+            },
+            {
+                type: e.tree || "tree_10",
+                pos: v2.create(-9, 12.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "woodpile_03",
+                pos: v2.create(-1, -13.25),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "woodpile_03",
+                pos: v2.create(-3, -16.75),
                 scale: 1,
                 ori: 0,
             },
@@ -9935,6 +10108,9 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         sound: { enter: "bush_enter_02" },
     }),
     bush_07x: createBush({ img: { sprite: "map-bush-07x.img" } }),
+
+    campfire_01: createCampfire({}),
+
     case_01: createCase({ loot: [autoLoot("deagle", 1, { preloadGuns: true })] }),
     case_02: createCase({
         img: { sprite: "map-case-deagle-02.img" },
@@ -16176,6 +16352,12 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     logging_complex_03: createLoggingComplex3({}),
     logging_complex_03sp: createLoggingComplex3({ groundTintDk: 0x253210 }),
     logging_complex_03su: createLoggingComplex3({ groundTintDk: 0x4e7d13 }),
+
+    camp_01: createCamp({}),
+    camp_01w: createCamp({
+        tree: randomObstacleType({ tree_07: 1, tree_08: 1 }),
+    }),
+
     junkyard_01: {
         type: "building",
         map: { display: true, shapes: [] },
