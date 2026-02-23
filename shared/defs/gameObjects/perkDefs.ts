@@ -41,8 +41,8 @@ export const PerkProperties = {
         giveInterval: 0.08, // interval between each grenade being given until the backpack is full
     },
     gotw: {
-        scale: 0.25,
-        healthRegen: 0.5, // per second
+        scale: 0.2,
+        healthRegen: 1, // per second
     },
     field_medic: {
         speedBoost: 1,

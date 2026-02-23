@@ -193,6 +193,17 @@ const mapDef: PartialMapDef = {
             { name: "crowbar", count: 1, weight: 3 },
             { name: "iceaxe", count: 1, weight: 1 },
         ],
+        tier_outfits: [
+            { name: "outfitCobaltShell", count: 1, weight: 0.2 },
+            { name: "outfitWoodland", count: 1, weight: 0.2 },
+            { name: "outfitWhite", count: 1, weight: 0.15 },
+            { name: "outfitCarbonFiber", count: 1, weight: 0.15 },
+            { name: "outfitBlackIce", count: 1, weight: 0.15 },
+            { name: "outfitDarkGloves", count: 1, weight: 0.1 },
+            { name: "outfitCamo", count: 1, weight: 0.1 },
+            { name: "outfitSnow", count: 1, weight: 0.1 },
+            { name: "outfitGhillie", count: 1, weight: 0.01 },
+        ],
     },
     mapGen: {
         densitySpawns: [
@@ -252,6 +263,10 @@ const mapDef: PartialMapDef = {
                     large: 2,
                 },
                 stone_04x: 3, // had to add the whole table to change this...might want to consider adding some form of partial override - Stu
+                camp_01: {
+                    small: 2,
+                    large: 3,
+                },
             },
         ],
         randomSpawns: [
