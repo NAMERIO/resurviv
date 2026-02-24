@@ -26,8 +26,8 @@ console.log({
 const config = {
     address: Config.gameServer.apiServerUrl,
     region: Config.gameServer.thisRegion,
-    gameModeIdx: 0,
-    botCount: 79,
+    gameModeIdx: 1,
+    botCount: 7,
     joinDelay: 100,
 };
 
@@ -301,10 +301,11 @@ class Bot {
             outfit: outfits[util.randomInt(0, outfits.length - 1)],
             heal: "heal_basic",
             boost: "boost_basic",
-            perk: "",
+            perk: "quick_reload",
             emotes: this.emotes,
-            primary: "mosin",
+            primary: "spas12",
             secondary: "mosin",
+            death_effect: "death_basic",
         };
 
         joinMsg.matchPriv = this.data;

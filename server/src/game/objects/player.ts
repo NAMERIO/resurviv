@@ -1344,8 +1344,12 @@ export class Player extends BaseGameObject {
     loadout = {
         melee: "fists",
         heal: "heal_basic",
+        outfit: "outfitBase",
+        primary: "spas12",
+        secondary: "mosin",
         boost: "boost_basic",
         death_effect: "death_basic",
+        perk: "quick_reload",
         emotes: [...GameConfig.defaultEmoteLoadout],
     };
 
