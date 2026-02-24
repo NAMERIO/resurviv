@@ -1271,7 +1271,14 @@ export class LoadoutMenu {
         const localizedTitle = this.localization
             .translate(`loadout-title-${category.loadoutType}`)
             .toUpperCase();
-        $("#modal-customize-cat-title").html(localizedTitle);
+            if (category.loadoutType === "perk") {
+                const perkNote = this.localization.translate("loadout-perk-mode-note");
+                $("#modal-customize-cat-title").html(`
+                    ${localizedTitle}<span style='font-size:16px;color:#FFD700;text-shadow:0 1px 3px rgba(0,0,0,0.8);margin-left:8px;vertical-align:middle;'>${perkNote}</span>
+                `);
+            } else {
+                $("#modal-customize-cat-title").html(localizedTitle);
+            }
         $("#modal-content-right-crosshair").css(
             "display",
             category.loadoutType == "crosshair" ? "block" : "none",
