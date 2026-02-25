@@ -127,6 +127,7 @@ const mapDef: PartialMapDef = {
                 crate_01: "crate_01x",
                 stone_01: "stone_01x",
                 stone_03: "stone_03x",
+                tree_01: "tree_07",
             },
         ],
     },

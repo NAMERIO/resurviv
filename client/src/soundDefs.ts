@@ -319,11 +319,11 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
         },
         spas16_reload_01: {
             path: "audio/guns/spas16_reload_01.mp3",
-            volume: 1,
+            volume: 1.25,
         },
         spas16_switch_01: {
             path: "audio/guns/spas16_switch_01.mp3",
-            volume: 1,
+            volume: 1.25,
         },
         mp220_01: {
             path: "audio/guns/mp220_01.mp3",
@@ -602,11 +602,11 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
         },
         imbel_reload_01: {
             path: "audio/guns/imbel_reload_01.mp3",
-            volume: 1,
+            volume: 1.25,
         },
         imbel_switch_01: {
             path: "audio/guns/imbel_switch_01.mp3",
-            volume: 1,
+            volume: 1.25,
         },
         m249_01: {
             path: "audio/guns/m249_01.mp3",

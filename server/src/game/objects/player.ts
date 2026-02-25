@@ -2073,7 +2073,7 @@ export class Player extends BaseGameObject {
                         )
                     ) {
                         this.indoors = true;
-                        this.insideZoomRegion = true;
+                        this.insideZoomRegion = !zoomRegion.noZoom;
                         occupiedBuilding = obj;
                         insideNoZoomRegion = false;
                         if (zoomRegion.zoom) {

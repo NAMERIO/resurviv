@@ -32,6 +32,7 @@ export interface BuildingDef {
             zoomIn?: AABB;
             zoomOut?: AABB;
             zoom?: number;
+            noZoom?: boolean;
         }>;
         vision?: {
             dist?: number;

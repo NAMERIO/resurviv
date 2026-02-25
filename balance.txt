@@ -181,7 +181,7 @@ Turkey Cache Changes (11/1/2025):
 ~ headshotMult on DMRs reduced across the board, damage increased (excluding the Mk 20 SSR which was adjusted in previous paches), see above. 
 + Gold Crate: Now drop 1 item from Tier Medical.
 
-0.2.2 (Woods Update) (02/23/2026):
+0.2.2 (Woods Update) (03/09/2026):
 - 1 Logging Complex 03 (Winter Woods, 3 --> 2).
 + 2-3 Camps (fixedSpawns, Winter Woods & Winter, 0 --> 2-3 depending on map size).
 + 1 Barrel Cache (fixedSpawns, Woods, 0 --> 1).

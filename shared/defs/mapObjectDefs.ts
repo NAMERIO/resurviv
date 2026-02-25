@@ -5115,7 +5115,7 @@ function createCamp<T extends BuildingDef>(e: Partial<T>): T {
             {
                 bound: collider.createAabbExtents(
                     v2.create(-1, -15),
-                    v2.create(6.25, 4.25),
+                    v2.create(6.25, 4.5),
                 ),
                 color: e.groundTintDk || 0x9e9e9e,
                 roughness: 0.1,
@@ -5133,7 +5133,7 @@ function createCamp<T extends BuildingDef>(e: Partial<T>): T {
                         v2.create(0, 0),
                         v2.create(15, 15),
                     ),
-                    zoom: 36,
+                    noZoom: true,
                 },
             ],
             imgs: [],
@@ -5222,13 +5222,13 @@ function createCamp<T extends BuildingDef>(e: Partial<T>): T {
             },
             {
                 type: "woodpile_03",
-                pos: v2.create(-1, -13.25),
+                pos: v2.create(-1, -13),
                 scale: 1,
                 ori: 0,
             },
             {
                 type: "woodpile_03",
-                pos: v2.create(-3, -16.75),
+                pos: v2.create(-3, -17),
                 scale: 1,
                 ori: 0,
             },
@@ -9342,6 +9342,13 @@ function createWorkshop<T extends BuildingDef>(e: Partial<T>): T {
             vision: { dist: 8, width: 5 },
             imgs: [
                 {
+                    sprite: "map-building-workshop-ceiling-02.img",
+                    pos: v2.create(-16.5, 4.5),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+                {
                     sprite: "map-building-workshop-ceiling-01.img",
                     pos: v2.create(8, 0),
                     scale: 0.5,
@@ -9616,13 +9623,13 @@ function createWorkshop<T extends BuildingDef>(e: Partial<T>): T {
             },
             {
                 type: "woodpile_03",
-                pos: v2.create(-5.5, 7.5),
+                pos: v2.create(-5.25, 7.5),
                 scale: 1,
                 ori: 1,
             },
             {
                 type: "woodpile_03",
-                pos: v2.create(-1.75, 5.5),
+                pos: v2.create(-1.5, 5.5),
                 scale: 1,
                 ori: 1,
             },
@@ -12806,7 +12813,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         },
     }),
     woodpile_03: createWoodPile({
-        collision: collider.createAabbExtents(v2.create(0, 0), v2.create(3, 1.5)),
+        collision: collider.createAabbExtents(v2.create(0, 0), v2.create(3, 1.75)),
         health: 175,
         destructible: true,
         map: { display: true, color: 0x663300, scale: 0.8 },
@@ -16203,47 +16210,47 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     },
     workshop_wall_right: createWall({
         material: "metal",
-        extents: v2.create(20, 0.4),
+        extents: v2.create(20, 0.5),
     }),
     workshop_wall_edge: createWall({
         material: "metal",
-        extents: v2.create(4, 0.4),
+        extents: v2.create(4, 0.5),
     }),
     workshop_wall_mid_1: createWall({
         material: "metal",
-        extents: v2.create(7.25, 0.4),
+        extents: v2.create(7.25, 0.5),
     }),
     workshop_wall_mid_2: createWall({
         material: "metal",
-        extents: v2.create(8, 0.4),
+        extents: v2.create(8, 0.5),
     }),
     workshop_wall_mid_3: createWall({
         material: "metal",
-        extents: v2.create(1.25, 0.4),
+        extents: v2.create(1.25, 0.5),
     }),
     workshop_wall_bot: createWall({
         material: "brick",
-        extents: v2.create(8.75, 0.4),
+        extents: v2.create(8.75, 0.5),
     }),
     workshop_wall_room_1: createWall({
         material: "brick",
-        extents: v2.create(4.25, 0.4),
+        extents: v2.create(4.25, 0.5),
     }),
     workshop_wall_room_2: createWall({
         material: "brick",
-        extents: v2.create(2.25, 0.4),
+        extents: v2.create(2.25, 0.5),
     }),
     workshop_wall_room_3: createWall({
         material: "brick",
-        extents: v2.create(4.5, 0.4),
+        extents: v2.create(4.5, 0.5),
     }),
     workshop_wall_room_4: createWall({
         material: "brick",
-        extents: v2.create(2.75, 0.4),
+        extents: v2.create(2.75, 0.5),
     }),
     workshop_wall_left: createWall({
         material: "brick",
-        extents: v2.create(15.5, 0.4),
+        extents: v2.create(15.5, 0.5),
     }),
     workshop_01: createWorkshop({
         left_loot: "loot_tier_1",
