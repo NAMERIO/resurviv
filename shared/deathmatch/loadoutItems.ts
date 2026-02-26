@@ -14,7 +14,7 @@ export const allowedGuns = [
     "ot38",
     // "ot38_dual",
     // "ots38_dual",
-    // "ots38",
+    "ots38",
     "deagle",
     "deagle_dual",
     "colt45",
@@ -59,13 +59,16 @@ export const allowedGuns = [
     "hk416",
     "m4a1",
     "mk12",
-    "scarssr",
+    // "scarssr",
+    "scorpion",
 
     //Light Machine Guns (LMG):
     "dp28",
     "qbb97",
     "l86",
     "bar",
+    "vector45",
+    "vector",
 
     //Others:
     "blr",
