@@ -1,0 +1,23 @@
+{
+  "name": "survev-desktop",
+  "version": "0.1.0",
+  "description": "Survev Desktop Client with Discord Rich Presence",
+  "main": "dist/main.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && electron dist/main.js",
+    "dev": "tsc && concurrently \"tsc --watch\" \"electron dist/main.js\" || echo [electron] dev failed, continuing...",
+    "package": "tsc && electron-builder --config electron-builder.json"
+  },
+  "dependencies": {
+    "discord-rpc": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.3",
+    "concurrently": "^9.2.1",
+    "electron": "33.3.1",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.9.3"
+  }
+}

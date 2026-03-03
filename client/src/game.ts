@@ -18,6 +18,7 @@ import { Editor } from "./debug/editor";
 /* STRIP_FROM_PROD_CLIENT:END */
 
 import { device } from "./device";
+import { discordPresence } from "./discordPresence";
 import { EmoteBarn } from "./emote";
 import { Gas } from "./gas";
 import { helpers } from "./helpers";
@@ -1281,6 +1282,16 @@ export class Game {
                 }
 
                 SDK.gamePlayStart();
+                discordPresence.matchStart({
+                    region: this.m_config.get("region") ?? "unknown",
+                    gameMode:
+                        this.teamMode === TeamMode.Solo
+                            ? "Solo"
+                            : this.teamMode === TeamMode.Duo
+                              ? "Duo"
+                              : "Squad",
+                    kills: 0,
+                });
                 break;
             }
             case net.MsgType.Map: {
@@ -1399,6 +1410,7 @@ export class Game {
                 // Update local kill counter
                 if (msg.killCreditId == this.m_localId && msg.killed) {
                     this.m_uiManager.setLocalKills(msg.killerKills);
+                    discordPresence.updateKills(msg.killerKills);
                 }
 
                 // Add killfeed entry for this kill
@@ -1548,6 +1560,9 @@ export class Game {
                 const msg = new net.GameOverMsg();
                 msg.deserialize(stream);
                 this.m_gameOver = msg.gameOver;
+
+                discordPresence.matchEnd();
+
                 const localTeamId = this.m_playerBarn.getPlayerInfo(
                     this.m_localId,
                 ).teamId;

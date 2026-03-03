@@ -1,0 +1,23 @@
+{
+  "appId": "com.survev.desktop",
+  "productName": "Survev",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "dist/**/*",
+    "node_modules/**/*"
+  ],
+  "win": {
+    "target": "nsis",
+    "icon": "../client/public/img/favicon.png"
+  },
+  "mac": {
+    "target": "dmg",
+    "icon": "../client/public/img/favicon.png"
+  },
+  "linux": {
+    "target": "AppImage",
+    "icon": "../client/public/img/favicon.png"
+  }
+}
