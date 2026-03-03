@@ -1,4 +1,5 @@
 import { GameObjectDefs, type LootDef } from "../../../shared/defs/gameObjectDefs";
+import { DamageStreakDefs } from "../../../shared/defs/gameObjects/damageStreakDefs";
 import {
     type AmmoDef,
     type BoostDef,
@@ -230,6 +231,9 @@ export class UiManager2 {
     newState = new UiState();
     frameCount = 0;
 
+    streakActivateRequested = false;
+    streakClickedIdx = -1;
+
     // DOM
     dom = {
         debugButton: domElemById("ui-debug-button"),
@@ -309,6 +313,15 @@ export class UiManager2 {
             divTitle: HTMLElement;
             divDesc: HTMLElement;
             image: HTMLImageElement;
+        }>,
+        streaks: [] as Array<{
+            div: HTMLElement;
+            image: HTMLImageElement;
+            progressFill: HTMLElement;
+            timerFill: HTMLElement;
+            dmgText: HTMLElement;
+            tooltipTitle: HTMLElement;
+            tooltipDesc: HTMLElement;
         }>,
     };
 
@@ -500,6 +513,33 @@ export class UiManager2 {
         for (let i = 0; i < this.dom.perks.length; i++) {
             addItemAction("drop", "perk", i as unknown as string, this.dom.perks[i].div);
         }
+
+        for (let i = 0; i < DamageStreakDefs.length; i++) {
+            const el = domElemById(`ui-streak-${i}`);
+            const streakData = {
+                div: el,
+                image: el.getElementsByClassName("ui-streak-image")[0] as HTMLImageElement,
+                progressFill: el.getElementsByClassName("ui-streak-progress-fill")[0] as HTMLElement,
+                timerFill: el.getElementsByClassName("ui-streak-timer-fill")[0] as HTMLElement,
+                dmgText: el.getElementsByClassName("ui-streak-dmg-text")[0] as HTMLElement,
+                tooltipTitle: el.getElementsByClassName("tooltip-title")[0] as HTMLElement,
+                tooltipDesc: el.getElementsByClassName("tooltip-desc")[0] as HTMLElement,
+            };
+            const def = DamageStreakDefs[i];
+            streakData.image.src = `img/loot/${def.lootImg.sprite.replace(".img", ".svg")}`;
+            streakData.tooltipTitle.textContent = `${def.name} [G]`;
+            streakData.tooltipDesc.textContent = def.description;
+            this.dom.streaks.push(streakData);
+        }
+
+        for (let i = 0; i < this.dom.streaks.length; i++) {
+            const streakEl = this.dom.streaks[i];
+            setEventListener("click", streakEl.div, () => {
+                this.streakActivateRequested = true;
+                this.streakClickedIdx = i;
+            });
+        }
+
         for (let i = 0; i < this.itemActions.length; i++) {
             const item = this.itemActions[i];
             setEventListener("mousedown", item.div, (e) => {
@@ -980,6 +1020,54 @@ export class UiManager2 {
                 Ee.pulse = !device.mobile && Ee.ticker < 4;
             } else {
                 Ee.type = "";
+            }
+        }
+
+        {
+            const ld = activePlayer.m_localData;
+            const availableSet = new Set(ld.m_streakAvailable);
+            const isActive = ld.m_streakActive;
+            const activeIdx = ld.m_streakActiveIdx;
+            const timeLeft = ld.m_streakTimeLeft;
+            const dmgDealt = ld.m_streakDamageDealt;
+            const currentTier = ld.m_streakCurrentTier;
+            const thresholdOffset = ld.m_streakThresholdOffset;
+
+            for (let i = 0; i < this.dom.streaks.length; i++) {
+                const sd = this.dom.streaks[i];
+                const def = DamageStreakDefs[i];
+                const isReady = availableSet.has(i);
+                const isThisActive = isActive && activeIdx === i;
+
+                sd.div.classList.remove("streak-ready", "streak-active", "streak-used");
+
+                if (isThisActive) {
+                    sd.div.classList.add("streak-active");
+                    const pct = Math.max(0, Math.min(100, (timeLeft / def.duration) * 100));
+                    sd.timerFill.style.height = `${pct}%`;
+                    sd.progressFill.style.height = "0%";
+                    sd.dmgText.textContent = `${Math.ceil(timeLeft)}s`;
+                } else if (isReady) {
+                    sd.div.classList.add("streak-ready");
+                    sd.timerFill.style.height = "0%";
+                    sd.progressFill.style.height = "100%";
+                    sd.dmgText.textContent = "READY";
+                } else if (currentTier <= i) {
+                    const prevBase = i > 0 ? DamageStreakDefs[i - 1].damageThreshold : 0;
+                    const prevThreshold = prevBase + thresholdOffset;
+                    const thisThreshold = def.damageThreshold + thresholdOffset;
+                    const range = thisThreshold - prevThreshold;
+                    const progress = Math.max(0, dmgDealt - prevThreshold);
+                    const pct = Math.min(100, (progress / range) * 100);
+                    sd.progressFill.style.height = `${pct}%`;
+                    sd.timerFill.style.height = "0%";
+                    sd.dmgText.textContent = `${Math.floor(dmgDealt)}/${thisThreshold}`;
+                } else {
+                    sd.div.classList.add("streak-used");
+                    sd.progressFill.style.height = "0%";
+                    sd.timerFill.style.height = "0%";
+                    sd.dmgText.textContent = "";
+                }
             }
         }
 

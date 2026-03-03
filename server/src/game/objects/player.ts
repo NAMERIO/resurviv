@@ -19,6 +19,7 @@ import type { GunDef } from "../../../../shared/defs/gameObjects/gunDefs";
 import type { MeleeDef } from "../../../../shared/defs/gameObjects/meleeDefs";
 import type { OutfitDef } from "../../../../shared/defs/gameObjects/outfitDefs";
 import { PerkProperties } from "../../../../shared/defs/gameObjects/perkDefs";
+import { DamageStreakDefs, DamageStreakProperties } from "../../../../shared/defs/gameObjects/damageStreakDefs";
 import type { RoleDef } from "../../../../shared/defs/gameObjects/roleDefs";
 import type { ThrowableDef } from "../../../../shared/defs/gameObjects/throwableDefs";
 import { UnlockDefs } from "../../../../shared/defs/gameObjects/unlockDefs";
@@ -429,6 +430,7 @@ export class PlayerBarn {
             player.inventoryDirty = false;
             player.weapsDirty = false;
             player.spectatorCountDirty = false;
+            player.streakDirty = false;
             player.activeIdDirty = false;
             player.groupStatusDirty = false;
             if (flushPlayerStatus) {
@@ -1259,6 +1261,107 @@ export class Player extends BaseGameObject {
         return this._perkTypes.includes(type);
     }
 
+    checkDamageStreaks(): void {
+        const offset = this.streakThresholdOffset;
+        for (let i = 0; i < DamageStreakDefs.length; i++) {
+            if (this.streakUnlockedTiers.has(i)) continue;
+            if (this.damageDealt >= DamageStreakDefs[i].damageThreshold + offset) {
+                this.streakUnlockedTiers.add(i);
+                this.streakAvailable.push(i);
+                this.streakDirty = true;
+            }
+        }
+    }
+
+    activateStreak(requestedIdx: number = -1): void {
+        if (this.streakAvailable.length === 0) return;
+        if (this.streakActive) return;
+
+        let streakIdx: number;
+        if (requestedIdx >= 0 && this.streakAvailable.includes(requestedIdx)) {
+            streakIdx = requestedIdx;
+            this.streakAvailable.splice(this.streakAvailable.indexOf(requestedIdx), 1);
+        } else {
+            streakIdx = this.streakAvailable.shift()!;
+        }
+        const streakDef = DamageStreakDefs[streakIdx];
+        if (!streakDef) return;
+
+        this.streakActive = true;
+        this.streakActiveIdx = streakIdx;
+        this.streakActiveTimer = streakDef.duration;
+        this.streakDirty = true;
+
+        if (streakDef.rewardType === "perk") {
+            this.addPerk(streakDef.rewardItem, false);
+        } else if (streakDef.rewardType === "gun") {
+            const slot = this.curWeapIdx <= 1 ? this.curWeapIdx : 0;
+            this.streakSavedWeapon = {
+                slot,
+                type: this.weapons[slot].type,
+                ammo: this.weapons[slot].ammo,
+            };
+            const gunDef = GameObjectDefs[streakDef.rewardItem] as GunDef;
+            const ammo = gunDef ? gunDef.maxClip : 30;
+            this.weaponManager.setWeapon(slot, streakDef.rewardItem, ammo);
+            this.weaponManager.setCurWeapIndex(slot, true, true, true);
+        }
+    }
+
+    deactivateStreak(): void {
+        if (!this.streakActive) return;
+
+        const streakDef = DamageStreakDefs[this.streakActiveIdx];
+        if (streakDef) {
+            if (streakDef.rewardType === "perk") {
+                if (this.hasPerk(streakDef.rewardItem)) {
+                    this.removePerk(streakDef.rewardItem);
+                }
+            } else if (streakDef.rewardType === "gun") {
+                if (this.streakSavedWeapon) {
+                    this.weaponManager.setWeapon(
+                        this.streakSavedWeapon.slot,
+                        this.streakSavedWeapon.type,
+                        this.streakSavedWeapon.ammo,
+                    );
+                    this.streakSavedWeapon = null;
+                }
+            }
+        }
+
+        this.streakActive = false;
+        this.streakActiveIdx = -1;
+        this.streakActiveTimer = 0;
+        this.streakDirty = true;
+    }
+
+    updateStreaks(dt: number): void {
+        if (this.streakActive) {
+            this.streakActiveTimer -= dt;
+            this.streakDirty = true;
+
+            const streakDef = DamageStreakDefs[this.streakActiveIdx];
+            if (streakDef && streakDef.rewardItem === "streak_juggernaut") {
+                this.health += DamageStreakProperties.streak_juggernaut.healthRegen * dt;
+            }
+
+            if (this.streakActiveTimer <= 0) {
+                this.deactivateStreak();
+            }
+        }
+
+        if (
+            !this.streakActive &&
+            this.streakAvailable.length === 0 &&
+            this.streakUnlockedTiers.size >= DamageStreakDefs.length
+        ) {
+            this.streakCycleCount++;
+            this.streakUnlockedTiers.clear();
+            this.streakDirty = true;
+            this.checkDamageStreaks();
+        }
+    }
+
     hasActivePan() {
         return (
             this.wearingPan ||
@@ -1359,6 +1462,30 @@ export class Player extends BaseGameObject {
 
     damageTaken = 0;
     damageDealt = 0;
+
+    streakAvailable: number[] = [];
+    streakActive = false;
+    streakActiveIdx = -1;
+    streakActiveTimer = 0;
+    streakUnlockedTiers = new Set<number>();
+    streakCycleCount = 0;
+    streakSavedWeapon: { slot: number; type: string; ammo: number } | null = null;
+    streakDirty = true;
+    get streakThresholdOffset(): number {
+        const maxBase = DamageStreakDefs[DamageStreakDefs.length - 1].damageThreshold;
+        return this.streakCycleCount * maxBase;
+    }
+    get streakDamageDealt(): number { return this.damageDealt; }
+    get streakCurrentTier(): number {
+        for (let i = 0; i < DamageStreakDefs.length; i++) {
+            if (!this.streakUnlockedTiers.has(i)) return i;
+        }
+        return DamageStreakDefs.length;
+    }
+    get availableStreaks(): number[] { return this.streakAvailable; }
+    get activeStreakActive(): boolean { return this.streakActive; }
+    get activeStreakIdx(): number { return this.streakActiveIdx; }
+    get activeStreakTimeLeft(): number { return this.streakActiveTimer; }
 
     // infinity since we aren't dead yet ;)
     // this is used for sorting and getting player ranks
@@ -1505,6 +1632,8 @@ export class Player extends BaseGameObject {
         }
 
         this.timeAlive += dt;
+
+        this.updateStreaks(dt);
 
         if (this.game.map.factionMode && this.timeUntilHidden > 0) {
             this.timeUntilHidden -= dt;
@@ -2454,6 +2583,14 @@ export class Player extends BaseGameObject {
                 weapons: player.weapons,
                 spectatorCountDirty: true,
                 spectatorCount: player.spectatorCount,
+                streakDirty: true,
+                streakDamageDealt: player.damageDealt,
+                streakCurrentTier: player.streakCurrentTier,
+                streakThresholdOffset: player.streakThresholdOffset,
+                availableStreaks: player.streakAvailable,
+                activeStreakActive: player.streakActive,
+                activeStreakIdx: player.streakActiveIdx,
+                activeStreakTimeLeft: player.streakActiveTimer,
             };
             this.startedSpectating = false;
         } else {
@@ -2734,6 +2871,11 @@ export class Player extends BaseGameObject {
                 reduceDamage(PerkProperties.steelskin.damageReduction);
             }
 
+            // Streak: Juggernaut damage reduction
+            if (this.hasPerk("streak_juggernaut")) {
+                reduceDamage(DamageStreakProperties.streak_juggernaut.damageReduction);
+            }
+
             const chest = GameObjectDefs[this.chest] as ChestDef;
             if (chest && !isHeadShot) {
                 let chestReduction = chest.damageReduction;
@@ -2774,6 +2916,8 @@ export class Player extends BaseGameObject {
         if (playerSource && params.source !== this) {
             if (playerSource.groupId !== this.groupId) {
                 playerSource.damageDealt += finalDamage;
+                playerSource.streakDirty = true;
+                playerSource.checkDamageStreaks();
             }
             this.lastDamagedBy = playerSource;
         }
@@ -3716,6 +3860,10 @@ export class Player extends BaseGameObject {
                 }
                 case GameConfig.Input.SwapWeapSlots: {
                     this.weaponManager.swapWeaponSlots();
+                    break;
+                }
+                case GameConfig.Input.ActivateStreak: {
+                    this.activateStreak(msg.streakIdx);
                     break;
                 }
             }

@@ -2,6 +2,7 @@ import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
 import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
 import { PerkProperties } from "../../../shared/defs/gameObjects/perkDefs";
+import { DamageStreakProperties } from "../../../shared/defs/gameObjects/damageStreakDefs";
 import {
     type ThrowableDef,
     ThrowableDefs,
@@ -724,6 +725,10 @@ export class WeaponManager {
 
         weapon.cooldown = itemDef.fireDelay;
         weapon.recoilTime = itemDef.recoilTime;
+
+        if (this.player.hasPerk("streak_rapid_fire")) {
+            weapon.cooldown *= DamageStreakProperties.streak_rapid_fire.fireDelayMult;
+        }
 
         // Check firing location
         if (itemDef.outsideOnly && this.player.indoors && !forceFire) {

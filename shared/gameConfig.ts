@@ -110,6 +110,7 @@ export enum Input {
     UsePainkiller,
     StowWeapons,
     SwapWeapSlots,
+    ActivateStreak,
     ToggleMap,
     CycleUIMode,
     EmoteMenu,
@@ -121,11 +122,7 @@ export enum Input {
 }
 
 export const GameConfig = {
-    // started with 1000 to distinguish us from the original surviv protocol
-    // the protocol we originated from was 78
-    // remember to bump this every time a serialization function is changed
-    // or a definition item added, removed or moved
-    protocolVersion: 1010,
+    protocolVersion: 1011,
     Input,
     EmoteSlot,
     WeaponSlot,

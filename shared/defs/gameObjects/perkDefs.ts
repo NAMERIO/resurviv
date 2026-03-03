@@ -89,6 +89,13 @@ export const PerkProperties = {
     rare_potato: {
         quality: 1,
     },
+    streak_rapid_fire: {
+        fireDelayMult: 0.5,
+    },
+    streak_juggernaut: {
+        damageReduction: 0.5,
+        healthRegen: 3,
+    },
     // map of ammo type to perk that boosts that ammo
     ammoBonuses: {
         "9mm": ["treat_9mm", "bonus_9mm"],
@@ -873,6 +880,36 @@ export const PerkDefs: Record<string, PerkDef> = {
             tint: 0xffffff,
             border: "loot-circle-outer-03.img",
             borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    streak_rapid_fire: {
+        name: "Rapid Fire",
+        type: "perk",
+        lore: "Greatly increased fire rate for a limited time!",
+        lootImg: {
+            sprite: "loot-perk-firepower.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xff4400,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    streak_juggernaut: {
+        name: "Juggernaut",
+        type: "perk",
+        lore: "Massive damage reduction and health regen for a limited time!",
+        lootImg: {
+            sprite: "loot-perk-steelskin.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xff0000,
             scale: 0.275,
         },
         sound: {

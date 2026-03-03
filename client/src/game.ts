@@ -650,6 +650,16 @@ export class Game {
                 this.m_activePlayer.gunSwitchCooldown = 0;
             }
 
+            if (
+                this.m_inputBinds.isBindPressed(Input.ActivateStreak) ||
+                this.m_ui2Manager.streakActivateRequested
+            ) {
+                inputMsg.addInput(Input.ActivateStreak);
+                inputMsg.streakIdx = this.m_ui2Manager.streakClickedIdx;
+                this.m_ui2Manager.streakActivateRequested = false;
+                this.m_ui2Manager.streakClickedIdx = -1;
+            }
+
             // Handle touch inputs
             if (this.m_uiManager.reloadTouched) {
                 inputMsg.addInput(Input.Reload);

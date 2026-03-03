@@ -49,6 +49,22 @@ function serializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
         s.writeUint8(data.spectatorCount);
     }
 
+    s.writeBoolean(data.streakDirty);
+    if (data.streakDirty) {
+        s.writeFloat(data.streakDamageDealt, 0, 65535, 16);
+        s.writeUint8(data.streakCurrentTier);
+        s.writeFloat(data.streakThresholdOffset, 0, 65535, 16);
+        s.writeUint8(data.availableStreaks.length);
+        for (let i = 0; i < data.availableStreaks.length; i++) {
+            s.writeUint8(data.availableStreaks[i]);
+        }
+        s.writeBoolean(data.activeStreakActive);
+        if (data.activeStreakActive) {
+            s.writeUint8(data.activeStreakIdx);
+            s.writeFloat(data.activeStreakTimeLeft, 0, 60, 8);
+        }
+    }
+
     s.writeAlignToNextByte();
 }
 
@@ -100,6 +116,25 @@ function deserializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     data.spectatorCountDirty = s.readBoolean();
     if (data.spectatorCountDirty) {
         data.spectatorCount = s.readUint8();
+    }
+    data.streakDirty = s.readBoolean();
+    if (data.streakDirty) {
+        data.streakDamageDealt = s.readFloat(0, 65535, 16);
+        data.streakCurrentTier = s.readUint8();
+        data.streakThresholdOffset = s.readFloat(0, 65535, 16);
+        const numAvail = s.readUint8();
+        data.availableStreaks = [];
+        for (let i = 0; i < numAvail; i++) {
+            data.availableStreaks.push(s.readUint8());
+        }
+        data.activeStreakActive = s.readBoolean();
+        if (data.activeStreakActive) {
+            data.activeStreakIdx = s.readUint8();
+            data.activeStreakTimeLeft = s.readFloat(0, 60, 8);
+        } else {
+            data.activeStreakIdx = -1;
+            data.activeStreakTimeLeft = 0;
+        }
     }
     s.readAlignToNextByte();
 }
@@ -802,6 +837,14 @@ export interface LocalDataWithDirty extends LocalData {
     inventoryDirty: boolean;
     weapsDirty: boolean;
     spectatorCountDirty: boolean;
+    streakDirty: boolean;
+    streakDamageDealt: number;
+    streakCurrentTier: number;
+    streakThresholdOffset: number;
+    availableStreaks: number[];
+    activeStreakActive: boolean;
+    activeStreakIdx: number;
+    activeStreakTimeLeft: number;
 }
 
 // the non-optional properties are used by both server and client

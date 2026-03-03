@@ -18,6 +18,7 @@ export class InputMsg implements AbstractMsg {
     toMouseLen = 0;
     inputs: Input[] = [];
     useItem = "";
+    streakIdx = -1;
 
     addInput(input: Input) {
         if (this.inputs.length < 7 && !this.inputs.includes(input)) {
@@ -49,6 +50,7 @@ export class InputMsg implements AbstractMsg {
         });
 
         s.writeGameType(this.useItem);
+        s.writeInt8(this.streakIdx);
     }
 
     deserialize(s: BitStream) {
@@ -75,5 +77,6 @@ export class InputMsg implements AbstractMsg {
         });
 
         this.useItem = s.readGameType();
+        this.streakIdx = s.readInt8();
     }
 }
