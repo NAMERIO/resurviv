@@ -175,6 +175,11 @@ export class LoadoutMenu {
             categoryImage: "img/loot/loot-perk-splinter.svg",
         },
         {
+            loadoutType: "streak",
+            gameType: "streak",
+            categoryImage: "img/loot/loot-perk-firepower.svg",
+        },
+        {
             loadoutType: "emote",
             gameType: "emote",
             categoryImage: "img/gui/loadout-emote.svg",
@@ -193,11 +198,6 @@ export class LoadoutMenu {
             loadoutType: "death_effect",
             gameType: "death_effect",
             categoryImage: "img/gui/skull.svg",
-        },
-        {
-            loadoutType: "streak",
-            gameType: "streak",
-            categoryImage: "img/loot/loot-perk-firepower.svg",
         },
     ];
 
