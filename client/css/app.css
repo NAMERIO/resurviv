@@ -4876,12 +4876,17 @@ input [type="image"]:focus {
 #modal-customize-body {
   background-color: #83af50;
   color: #000;
-  height: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  padding: 0 8px;
+  padding-top: 36px;
 }
 
 #modal-customize-item-header {
-  padding-bottom: 16px;
-  padding-top: 16px;
+  padding-bottom: 6px;
+  padding-top: 6px;
   user-select: none;
 }
 
@@ -4889,7 +4894,7 @@ input [type="image"]:focus {
   color: #fff;
   cursor: pointer;
   display: inline;
-  font-size: 48px;
+  font-size: 28px;
   font-weight: 700;
   text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.75);
 }
@@ -4897,7 +4902,7 @@ input [type="image"]:focus {
 #modal-customize-item-rarity {
   color: #c5c5c5;
   display: inline;
-  font-size: 24px;
+  font-size: 16px;
   font-weight: 700;
   padding-left: 6px;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.75);
@@ -5055,9 +5060,11 @@ input [type="image"]:focus {
 
 #modal-customize-list {
   background-color: rgba(0, 0, 0, 0.3);
-  height: 362px;
+  flex: 1;
+  min-height: 200px;
+  max-height: 520px;
   overflow-x: hidden;
-  overflow-y: scroll;
+  overflow-y: auto;
   position: relative;
   width: 100%;
 }
@@ -5066,11 +5073,12 @@ input [type="image"]:focus {
   background-color: rgba(0, 0, 0, 0.3);
   cursor: pointer;
   display: inline-block;
-  height: 96px;
-  margin-left: 8px;
-  margin-top: 8px;
+  height: 88px;
+  margin-left: 6px;
+  margin-top: 6px;
   position: relative;
-  width: 96px;
+  width: 88px;
+  border-radius: 4px;
 }
 
 .customize-list-item-unlocked {
@@ -5080,26 +5088,28 @@ input [type="image"]:focus {
 .customize-list-item-locked {
   background-repeat: no-repeat;
   background-image: url(/img/gui/lock.svg);
-  background-size: 24px;
-  background-position: 71px 68px;
+  background-size: 20px;
+  background-position: calc(100% - 4px) calc(100% - 4px);
   opacity: 0.4;
 }
 
 .customize-list-item:hover {
   opacity: 1;
   transition: all 0.1s ease;
+  transform: scale(1.05);
 }
 
 .customize-list-item-selected {
   opacity: 1;
-  border: 5px solid #0f0;
+  border: 3px solid #0f0;
   box-sizing: border-box;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.4);
 }
 
 .customize-list-item > .customize-item-image {
   background-position: center;
   background-repeat: no-repeat;
-  background-size: 64px;
+  background-size: 56px;
   height: 100%;
   width: 100%;
 }
@@ -5385,21 +5395,29 @@ input [type="image"]:focus {
 
 #modal-customize-cat-title {
   color: #fff;
-  font-size: 32px;
-  left: 18px;
+  font-size: 22px;
   position: absolute;
   text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.75);
-  top: 12px;
+  top: 8px;
+  left: 84px;
+  right: 80px;
+  z-index: 3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #modal-customize-sort-wrap {
   border-radius: 3px;
   color: #fff;
   font-size: 10px;
-  overflow: hidden;
+  overflow: visible;
   position: absolute;
-  right: 56px;
-  top: 10px;
+  right: 42px;
+  top: 6px;
+  z-index: 3;
+  width: auto;
+  height: 28px;
 }
 
 @media (max-height: 768px) {
@@ -5464,78 +5482,87 @@ input [type="image"]:focus {
 
 #modal-customize-close {
   position: absolute;
-  right: 12px;
-  top: 0;
+  right: 8px;
+  top: 2px;
+  z-index: 3;
 }
 
 #modal-customize-close span.close-corner {
-  margin-top: 10px;
-  margin-right: -4px;
-  width: 28px;
-  height: 28px;
+  margin-top: 6px;
+  margin-right: 0;
+  width: 24px;
+  height: 24px;
   color: #fff;
   float: right;
   font-size: 48px;
   font-weight: 400;
   background-repeat: no-repeat;
   background-image: url(/img/gui/close.svg);
-  background-size: 28px;
+  background-size: 24px;
 }
 
 #modal-customize-header {
-  background-color: #547033;
+  background-color: #2e4a19;
   color: #fff;
-  height: 122px;
+  width: 72px;
+  min-width: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0px;
+  padding: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 5px 0 0 5px;
+  border-right: 3px solid rgba(0, 0, 0, 0.4);
+  scrollbar-width: none;
 }
 
 #modal-customize-cat-standalone {
-  margin-left: 30px;
+  margin-left: 0;
+  margin-top: 0;
+  border-top: 2px solid rgba(255, 255, 255, 0.15);
 }
 
 #modal-customize-cat-standalone:before {
-  border-bottom: solid 72px rgba(0, 0, 0, 0.5);
-  content: "";
-  cursor: default;
-  margin-left: -20px;
-  position: absolute;
-  width: 8px;
+  display: none;
 }
 
 .modal-customize-cat {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 0.05);
   cursor: pointer;
-  display: inline-block;
-  height: 72px;
-  margin-left: 4px;
-  margin-top: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 52px;
+  width: 72px;
   position: relative;
-  width: 70px;
+  transition: background 0.15s;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.modal-customize-cat:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .modal-customize-cat-image {
   background-repeat: no-repeat;
-  background-size: 56px;
-  height: 56px;
-  margin: auto;
-  opacity: 0.4;
-  position: relative;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 56px;
+  background-size: 36px;
+  background-position: center;
+  height: 36px;
+  width: 36px;
+  opacity: 0.6;
+  transition: opacity 0.15s;
 }
 
 .modal-customize-cat-connect {
-  background: #a3c082;
-  bottom: -16px;
-  height: 8px;
-  margin: auto;
-  opacity: 0;
-  position: relative;
-  width: 70px;
+  display: none;
 }
 
 .modal-customize-cat-selected {
-  background: #82ad51 !important;
+  background: rgba(130, 173, 81, 0.5) !important;
+  border-left: 3px solid #a0d450;
 }
 
 .modal-customize-cat-image-selected {
@@ -5543,45 +5570,35 @@ input [type="image"]:focus {
 }
 
 .modal-customize-cat-connect-selected {
-  opacity: 1;
+  display: none;
 }
 
 #modal-customize-header h2 {
   font-weight: 700;
+  display: none;
 }
 
 #modal-customize-footer {
-  background-color: #547033;
+  background-color: #3a5c1f;
   color: #fff;
-  height: 56px;
+  height: auto;
+  min-height: 40px;
+  padding: 4px 12px;
+  border-radius: 0 0 5px 0 !important;
 }
 
 #modal-customize-item-source {
   color: #ffdb7b;
-  font-size: 24px;
+  font-size: 16px;
   font-style: normal;
-  line-height: 28px;
+  line-height: 22px;
 }
 
 #modal-customize-item-lore {
   color: #d2ff7b;
-  font-size: 18px;
+  font-size: 14px;
   font-style: italic;
-  line-height: 28px;
-}
-
-#modal-customize-item-source {
-  color: #ffdb7b;
-  font-size: 24px;
-  font-style: normal;
-  line-height: 28px;
-}
-
-#modal-customize-item-lore {
-  color: #d2ff7b;
-  font-size: 18px;
-  font-style: italic;
-  line-height: 28px;
+  line-height: 20px;
 }
 
 #modal-customize-unlocks {
@@ -5589,7 +5606,7 @@ input [type="image"]:focus {
   left: 0;
   pointer-events: all;
   position: fixed;
-  width: 578px;
+  width: 600px;
 }
 
 @media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
@@ -5741,13 +5758,38 @@ input [type="image"]:focus {
 }
 
 #modal-content-left {
-  display: inline-block;
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  grid-template-rows: auto 1fr auto;
   left: 0;
   pointer-events: initial;
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
-  width: 578px;
+  width: 600px;
+  height: 585px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+#modal-content-left > #modal-customize-header {
+  grid-column: 1;
+  grid-row: 1 / -1;
+}
+
+#modal-content-left > #modal-customize-body {
+  grid-column: 2;
+  grid-row: 1 / 3;
+}
+
+#modal-content-left > #modal-customize-footer {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+#modal-content-left > .modal-disabled {
+  grid-column: 2;
+  grid-row: 1 / -1;
 }
 
 .modal-content-right {
@@ -5776,6 +5818,141 @@ input [type="image"]:focus {
 
 #modal-content-right-emote {
   height: 464px;
+}
+
+#modal-content-right-weapon {
+  height: 550px;
+}
+
+#customize-weapon-parent {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+#weapon-stats-name {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.75);
+  margin-bottom: 0;
+}
+
+#weapon-stats-rarity {
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.75);
+  color: #c5c5c5;
+}
+
+#weapon-stats-image {
+  width: 100%;
+  height: 120px;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+#weapon-stats-image-inner {
+  width: 180px;
+  height: 90px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+#weapon-stats-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.weapon-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.weapon-stat-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  width: 72px;
+  text-align: right;
+  flex-shrink: 0;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.75);
+}
+
+.weapon-stat-bar-outer {
+  flex: 1;
+  height: 14px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.weapon-stat-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.75);
+}
+
+.weapon-stat-bar-inner {
+  height: 100%;
+  border-radius: 2px;
+  background: #f2f2f2;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+#weapon-stat-damage,
+#weapon-stat-firerate,
+#weapon-stat-range,
+#weapon-stat-accuracy,
+#weapon-stat-magazine,
+#weapon-stat-reload {
+  background: #fff;
+}
+
+#weapon-stats-details {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.weapon-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.weapon-detail-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.75);
+}
+
+.weapon-detail-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.75);
 }
 
 #modal-customize .modal-customize-text {
@@ -7023,6 +7200,16 @@ input [type="image"]:focus {
     transform: translateX(-50%);
   }
 
+  #modal-content-right-weapon {
+    bottom: initial;
+    height: auto;
+    max-height: 360px;
+    left: 50%;
+    top: 364px;
+    transform: translateX(-50%);
+    overflow-y: auto;
+  }
+
   #customize-emote-wheel {
     top: 50%;
     left: 33%;
@@ -7050,10 +7237,13 @@ input [type="image"]:focus {
     top: 0;
     transform: initial;
     width: 100%;
+    height: auto;
+    grid-template-columns: 56px 1fr;
   }
 
   #modal-customize-cat-title {
-    font-size: 24px;
+    font-size: 18px;
+    left: 68px;
   }
 
   #modal-customize-close > .close {
@@ -7081,7 +7271,7 @@ input [type="image"]:focus {
   }
 
   #modal-customize-list {
-    height: 164px;
+    max-height: 164px;
     margin: auto;
   }
 
@@ -7245,11 +7435,6 @@ input [type="image"]:focus {
   }
 }
 
-/* ============================================
-   CLAN SYSTEM STYLES - Surviv.io Style
-   ============================================ */
-
-/* Clans Button in Account Area */
 #btn-clans {
   cursor: pointer;
   background-color: #d07017;
