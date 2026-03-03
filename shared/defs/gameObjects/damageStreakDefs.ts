@@ -1,8 +1,10 @@
-export interface DamageStreakReward {
-    readonly type: string;
+import { Rarity } from "../../gameConfig";
+
+export interface DamageStreakDef {
+    readonly type: "streak";
     readonly name: string;
-    readonly description: string;
-    readonly damageThreshold: number;
+    readonly rarity: Rarity;
+    readonly lore: string;
     readonly rewardType: "perk" | "gun";
     readonly rewardItem: string;
     readonly duration: number;
@@ -18,14 +20,22 @@ export interface DamageStreakReward {
     };
 }
 
-export const DamageStreakDefs: DamageStreakReward[] = [
-    {
-        type: "streak_rapid_fire",
+export const StreakThresholds = {
+    firstActivation: 300,
+    increment: 400,
+    get(activationIndex: number): number {
+        return StreakThresholds.firstActivation + activationIndex * StreakThresholds.increment;
+    },
+};
+
+export const DamageStreakDefs: Record<string, DamageStreakDef> = {
+    streak_rapid_fire: {
+        type: "streak",
         name: "Rapid Fire",
-        description: "Increased fire rate for 10 seconds!",
-        damageThreshold: 150,
+        rarity: Rarity.Common,
+        lore: "Increased fire rate for 10 seconds!",
         rewardType: "perk",
-        rewardItem: "streak_rapid_fire",
+        rewardItem: "streak_rapid_fire_effect",
         duration: 10,
         lootImg: {
             sprite: "loot-perk-firepower.img",
@@ -36,11 +46,11 @@ export const DamageStreakDefs: DamageStreakReward[] = [
         },
         sound: { activate: "perk_pickup_01" },
     },
-    {
-        type: "streak_heavy_hitter",
+    streak_heavy_hitter: {
+        type: "streak",
         name: "Heavy Hitter",
-        description: "AWM-S sniper for 10 seconds!",
-        damageThreshold: 300,
+        rarity: Rarity.Rare,
+        lore: "AWM-S sniper for 10 seconds!",
         rewardType: "gun",
         rewardItem: "awc",
         duration: 10,
@@ -53,13 +63,13 @@ export const DamageStreakDefs: DamageStreakReward[] = [
         },
         sound: { activate: "perk_pickup_01" },
     },
-    {
-        type: "streak_juggernaut",
+    streak_juggernaut: {
+        type: "streak",
         name: "Juggernaut",
-        description: "Damage reduction + health regen for 10 seconds!",
-        damageThreshold: 500,
+        rarity: Rarity.Uncommon,
+        lore: "Damage reduction + health regen for 10 seconds!",
         rewardType: "perk",
-        rewardItem: "streak_juggernaut",
+        rewardItem: "streak_juggernaut_effect",
         duration: 10,
         lootImg: {
             sprite: "loot-perk-steelskin.img",
@@ -70,13 +80,15 @@ export const DamageStreakDefs: DamageStreakReward[] = [
         },
         sound: { activate: "perk_pickup_01" },
     },
-];
+};
+
+export const DefaultStreakType = "streak_rapid_fire";
 
 export const DamageStreakProperties = {
-    streak_rapid_fire: {
+    streak_rapid_fire_effect: {
         fireDelayMult: 0.5,
     },
-    streak_juggernaut: {
+    streak_juggernaut_effect: {
         damageReduction: 0.5,
         healthRegen: 3,
     },

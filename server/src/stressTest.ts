@@ -302,6 +302,7 @@ class Bot {
             heal: "heal_basic",
             boost: "boost_basic",
             perk: "quick_reload",
+            streak: "streak_rapid_fire",
             emotes: this.emotes,
             primary: "spas12",
             secondary: "mosin",

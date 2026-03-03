@@ -183,6 +183,12 @@ export class LoadoutDisplay {
                     ammo: 0,
                 },
             ],
+            streakDirty: false,
+            streakDamageDealt: 0,
+            streakNextThreshold: 300,
+            streakReady: false,
+            activeStreakActive: false,
+            activeStreakTimeLeft: 0,
         });
 
         this.activePlayer.layer = this.activePlayer.m_netData.m_layer;
@@ -417,6 +423,12 @@ export class LoadoutDisplay {
                 inventory: {},
                 spectatorCount: 0,
                 action: { time: 0, duration: 0, targetId: 0 },
+                streakDirty: false,
+                streakDamageDealt: 0,
+                streakNextThreshold: 300,
+                streakReady: false,
+                activeStreakActive: false,
+                activeStreakTimeLeft: 0,
             });
         }
     }

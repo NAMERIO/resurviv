@@ -5573,11 +5573,11 @@ span.ui-stats-header-value {
 
 .ui-streak-icon {
   position: relative;
-  width: 72px;
-  height: 90px;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 6px;
-  border: 2px solid transparent;
+  width: 90px;
+  height: 110px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  border: 3px solid transparent;
   overflow: hidden;
   opacity: 0.35;
   pointer-events: none;
@@ -5615,11 +5615,11 @@ span.ui-stats-header-value {
   margin: auto;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: 18px;
   top: 0;
   z-index: 2;
-  height: 52px;
-  width: 52px;
+  height: 60px;
+  width: 60px;
 }
 
 .ui-streak-progress-fill {
@@ -5646,13 +5646,27 @@ span.ui-stats-header-value {
 
 .ui-streak-dmg-text {
   position: absolute;
-  bottom: 3px;
+  bottom: 4px;
   width: 100%;
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: bold;
   color: #fff;
   text-shadow: 1px 1px 2px #000;
+  z-index: 3;
+}
+
+.ui-streak-label {
+  position: absolute;
+  top: 3px;
+  width: 100%;
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  color: #ffd700;
+  text-shadow: 1px 1px 2px #000;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   z-index: 3;
 }
 

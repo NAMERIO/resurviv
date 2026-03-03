@@ -52,15 +52,10 @@ function serializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     s.writeBoolean(data.streakDirty);
     if (data.streakDirty) {
         s.writeFloat(data.streakDamageDealt, 0, 65535, 16);
-        s.writeUint8(data.streakCurrentTier);
-        s.writeFloat(data.streakThresholdOffset, 0, 65535, 16);
-        s.writeUint8(data.availableStreaks.length);
-        for (let i = 0; i < data.availableStreaks.length; i++) {
-            s.writeUint8(data.availableStreaks[i]);
-        }
+        s.writeFloat(data.streakNextThreshold, 0, 65535, 16);
+        s.writeBoolean(data.streakReady);
         s.writeBoolean(data.activeStreakActive);
         if (data.activeStreakActive) {
-            s.writeUint8(data.activeStreakIdx);
             s.writeFloat(data.activeStreakTimeLeft, 0, 60, 8);
         }
     }
@@ -120,19 +115,12 @@ function deserializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     data.streakDirty = s.readBoolean();
     if (data.streakDirty) {
         data.streakDamageDealt = s.readFloat(0, 65535, 16);
-        data.streakCurrentTier = s.readUint8();
-        data.streakThresholdOffset = s.readFloat(0, 65535, 16);
-        const numAvail = s.readUint8();
-        data.availableStreaks = [];
-        for (let i = 0; i < numAvail; i++) {
-            data.availableStreaks.push(s.readUint8());
-        }
+        data.streakNextThreshold = s.readFloat(0, 65535, 16);
+        data.streakReady = s.readBoolean();
         data.activeStreakActive = s.readBoolean();
         if (data.activeStreakActive) {
-            data.activeStreakIdx = s.readUint8();
             data.activeStreakTimeLeft = s.readFloat(0, 60, 8);
         } else {
-            data.activeStreakIdx = -1;
             data.activeStreakTimeLeft = 0;
         }
     }
@@ -839,11 +827,9 @@ export interface LocalDataWithDirty extends LocalData {
     spectatorCountDirty: boolean;
     streakDirty: boolean;
     streakDamageDealt: number;
-    streakCurrentTier: number;
-    streakThresholdOffset: number;
-    availableStreaks: number[];
+    streakNextThreshold: number;
+    streakReady: boolean;
     activeStreakActive: boolean;
-    activeStreakIdx: number;
     activeStreakTimeLeft: number;
 }
 

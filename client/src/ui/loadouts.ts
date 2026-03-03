@@ -1,4 +1,5 @@
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
+import { DamageStreakDefs, DefaultStreakType } from "../../../shared/defs/gameObjects/damageStreakDefs";
 import type { UnlockDefs } from "../../../shared/defs/gameObjects/unlockDefs";
 import { GameConfig } from "../../../shared/gameConfig";
 import type { Crosshair } from "../../../shared/utils/loadout";
@@ -14,6 +15,7 @@ export interface Loadout {
     death_effect: string;
     melee: string;
     perk: string;
+    streak: string;
     emotes: string[];
     crosshair: Crosshair;
 }
@@ -55,6 +57,7 @@ const loadout = {
                 },
                 emotes: [],
                 perk: "",
+                streak: DefaultStreakType,
             },
             ...userLoadout,
         } as Loadout;
@@ -72,6 +75,7 @@ const loadout = {
             primary: getGameType("gun", mergedLoadout.primary, "mosin"),
             secondary: getGameType("gun", mergedLoadout.secondary, "mosin"),
             perk: getGameType("perk", mergedLoadout.perk, "quick_reload"),
+            streak: DamageStreakDefs[mergedLoadout.streak] ? mergedLoadout.streak : DefaultStreakType,
             crosshair: {
                 type:
                     mergedLoadout.crosshair.type === "crosshair_custom_image"

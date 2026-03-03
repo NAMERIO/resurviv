@@ -185,6 +185,7 @@ export const helpers = {
             case "backpack":
             case "perk":
             case "xp":
+            case "streak":
                 return `img/loot/${def.lootImg?.sprite.slice(0, -4)}.svg`;
             case "heal_effect":
             case "boost_effect":

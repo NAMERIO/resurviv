@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { GameObjectDefs } from "../defs/gameObjectDefs";
+import { DamageStreakDefs, DefaultStreakType } from "../defs/gameObjects/damageStreakDefs";
 import { UnlockDefs } from "../defs/gameObjects/unlockDefs";
 import { GameConfig } from "../gameConfig";
 import { deepEqual } from "./deepEqual";
@@ -23,6 +24,7 @@ export const loadoutSchema = z.object({
     primary: z.string(),
     secondary: z.string(),
     perk: z.string(),
+    streak: z.string(),
     crosshair: z.object({
         type: z.string(),
         color: z.number(),
@@ -67,6 +69,7 @@ export const loadout = {
                     stroke: 0,
                 },
                 emotes: [],
+                streak: DefaultStreakType,
             },
             ...userLoadout,
         } as Loadout;
@@ -84,6 +87,7 @@ export const loadout = {
             primary: getGameType("gun", mergedLoadout.primary, "mosin"),
             secondary: getGameType("gun", mergedLoadout.secondary, "mosin"),
             perk: getGameType("perk", mergedLoadout.perk, ""),
+            streak: DamageStreakDefs[mergedLoadout.streak] ? mergedLoadout.streak : DefaultStreakType,
             crosshair: {
                 type:
                     mergedLoadout.crosshair.type === "crosshair_custom_image"
@@ -145,6 +149,11 @@ export const loadout = {
         itemsToCheck.forEach((item) => {
             newLoadout[item] = checkTypeExists(newLoadout[item]);
         });
+
+        // streak uses DamageStreakDefs keys, not GameObjectDefs
+        if (!newLoadout.streak || !DamageStreakDefs[newLoadout.streak]) {
+            newLoadout.streak = DefaultStreakType;
+        }
 
         if (newLoadout.crosshair.type === "crosshair_custom_image") {
         } else {

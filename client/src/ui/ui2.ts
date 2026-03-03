@@ -1,5 +1,5 @@
 import { GameObjectDefs, type LootDef } from "../../../shared/defs/gameObjectDefs";
-import { DamageStreakDefs } from "../../../shared/defs/gameObjects/damageStreakDefs";
+import { DamageStreakDefs, DefaultStreakType } from "../../../shared/defs/gameObjects/damageStreakDefs";
 import {
     type AmmoDef,
     type BoostDef,
@@ -233,6 +233,7 @@ export class UiManager2 {
 
     streakActivateRequested = false;
     streakClickedIdx = -1;
+    chosenStreakType = DefaultStreakType;
 
     // DOM
     dom = {
@@ -314,7 +315,7 @@ export class UiManager2 {
             divDesc: HTMLElement;
             image: HTMLImageElement;
         }>,
-        streaks: [] as Array<{
+        streakSingle: null as null | {
             div: HTMLElement;
             image: HTMLImageElement;
             progressFill: HTMLElement;
@@ -322,7 +323,7 @@ export class UiManager2 {
             dmgText: HTMLElement;
             tooltipTitle: HTMLElement;
             tooltipDesc: HTMLElement;
-        }>,
+        },
     };
 
     rareLootMessageQueue: string[] = [];
@@ -514,9 +515,10 @@ export class UiManager2 {
             addItemAction("drop", "perk", i as unknown as string, this.dom.perks[i].div);
         }
 
-        for (let i = 0; i < DamageStreakDefs.length; i++) {
-            const el = domElemById(`ui-streak-${i}`);
-            const streakData = {
+        // Single streak icon setup
+        {
+            const el = domElemById("ui-streak-0");
+            this.dom.streakSingle = {
                 div: el,
                 image: el.getElementsByClassName("ui-streak-image")[0] as HTMLImageElement,
                 progressFill: el.getElementsByClassName("ui-streak-progress-fill")[0] as HTMLElement,
@@ -525,18 +527,11 @@ export class UiManager2 {
                 tooltipTitle: el.getElementsByClassName("tooltip-title")[0] as HTMLElement,
                 tooltipDesc: el.getElementsByClassName("tooltip-desc")[0] as HTMLElement,
             };
-            const def = DamageStreakDefs[i];
-            streakData.image.src = `img/loot/${def.lootImg.sprite.replace(".img", ".svg")}`;
-            streakData.tooltipTitle.textContent = `${def.name} [G]`;
-            streakData.tooltipDesc.textContent = def.description;
-            this.dom.streaks.push(streakData);
-        }
+            this.updateStreakIcon();
 
-        for (let i = 0; i < this.dom.streaks.length; i++) {
-            const streakEl = this.dom.streaks[i];
-            setEventListener("click", streakEl.div, () => {
+            setEventListener("click", el, () => {
                 this.streakActivateRequested = true;
-                this.streakClickedIdx = i;
+                this.streakClickedIdx = -1;
             });
         }
 
@@ -610,6 +605,21 @@ export class UiManager2 {
             }
         };
         window.addEventListener("keyup", this.onKeyUp);
+    }
+
+    setChosenStreakType(type: string) {
+        this.chosenStreakType = DamageStreakDefs[type] ? type : DefaultStreakType;
+        this.updateStreakIcon();
+    }
+
+    updateStreakIcon() {
+        const sd = this.dom.streakSingle;
+        if (!sd) return;
+        const def = DamageStreakDefs[this.chosenStreakType];
+        if (!def) return;
+        sd.image.src = `img/loot/${def.lootImg.sprite.replace(".img", ".svg")}`;
+        sd.tooltipTitle.textContent = `${def.name} [G]`;
+        sd.tooltipDesc.textContent = def.lore;
     }
 
     m_free() {
@@ -1025,23 +1035,18 @@ export class UiManager2 {
 
         {
             const ld = activePlayer.m_localData;
-            const availableSet = new Set(ld.m_streakAvailable);
-            const isActive = ld.m_streakActive;
-            const activeIdx = ld.m_streakActiveIdx;
-            const timeLeft = ld.m_streakTimeLeft;
-            const dmgDealt = ld.m_streakDamageDealt;
-            const currentTier = ld.m_streakCurrentTier;
-            const thresholdOffset = ld.m_streakThresholdOffset;
-
-            for (let i = 0; i < this.dom.streaks.length; i++) {
-                const sd = this.dom.streaks[i];
-                const def = DamageStreakDefs[i];
-                const isReady = availableSet.has(i);
-                const isThisActive = isActive && activeIdx === i;
+            const sd = this.dom.streakSingle;
+            if (sd) {
+                const def = DamageStreakDefs[this.chosenStreakType];
+                const isActive = ld.m_streakActive;
+                const isReady = ld.m_streakReady;
+                const timeLeft = ld.m_streakTimeLeft;
+                const dmgDealt = ld.m_streakDamageDealt;
+                const nextThreshold = ld.m_streakNextThreshold;
 
                 sd.div.classList.remove("streak-ready", "streak-active", "streak-used");
 
-                if (isThisActive) {
+                if (isActive && def) {
                     sd.div.classList.add("streak-active");
                     const pct = Math.max(0, Math.min(100, (timeLeft / def.duration) * 100));
                     sd.timerFill.style.height = `${pct}%`;
@@ -1052,21 +1057,18 @@ export class UiManager2 {
                     sd.timerFill.style.height = "0%";
                     sd.progressFill.style.height = "100%";
                     sd.dmgText.textContent = "READY";
-                } else if (currentTier <= i) {
-                    const prevBase = i > 0 ? DamageStreakDefs[i - 1].damageThreshold : 0;
-                    const prevThreshold = prevBase + thresholdOffset;
-                    const thisThreshold = def.damageThreshold + thresholdOffset;
-                    const range = thisThreshold - prevThreshold;
+                } else {
+                    // Show progress toward next threshold
+                    // We need the previous threshold to compute progress range
+                    const prevThreshold = nextThreshold > 0
+                        ? nextThreshold - (dmgDealt < 300 ? 300 : 400)
+                        : 0;
+                    const range = nextThreshold - prevThreshold;
                     const progress = Math.max(0, dmgDealt - prevThreshold);
-                    const pct = Math.min(100, (progress / range) * 100);
+                    const pct = range > 0 ? Math.min(100, (progress / range) * 100) : 0;
                     sd.progressFill.style.height = `${pct}%`;
                     sd.timerFill.style.height = "0%";
-                    sd.dmgText.textContent = `${Math.floor(dmgDealt)}/${thisThreshold}`;
-                } else {
-                    sd.div.classList.add("streak-used");
-                    sd.progressFill.style.height = "0%";
-                    sd.timerFill.style.height = "0%";
-                    sd.dmgText.textContent = "";
+                    sd.dmgText.textContent = `${Math.floor(dmgDealt)}/${nextThreshold}`;
                 }
             }
         }

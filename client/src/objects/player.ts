@@ -401,13 +401,11 @@ export class Player implements AbstractObject {
             ammo: number;
         }>;
         m_spectatorCount: number;
-        m_streakAvailable: number[];
+        m_streakReady: boolean;
         m_streakActive: boolean;
-        m_streakActiveIdx: number;
         m_streakTimeLeft: number;
         m_streakDamageDealt: number;
-        m_streakCurrentTier: number;
-        m_streakThresholdOffset: number;
+        m_streakNextThreshold: number;
     };
 
     throwableStatePrev!: string;
@@ -563,13 +561,11 @@ export class Player implements AbstractObject {
             m_inventory: {},
             m_weapons: [],
             m_spectatorCount: 0,
-            m_streakAvailable: [],
+            m_streakReady: false,
             m_streakActive: false,
-            m_streakActiveIdx: -1,
             m_streakTimeLeft: 0,
             m_streakDamageDealt: 0,
-            m_streakCurrentTier: 0,
-            m_streakThresholdOffset: 0,
+            m_streakNextThreshold: 300,
         };
 
         this.playAnim(Anim.None, -1);
@@ -706,13 +702,11 @@ export class Player implements AbstractObject {
         }
 
         if (data.streakDirty) {
-            this.m_localData.m_streakAvailable = data.availableStreaks || [];
+            this.m_localData.m_streakReady = data.streakReady || false;
             this.m_localData.m_streakActive = data.activeStreakActive || false;
-            this.m_localData.m_streakActiveIdx = data.activeStreakIdx ?? -1;
             this.m_localData.m_streakTimeLeft = data.activeStreakTimeLeft ?? 0;
             this.m_localData.m_streakDamageDealt = data.streakDamageDealt ?? 0;
-            this.m_localData.m_streakCurrentTier = data.streakCurrentTier ?? 0;
-            this.m_localData.m_streakThresholdOffset = data.streakThresholdOffset ?? 0;
+            this.m_localData.m_streakNextThreshold = data.streakNextThreshold ?? 300;
         }
 
         // Zoom more quickly when changing scopes

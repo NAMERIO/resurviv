@@ -263,6 +263,11 @@ export class Game {
             this.m_inputBindUi,
         );
         this.m_ui2Manager = new UiManager2(this.m_localization, this.m_inputBinds);
+        {
+            const loadout = this.m_config.get("loadout");
+            // Always set streak type - setChosenStreakType will use default if not set
+            this.m_ui2Manager.setChosenStreakType(loadout?.streak || "");
+        }
         this.m_emoteBarn = new EmoteBarn(
             this.m_audioManager,
             this.m_uiManager,

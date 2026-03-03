@@ -100,6 +100,15 @@ export class WeaponManager {
         forceSwitch = false,
         changeCooldown = true,
     ): void {
+        // Prevent switching away from streak weapon
+        if (
+            !forceSwitch &&
+            this.player.streakActive &&
+            this.player.streakSavedWeapon?.slot === this._curWeapIdx
+        ) {
+            return;
+        }
+
         // if current slot is invalid and next too, switch to melee
         if (!this.activeWeapon && !this.weapons[idx].type) {
             idx = WeaponSlot.Melee;
@@ -619,6 +628,11 @@ export class WeaponManager {
         const def = GameObjectDefs[this.weapons[weapIdx].type] as GunDef | undefined;
         if (def?.noDrop) return;
 
+        // Prevent dropping streak weapon
+        if (this.player.streakActive && this.player.streakSavedWeapon?.slot === weapIdx) {
+            return;
+        }
+
         this._dropGun(weapIdx);
         this.setWeapon(weapIdx, "", 0);
     }
@@ -726,8 +740,8 @@ export class WeaponManager {
         weapon.cooldown = itemDef.fireDelay;
         weapon.recoilTime = itemDef.recoilTime;
 
-        if (this.player.hasPerk("streak_rapid_fire")) {
-            weapon.cooldown *= DamageStreakProperties.streak_rapid_fire.fireDelayMult;
+        if (this.player.hasPerk("streak_rapid_fire_effect")) {
+            weapon.cooldown *= DamageStreakProperties.streak_rapid_fire_effect.fireDelayMult;
         }
 
         // Check firing location

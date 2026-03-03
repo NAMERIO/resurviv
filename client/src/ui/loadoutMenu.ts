@@ -194,6 +194,11 @@ export class LoadoutMenu {
             gameType: "death_effect",
             categoryImage: "img/gui/skull.svg",
         },
+        {
+            loadoutType: "streak",
+            gameType: "streak",
+            categoryImage: "img/loot/loot-perk-firepower.svg",
+        },
     ];
 
     selectedItem: {
@@ -1444,18 +1449,24 @@ export class LoadoutMenu {
         const listItems = $("<div/>");
         for (let i = 0; i < loadoutItems.length; i++) {
             const item = loadoutItems[i];
+
             const objDef = GameObjectDefs[item.type] as MeleeDef;
+            const itemName = objDef.name;
+            const itemRarity = objDef.rarity || Rarity.Stock;
+            const itemLore = objDef.lore || "";
+            const svg = helpers.getSvgFromGameType(item.type);
+            const transform = helpers.getCssTransformFromGameType(item.type);
 
             const itemInfo: ItemInfo = {
                 loadoutType: category.loadoutType,
                 type: item.type,
-                rarity: objDef.rarity || Rarity.Stock,
-                displayName: objDef.name,
+                rarity: itemRarity,
+                displayName: itemName,
                 displaySource: getItemSourceName(item.source),
-                displayLore: objDef.lore!,
+                displayLore: itemLore,
                 timeAcquired: item.timeAcquired,
                 idx: i,
-                subcat: (objDef as unknown as EmoteDef).category,
+                subcat: (GameObjectDefs[item.type] as unknown as EmoteDef)?.category || 0 as EmoteCategory,
                 outerDiv: null,
             };
 
@@ -1465,8 +1476,6 @@ export class LoadoutMenu {
                 "data-idx": i,
             });
 
-            const svg = helpers.getSvgFromGameType(item.type);
-            const transform = helpers.getCssTransformFromGameType(item.type);
             const innerDiv = $("<div/>", {
                 class: "customize-item-image",
                 css: {

@@ -19,7 +19,7 @@ import type { GunDef } from "../../../../shared/defs/gameObjects/gunDefs";
 import type { MeleeDef } from "../../../../shared/defs/gameObjects/meleeDefs";
 import type { OutfitDef } from "../../../../shared/defs/gameObjects/outfitDefs";
 import { PerkProperties } from "../../../../shared/defs/gameObjects/perkDefs";
-import { DamageStreakDefs, DamageStreakProperties } from "../../../../shared/defs/gameObjects/damageStreakDefs";
+import { DamageStreakDefs, DamageStreakProperties, DefaultStreakType, StreakThresholds } from "../../../../shared/defs/gameObjects/damageStreakDefs";
 import type { RoleDef } from "../../../../shared/defs/gameObjects/roleDefs";
 import type { ThrowableDef } from "../../../../shared/defs/gameObjects/throwableDefs";
 import { UnlockDefs } from "../../../../shared/defs/gameObjects/unlockDefs";
@@ -1262,34 +1262,26 @@ export class Player extends BaseGameObject {
     }
 
     checkDamageStreaks(): void {
-        const offset = this.streakThresholdOffset;
-        for (let i = 0; i < DamageStreakDefs.length; i++) {
-            if (this.streakUnlockedTiers.has(i)) continue;
-            if (this.damageDealt >= DamageStreakDefs[i].damageThreshold + offset) {
-                this.streakUnlockedTiers.add(i);
-                this.streakAvailable.push(i);
-                this.streakDirty = true;
-            }
+        // If already ready or active, nothing to check
+        if (this.streakReady || this.streakActive) return;
+        const threshold = this.streakNextThreshold;
+        if (this.damageDealt >= threshold) {
+            this.streakReady = true;
+            this.streakDirty = true;
         }
     }
 
     activateStreak(requestedIdx: number = -1): void {
-        if (this.streakAvailable.length === 0) return;
+        if (!this.streakReady) return;
         if (this.streakActive) return;
 
-        let streakIdx: number;
-        if (requestedIdx >= 0 && this.streakAvailable.includes(requestedIdx)) {
-            streakIdx = requestedIdx;
-            this.streakAvailable.splice(this.streakAvailable.indexOf(requestedIdx), 1);
-        } else {
-            streakIdx = this.streakAvailable.shift()!;
-        }
-        const streakDef = DamageStreakDefs[streakIdx];
+        const streakDef = DamageStreakDefs[this.chosenStreakType];
         if (!streakDef) return;
 
+        this.streakReady = false;
         this.streakActive = true;
-        this.streakActiveIdx = streakIdx;
         this.streakActiveTimer = streakDef.duration;
+        this.streakActivationCount++;
         this.streakDirty = true;
 
         if (streakDef.rewardType === "perk") {
@@ -1311,7 +1303,7 @@ export class Player extends BaseGameObject {
     deactivateStreak(): void {
         if (!this.streakActive) return;
 
-        const streakDef = DamageStreakDefs[this.streakActiveIdx];
+        const streakDef = DamageStreakDefs[this.chosenStreakType];
         if (streakDef) {
             if (streakDef.rewardType === "perk") {
                 if (this.hasPerk(streakDef.rewardItem)) {
@@ -1330,7 +1322,6 @@ export class Player extends BaseGameObject {
         }
 
         this.streakActive = false;
-        this.streakActiveIdx = -1;
         this.streakActiveTimer = 0;
         this.streakDirty = true;
     }
@@ -1340,25 +1331,16 @@ export class Player extends BaseGameObject {
             this.streakActiveTimer -= dt;
             this.streakDirty = true;
 
-            const streakDef = DamageStreakDefs[this.streakActiveIdx];
-            if (streakDef && streakDef.rewardItem === "streak_juggernaut") {
-                this.health += DamageStreakProperties.streak_juggernaut.healthRegen * dt;
+            const streakDef = DamageStreakDefs[this.chosenStreakType];
+            if (streakDef && streakDef.rewardItem === "streak_juggernaut_effect") {
+                this.health += DamageStreakProperties.streak_juggernaut_effect.healthRegen * dt;
             }
 
             if (this.streakActiveTimer <= 0) {
                 this.deactivateStreak();
+                // Check if next charge is already earned
+                this.checkDamageStreaks();
             }
-        }
-
-        if (
-            !this.streakActive &&
-            this.streakAvailable.length === 0 &&
-            this.streakUnlockedTiers.size >= DamageStreakDefs.length
-        ) {
-            this.streakCycleCount++;
-            this.streakUnlockedTiers.clear();
-            this.streakDirty = true;
-            this.checkDamageStreaks();
         }
     }
 
@@ -1463,28 +1445,18 @@ export class Player extends BaseGameObject {
     damageTaken = 0;
     damageDealt = 0;
 
-    streakAvailable: number[] = [];
+    chosenStreakType = DefaultStreakType;
+    streakActivationCount = 0;
+    streakReady = false;
     streakActive = false;
-    streakActiveIdx = -1;
     streakActiveTimer = 0;
-    streakUnlockedTiers = new Set<number>();
-    streakCycleCount = 0;
     streakSavedWeapon: { slot: number; type: string; ammo: number } | null = null;
     streakDirty = true;
-    get streakThresholdOffset(): number {
-        const maxBase = DamageStreakDefs[DamageStreakDefs.length - 1].damageThreshold;
-        return this.streakCycleCount * maxBase;
+    get streakNextThreshold(): number {
+        return StreakThresholds.get(this.streakActivationCount);
     }
     get streakDamageDealt(): number { return this.damageDealt; }
-    get streakCurrentTier(): number {
-        for (let i = 0; i < DamageStreakDefs.length; i++) {
-            if (!this.streakUnlockedTiers.has(i)) return i;
-        }
-        return DamageStreakDefs.length;
-    }
-    get availableStreaks(): number[] { return this.streakAvailable; }
     get activeStreakActive(): boolean { return this.streakActive; }
-    get activeStreakIdx(): number { return this.streakActiveIdx; }
     get activeStreakTimeLeft(): number { return this.streakActiveTimer; }
 
     // infinity since we aren't dead yet ;)
@@ -2585,11 +2557,9 @@ export class Player extends BaseGameObject {
                 spectatorCount: player.spectatorCount,
                 streakDirty: true,
                 streakDamageDealt: player.damageDealt,
-                streakCurrentTier: player.streakCurrentTier,
-                streakThresholdOffset: player.streakThresholdOffset,
-                availableStreaks: player.streakAvailable,
+                streakNextThreshold: player.streakNextThreshold,
+                streakReady: player.streakReady,
                 activeStreakActive: player.streakActive,
-                activeStreakIdx: player.streakActiveIdx,
                 activeStreakTimeLeft: player.streakActiveTimer,
             };
             this.startedSpectating = false;
@@ -2872,8 +2842,8 @@ export class Player extends BaseGameObject {
             }
 
             // Streak: Juggernaut damage reduction
-            if (this.hasPerk("streak_juggernaut")) {
-                reduceDamage(DamageStreakProperties.streak_juggernaut.damageReduction);
+            if (this.hasPerk("streak_juggernaut_effect")) {
+                reduceDamage(DamageStreakProperties.streak_juggernaut_effect.damageReduction);
             }
 
             const chest = GameObjectDefs[this.chest] as ChestDef;
@@ -4687,6 +4657,13 @@ export class Player extends BaseGameObject {
             (this.game.map.perkMode || !!this.game.map.mapDef.gameMode.allowLoadoutPerks)
         ) {
             this.addPerk(loadout.perk, false);
+        }
+
+        // Set chosen streak from loadout
+        if (loadout.streak && DamageStreakDefs[loadout.streak]) {
+            this.chosenStreakType = loadout.streak;
+        } else {
+            this.chosenStreakType = DefaultStreakType;
         }
 
         // Normal mode: Initialize primary weapon
