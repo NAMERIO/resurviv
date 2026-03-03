@@ -4,7 +4,6 @@ packages:
   - client/
   - bot/
   - tests/
-  - electron/
   - '!**dist/**'
 
 ignoredBuiltDependencies:
