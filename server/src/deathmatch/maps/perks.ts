@@ -13,6 +13,7 @@ const config = {
 } as const;
 
 const mapDef = {
+    mapId: 18,
     desc: {
         name: "Perks",
         icon: "img/loot/loot-perk-armor_master.svg",

@@ -6,8 +6,9 @@ import { DeatchmatchHalloween } from "../../server/src/deathmatch/maps/halloween
 import { DeatchmatchMain } from "../../server/src/deathmatch/maps/main";
 import { DeatchmatchPerks } from "../../server/src/deathmatch/maps/perks";
 import { DeatchmatchSnow } from "../../server/src/deathmatch/maps/snow";
-import { DeatchmatchValentine } from "../../server/src/deathmatch/maps/valentine";
+import { DeathmatchValentine } from "../../server/src/deathmatch/maps/valentine";
 import { DeatchmatchWoods as Woods } from "../../server/src/deathmatch/maps/woods";
+import { DeathmatchInferno } from "../../server/src/deathmatch/maps/inferno";
 import type { Vec2 } from "../utils/v2";
 import { Birthday } from "./maps/birthdayDefs";
 import { MainSpring } from "./maps/mainSpringDefs";
@@ -36,7 +37,8 @@ export type Atlas =
     | "savannah"
     | "turkey"
     | "perks"
-    | "valentine";
+    | "valentine"
+    | "inferno";
 
 export const MapDefs = {
     main: DeatchmatchMain,
@@ -58,7 +60,8 @@ export const MapDefs = {
     turkey: Turkey,
     birthday: Birthday,
     perks: DeatchmatchPerks,
-    valentine: DeatchmatchValentine,
+    valentine: DeathmatchValentine,
+    inferno: DeathmatchInferno,
 
     /* STRIP_FROM_PROD_CLIENT:START */
     test_normal: testNormal,
@@ -190,6 +193,7 @@ export interface MapDef {
                     odds: number;
                     innerRad: number;
                     outerRad: number;
+                    circular?: boolean;
                     spawnBound: {
                         pos: Vec2;
                         rad: number;

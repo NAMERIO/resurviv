@@ -202,27 +202,44 @@ export class RiverCreator {
             util.randomPointInCircle(lake.spawnBound.rad, this.randomGenerator),
         );
 
-        const variationPushDistance = 10;
+        const variationPushDistance = lake.circular ? 0 : 10;
         const width = (lake.outerRad - lake.innerRad) / 2;
 
-        const len = lake.innerRad + width - variationPushDistance * 2;
+        const len = lake.innerRad + width - (lake.circular ? 0 : variationPushDistance * 2);
 
-        const step = (Math.PI * 2) / (width + 1);
-        const max = Math.PI * 2 - step;
-        for (let i = 0; i < max; i += step) {
-            const dir = v2.create(Math.cos(i), Math.sin(i));
-            points.push(v2.add(center, v2.mul(dir, len)));
+        if (lake.circular) {
+            const sides = 12;
+            const angleOffset = this.randomGenerator(0, Math.PI * 2);
+            for (let i = 0; i < sides; i++) {
+                const angle = angleOffset + (Math.PI * 2 * i) / sides;
+                const dir = v2.create(Math.cos(angle), Math.sin(angle));
+                const nextAngle = angleOffset + (Math.PI * 2 * (i + 1)) / sides;
+                const midAngle = (angle + nextAngle) / 2;
+                points.push(v2.add(center, v2.mul(dir, len)));
+                const midDir = v2.create(Math.cos(midAngle), Math.sin(midAngle));
+                points.push(v2.add(center, v2.mul(midDir, len)));
+            }
+        } else {
+            const numPoints = width + 1;
+            const step = (Math.PI * 2) / numPoints;
+            const max = Math.PI * 2 - step;
+            for (let i = 0; i < max; i += step) {
+                const dir = v2.create(Math.cos(i), Math.sin(i));
+                points.push(v2.add(center, v2.mul(dir, len)));
+            }
         }
 
-        const start = this.randomGenerator(0, Math.PI * 2);
-        const end = start + Math.PI * 2;
-        for (let i = start; i < end; i += this.randomGenerator(0.5, 1.1)) {
-            let pushDist = this.randomGenerator(0, variationPushDistance);
-            if (this.randomGenerator() < 0.5) pushDist *= -1;
-            pushDist += len;
+        if (!lake.circular) {
+            const start = this.randomGenerator(0, Math.PI * 2);
+            const end = start + Math.PI * 2;
+            for (let i = start; i < end; i += this.randomGenerator(0.5, 1.1)) {
+                let pushDist = this.randomGenerator(0, variationPushDistance);
+                if (this.randomGenerator() < 0.5) pushDist *= -1;
+                pushDist += len;
 
-            const dir = v2.create(Math.cos(i) * pushDist, Math.sin(i) * pushDist);
-            this.pushNodes(center, points, v2.add(center, dir));
+                const dir = v2.create(Math.cos(i) * pushDist, Math.sin(i) * pushDist);
+                this.pushNodes(center, points, v2.add(center, dir));
+            }
         }
         points.push(v2.copy(points[0]));
 

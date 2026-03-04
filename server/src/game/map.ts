@@ -967,7 +967,7 @@ export class GameMap {
             } else if (def.terrain?.bridge) {
                 // this.genBridge(type);
             } else if (def.terrain?.lakeCenter) {
-                // this.genOnLakeCenter(type);
+                this.genOnLakeCenter(type);
             } else if (def.terrain?.grass) {
                 try {
                     this.genOnGrass(type);

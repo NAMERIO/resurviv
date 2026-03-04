@@ -9866,6 +9866,14 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             residue: "map-bush-res-13.img",
         },
     }),
+    bush_14b: createBush({
+        collision: collider.createCircle(v2.create(0, 0), 2.5),
+        map: { display: true, color: 0x4a4a4a, scale: 1 },
+        img: {
+            sprite: "map-bush-14b.img",
+            residue: "map-bush-res-14b.img",
+        },
+    }),
     bush_06b: createBush({
         scale: { createMin: 1, createMax: 1 },
         collision: collider.createCircle(v2.create(0, 0), 1.75),
@@ -10495,6 +10503,19 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         },
         sound: { explode: "crate_break_01" },
     } as unknown as Partial<ObstacleDef>),
+    crate_30: createCrate({
+        health: 140,
+        loot: [
+            autoLoot("m1014", 1),
+            autoLoot("helmet03_lt_aged", 1),
+            autoLoot("outfitRedLeaderAged", 1),
+            autoLoot("machete_taiga", 1),
+        ],
+        map: { display: true, color: 0xcc0000 },
+        terrain: { grass: true, beach: false },
+        img: { sprite: "map-pyre-01.img", residue: "map-crate-pyre-res.img" },
+        sound: { explode: "crate_break_01" },
+    }),
     crate_11sv: createCrate({
         scale: { destroy: 0.75 },
         health: 200,
@@ -12423,6 +12444,20 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             residue: "map-tree-res-02.img",
             tint: 0xffffff,
             scale: 0.35,
+            zIdx: 801,
+        },
+    } as unknown as Partial<ObstacleDef>),
+    tree_20: createTree({
+        collision: collider.createCircle(v2.create(0, 0), 2.3),
+        aabb: collider.createAabbExtents(v2.create(0, 0), v2.create(12, 12)),
+        scale: { createMin: 1.2, createMax: 1.3 },
+        health: 400,
+        map: { color: 0x4a4a4a, scale: 3 },
+        img: {
+            sprite: "map-tree-20.img",
+            residue: "map-snowball-res.img",
+            tint: 0xffffff,
+            scale: 0.7,
             zIdx: 801,
         },
     } as unknown as Partial<ObstacleDef>),
