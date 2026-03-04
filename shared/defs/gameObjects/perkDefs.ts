@@ -105,6 +105,10 @@ export const PerkProperties = {
         healTickRate: 0.5, 
         burnImmunity: true, 
     },
+    pyro: {
+        fireRangeMult: 1.2,
+        fireDamageMult: 1.2,
+    },
 };
 
 export interface PerkDef {
@@ -922,6 +926,21 @@ export const PerkDefs: Record<string, PerkDef> = {
         lore: "Heal from fire, lava, or burning effect. Take small passive damage on land. Immune to burn DoT and Flamethrower.",
         lootImg: {
             sprite: "loot-perk-phoenix.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    pyro: {
+        name: "Pyro",
+        type: "perk",
+        lore: "Increases the range and damage of the Flamethrower and any weapon modified by Nitro Lace by 20%.",
+        lootImg: {
+            sprite: "loot-perk-pyro.img",
             tint: 0xffffff,
             border: "loot-circle-outer-03.img",
             borderTint: 0xffffff,

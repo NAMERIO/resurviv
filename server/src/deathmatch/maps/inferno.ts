@@ -175,4 +175,8 @@ export const DeathmatchInferno = util.mergeDeep({}, Main, mapDef) as MapDef;
 DeathmatchInferno["lootTable"] = {
     ...DeathmatchInferno["lootTable"],
     tier_forest_helmet: [{ name: "helmet03", count: 1, weight: 1 }],
+    tier_perks_inferno: [
+        { name: "pyro", count: 1, weight: 1 },
+        { name: "phoenix", count: 1, weight: 1 },
+    ],
 };

@@ -649,7 +649,16 @@ export class Bullet {
                         this.player?.nitroLaceEffect &&
                         this.player.teamId !== col.player!.teamId
                     ) {
-                        col.player!.burnDuration = GameConfig.player.burnDuration;
+                        let burnDuration = GameConfig.player.burnDuration;
+                        let burnDamage = GameConfig.player.burnDamage;
+                        
+                        if (this.player.hasPerk("pyro")) {
+                            const pyroMult = PerkProperties.pyro.fireDamageMult as number ?? 1.2;
+                            burnDamage *= pyroMult;
+                            burnDuration *= pyroMult;
+                        }
+                        
+                        col.player!.burnDuration = burnDuration;
                         col.player!.burnTicker = GameConfig.player.burnTickRate;
                         col.player!.burnEffect = true;
                         col.player!.setDirty();
