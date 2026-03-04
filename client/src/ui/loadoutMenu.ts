@@ -368,6 +368,13 @@ export class LoadoutMenu {
                         },
                     }),
                 );
+                const catName = this.localization.translate(`loadout-title-${this.categories[i].loadoutType}`) || this.categories[i].loadoutType;
+                r.append(
+                    $("<div/>", {
+                        class: "modal-customize-cat-name",
+                        text: catName,
+                    }),
+                );
                 r.append(
                     $("<div/>", {
                         class: "modal-customize-cat-connect",

@@ -5532,9 +5532,10 @@ input [type="image"]:focus {
   background: rgba(255, 255, 255, 0.05);
   cursor: pointer;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 52px;
+  height: 60px;
   width: 72px;
   position: relative;
   transition: background 0.15s;
@@ -5554,6 +5555,23 @@ input [type="image"]:focus {
   width: 36px;
   opacity: 0.6;
   transition: opacity 0.15s;
+}
+
+.modal-customize-cat-name {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 68px;
+}
+
+.modal-customize-cat-selected .modal-customize-cat-name {
+  color: #fff;
 }
 
 .modal-customize-cat-connect {
