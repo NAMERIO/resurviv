@@ -3226,8 +3226,8 @@ const ParticleDefs: Record<string, ParticleDef> = {
         drag: 0,
         rotVel: new Range(Math.PI * 0.25, Math.PI * 0.5),
         scale: {
-            start: new Range(0.12, 0.14),
-            end: new Range(0.06, 0.08),
+            start: new Range(0.15, 0.17),
+            end: new Range(0.09, 0.11),
             lerp: new Range(0, 1),
         },
         alpha: {
