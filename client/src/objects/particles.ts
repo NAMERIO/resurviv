@@ -2293,6 +2293,23 @@ const ParticleDefs: Record<string, ParticleDef> = {
             return util.rgbToInt(util.hsvToRgb(0.934, 0.986, 0.8431));
         },
     },
+    explosionAntiFire: {
+        image: ["part-frag-burst-01.img"],
+        life: 0.5,
+        drag: 0,
+        rotVel: 0,
+        scale: {
+            start: 1,
+            end: 4,
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 1,
+            end: 0,
+            lerp: new Range(0.75, 1),
+        },
+        color: 0xffffff,
+    },
     explosionMIRV: {
         image: ["part-frag-burst-01.img"],
         life: 0.5,

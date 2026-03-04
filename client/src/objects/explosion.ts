@@ -751,4 +751,18 @@ const ExplosionEffectDefs: Record<string, ExplotionDef> = {
         shakeDur: 0,
         lifetime: 1,
     },
+    antiFire: {
+        burst: {
+            particle: "explosionAntiFire",
+            scale: 0,
+            sound: {
+                grass: "explosion_smoke_01",
+                water: "explosion_smoke_01",
+            },
+        },
+        rippleCount: 10,
+        shakeStr: 0,
+        shakeDur: 0,
+        lifetime: 6,
+    },
 };

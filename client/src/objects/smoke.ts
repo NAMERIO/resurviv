@@ -21,6 +21,7 @@ class Smoke implements AbstractObject {
     m_rad!: number;
     m_layer!: number;
     m_interior!: number;
+    m_isFoam!: boolean;
 
     m_init() {}
     m_free() {
@@ -40,6 +41,7 @@ class Smoke implements AbstractObject {
         if (fullUpdate) {
             this.m_layer = data.layer;
             this.m_interior = data.interior;
+            this.m_isFoam = data.isFoam;
         }
 
         if (isNew) {
@@ -49,6 +51,7 @@ class Smoke implements AbstractObject {
                 this.m_rad,
                 this.m_layer,
                 this.m_interior,
+                this.m_isFoam,
             );
         }
         this.m_particle!.posTarget = v2.copy(this.m_pos);
@@ -56,11 +59,16 @@ class Smoke implements AbstractObject {
     }
 }
 
-const particles = ["part-smoke-02.img", "part-smoke-03.img"];
+const smokeParticles = ["part-smoke-02.img", "part-smoke-03.img"];
+const foamParticles = [
+    "foam1.img", "foam2.img", "foam3.img", "foam4.img",
+    "foam5.img", "foam6.img", "foam7.img", "foam8.img",
+    "foam9.img", "foam10.img", "foam11.img", "foam12.img",
+];
 export class SmokeParticle {
     active = false;
     zIdx = 0;
-    sprite = PIXI.Sprite.from(particles[Math.floor(Math.random() * particles.length)]);
+    sprite = PIXI.Sprite.from(smokeParticles[Math.floor(Math.random() * smokeParticles.length)]);
 
     pos!: Vec2;
     posTarget!: Vec2;
@@ -75,13 +83,14 @@ export class SmokeParticle {
     tint!: number;
     layer!: number;
     interior!: number;
+    isFoam!: boolean;
 
     constructor() {
         this.sprite.anchor = new PIXI.Point(0.5, 0.5) as PIXI.ObservablePoint;
         this.sprite.visible = false;
     }
 
-    m_init(pos: Vec2, rad: number, layer: number, interior: number) {
+    m_init(pos: Vec2, rad: number, layer: number, interior: number, isFoam: boolean = false) {
         this.pos = v2.copy(pos);
         this.posTarget = v2.copy(this.pos);
         this.rad = rad;
@@ -91,7 +100,16 @@ export class SmokeParticle {
         this.fade = false;
         this.fadeTicker = 0;
         this.fadeDuration = util.random(0.5, 0.75);
-        this.tint = util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.9, 0.95)));
+        this.isFoam = isFoam;
+        if (isFoam) {
+            const foamImg = foamParticles[Math.floor(Math.random() * foamParticles.length)];
+            this.sprite.texture = PIXI.Texture.from(foamImg);
+            this.tint = 0x00ffffff;
+        } else {
+            const smokeImg = smokeParticles[Math.floor(Math.random() * smokeParticles.length)];
+            this.sprite.texture = PIXI.Texture.from(smokeImg);
+            this.tint = util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.9, 0.95)));
+        }
         this.layer = layer;
         this.interior = interior;
     }
@@ -145,7 +163,8 @@ export class SmokeBarn {
                 p.fadeTicker += p.fade ? dt : 0;
                 p.active = p.fadeTicker < p.fadeDuration;
 
-                const alpha = math.clamp(1 - p.fadeTicker / p.fadeDuration, 0, 1) * 0.9;
+                const kDefaultAlpha = p.isFoam ? 0.4 : 0.9;
+                const alpha = math.clamp(1 - p.fadeTicker / p.fadeDuration, 0, 1) * kDefaultAlpha;
 
                 // Always add to the top layer if visible and not occluded by
                 // the layer mask (fixes issue of smokes spawning on the ground

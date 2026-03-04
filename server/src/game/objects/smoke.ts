@@ -1,3 +1,4 @@
+import { MapId } from "../../../../shared/defs/types/misc";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
 import { type AABB, coldet } from "../../../../shared/utils/coldet";
 import { collider } from "../../../../shared/utils/collider";
@@ -36,12 +37,13 @@ class SmokeEmitter {
         public pos: Vec2,
         public layer: number,
         public interior: number,
+        public isFoam: boolean,
     ) {}
 
     update(dt: number) {
         this.spawnTicker += dt;
         if (this.spawnTicker > SPAWN_DELAY) {
-            this.smokeBarn.addSmoke(this.pos, this.layer, this.interior);
+            this.smokeBarn.addSmoke(this.pos, this.layer, this.interior, this.isFoam);
             this.smokesSpawned++;
             this.spawnTicker = 0;
         }
@@ -77,9 +79,35 @@ export class SmokeBarn {
                 i--;
             }
         }
+
+        this.checkFoamBurnRemoval();
     }
 
-    addEmitter(pos: Vec2, layer: number) {
+    checkFoamBurnRemoval() {
+        const foamSmokes = this.smokes.filter((s) => s.isFoam && !s.destroyed);
+        if (foamSmokes.length === 0) return;
+
+        const isInferno = this.game.map.mapId === MapId.Inferno;
+
+        const players = this.game.playerBarn.players;
+        for (const player of players) {
+            if (player.dead || player.burnDuration <= 0) continue;
+            if (isInferno && this.game.map.isOnWater(player.pos, player.layer)) continue;
+            for (const smoke of foamSmokes) {
+                if (!util.sameLayer(player.layer, smoke.layer)) continue;
+                const dist = v2.distance(player.pos, smoke.pos);
+                if (dist < smoke.rad) {
+                    player.burnDuration = 0;
+                    player.burnTicker = 0;
+                    player.burnEffect = false;
+                    player.setDirty();
+                    break;
+                }
+            }
+        }
+    }
+
+    addEmitter(pos: Vec2, layer: number, isFoam: boolean = false) {
         let interior = 0;
         const coll = collider.createCircle(pos, 1);
         const objs = this.game.grid.intersectCollider(coll);
@@ -96,13 +124,13 @@ export class SmokeBarn {
             }
         }
 
-        const emitter = new SmokeEmitter(this, pos, layer, interior);
+        const emitter = new SmokeEmitter(this, pos, layer, interior, isFoam);
 
         this.emitters.push(emitter);
     }
 
-    addSmoke(pos: Vec2, layer: number, interior: number) {
-        const smoke = new Smoke(this.game, pos, layer, interior);
+    addSmoke(pos: Vec2, layer: number, interior: number, isFoam: boolean = false) {
+        const smoke = new Smoke(this.game, pos, layer, interior, isFoam);
         this.game.objectRegister.register(smoke);
         this.smokes.push(smoke);
     }
@@ -117,15 +145,17 @@ export class Smoke extends BaseGameObject {
     life = LIFE_TIME;
     rad = util.random(0.5, 1);
     interior: number;
+    isFoam: boolean;
 
     maxSize = util.random(RAD_MIN, RAD_MAX);
     dir = v2.randomUnit();
     speed = util.random(SPAWN_MIN_SPEED, SPAWN_MAX_SPEED);
 
-    constructor(game: Game, pos: Vec2, layer: number, interior: number) {
+    constructor(game: Game, pos: Vec2, layer: number, interior: number, isFoam: boolean = false) {
         super(game, pos);
         this.layer = layer;
         this.interior = interior;
+        this.isFoam = isFoam;
         this.bounds = collider.createAabbExtents(
             v2.create(0, 0),
             v2.create(this.rad, this.rad),

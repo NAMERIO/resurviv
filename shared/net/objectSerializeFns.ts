@@ -173,6 +173,7 @@ export interface ObjectsFullData {
     [ObjectType.Smoke]: {
         layer: number;
         interior: number;
+        isFoam: boolean;
     };
     [ObjectType.Airdrop]: {
         pos: Vec2;
@@ -586,6 +587,7 @@ export const ObjectSerializeFns: {
         serializeFull: (s, data) => {
             s.writeBits(data.layer, 2);
             s.writeBits(data.interior, 6);
+            s.writeBoolean(data.isFoam);
         },
         deserializePart: (s, data) => {
             data.pos = s.readMapPos();
@@ -594,6 +596,7 @@ export const ObjectSerializeFns: {
         deserializeFull: (s, data) => {
             data.layer = s.readBits(2);
             data.interior = s.readBits(6);
+            data.isFoam = s.readBoolean();
         },
     },
     [ObjectType.Airdrop]: {
