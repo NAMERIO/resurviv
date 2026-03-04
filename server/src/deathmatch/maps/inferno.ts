@@ -14,13 +14,12 @@ const config = {
     spawnDensity: 60,
 } as const;
 
-
 const mapDef: PartialMapDef = {
     mapId: MapId.Inferno,
     desc: {
-        name: 'Inferno',
-        icon: 'img/gui/inferno.svg',
-        buttonCss: 'btn-mode-inferno',
+        name: "Inferno",
+        icon: "img/gui/inferno.svg",
+        buttonCss: "btn-mode-inferno",
     },
     assets: {
         audio: [
@@ -32,15 +31,15 @@ const mapDef: PartialMapDef = {
     },
     biome: {
         colors: {
-            background: 0x20536E,
-            water: 0xFE8438,
-            waterRipple: 0xFE8438,
-            beach: 0x534D45,
+            background: 0x20536e,
+            water: 0xfe8438,
+            waterRipple: 0xfe8438,
+            beach: 0x534d45,
             riverbank: 0x252525,
-            grass: 0x3C3C3C,
+            grass: 0x3c3c3c,
             underground: 0x1b0d03,
-            playerSubmerge: 0xFFFFFF,
-            playerGhillie: 0x83af50
+            playerSubmerge: 0xffffff,
+            playerGhillie: 0x83af50,
         },
     },
     gameMode: { maxPlayers: 40, infernoMode: true },
@@ -69,7 +68,7 @@ const mapDef: PartialMapDef = {
         },
     },
 
-     mapGen: {
+    mapGen: {
         map: {
             baseWidth: config.mapWidth,
             baseHeight: config.mapWidth,
@@ -93,26 +92,25 @@ const mapDef: PartialMapDef = {
         },
         places: Main.mapGen
             ? Array(config.places)
-                    .fill(false)
-                    .map(() => {
-                        return Main.mapGen?.places[
-                            Math.floor(Math.random() * Main.mapGen.places.length)
-                        ];
-                    })
+                  .fill(false)
+                  .map(() => {
+                      return Main.mapGen?.places[
+                          Math.floor(Math.random() * Main.mapGen.places.length)
+                      ];
+                  })
             : [],
         densitySpawns: Main.mapGen
             ? (Main.mapGen.densitySpawns.reduce(
-                    (array, item) => {
-                        let object: Record<string, number> = {};
-                        for (const [key, value] of Object.entries(item)) {
-                            object[key] =
-                                (value * config.spawnDensity) / 100;
-                        }
-                        array.push(object);
-                        return array;
-                    },
-                    [] as Record<string, number>[],
-                ) as [Record<string, number>?])
+                  (array, item) => {
+                      let object: Record<string, number> = {};
+                      for (const [key, value] of Object.entries(item)) {
+                          object[key] = (value * config.spawnDensity) / 100;
+                      }
+                      array.push(object);
+                      return array;
+                  },
+                  [] as Record<string, number>[],
+              ) as [Record<string, number>?])
             : [],
 
         fixedSpawns: [
@@ -165,8 +163,8 @@ const mapDef: PartialMapDef = {
         ],
         spawnReplacements: [
             {
-                tree_01: "tree_20"
-            }
+                tree_01: "tree_20",
+            },
         ],
     },
 };

@@ -3620,9 +3620,9 @@ a:active {
 }
 
 .btn-mode-inferno {
-  border-bottom: 2px solid #c95c18!important;
+  border-bottom: 2px solid #c95c18 !important;
   box-shadow: inset 0 -2px #c95c18 !important;
-  background-color: #FE8438!important;
+  background-color: #fe8438 !important;
 }
 @media (max-width: 850px), (max-width: 900px), (max-width: 930px) {
   .btn-mode-inferno {

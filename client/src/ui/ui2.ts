@@ -1,5 +1,8 @@
 import { GameObjectDefs, type LootDef } from "../../../shared/defs/gameObjectDefs";
-import { DamageStreakDefs, DefaultStreakType } from "../../../shared/defs/gameObjects/damageStreakDefs";
+import {
+    DamageStreakDefs,
+    DefaultStreakType,
+} from "../../../shared/defs/gameObjects/damageStreakDefs";
 import {
     type AmmoDef,
     type BoostDef,
@@ -524,11 +527,21 @@ export class UiManager2 {
             const el = domElemById("ui-streak-0");
             this.dom.streakSingle = {
                 div: el,
-                image: el.getElementsByClassName("ui-streak-image")[0] as HTMLImageElement,
-                progressFill: el.getElementsByClassName("ui-streak-progress-fill")[0] as HTMLElement,
-                timerFill: el.getElementsByClassName("ui-streak-timer-fill")[0] as HTMLElement,
-                dmgText: el.getElementsByClassName("ui-streak-dmg-text")[0] as HTMLElement,
-                tooltipTitle: el.getElementsByClassName("tooltip-title")[0] as HTMLElement,
+                image: el.getElementsByClassName(
+                    "ui-streak-image",
+                )[0] as HTMLImageElement,
+                progressFill: el.getElementsByClassName(
+                    "ui-streak-progress-fill",
+                )[0] as HTMLElement,
+                timerFill: el.getElementsByClassName(
+                    "ui-streak-timer-fill",
+                )[0] as HTMLElement,
+                dmgText: el.getElementsByClassName(
+                    "ui-streak-dmg-text",
+                )[0] as HTMLElement,
+                tooltipTitle: el.getElementsByClassName(
+                    "tooltip-title",
+                )[0] as HTMLElement,
                 tooltipDesc: el.getElementsByClassName("tooltip-desc")[0] as HTMLElement,
             };
             this.updateStreakIcon();
@@ -1059,7 +1072,10 @@ export class UiManager2 {
 
                 if (isActive && def) {
                     sd.div.classList.add("streak-active");
-                    const pct = Math.max(0, Math.min(100, (timeLeft / def.duration) * 100));
+                    const pct = Math.max(
+                        0,
+                        Math.min(100, (timeLeft / def.duration) * 100),
+                    );
                     sd.timerFill.style.height = `${pct}%`;
                     sd.progressFill.style.height = "0%";
                     sd.dmgText.textContent = `${Math.ceil(timeLeft)}s`;
@@ -1071,9 +1087,10 @@ export class UiManager2 {
                 } else {
                     // Show progress toward next threshold
                     // We need the previous threshold to compute progress range
-                    const prevThreshold = nextThreshold > 0
-                        ? nextThreshold - (dmgDealt < 300 ? 300 : 400)
-                        : 0;
+                    const prevThreshold =
+                        nextThreshold > 0
+                            ? nextThreshold - (dmgDealt < 300 ? 300 : 400)
+                            : 0;
                     const range = nextThreshold - prevThreshold;
                     const progress = Math.max(0, dmgDealt - prevThreshold);
                     const pct = range > 0 ? Math.min(100, (progress / range) * 100) : 0;

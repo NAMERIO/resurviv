@@ -205,7 +205,8 @@ export class RiverCreator {
         const variationPushDistance = lake.circular ? 0 : 10;
         const width = (lake.outerRad - lake.innerRad) / 2;
 
-        const len = lake.innerRad + width - (lake.circular ? 0 : variationPushDistance * 2);
+        const len =
+            lake.innerRad + width - (lake.circular ? 0 : variationPushDistance * 2);
 
         if (lake.circular) {
             const sides = 12;

@@ -651,13 +651,14 @@ export class Bullet {
                     ) {
                         let burnDuration = GameConfig.player.burnDuration;
                         let burnDamage = GameConfig.player.burnDamage;
-                        
+
                         if (this.player.hasPerk("pyro")) {
-                            const pyroMult = PerkProperties.pyro.fireDamageMult as number ?? 1.2;
+                            const pyroMult =
+                                (PerkProperties.pyro.fireDamageMult as number) ?? 1.2;
                             burnDamage *= pyroMult;
                             burnDuration *= pyroMult;
                         }
-                        
+
                         col.player!.burnDuration = burnDuration;
                         col.player!.burnTicker = GameConfig.player.burnTickRate;
                         col.player!.burnEffect = true;

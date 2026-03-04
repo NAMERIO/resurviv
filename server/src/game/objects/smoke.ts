@@ -151,7 +151,13 @@ export class Smoke extends BaseGameObject {
     dir = v2.randomUnit();
     speed = util.random(SPAWN_MIN_SPEED, SPAWN_MAX_SPEED);
 
-    constructor(game: Game, pos: Vec2, layer: number, interior: number, isFoam: boolean = false) {
+    constructor(
+        game: Game,
+        pos: Vec2,
+        layer: number,
+        interior: number,
+        isFoam: boolean = false,
+    ) {
         super(game, pos);
         this.layer = layer;
         this.interior = interior;

@@ -5,6 +5,12 @@ import {
     type LootDef,
     WeaponTypeToDefs,
 } from "../../../../shared/defs/gameObjectDefs";
+import {
+    DamageStreakDefs,
+    DamageStreakProperties,
+    DefaultStreakType,
+    StreakThresholds,
+} from "../../../../shared/defs/gameObjects/damageStreakDefs";
 import { type EmoteDef, EmotesDefs } from "../../../../shared/defs/gameObjects/emoteDefs";
 import {
     type BackpackDef,
@@ -19,7 +25,6 @@ import type { GunDef } from "../../../../shared/defs/gameObjects/gunDefs";
 import type { MeleeDef } from "../../../../shared/defs/gameObjects/meleeDefs";
 import type { OutfitDef } from "../../../../shared/defs/gameObjects/outfitDefs";
 import { PerkProperties } from "../../../../shared/defs/gameObjects/perkDefs";
-import { DamageStreakDefs, DamageStreakProperties, DefaultStreakType, StreakThresholds } from "../../../../shared/defs/gameObjects/damageStreakDefs";
 import type { RoleDef } from "../../../../shared/defs/gameObjects/roleDefs";
 import type { ThrowableDef } from "../../../../shared/defs/gameObjects/throwableDefs";
 import { UnlockDefs } from "../../../../shared/defs/gameObjects/unlockDefs";
@@ -1350,7 +1355,8 @@ export class Player extends BaseGameObject {
 
             const streakDef = DamageStreakDefs[this.chosenStreakType];
             if (streakDef && streakDef.rewardItem === "streak_juggernaut_effect") {
-                this.health += DamageStreakProperties.streak_juggernaut_effect.healthRegen * dt;
+                this.health +=
+                    DamageStreakProperties.streak_juggernaut_effect.healthRegen * dt;
             }
 
             if (this.streakActiveTimer <= 0) {
@@ -1472,9 +1478,15 @@ export class Player extends BaseGameObject {
     get streakNextThreshold(): number {
         return StreakThresholds.get(this.streakActivationCount);
     }
-    get streakDamageDealt(): number { return this.damageDealt; }
-    get activeStreakActive(): boolean { return this.streakActive; }
-    get activeStreakTimeLeft(): number { return this.streakActiveTimer; }
+    get streakDamageDealt(): number {
+        return this.damageDealt;
+    }
+    get activeStreakActive(): boolean {
+        return this.streakActive;
+    }
+    get activeStreakTimeLeft(): number {
+        return this.streakActiveTimer;
+    }
 
     // infinity since we aren't dead yet ;)
     // this is used for sorting and getting player ranks
@@ -2957,7 +2969,9 @@ export class Player extends BaseGameObject {
 
             // Streak: Juggernaut damage reduction
             if (this.hasPerk("streak_juggernaut_effect")) {
-                reduceDamage(DamageStreakProperties.streak_juggernaut_effect.damageReduction);
+                reduceDamage(
+                    DamageStreakProperties.streak_juggernaut_effect.damageReduction,
+                );
             }
 
             const chest = GameObjectDefs[this.chest] as ChestDef;

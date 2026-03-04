@@ -50,7 +50,7 @@ const perks = [
     "chambered",
 ];
 
-const droppablePerks = ["ap_rounds", "self_revive"];
+const droppablePerks = ["ap_rounds", "self_revive", "pyro", "phoenix"];
 
 export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
     if (data.player.game.aliveCount < 5) {
@@ -80,7 +80,7 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
     if (
         data.source?.__id !== data.player.__id &&
         data.damageType !== GameConfig.DamageType.Bleeding &&
-        Math.random() < 0.2
+        Math.random() < 0.4
     ) {
         const perk = perks[Math.floor(Math.random() * perks.length)];
         data.player.game.lootBarn.addLoot(perk, data.player.pos, data.player.layer, 1);
@@ -152,6 +152,11 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
                 Math.min(killer.inventory["snowball"] + 3, 8),
             );
         }
+        killer.invManager.set(
+            "nitroLace",
+            Math.min(killer.inventory["nitroLace"] + 1, 15),
+        );
+
         killer.inventoryDirty = true;
         killer.weapsDirty = true;
 

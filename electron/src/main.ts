@@ -1,12 +1,12 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { app, BrowserWindow, ipcMain, type IpcMainEvent } from "electron";
+import { app, BrowserWindow, type IpcMainEvent, ipcMain } from "electron";
 import {
     destroyDiscordRPC,
     initDiscordRPC,
+    type PresenceData,
     setIdlePresence,
     updateMatchPresence,
-    type PresenceData,
 } from "./discordRPC.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -53,10 +53,13 @@ function registerIPC(): void {
         });
     });
 
-    ipcMain.on("discord:match-update", (_event: IpcMainEvent, data: Partial<PresenceData>) => {
-        console.log("[IPC] match-update", data);
-        updateMatchPresence(data);
-    });
+    ipcMain.on(
+        "discord:match-update",
+        (_event: IpcMainEvent, data: Partial<PresenceData>) => {
+            console.log("[IPC] match-update", data);
+            updateMatchPresence(data);
+        },
+    );
 
     ipcMain.on("discord:match-end", () => {
         console.log("[IPC] match-end");

@@ -1,8 +1,8 @@
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
+import { DamageStreakProperties } from "../../../shared/defs/gameObjects/damageStreakDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
 import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
 import { PerkProperties } from "../../../shared/defs/gameObjects/perkDefs";
-import { DamageStreakProperties } from "../../../shared/defs/gameObjects/damageStreakDefs";
 import {
     type ThrowableDef,
     ThrowableDefs,
@@ -741,7 +741,8 @@ export class WeaponManager {
         weapon.recoilTime = itemDef.recoilTime;
 
         if (this.player.hasPerk("streak_rapid_fire_effect")) {
-            weapon.cooldown *= DamageStreakProperties.streak_rapid_fire_effect.fireDelayMult;
+            weapon.cooldown *=
+                DamageStreakProperties.streak_rapid_fire_effect.fireDelayMult;
         }
 
         // Check firing location

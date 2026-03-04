@@ -1,4 +1,5 @@
 import pkg from "discord-rpc";
+
 const { Client, register } = pkg;
 type Presence = Parameters<InstanceType<typeof Client>["setActivity"]>[0];
 
@@ -24,7 +25,9 @@ export async function initDiscordRPC(): Promise<void> {
 
     rpcClient.on("ready", () => {
         connected = true;
-        console.log(`[Discord RPC] Connected as ${rpcClient!.user?.username ?? "unknown"}`);
+        console.log(
+            `[Discord RPC] Connected as ${rpcClient!.user?.username ?? "unknown"}`,
+        );
         setIdlePresence();
     });
 
@@ -96,8 +99,7 @@ export async function destroyDiscordRPC(): Promise<void> {
         try {
             await rpcClient.clearActivity();
             await rpcClient.destroy();
-        } catch {
-        }
+        } catch {}
         rpcClient = null;
         connected = false;
         console.log("[Discord RPC] Destroyed");

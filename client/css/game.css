@@ -5607,7 +5607,9 @@ span.ui-stats-header-value {
   opacity: 0.35;
   pointer-events: none;
   cursor: default;
-  transition: opacity 0.25s ease-out, border-color 0.25s ease-out;
+  transition:
+    opacity 0.25s ease-out,
+    border-color 0.25s ease-out;
 }
 
 .ui-streak-icon.streak-ready {
@@ -5621,7 +5623,9 @@ span.ui-stats-header-value {
 .ui-streak-icon.streak-ready:hover {
   border-color: #00ff00;
   transform: scale(1.1);
-  transition: transform 100ms ease-in, border-color 100ms ease-out;
+  transition:
+    transform 100ms ease-in,
+    border-color 100ms ease-out;
 }
 
 .ui-streak-icon.streak-active {
@@ -5696,7 +5700,8 @@ span.ui-stats-header-value {
 }
 
 @keyframes streakReady {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
   }
   50% {

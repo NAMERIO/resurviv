@@ -4,10 +4,7 @@
   "directories": {
     "output": "release"
   },
-  "files": [
-    "dist/**/*",
-    "node_modules/**/*"
-  ],
+  "files": ["dist/**/*", "node_modules/**/*"],
   "win": {
     "target": "nsis",
     "icon": "../client/public/img/favicon.png"

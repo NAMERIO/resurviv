@@ -1,5 +1,6 @@
 import { type BulletDef, BulletDefs } from "./gameObjects/bulletDefs";
 import { type CrosshairDef, CrosshairDefs } from "./gameObjects/crosshairDefs";
+import { type DamageStreakDef, DamageStreakDefs } from "./gameObjects/damageStreakDefs";
 import { type DeathEffectDef, DeathEffectDefs } from "./gameObjects/deathEffectDefs";
 import { type EmoteDef, EmotesDefs } from "./gameObjects/emoteDefs";
 import { type ExplosionDef, ExplosionDefs } from "./gameObjects/explosionsDefs";
@@ -25,7 +26,6 @@ import { type RoleDef, RoleDefs } from "./gameObjects/roleDefs";
 import { type ThrowableDef, ThrowableDefs } from "./gameObjects/throwableDefs";
 import { type UnlockDef, UnlockDefs } from "./gameObjects/unlockDefs";
 import { type XPDef, XPDefs } from "./gameObjects/xpDefs";
-import { type DamageStreakDef, DamageStreakDefs } from "./gameObjects/damageStreakDefs";
 
 export type GameObjectDef =
     | BulletDef

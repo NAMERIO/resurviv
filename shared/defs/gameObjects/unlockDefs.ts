@@ -19,11 +19,7 @@ export const privateOutfits = [
 
 const _allowedHealEffects = Object.keys(HealEffectDefs);
 const _allowedDeathEffects = Object.keys(DeathEffectDefs);
-const _allowedStreaks = [
-    "streak_rapid_fire",
-    "streak_heavy_hitter",
-    "streak_juggernaut",
-];
+const _allowedStreaks = ["streak_rapid_fire", "streak_heavy_hitter", "streak_juggernaut"];
 const _allowedMeleeSkins = [
     "fists",
     "red_gloves",

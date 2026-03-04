@@ -1,13 +1,13 @@
 import "@taufik-nurrohman/color-picker";
 import $ from "jquery";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
+import { type BulletDef, BulletDefs } from "../../../shared/defs/gameObjects/bulletDefs";
 import { EmoteCategory, type EmoteDef } from "../../../shared/defs/gameObjects/emoteDefs";
-import { BulletDefs, type BulletDef } from "../../../shared/defs/gameObjects/bulletDefs";
 import { ExplosionDefs } from "../../../shared/defs/gameObjects/explosionsDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
 import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
-import type { ThrowableDef } from "../../../shared/defs/gameObjects/throwableDefs";
 import { OutfitDefs } from "../../../shared/defs/gameObjects/outfitDefs";
+import type { ThrowableDef } from "../../../shared/defs/gameObjects/throwableDefs";
 import {
     privateOutfits,
     type UnlockDef,
@@ -368,7 +368,10 @@ export class LoadoutMenu {
                         },
                     }),
                 );
-                const catName = this.localization.translate(`loadout-title-${this.categories[i].loadoutType}`) || this.categories[i].loadoutType;
+                const catName =
+                    this.localization.translate(
+                        `loadout-title-${this.categories[i].loadoutType}`,
+                    ) || this.categories[i].loadoutType;
                 r.append(
                     $("<div/>", {
                         class: "modal-customize-cat-name",
@@ -1237,14 +1240,27 @@ export class LoadoutMenu {
         const MAX_MAGAZINE = 100;
         const MAX_RELOAD = 5;
         const rarityNames = ["stock", "common", "uncommon", "rare", "epic", "mythic"];
-        const rarityColors = ["#c5c5c5", "#c5c5c5", "#12ff00", "#00deff", "#f600ff", "#d96100"];
+        const rarityColors = [
+            "#c5c5c5",
+            "#c5c5c5",
+            "#12ff00",
+            "#00deff",
+            "#f600ff",
+            "#d96100",
+        ];
         if (def.type === "gun") {
             const gunDef = def as GunDef;
             const bulletDef = BulletDefs[gunDef.bulletType] as BulletDef | undefined;
             let totalDamage = 0;
             if (gunDef.isLauncher && gunDef.projType) {
-                const throwableDef = GameObjectDefs[gunDef.projType] as ThrowableDef | undefined;
-                if (throwableDef && throwableDef.type === "throwable" && throwableDef.explosionType) {
+                const throwableDef = GameObjectDefs[gunDef.projType] as
+                    | ThrowableDef
+                    | undefined;
+                if (
+                    throwableDef &&
+                    throwableDef.type === "throwable" &&
+                    throwableDef.explosionType
+                ) {
                     const explosionDef = ExplosionDefs[throwableDef.explosionType];
                     totalDamage = explosionDef?.damage ?? 0;
                 }
@@ -1258,25 +1274,47 @@ export class LoadoutMenu {
             const accuracy = Math.max(0, MAX_ACCURACY - spread);
             $("#weapon-stats-name").html(gunDef.name);
             const rarity = (gunDef as any).rarity ?? 0;
-            $("#weapon-stats-rarity").html(rarityNames[rarity] || "stock").css("color", rarityColors[rarity] || "#c5c5c5");
+            $("#weapon-stats-rarity")
+                .html(rarityNames[rarity] || "stock")
+                .css("color", rarityColors[rarity] || "#c5c5c5");
             const sprite = gunDef.lootImg.sprite;
             if (sprite) {
                 const svgName = sprite.replace(/\.img$/, "");
-                $("#weapon-stats-image-inner").css("background-image", `url(img/loot/${svgName}.svg)`);
+                $("#weapon-stats-image-inner").css(
+                    "background-image",
+                    `url(img/loot/${svgName}.svg)`,
+                );
             }
-            const clampPct = (val: number, max: number) => Math.min(100, Math.max(0, (val / max) * 100));
-            $("#weapon-stat-damage").css("width", `${clampPct(totalDamage, MAX_DAMAGE)}%`);
+            const clampPct = (val: number, max: number) =>
+                Math.min(100, Math.max(0, (val / max) * 100));
+            $("#weapon-stat-damage").css(
+                "width",
+                `${clampPct(totalDamage, MAX_DAMAGE)}%`,
+            );
             $("#weapon-val-damage").html(`${Math.round(totalDamage * 10) / 10}`);
-            $("#weapon-stat-firerate").css("width", `${clampPct(fireRate, MAX_FIRERATE)}%`);
+            $("#weapon-stat-firerate").css(
+                "width",
+                `${clampPct(fireRate, MAX_FIRERATE)}%`,
+            );
             $("#weapon-val-firerate").html(`${Math.round(fireRate * 10) / 10}`);
             $("#weapon-stat-range").css("width", `${clampPct(range, MAX_RANGE)}%`);
             $("#weapon-val-range").html(`${Math.round(range)}`);
-            $("#weapon-stat-accuracy").css("width", `${clampPct(accuracy, MAX_ACCURACY)}%`);
+            $("#weapon-stat-accuracy").css(
+                "width",
+                `${clampPct(accuracy, MAX_ACCURACY)}%`,
+            );
             $("#weapon-val-accuracy").html(`${Math.round(accuracy * 10) / 10}`);
-            $("#weapon-stat-magazine").css("width", `${clampPct(gunDef.maxClip, MAX_MAGAZINE)}%`);
+            $("#weapon-stat-magazine").css(
+                "width",
+                `${clampPct(gunDef.maxClip, MAX_MAGAZINE)}%`,
+            );
             $("#weapon-val-magazine").html(`${gunDef.maxClip}`);
-            const reloadScore = gunDef.reloadTime > 0 ? MAX_RELOAD / gunDef.reloadTime : MAX_RELOAD;
-            $("#weapon-stat-reload").css("width", `${clampPct(reloadScore, MAX_RELOAD)}%`);
+            const reloadScore =
+                gunDef.reloadTime > 0 ? MAX_RELOAD / gunDef.reloadTime : MAX_RELOAD;
+            $("#weapon-stat-reload").css(
+                "width",
+                `${clampPct(reloadScore, MAX_RELOAD)}%`,
+            );
             $("#weapon-val-reload").html(`${Math.round(gunDef.reloadTime * 10) / 10}s`);
             const ammoNames: Record<string, string> = {
                 "9mm": "9mm",
@@ -1285,39 +1323,56 @@ export class LoadoutMenu {
                 "12gauge": "12 Gauge",
                 "50AE": ".50 AE",
                 "308sub": ".308 Sub",
-                "flare": "Flare",
+                flare: "Flare",
                 "45acp": ".45 ACP",
                 "40mm": "40mm",
             };
             const fireModeNames: Record<string, string> = {
-                "auto": "Full Auto",
-                "single": "Semi-Auto",
-                "burst": "Burst",
-                "blaster": "Blaster",
+                auto: "Full Auto",
+                single: "Semi-Auto",
+                burst: "Burst",
+                blaster: "Blaster",
             };
             $("#weapon-detail-ammo").html(ammoNames[gunDef.ammo] || gunDef.ammo);
-            $("#weapon-detail-firemode").html(fireModeNames[gunDef.fireMode] || gunDef.fireMode);
+            $("#weapon-detail-firemode").html(
+                fireModeNames[gunDef.fireMode] || gunDef.fireMode,
+            );
             const headshotPct = Math.round(gunDef.headshotMult * 100);
             $("#weapon-detail-headshot").html(`${headshotPct}%`);
-
         } else if (def.type === "melee") {
             const meleeDef = def as MeleeDef;
 
             $("#weapon-stats-name").html(meleeDef.name);
             const rarity = meleeDef.rarity ?? 0;
-            $("#weapon-stats-rarity").html(rarityNames[rarity] || "stock").css("color", rarityColors[rarity] || "#c5c5c5");
+            $("#weapon-stats-rarity")
+                .html(rarityNames[rarity] || "stock")
+                .css("color", rarityColors[rarity] || "#c5c5c5");
             const sprite = meleeDef.lootImg.sprite;
             if (sprite) {
                 const svgName = sprite.replace(/\.img$/, "");
-                $("#weapon-stats-image-inner").css("background-image", `url(img/loot/${svgName}.svg)`);
+                $("#weapon-stats-image-inner").css(
+                    "background-image",
+                    `url(img/loot/${svgName}.svg)`,
+                );
             }
-            const clampPct = (val: number, max: number) => Math.min(100, Math.max(0, (val / max) * 100));
-            const meleeFireRate = meleeDef.attack.cooldownTime > 0 ? 1 / meleeDef.attack.cooldownTime : 0;
-            $("#weapon-stat-damage").css("width", `${clampPct(meleeDef.damage, MAX_DAMAGE)}%`);
+            const clampPct = (val: number, max: number) =>
+                Math.min(100, Math.max(0, (val / max) * 100));
+            const meleeFireRate =
+                meleeDef.attack.cooldownTime > 0 ? 1 / meleeDef.attack.cooldownTime : 0;
+            $("#weapon-stat-damage").css(
+                "width",
+                `${clampPct(meleeDef.damage, MAX_DAMAGE)}%`,
+            );
             $("#weapon-val-damage").html(`${meleeDef.damage}`);
-            $("#weapon-stat-firerate").css("width", `${clampPct(meleeFireRate, MAX_FIRERATE)}%`);
+            $("#weapon-stat-firerate").css(
+                "width",
+                `${clampPct(meleeFireRate, MAX_FIRERATE)}%`,
+            );
             $("#weapon-val-firerate").html(`${Math.round(meleeFireRate * 10) / 10}`);
-            $("#weapon-stat-range").css("width", `${clampPct(meleeDef.attack.rad * 10, MAX_RANGE)}%`);
+            $("#weapon-stat-range").css(
+                "width",
+                `${clampPct(meleeDef.attack.rad * 10, MAX_RANGE)}%`,
+            );
             $("#weapon-val-range").html(`${meleeDef.attack.rad}`);
             $("#weapon-stat-accuracy").css("width", "100%");
             $("#weapon-val-accuracy").html("--");
@@ -1409,14 +1464,14 @@ export class LoadoutMenu {
         const localizedTitle = this.localization
             .translate(`loadout-title-${category.loadoutType}`)
             .toUpperCase();
-            if (category.loadoutType === "perk") {
-                const perkNote = this.localization.translate("loadout-perk-mode-note");
-                $("#modal-customize-cat-title").html(`
+        if (category.loadoutType === "perk") {
+            const perkNote = this.localization.translate("loadout-perk-mode-note");
+            $("#modal-customize-cat-title").html(`
                     ${localizedTitle}<span style='font-size:16px;color:#FFD700;text-shadow:0 1px 3px rgba(0,0,0,0.8);margin-left:8px;vertical-align:middle;'>${perkNote}</span>
                 `);
-            } else {
-                $("#modal-customize-cat-title").html(localizedTitle);
-            }
+        } else {
+            $("#modal-customize-cat-title").html(localizedTitle);
+        }
         $("#modal-content-right-crosshair").css(
             "display",
             category.loadoutType == "crosshair" ? "block" : "none",
@@ -1425,11 +1480,10 @@ export class LoadoutMenu {
             "display",
             category.loadoutType == "emote" ? "block" : "none",
         );
-        const isWeaponCat = ["primary", "secondary", "melee"].includes(category.loadoutType);
-        $("#modal-content-right-weapon").css(
-            "display",
-            isWeaponCat ? "block" : "none",
+        const isWeaponCat = ["primary", "secondary", "melee"].includes(
+            category.loadoutType,
         );
+        $("#modal-content-right-weapon").css("display", isWeaponCat ? "block" : "none");
         if (isWeaponCat) {
             this.clearWeaponStats();
         }
@@ -1473,7 +1527,9 @@ export class LoadoutMenu {
                 displayLore: itemLore,
                 timeAcquired: item.timeAcquired,
                 idx: i,
-                subcat: (GameObjectDefs[item.type] as unknown as EmoteDef)?.category || 0 as EmoteCategory,
+                subcat:
+                    (GameObjectDefs[item.type] as unknown as EmoteDef)?.category ||
+                    (0 as EmoteCategory),
                 outerDiv: null,
             };
 

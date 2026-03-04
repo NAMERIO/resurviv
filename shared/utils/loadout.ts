@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 import { GameObjectDefs } from "../defs/gameObjectDefs";
-import { DamageStreakDefs, DefaultStreakType } from "../defs/gameObjects/damageStreakDefs";
+import {
+    DamageStreakDefs,
+    DefaultStreakType,
+} from "../defs/gameObjects/damageStreakDefs";
 import { UnlockDefs } from "../defs/gameObjects/unlockDefs";
 import { GameConfig } from "../gameConfig";
 import { deepEqual } from "./deepEqual";
@@ -87,7 +90,9 @@ export const loadout = {
             primary: getGameType("gun", mergedLoadout.primary, "mosin"),
             secondary: getGameType("gun", mergedLoadout.secondary, "mosin"),
             perk: getGameType("perk", mergedLoadout.perk, ""),
-            streak: DamageStreakDefs[mergedLoadout.streak] ? mergedLoadout.streak : DefaultStreakType,
+            streak: DamageStreakDefs[mergedLoadout.streak]
+                ? mergedLoadout.streak
+                : DefaultStreakType,
             crosshair: {
                 type:
                     mergedLoadout.crosshair.type === "crosshair_custom_image"

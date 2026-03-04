@@ -61,14 +61,25 @@ class Smoke implements AbstractObject {
 
 const smokeParticles = ["part-smoke-02.img", "part-smoke-03.img"];
 const foamParticles = [
-    "foam1.img", "foam2.img", "foam3.img", "foam4.img",
-    "foam5.img", "foam6.img", "foam7.img", "foam8.img",
-    "foam9.img", "foam10.img", "foam11.img", "foam12.img",
+    "foam1.img",
+    "foam2.img",
+    "foam3.img",
+    "foam4.img",
+    "foam5.img",
+    "foam6.img",
+    "foam7.img",
+    "foam8.img",
+    "foam9.img",
+    "foam10.img",
+    "foam11.img",
+    "foam12.img",
 ];
 export class SmokeParticle {
     active = false;
     zIdx = 0;
-    sprite = PIXI.Sprite.from(smokeParticles[Math.floor(Math.random() * smokeParticles.length)]);
+    sprite = PIXI.Sprite.from(
+        smokeParticles[Math.floor(Math.random() * smokeParticles.length)],
+    );
 
     pos!: Vec2;
     posTarget!: Vec2;
@@ -90,7 +101,13 @@ export class SmokeParticle {
         this.sprite.visible = false;
     }
 
-    m_init(pos: Vec2, rad: number, layer: number, interior: number, isFoam: boolean = false) {
+    m_init(
+        pos: Vec2,
+        rad: number,
+        layer: number,
+        interior: number,
+        isFoam: boolean = false,
+    ) {
         this.pos = v2.copy(pos);
         this.posTarget = v2.copy(this.pos);
         this.rad = rad;
@@ -102,11 +119,13 @@ export class SmokeParticle {
         this.fadeDuration = util.random(0.5, 0.75);
         this.isFoam = isFoam;
         if (isFoam) {
-            const foamImg = foamParticles[Math.floor(Math.random() * foamParticles.length)];
+            const foamImg =
+                foamParticles[Math.floor(Math.random() * foamParticles.length)];
             this.sprite.texture = PIXI.Texture.from(foamImg);
             this.tint = 0x00ffffff;
         } else {
-            const smokeImg = smokeParticles[Math.floor(Math.random() * smokeParticles.length)];
+            const smokeImg =
+                smokeParticles[Math.floor(Math.random() * smokeParticles.length)];
             this.sprite.texture = PIXI.Texture.from(smokeImg);
             this.tint = util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.9, 0.95)));
         }
@@ -164,7 +183,8 @@ export class SmokeBarn {
                 p.active = p.fadeTicker < p.fadeDuration;
 
                 const kDefaultAlpha = p.isFoam ? 0.4 : 0.9;
-                const alpha = math.clamp(1 - p.fadeTicker / p.fadeDuration, 0, 1) * kDefaultAlpha;
+                const alpha =
+                    math.clamp(1 - p.fadeTicker / p.fadeDuration, 0, 1) * kDefaultAlpha;
 
                 // Always add to the top layer if visible and not occluded by
                 // the layer mask (fixes issue of smokes spawning on the ground

@@ -102,8 +102,8 @@ export const PerkProperties = {
         passiveDamage: 1,
         passiveTickRate: 1,
         healRate: 2,
-        healTickRate: 0.5, 
-        burnImmunity: true, 
+        healTickRate: 0.5,
+        burnImmunity: true,
     },
     pyro: {
         fireRangeMult: 1.2,

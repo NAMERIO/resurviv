@@ -24,7 +24,10 @@ export const StreakThresholds = {
     firstActivation: 300,
     increment: 400,
     get(activationIndex: number): number {
-        return StreakThresholds.firstActivation + activationIndex * StreakThresholds.increment;
+        return (
+            StreakThresholds.firstActivation +
+            activationIndex * StreakThresholds.increment
+        );
     },
 };
 
