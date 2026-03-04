@@ -86,6 +86,7 @@ export interface ObjectsFullData {
 
         wearingPan: boolean;
         healEffect: boolean;
+        burnEffect: boolean;
 
         frozen: boolean;
         frozenOri: number;
@@ -213,6 +214,7 @@ export const ObjectSerializeFns: {
 
             s.writeBoolean(data.wearingPan);
             s.writeBoolean(data.healEffect);
+            s.writeBoolean(data.burnEffect);
 
             s.writeBoolean(data.frozen);
             if (data.frozen) {
@@ -282,6 +284,7 @@ export const ObjectSerializeFns: {
 
             data.wearingPan = s.readBoolean();
             data.healEffect = s.readBoolean();
+            data.burnEffect = s.readBoolean();
 
             data.frozen = s.readBoolean();
             data.frozenOri = data.frozen ? s.readBits(2) : 0;

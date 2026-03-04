@@ -23,6 +23,7 @@ import { DamageStreakDefs, DamageStreakProperties, DefaultStreakType, StreakThre
 import type { RoleDef } from "../../../../shared/defs/gameObjects/roleDefs";
 import type { ThrowableDef } from "../../../../shared/defs/gameObjects/throwableDefs";
 import { UnlockDefs } from "../../../../shared/defs/gameObjects/unlockDefs";
+import { MapId } from "../../../../shared/defs/types/misc";
 import {
     type Action,
     type Anim,
@@ -873,6 +874,9 @@ export class Player extends BaseGameObject {
 
     wearingPan = false;
     healEffect = false;
+    burnEffect = false;
+    burnTicker = 0;
+    burnDuration = 0;
     // if hit by snowball or potato, slowed down for "x" seconds
     frozenTicker = 0;
     frozen = false;
@@ -1771,6 +1775,45 @@ export class Player extends BaseGameObject {
                 damageType: GameConfig.DamageType.Gas,
                 dir: this.dir,
             });
+        }
+
+        // Inferno mode: burn when walking on water (lava)
+        {
+            const isOnWater = this.game.map.isOnWater(this.pos, this.layer);
+            const isInferno = this.game.map.mapId === MapId.Inferno;
+
+            if (isOnWater && isInferno) {
+                this.burnDuration = GameConfig.player.burnDuration;
+            }
+
+            const oldBurnEffect = this.burnEffect;
+
+            if (this.burnDuration > 0) {
+                this.burnDuration -= dt;
+                this.burnTicker -= dt;
+                this.burnEffect = true;
+
+                if (this.burnTicker <= 0) {
+                    this.burnTicker = GameConfig.player.burnTickRate;
+                    this.damage({
+                        amount: GameConfig.player.burnDamage,
+                        damageType: GameConfig.DamageType.Burning,
+                        dir: this.dir,
+                    });
+                }
+
+                if (this.burnDuration <= 0) {
+                    this.burnDuration = 0;
+                    this.burnTicker = 0;
+                    this.burnEffect = false;
+                }
+            } else {
+                this.burnEffect = false;
+            }
+
+            if (oldBurnEffect !== this.burnEffect) {
+                this.setDirty();
+            }
         }
 
         if (this.reloadAgain && this.actionType !== GameConfig.Action.Revive) {
@@ -2812,11 +2855,12 @@ export class Player extends BaseGameObject {
             finalDamage -= finalDamage * multi;
         };
 
-        // ignore armor for gas and bleeding damage
+        // ignore armor for gas, bleeding, burning, and airdrop damage
         if (
             params.damageType !== GameConfig.DamageType.Gas &&
             params.damageType !== GameConfig.DamageType.Bleeding &&
-            params.damageType !== GameConfig.DamageType.Airdrop
+            params.damageType !== GameConfig.DamageType.Airdrop &&
+            params.damageType !== GameConfig.DamageType.Burning
         ) {
             const gameSourceDef = GameObjectDefs[params.gameSourceType ?? ""];
             let isHeadShot = false;

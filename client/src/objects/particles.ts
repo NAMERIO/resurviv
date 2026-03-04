@@ -3221,7 +3221,7 @@ const ParticleDefs: Record<string, ParticleDef> = {
         ignoreValueAdjust: true,
     },
     burning: {
-        image: ["part-boost-basic.img"],
+        image: ["part-burning.img"],
         life: new Range(0.75, 1),
         drag: 0,
         rotVel: new Range(Math.PI * 0.25, Math.PI * 0.5),
@@ -3241,7 +3241,7 @@ const ParticleDefs: Record<string, ParticleDef> = {
             lerp: new Range(0, 0.05),
         },
         color: function () {
-            return util.rgbToInt(util.hsvToRgb(0.3, 1, util.random(0.7, 1)));
+            return util.rgbToInt(util.hsvToRgb(0.07, 1, util.random(0.7, 1)));
         },
         ignoreValueAdjust: true,
     },

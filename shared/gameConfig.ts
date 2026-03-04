@@ -20,6 +20,7 @@ export enum DamageType {
     Gas,
     Airdrop,
     Airstrike,
+    Burning,
 }
 
 export enum Action {
@@ -162,6 +163,9 @@ export const GameConfig = {
         frozenSpeedPenalty: 3,
         hasteSpeedBonus: 4.8,
         bleedTickRate: 1,
+        burnTickRate: 0.5,
+        burnDamage: 3,
+        burnDuration: 5,
         downedMoveSpeed: 4,
         downedRezMoveSpeed: 2,
         downedDamageBuffer: 0.1, // time buffer after being downed where a player can't take damage

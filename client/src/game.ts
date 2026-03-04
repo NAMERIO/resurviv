@@ -1365,7 +1365,8 @@ export class Game {
                     (msg.downed && !msg.killed) ||
                     msg.damageType == GameConfig.DamageType.Gas ||
                     msg.damageType == GameConfig.DamageType.Bleeding ||
-                    msg.damageType == GameConfig.DamageType.Airdrop;
+                    msg.damageType == GameConfig.DamageType.Airdrop ||
+                    msg.damageType == GameConfig.DamageType.Burning;
                 const targetInfo = this.m_playerBarn.getPlayerInfo(msg.targetId);
                 const killerInfo = this.m_playerBarn.getPlayerInfo(msg.killCreditId);
                 const killfeedKillerInfo = useKillerInfoInFeed

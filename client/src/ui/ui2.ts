@@ -1566,6 +1566,12 @@ export class UiManager2 {
                     "game-the-air-strike",
                 )} ${killTxt} ${targetName}`;
             }
+            case DamageType.Burning: {
+                const killTxt = this.localization.translate(
+                    downed ? "game-knocked-out" : "game-killed",
+                );
+                return `Burning Effect ${killTxt} ${targetName}`;
+            }
             default:
                 return "";
         }
@@ -1691,6 +1697,8 @@ export class UiManager2 {
                 killerTxt = this.localization.translate("game-the-air-drop");
             } else if (damageType == GameConfig.DamageType.Airstrike) {
                 killerTxt = this.localization.translate("game-the-air-strike");
+            } else if (damageType == GameConfig.DamageType.Burning) {
+                killerTxt = "Burning Effect";
             }
         }
         let damageTxt = this.localization.translate(`game-${sourceType}`);

@@ -310,6 +310,7 @@ export class Player implements AbstractObject {
     useItemEmitter: Emitter | null = null;
     hasteEmitter: Emitter | null = null;
     passiveHealEmitter: Emitter | null = null;
+    burningEmitter: Emitter | null = null;
     downed = false;
     wasDowned = false;
     bleedTicker = 0;
@@ -373,6 +374,7 @@ export class Player implements AbstractObject {
         m_actionSeq: number;
         m_wearingPan: boolean;
         m_healEffect: boolean;
+        m_burnEffect: boolean;
         m_frozen: boolean;
         m_frozenOri: number;
         m_hasteType: Exclude<HasteType, HasteType.Count>;
@@ -539,6 +541,7 @@ export class Player implements AbstractObject {
             m_actionSeq: 0,
             m_wearingPan: false,
             m_healEffect: false,
+            m_burnEffect: false,
             m_frozen: false,
             m_frozenOri: 0,
             m_hasteType: HasteType.None,
@@ -623,6 +626,7 @@ export class Player implements AbstractObject {
             this.m_netData.m_wearingPan = data.wearingPan;
             this.m_netData.m_wearingLasrSwrd = data.wearingLasrSwrd;
             this.m_netData.m_healEffect = data.healEffect;
+            this.m_netData.m_burnEffect = data.burnEffect;
             this.m_netData.m_frozen = data.frozen;
             this.m_netData.m_frozenOri = data.frozenOri;
             this.m_netData.m_hasteType = data.hasteType;
@@ -1382,6 +1386,23 @@ export class Player implements AbstractObject {
             this.passiveHealEmitter.layer = this.renderLayer;
             this.passiveHealEmitter.zOrd = this.renderZOrd + 1;
         }
+
+        // Burning effect
+        if (this.m_netData.m_burnEffect && !this.burningEmitter) {
+            this.burningEmitter = particleBarn.addEmitter("burning", {
+                pos: this.m_pos,
+                layer: this.layer,
+            });
+        } else if (!this.m_netData.m_burnEffect && this.burningEmitter) {
+            this.burningEmitter.stop();
+            this.burningEmitter = null;
+        }
+        if (this.burningEmitter) {
+            this.burningEmitter.pos = v2.add(this.m_pos, v2.create(0, 0.1));
+            this.burningEmitter.layer = this.renderLayer;
+            this.burningEmitter.zOrd = this.renderZOrd + 1;
+        }
+
         if (isActivePlayer && !isSpectating) {
             const curWeapIdx = this.m_localData.m_curWeapIdx;
             const curWeap = this.m_localData.m_weapons[curWeapIdx];
