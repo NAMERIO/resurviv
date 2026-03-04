@@ -211,6 +211,13 @@ export class ExplosionBarn {
             if (explosion.type === "explosion_snow_cannonball" && !isSourceTeammate) {
                 obj.dropRandomLoot();
             }
+
+            if (explosion.type === "explosion_fire" && !isSourceTeammate) {
+                obj.burnDuration = GameConfig.player.burnDuration;
+                obj.burnTicker = GameConfig.player.burnTickRate;
+                obj.burnEffect = true;
+                obj.setDirty();
+            }
         }
 
         if (obj.__type === ObjectType.Obstacle) {
