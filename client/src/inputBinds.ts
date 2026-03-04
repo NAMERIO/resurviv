@@ -55,6 +55,7 @@ const BindDefs = {
     [GameInput.UseHealthKit]: def("Use Med Kit", inputKey(Key.Eight)),
     [GameInput.UseSoda]: def("Use Soda", inputKey(Key.Nine)),
     [GameInput.UsePainkiller]: def("Use Pills", inputKey(Key.Zero)),
+    [GameInput.UseNitroLace]: def("Use Nitro Lace", inputKey(Key.N)),
     [GameInput.SwapWeapSlots]: def("Switch Gun Slots", inputKey(Key.T)),
     [GameInput.ActivateStreak]: def("Activate Streak", inputKey(Key.G)),
     [GameInput.ToggleMap]: def("Toggle Map", inputKey(Key.M)),

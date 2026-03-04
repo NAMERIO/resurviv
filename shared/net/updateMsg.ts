@@ -60,6 +60,11 @@ function serializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
         }
     }
 
+    s.writeBoolean(data.nitroLaceDirty);
+    if (data.nitroLaceDirty) {
+        s.writeFloat(data.nitroLacePercentage, 0, 100, 8);
+    }
+
     s.writeAlignToNextByte();
 }
 
@@ -123,6 +128,10 @@ function deserializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
         } else {
             data.activeStreakTimeLeft = 0;
         }
+    }
+    data.nitroLaceDirty = s.readBoolean();
+    if (data.nitroLaceDirty) {
+        data.nitroLacePercentage = s.readFloat(0, 100, 8);
     }
     s.readAlignToNextByte();
 }
@@ -831,6 +840,8 @@ export interface LocalDataWithDirty extends LocalData {
     streakReady: boolean;
     activeStreakActive: boolean;
     activeStreakTimeLeft: number;
+    nitroLaceDirty: boolean;
+    nitroLacePercentage: number;
 }
 
 // the non-optional properties are used by both server and client

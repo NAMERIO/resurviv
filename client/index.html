@@ -257,6 +257,14 @@
               <div class="ui-loot-count">0</div>
               <img class="ui-loot-image" src="">
             </div>
+            <div id="ui-loot-nitroLace" class="ui-loot ui-outline-hover ui-scale-hover ui-medical tooltip" style="display: none;">
+              <div class="tooltip-text">
+                <div class="tooltip-title" data-l10n="game-nitroLace">Nitro Lace</div>
+                <div class="tooltip-description"><span data-l10n="game-nitroLace-tooltip">Left-click to ignite bullets for 10s.</span></div>
+              </div>
+              <div class="ui-loot-count">0</div>
+              <img class="ui-loot-image" src="">
+            </div>
           </div>
           <div id="ui-streak-wrapper">
             <div id="ui-streak-0" class="ui-streak-icon ui-outline-hover tooltip" data-streak-idx="0">
@@ -508,7 +516,10 @@
         <div id="ui-equipped-ammo-wrapper" class="js-ui-map-hidden js-ui-hud-show">
           <div id="ui-equipped-ammo">
             <div id="ui-bullet-counter">
-              <div id="ui-current-clip">0</div>
+              <div id="ui-current-clip">
+                <div id="ui-current-clip-bg"></div>
+                <span id="ui-current-clip-span">0</span>
+              </div>
               <div id="ui-remaining-ammo">0</div>
               <div id="ui-reload-button-container">
                 <div id="ui-reload-button"></div>

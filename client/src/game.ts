@@ -702,6 +702,8 @@ export class Game {
                 inputMsg.useItem = "soda";
             } else if (this.m_inputBinds.isBindPressed(Input.UsePainkiller)) {
                 inputMsg.useItem = "painkiller";
+            } else if (this.m_inputBinds.isBindPressed(Input.UseNitroLace)) {
+                inputMsg.useItem = "nitroLace";
             }
 
             // Process 'drop' actions triggered from the ui

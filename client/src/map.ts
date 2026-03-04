@@ -109,6 +109,7 @@ export class Map {
     factionMode = false;
     perkMode = false;
     turkeyMode = false;
+    infernoMode = false;
     seed = 0;
     width = 0;
     height = 0;
@@ -186,6 +187,7 @@ export class Map {
         this.factionMode = !!this.mapDef.gameMode.factionMode;
         this.perkMode = !!this.mapDef.gameMode.perkMode;
         this.turkeyMode = !!this.mapDef.gameMode.turkeyMode;
+        this.infernoMode = !!this.mapDef.gameMode.infernoMode;
         this.seed = mapMsg.seed;
         this.width = mapMsg.width;
         this.height = mapMsg.height;

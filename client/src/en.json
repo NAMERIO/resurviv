@@ -315,6 +315,8 @@
   "game-adrenaline-tooltip": "Adrenaline restores health over time.",
   "game-painkiller": "Pills",
   "game-painkiller-tooltip": "Left-click to boost adrenaline by 50.",
+  "game-nitroLace": "Nitro Lace",
+  "game-nitroLace-tooltip": "Left-click to make bullets apply Burning for 10 seconds.",
   "game-9mm": "9mm",
   "game-9mm-tooltip": "Ammo for M9, MP5, G18C, MAC-10, M93R, UMP9, Vector, P30L, VSS and CZ-3A1.",
   "game-12gauge": "12 gauge",

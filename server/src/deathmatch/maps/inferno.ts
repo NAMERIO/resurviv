@@ -43,7 +43,7 @@ const mapDef: PartialMapDef = {
             playerGhillie: 0x83af50
         },
     },
-    gameMode: { maxPlayers: 40 },
+    gameMode: { maxPlayers: 40, infernoMode: true },
     gameConfig: {
         planes: {
             timings: [

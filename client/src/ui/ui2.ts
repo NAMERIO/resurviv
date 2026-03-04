@@ -157,6 +157,8 @@ class UiState {
         remaining: 0,
         displayCurrent: false,
         displayRemaining: false,
+        nitroLaceActive: false,
+        nitroLacePercentage: 0,
     };
 
     interaction = {
@@ -270,6 +272,8 @@ export class UiManager2 {
         }>,
         ammo: {
             current: domElemById("ui-current-clip"),
+            currentSpan: domElemById("ui-current-clip-span"),
+            clipBg: domElemById("ui-current-clip-bg"),
             remaining: domElemById("ui-remaining-ammo"),
             reloadButton: domElemById("ui-reload-button-container"),
         },
@@ -932,6 +936,8 @@ export class UiManager2 {
         state.ammo.remaining = fe;
         state.ammo.displayCurrent = weaponDef.type != "melee";
         state.ammo.displayRemaining = fe > 0;
+        state.ammo.nitroLaceActive = activePlayer.m_localData.m_nitroLaceActive;
+        state.ammo.nitroLacePercentage = activePlayer.m_localData.m_nitroLacePercentage;
         const curWeapIdx = activePlayer.m_localData.m_curWeapIdx;
         const weaponSlotDom = this.dom.weapons[curWeapIdx];
         if (weaponSlotDom?.loading) {
@@ -978,6 +984,11 @@ export class UiManager2 {
                 ve.width = 0;
             }
         }
+        const nitroLaceBtn = document.getElementById("ui-loot-nitroLace");
+        if (nitroLaceBtn) {
+            nitroLaceBtn.style.display = map.infernoMode ? "" : "none";
+        }
+
         for (let Te = 0; Te < state.gear.length; Te++) {
             const Me = state.gear[Te];
             let Pe = "";
@@ -1310,8 +1321,8 @@ export class UiManager2 {
         }
         if (patch.ammo.current) {
             const H = state.ammo.current;
-            dom.ammo.current.innerHTML = String(H);
-            dom.ammo.current.style.color = H > 0 ? "white" : "red";
+            dom.ammo.currentSpan.innerHTML = String(H);
+            dom.ammo.currentSpan.style.color = H > 0 ? "white" : "red";
         }
         if (patch.ammo.remaining) {
             const V = state.ammo.remaining;
@@ -1328,6 +1339,15 @@ export class UiManager2 {
             dom.ammo.reloadButton.style.opacity = String(
                 state.ammo.displayRemaining ? 1 : 0,
             );
+        }
+        if (patch.ammo.nitroLaceActive || patch.ammo.nitroLacePercentage) {
+            if (state.ammo.nitroLaceActive) {
+                dom.ammo.current.classList.add("nitro-lace");
+                dom.ammo.clipBg.style.width = `${state.ammo.nitroLacePercentage}%`;
+            } else {
+                dom.ammo.current.classList.remove("nitro-lace");
+                dom.ammo.clipBg.style.width = "0%";
+            }
         }
         for (let U = 0; U < patch.scopes.length; U++) {
             const W = patch.scopes[U];
@@ -1804,6 +1824,7 @@ export function loadStaticDomImages() {
         "ui-loot-soda": "img/loot/loot-medical-soda.svg",
         // "ui-loot-pulseBox": "img/loot/loot-pulseBox.svg",
         "ui-loot-painkiller": "img/loot/loot-medical-pill.svg",
+        "ui-loot-nitroLace": "img/loot/loot-nitroLace.svg",
         "ui-loot-9mm": "img/loot/loot-ammo-box.svg",
         "ui-loot-12gauge": "img/loot/loot-ammo-box.svg",
         "ui-loot-762mm": "img/loot/loot-ammo-box.svg",

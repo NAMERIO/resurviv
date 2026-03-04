@@ -2180,6 +2180,31 @@ img {
   left: 50%;
   position: relative;
   text-align: center;
+  overflow: hidden;
+  border: 4px solid transparent;
+  line-height: 42px;
+  box-sizing: border-box;
+}
+
+#ui-bullet-counter #ui-current-clip span {
+  font-size: 44px;
+  font-weight: bold;
+}
+
+#ui-bullet-counter #ui-current-clip.nitro-lace > #ui-current-clip-bg {
+  background-image: url(../img/burning_status.png);
+  background-size: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 101%;
+  height: 100%;
+  z-index: 0;
+}
+
+#ui-bullet-counter #ui-current-clip span {
+  position: relative;
+  z-index: 1;
 }
 
 #ui-bullet-counter #ui-remaining-ammo {

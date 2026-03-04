@@ -126,6 +126,7 @@ export interface MapDef {
         allowLoadoutPerks?: boolean;
         turkeyMode?: boolean;
         spookyKillSounds?: boolean;
+        infernoMode?: boolean;
     };
     gameConfig: {
         planes: {

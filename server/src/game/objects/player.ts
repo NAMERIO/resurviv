@@ -432,6 +432,7 @@ export class PlayerBarn {
             player.weapsDirty = false;
             player.spectatorCountDirty = false;
             player.streakDirty = false;
+            player.nitroLaceDirty = false;
             player.activeIdDirty = false;
             player.groupStatusDirty = false;
             if (flushPlayerStatus) {
@@ -877,6 +878,14 @@ export class Player extends BaseGameObject {
     burnEffect = false;
     burnTicker = 0;
     burnDuration = 0;
+    nitroLaceEffect = false;
+    nitroLaceDuration = 0;
+    nitroLaceMaxDuration = 10;
+    nitroLaceDirty = false;
+    get nitroLacePercentage(): number {
+        if (this.nitroLaceMaxDuration <= 0) return 0;
+        return (this.nitroLaceDuration / this.nitroLaceMaxDuration) * 100;
+    }
     // if hit by snowball or potato, slowed down for "x" seconds
     frozenTicker = 0;
     frozen = false;
@@ -1816,6 +1825,25 @@ export class Player extends BaseGameObject {
             }
         }
 
+        // Nitro Lace timer
+        {
+            const oldNitroLace = this.nitroLaceEffect;
+            if (this.nitroLaceDuration > 0) {
+                this.nitroLaceDuration -= dt;
+                this.nitroLaceEffect = true;
+                this.nitroLaceDirty = true;
+
+                if (this.nitroLaceDuration <= 0) {
+                    this.nitroLaceDuration = 0;
+                    this.nitroLaceEffect = false;
+                    this.nitroLaceDirty = true;
+                }
+            }
+            if (oldNitroLace !== this.nitroLaceEffect) {
+                this.setDirty();
+            }
+        }
+
         if (this.reloadAgain && this.actionType !== GameConfig.Action.Revive) {
             this.reloadAgain = false;
             this.weaponManager.scheduledReload = true;
@@ -1843,6 +1871,12 @@ export class Player extends BaseGameObject {
                         this.applyActionFunc((target: Player) => {
                             target.boost += itemDef.boost;
                         });
+                    }
+                    if (this.actionItem === "nitroLace") {
+                        this.nitroLaceDuration = this.nitroLaceMaxDuration;
+                        this.nitroLaceEffect = true;
+                        this.nitroLaceDirty = true;
+                        this.setDirty();
                     }
                     this.invManager.take(this.actionItem as InventoryItem, 1);
                 } else if (this.isReloading()) {
@@ -2604,6 +2638,8 @@ export class Player extends BaseGameObject {
                 streakReady: player.streakReady,
                 activeStreakActive: player.streakActive,
                 activeStreakTimeLeft: player.streakActiveTimer,
+                nitroLaceDirty: true,
+                nitroLacePercentage: player.nitroLacePercentage,
             };
             this.startedSpectating = false;
         } else {

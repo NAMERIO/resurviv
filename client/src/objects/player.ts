@@ -375,6 +375,7 @@ export class Player implements AbstractObject {
         m_wearingPan: boolean;
         m_healEffect: boolean;
         m_burnEffect: boolean;
+        m_nitroLaceEffect: boolean;
         m_frozen: boolean;
         m_frozenOri: number;
         m_hasteType: Exclude<HasteType, HasteType.Count>;
@@ -408,6 +409,8 @@ export class Player implements AbstractObject {
         m_streakTimeLeft: number;
         m_streakDamageDealt: number;
         m_streakNextThreshold: number;
+        m_nitroLaceActive: boolean;
+        m_nitroLacePercentage: number;
     };
 
     throwableStatePrev!: string;
@@ -542,6 +545,7 @@ export class Player implements AbstractObject {
             m_wearingPan: false,
             m_healEffect: false,
             m_burnEffect: false,
+            m_nitroLaceEffect: false,
             m_frozen: false,
             m_frozenOri: 0,
             m_hasteType: HasteType.None,
@@ -569,6 +573,8 @@ export class Player implements AbstractObject {
             m_streakTimeLeft: 0,
             m_streakDamageDealt: 0,
             m_streakNextThreshold: 300,
+            m_nitroLaceActive: false,
+            m_nitroLacePercentage: 0,
         };
 
         this.playAnim(Anim.None, -1);
@@ -627,6 +633,7 @@ export class Player implements AbstractObject {
             this.m_netData.m_wearingLasrSwrd = data.wearingLasrSwrd;
             this.m_netData.m_healEffect = data.healEffect;
             this.m_netData.m_burnEffect = data.burnEffect;
+            this.m_netData.m_nitroLaceEffect = data.nitroLaceEffect;
             this.m_netData.m_frozen = data.frozen;
             this.m_netData.m_frozenOri = data.frozenOri;
             this.m_netData.m_hasteType = data.hasteType;
@@ -711,6 +718,11 @@ export class Player implements AbstractObject {
             this.m_localData.m_streakTimeLeft = data.activeStreakTimeLeft ?? 0;
             this.m_localData.m_streakDamageDealt = data.streakDamageDealt ?? 0;
             this.m_localData.m_streakNextThreshold = data.streakNextThreshold ?? 300;
+        }
+
+        if (data.nitroLaceDirty) {
+            this.m_localData.m_nitroLaceActive = (data.nitroLacePercentage ?? 0) > 0;
+            this.m_localData.m_nitroLacePercentage = data.nitroLacePercentage ?? 0;
         }
 
         // Zoom more quickly when changing scopes

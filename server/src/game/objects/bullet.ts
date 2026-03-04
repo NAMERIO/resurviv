@@ -645,6 +645,15 @@ export class Bullet {
                             ? PerkProperties.ap_rounds.armorPenetration
                             : undefined,
                     });
+                    if (
+                        this.player?.nitroLaceEffect &&
+                        this.player.teamId !== col.player!.teamId
+                    ) {
+                        col.player!.burnDuration = GameConfig.player.burnDuration;
+                        col.player!.burnTicker = GameConfig.player.burnTickRate;
+                        col.player!.burnEffect = true;
+                        col.player!.setDirty();
+                    }
                 }
                 hit = col.collidable;
             } else if (col.type == "pan") {

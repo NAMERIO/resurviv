@@ -305,6 +305,7 @@ export interface BoostDef {
     type: "boost";
     useTime: number;
     boost: number;
+    hideUi?: boolean;
     lootImg: LootImg;
     sound: Sound;
     emitter: string;
@@ -364,6 +365,7 @@ const BoostDefs: Record<string, BoostDef> = {
         type: "boost",
         useTime: 0.2,
         boost: 0.0,
+        hideUi: true,
         lootImg: {
             sprite: "loot-pulseBox.img",
             tint: 0xffffff,
@@ -374,6 +376,28 @@ const BoostDefs: Record<string, BoostDef> = {
         sound: {
             pickup: "soda_pickup_01",
             use: "pulseBox_use_01",
+        },
+        aura: {
+            sprite: "part-aura-circle-01.img",
+            tint: 0x199500,
+        },
+        emitter: "boost",
+    },
+    nitroLace: {
+        name: "Nitro Lace",
+        type: "boost",
+        useTime: 2,
+        boost: 0,
+        lootImg: {
+            sprite: "loot-nitroLace.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-01.img",
+            borderTint: 0x000000,
+            scale: 0.2,
+        },
+        sound: {
+            pickup: "watermelon_pickup_01",
+            use: "soda_use_01",
         },
         aura: {
             sprite: "part-aura-circle-01.img",
