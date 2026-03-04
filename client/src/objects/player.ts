@@ -224,6 +224,7 @@ export class Player implements AbstractObject {
     chestSprite = createSprite();
     flakSprite = createSprite();
     steelskinSprite = createSprite();
+    phoenixSprite = createSprite();
     helmetSprite = createSprite();
     visorSprite = createSprite();
     backpackSprite = createSprite();
@@ -475,6 +476,7 @@ export class Player implements AbstractObject {
         this.bodyContainer.addChild(this.handRContainer);
         this.bodyContainer.addChild(this.visorSprite);
         this.bodyContainer.addChild(this.helmetSprite);
+        this.bodyContainer.addChild(this.phoenixSprite);
 
         this.container.addChild(this.bodyContainer);
 
@@ -1868,6 +1870,17 @@ export class Player implements AbstractObject {
             this.steelskinSprite.visible = true;
         } else {
             this.steelskinSprite.visible = false;
+        }
+
+        if (this.m_hasPerk("phoenix")) {
+            this.phoenixSprite.texture = PIXI.Texture.from("loot-phoenix-perk.img");
+            this.phoenixSprite.scale.set(0.3, 0.3);
+            this.phoenixSprite.anchor.set(0.575, 0.5);
+            this.phoenixSprite.position.set(-4.0, 0.0);
+            this.phoenixSprite.tint = 0xffffff;
+            this.phoenixSprite.visible = true;
+        } else {
+            this.phoenixSprite.visible = false;
         }
 
         // Helmet

@@ -882,6 +882,10 @@ export class Player extends BaseGameObject {
     nitroLaceDuration = 0;
     nitroLaceMaxDuration = 10;
     nitroLaceDirty = false;
+
+    // Phoenix perk state
+    phoenixPassiveTicker = 0;
+    phoenixHealTicker = 0;
     get nitroLacePercentage(): number {
         if (this.nitroLaceMaxDuration <= 0) return 0;
         return (this.nitroLaceDuration / this.nitroLaceMaxDuration) * 100;
@@ -1790,6 +1794,7 @@ export class Player extends BaseGameObject {
         {
             const isOnWater = this.game.map.isOnWater(this.pos, this.layer);
             const isInferno = this.game.map.mapId === MapId.Inferno;
+            const hasPhoenix = this.hasPerk("phoenix");
 
             if (isOnWater && isInferno) {
                 this.burnDuration = GameConfig.player.burnDuration;
@@ -1802,13 +1807,21 @@ export class Player extends BaseGameObject {
                 this.burnTicker -= dt;
                 this.burnEffect = true;
 
-                if (this.burnTicker <= 0) {
-                    this.burnTicker = GameConfig.player.burnTickRate;
-                    this.damage({
-                        amount: GameConfig.player.burnDamage,
-                        damageType: GameConfig.DamageType.Burning,
-                        dir: this.dir,
-                    });
+                if (hasPhoenix) {
+                    if (this.burnTicker <= 0) {
+                        this.burnTicker = GameConfig.player.burnTickRate;
+                        const healAmt = PerkProperties.phoenix.healRate;
+                        this.health += healAmt;
+                    }
+                } else {
+                    if (this.burnTicker <= 0) {
+                        this.burnTicker = GameConfig.player.burnTickRate;
+                        this.damage({
+                            amount: GameConfig.player.burnDamage,
+                            damageType: GameConfig.DamageType.Burning,
+                            dir: this.dir,
+                        });
+                    }
                 }
 
                 if (this.burnDuration <= 0) {
@@ -1818,6 +1831,19 @@ export class Player extends BaseGameObject {
                 }
             } else {
                 this.burnEffect = false;
+            }
+            if (hasPhoenix && !this.burnEffect && !(isOnWater && isInferno)) {
+                this.phoenixPassiveTicker -= dt;
+                if (this.phoenixPassiveTicker <= 0) {
+                    this.phoenixPassiveTicker = PerkProperties.phoenix.passiveTickRate;
+                    this.damage({
+                        amount: PerkProperties.phoenix.passiveDamage,
+                        damageType: GameConfig.DamageType.Phoenix,
+                        dir: this.dir,
+                    });
+                }
+            } else if (hasPhoenix) {
+                this.phoenixPassiveTicker = PerkProperties.phoenix.passiveTickRate;
             }
 
             if (oldBurnEffect !== this.burnEffect) {
@@ -2855,6 +2881,14 @@ export class Player extends BaseGameObject {
         if (this.downed && this.downedDamageTicker > 0) return;
         // cobalt players on role picker menu
         if (this.game.map.perkMode && !this.role) return;
+
+        // Phoenix perk: immune to burn DoT damage (Burning effect and Flamethrower)
+        if (
+            this.hasPerk("phoenix") &&
+            params.damageType === GameConfig.DamageType.Burning
+        ) {
+            return;
+        }
 
         const playerSource =
             params.source?.__type === ObjectType.Player

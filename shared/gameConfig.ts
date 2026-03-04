@@ -21,6 +21,7 @@ export enum DamageType {
     Airdrop,
     Airstrike,
     Burning,
+    Phoenix,
 }
 
 export enum Action {

@@ -98,6 +98,13 @@ export const PerkProperties = {
         "45acp": ["bonus_45"],
     } as Record<string, string[]>,
     ammoBonusDamageMult: 1.08,
+    phoenix: {
+        passiveDamage: 1,
+        passiveTickRate: 1,
+        healRate: 2,
+        healTickRate: 0.5, 
+        burnImmunity: true, 
+    },
 };
 
 export interface PerkDef {
@@ -903,6 +910,21 @@ export const PerkDefs: Record<string, PerkDef> = {
             tint: 0xffffff,
             border: "loot-circle-outer-03.img",
             borderTint: 0xff0000,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    phoenix: {
+        name: "Phoenix",
+        type: "perk",
+        lore: "Heal from fire, lava, or burning effect. Take small passive damage on land. Immune to burn DoT and Flamethrower.",
+        lootImg: {
+            sprite: "loot-perk-phoenix.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
             scale: 0.275,
         },
         sound: {

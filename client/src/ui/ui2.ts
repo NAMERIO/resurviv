@@ -1592,6 +1592,12 @@ export class UiManager2 {
                 );
                 return `Burning Effect ${killTxt} ${targetName}`;
             }
+            case DamageType.Phoenix: {
+                const killTxt = this.localization.translate(
+                    downed ? "game-knocked-out" : "game-killed",
+                );
+                return `Phoenix ${killTxt} ${targetName}`;
+            }
             default:
                 return "";
         }
@@ -1719,6 +1725,8 @@ export class UiManager2 {
                 killerTxt = this.localization.translate("game-the-air-strike");
             } else if (damageType == GameConfig.DamageType.Burning) {
                 killerTxt = "Burning Effect";
+            } else if (damageType == GameConfig.DamageType.Phoenix) {
+                killerTxt = "Phoenix";
             }
         }
         let damageTxt = this.localization.translate(`game-${sourceType}`);
