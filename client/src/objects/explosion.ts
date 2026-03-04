@@ -710,7 +710,7 @@ const ExplosionEffectDefs: Record<string, ExplotionDef> = {
     fire_shot: {
         burst: {
             particle: "",
-            scale: 0.2,
+            scale: 0.1,
             sound: {
                 grass: "",
                 water: "",
@@ -721,7 +721,7 @@ const ExplosionEffectDefs: Record<string, ExplotionDef> = {
             count: 2,
             speed: {
                 min: 5,
-                max: 25,
+                max: 10,
             },
         },
         rippleCount: 1,
