@@ -74,7 +74,7 @@ export const allowedGuns = [
     "blr",
     "m1a1",
     // "bugle",
-    "m9A17",
+    // "m9A17",
     // "m79",
     // "waterGun",
     // "rainbow_blaster",
