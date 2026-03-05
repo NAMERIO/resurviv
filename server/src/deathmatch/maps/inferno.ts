@@ -10,7 +10,7 @@ const switchToSmallMap = false;
 const config = {
     mapSize: switchToSmallMap ? "small" : "large",
     places: 3,
-    mapWidth: 225,
+    mapWidth: 270,
     spawnDensity: 60,
 } as const;
 
@@ -27,7 +27,7 @@ const mapDef: PartialMapDef = {
             { name: "footstep_08", channel: "sfx" },
             { name: "footstep_09", channel: "sfx" },
         ],
-        atlases: ["gradient", "loadout", "shared", "desert", "main", "inferno"],
+        atlases: ["gradient", "loadout", "shared", "desert", "main", "inferno", "woods"],
     },
     biome: {
         colors: {
@@ -78,12 +78,12 @@ const mapDef: PartialMapDef = {
                 lakes: [
                     {
                         odds: 1,
-                        innerRad: 25,
-                        outerRad: 43,
+                        innerRad: 20,
+                        outerRad: 40,
                         circular: true,
                         spawnBound: {
-                            pos: v2.create(0.5, 0.5),
-                            rad: 80,
+                            pos: v2.create(0.5, 0.75),
+                            rad: 30,
                         },
                     },
                 ],
@@ -104,7 +104,7 @@ const mapDef: PartialMapDef = {
                   (array, item) => {
                       let object: Record<string, number> = {};
                       for (const [key, value] of Object.entries(item)) {
-                          object[key] = (value * config.spawnDensity) / 100;
+                          object[key] = (value * config.spawnDensity) / 150;
                       }
                       array.push(object);
                       return array;
@@ -123,21 +123,19 @@ const mapDef: PartialMapDef = {
                 barrel_01: 10,
                 crate_01: 18,
                 crate_30: 4,
-                bush_14b: 16,
                 hedgehog_01: 4,
-                container_01: 1,
-                container_02: 1,
                 container_03: 1,
                 container_04: 1,
                 shack_01: 1,
                 outhouse_01: 1,
-                loot_tier_1: 10,
+                loot_tier_1: 5,
                 loot_tier_beach: 3,
+                tree_01: 0,
             },
         ],
         randomSpawns: [
             {
-                spawns: ["logging_complex_01v", "desert_town_02v"],
+                spawns: ["logging_complex_01i", "desert_town_02i"],
                 choose: 2,
             },
             {
@@ -164,6 +162,10 @@ const mapDef: PartialMapDef = {
         spawnReplacements: [
             {
                 tree_01: "tree_20",
+                bush_01: "bush_14b",            
+                bush_07: "bush_14b",
+                tree_07: "tree_20",
+                tree_03sv: "tree_20",
             },
         ],
     },
