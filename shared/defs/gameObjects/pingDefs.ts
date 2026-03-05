@@ -97,6 +97,18 @@ export const PingDefs: Record<string, PingDef> = {
         worldDisplay: false,
         tint: 0x12ff00,
     },
+    ping_lavasking: {
+        type: "ping",
+        texture: "player-king-lava.img",
+        mapTexture: "ping-map-woods-king.img",
+        sound: "helmet03_forest_pickup_01",
+        pingMap: true,
+        pingLife: 4,
+        mapLife: 10,
+        mapEvent: true,
+        worldDisplay: false,
+        tint: 0xff6a00,
+    },
     ping_unlock: {
         type: "ping",
         texture: "ping-team-unlock.img",
