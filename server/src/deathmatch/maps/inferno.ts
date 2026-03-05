@@ -179,4 +179,9 @@ DeathmatchInferno["lootTable"] = {
         { name: "pyro", count: 1, weight: 1 },
         { name: "phoenix", count: 1, weight: 1 },
     ],
+    tier_ring_case: [
+        { name: "sv98", count: 1, weight: 0.75 },
+        { name: "usas", count: 1, weight: 0.15 },
+    ],
+    
 };

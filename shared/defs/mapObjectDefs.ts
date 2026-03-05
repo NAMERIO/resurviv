@@ -10506,10 +10506,9 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     crate_30: createCrate({
         health: 140,
         loot: [
-            autoLoot("m1014", 1),
-            autoLoot("helmet03_lt_aged", 1),
-            autoLoot("outfitRedLeaderAged", 1),
-            autoLoot("machete_taiga", 1),
+            autoLoot("pyro", 1),
+            autoLoot("phoenix", 1),
+            autoLoot("m9A17", 1),
         ],
         map: { display: true, color: 0xcc0000 },
         terrain: { grass: true, beach: false },
