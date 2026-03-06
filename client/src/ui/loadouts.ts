@@ -59,7 +59,6 @@ const loadout = {
                     stroke: 0,
                 },
                 emotes: [],
-                perk: "",
                 streak: DefaultStreakType,
             },
             ...userLoadout,

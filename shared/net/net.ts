@@ -31,7 +31,7 @@ export const BitSizes = {
     Action: getBits(GameConfig.Action.Count),
     Anim: getBits(GameConfig.Anim.Count),
     Haste: getBits(GameConfig.HasteType.Count),
-    Perks: getBits(Constants.MaxPerks),
+    Perks: getBits(Constants.MaxPerks + 1),
     MapIndicators: getBits(Constants.MaxMapIndicators),
 };
 

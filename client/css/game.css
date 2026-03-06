@@ -2554,6 +2554,26 @@ img {
   right: 120px;
 }
 
+#ui-perk-4 {
+  left: 4px;
+  bottom: 70px;
+}
+
+#ui-perk-5 {
+  right: 0px;
+  bottom: 70px;
+}
+
+#ui-perk-6 {
+  right: 60px;
+  bottom: 70px;
+}
+
+#ui-perk-7 {
+  right: 120px;
+  bottom: 70px;
+}
+
 .ui-perk-no-drop {
   border: 2px solid transparent;
 }
