@@ -4891,8 +4891,8 @@ input [type="image"]:focus {
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  padding: 0 8px;
-  padding-top: 36px;
+  padding: 0 12px;
+  padding-top: 30px;
 }
 
 #modal-customize-item-header {
@@ -5072,8 +5072,8 @@ input [type="image"]:focus {
 #modal-customize-list {
   background-color: rgba(0, 0, 0, 0.3);
   flex: 1;
-  min-height: 200px;
-  max-height: 520px;
+  min-height: 240px;
+  max-height: 680px;
   overflow-x: hidden;
   overflow-y: auto;
   position: relative;
@@ -5796,7 +5796,7 @@ input [type="image"]:focus {
   top: 50%;
   transform: translateY(-50%);
   width: 600px;
-  height: 585px;
+  height: 730px;
   border-radius: 5px;
   overflow: hidden;
 }
