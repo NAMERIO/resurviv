@@ -9,6 +9,7 @@ export class GameMod {
     isPingVisible: boolean;
     fpsCounter!: HTMLElement | null;
     killsCounter!: HTMLElement | null;
+    pingCounter!: HTMLElement | null;
     localRotation!: HTMLElement | null;
     currentServer!: string | null;
     pingTest!: PingTest | null;
@@ -55,12 +56,36 @@ export class GameMod {
             pointerEvents: "none",
         });
 
+        this.pingCounter = document.createElement("div");
+        this.pingCounter.id = "pingCounter";
+        Object.assign(this.pingCounter.style, {
+            color: "white",
+            backgroundColor: "rgba(0, 0, 0, 0.2)",
+            padding: "5px 10px",
+            marginTop: "2px",
+            borderRadius: "5px",
+            fontFamily: "Arial, sans-serif",
+            fontSize: "14px",
+            zIndex: "10000",
+            pointerEvents: "none",
+        });
+
         const uiTopLeft = document.getElementById("ui-top-left");
         if (uiTopLeft) {
             uiTopLeft.appendChild(this.fpsCounter);
+            uiTopLeft.appendChild(this.pingCounter);
         }
 
         this.updateFpsVisibility();
+        this.updatePingVisibility();
+    }
+    updatePingVisibility() {
+        if (this.pingCounter) {
+            this.pingCounter.style.display = this.isPingVisible ? "block" : "none";
+            this.pingCounter.style.backgroundColor = this.isPingVisible
+                ? "rgba(0, 0, 0, 0.2)"
+                : "transparent";
+        }
     }
 
     updateFpsVisibility() {
@@ -440,6 +465,11 @@ export class GameMod {
             if (this.isFpsVisible && this.fpsCounter) {
                 this.fpsCounter.textContent = `FPS: ${this.fps}`;
             }
+        }
+        if (this.pingCounter && this.isPingVisible) {
+            const pingRes = this.pingTest?.getPingResult();
+            const pingValue = typeof pingRes?.ping === "number" ? pingRes.ping : "N/A";
+            this.pingCounter.textContent = `Ping: ${pingValue} ms`;
         }
 
         this.startPingTest();
