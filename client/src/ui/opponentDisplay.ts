@@ -189,6 +189,8 @@ export class LoadoutDisplay {
             streakReady: false,
             activeStreakActive: false,
             activeStreakTimeLeft: 0,
+            nitroLaceDirty: false,
+            nitroLacePercentage: 0,
         });
 
         this.activePlayer.layer = this.activePlayer.m_netData.m_layer;
@@ -370,6 +372,8 @@ export class LoadoutDisplay {
             actionItem: options.actionItem || "",
             wearingPan: false,
             healEffect: false,
+            burnEffect: false,
+            nitroLaceEffect: false,
             frozen: false,
             frozenOri: 0,
             hasteType: 0,
@@ -429,6 +433,8 @@ export class LoadoutDisplay {
                 streakReady: false,
                 activeStreakActive: false,
                 activeStreakTimeLeft: 0,
+                nitroLaceDirty: false,
+                nitroLacePercentage: 0,
             });
         }
     }
