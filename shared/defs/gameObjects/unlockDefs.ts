@@ -302,6 +302,7 @@ const _allowedOutfits = [
     "outfitPreyDinner",
     // "outfitWolf",
     // "outfitPanda",
+    "outfitMwow",
 ];
 const _allowedEmotes = [
     "emote_thumbsup",

@@ -3978,6 +3978,28 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+    outfitMwow: defineOutfitSkin("outfitBase", {
+        name: "MEOW",
+        noDropOnDeath: true,
+        rarity: 5,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-01.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-yin-yang.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-moosli.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-meow.img",
+            aboveHand: true,
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitMeow.img",
+            tint: 0xffffff,
+        },
+    }),
 
     outfitNeckNapkin: defineOutfitSkin("outfitBase", {
         name: "Neck Napkin",

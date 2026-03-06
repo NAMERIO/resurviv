@@ -120,7 +120,7 @@ function createTypeSerialization(
     return typeMap;
 }
 
-const gameTypeSerialization = createTypeSerialization("Game", GameObjectDefs, 10);
+const gameTypeSerialization = createTypeSerialization("Game", GameObjectDefs, 11);
 const mapTypeSerialization = createTypeSerialization("Map", MapObjectDefs, 12);
 
 export class BitStream extends bb.BitStream {
