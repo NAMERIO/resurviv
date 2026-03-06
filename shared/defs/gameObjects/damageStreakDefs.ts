@@ -41,7 +41,7 @@ export const DamageStreakDefs: Record<string, DamageStreakDef> = {
         rewardItem: "streak_rapid_fire_effect",
         duration: 10,
         lootImg: {
-            sprite: "loot-perk-firepower.img",
+            sprite: "loot-perk-rapid-bullet.img",
             tint: 0xffffff,
             border: "loot-circle-outer-03.img",
             borderTint: 0xff4400,
@@ -75,7 +75,7 @@ export const DamageStreakDefs: Record<string, DamageStreakDef> = {
         rewardItem: "streak_juggernaut_effect",
         duration: 10,
         lootImg: {
-            sprite: "loot-perk-steelskin.img",
+            sprite: "loot-perk-aoe-heal.img",
             tint: 0xffffff,
             border: "loot-circle-outer-03.img",
             borderTint: 0xff0000,

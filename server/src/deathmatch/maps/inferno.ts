@@ -166,6 +166,7 @@ const mapDef: PartialMapDef = {
                 bush_07: "bush_14b",
                 tree_07: "tree_20",
                 tree_03sv: "tree_20",
+                stone_03: "stone_03l",
             },
         ],
     },
@@ -174,7 +175,7 @@ export const DeathmatchInferno = util.mergeDeep({}, Main, mapDef) as MapDef;
 
 DeathmatchInferno["lootTable"] = {
     ...DeathmatchInferno["lootTable"],
-    tier_forest_helmet: [{ name: "helmet03", count: 1, weight: 1 }],
+    tier_forest_helmet: [{ name: "helmet03_lava", count: 1, weight: 1 }],
     tier_perks_inferno: [
         { name: "pyro", count: 1, weight: 1 },
         { name: "phoenix", count: 1, weight: 1 },
@@ -204,6 +205,16 @@ DeathmatchInferno["lootTable"] = {
         { name: "awc", count: 1, weight: 0.1 }, 
         { name: "pkp", count: 1, weight: 0.3 },
         { name: "m249", count: 1, weight: 0.3 },
+    ],
+    tier_guns: [
+        { name: "flare_gun", count: 1, weight: 0.5 },
+        { name: "flare_gun_dual", count: 1, weight: 0.25 },
+        { name: "nitoLace", count: 2, weight: 0.8 },
+        { name: "machete_taiga", count: 1, weight: 0.6 },
+        { name: "lasr_gun", count: 1, weight: 0.7 },
+        { name: "lasr_gun_dual", count: 1, weight: 0.6 },
+        { name: "garand", count: 1, weight: 0.9 },
+
     ],
 
 };
