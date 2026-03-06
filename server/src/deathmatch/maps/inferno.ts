@@ -20,6 +20,7 @@ const mapDef: PartialMapDef = {
         name: "Inferno",
         icon: "img/gui/inferno.svg",
         buttonCss: "btn-mode-inferno",
+        backgroundImg: "img/main_splash_infernos_01.png"
     },
     assets: {
         audio: [
