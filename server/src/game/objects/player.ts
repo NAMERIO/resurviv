@@ -1457,6 +1457,7 @@ export class Player extends BaseGameObject {
         secondary: "mosin",
         boost: "boost_basic",
         death_effect: "death_basic",
+        streak: "streak_rapid_fire",
         perk: "quick_reload",
         emotes: [...GameConfig.defaultEmoteLoadout],
     };
