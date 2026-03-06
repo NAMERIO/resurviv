@@ -290,7 +290,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             handSprite: "player-hands-arctic-avenger.img",
             footTint: 0xffffff,
             footSprite: "player-hands-arctic-avenger.img",
-            backpackTint: 12002083,
+            backpackTint: 0xffffff,
             backpackSprite: "player-back-checkmate.img",
         },
         lootImg: {

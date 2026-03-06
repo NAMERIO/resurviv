@@ -38,8 +38,8 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="1.9899323"
-     inkscape:cx="44.473876"
-     inkscape:cy="76.635774"
+     inkscape:cx="44.473875"
+     inkscape:cy="76.635773"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
      inkscape:window-x="0"
@@ -48,7 +48,7 @@
      inkscape:current-layer="svg2" /><g
      style="fill:none"
      id="g2"
-     transform="translate(6.7888969,6.7550968)"><path
+     transform="matrix(1,0,0,-1,6.7888969,140.51301)"><path
        d="M 67.649392,0.3793005 C 104.37628,0.5049431 134.04719,30.399111 133.92161,67.106395 133.79604,103.81328 103.92129,133.50425 67.194402,133.37861 30.467612,133.25297 0.79668665,103.35829 0.92226082,66.651405 1.0478364,29.944121 30.922602,0.25365823 67.649392,0.3793005 Z"
        fill="url(#paint0_linear)"
        id="path1-3"
