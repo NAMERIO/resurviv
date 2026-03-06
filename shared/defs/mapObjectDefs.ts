@@ -10505,11 +10505,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     } as unknown as Partial<ObstacleDef>),
     crate_30: createCrate({
         health: 140,
-        loot: [
-            autoLoot("pyro", 1),
-            autoLoot("phoenix", 1),
-            autoLoot("m9A17", 1),
-        ],
+        loot: [autoLoot("pyro", 1), autoLoot("phoenix", 1), autoLoot("m9A17", 1)],
         map: { display: true, color: 0xcc0000 },
         terrain: { grass: true, beach: false },
         img: { sprite: "map-pyre-01.img", residue: "map-crate-pyre-res.img" },
@@ -11835,7 +11831,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         img: {
             sprite: "map-stone-03l.img",
             residue: "map-stone-res-01l",
-        }
+        },
     }),
     stone_03f: createRiverStone({
         img: {

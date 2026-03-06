@@ -123,7 +123,7 @@ const _allowedMeleeSkins = [
     // "lasr_swrd",
     // "lasr_swrd_02",
     // "lasr_swrd_03",
-    "fist_Checkmate"
+    "fist_Checkmate",
 ];
 const _allowedOutfits = [
     "outfitLustrousPaladin",

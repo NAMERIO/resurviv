@@ -20,7 +20,7 @@ const mapDef: PartialMapDef = {
         name: "Inferno",
         icon: "img/gui/inferno.svg",
         buttonCss: "btn-mode-inferno",
-        backgroundImg: "img/main_splash_infernos_01.png"
+        backgroundImg: "img/main_splash_infernos_01.png",
     },
     assets: {
         audio: [
@@ -163,7 +163,7 @@ const mapDef: PartialMapDef = {
         spawnReplacements: [
             {
                 tree_01: "tree_20",
-                bush_01: "bush_14b",            
+                bush_01: "bush_14b",
                 bush_07: "bush_14b",
                 tree_07: "tree_20",
                 tree_03sv: "tree_20",
@@ -189,7 +189,7 @@ DeathmatchInferno["lootTable"] = {
         { name: "saiga", count: 1, weight: 1 },
         { name: "sv98", count: 1, weight: 1 },
         { name: "flare_gun", count: 1, weight: 0.9 },
-         { name: "m249", count: 1, weight: 0.1 },
+        { name: "m249", count: 1, weight: 0.1 },
     ],
     tier_airdrop_rare: [
         { name: "garand", count: 1, weight: 6 },
@@ -197,13 +197,13 @@ DeathmatchInferno["lootTable"] = {
         { name: "pkp", count: 1, weight: 0.08 },
         { name: "m249", count: 1, weight: 0.1 },
         { name: "m4a1", count: 1, weight: 4 },
-        { name: "scorpion", count: 1, weight: 5 }, 
+        { name: "scorpion", count: 1, weight: 5 },
         { name: "scarssr", count: 1, weight: 4.5 },
     ],
     tier_airdrop_mythic: [
-        { name: "scarssr", count: 1, weight: 1 }, 
+        { name: "scarssr", count: 1, weight: 1 },
         { name: "usas", count: 1, weight: 0.5 },
-        { name: "awc", count: 1, weight: 0.1 }, 
+        { name: "awc", count: 1, weight: 0.1 },
         { name: "pkp", count: 1, weight: 0.3 },
         { name: "m249", count: 1, weight: 0.3 },
     ],
@@ -215,7 +215,5 @@ DeathmatchInferno["lootTable"] = {
         { name: "lasr_gun", count: 1, weight: 0.7 },
         { name: "lasr_gun_dual", count: 1, weight: 0.6 },
         { name: "garand", count: 1, weight: 0.9 },
-
     ],
-
 };
