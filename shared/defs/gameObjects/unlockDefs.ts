@@ -122,7 +122,8 @@ const _allowedMeleeSkins = [
     "bowie_frontier",
     // "lasr_swrd",
     // "lasr_swrd_02",
-    // "lasr_swrd_03"
+    // "lasr_swrd_03",
+    "fist_Checkmate"
 ];
 const _allowedOutfits = [
     "outfitLustrousPaladin",
@@ -303,6 +304,7 @@ const _allowedOutfits = [
     // "outfitWolf",
     // "outfitPanda",
     "outfitMwow",
+    "outfitCheckmate",
 ];
 const _allowedEmotes = [
     "emote_thumbsup",

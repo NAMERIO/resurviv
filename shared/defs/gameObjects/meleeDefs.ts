@@ -2032,6 +2032,22 @@ const SkinDefs: Record<string, MeleeDef> = {
             spriteR: "player-fists-graphbars-r.img",
         },
     }),
+    fist_Checkmate: defineMeleeSkin("fists", {
+        name: "Checkmate",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-hand-checkmate.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-hands-blue-zone.img",
+            spriteR: "player-hands-arctic-avenger.img",
+        },
+    }),
     fist_grizzly: defineMeleeSkin("fists", {
         name: "Grizzly",
         rarity: Rarity.Rare,

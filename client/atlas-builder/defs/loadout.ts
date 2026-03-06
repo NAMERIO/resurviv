@@ -539,6 +539,7 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/loot-watermelon-fists.svg",
         "loot/loot-woody-allan-fists.svg",
         "loot/loot-wrecked-angle-fists.svg",
+        "loot/loot-hand-checkmate.svg",
         "loot/loot-melee-kukri-sniper.svg",
         "loot/loot-melee-kukri-trad.svg",
         "loot/loot-melee-machete-taiga.svg",
@@ -703,6 +704,7 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/loot-kxr-outfit.svg",
         "loot/loot-snowman-outfit.svg",
         "loot/loot-shirt-outfitThePro.svg",
+        "loot/loot-shirt-outfitCheckmate.svg",
 
         "loot/loot-throwable-frag-egg.svg",
         "loot/loot-throwable-frag.svg",
@@ -1225,6 +1227,7 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-base-outfitWinter.svg",
         "player/player-base-outfitZebra.svg",
         "player/player-base-outfitPolice.svg",
+        "player/player-base-checkmate.svg",
 
         "player/player-fists-police.svg",
         "player/player-fists-gloves-01.svg",
@@ -1789,6 +1792,7 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-back-sir-loin.svg",
         "player/player-back-moosli.svg",
         "player/player-back-prey-dinner.svg",
+        "player/player-back-checkmate.svg",
 
         "proj/proj-bomb-iron-01.svg",
         "proj/proj-frag-nopin-01.svg",

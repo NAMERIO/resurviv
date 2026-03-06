@@ -280,6 +280,25 @@ const SkinDefs: Record<string, OutfitDef> = {
         rarity: 3,
         lore: "For those who wield the power of the pan.",
     }),
+    outfitCheckmate: defineOutfitSkin("outfitBase", {
+        name: "Checkmate",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-checkmate.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-arctic-avenger.img",
+            footTint: 0xffffff,
+            footSprite: "player-hands-arctic-avenger.img",
+            backpackTint: 12002083,
+            backpackSprite: "player-back-checkmate.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitCheckmate.img",
+            tint: 0xffffff,
+        },
+        rarity: 2,
+    }),
     outfitEyes_t: defineOutfitSkin("outfitBase", {
         name: "Eyes-T",
         noDropOnDeath: false, // for now
