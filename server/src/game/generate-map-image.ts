@@ -15,6 +15,8 @@ import {
 import { util } from "../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../shared/utils/v2";
 import { Config } from "../config";
+import { THIS_REGION } from "../region";
+import { config } from "process";
 
 function drawLine(canvas: CanvasRenderingContext2D, pt0: Vec2, pt1: Vec2) {
     canvas.moveTo(pt0.x, pt0.y);
@@ -331,7 +333,7 @@ export function renderMap(mapMsg: MapMsg) {
     formData.append(
         "payload_json",
         JSON.stringify({
-            content: `Map: ${mapMsg.mapName} | Seed: ${mapMsg.seed}`,
+            content: `Map: ${mapMsg.mapName} | Seed: ${mapMsg.seed} | Region: ${THIS_REGION}`,
         }),
     );
 
