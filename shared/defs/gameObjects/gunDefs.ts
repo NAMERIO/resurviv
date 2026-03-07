@@ -2046,7 +2046,7 @@ export const BaseDefs: Record<string, GunDef> = {
         recoilTime: 1e10,
         moveSpread: 3,
         shotSpread: 2,
-        bulletCount: 10,
+        bulletCount: 9,
         jitter: 0.25,
         bulletType: "bullet_flechette",
         headshotMult: 1.5,
