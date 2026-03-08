@@ -46,6 +46,7 @@ export class Obstacle extends BaseGameObject {
 
     interactionRad = 0;
     interactedBy?: Player;
+    interactCooldown = 0;
 
     get interactable() {
         return this.button?.canUse ?? this.door?.canUse;
@@ -240,6 +241,10 @@ export class Obstacle extends BaseGameObject {
             if (this.regrowTicker < 0) {
                 this.regrow();
             }
+        }
+
+        if (this.interactCooldown > 0) {
+            this.interactCooldown -= dt;
         }
     }
 
@@ -523,6 +528,11 @@ export class Obstacle extends BaseGameObject {
 
     interact(player?: Player, auto = false): void {
         if (this.dead) return;
+
+        if (player) {
+            if (this.interactCooldown > 0) return;
+            this.interactCooldown = 0.1;
+        }
 
         this.interactedBy = player;
 
