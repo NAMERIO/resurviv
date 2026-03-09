@@ -191,6 +191,8 @@ export class Game {
                         death_effect: playerLoadout.death_effect || "death_basic",
                         heal: playerLoadout.heal || "heal_basic",
                         boost: playerLoadout.boost || "boost_basic",
+                        perk: playerLoadout.perk || "quick_reload",
+                        streak: playerLoadout.streak || "streak_rapid_fire",
                     };
 
                     this.m_sendMessage(net.MsgType.Join, joinMessage, 8192);
