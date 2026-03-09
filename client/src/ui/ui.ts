@@ -25,7 +25,7 @@ import { type MapSprite, MapSpriteBarn } from "../objects/mapSprite";
 import type { ParticleBarn } from "../objects/particles";
 import type { PlaneBarn } from "../objects/plane";
 import type { Player, PlayerBarn } from "../objects/player";
-import { SDK } from "../sdk";
+import { SDK } from "../sdk/sdk";
 import type { Localization } from "./localization";
 import { PieTimer } from "./pieTimer";
 import type { Touch } from "./touch";
@@ -1289,15 +1289,6 @@ export class UiManager {
 
     removeAds() {
         SDK.removeAllAds();
-
-        if (!window.aiptag) return;
-        const ads = ["728x90", "300x250_2"];
-        for (let i = 0; i < ads.length; i++) {
-            const ad = ads[i];
-            window.aiptag.cmd.display.push(() => {
-                window.aipDisplayTag!.destroy(`${AIP_PLACEMENT_ID}_${ad}`);
-            });
-        }
     }
 
     refreshMainPageAds() {
@@ -1309,13 +1300,7 @@ export class UiManager {
             }
         }
 
-        if (!window.aiptag) return;
-        for (let i = 0; i < ads.length; i++) {
-            const ad = ads[i];
-            window.aiptag.cmd.display.push(() => {
-                window.aipDisplayTag!.display(`${AIP_PLACEMENT_ID}_${ad}`);
-            });
-        }
+        SDK.showStickyAd();
     }
 
     clearUI() {
@@ -1347,6 +1332,7 @@ export class UiManager {
             opacity: 0,
         });
         this.statsContents.stop().hide();
+        SDK.hideStickyAd();
     }
 
     teamModeToString(teamMode: TeamMode) {
@@ -1416,12 +1402,6 @@ export class UiManager {
             this.refreshMainPageAds();
             this.game.onQuit();
         };
-
-        if (skipAd) {
-            doQuit();
-        } else {
-            SDK.requestQuitAd(doQuit);
-        }
     }
 
     showStats(
@@ -1583,8 +1563,8 @@ export class UiManager {
                 html: this.localization.translate("game-play-new-game"),
             });
             restartButton.on("click", () => {
-                SDK.requestMidGameAd(() => {
-                    this.quitGame(true);
+                SDK.requestFullscreenAd(() => {
+                    this.quitGame();
                 });
             });
             this.statsOptions.append(restartButton);
@@ -1734,8 +1714,8 @@ export class UiManager {
             html: this.localization.translate("game-play-new-game"),
         });
         a.on("click", () => {
-            SDK.requestMidGameAd(() => {
-                this.quitGame(true);
+            SDK.requestFullscreenAd(() => {
+                this.quitGame();
             });
         });
         this.statsOptions.append(a);
@@ -1781,12 +1761,7 @@ export class UiManager {
         setTimeout(() => {
             const bannerAd = $("#ui-stats-ad-container-desktop");
             bannerAd.css("display", "inline-block");
-
-            if (window.aiptag) {
-                window.aiptag!.cmd.display.push(() => {
-                    window.aipDisplayTag!.display(`${AIP_PLACEMENT_ID}_300x250_2`);
-                });
-            }
+            SDK.showStickyAd();
 
             ui2.hideKillMessage();
         }, delay);

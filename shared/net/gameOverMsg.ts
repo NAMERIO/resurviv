@@ -9,6 +9,7 @@ export class GameOverMsg implements AbstractMsg {
     playerStats: Array<PlayerStatsMsg["playerStats"]> = [];
 
     serialize(s: BitStream) {
+        /* STRIP_FROM_PROD_CLIENT:START */
         s.writeUint8(this.teamId);
         s.writeUint8(this.teamRank);
         s.writeUint8(+this.gameOver);
@@ -19,6 +20,7 @@ export class GameOverMsg implements AbstractMsg {
             statsMsg.playerStats = stats;
             statsMsg.serialize(s);
         });
+        /* STRIP_FROM_PROD_CLIENT:END */
     }
 
     deserialize(s: BitStream) {

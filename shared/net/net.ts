@@ -327,8 +327,12 @@ export class MsgStream {
 
 export enum MsgType {
     None,
-    Join,
-    Disconnect,
+    // DON'T EVEN THINK ABOUT REORDERING THINGS HERE!!!!
+    // JoinMsg should always be ID 1 to not break protocol version check with old clients!
+    // And DisconnectMsg should always be ID 2, so it receives errors from JoinMsg Properly
+    // Please add new Msg Types always to the end of the enum to stay as safe as possible
+    Join = 1,
+    Disconnect = 2,
     Input,
     Edit,
     Joined,

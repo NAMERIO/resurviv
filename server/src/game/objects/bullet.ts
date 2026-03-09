@@ -48,6 +48,7 @@ export interface BulletParams {
     lastShot?: boolean;
     splinter?: boolean;
     apRounds?: boolean;
+    highVelocity?: boolean;
     shotAlt?: boolean;
     trailSaturated?: boolean;
     trailSmall?: boolean;
@@ -59,6 +60,9 @@ export interface BulletParams {
     onHitFx?: string;
     clipDistance?: boolean;
     distance?: number;
+    hasModifier?: boolean;
+    speedMult?: number;
+    distanceMult?: number;
 }
 
 export class BulletBarn {
@@ -154,6 +158,7 @@ export class Bullet {
     shotAlt!: boolean;
     splinter!: boolean;
     apRounds!: boolean;
+    highVelocity!: boolean;
     trailSaturated!: boolean;
     trailSmall!: boolean;
     trailThick!: boolean;
@@ -162,6 +167,9 @@ export class Bullet {
     damageSelf!: boolean;
     damage!: number;
     damageMult!: number;
+    hasModifier!: boolean;
+    speedMult!: number;
+    distanceMult!: number;
     onHitFx?: string;
     hasOnHitFx!: boolean;
     damageType!: DamageType;
@@ -194,7 +202,9 @@ export class Bullet {
         this.reflectObjId = params.reflectObjId ?? 0;
         this.reflected = false;
         this.lastShot = params.lastShot ?? false;
-        this.speed = bulletDef.speed * variance;
+        this.speedMult = params.speedMult ?? 1;
+        this.speed = bulletDef.speed * this.speedMult * variance;
+        this.hasModifier = this.speedMult !== 1 || this.distanceMult !== 1;
         this.onHitFx = bulletDef.onHit ?? params.onHitFx;
         this.canReflect = this.onHitFx !== "explosion_rounds";
 
@@ -222,7 +232,12 @@ export class Bullet {
             bulletDef.distance /
             Math.pow(GameConfig.bullet.reflectDistDecay, this.reflectCount);
         if (params.clipDistance) {
-            distance = math.min(bulletDef.distance, params.distance!);
+            distance = math.min(
+                bulletDef.distance * (params.distanceMult ?? 1),
+                params.distance!,
+            );
+            // we don't want it to be multiplied twice
+            params.distanceMult = 1;
         }
 
         this.shotSourceType = params.gameSourceType;
@@ -234,13 +249,15 @@ export class Bullet {
         this.shotAlt = params.shotAlt ?? false;
         this.splinter = params.splinter ?? false;
         this.apRounds = params.apRounds ?? false;
+        this.highVelocity = params.highVelocity ?? false;
         this.trailSaturated = params.trailSaturated ?? false;
         this.trailSmall = params.trailSmall ?? false;
         this.trailThick = params.trailThick ?? false;
         this.varianceT = params.varianceT ?? 1;
         this.distAdjIdx = distAdjIdx;
+        this.distanceMult = params.distanceMult ?? 1;
         this.distance = this.maxDistance = math.clamp(
-            distance * variance + distAdj,
+            distance * this.distanceMult * variance + distAdj,
             0,
             Constants.MaxPosition,
         );
@@ -256,6 +273,7 @@ export class Bullet {
             this.shotAlt ||
             this.splinter ||
             this.apRounds ||
+            this.highVelocity ||
             this.trailSaturated ||
             this.trailSmall ||
             this.trailThick;
@@ -704,7 +722,10 @@ export class Bullet {
             pos,
             dir,
             layer: this.layer,
+            hasModifier: this.hasModifier,
             damageMult: this.damageMult,
+            speedMult: this.speedMult,
+            distanceMult: this.distanceMult,
             shotFx: false,
             reflectCount: this.reflectCount + 1,
             reflectObjId: objId,
@@ -713,6 +734,7 @@ export class Bullet {
             shotAlt: this.shotAlt,
             splinter: this.splinter,
             apRounds: this.apRounds,
+            highVelocity: this.highVelocity,
             trailSaturated: this.trailSaturated,
             trailSmall: this.trailSmall,
             trailThick: this.trailThick,

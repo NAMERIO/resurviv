@@ -1,4 +1,6 @@
 {
+  "$schema": "https://www.schemastore.org/tsconfig.json",
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2022",
     "module": "ES2022",
@@ -14,6 +16,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "exclude": ["node_modules"],
   "include": ["./", "../shared/"]
 }

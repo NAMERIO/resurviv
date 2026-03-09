@@ -327,6 +327,7 @@ export class Projectile extends BaseGameObject {
                 obj.__type === ObjectType.Player &&
                 def.playerCollision &&
                 !obj.dead &&
+                util.sameLayer(this.layer, obj.layer) &&
                 obj.__id !== this.playerId
             ) {
                 if (coldet.testCircleCircle(this.pos, this.rad, obj.pos, obj.rad)) {

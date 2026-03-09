@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { type MapDef, MapDefs } from "../../../shared/defs/mapDefs";
 import type { TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
+import { util } from "../../../shared/utils/util";
 import { ServerLogger } from "../utils/logger";
 import {
     type FindGamePrivateBody,
@@ -281,10 +282,7 @@ export class GameProcessManager implements GameManager {
             }
         }, 5000);
 
-        const idx = this.processes.indexOf(gameProc);
-        if (idx !== -1) {
-            this.processes.splice(idx, 1);
-        }
+        util.removeFrom(this.processes, gameProc);
         this.processById.delete(gameProc.id);
     }
 

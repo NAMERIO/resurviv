@@ -5,8 +5,7 @@ import { api } from "../api";
 import { device } from "../device";
 import { helpers } from "../helpers";
 import { proxy } from "../proxy";
-import { SDK } from "../sdk";
-import { ClanUi } from "./clanUi";
+import { SDK } from "../sdk/sdk";
 import type { LoadoutMenu } from "./loadoutMenu";
 import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
@@ -34,11 +33,7 @@ function createLoginOptions(
         class: "account-buttons",
     });
     contentsElem.append(buttonParentElem);
-    const addLoginOption = function (
-        method: string,
-        linked: boolean,
-        onClick: () => void,
-    ) {
+    const addLoginOption = function (method: string, onClick: () => void) {
         const el = $("<div/>", {
             class: `menu-option btn-darken btn-standard btn-login-${method}`,
         });
@@ -57,31 +52,28 @@ function createLoginOptions(
                     }),
                 ),
         );
-        if (linkAccount && linked) {
-            el.addClass("btn-login-linked");
-            el.find("span.login-button-name").html('<div class="icon"></div>');
-        } else {
-            el.on("click", (_e) => {
-                onClick();
-            });
-        }
+
+        el.on("click", (_e) => {
+            onClick();
+        });
+
         buttonParentElem.append(el);
     };
 
     // Define the available login methods
     if (proxy.loginSupported("google")) {
-        addLoginOption("google", account.profile.linkedGoogle, () => {
+        addLoginOption("google", () => {
             window.location.href = api.resolveUrl("/api/auth/google");
         });
     }
     if (proxy.loginSupported("discord")) {
-        addLoginOption("discord", account.profile.linkedDiscord, () => {
+        addLoginOption("discord", () => {
             window.location.href = api.resolveUrl("/api/auth/discord");
         });
     }
 
     if (proxy.loginSupported("mock")) {
-        addLoginOption("mock", false, () => {
+        addLoginOption("mock", () => {
             window.location.href = api.resolveUrl("/api/auth/mock");
         });
     }
@@ -97,8 +89,6 @@ export class ProfileUi {
 
     loginOptionsModalMobile!: MenuModal;
     modalMobileAccount!: MenuModal;
-
-    clanUi: ClanUi | null = null;
 
     constructor(
         public account: Account,
@@ -340,23 +330,8 @@ export class ProfileUi {
             });
             return false;
         });
-        $("#btn-clans").on("click", () => {
-            this.waitOnLogin(() => {
-                if (this.account.loggedIn) {
-                    if (!this.clanUi) {
-                        this.clanUi = new ClanUi(this.account, this.localization);
-                    }
-                    this.clanUi.showMainModal();
-                } else {
-                    this.showLoginMenu({
-                        modal: true,
-                    });
-                }
-            });
-            return false;
-        });
 
-        const loginSupported = !SDK.isThirdPartyPlatform && proxy.anyLoginSupported();
+        const loginSupported = !SDK.isAnySDK && proxy.anyLoginSupported();
 
         $(".account-block").toggle(loginSupported);
     }

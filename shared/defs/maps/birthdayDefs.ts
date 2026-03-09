@@ -41,12 +41,12 @@ const mapDef: PartialMapDef = {
         maxPlayers: 80,
         killLeaderEnabled: true,
     },
+    /* STRIP_FROM_PROD_CLIENT:START */
     gameConfig: {
         planes: {
             timings: [],
         },
     },
-    /* STRIP_FROM_PROD_CLIENT:START */
     // NOTE: this loot table is not the original one so its not accurate
     // ? are guesses based on statistics
     // ! are uncertain data based on leak

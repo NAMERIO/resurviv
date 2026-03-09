@@ -179,11 +179,6 @@ export class PlayerBarn {
             }
         }
 
-        if (joinMsg.protocol !== GameConfig.protocolVersion) {
-            this.game.closeSocket(socketId, "index-invalid-protocol");
-            return;
-        }
-
         const result = this.getGroupAndTeam(joinData);
         const group = result?.group;
         // solo 50v50 just chooses the smallest team everytime no matter what
@@ -378,12 +373,12 @@ export class PlayerBarn {
     }
 
     removePlayer(player: Player) {
-        this.players.splice(this.players.indexOf(player), 1);
-        const livingIdx = this.livingPlayers.indexOf(player);
-        if (livingIdx !== -1) {
-            this.livingPlayers.splice(livingIdx, 1);
+        util.removeFrom(this.players, player);
+
+        if (util.removeFrom(this.livingPlayers, player)) {
             this.aliveCountDirty = true;
         }
+
         this.deletedPlayers.push(player.__id);
         player.destroy();
         if (player.team) {
@@ -393,7 +388,7 @@ export class PlayerBarn {
             player.group.removePlayer(player);
 
             if (player.group.players.length <= 0) {
-                this.groups.splice(this.groups.indexOf(player.group), 1);
+                util.removeFrom(this.groups, player.group);
                 this.groupsByHash.delete(player.group.hash);
             }
         }
@@ -812,6 +807,11 @@ export class Player extends BaseGameObject {
         this.startedSpectating = true;
     }
 
+    spectateCooldown = 0;
+    spectateCooldownCount = 0;
+    spectateMsgCount = 0;
+    spectateMsgTicker = 0;
+
     spectators = new Set<Player>();
 
     outfit = "outfitBase";
@@ -863,7 +863,6 @@ export class Player extends BaseGameObject {
     animType: Anim = GameConfig.Anim.None;
     animSeq = 0;
     private _animTicker = 0;
-    private _animCb?: () => void;
 
     distSinceLastCrawl = 0;
 
@@ -896,6 +895,8 @@ export class Player extends BaseGameObject {
         return (this.nitroLaceDuration / this.nitroLaceMaxDuration) * 100;
     }
     // if hit by snowball or potato, slowed down for "x" seconds
+    healEffectTicker = 0;
+    // if hit by snowball, potato, or coconut: slowed down for "x" seconds
     frozenTicker = 0;
     frozen = false;
     frozenOri = 0;
@@ -1238,6 +1239,7 @@ export class Player extends BaseGameObject {
 
     removePerk(type: string): void {
         const idx = this._perks.findIndex((perk) => perk.type === type);
+        if (idx === -1) return;
         this._perks.splice(idx, 1);
         this._perkTypes.splice(this._perkTypes.indexOf(type), 1);
 
@@ -1267,10 +1269,7 @@ export class Player extends BaseGameObject {
                 this.weaponManager.clampGunsAmmo();
                 break;
             case "aoe_heal": {
-                const idx = this.game.playerBarn.aoeHealPlayers.indexOf(this);
-                if (idx !== -1) {
-                    this.game.playerBarn.aoeHealPlayers.splice(idx, 1);
-                }
+                util.removeFrom(this.game.playerBarn.aoeHealPlayers, this);
                 break;
             }
         }
@@ -1615,6 +1614,10 @@ export class Player extends BaseGameObject {
 
         this.setLoadout(loadout ? loadout : joinMsg.loadout, !loadout);
 
+        if (this.game.map.sniperMode) {
+            this.invManager.give("2xscope", 1);
+        }
+
         this.weaponManager.showNextThrowable();
         this.recalculateScale();
 
@@ -1623,6 +1626,16 @@ export class Player extends BaseGameObject {
 
     update(dt: number): void {
         if (this.dead) {
+            this.spectateCooldown -= dt;
+
+            if (this.spectateMsgCount > 0) {
+                this.spectateMsgTicker += dt;
+                if (this.spectateMsgTicker > 3) {
+                    this.spectateMsgCount--;
+                    this.spectateMsgTicker = 0;
+                }
+            }
+
             if (!this.sentDeathEmote) {
                 this.sendDeathEmoteTicker -= dt;
                 if (this.sendDeathEmoteTicker <= 0) {
@@ -1780,6 +1793,10 @@ export class Player extends BaseGameObject {
                 damageType: GameConfig.DamageType.Bleeding,
                 dir: this.dir,
             });
+            // don't continue the update if we died
+            if (this.dead) {
+                return;
+            }
         }
 
         this.chattyTicker -= dt;
@@ -1801,6 +1818,10 @@ export class Player extends BaseGameObject {
                 damageType: GameConfig.DamageType.Gas,
                 dir: this.dir,
             });
+            // don't continue the update if we died
+            if (this.dead) {
+                return;
+            }
         }
 
         // Inferno mode: burn when walking on water (lava)
@@ -1969,7 +1990,6 @@ export class Player extends BaseGameObject {
                 this._animTicker = 0;
                 this.animSeq++;
                 this.setDirty();
-                this._animCb?.();
             }
         }
 
@@ -2197,7 +2217,7 @@ export class Player extends BaseGameObject {
         // Mobile auto interaction
         //
         this.mobileDropTicker -= dt;
-        if (this.isMobile && this.mobileDropTicker <= 0 && !this.downed) {
+        if (this.isMobile && this.mobileDropTicker <= 0 && !this.downed && !this.dead) {
             const closestLoot = this.getClosestLoot();
 
             if (closestLoot) {
@@ -2287,6 +2307,12 @@ export class Player extends BaseGameObject {
         const oldHealEffect = this.healEffect;
         this.healEffect = false;
 
+        // Special handling for short ticker for throwable healing
+        this.healEffectTicker -= dt;
+        if (this.healEffectTicker > 0) {
+            this.healEffect = true;
+        }
+
         let zoomRegionZoom = lowestZoom;
         let insideNoZoomRegion = true;
         let insideSmoke = false;
@@ -2336,7 +2362,7 @@ export class Player extends BaseGameObject {
                         )
                     ) {
                         this.indoors = true;
-                        this.insideZoomRegion = true;
+                        this.insideZoomRegion = !zoomRegion.noZoom;
                         occupiedBuilding = obj;
                         insideNoZoomRegion = false;
                         if (zoomRegion.zoom) {
@@ -2794,7 +2820,14 @@ export class Player extends BaseGameObject {
         const planes = this.game.planeBarn.planes;
         for (let i = 0; i < planes.length; i++) {
             const plane = planes[i];
-            if (coldet.testCircleAabb(plane.pos, plane.rad, rect.min, rect.max)) {
+            if (
+                coldet.testCircleAabb(plane.pos, plane.rad, rect.min, rect.max) &&
+                coldet.testPointAabb(
+                    plane.pos,
+                    this.game.planeBarn.planeBounds.min,
+                    this.game.planeBarn.planeBounds.max,
+                )
+            ) {
                 updateMsg.planes.push(plane);
             }
         }
@@ -2839,6 +2872,31 @@ export class Player extends BaseGameObject {
     }
 
     spectate(spectateMsg: net.SpectateMsg): void {
+        if (!this.dead) return;
+
+        if (this.spectateCooldown >= 0.75) {
+            this.spectateCooldownCount++;
+
+            if (this.spectateCooldownCount > 10) {
+                this.game.closeSocket(this.socketId);
+                this.game.logger.error(
+                    `Game ${this.game.id} - Player ${this.name} disconnected for spamming SpectateMsg (cooldown)`,
+                );
+            }
+            return;
+        }
+        this.spectateCooldown = 1;
+
+        this.spectateMsgCount++;
+
+        if (this.spectateMsgCount > 50) {
+            this.game.closeSocket(this.socketId);
+            this.game.logger.error(
+                `Game ${this.game.id} - Player ${this.name} Player ${this.name} disconnected for spamming SpectateMsg (count)`,
+            );
+            return;
+        }
+
         // livingPlayers is used here instead of a more "efficient" option because its sorted while other options are not
         const spectatablePlayers = this.game.playerBarn.livingPlayers.filter(
             (p) => this != p,
@@ -3168,17 +3226,15 @@ export class Player extends BaseGameObject {
         this.mapIndicator?.kill();
 
         this.game.playerBarn.aliveCountDirty = true;
-        this.game.playerBarn.livingPlayers.splice(
-            this.game.playerBarn.livingPlayers.indexOf(this),
-            1,
-        );
+
+        util.removeFrom(this.game.playerBarn.livingPlayers, this);
 
         this.game.playerBarn.killedPlayers.push(this);
 
         this.group?.checkPlayers();
 
         if (this.team) {
-            this.team.livingPlayers.splice(this.team.livingPlayers.indexOf(this), 1);
+            util.removeFrom(this.team.livingPlayers, this);
         }
 
         if (this.weaponManager.cookingThrowable) {
@@ -3224,12 +3280,43 @@ export class Player extends BaseGameObject {
                     killCreditSource.giveHaste(GameConfig.HasteType.Takedown, 3);
                 }
 
+                // If the killer used a mine and has the mine_master perk, refund a mine
                 if (
                     params.gameSourceType === "mine" &&
                     killCreditSource.hasPerk("mine_master")
                 ) {
                     const killer = killCreditSource as Player;
                     killer.invManager.give("mine", 1);
+                }
+
+                // Pirate's Bounty (Cutlass-specific): melee kills with the pirate perk spawn extra loot
+                const weaponDef = GameObjectDefs[params.gameSourceType || ""];
+                if (killCreditSource.hasPerk("pirate") && weaponDef?.type == "melee") {
+                    const count = util.randomInt(3, 4);
+                    for (let i = 0; i < count; i++) {
+                        const item = this.game.lootBarn.getLootTable("tier_pirate");
+                        if (!item) continue;
+
+                        this.game.lootBarn.addLoot(
+                            item.name,
+                            this.pos,
+                            this.layer,
+                            item.count,
+                        );
+                    }
+
+                    // rare gun
+                    if (Math.random() < 0.12) {
+                        const item = this.game.lootBarn.getLootTable("tier_pirate_rare");
+                        if (item) {
+                            this.game.lootBarn.addLoot(
+                                item.name,
+                                this.pos,
+                                this.layer,
+                                item.count,
+                            );
+                        }
+                    }
                 }
 
                 if (killCreditSource.role === "woods_king") {
@@ -3863,8 +3950,7 @@ export class Player extends BaseGameObject {
                         GameConfig.WeaponSlot.Melee,
                     ];
 
-                    const currentTarget = slotTargets.indexOf(this.curWeapIdx);
-                    if (currentTarget != -1) slotTargets.splice(currentTarget, 1);
+                    util.removeFrom(slotTargets, this.curWeapIdx);
 
                     for (let i = 0; i < slotTargets.length; i++) {
                         const slot = slotTargets[i];
@@ -4351,9 +4437,9 @@ export class Player extends BaseGameObject {
                 const isMistery = type === "halloween_mystery";
 
                 if (isMistery) {
-                    type = this.game.lootBarn.getLootTable(
-                        "tier_halloween_mystery_perks",
-                    )[0].name;
+                    type =
+                        this.game.lootBarn.getLootTable("tier_halloween_mystery_perks")
+                            ?.name || type;
                 }
 
                 pickupMsg.item = type;
@@ -5086,12 +5172,11 @@ export class Player extends BaseGameObject {
         this.setDirty();
     }
 
-    playAnim(type: Anim, duration: number, cb?: () => void): void {
+    playAnim(type: Anim, duration: number): void {
         this.animType = type;
         this.animSeq++;
         this.setDirty();
         this._animTicker = duration;
-        this._animCb = cb;
     }
 
     cancelAnim(): void {

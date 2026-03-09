@@ -164,6 +164,14 @@ export class ExplosionBarn {
                 explosion.damageParams.source &&
                 explosion.damageParams.source.__type == ObjectType.Player &&
                 explosion.damageParams.source.teamId == obj.teamId;
+
+            if (def.healTeam && isSourceTeammate) {
+                const healAmount = def.healAmount ?? 5; // default to 5 if healValue is not defined
+                obj.health += healAmount;
+                obj.healEffectTicker = 0.5;
+                obj.setDirty();
+                return;
+            }
             if (!isSourceTeammate) {
                 if (def.freezeAmount && def.freezeDuration) {
                     const playerRot = Math.atan2(obj.dir.y, obj.dir.x);
@@ -175,7 +183,9 @@ export class ExplosionBarn {
                     obj.freeze(ori, def.freezeDuration);
                 }
                 if (def.dropRandomLoot) {
-                    obj.dropRandomLoot();
+                    for (let i = 0; i < def.dropRandomLoot; i++) {
+                        obj.dropRandomLoot();
+                    }
                 }
 
                 const src = explosion.damageParams.source;

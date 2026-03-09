@@ -5,6 +5,7 @@ import type { Vec2 } from "../../utils/v2";
 export interface MeleeDef {
     readonly type: "melee";
     name: string;
+    perk?: string;
     quality: number;
     autoAttack: boolean;
     switchDelay: number;
@@ -1050,7 +1051,6 @@ const BaseDefs: Record<string, MeleeDef> = {
         switchDelay: 0.25,
         damage: 33,
         obstacleDamage: 1.4,
-        noPotatoSwap: true,
         attack: {
             offset: {
                 x: 1.25,
@@ -1070,11 +1070,11 @@ const BaseDefs: Record<string, MeleeDef> = {
         sound: {
             pickup: "frag_pickup_01",
             swing: "knife_swing_01",
-            deploy: "frag_pickup_01",
+            deploy: "stow_weapon_01",
             playerHit: "crowbar_hit_01",
         },
         lootImg: {
-            sprite: "loot-melee-crowbar-scout.img",
+            sprite: "loot-melee-crowbar.img",
             tint: 0xffffff,
             border: "loot-circle-outer-02.img",
             borderTint: 0xffffff,
@@ -1082,7 +1082,7 @@ const BaseDefs: Record<string, MeleeDef> = {
             rot: 0.785,
         },
         worldImg: {
-            sprite: "loot-melee-crowbar-scout.img",
+            sprite: "loot-melee-crowbar.img",
             pos: {
                 x: -1,
                 y: -10,
@@ -1145,6 +1145,59 @@ const BaseDefs: Record<string, MeleeDef> = {
         reflectArea: {
             offset: { x: 1.75, y: 0.0 },
             rad: 1,
+        },
+    },
+    cutlass: {
+        name: "Cutlass",
+        type: "melee",
+        quality: 1,
+        cleave: true,
+        autoAttack: false,
+        switchDelay: 0.25,
+        damage: 30,
+        obstacleDamage: 1,
+        attack: {
+            offset: {
+                x: 2.25,
+                y: 0,
+            },
+            rad: 1.75,
+            damageTimes: [0.1],
+            cooldownTime: 0.225,
+        },
+        speed: {
+            equip: 1,
+        },
+        anim: {
+            idlePose: "cutlass",
+            attackAnims: ["cut", "cutReverse"],
+        },
+        sound: {
+            pickup: "frag_pickup_01",
+            swing: "knife_swing_01",
+            deploy: "knife_deploy_01",
+            playerHit: "knife_hit_01",
+        },
+        lootImg: {
+            sprite: "loot-melee-cutlass.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-02.img",
+            borderTint: 0xffffff,
+            scale: 0.3,
+            rot: 0.9,
+        },
+        worldImg: {
+            sprite: "loot-melee-cutlass.img",
+            pos: {
+                x: 2.5,
+                y: -75,
+            },
+            rot: 1.885,
+            scale: {
+                x: 0.325,
+                y: 0.325,
+            },
+            tint: 0xffffff,
         },
     },
 };
@@ -2762,11 +2815,13 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     crowbar_scout: defineMeleeSkin("crowbar", {
         name: "Scouting Crowbar",
-        noPotatoSwap: false,
+        lootImg: { sprite: "loot-melee-crowbar-scout.img" },
+        worldImg: {
+            sprite: "loot-melee-crowbar-scout.img",
+        },
     }),
     crowbar_recon: defineMeleeSkin("crowbar", {
         name: "Crowbar Carbon",
-        noPotatoSwap: false,
         lootImg: { sprite: "loot-melee-crowbar-recon.img" },
         worldImg: {
             sprite: "loot-melee-crowbar-recon.img",

@@ -5,7 +5,7 @@ import { type Vec2, v2 } from "../../../shared/utils/v2";
 import type { Camera } from "../camera";
 import type { Map } from "../map";
 import type { Renderer } from "../renderer";
-import { SDK } from "../sdk";
+import { SDK } from "../sdk/sdk";
 
 class Range {
     constructor(
@@ -3112,6 +3112,26 @@ const ParticleDefs: Record<string, ParticleDef> = {
         color: 16403715,
     },
 
+    coconut_impact: {
+        image: ["part-coconut-01.img", "part-coconut-02.img", "part-coconut-03.img"],
+        life: new Range(0.5, 1),
+        drag: new Range(0, 0),
+        rotVel: new Range(Math.PI * 0.25, Math.PI * 0.5),
+        scale: {
+            start: new Range(0.13, 0.23),
+            end: new Range(0.07, 0.14),
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 1,
+            end: 0,
+            lerp: new Range(0.9, 1),
+        },
+        color: function () {
+            return util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.9, 0.95)));
+        },
+    },
+
     heal_basic: {
         image: ["part-heal-basic.img"],
         life: new Range(0.75, 1),
@@ -3589,6 +3609,15 @@ const EmitterDefs: Record<string, EmitterDef> = {
         rate: new Range(0.72, 0.83),
         radius: 0,
         speed: new Range(64, 96),
+        angle: Math.PI * 0.1,
+        rot: new Range(0, Math.PI * 2),
+        maxCount: Number.MAX_VALUE,
+    },
+    campfire_smoke: {
+        particle: "cabinSmoke",
+        rate: new Range(2, 4),
+        radius: 0,
+        speed: new Range(1, 1.5),
         angle: Math.PI * 0.1,
         rot: new Range(0, Math.PI * 2),
         maxCount: Number.MAX_VALUE,

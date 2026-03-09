@@ -1,0 +1,94 @@
+name: Deploy offline version of the PR to Cloudflare Pages
+
+on:
+  pull_request_target:
+    types: [labeled, synchronize]
+
+jobs:
+  deploy-preview:
+    if: contains(github.event.pull_request.labels.*.name, 'deploy-preview')
+    runs-on: ubuntu-latest
+    concurrency: ci-deploy-${{ github.ref }}
+    permissions:
+      contents: read
+      pull-requests: write
+      deployments: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Attempt merge with offline branch
+        id: merge
+        run: |
+
+          git config user.name "deploy-ci"
+          git config user.email "deploy-ci@users.noreply.github.com"
+          git fetch origin offline-mode:offline-mode
+          git checkout offline-mode
+
+          if git merge --no-commit --no-ff ${{ github.event.pull_request.head.sha }}; then
+            exit 0
+          else
+            git merge --abort
+            exit 1
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install Packages
+        run: pnpm install --filter client --filter shared --filter server
+
+      - name: Restore Atlas Cache
+        id: cache-atlases-restore
+        uses: actions/cache@v4
+        if: always()
+        with:
+          path: ./client/node_modules/.atlas-cache/
+          key: "atlas-cache-${{ github.run_id }}"
+          restore-keys: |
+            atlas-cache
+
+      - name: Build client
+        run: pnpm run build
+        working-directory: ./client
+
+      - name: Save Atlas Cache
+        id: cache-atlases-save
+        uses: actions/cache/save@v4
+        with:
+          path: ./client/node_modules/.atlas-cache/
+          key: "atlas-cache-${{ github.run_id }}"
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ./client
+          packageManager: pnpm
+          command: pages deploy ./dist --project-name=survev-deploy-test --branch=${{ github.event.pull_request.number }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `**Testing URL:** ${{ steps.deploy.outputs.deployment-url }}
+
+              hope it works 💃`
+            });

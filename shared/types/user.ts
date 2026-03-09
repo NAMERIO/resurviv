@@ -1,5 +1,4 @@
 import { z } from "zod";
-import type { UsersTableSelect } from "../../server/src/api/db/schema";
 import { Constants } from "../../shared/net/net";
 import { type Item, ItemStatus, type Loadout, loadoutSchema } from "../utils/loadout";
 
@@ -7,13 +6,16 @@ export type ProfileResponse =
     | {
           readonly banned: true;
           reason: string;
+          success?: false;
       }
     | {
+          banned?: false;
           readonly success: true;
-          profile: Pick<
-              UsersTableSelect,
-              "slug" | "username" | "usernameSet" | "linked"
-          > & {
+          profile: {
+              slug: string;
+              username: string;
+              usernameSet: boolean;
+              linked: boolean;
               usernameChangeTime: number;
           };
           loadout: Loadout;

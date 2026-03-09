@@ -55,8 +55,8 @@ export const PerkProperties = {
         mineDamageMult: 0.2,
     },
     gotw: {
-        scale: 0.25,
-        healthRegen: 0.5, // per second
+        scale: 0.2,
+        healthRegen: 1, // per second
     },
     field_medic: {
         speedBoost: 1,
@@ -85,9 +85,15 @@ export const PerkProperties = {
     },
     bonus_9mm: {
         spreadMul: 1.1,
+        speedMult: 1.25,
+        distanceMult: 1.25,
     },
     rare_potato: {
         quality: 1,
+    },
+    high_velocity: {
+        speedMult: 1.4,
+        distanceMult: 1.3,
     },
     // map of ammo type to perk that boosts that ammo
     ammoBonuses: {
@@ -383,6 +389,20 @@ export const PerkDefs: Record<string, PerkDef> = {
             pickup: "perk_pickup_01",
         },
     },
+    pirate: {
+        name: "Pirate's Bounty",
+        type: "perk",
+        lootImg: {
+            sprite: "loot-perk-pirate.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
     hunted: {
         name: "The Hunted",
         type: "perk",
@@ -576,6 +596,20 @@ export const PerkDefs: Record<string, PerkDef> = {
         },
         sound: { pickup: "perk_pickup_01" },
     },
+    high_velocity: {
+        name: "High-Velocity Rounds",
+        type: "perk",
+        lootImg: {
+            sprite: "loot-perk-high-velocity.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: { pickup: "perk_pickup_01" },
+    },
+
+    // Halloween Perks
     halloween_mystery: {
         name: "Trick Or Treat?",
         type: "perk",
@@ -740,6 +774,8 @@ export const PerkDefs: Record<string, PerkDef> = {
             pickup: "perk_pickup_01",
         },
     },
+
+    // Cosmetic Perks
     turkey_shoot: {
         name: "Perky Shoot",
         type: "perk",

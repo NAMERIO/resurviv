@@ -331,6 +331,7 @@ export class UpdateMsg implements AbstractMsg {
     ack = 0;
 
     serialize(s: BitStream) {
+        /* STRIP_FROM_PROD_CLIENT:START */
         let flags = 0;
         const flagsIdx = s.byteIndex;
         s.writeUint16(flags);
@@ -424,7 +425,11 @@ export class UpdateMsg implements AbstractMsg {
                     s.writeBits(bullet.reflectCount, 2);
                     s.writeUint16(bullet.reflectObjId);
                 }
-
+                s.writeBoolean(bullet.hasModifier);
+                if (bullet.hasModifier) {
+                    s.writeFloat(bullet.speedMult, 0.5, 2, 8);
+                    s.writeFloat(bullet.distanceMult, 0.5, 2, 8);
+                }
                 s.writeBoolean(bullet.hasSpecialFx);
 
                 if (bullet.hasSpecialFx) {
@@ -432,6 +437,7 @@ export class UpdateMsg implements AbstractMsg {
                     s.writeBoolean(bullet.splinter);
                     s.writeBoolean(bullet.trailSaturated);
                     s.writeBoolean(bullet.apRounds);
+                    s.writeBoolean(bullet.highVelocity);
                     s.writeBoolean(bullet.trailSmall);
                     s.writeBoolean(bullet.trailThick);
                 }
@@ -471,7 +477,14 @@ export class UpdateMsg implements AbstractMsg {
         if (this.planes.length) {
             s.writeArray(this.planes, 8, (plane) => {
                 s.writeUint8(plane.id);
-                s.writeVec(v2.add(plane.pos, v2.create(512, 512)), 0, 0, 2048, 2048, 10);
+                s.writeVec(
+                    plane.pos,
+                    -256,
+                    -256,
+                    Constants.MaxPosition + 256,
+                    Constants.MaxPosition + 256,
+                    10,
+                );
                 s.writeUnitVec(plane.planeDir, 8);
                 s.writeBoolean(plane.actionComplete);
                 s.writeBits(plane.action, 3);
@@ -515,6 +528,7 @@ export class UpdateMsg implements AbstractMsg {
         s.byteIndex = flagsIdx;
         s.writeUint16(flags);
         s.byteIndex = idx;
+        /* STRIP_FROM_PROD_CLIENT:END */
     }
 
     // @ts-expect-error deserialize only accept one argument for now
@@ -629,12 +643,21 @@ export class UpdateMsg implements AbstractMsg {
                     bullet.reflectCount = s.readBits(2);
                     bullet.reflectObjId = s.readUint16();
                 }
+                bullet.speedMult = 1;
+                bullet.distanceMult = 1;
+                bullet.hasModifier = s.readBoolean();
+                if (bullet.hasModifier) {
+                    bullet.speedMult = s.readFloat(0.5, 2, 8);
+                    bullet.distanceMult = s.readFloat(0.5, 2, 8);
+                }
+
                 bullet.hasSpecialFx = s.readBoolean();
                 if (bullet.hasSpecialFx) {
                     bullet.shotAlt = s.readBoolean();
                     bullet.splinter = s.readBoolean();
                     bullet.trailSaturated = s.readBoolean();
                     bullet.apRounds = s.readBoolean();
+                    bullet.highVelocity = s.readBoolean();
                     bullet.trailSmall = s.readBoolean();
                     bullet.trailThick = s.readBoolean();
                 }
@@ -677,8 +700,14 @@ export class UpdateMsg implements AbstractMsg {
             this.planes = s.readArray(8, () => {
                 const plane = {} as Plane;
                 plane.id = s.readUint8();
-                const pos = s.readVec(0, 0, 2048, 2048, 10);
-                plane.pos = v2.create(pos.x - 512, pos.y - 512);
+                const pos = s.readVec(
+                    -256,
+                    -256,
+                    Constants.MaxPosition + 256,
+                    Constants.MaxPosition + 256,
+                    10,
+                );
+                plane.pos = v2.create(pos.x, pos.y);
                 plane.planeDir = s.readUnitVec(8);
                 plane.actionComplete = s.readBoolean();
                 plane.action = s.readBits(3);
@@ -754,8 +783,12 @@ export interface Bullet {
     splinter: boolean;
     trailSaturated: boolean;
     apRounds: boolean;
+    highVelocity: boolean;
     trailSmall: boolean;
     trailThick: boolean;
+    speedMult: number;
+    distanceMult: number;
+    hasModifier: boolean;
 }
 
 export interface Explosion {

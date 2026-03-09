@@ -207,21 +207,27 @@ export class LootBarn {
         return fn();
     }
 
-    getLootTable(tier: string): Array<LootTierItem> {
-        if (!this.game.map.mapDef.lootTable[tier]) {
-            this.game.logger.warn(`Unknown loot tier with type ${tier}`);
-            return [];
-        }
-        const items: Array<LootTierItem> = [];
+    getLootTable(tier: string, visited = new Set<string>()): LootTierItem | undefined {
+        if (visited.has(tier)) return undefined;
+        visited.add(tier);
 
-        const item = this._getLootTable(tier);
+        const lootTable = this.game.map.mapDef.lootTable;
+        if (!lootTable || !lootTable[tier]) {
+            this.game.logger?.warn?.(`Unknown loot tier requested: ${tier}`);
+            return undefined;
+        }
+
+        let item: LootTierItem | undefined = this._getLootTable(tier);
+
+        if (!item || !item.name) {
+            return undefined;
+        }
+
         if (item.name.startsWith("tier_")) {
-            items.push(...this.getLootTable(item.name));
-        } else if (item.name) {
-            items.push(item);
+            return this.getLootTable(item.name, visited);
         }
 
-        return items;
+        return item;
     }
 }
 

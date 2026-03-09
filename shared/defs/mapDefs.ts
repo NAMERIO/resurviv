@@ -10,6 +10,8 @@ import { DeatchmatchSnow } from "../../server/src/deathmatch/maps/snow";
 import { DeathmatchValentine } from "../../server/src/deathmatch/maps/valentine";
 import { DeatchmatchWoods as Woods } from "../../server/src/deathmatch/maps/woods";
 import type { Vec2 } from "../utils/v2";
+import { Main } from "./maps/baseDefs";
+import { Beach } from "./maps/beachDefs";
 import { Birthday } from "./maps/birthdayDefs";
 import { MainSpring } from "./maps/mainSpringDefs";
 import { MainSummer } from "./maps/mainSummerDefs";
@@ -38,7 +40,8 @@ export type Atlas =
     | "turkey"
     | "perks"
     | "valentine"
-    | "inferno";
+    | "inferno"
+    | "beach";
 
 export const MapDefs = {
     main: DeatchmatchMain,
@@ -62,6 +65,7 @@ export const MapDefs = {
     perks: DeatchmatchPerks,
     valentine: DeathmatchValentine,
     inferno: DeathmatchInferno,
+    beach: Beach,
 
     /* STRIP_FROM_PROD_CLIENT:START */
     test_normal: testNormal,

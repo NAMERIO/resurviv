@@ -19,6 +19,7 @@ const mapDef: PartialMapDef = {
         },
         particles: { camera: "falling_leaf_summer" },
     },
+    /* STRIP_FROM_PROD_CLIENT:START */
     mapGen: {
         customSpawnRules: {
             locationSpawns: [
@@ -32,16 +33,17 @@ const mapDef: PartialMapDef = {
         },
         fixedSpawns: [
             {
-                logging_complex_01su: 1,
                 logging_complex_02su: 1,
                 logging_complex_03su: 3,
                 teapavilion_01w: 1,
                 warehouse_01: 3,
+                workshop_complex_01: 1,
                 house_red_01: 3,
                 barn_01: 3,
                 cache_06: 48,
-                cache_01: 1,
+                cache_01w: 1,
                 cache_02su: 1,
+                cache_07w: 1,
                 bunker_structure_01b: 1,
                 bunker_structure_03: 1,
                 bunker_structure_07: 1,
@@ -68,6 +70,7 @@ const mapDef: PartialMapDef = {
             },
         ],
     },
+    /* STRIP_FROM_PROD_CLIENT:END */
 };
 
 export const WoodsSummer = util.mergeDeep({}, Woods, mapDef) as MapDef;

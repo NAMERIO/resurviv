@@ -1,0 +1,35 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+    paths: &paths
+      - "tests/**"
+      - "server/**"
+      - "shared/**"
+      - "*.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/tests.yml"
+
+  pull_request:
+    paths: *paths
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    concurrency: ci-tests-${{ github.ref }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install Packages
+        run: pnpm install --filter tests --filter shared --filter server
+
+      - name: Run tests
+        run: pnpm run test
+        working-directory: ./tests

@@ -32,6 +32,7 @@ export interface BuildingDef {
             zoomIn?: AABB;
             zoomOut?: AABB;
             zoom?: number;
+            noZoom?: boolean;
         }>;
         vision?: {
             dist?: number;
@@ -63,10 +64,11 @@ export interface BuildingDef {
     }>;
     porch_01?: string;
     stand?: string;
-    tree?: string;
+    tree?: string | Record<string, number>;
     tree_scale?: number;
     tree_loot?: string;
     bush_chance?: number;
+    bush?: string | Record<string, number>;
     decoration_01?: string;
     decoration_02?: string;
     mid_obs_01?: string;
@@ -112,7 +114,7 @@ export interface BuildingDef {
     bonus_door?: string;
     goreRegion?: AABB;
     tree_08c?: string;
-    crate?: string;
+    crate?: string | Record<string, number>;
     oris?: number[];
     vault?: string;
     scale?: {
@@ -145,7 +147,7 @@ export interface BuildingDef {
     entry_loot?: string;
     obs?: string;
     ceilingImg?: string;
-    specialLoot?: string;
+    specialLoot?: string | Record<string, number>;
     basement?: string;
     grass_color?: number;
     tree_small?: string;

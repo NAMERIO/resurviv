@@ -188,7 +188,6 @@ const mapDef: PartialMapDef = {
         ],
         fixedSpawns: [
             {
-                shilo_01: 1,
                 warehouse_01: 2,
                 house_red_01: { small: 3, large: 4 },
                 house_red_02: { small: 3, large: 4 },

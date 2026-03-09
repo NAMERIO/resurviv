@@ -1,67 +1,34 @@
 import { resolve } from "node:path";
-import { defineConfig, type Plugin, type ServerOptions } from "vite";
-import solid from "vite-plugin-solid";
+import { defineConfig, loadEnv, type Plugin, type ServerOptions } from "vite";
 import stripBlockPlugin from "vite-plugin-strip-block";
 import { getConfig } from "../config";
 import { version } from "../package.json";
 import { GIT_VERSION } from "../server/src/utils/gitRevision";
 import { atlasBuilderPlugin } from "./atlas-builder/vitePlugin";
 import { codefendPlugin } from "./vite-plugins/codefendPlugin";
+import { ejsPlugin } from "./vite-plugins/ejsPlugin";
 
 export default defineConfig(({ mode }) => {
+    const viteEnv = loadEnv(mode, process.cwd(), "VITE_");
     const isDev = mode === "development";
 
     const Config = getConfig(!isDev, "");
 
-    process.env.VITE_ADIN_PLAY_SCRIPT = "";
-    process.env.VITE_AIP_PLACEMENT_ID = "";
     process.env.VITE_TURNSTILE_SCRIPT = "";
-    process.env.VITE_GAMEMONETIZE_ID = Config.secrets.GAMEMONETIZE_ID || "";
-
-    if (Config.secrets.AIP_ID) {
-        process.env.VITE_ADIN_PLAY_SCRIPT = `<script>
-        const urlParams = new URLSearchParams(self.location.search);
-
-        const isCrazyGames = urlParams.has("crazygames");
-
-        const isPOKI = window != window.parent && document.referrer && (() => { try { return new URL(document.referrer).origin.includes("poki"); } catch(e) { return false; } })();
-
-        const isWithinGameMonetize = window.location.href.includes("gamemonetize") || (window != window.parent && document.referrer && (() => { try { return new URL(document.referrer).origin.includes("gamemonetize"); } catch(e) { return false; } })());
-
-        if (!isCrazyGames && !isPOKI && !isWithinGameMonetize) {
-            const script = document.createElement("script");
-            script.src = "//api.adinplay.com/libs/aiptag/pub/SNP/${Config.secrets.AIP_ID}/tag.min.js";
-            document.head.appendChild(script);
-
-            window.aiptag = window.aiptag || { cmd: [] };
-            aiptag.cmd.display = aiptag.cmd.display || [];
-
-            // CMP tool settings
-            aiptag.cmp = {
-                show: true,
-                position: "centered", // centered, bottom
-                button: false,
-                buttonText: "Privacy settings",
-                buttonPosition: "bottom-left", // bottom-left, bottom-right, top-left, top-right
-            };
-
-            script.addEventListener("load", () => {
-                window.aiptag.cmd.display.push(() => {
-                    window.aipDisplayTag.display("${Config.secrets.AIP_PLACEMENT_ID}_728x90");
-                });
-            });
-        }
-    </script>`;
-        process.env.VITE_AIP_PLACEMENT_ID = Config.secrets.AIP_PLACEMENT_ID;
-    }
-
+    process.env.VITE_AD_PREFIX = Config.secrets.AD_PREFIX;
     if (Config.secrets.TURNSTILE_SITE_KEY) {
         process.env.VITE_TURNSTILE_SCRIPT = `<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>`;
     }
 
+    process.env.VITE_DEBUG_CSS_LINK = isDev
+        ? `<link href='css/dev.css' rel="stylesheet" />`
+        : "";
     process.env.VITE_GAME_VERSION = version;
 
-    const plugins: Plugin[] = [solid(), ...atlasBuilderPlugin()];
+    process.env.VITE_SPELLSYNC_PROJECT_ID = Config.secrets.SPELLSYNC_PROJECT_ID;
+    process.env.VITE_SPELLSYNC_PUBLIC_TOKEN = Config.secrets.SPELLSYNC_PUBLIC_TOKEN;
+
+    const plugins: Plugin[] = [ejsPlugin(), ...atlasBuilderPlugin()];
 
     if (!isDev) {
         plugins.push(codefendPlugin());
@@ -70,7 +37,7 @@ export default defineConfig(({ mode }) => {
             stripBlockPlugin({
                 start: "STRIP_FROM_PROD_CLIENT:START",
                 end: "STRIP_FROM_PROD_CLIENT:END",
-            }),
+            }) as unknown as Plugin,
         );
     }
 
@@ -124,7 +91,13 @@ export default defineConfig(({ mode }) => {
             },
         },
         resolve: {
-            extensions: [".ts", ".tsx", ".js"],
+            extensions: [".ts", ".js"],
+            alias: {
+                "@/sdk":
+                    viteEnv?.VITE_ENABLE_SURVEV_ADS === "true"
+                        ? "./sdk-manager.prod"
+                        : "./sdk-manager",
+            },
         },
         define: {
             GAME_REGIONS: Config.regions,
@@ -137,8 +110,10 @@ export default defineConfig(({ mode }) => {
                     https: data.https,
                 };
             }),
-            AIP_PLACEMENT_ID: JSON.stringify(Config.secrets.AIP_PLACEMENT_ID),
+            AD_PREFIX: JSON.stringify(Config.secrets.AD_PREFIX),
             VITE_GAMEMONETIZE_ID: JSON.stringify(Config.secrets.GAMEMONETIZE_ID),
+            SPELLSYNC_PROJECT_ID: JSON.stringify(Config.secrets.SPELLSYNC_PROJECT_ID),
+            SPELLSYNC_PUBLIC_TOKEN: JSON.stringify(Config.secrets.SPELLSYNC_PUBLIC_TOKEN),
             IS_DEV: isDev,
             PROXY_DEFS: JSON.stringify(Config.proxies),
             TURNSTILE_SITE_KEY: JSON.stringify(Config.secrets.TURNSTILE_SITE_KEY),

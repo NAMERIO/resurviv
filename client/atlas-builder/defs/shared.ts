@@ -70,6 +70,7 @@ export const SharedAtlas: AtlasDef = {
 
         "map/map-case-basement-01.svg",
         "map/map-case-chrys-01.svg",
+        "map/map-case-crow-01.svg",
         "map/map-case-deagle-01.svg",
         "map/map-case-deagle-02.svg",
         "map/map-case-flare-01.svg",
@@ -228,7 +229,7 @@ export const SharedAtlas: AtlasDef = {
         "map/map-table-01.svg",
         "map/map-table-02.svg",
         "map/map-table-03.svg",
-        "map/map-table-res.svg",
+        "map/map-table-res-01.svg",
 
         "map/map-toilet-01.svg",
         "map/map-toilet-02.svg",

@@ -92,7 +92,7 @@ const mapDef: PartialMapDef = {
             { name: "scar", count: 1, weight: 0.01 },
             { name: "dp28", count: 1, weight: 0.5 },
             { name: "bar", count: 1, weight: 0.05 },
-            { name: "mosin", count: 1, weight: 0.1 },
+            { name: "mosin", count: 1, weight: 0.05 },
             { name: "m39", count: 1, weight: 0.1 },
             { name: "mp5", count: 1, weight: 10 },
             { name: "mac10", count: 1, weight: 6 },
@@ -113,7 +113,7 @@ const mapDef: PartialMapDef = {
             { name: "flare_gun", count: 1, weight: 0.145 }, // !
             { name: "flare_gun_dual", count: 1, weight: 0.0025 }, // !
             { name: "groza", count: 1, weight: 0.8 },
-            { name: "scout_elite", count: 1, weight: 0.05 },
+            { name: "scout_elite", count: 1, weight: 0.1 },
             { name: "vss", count: 1, weight: 0.1 }, // !
         ],
         tier_chest: [
@@ -151,7 +151,7 @@ const mapDef: PartialMapDef = {
             { name: "mk12", count: 1, weight: 2.5 },
             { name: "scar", count: 1, weight: 0.75 },
             { name: "bar", count: 1, weight: 1 },
-            { name: "mosin", count: 1, weight: 2.5 },
+            { name: "mosin", count: 1, weight: 1.5 },
             { name: "m39", count: 1, weight: 2.5 },
             { name: "saiga", count: 1, weight: 1 },
             { name: "deagle", count: 1, weight: 1 },
@@ -160,7 +160,7 @@ const mapDef: PartialMapDef = {
             { name: "qbb97", count: 1, weight: 1.5 },
             { name: "m9", count: 1, weight: 0.01 },
             { name: "flare_gun", count: 1, weight: 0.5 },
-            { name: "scout_elite", count: 1, weight: 1.5 },
+            { name: "scout_elite", count: 1, weight: 2.5 },
             { name: "vss", count: 1, weight: 2.5 }, // !
         ],
         tier_airdrop_rare: [
@@ -188,6 +188,21 @@ const mapDef: PartialMapDef = {
             { name: "sv98_winter", count: 1, weight: 1 },
             { name: "awc_winter", count: 1, weight: 0.75 },
             { name: "pkp", count: 1, weight: 0.75 },
+        ],
+        tier_crow_case_melee: [
+            { name: "crowbar", count: 1, weight: 3 },
+            { name: "iceaxe", count: 1, weight: 1 },
+        ],
+        tier_outfits: [
+            { name: "outfitCobaltShell", count: 1, weight: 0.2 },
+            { name: "outfitWoodland", count: 1, weight: 0.2 },
+            { name: "outfitWhite", count: 1, weight: 0.15 },
+            { name: "outfitCarbonFiber", count: 1, weight: 0.15 },
+            { name: "outfitBlackIce", count: 1, weight: 0.15 },
+            { name: "outfitDarkGloves", count: 1, weight: 0.1 },
+            { name: "outfitCamo", count: 1, weight: 0.1 },
+            { name: "outfitSnow", count: 1, weight: 0.1 },
+            { name: "outfitGhillie", count: 1, weight: 0.01 },
         ],
     },
     mapGen: {
@@ -218,7 +233,8 @@ const mapDef: PartialMapDef = {
         fixedSpawns: [
             {
                 // small is spawn count for solos and duos, large is spawn count for squads
-                warehouse_01x: 2,
+                warehouse_01x: { small: 1, large: 2 },
+                warehouse_03x: 1,
                 house_red_01x: { small: 3, large: 4 },
                 house_red_02x: { small: 3, large: 4 },
                 barn_01x: { small: 1, large: 3 },
@@ -247,7 +263,10 @@ const mapDef: PartialMapDef = {
                     large: 2,
                 },
                 stone_04x: 3, // had to add the whole table to change this...might want to consider adding some form of partial override - Stu
-                club_complex_01: 1,
+                camp_01: {
+                    small: 2,
+                    large: 3,
+                },
             },
         ],
         randomSpawns: [

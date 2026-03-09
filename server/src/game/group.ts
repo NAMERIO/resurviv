@@ -46,7 +46,7 @@ class BasePlayerGroup {
     }
 
     removePlayer(player: Player) {
-        this.players.splice(this.players.indexOf(player), 1);
+        util.removeFrom(this.players, player);
         this.checkPlayers();
     }
 

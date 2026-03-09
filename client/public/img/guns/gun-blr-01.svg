@@ -41,11 +41,11 @@
      fit-margin-left="1"
      fit-margin-bottom="1"
      fit-margin-right="1"
-     inkscape:zoom="2.9517742"
-     inkscape:cx="9.9939894"
-     inkscape:cy="91.131632"
+     inkscape:zoom="3.3377728"
+     inkscape:cx="31.907505"
+     inkscape:cy="117.74319"
      inkscape:window-x="1512"
-     inkscape:window-y="31"
+     inkscape:window-y="30"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg854"
      inkscape:showpageshadow="false"
@@ -147,7 +147,7 @@
      x="16"
      y="112" />
   <path
-     style="fill:#472706;fill-opacity:1;stroke:#000000;stroke-width:10.9938;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+     style="fill:#784329;fill-opacity:1;stroke:#000000;stroke-width:10.9938;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
      id="rect48"
      width="26.862263"
      height="46.557053"
@@ -156,13 +156,13 @@
      inkscape:path-effect="#path-effect9-8"
      sodipodi:type="rect"
      d="m 437.77365,622.48401 h 20.86226 l 3,3 v 43.55705 h -26.86226 v -43.55705 z"
-     transform="matrix(0.7689833,0,0,0.68859363,-316.662,-285.10195)" />
+     transform="matrix(0.7689833,0,0,0.68859363,-316.66199,-285.10195)" />
   <rect
-     style="fill:#472706;fill-opacity:1;stroke:#000000;stroke-width:7;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+     style="fill:#784329;fill-opacity:1;stroke:#000000;stroke-width:7;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
      id="rect48-7"
      width="15.999999"
      height="41.646957"
-     x="20.000002"
+     x="20"
      y="193.17651" />
   <path
      style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:10.593;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
@@ -174,16 +174,16 @@
      inkscape:path-effect="#path-effect57-31"
      sodipodi:type="rect"
      d="m 423.02176,655.91791 h 38.36598 v 31.19396 l -3,3 h -32.36598 l -3,-3 z"
-     transform="matrix(0.70374837,0,0,0.52258716,-283.20091,-169.13608)" />
+     transform="matrix(0.70374837,0,0,0.52258716,-283.20087,-169.13608)" />
   <rect
      style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:4.64689;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
      id="rect50"
      width="5"
      height="10"
-     x="25.499973"
+     x="25.5"
      y="195" />
   <path
-     style="fill:#505050;fill-opacity:1;stroke:#000000;stroke-width:10.5486;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+     style="fill:#646464;fill-opacity:1;stroke:#000000;stroke-width:10.5486;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
      id="rect51"
      width="15.941988"
      height="181.85886"
@@ -192,20 +192,20 @@
      inkscape:path-effect="#path-effect58-0"
      sodipodi:type="rect"
      d="m 437.2338,441.27884 9.94198,0 a 3,3 45 0 1 3,3 V 623.1377 H 434.2338 V 444.27884 a 3,3 135 0 1 3,-3 z"
-     transform="matrix(0.88493866,0,0,0.64994404,-363.32412,-260.24254)" />
+     transform="matrix(0.79337635,0,0,0.65189411,-322.83482,-261.28038)" />
   <rect
      style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:3.74173;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
      id="rect54"
      width="6.2140217"
      height="9"
-     x="24.892979"
+     x="24.89299"
      y="36" />
   <rect
-     style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:3.74171;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
+     style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:3.61484;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
      id="rect55"
-     width="30"
+     width="28"
      height="8"
-     x="12.999959"
+     x="14"
      y="106.00001" />
   <path
      style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:5.23152;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
@@ -217,22 +217,22 @@
      inkscape:path-effect="#path-effect56-0"
      sodipodi:type="rect"
      d="m 440.71072,627.10638 h 2.98802 l 3,3 v 18.31443 h -8.98802 v -18.31443 z"
-     transform="matrix(0.77881522,0,0,0.65683207,-316.39582,-259.90358)" />
+     transform="matrix(0.77881522,0,0,0.65683207,-316.39577,-259.90358)" />
   <rect
      style="fill:#000000;stroke-width:6.01571;stroke-linecap:round"
      id="rect5"
      width="26"
      height="18"
-     x="14.999997"
+     x="15"
      y="210" />
   <path
      style="fill:#000000;stroke-width:5.80218;stroke-linecap:round"
-     d="m 39.5,73.999998 2,31.999352 -2,6.5e-4 z"
+     d="m 38.5,73.999998 2,31.999352 -2,6.5e-4 z"
      id="path2"
      sodipodi:nodetypes="cccc" />
   <path
-     style="fill:#000000;stroke-width:5.80218;stroke-linecap:round"
-     d="M 16.493609,73.57187 14.5,105.99934 16.493609,106 Z"
+     style="fill:#000000;stroke-width:5.77298;stroke-linecap:round"
+     d="M 17.503195,74 15.503196,105.99935 17.503195,106 Z"
      id="path2-5"
      sodipodi:nodetypes="cccc" />
 </svg>

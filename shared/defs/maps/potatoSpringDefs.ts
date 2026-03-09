@@ -39,6 +39,7 @@ const mapDef: PartialMapDef = {
             camera: "falling_leaf_potato",
         },
     },
+    /* STRIP_FROM_PROD_CLIENT:START */
     lootTable: {
         tier_chrys_case: [
             { name: "", count: 1, weight: 2 }, // ?
@@ -51,7 +52,6 @@ const mapDef: PartialMapDef = {
             { name: "outfitAirdrop", count: 1, weight: 1 },
         ],
     },
-    /* STRIP_FROM_PROD_CLIENT:START */
     mapGen: {
         densitySpawns: [
             {

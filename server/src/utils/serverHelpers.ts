@@ -11,6 +11,7 @@ import {
 } from "obscenity";
 import ProxyCheck, { type IPAddressInfo } from "proxycheck-ts";
 import { Constants } from "../../../shared/net/net";
+import { util } from "../../../shared/utils/util";
 import type { PrivateRouteApp } from "../api/routes/private/private";
 import { Config } from "../config";
 import { defaultLogger } from "./logger";
@@ -392,7 +393,7 @@ export async function isBehindProxy(ip: string, vpn: 0 | 1 | 2 | 3): Promise<boo
             }
         } catch (error) {
             defaultLogger.error(`Proxycheck error:`, error);
-            return true;
+            return false;
         }
     }
     if (!info) {
@@ -400,7 +401,7 @@ export async function isBehindProxy(ip: string, vpn: 0 | 1 | 2 | 3): Promise<boo
     }
     proxyCheckCache.set(ip, {
         info,
-        expiresAt: Date.now() + 60 * 60 * 24, // a day
+        expiresAt: Date.now() + util.daysToMs(1),
     });
 
     return info.proxy === "yes" || info.vpn === "yes";

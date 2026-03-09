@@ -16,7 +16,7 @@ import {
     zTeamClientMsg,
 } from "../../shared/types/team";
 import type { Loadout } from "../../shared/utils/loadout";
-import { assert } from "../../shared/utils/util";
+import { assert, util } from "../../shared/utils/util";
 import type { ApiServer } from "./api/apiServer";
 import { validateSessionToken } from "./api/auth";
 import { db } from "./api/db";
@@ -218,10 +218,10 @@ class Room {
     }
 
     removePlayer(player: Player) {
-        const idx = this.players.indexOf(player);
-        if (idx === -1) return;
+        if (!util.removeFrom(this.players, player)) {
+            return;
+        }
 
-        this.players.splice(idx, 1);
         player.room = undefined;
         player.socket.close();
 

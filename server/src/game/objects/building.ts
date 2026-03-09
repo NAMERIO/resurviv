@@ -54,6 +54,7 @@ export class Building extends BaseGameObject {
         zoomIn?: AABB;
         zoomOut?: AABB;
         zoom?: number;
+        noZoom?: boolean;
     }> = [];
 
     healRegions?: Array<{
@@ -167,6 +168,7 @@ export class Building extends BaseGameObject {
                       ) as AABB)
                     : undefined,
                 zoom: region.zoom,
+                noZoom: region.noZoom,
             });
         }
 

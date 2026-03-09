@@ -46,6 +46,7 @@ export class Obstacle extends BaseGameObject {
 
     interactionRad = 0;
     interactedBy?: Player;
+    interactCooldown = 0;
 
     get interactable() {
         return this.button?.canUse ?? this.door?.canUse;
@@ -240,6 +241,10 @@ export class Obstacle extends BaseGameObject {
             if (this.regrowTicker < 0) {
                 this.regrow();
             }
+        }
+
+        if (this.interactCooldown > 0) {
+            this.interactCooldown -= dt;
         }
     }
 
@@ -453,21 +458,20 @@ export class Obstacle extends BaseGameObject {
                 const count = util.randomInt(lootTierOrItem.min!, lootTierOrItem.max!);
 
                 for (let i = 0; i < count; i++) {
-                    const items = this.game.lootBarn.getLootTable(lootTierOrItem.tier!);
+                    const item = this.game.lootBarn.getLootTable(lootTierOrItem.tier!);
+                    if (!item) continue;
 
-                    for (const item of items) {
-                        this.game.lootBarn.addLoot(
-                            item.name,
-                            v2.add(lootPos, v2.mul(v2.randomUnit(), 0.2)),
-                            this.layer,
-                            item.count,
-                            undefined,
-                            undefined, // undefined to use default push speed value
-                            params.dir,
-                            lootTierOrItem.props?.preloadGuns || item.preload,
-                            "obstacle",
-                        );
-                    }
+                    this.game.lootBarn.addLoot(
+                        item.name,
+                        v2.add(lootPos, v2.mul(v2.randomUnit(), 0.2)),
+                        this.layer,
+                        item.count,
+                        undefined,
+                        undefined, // undefined to use default push speed value
+                        params.dir,
+                        lootTierOrItem.props?.preloadGuns || item.preload,
+                        "obstacle",
+                    );
                 }
             } else {
                 this.game.lootBarn.addLoot(
@@ -509,7 +513,8 @@ export class Obstacle extends BaseGameObject {
                 let collision: Collider | undefined = undefined;
                 if (obj.isDoor) {
                     collision = collider.createCircle(obj.pos, 0.5);
-                } else if (obj.type.includes("window_open")) {
+                } else if (obj.height == 0.2 && obj.isWall && !obj.destructible) {
+                    // broken windows
                     collision = obj.collider;
                 }
                 if (!collision) continue;
@@ -523,6 +528,11 @@ export class Obstacle extends BaseGameObject {
 
     interact(player?: Player, auto = false): void {
         if (this.dead) return;
+
+        if (player) {
+            if (this.interactCooldown > 0) return;
+            this.interactCooldown = 0.1;
+        }
 
         this.interactedBy = player;
 

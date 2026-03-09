@@ -40,6 +40,9 @@ const mapDef: PartialMapDef = {
             playerGhillie: 0xa48e2e,
         },
     },
+    gameMode: { turkeyMode: true },
+
+    /* STRIP_FROM_PROD_CLIENT:START */
     mapGen: {
         densitySpawns: [
             {
@@ -97,7 +100,6 @@ const mapDef: PartialMapDef = {
                 mil_crate_02: { odds: 0.25 },
                 tree_02: 4,
                 stone_04: 1,
-                club_complex_01: 1,
             },
         ],
         spawnReplacements: [
@@ -107,7 +109,7 @@ const mapDef: PartialMapDef = {
             },
         ],
     },
-    gameMode: { turkeyMode: true },
+    /* STRIP_FROM_PROD_CLIENT:END */
 };
 
 export const Turkey = util.mergeDeep({}, Main, mapDef);

@@ -83,7 +83,7 @@ export class Creator {
             const err = {
                 id,
                 ids: Object.keys(this.m_idToObj),
-                stream: s.view.view,
+                stream: [...s.view.view],
             };
             console.error("objectPoolErr", `getTypeById${JSON.stringify(err)}`);
             return ObjectType.Invalid;

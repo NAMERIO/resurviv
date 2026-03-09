@@ -34,6 +34,7 @@ const mapDef: PartialMapDef = {
         },
         particles: {},
     },
+    /* STRIP_FROM_PROD_CLIENT:START */
     gameConfig: {
         planes: {
             crates: [
@@ -71,7 +72,6 @@ const mapDef: PartialMapDef = {
 
         tier_airdrop_outfits: [{ name: "outfitGhillie", count: 1, weight: 1 }],
     },
-    /* STRIP_FROM_PROD_CLIENT:START */
     mapGen: {
         map: {
             rivers: {
@@ -131,7 +131,6 @@ const mapDef: PartialMapDef = {
         ],
         fixedSpawns: [
             {
-                bunker_structure_09: 1,
                 warehouse_01: 2,
                 house_red_01: 3,
                 house_red_02: 1,

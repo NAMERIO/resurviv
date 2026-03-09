@@ -1,19 +1,5 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "ES2022",
-    "moduleResolution": "Bundler",
-    "outDir": "./dist",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-    "sourceMap": true,
-    "strictNullChecks": true,
-    "allowJs": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "noEmit": true
-  },
-  "exclude": ["node_modules"],
+  "$schema": "https://www.schemastore.org/tsconfig.json",
+  "extends": "../tsconfig.base.json",
   "include": ["./"]
 }

@@ -55,6 +55,10 @@ export type ImgCache = Record<
     }
 >;
 
+// increment every time logic that may change the output is done
+// so it invalidates old cache
+const ATLAS_HASH_VERSION = 1;
+
 export class ImageManager {
     private cache: ImgCache = {};
     private imagesToRender = new Map<string, string>();
@@ -369,7 +373,7 @@ export class AtlasManager {
             images.set(image, true);
         }
 
-        let atlasHash = "";
+        let atlasHash = `${ATLAS_HASH_VERSION}`;
         for (const file of atlasDef.images) {
             const imagePath = Path.join(imageFolder, file);
             if (!fs.existsSync(imagePath)) {

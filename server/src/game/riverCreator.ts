@@ -1,6 +1,8 @@
 import type { MapDef } from "../../../shared/defs/mapDefs";
 import { coldet } from "../../../shared/utils/coldet";
+import { collider } from "../../../shared/utils/collider";
 import { math } from "../../../shared/utils/math";
+import { catmullRom, getControlPoints } from "../../../shared/utils/spline";
 import { util } from "../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../shared/utils/v2";
 import type { GameMap } from "./map";
@@ -244,11 +246,36 @@ export class RiverCreator {
         }
         points.push(v2.copy(points[0]));
 
+        // smooth out the lake using the spline logic
+        const smoothPoints = new Array(33);
+        for (let i = 0; i < smoothPoints.length; i += 1) {
+            const { pt, p0, p1, p2, p3 } = getControlPoints(
+                i / smoothPoints.length,
+                points,
+                true,
+            );
+
+            smoothPoints[i] = v2.create(
+                catmullRom(pt, p0.x, p1.x, p2.x, p3.x),
+                catmullRom(pt, p0.y, p1.y, p2.y, p3.y),
+            );
+        }
+
+        smoothPoints.push(v2.copy(points[0]));
+
+        let aabbMin = v2.create(Number.MAX_VALUE, Number.MAX_VALUE);
+        let aabbMax = v2.create(-Number.MAX_VALUE, -Number.MAX_VALUE);
+        for (let i = 0; i < smoothPoints.length; i++) {
+            aabbMin = v2.minElems(aabbMin, smoothPoints[i]);
+            aabbMax = v2.maxElems(aabbMax, smoothPoints[i]);
+        }
+
         return {
             width,
-            points,
+            points: smoothPoints,
             looped: true,
             center,
+            aabb: collider.createAabb(aabbMin, aabbMax),
         };
     }
 }

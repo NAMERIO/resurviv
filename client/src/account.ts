@@ -1,6 +1,19 @@
 import $ from "jquery";
-import type { LoadoutRequest, LoadoutResponse } from "../../shared/types/user";
-import loadouts, { type ItemStatus, type Loadout } from "../../shared/utils/loadout";
+import type {
+    LoadoutRequest,
+    LoadoutResponse,
+    ProfileResponse,
+    RefreshQuestRequest,
+    RefreshQuestResponse,
+    SetItemStatusRequest,
+    SetPassUnlockRequest,
+    SetPassUnlockResponse,
+    SetQuestRequest,
+    UsernameRequest,
+    UsernameResponse,
+} from "../../shared/types/user";
+import type { ItemStatus } from "../../shared/utils/loadout";
+import { type Loadout, loadout as loadouts } from "../../shared/utils/loadout";
 import { util } from "../../shared/utils/util";
 import { api } from "./api";
 import type { ConfigManager } from "./config";
@@ -56,9 +69,7 @@ export class Account {
     loggingIn = false;
     loggedIn = false;
     profile = {
-        linkedTwitch: false,
-        linkedDiscord: false,
-        linkedGoogle: false,
+        linked: false,
         usernameSet: false,
         username: "",
         slug: "",
@@ -178,7 +189,7 @@ export class Account {
 
     loadProfile() {
         this.loggingIn = !this.loggedIn;
-        this.ajaxRequest("/api/user/profile", (err, data) => {
+        this.ajaxRequest("/api/user/profile", (err, data: ProfileResponse) => {
             const a = this.loggingIn;
             this.loggingIn = false;
             this.loggedIn = false;
@@ -191,7 +202,12 @@ export class Account {
             } else if (data.success) {
                 this.loggedIn = true;
                 this.profile = data.profile;
-                this.items = data.items;
+                this.items = (data.items || []).map((it: any) => {
+                    return {
+                        type: it.type,
+                        status: (it.status ?? 0) as ItemStatus,
+                    };
+                });
                 const profile = this.config.get("profile") || { slug: "" };
                 profile.slug = data.profile.slug;
                 this.config.set("profile", profile);

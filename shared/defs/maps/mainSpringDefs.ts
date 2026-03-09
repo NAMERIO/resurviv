@@ -90,7 +90,6 @@ const mapDef: PartialMapDef = {
                 tree_02: 3,
                 teahouse_01: { small: 2, large: 3 },
                 stone_04: 1,
-                club_complex_01: 1,
             },
         ],
         spawnReplacements: [{ tree_01: "tree_07sp" }],

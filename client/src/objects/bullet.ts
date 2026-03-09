@@ -146,8 +146,8 @@ export class BulletBarn {
         b.pos = v2.copy(bullet.pos);
         b.dir = v2.copy(bullet.dir);
         b.layer = bullet.layer;
-        b.speed = bulletDef.speed * variance;
-        b.distance = distance * variance + distAdj;
+        b.speed = bulletDef.speed * bullet.speedMult * variance;
+        b.distance = distance * bullet.distanceMult * variance + distAdj;
         b.damageSelf = bulletDef.shrapnel || bullet.reflectCount > 0;
         b.reflectCount = bullet.reflectCount;
         b.reflectObjId = bullet.reflectObjId;

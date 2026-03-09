@@ -1,4 +1,5 @@
 import { App, SSLApp, type WebSocket } from "uWebSockets.js";
+import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { Cron } from "croner";
@@ -128,6 +129,9 @@ class GameServer {
         const games: SaveGameBody["matchData"] = [];
 
         const dir = path.resolve("lost_game_data");
+
+        if (!existsSync(dir)) return;
+
         const files = await fs.readdir(dir);
 
         for (const fileName of files) {
