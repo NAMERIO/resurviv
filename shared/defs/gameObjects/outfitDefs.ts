@@ -1525,23 +1525,6 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0x5e6473,
         },
     }),
-    outfitBeachCamo: defineOutfitSkin("outfitBase", {
-        name: "Beach Shored",
-        skinImg: {
-            baseTint: 0xedca7e,
-            baseSprite: "player-base-01.img",
-            handTint: 0xfae5b6,
-            handSprite: "player-hands-01.img",
-            footTint: 0xfae5b6,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0x7c995b,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-shirt-01.img",
-            tint: 0xedca7e,
-        },
-    }),
     outfitCoconut: defineOutfitSkin("outfitBase", {
         name: "Coconut Frenzy",
         rarity: Rarity.Common,
