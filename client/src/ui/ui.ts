@@ -1396,12 +1396,10 @@ export class UiManager {
         )} </span><span class="ui-stats-header-value">${teamKills}</span></div>`;
     }
 
-    quitGame(skipAd = false) {
-        const doQuit = () => {
-            this.game.m_gameOver = true;
-            this.refreshMainPageAds();
-            this.game.onQuit();
-        };
+    quitGame() {
+        this.game.m_gameOver = true;
+        this.refreshMainPageAds();
+        this.game.onQuit();
     }
 
     showStats(
