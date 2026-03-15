@@ -1,4 +1,4 @@
-## Test server: http://209.46.126.159/
+## Test server: https://resurviv.biz
 
 # Open sourced surviv.io
 Survev.io is an open source recreation of a hit web game "surviv.io" that has been permanently shut down.
