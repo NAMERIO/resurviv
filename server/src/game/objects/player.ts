@@ -1313,6 +1313,7 @@ export class Player extends BaseGameObject {
             this.addPerk(streakDef.rewardItem, false);
         } else if (streakDef.rewardType === "gun") {
             const slot = this.curWeapIdx <= 1 ? this.curWeapIdx : 0;
+            this.streakGunSlot = slot;
             this.streakSavedWeapon = {
                 slot,
                 type: this.weapons[slot].type,
@@ -1335,6 +1336,9 @@ export class Player extends BaseGameObject {
                     this.removePerk(streakDef.rewardItem);
                 }
             } else if (streakDef.rewardType === "gun") {
+                if (this.streakGunSlot >= 0) {
+                    this.weaponManager.setWeapon(this.streakGunSlot, "", 0);
+                }
                 if (this.streakSavedWeapon) {
                     this.weaponManager.setWeapon(
                         this.streakSavedWeapon.slot,
@@ -1343,6 +1347,7 @@ export class Player extends BaseGameObject {
                     );
                     this.streakSavedWeapon = null;
                 }
+                this.streakGunSlot = -1;
             }
         }
 
@@ -1480,6 +1485,7 @@ export class Player extends BaseGameObject {
     streakActive = false;
     streakActiveTimer = 0;
     streakSavedWeapon: { slot: number; type: string; ammo: number } | null = null;
+    streakGunSlot: number = -1;
     streakDirty = true;
     get streakNextThreshold(): number {
         return StreakThresholds.get(this.streakActivationCount);
@@ -3493,10 +3499,15 @@ export class Player extends BaseGameObject {
         // drop loot
         //
 
-        // Fix streak heavy hitter crash: restore before drops
-        if (this.streakActive && this.streakSavedWeapon) {
-            this.weaponManager.setWeapon(this.streakSavedWeapon.slot, this.streakSavedWeapon.type, this.streakSavedWeapon.ammo);
-            this.streakSavedWeapon = null;
+        if (this.streakActive) {
+            if (this.streakGunSlot >= 0) {
+                this.weaponManager.setWeapon(this.streakGunSlot, "", 0);
+            }
+            if (this.streakSavedWeapon) {
+                this.weaponManager.setWeapon(this.streakSavedWeapon.slot, this.streakSavedWeapon.type, this.streakSavedWeapon.ammo);
+                this.streakSavedWeapon = null;
+            }
+            this.streakGunSlot = -1;
             this.deactivateStreak();
         }
 

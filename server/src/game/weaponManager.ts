@@ -100,15 +100,6 @@ export class WeaponManager {
         forceSwitch = false,
         changeCooldown = true,
     ): void {
-        // Prevent switching away from streak weapon
-        if (
-            !forceSwitch &&
-            this.player.streakActive &&
-            this.player.streakSavedWeapon?.slot === this._curWeapIdx
-        ) {
-            return;
-        }
-
         // if current slot is invalid and next too, switch to melee
         if (!this.activeWeapon && !this.weapons[idx].type) {
             idx = WeaponSlot.Melee;
@@ -215,6 +206,8 @@ export class WeaponManager {
     }
 
     swapWeaponSlots() {
+        if (this.player.streakActive) return;
+
         const primary = {
             ...this.weapons[WeaponSlot.Primary],
         };
@@ -651,8 +644,8 @@ export class WeaponManager {
     dropGun(weapIdx: number): void {
         const def = GameObjectDefs[this.weapons[weapIdx].type] as GunDef | undefined;
         if (def?.noDrop) return;
+        if (this.player.streakActive && weapIdx < 2) return;
 
-        // Prevent dropping streak weapon
         if (this.player.streakActive && this.player.streakSavedWeapon?.slot === weapIdx) {
             return;
         }
@@ -662,6 +655,8 @@ export class WeaponManager {
     }
 
     replaceGun(idx: number, type: string): void {
+        if (this.player.streakActive && idx < 2) return;
+
         const oldDef = GameObjectDefs[this.weapons[idx].type] as GunDef | undefined;
         let ammo = 0;
 
