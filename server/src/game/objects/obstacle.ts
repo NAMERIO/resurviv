@@ -541,7 +541,7 @@ export class Obstacle extends BaseGameObject {
     interact(player?: Player, auto = false): void {
         if (this.dead) return;
 
-        if (player) {
+        if (player && !auto) {
             if (this.interactCooldown > 0) return;
             this.interactCooldown = 0.1;
         }

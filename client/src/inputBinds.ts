@@ -1,7 +1,7 @@
 import base64 from "base64-js";
-import BitBuffer from "bit-buffer";
 import $ from "jquery";
 import { Input as GameInput, type Input } from "../../shared/gameConfig";
+import { BitStream } from "../../shared/lib/bitBuffer";
 import type { ConfigManager } from "./config";
 import {
     type InputHandler,
@@ -83,7 +83,7 @@ export class InputBinds {
 
     toArray() {
         const buf = new ArrayBuffer(this.binds.length * 2 + 1);
-        const stream = new BitBuffer.BitStream(buf);
+        const stream = new BitStream(buf);
         stream.writeUint8(1);
         for (let i = 0; i < this.binds.length; i++) {
             const bind = this.binds[i];
@@ -118,7 +118,7 @@ export class InputBinds {
         for (let i = 0; i < data.length; i++) {
             view[i] = data[i];
         }
-        const stream = new BitBuffer.BitStream(arrayBuf);
+        const stream = new BitStream(arrayBuf);
         const version = stream.readUint8();
         this.clearAllBinds();
         for (let idx = 0; stream.length - stream.index >= 10; ) {

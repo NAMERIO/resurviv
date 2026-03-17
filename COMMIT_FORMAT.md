@@ -16,7 +16,7 @@ Must be one of the following:
 * **chore**: Changes to the build process or auxiliary tools and libraries such as documentation generation.
 * **deploy**: An automated commit, normally from a workflow.
 * **docs**: Changes to documentation.
-* **enhance**: Improvements to an existing feature.
+* **enhance**: Minor changes to an existing feature that do not fix bugs.
 * **feat**: A new feature, or a significant change to an existing feature.
 * **fix**: A code change that fixes a bug.
 * **perf**: A code change that improves performance.
@@ -35,3 +35,4 @@ The subject contains succinct description of the change:
 * Use the past tense: `changed` not `change` nor `changes`.
 * Do not use a period (.) at the end.
 * Do not use markdown formatting.
+* Do not capitalize: `fix (server): prevented ...` not `fix (server): Prevented ...`.

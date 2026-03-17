@@ -93,39 +93,31 @@ describe.for(Object.entries(RoleDefs))("Role $0", ([, def]) => {
     if (def.perks) {
         hasTest = true;
 
-        test.for(def.perks)(
-            "Perk $0",
-            {
-                retry: 200,
-            },
-            (perk) => {
-                if (typeof perk === "string") {
-                    expect(perk).toBeValidLoot("perk");
-                } else {
-                    expect(perk()).toBeValidLoot("perk");
-                }
-            },
-        );
+        test.for(def.perks)("Perk $0", {
+            retry: 200,
+        }, (perk) => {
+            if (typeof perk === "string") {
+                expect(perk).toBeValidLoot("perk");
+            } else {
+                expect(perk()).toBeValidLoot("perk");
+            }
+        });
     }
 
     if (def.defaultItems) {
         hasTest = true;
 
         describe("Items", () => {
-            test.for(def.defaultItems!.weapons)(
-                "Weapon $0",
-                {
-                    retry: 200,
-                },
-                (weapon) => {
-                    if (typeof weapon == "object" && weapon.type) {
-                        expect(weapon.type).toBeValidLoot();
-                    } else if (typeof weapon === "function") {
-                        expect(weapon(TeamColor.Red).type).toBeValidLoot();
-                        expect(weapon(TeamColor.Blue).type).toBeValidLoot();
-                    }
-                },
-            );
+            test.for(def.defaultItems!.weapons)("Weapon $0", {
+                retry: 200,
+            }, (weapon) => {
+                if (typeof weapon == "object" && weapon.type) {
+                    expect(weapon.type).toBeValidLoot();
+                } else if (typeof weapon === "function") {
+                    expect(weapon(TeamColor.Red).type).toBeValidLoot();
+                    expect(weapon(TeamColor.Blue).type).toBeValidLoot();
+                }
+            });
 
             test("Items", () => {
                 if (def.defaultItems!.backpack) {

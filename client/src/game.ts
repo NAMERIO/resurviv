@@ -1048,7 +1048,7 @@ export class Game {
     m_render(dt: number, debug: DebugRenderOpts) {
         const grassColor = this.m_map.mapLoaded
             ? this.m_map.getMapDef().biome.colors.grass
-            : 8433481;
+            : 0x80af49;
         this.m_pixi.renderer.background.color = grassColor;
         // Module rendering
         this.m_playerBarn.m_render(this.m_camera, debug);

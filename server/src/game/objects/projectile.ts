@@ -289,7 +289,7 @@ export class Projectile extends BaseGameObject {
                             weaponSourceType: this.weaponSourceType,
                             source: this.game.objectRegister.getById(this.playerId),
                             mapSourceType: "",
-                            dir: this.vel,
+                            dir: this.dir,
                         });
 
                         if (obj.dead || !obj.collidable) continue;
@@ -309,7 +309,7 @@ export class Projectile extends BaseGameObject {
                         if (def.explodeOnImpact) {
                             this.explode();
                         } else {
-                            const len = v2.length(this.vel);
+                            const len = math.max(v2.length(this.vel), 0.000001);
                             const dir = v2.div(this.vel, len);
                             const normal = intersection
                                 ? intersection.dir

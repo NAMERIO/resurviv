@@ -216,6 +216,7 @@ export class GameMap {
     riverMasks!: Array<{ pos: Vec2; rad: number }>;
     normalRivers!: Array<River & { looped: false }>;
     lakes!: Array<River & { looped: true }>;
+    lakeObjs!: Array<string>;
     riverAreas!: Map<River, { water: number; shore: number }>;
 
     shoreArea!: number;
@@ -320,6 +321,7 @@ export class GameMap {
         this.structures = [];
         this.bridges = [];
         this.riverDescs = [];
+        this.lakeObjs = [];
         this.grid = new MapGrid(this.width, this.height);
 
         this.msg = new net.MapMsg();
@@ -635,6 +637,8 @@ export class GameMap {
         // Generate lakes
         //
         for (const lakeDef of mapConfig.rivers.lakes) {
+            if (randomGenerator() > lakeDef.odds) continue;
+
             this.trySpawn(`lake`, () => {
                 const lake = riverCreator.createLake(lakeDef);
 
@@ -654,6 +658,7 @@ export class GameMap {
                 }
 
                 this.riverDescs.push(lake);
+                this.lakeObjs.push(lakeDef.centerObj ?? "");
                 return true;
             });
         }
@@ -900,7 +905,20 @@ export class GameMap {
             }
         };
 
-        // faction mode bridges should have highest priority to make sure
+        // lake center objects should have highest priority
+        // as they are forced to spawn on a specific position
+        // if anything spawns before them they could overlap
+        if (this.lakeObjs.length) {
+            for (let i = 0; i < this.lakeObjs.length; i++) {
+                const lake = this.lakes[i];
+                const type = this.lakeObjs[i];
+                if (!type) continue;
+
+                this.genAuto(type, lake.center, 0, 0);
+            }
+        }
+
+        // faction mode bridges should have second highest priority to make sure
         // nothing breaks their spawning
         if (this.factionMode) {
             this.timerStart();
@@ -1019,9 +1037,7 @@ export class GameMap {
             } else if (def.terrain?.river) {
                 // this.genOnRiver(type);
             } else if (def.terrain?.bridge) {
-                // this.genBridge(type);
-            } else if (def.terrain?.lakeCenter) {
-                this.genOnLakeCenter(type);
+                this.genBridge(type);
             } else if (def.terrain?.grass) {
                 try {
                     this.genOnGrass(type);
@@ -1822,14 +1838,6 @@ export class GameMap {
             100,
             false,
         );
-    }
-
-    // todo make this choose a random lake out of available ones instead of filling all of them
-    genOnLakeCenter(type: string) {
-        for (let i = 0; i < this.lakes.length; i++) {
-            const lake = this.lakes[i];
-            this.genAuto(type, lake.center, 0, 0);
-        }
     }
 
     genObstacle(

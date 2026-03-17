@@ -268,7 +268,10 @@ const commands = {
             },
         ],
     }),
-};
+} as unknown as Record<
+    Exclude<Command, "search_player">,
+    ReturnType<typeof createCommand>
+>;
 
 export type CommandHandlers = {
     [key in Command]: (interaction: ChatInputCommandInteraction) => Promise<void>;

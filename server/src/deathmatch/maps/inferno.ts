@@ -82,6 +82,7 @@ const mapDef: PartialMapDef = {
                         innerRad: 20,
                         outerRad: 40,
                         circular: true,
+                        centerObj: "teapavilion_01w",
                         spawnBound: {
                             pos: v2.create(0.5, 0.75),
                             rad: 30,
@@ -116,7 +117,6 @@ const mapDef: PartialMapDef = {
 
         fixedSpawns: [
             {
-                teapavilion_01w: 1,
                 silo_01: 2,
                 cache_06: 1,
                 house_red_01: 1,

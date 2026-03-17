@@ -88,7 +88,6 @@ const mapDef: PartialMapDef = {
             {
                 logging_complex_02sp: 1,
                 logging_complex_03sp: 3,
-                teapavilion_01w: 1,
                 warehouse_01: { small: 3, large: 4 },
                 workshop_complex_01: 1,
                 house_red_01: { small: 3, large: 4 },
@@ -117,11 +116,7 @@ const mapDef: PartialMapDef = {
                 recorder_02: "recorder_09",
             },
         ],
-        importantSpawns: [
-            "logging_complex_01sp",
-            "logging_complex_02sp",
-            "teapavilion_01w",
-        ],
+        importantSpawns: ["logging_complex_01sp", "logging_complex_02sp"],
     },
     /* STRIP_FROM_PROD_CLIENT:END */
 };

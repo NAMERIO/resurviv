@@ -24,9 +24,9 @@ const {
 } = Config;
 
 export {
+    API_URL,
+    DISCORD_BOT_TOKEN,
+    DISCORD_CLIENT_ID,
     DISCORD_GUILD_ID,
     DISCORD_ROLE_ID,
-    DISCORD_CLIENT_ID,
-    DISCORD_BOT_TOKEN,
-    API_URL,
 };

@@ -10,12 +10,12 @@
        if (config.webview) {
          var a = document.createElement("a");
          var text = document.createTextNode("Go back");
-         a.appendChild(document.createTextNode("Go back"));
+         a.appendChild(text);
          a.title = "Go back";
          a.href = "javascript:history.back()";
          document.body.appendChild(a);
        }
-     } catch (e) { }
+     } catch { }
     </script>
     <pre style="word-wrap: break-word; white-space: pre-wrap;"># Changelog
 
@@ -27,6 +27,29 @@
 - Beach mode content
 - More translations
 - Wiki
+
+## [0.2.22] - March 16th, 2026
+- The Shishigami no Kabuto can no longer be replaced by the Level 3 Helmet while equipped.
+- Added various translations for survev-original content (remaining translations to be done in the coming updates).
+- Fixed an issue where other non-intended structures could spawn at the center of lakes.
+- Fixed an issue where other non-Winter maps would use the Winter recolor for 7.62mm bullets.
+- Fixed the loot eating nade...don't worry about it.
+
+### Balance
+- The SPAS-16 now has first shot accuracy, but has increased spread, decreased pellets per shot, and a movement penalty while firing.
+- Changed Hardstone loot on the Winter Woods map to match the Winter map.
+- Increased .308 Subsonic capacity (Military Pack unchanged).
+
+## [0.2.21] - March 10th, 2026
+- Fixed an issue where automatic doors would stop working.
+- Fixed an issue where the Shishigami no Kabuto wouldn't play the kill sound on the Winter Woods map.
+- Fixed an issue where the recorders wouldn't play their audio when used on the Winter Woods map.
+- Fixed an issue with the Ghillie Suit on the Winter Woods map.
+- Fixed an issue where a door in the Workshop would clip into a table when opened.
+
+### Balance
+- Adjusted the spread of the SPAS-16.
+- Increased the rarity of the MP220 on the Woods map.
 
 ## [0.2.2] - March 9th, 2026
 - Added new buildings: Workshop, Camp.

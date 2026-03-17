@@ -10,25 +10,25 @@ describe.for(maps)("Map %s", (map) => {
     const mapDef: MapDef = MapDefs[map as keyof typeof MapDefs];
 
     describe("Loot Tables", () => {
-        test.for(Object.entries(mapDef.lootTable))(
-            "Loot table $0",
-            ([tableId, table]) => {
-                const itemsSet = new Set();
-                for (const item of table) {
-                    itemsSet.add(item.name);
-                    if (item.name.startsWith("tier_")) {
-                        expect(item.name).toBeValidLootTier();
-                    } else if (item.name !== "") {
-                        expect(item.name).toBeValidLoot();
-                    }
+        test.for(Object.entries(mapDef.lootTable))("Loot table $0", ([
+            tableId,
+            table,
+        ]) => {
+            const itemsSet = new Set();
+            for (const item of table) {
+                itemsSet.add(item.name);
+                if (item.name.startsWith("tier_")) {
+                    expect(item.name).toBeValidLootTier();
+                } else if (item.name !== "") {
+                    expect(item.name).toBeValidLoot();
                 }
-                expect(itemsSet.size, "Loot table must not have duplicated items").toBe(
-                    table.length,
-                );
+            }
+            expect(itemsSet.size, "Loot table must not have duplicated items").toBe(
+                table.length,
+            );
 
-                expect(tableId).toBeValidLootTier();
-            },
-        );
+            expect(tableId).toBeValidLootTier();
+        });
     });
 
     describe("Airdrop Crates", () => {
@@ -85,19 +85,17 @@ describe.for(maps)("Map %s", (map) => {
             expect(key).toBeValidMapObj();
         });
 
-        test.for(mapGen.randomSpawns.map((p) => p.spawns).flat())(
-            "Random Spawn %0",
-            (spawn) => {
-                expect(spawn).toBeValidMapObj();
-            },
-        );
+        test.for(
+            mapGen.randomSpawns.map((p) => p.spawns).flat(),
+        )("Random Spawn %0", (spawn) => {
+            expect(spawn).toBeValidMapObj();
+        });
 
-        test.for(Object.entries(mapGen.spawnReplacements[0]))(
-            "Spawn Replacement $0",
-            ([key]) => {
-                expect(key).toBeValidMapObj();
-            },
-        );
+        test.for(Object.entries(mapGen.spawnReplacements[0]))("Spawn Replacement $0", ([
+            key,
+        ]) => {
+            expect(key).toBeValidMapObj();
+        });
 
         test.for(mapGen.importantSpawns)("Important Spawn $0", (spawn) => {
             expect(spawn).toBeValidMapObj();

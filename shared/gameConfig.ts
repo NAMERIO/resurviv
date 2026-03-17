@@ -129,7 +129,7 @@ export const GameConfig = {
     // the protocol we originated from was 78
     // remember to bump this every time a serialization function is changed
     // or a definition item added, removed or moved
-    protocolVersion: 1012,
+    protocolVersion: 1013,
     Input,
     EmoteSlot,
     WeaponSlot,
@@ -420,7 +420,7 @@ export const GameConfig = {
         "40mm": [10, 20, 30, 40],
         "12gauge": [15, 30, 60, 90],
         "50AE": [49, 98, 147, 196],
-        "308sub": [10, 20, 40, 80],
+        "308sub": [20, 40, 60, 80],
         flare: [2, 4, 6, 8],
         "45acp": [90, 180, 240, 300],
         mine: [3, 6, 9, 12],

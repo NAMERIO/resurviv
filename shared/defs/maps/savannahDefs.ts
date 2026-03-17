@@ -170,6 +170,7 @@ const mapDef: PartialMapDef = {
                         odds: 1,
                         innerRad: 32,
                         outerRad: 48,
+                        centerObj: "crate_02sv_lake",
                         spawnBound: {
                             pos: v2.create(0.5, 0.5),
                             rad: 200,
@@ -179,6 +180,7 @@ const mapDef: PartialMapDef = {
                         odds: 1,
                         innerRad: 16,
                         outerRad: 32,
+                        centerObj: "crate_02sv_lake",
                         spawnBound: {
                             pos: v2.create(0.5, 0.5),
                             rad: 200,
@@ -188,6 +190,7 @@ const mapDef: PartialMapDef = {
                         odds: 1,
                         innerRad: 16,
                         outerRad: 32,
+                        centerObj: "crate_02sv_lake",
                         spawnBound: {
                             pos: v2.create(0.5, 0.5),
                             rad: 200,
@@ -243,7 +246,6 @@ const mapDef: PartialMapDef = {
                 mansion_structure_01: 1,
                 warehouse_01: { small: 3, large: 4 },
                 warehouse_03sv: 1,
-                crate_02sv_lake: 1,
                 cache_01sv: 1,
                 cache_02sv: 1, // mosin tree
                 cache_07: 1,

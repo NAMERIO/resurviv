@@ -8,7 +8,6 @@ interface TerrainSpawnDef {
     grass?: boolean;
     beach?: boolean;
     riverShore?: boolean;
-    lakeCenter?: boolean;
     spawnPriority?: number;
     bridge?: {
         nearbyWidthMult: number;

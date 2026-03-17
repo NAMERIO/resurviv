@@ -77,6 +77,14 @@ export default defineConfig(({ mode }) => {
                 input: {
                     main: resolve(import.meta.dirname, "index.html"),
                     stats: resolve(import.meta.dirname, "stats/index.html"),
+                    ...(isDev
+                        ? {
+                              "building-editor": resolve(
+                                  import.meta.dirname,
+                                  "building-editor/index.html",
+                              ),
+                          }
+                        : {}),
                 },
                 output: {
                     assetFileNames(assetInfo) {

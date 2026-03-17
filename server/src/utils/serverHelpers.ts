@@ -116,9 +116,7 @@ const badWordsdataSet = new DataSet<{ originalWord: string }>()
     })
     .addPhrase((phrase) =>
         // https://github.com/jo3-l/obscenity/blob/9564653e9f8563e178cd0790ccf256dc2b610494/src/preset/english.ts#L269 only matches it without the "a"??
-        phrase
-            .setMetadata({ originalWord: "faggot" })
-            .addPattern(pattern`faggot`),
+        phrase.setMetadata({ originalWord: "faggot" }).addPattern(pattern`faggot`),
     )
     .addPhrase((phrase) =>
         phrase

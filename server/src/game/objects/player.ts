@@ -725,6 +725,9 @@ export class Player extends BaseGameObject {
     insideZoomRegion = false;
 
     private _zoom: number = 0;
+    // zoom used for the area in which the server will send objects to the client
+    private _cullingZoom: number = 0;
+    private _cullingZoomTicker = 0;
 
     get zoom(): number {
         return this._zoom;
@@ -733,6 +736,15 @@ export class Player extends BaseGameObject {
     set zoom(zoom: number) {
         if (zoom === this._zoom) return;
         assert(zoom !== 0);
+        // when changing to a lower zoom level
+        // we want to delay changing the culling zoom
+        // so objects only disappear from the client after the scope animation
+        // has finished, instead of flashing out of existence
+        if (zoom < this._cullingZoom) {
+            this._cullingZoomTicker = 0.5;
+        } else {
+            this._cullingZoom = zoom;
+        }
         this._zoom = zoom;
         this.zoomDirty = true;
     }
@@ -1637,6 +1649,7 @@ export class Player extends BaseGameObject {
         this.recalculateScale();
 
         this.logPlayerIp();
+        this._cullingZoom = this.zoom;
     }
 
     update(dt: number): void {
@@ -2458,6 +2471,19 @@ export class Player extends BaseGameObject {
             this.zoom = finalZoom;
         }
 
+        if (this._cullingZoom !== this.zoom) {
+            this._cullingZoomTicker -= dt;
+            if (this._cullingZoomTicker <= 0) {
+                this._cullingZoom = this.zoom;
+            }
+        }
+        if (this.portrait !== this._cullingPortrait) {
+            this._cullingPortraitTicker -= dt;
+            if (this._cullingPortraitTicker <= 0) {
+                this._cullingPortrait = this.portrait;
+            }
+        }
+
         if (insideNoZoomRegion) {
             this.insideZoomRegion = false;
         }
@@ -2672,8 +2698,16 @@ export class Player extends BaseGameObject {
             player = this;
         }
 
-        const radius = player.zoom + 4;
-        const rect = coldet.circleToAabb(player.pos, radius);
+        const radius = player._cullingZoom + 4;
+        let width = player._cullingZoom + 4;
+        // client zoom tries to keep a 16/9 aspect ratio, mirror it here
+        let height = width / (16 / 9);
+        if (this._cullingPortrait) {
+            let tmp = width;
+            width = height;
+            height = tmp;
+        }
+        const rect = collider.createAabbExtents(this.pos, v2.create(width, height));
 
         const newVisibleObjects = game.grid.intersectColliderSet(rect);
         // client crashes if active player is not visible
@@ -3898,6 +3932,8 @@ export class Player extends BaseGameObject {
     shootStart = false;
     shootHold = false;
     portrait = false;
+    private _cullingPortrait = false;
+    private _cullingPortraitTicker = 0;
     touchMoveActive = false;
     touchMoveDir = v2.create(1, 0);
     touchMoveLen = 255;
@@ -3929,6 +3965,11 @@ export class Player extends BaseGameObject {
         this.moveRight = msg.moveRight;
         this.moveUp = msg.moveUp;
         this.moveDown = msg.moveDown;
+
+        // same logic for `_cullingZoom`, see comment on `set zoom`
+        if (this.portrait != msg.portrait) {
+            this._cullingPortraitTicker = 0.5;
+        }
         this.portrait = msg.portrait;
         this.touchMoveActive = msg.touchMoveActive;
         this.touchMoveDir = v2.normalizeSafe(msg.touchMoveDir);
@@ -4418,7 +4459,9 @@ export class Player extends BaseGameObject {
                     // role helmets and perk helmets can't be dropped in favor of another helmet, they're the "highest" tier
                     if (
                         def.type == "helmet" &&
-                        (this.hasRoleHelmet || (thisDef && (thisDef as HelmetDef).perk))
+                        (this.hasRoleHelmet ||
+                            (thisDef && (thisDef as HelmetDef).perk) ||
+                            (thisDef && (thisDef as HelmetDef).role))
                     ) {
                         amountLeft = 1;
                         lootToAdd = obj.type;

@@ -94,6 +94,7 @@ export class BulletBarn {
 
     onMapLoad(map: Map) {
         this.tracerColors = util.mergeDeep(
+            {},
             GameConfig.tracerColors,
             map.getMapDef().biome.tracerColors,
         );

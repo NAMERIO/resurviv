@@ -199,6 +199,7 @@ export interface MapDef {
                     innerRad: number;
                     outerRad: number;
                     circular?: boolean;
+                    centerObj?: string;
                     spawnBound: {
                         pos: Vec2;
                         rad: number;

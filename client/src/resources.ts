@@ -43,8 +43,12 @@ function loadTexture(renderer: PIXI.IRenderer, url: string) {
     return baseTex;
 }
 
-function loadSpritesheet(renderer: PIXI.IRenderer, data: PIXI.ISpritesheetData) {
-    const baseTex = loadTexture(renderer, data.meta.image!);
+function loadSpritesheet(
+    renderer: PIXI.IRenderer,
+    basePath: string,
+    data: PIXI.ISpritesheetData,
+) {
+    const baseTex = loadTexture(renderer, basePath + data.meta.image!);
 
     const sheet = new PIXI.Spritesheet(baseTex, data);
     sheet.resolution = baseTex.resolution;
@@ -104,6 +108,7 @@ export class ResourceManager {
         public renderer: PIXI.IRenderer,
         public audioManager: AudioManager,
         public config: ConfigManager,
+        public basePath = "",
     ) {
         this.textureRes = selectTextureRes(this.renderer, this.config);
         PIXI.BasePrepare.uploadsPerFrame = 1;
@@ -151,7 +156,7 @@ export class ResourceManager {
             return; // skip loading this atlas
         }
         for (let i = 0; i < atlasDef.length; i++) {
-            const atlas = loadSpritesheet(this.renderer, atlasDef[i]);
+            const atlas = loadSpritesheet(this.renderer, this.basePath, atlasDef[i]);
             this.atlases[name].spritesheets.push(atlas);
         }
         this.atlases[name].loaded = true;

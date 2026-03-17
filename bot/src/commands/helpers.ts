@@ -7,7 +7,7 @@ import {
 import type z from "zod";
 import { botLogger, type Command, honoClient, isAdmin } from "../utils";
 
-export function createCommand<T extends z.ZodSchema>(config: {
+export function createCommand<T extends z.ZodSchema = z.ZodSchema>(config: {
     name: Command;
     description: string;
     optionValidator: T;

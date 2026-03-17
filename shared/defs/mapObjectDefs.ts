@@ -10273,7 +10273,7 @@ function createWorkshop<T extends BuildingDef>(e: Partial<T>): T {
             },
             {
                 type: "table_01",
-                pos: v2.create(-14.5, 3.5),
+                pos: v2.create(-14.5, 2.25),
                 scale: 1,
                 ori: 1,
             },
@@ -11490,7 +11490,6 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         health: 140,
         loot: [tierLoot("tier_soviet", 5, 6), tierLoot("tier_medical", 1, 1)],
         map: { display: true, color: 0xffc000 },
-        terrain: { lakeCenter: true },
         img: { sprite: "map-crate-02sv.img" },
         sound: { explode: "crate_break_01" },
     } as unknown as Partial<ObstacleDef>),
@@ -23270,12 +23269,11 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
         ],
     }),
-    teapavilion_01: createTeaPavilion({ terrain: { lakeCenter: true } }),
+    teapavilion_01: createTeaPavilion({}),
     teapavilion_01w: createTeaPavilion({
         center_loot: "loot_tier_helmet_forest",
         left_loot: "pot_03b",
         right_loot: "pot_03c",
-        terrain: { lakeCenter: true },
     }),
     teahouse_complex_01s: createTeaHouseComplex({}),
     teahouse_complex_01su: createTeaHouseComplex({
@@ -24371,7 +24369,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     teapavilion_complex_01: {
         type: "building",
         map: { display: true, shapes: [] },
-        terrain: { lakeCenter: true },
+        terrain: { grass: true },
         mapObstacleBounds: [
             collider.createAabbExtents(v2.create(0, 0), v2.create(14, 14)),
             collider.createAabbExtents(v2.create(0, -20), v2.create(4, 12)),

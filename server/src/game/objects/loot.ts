@@ -79,7 +79,7 @@ export class LootBarn {
 
     flush() {
         for (let i = 0; i < this.newLoots.length; i++) {
-            this.newLoots[i].isOld = false;
+            this.newLoots[i].isOld = true;
             this.newLoots[i].serializeFull();
         }
         this.newLoots.length = 0;
