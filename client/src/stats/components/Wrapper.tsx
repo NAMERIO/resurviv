@@ -97,7 +97,7 @@ export function Navbar() {
             <div class="container">
                 <button class="btn btn-outline-success my-2 my-sm-0" type="button">
                     <a class="nav-link-bright" href="/" data-l10n="index-play-survevio">
-                        Play survev.io!
+                        Play Resurviv.biz!
                     </a>
                 </button>
                 <button
