@@ -34,6 +34,7 @@ import { LoadoutDisplay } from "./ui/opponentDisplay";
 import { Pass } from "./ui/pass";
 import { ProfileUi } from "./ui/profileUi";
 import { TeamMenu } from "./ui/teamMenu";
+import { ClanUi } from "./ui/clanUi";
 import { loadStaticDomImages } from "./ui/ui2";
 
 export class Application {
@@ -63,6 +64,7 @@ export class Application {
     loadoutMenu!: LoadoutMenu;
     pass!: Pass;
     profileUi!: ProfileUi;
+    clanUi!: ClanUi;
 
     pingTest = new PingTest();
     audioManager = new AudioManager();
@@ -164,6 +166,12 @@ export class Application {
                 this.loadoutMenu,
                 this.errorModal,
             );
+
+            // Initialize ClanUi
+            this.clanUi = new ClanUi(this.account, this.localization);
+            $("#btn-clans").on("click", () => {
+                this.clanUi.showMainModal();
+            });
 
             this.nameInput.attr("maxLength", net.Constants.PlayerNameMaxLen);
 
