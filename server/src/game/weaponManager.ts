@@ -414,15 +414,17 @@ export class WeaponManager {
                 break;
             case "blaster":
                 if (this.wasHolding && !player.shootHold && weapon.cooldown <= 0) {
+                    if (!itemDef) return;
                     const loadTime = itemDef.loadTime ?? 1.5;
                     if (this.loadingBlasterCharge >= loadTime) {
-                        this.fireWeapon(this.offHand); // 🔥 Fire the rainbow projectile
+                        this.fireWeapon(this.offHand);
                         this.offHand = !this.offHand;
                     }
                     this.loadingBlasterCharge = 0; // ✅ Reset the charge
                 }
                 if (player.shootHold) {
                     this.loadingBlasterCharge += dt;
+                    if (!itemDef) return;
                     const loadTime = itemDef.loadTime ?? 1.5;
                     if (this.loadingBlasterCharge > loadTime) {
                         this.loadingBlasterCharge = loadTime;

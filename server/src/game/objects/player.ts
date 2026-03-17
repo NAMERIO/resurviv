@@ -3493,6 +3493,13 @@ export class Player extends BaseGameObject {
         // drop loot
         //
 
+        // Fix streak heavy hitter crash: restore before drops
+        if (this.streakActive && this.streakSavedWeapon) {
+            this.weaponManager.setWeapon(this.streakSavedWeapon.slot, this.streakSavedWeapon.type, this.streakSavedWeapon.ammo);
+            this.streakSavedWeapon = null;
+            this.deactivateStreak();
+        }
+
         for (let i = 0; i < GameConfig.WeaponSlot.Count; i++) {
             const weap = this.weapons[i];
             if (!weap.type) continue;
