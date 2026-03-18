@@ -47,9 +47,6 @@ if (window.self !== window.top) {
 }
 
 function isWithinGameMonetize(): boolean {
-    if (import.meta.env.VITE_GAMEMONETIZE_ID) {
-        return true;
-    }
     try {
         if (window !== window.parent && document.referrer) {
             const parentOrigin = new URL(document.referrer).origin;
@@ -95,7 +92,6 @@ export class SDKManager implements BaseSDKManager {
     isGameMonetize = isWithinGameMonetize();
     isSpellSync = isWithinSpellSync();
     isAnySDK: boolean;
-    isThirdPartyPlatform: boolean;
 
     respawns: number[] = [];
 
@@ -124,8 +120,8 @@ export class SDKManager implements BaseSDKManager {
             $("#left-column").hide();
             if (!this.isSpellSync) $("#btn-discord-top-right").show();
             $(".surviv-shirts")
-                .css("background-image", "url(./img/discord-promo.png)")
-                .html(`<a href="https://discord.gg/6uRdCdkTPt" target="_blank"></a>`);
+                .css("background-image", "url(./img/resurviv-discord-promo.png)")
+                .html(`<a href="https://discord.gg/sQ5tUD9edv" target="_blank"></a>`);
 
             if (this.isSpellSync) {
                 $("a[href='changelogRec.html']").hide();
@@ -142,17 +138,13 @@ export class SDKManager implements BaseSDKManager {
             $(".btn-kofi").show();
             $(".surviv-shirts")
                 .css("background-image", "url(./img/survev-kofi.png)")
-                .html(`<a href="https://ko-fi.com/survev" target="_blank"></a>`);
+                .html(`<a href="https://ko-fi.com/resurviv" target="_blank"></a>`);
 
             const fuseScript = document.createElement("script");
             fuseScript.async = true;
             fuseScript.src = "https://cdn.fuseplatform.net/publift/tags/2/4018/fuse.js";
             document.head.appendChild(fuseScript);
         }
-        $(".btn-kofi").show();
-        $(".surviv-shirts")
-            .css("background-image", "url(./img/resurviv-discord-promo.png)")
-            .html(`<a href="https://discord.gg/uzudxzmJBf" target="_blank"></a>`);
 
         if (this.isPoki) {
             await this.initPoki();
@@ -200,12 +192,9 @@ export class SDKManager implements BaseSDKManager {
     }
 
     requestMidGameAd(callback: () => void): void {
-        this.gamesPlayed++;
-        const showAd = this.gamesPlayed % 3 === 0;
-
         if (this.isPoki) {
             this.requestPokiMidGameAd(callback);
-        } else if (this.isGameMonetize && showAd) {
+        } else if (this.isGameMonetize) {
             this.requestGameMonetizeMidgameAd(callback);
         } else if (this.isCrazyGames) {
             this.requestCrazyGamesMidGameAd(callback);
@@ -307,18 +296,10 @@ export class SDKManager implements BaseSDKManager {
     }
 
     private requestGameMonetizeMidgameAd(callback: () => void): void {
-        if (!this.isGameMonetizeReady) {
-            console.warn("GameMonetize SDK not ready yet, queuing ad request");
-            this.pendingAdCallback = callback;
-            return;
-        }
-
         if (window.sdk && window.sdk.showBanner) {
-            this.adCallback = callback;
             window.sdk.showBanner();
             callback();
         } else {
-            console.warn("GameMonetize SDK object not available");
             callback();
         }
     }
@@ -332,39 +313,21 @@ export class SDKManager implements BaseSDKManager {
     }
 
     private initGameMonetize() {
-        const gameId = import.meta.env.VITE_GAMEMONETIZE_ID;
-        if (!gameId || gameId === "" || gameId === "undefined") {
-            console.error("GameMonetize: Invalid or missing gameId!", gameId);
-            return;
-        }
-        console.log("GameMonetize: Initializing with gameId:", gameId);
-        window.SDK_OPTIONS = {
-            gameId: gameId,
-            onEvent: (event: any) => {
-                console.log("GameMonetize Event:", event.name);
-                switch (event.name) {
-                    case "SDK_READY":
-                        console.log(
-                            "GameMonetize SDK Ready - Impressions should now track",
-                        );
-                        this.isGameMonetizeReady = true;
-                        if (this.pendingAdCallback) {
-                            const cb = this.pendingAdCallback;
-                            this.pendingAdCallback = null;
-                            this.requestGameMonetizeMidgameAd(cb);
-                        }
-                        break;
-                    case "SDK_ERROR":
-                        console.error("GameMonetize SDK Error:", event);
-                        break;
-                }
-            },
-        };
-
         const gameMonetizeScript = document.createElement("script");
         gameMonetizeScript.src = "https://api.gamemonetize.com/sdk.js";
         gameMonetizeScript.id = "gamemonetize-sdk";
         document.head.appendChild(gameMonetizeScript);
+
+        window.SDK_OPTIONS = {
+            gameId: import.meta.env.VITE_GAMEMONETIZE_ID,
+            onEvent: (event: any) => {
+                switch (event.name) {
+                    case "SDK_READY":
+                        console.log("Successfully loaded GameMonetize SDK"); // never happens for some reasons
+                        break;
+                }
+            },
+        };
     }
 
     private initPoki(): Promise<void> {
