@@ -17,11 +17,11 @@ export const PassDefs: Record<string, PassDef> = {
         items: [
             {
                 level: 2,
-                item: "outfitParma",
+                item: "outfitThePro",
             },
             {
                 level: 3,
-                item: "heal_heart",
+                item: "fist_shinyJello",
             },
             {
                 level: 4,
@@ -29,23 +29,23 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 5,
-                item: "outfitWhite",
+                item: "outfitToxicBarrel",
             },
             {
                 level: 6,
-                item: "boost_star",
+                item: "emote_nooblet",
             },
             {
                 level: 7,
-                item: "emote_ok",
+                item: "outfitTirelessly",
             },
             {
                 level: 8,
-                item: "outfitRed",
+                item: "emote_rainbow",
             },
             {
                 level: 9,
-                item: "heal_moon",
+                item: "outfitSplotchfest",
             },
             {
                 level: 10,
@@ -57,7 +57,7 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 12,
-                item: "boost_naturalize",
+                item: "outfitToontooine",
             },
             {
                 level: 13,
@@ -65,11 +65,11 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 14,
-                item: "outfitDarkGloves",
+                item: "outfitJuleVerny",
             },
             {
                 level: 15,
-                item: "heal_tomoe",
+                item: "fist_theOtherPong",
             },
             {
                 level: 16,
@@ -77,11 +77,11 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 17,
-                item: "outfitCarbonFiber",
+                item: "outfitKingGalaxy",
             },
             {
                 level: 18,
-                item: "boost_shuriken",
+                item: "emote_rip",
             },
             {
                 level: 19,
@@ -89,7 +89,7 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 20,
-                item: "outfitParmaPrestige",
+                item: "outfitMagmatic",
             },
             {
                 level: 21,
@@ -97,7 +97,7 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 30,
-                item: "outfitTurkey",
+                item: "outfitFireball",
             },
             {
                 level: 50,
