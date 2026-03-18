@@ -32,9 +32,11 @@ export const passUtil = {
         };
     },
     timeUntilQuestRefresh: function (timeAcquired: number) {
+        const interval = 5 * 60 * 60 * 1000;
+        const offset = 25200000;
         return (
-            Math.floor((timeAcquired - 25200000 + 86400000 - 1) / 86400000) * 86400000 +
-            25200000 -
+            Math.floor((timeAcquired - offset + interval - 1) / interval) * interval +
+            offset -
             Date.now()
         );
     },
