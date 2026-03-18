@@ -17,6 +17,16 @@ export const DeatchmatchCobalt: MapDef = util.mergeDeep(structuredClone(Cobalt),
     biome: {
         particles: { camera: "falling_leaf_spring" },
     },
+    assets: {
+        audio: [
+            { name: "spawn_01", channel: "ui" },
+            { name: "ping_unlock_01", channel: "ui" },
+            { name: "ambient_lab_01", channel: "ambient" },
+            { name: "log_13", channel: "sfx" },
+            { name: "log_14", channel: "sfx" },
+        ],
+        atlases: ["gradient", "loadout", "shared", "cobalt", "woods"],
+    },
     gameConfig: {
         planes: {
             timings: [
@@ -47,76 +57,78 @@ export const DeatchmatchCobalt: MapDef = util.mergeDeep(structuredClone(Cobalt),
                       ];
                   })
             : {},
+        randomSpawns: [
+            {
+                spawns: ["logging_complex_01c", "desert_town_02c"],
+                choose: 2,
+            },
+            {
+                spawns: ["bunker_structure_03", "bunker_structure_01"],
+                choose: 1,
+            },
+            {
+                spawns: ["bank_01", "police_01"],
+                choose: 1,
+            },
+            {
+                spawns: ["warehouse_01", "house_red_01"],
+                choose: 1,
+            },
+            {
+                spawns: ["mil_crate_02", "mil_crate_03"],
+                choose: 1,
+            },
+            {
+                spawns: ["barn_02", "barn_01"],
+                choose: 1,
+            },
+        ],
+        spawnReplacements: [
+            {
+                tree_01: "tree_01cb",
+                stone_01: "stone_01cb",
+                bush_01: "bush_01cb",
+                bush_04: "bush_04cb",
+                stone_03: "stone_03cb",
+            },
+        ],
     },
 });
 
 DeatchmatchCobalt.lootTable = {
-    tier_guns: [
-        { name: "flare_gun", count: 1, weight: 14.5 },
-        {
-            name: "flare_gun_dual",
-            count: 1,
-            weight: 0.25,
-        },
+    tier_ring_case: [
+        { name: "sv98", count: 1, weight: 0.75 },
+        { name: "usas", count: 1, weight: 0.15 },
     ],
     tier_airdrop_uncommon: [
         { name: "saiga", count: 1, weight: 1 },
-        { name: "deagle", count: 1, weight: 1 },
-        { name: "sv98", count: 1, weight: 0.5 },
-        { name: "m9", count: 1, weight: 0.01 },
-        { name: "flare_gun", count: 1, weight: 0.5 },
-        { name: "model94", count: 1, weight: 2 },
-        { name: "an94", count: 1, weight: 1 },
+        { name: "sv98", count: 1, weight: 1 },
+        { name: "flare_gun", count: 1, weight: 0.9 },
+        { name: "m249", count: 1, weight: 0.1 },
     ],
     tier_airdrop_rare: [
         { name: "garand", count: 1, weight: 6 },
         { name: "awc", count: 1, weight: 3 },
-        { name: "pkp", count: 1, weight: 3 },
+        { name: "pkp", count: 1, weight: 0.08 },
         { name: "m249", count: 1, weight: 0.1 },
         { name: "m4a1", count: 1, weight: 4 },
-        { name: "ots38_dual", count: 1, weight: 4.5 },
+        { name: "scorpion", count: 1, weight: 5 },
+        { name: "scarssr", count: 1, weight: 4.5 },
     ],
-    tier_ammo_crate: [{ name: "flare", count: 2, weight: 1 }],
-    tier_airdrop_outfits: [
-        { name: "", count: 1, weight: 20 },
-        { name: "outfitMeteor", count: 1, weight: 5 },
-        { name: "outfitHeaven", count: 1, weight: 1 },
-        {
-            name: "outfitGhillie",
-            count: 1,
-            weight: 0.5,
-        },
-    ],
-    tier_airdrop_melee: [
-        { name: "", count: 1, weight: 19 },
-        { name: "stonehammer", count: 1, weight: 1 },
-        { name: "pan", count: 1, weight: 1 },
-    ],
-    tier_throwables: [
-        { name: "frag", count: 2, weight: 1 },
-        { name: "smoke", count: 1, weight: 1 },
-        { name: "strobe", count: 1, weight: 0.2 },
-        { name: "mirv", count: 2, weight: 0.05 },
-        { name: "mine", count: 3, weight: 1 },
-    ],
-    tier_airdrop_throwables: [
-        { name: "strobe", count: 1, weight: 1 },
-        { name: "frag", count: 3, weight: 0.1 },
-        { name: "mine", count: 3, weight: 1 },
-    ],
-    tier_perks: [
-        { name: "broken_arrow", count: 1, weight: 1 },
-        { name: "fabricate", count: 1, weight: 1 },
-        { name: "flak_jacket", count: 1, weight: 1 },
-        { name: "bonus_45", count: 1, weight: 1 },
-    ],
-    tier_eye_stone: [
-        { name: "garand", count: 1, weight: 2 },
+    tier_airdrop_mythic: [
+        { name: "scarssr", count: 1, weight: 1 },
+        { name: "usas", count: 1, weight: 0.5 },
         { name: "awc", count: 1, weight: 0.1 },
+        { name: "pkp", count: 1, weight: 0.3 },
+        { name: "m249", count: 1, weight: 0.3 },
     ],
-    tier_class_crate_mythic: [
-        { name: "scavenger_adv", count: 1, weight: 1 },
-        { name: "explosive", count: 1, weight: 2 },
-        { name: "splinter", count: 1, weight: 3 },
+    tier_guns: [
+        { name: "flare_gun", count: 1, weight: 0.5 },
+        { name: "flare_gun_dual", count: 1, weight: 0.25 },
+        { name: "nitoLace", count: 2, weight: 0.8 },
+        { name: "machete_taiga", count: 1, weight: 0.6 },
+        { name: "lasr_gun", count: 1, weight: 0.7 },
+        { name: "lasr_gun_dual", count: 1, weight: 0.6 },
+        { name: "garand", count: 1, weight: 0.9 },
     ],
 };
