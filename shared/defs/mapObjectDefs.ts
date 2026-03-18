@@ -18124,19 +18124,19 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         mapGroundPatches: [
             {
                 bound: collider.createAabbExtents(v2.create(0, -3), v2.create(45, 55)),
-                color: 0x2E363F,
+                color: 0x3E4954,
                 roughness: 0.1,
                 offsetDist: 1,
             },
             {
                 bound: collider.createAabbExtents(v2.create(0, 0), v2.create(46, 10)),
-                color: 0x1F242A,
+                color: 0x2E363F,
                 roughness: 0.1,
                 offsetDist: 1,
             },
             {
                 bound: collider.createAabbExtents(v2.create(0, 2), v2.create(5, 50.5)),
-                color: 0x1F242A,
+                color: 0x2E363F,
                 roughness: 0.1,
                 offsetDist: 1,
             },
