@@ -4421,7 +4421,6 @@ a:active {
   margin-left: -20px;
   padding: 12px 14px 12px 15px;
   width: calc(100% + 10px);
-
 }
 
 .pass-section-header {
@@ -4430,7 +4429,7 @@ a:active {
   font-weight: 700;
   margin-bottom: 12px;
   text-align: center;
-  text-shadow: 1px 1px 0 rgba(0,0,0,0.75);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
 }
 
 #pass-items-list {
@@ -4444,7 +4443,7 @@ a:active {
 
 .pass-item {
   align-items: center;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   border-radius: 4px;
   cursor: default;
   display: flex;
@@ -4455,7 +4454,7 @@ a:active {
 }
 
 .pass-item:hover {
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
 }
 
 .pass-item.unlocked {
@@ -4464,7 +4463,7 @@ a:active {
 }
 
 .pass-item-level {
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   border-radius: 50%;
   font-size: 14px;
   font-weight: 700;
@@ -4482,13 +4481,12 @@ a:active {
   width: 38px;
 }
 
-
 .pass-item-name {
   color: #fff;
   flex: 1;
   font-size: 16px;
   font-weight: 500;
-  text-shadow: 1px 1px 0 rgba(0,0,0,0.75);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4513,17 +4511,17 @@ a:active {
 }
 
 #pass-items-list::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
   border-radius: 3px;
 }
 
 #pass-items-list::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 3px;
 }
 
 #pass-items-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.5);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 #pass-items-wrapper {
@@ -4533,7 +4531,6 @@ a:active {
 #pass-items-wrapper.logged-in {
   margin-top: 30px;
 }
-
 
 #pass-items-wrapper.logged-out {
   margin-top: 120px !important;
@@ -4547,22 +4544,22 @@ a:active {
     margin-top: 8px;
     padding: 8px;
   }
-  
+
   #pass-items-list {
     max-height: 120px;
   }
-  
+
   .pass-item {
     padding: 6px;
     gap: 6px;
   }
-  
+
   .pass-item-image {
     background-size: 28px;
     height: 36px;
     width: 36px;
   }
-  
+
   .pass-item-level {
     height: 22px;
     line-height: 22px;
@@ -4570,7 +4567,6 @@ a:active {
     font-size: 12px;
   }
 }
-
 
 #start-top-left {
   position: absolute;

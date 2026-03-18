@@ -26,6 +26,7 @@ import { proxy } from "./proxy";
 import { ResourceManager } from "./resources";
 import { SDK } from "./sdk/sdk";
 import { SiteInfo } from "./siteInfo";
+import { ClanUi } from "./ui/clanUi";
 import { LoadoutMenu } from "./ui/loadoutMenu";
 import { Localization } from "./ui/localization";
 import Menu from "./ui/menu";
@@ -34,7 +35,6 @@ import { LoadoutDisplay } from "./ui/opponentDisplay";
 import { Pass } from "./ui/pass";
 import { ProfileUi } from "./ui/profileUi";
 import { TeamMenu } from "./ui/teamMenu";
-import { ClanUi } from "./ui/clanUi";
 import { loadStaticDomImages } from "./ui/ui2";
 
 export class Application {

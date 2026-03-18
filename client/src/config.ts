@@ -1,8 +1,8 @@
 import type { MapDefs } from "../../shared/defs/mapDefs";
 import { GameConfig } from "../../shared/gameConfig";
 import { util } from "../../shared/utils/util";
-import loadout from "./ui/loadouts";
 import { v2 } from "../../shared/utils/v2";
+import loadout from "./ui/loadouts";
 import type { Locale } from "./ui/localization";
 
 export const debugToolsConfig = {

@@ -1,4 +1,5 @@
 import { type CanvasRenderingContext2D, createCanvas } from "canvas";
+import { config } from "process";
 import { type MapDef, MapDefs } from "../../../shared/defs/mapDefs";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import type { BuildingDef, ObstacleDef } from "../../../shared/defs/mapObjectsTyping";
@@ -16,7 +17,6 @@ import { util } from "../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../shared/utils/v2";
 import { Config } from "../config";
 import { THIS_REGION } from "../region";
-import { config } from "process";
 
 function drawLine(canvas: CanvasRenderingContext2D, pt0: Vec2, pt1: Vec2) {
     canvas.moveTo(pt0.x, pt0.y);

@@ -298,25 +298,25 @@ export class Pass {
         if (!passDef.items) return;
 
         const passLevel = this.account.loggedIn ? this.pass.currentLevel : 0;
-        
+
         for (const passItem of passDef.items) {
             const itemLevel = passItem.level;
             const itemId = passItem.item;
             const itemDef = GameObjectDefs[itemId];
-            
+
             const isUnlocked = itemLevel <= passLevel;
-            
+
             const itemName = (itemDef as any)?.name || itemId;
             const svgUrl = helpers.getSvgFromGameType(itemId);
             const transform = helpers.getCssTransformFromGameType(itemId);
             const itemDiv = $(`
-                <div class="pass-item ${isUnlocked ? 'unlocked' : ''} ${!isUnlocked ? 'pass-item-locked' : ''}">
+                <div class="pass-item ${isUnlocked ? "unlocked" : ""} ${!isUnlocked ? "pass-item-locked" : ""}">
                     <div class="pass-item-level">${itemLevel}</div>
                     <div class="pass-item-image" style="background-image: url(${svgUrl}); ${transform}"></div>
                     <div class="pass-item-name">${itemName}</div>
                 </div>
             `);
-            
+
             passItemsList.append(itemDiv);
         }
     }

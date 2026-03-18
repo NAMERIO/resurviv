@@ -28,9 +28,9 @@ import { PerkProperties } from "../../../../shared/defs/gameObjects/perkDefs";
 import type { RoleDef } from "../../../../shared/defs/gameObjects/roleDefs";
 import type { ThrowableDef } from "../../../../shared/defs/gameObjects/throwableDefs";
 import { UnlockDefs } from "../../../../shared/defs/gameObjects/unlockDefs";
-import { MapId } from "../../../../shared/defs/types/misc";
 import { MapObjectDefs } from "../../../../shared/defs/mapObjectDefs";
 import type { StructureDef } from "../../../../shared/defs/mapObjectsTyping";
+import { MapId } from "../../../../shared/defs/types/misc";
 import {
     type Action,
     type Anim,
@@ -3538,7 +3538,11 @@ export class Player extends BaseGameObject {
                 this.weaponManager.setWeapon(this.streakGunSlot, "", 0);
             }
             if (this.streakSavedWeapon) {
-                this.weaponManager.setWeapon(this.streakSavedWeapon.slot, this.streakSavedWeapon.type, this.streakSavedWeapon.ammo);
+                this.weaponManager.setWeapon(
+                    this.streakSavedWeapon.slot,
+                    this.streakSavedWeapon.type,
+                    this.streakSavedWeapon.ammo,
+                );
                 this.streakSavedWeapon = null;
             }
             this.streakGunSlot = -1;
