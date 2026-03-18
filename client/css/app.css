@@ -4427,7 +4427,8 @@ a:active {
   color: #ffd800;
   font-size: 18px;
   font-weight: 700;
-  margin-bottom: 12px;
+  padding-top: 10px;
+  margin-bottom: 10px;
   text-align: center;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.75);
 }
@@ -4436,7 +4437,7 @@ a:active {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 175px;
+  max-height: 200px;
   overflow-y: auto;
   padding-right: 5px;
 }
