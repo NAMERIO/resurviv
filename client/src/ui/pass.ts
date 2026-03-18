@@ -125,6 +125,8 @@ export class Pass {
     onPass(pass: any, quests: any[], resetRefresh: boolean) {
         const refreshOffset = 5 * 1000;
         const newQuests = [];
+        $("#pass-items-wrapper").removeClass("logged-out").addClass("logged-in");
+        this.populatePassItems();
         let questAnimCount = 0;
         for (let passIdx = 0; passIdx < quests.length; passIdx++) {
             const questData = quests[passIdx];
@@ -228,6 +230,7 @@ export class Pass {
             newQuests.push(quest);
         }
         this.quests = newQuests;
+        this.populatePassItems();
         this.pass.data = pass;
         this.pass.animSteps = [];
         this.pass.currentXp = Math.round(this.pass.currentXp);
@@ -285,6 +288,39 @@ export class Pass {
             width: `${pct}%`,
         });
         this.loaded = true;
+    }
+
+    populatePassItems() {
+        const passDef = PassDefs[this.pass.data.type as keyof typeof PassDefs];
+        const passItemsList = $("#pass-items-list");
+        passItemsList.empty();
+
+        if (!passDef.items) return;
+
+        const passLevel = this.pass.currentLevel;
+        
+        for (const passItem of passDef.items) {
+            const itemLevel = passItem.level;
+            const itemId = passItem.item;
+            const itemDef = GameObjectDefs[itemId];
+            
+            const isUnlocked = itemLevel <= passLevel;
+            const isCurrent = itemLevel === passLevel + 1;
+            
+            const itemName = (itemDef as any)?.name || itemId;
+            const svgUrl = helpers.getSvgFromGameType(itemId);
+            const transform = helpers.getCssTransformFromGameType(itemId);
+            const itemDiv = $(`
+                <div class="pass-item ${isUnlocked ? 'unlocked' : ''} ${isCurrent ? 'current' : ''} ${!isUnlocked ? 'pass-item-locked' : ''}">
+                    <div class="pass-item-level">${itemLevel}</div>
+                    <div class="pass-item-image" style="background-image: url(${svgUrl}); ${transform}"></div>
+                    <div class="pass-item-name">${itemName}</div>
+                </div>
+            `);
+
+            
+            passItemsList.append(itemDiv);
+        }
     }
 
     onRequest(account: Account) {
@@ -455,6 +491,10 @@ export class Pass {
     }
 
     update(dt: number) {
+        $("#pass-items-wrapper").css("display", "block");
+        if (!this.account.loggedIn) {
+            this.populatePassItems();
+        }
         this.updatePassTicker -= dt;
 
         if (this.updatePass && this.updatePassTicker < 0) {
@@ -588,5 +628,7 @@ export class Pass {
         $("#pass-progress-xp-current").html(0);
         $("#pass-progress-xp-target").html(def.xp[0]);
         this.setPassUnlockImage(def.items[0].item);
+        $("#pass-items-wrapper").addClass("logged-out");
+        this.populatePassItems();
     }
 }
