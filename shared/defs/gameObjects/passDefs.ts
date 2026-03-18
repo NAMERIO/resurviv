@@ -73,7 +73,7 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 16,
-                item: "emote_picassoface",
+                item: "karambit_rugged",
             },
             {
                 level: 17,
