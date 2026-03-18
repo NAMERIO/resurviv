@@ -2003,36 +2003,40 @@ export class Player implements AbstractObject {
             }
         }
         if (weapDef.type == "melee" && this.m_netData.m_activeWeapon != "fists") {
-            const img = weapDef.worldImg!;
-            this.meleeSprite.texture = PIXI.Texture.from(img.sprite);
+            const img = weapDef.worldImg;
+            if (img && img.sprite) {
+                this.meleeSprite.texture = PIXI.Texture.from(img.sprite);
 
-            let pos = img.pos;
-            if (this.m_netData.m_animType === Anim.DeployMelee && img.deployPos) {
-                pos = img.deployPos;
-            }
+                let pos = img.pos;
+                if (this.m_netData.m_animType === Anim.DeployMelee && img.deployPos) {
+                    pos = img.deployPos;
+                }
 
-            this.meleeSprite.pivot.set(-pos.x, -pos.y);
-            this.meleeSprite.scale.set(img.scale.x / bodyScale, img.scale.y / bodyScale);
-            this.meleeSprite.rotation = img.rot;
-            this.meleeSprite.tint = img.tint;
-            this.meleeSprite.visible = true;
-            const handRSpriteIdx = this.handRContainer.getChildIndex(this.handRSprite);
-            const maxHRSIdx = math.max(
-                img.renderOnHand ? handRSpriteIdx + 1 : handRSpriteIdx - 1,
-                0,
-            );
-            if (this.handRContainer.getChildIndex(this.meleeSprite) != maxHRSIdx) {
-                this.handRContainer.addChildAt(this.meleeSprite, maxHRSIdx);
-            }
-            const handRContainerIdx = this.bodyContainer.getChildIndex(
-                this.handRContainer,
-            );
-            const maxHandRCIdx = math.max(
-                img.leftHandOntop ? handRContainerIdx + 1 : handRContainerIdx - 1,
-                0,
-            );
-            if (this.bodyContainer.getChildIndex(this.handLContainer) != maxHandRCIdx) {
-                this.bodyContainer.addChildAt(this.handLContainer, maxHandRCIdx);
+                this.meleeSprite.pivot.set(-pos.x, -pos.y);
+                this.meleeSprite.scale.set(img.scale.x / bodyScale, img.scale.y / bodyScale);
+                this.meleeSprite.rotation = img.rot;
+                this.meleeSprite.tint = img.tint;
+                this.meleeSprite.visible = true;
+                const handRSpriteIdx = this.handRContainer.getChildIndex(this.handRSprite);
+                const maxHRSIdx = math.max(
+                    img.renderOnHand ? handRSpriteIdx + 1 : handRSpriteIdx - 1,
+                    0,
+                );
+                if (this.handRContainer.getChildIndex(this.meleeSprite) != maxHRSIdx) {
+                    this.handRContainer.addChildAt(this.meleeSprite, maxHRSIdx);
+                }
+                const handRContainerIdx = this.bodyContainer.getChildIndex(
+                    this.handRContainer,
+                );
+                const maxHandRCIdx = math.max(
+                    img.leftHandOntop ? handRContainerIdx + 1 : handRContainerIdx - 1,
+                    0,
+                );
+                if (this.bodyContainer.getChildIndex(this.handLContainer) != maxHandRCIdx) {
+                    this.bodyContainer.addChildAt(this.handLContainer, maxHandRCIdx);
+                }
+            } else {
+                this.meleeSprite.visible = false;
             }
         } else {
             this.meleeSprite.visible = false;
