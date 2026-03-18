@@ -236,6 +236,7 @@ export class EditorDisplay {
             loadout: {
                 heal: "heal_basic",
                 boost: "boost_basic",
+                death_effect: "death_basic",
             },
         });
     }
