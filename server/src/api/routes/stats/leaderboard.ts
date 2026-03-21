@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { MinGames } from "../../../../../shared/constants";
 import { TeamMode } from "../../../../../shared/gameConfig";
 import {
-    type LeaderboardRequest,
+    type LeaderboardParams,
     type LeaderboardResponse,
     zLeaderboardsRequest,
 } from "../../../../../shared/types/stats";
@@ -56,7 +56,7 @@ leaderboardRouter.post(
 // we don't use the one sent by the client lol.
 const MAX_RESULT_COUNT = 100;
 
-const typeToQuery: Record<LeaderboardRequest["type"], string> = {
+const typeToQuery: Record<LeaderboardParams["type"], string> = {
     kills: "SUM(match_data.kills)",
     most_damage_dealt: "MAX(match_data.damage_dealt)",
     kpg: "ROUND(SUM(match_data.kills) * 1.0 / COUNT(*), 1)",
@@ -69,7 +69,7 @@ const intervalFilter = {
     weekly: gte(matchDataTable.createdAt, sql`NOW() - INTERVAL '7 days'`),
 };
 
-async function soloLeaderboardQuery(params: LeaderboardRequest) {
+async function soloLeaderboardQuery(params: LeaderboardParams) {
     const { interval, mapId, teamMode, type } = params;
     const minGames = type === "kpg" ? MinGames[type][interval] : 1;
 
@@ -116,7 +116,7 @@ async function multiplePlayersQuery({
     interval,
     mapId,
     teamMode,
-}: LeaderboardRequest): Promise<LeaderboardResponse[]> {
+}: LeaderboardParams): Promise<LeaderboardResponse[]> {
     const data = await db
         .select({
             matchedUsers: sql<
@@ -190,7 +190,7 @@ async function multiplePlayersQuery({
     }) satisfies LeaderboardResponse[];
 }
 
-function logQueryPerformance(startTime: number, params: LeaderboardRequest) {
+function logQueryPerformance(startTime: number, params: LeaderboardParams) {
     const endTime = performance.now();
     const executionTime = endTime - startTime;
     const timeString =

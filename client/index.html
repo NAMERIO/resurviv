@@ -830,6 +830,28 @@
           </div>
         </div>
 
+        <div class="currency-container">
+          <div class="currency-block">
+            <div class="currency-overview">
+              <div class="currency-details-user currency-details-block">
+                <div class="currency-details">
+                  <div class="currency-gp">
+                    <div id="start-gp-display-amount" class="currency-text">0</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="spin-overview"></div>
+            <div class="spin-overview"></div>
+            <div class="spin-overview" id="open-store-button">
+              <a id="start-shop-shortcut" class="btn-green btn-darken menu-option btn-open-iap" data-l10n="index-shop">Shop</a>
+              <div class="index-offer-time-left-text">
+                <span data-l10n="shop-new-bundles">Reward highlights</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Accounts -->
         <div id="start-top-right">
           <div class="account-block" style="display: none;">
@@ -856,11 +878,6 @@
                 <div id="btn-clans" class="account-details-button-wrapper menu-option btn-darken">
                   <div class="account-details-button">
                     <div class="account-link"><span>Clans</span></div>
-                  </div>
-                </div>
-                <div class="account-details-button-wrapper menu-option btn-darken">
-                  <div class="account-details-button">
-                    <div class="account-link account-shop-link"><span data-l10n="index-shop">Shop</span></div>
                   </div>
                 </div>
               </div>
@@ -933,7 +950,6 @@
                 <div id="player-options">
                   <input type="text" class="menu-option player-name-input" tabindex="0" placeholder="Enter your name here" data-l10n="index-enter-name-here" id="player-name-input-solo" maxlength="16" />
                   <a class="btn-darken menu-option player-options-btn" id="btn-customize"></a>
-                  <a class="btn-darken menu-option player-options-btn btn-gp-shop" id="btn-gp-shop" data-l10n="index-shop">Shop</a>
                 </div>
                 <select id="server-select-main" class="server-select menu-option btn-hollow btn-hollow-selected">
                   <optgroup id="server-opts" label="Region" data-l10n="index-region">
@@ -1480,6 +1496,36 @@
               </div>
               <div id="market-items-list"></div>
             </div>
+          </div>
+        </div>
+      </div>
+      <div id="modal-confirm-sell" class="modal">
+        <div class="modal-content modal-close">
+          <div class="modal-header">
+            <span class="close close-corner"></span>
+            <h2 id="modal-confirm-sell-title" data-l10n="confirm-sell-modal-title">Confirm Sell</h2>
+          </div>
+          <div class="modal-body">
+            <p id="modal-confirm-sell-desc" class="modal-body-text" data-l10n="confirm-sell-modal-desc">Are you sure you want to sell the selected item?</p>
+            <div class="confirm-sell-price-row">
+              <span data-l10n="market-sell-item-for">List item for:</span>
+              <label class="confirm-sell-price-input-wrap" for="confirm-sell-price-input">
+                <span class="confirm-sell-price-icon"></span>
+                <input id="confirm-sell-price-input" type="number" inputmode="numeric" min="0" step="1" value="0">
+              </label>
+            </div>
+            <div id="confirm-sell-price-range" class="confirm-sell-price-range"></div>
+            <div id="confirm-sell-price-error" class="confirm-sell-price-error"></div>
+          </div>
+          <div class="modal-footer modal-footer-round">
+            <h3 class="close close-footer">
+              <div id="confirm-sell-no" class="btn-cancel-sell btn-darken">
+                <span data-l10n="confirm-sell-modal-no">No, keep.</span>
+              </div>
+              <div id="confirm-sell-yes" class="btn-confirm-sell btn-darken">
+                <span data-l10n="confirm-sell-modal-yes">Yes, sell.</span>
+              </div>
+            </h3>
           </div>
         </div>
       </div>

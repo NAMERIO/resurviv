@@ -1,6 +1,10 @@
 import $ from "jquery";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { Rarity } from "../../../shared/gameConfig";
+import {
+    getMarketPriceBounds,
+    getSuggestedMarketSellPrice,
+} from "../../../shared/utils/marketPricing";
 import type { Account } from "../account";
 import { helpers } from "../helpers";
 import { MenuModal } from "./menuModal";
@@ -11,6 +15,7 @@ type MarketSort = "price" | "item" | "rarity";
 type MarketOrder = "lowhigh" | "highlow";
 
 type Listing = {
+    id?: string;
     type: string;
     category: string;
     name: string;
@@ -19,6 +24,9 @@ type Listing = {
     transform: string;
     price: number;
     owned?: boolean;
+    action: "buy" | "sell" | "cancel";
+    sellerName?: string;
+    createdAt?: number;
 };
 
 const supportedMarketTypes = new Set([
@@ -48,16 +56,12 @@ const categoryL10n: Record<string, string> = {
     death_effect: "market-type-deathEffect",
 };
 
-function hashString(value: string) {
-    let hash = 0;
-    for (let i = 0; i < value.length; i++) {
-        hash = (hash * 31 + value.charCodeAt(i)) >>> 0;
-    }
-    return hash;
-}
-
 export class ShopMenu {
     modal = new MenuModal($("#iap-modal"));
+    confirmSellModal = new MenuModal($("#modal-confirm-sell"));
+    marketTimerId: number | null = null;
+    pendingSellItem: Listing | null = null;
+    pendingAction: "sell" | "cancel" = "sell";
     activeTab: ShopTab = "shop";
     marketType = "all";
     marketRarity = "all";
@@ -76,6 +80,13 @@ export class ShopMenu {
             this.refreshData();
             this.render();
         });
+        this.account.addEventListener("market", () => {
+            this.refreshData();
+            this.render();
+        });
+        this.account.addEventListener("gpBalance", () => {
+            this.renderBalance();
+        });
         this.account.addEventListener("login", () => {
             this.refreshData();
             this.render();
@@ -88,12 +99,67 @@ export class ShopMenu {
         this.modal.onShow(() => {
             this.refreshData();
             this.render();
+            this.startMarketTimers();
+            this.account.loadMarket((success) => {
+                if (!success) {
+                    this.setStatus("shop-market-load-failed");
+                }
+            });
+        });
+        this.modal.onHide(() => {
+            this.stopMarketTimers();
         });
 
-        $("#btn-gp-shop, .account-shop-link").on("click", (e) => {
+        this.confirmSellModal.onHide(() => {
+            this.pendingSellItem = null;
+            $("#confirm-sell-price-range").hide();
+            $("#confirm-sell-price-error").text("").hide();
+        });
+
+        $("#start-shop-shortcut, #open-store-button").on("click", (e) => {
             e.preventDefault();
             this.modal.show(true);
             return false;
+        });
+
+        $("#confirm-sell-yes").on("click", (e) => {
+            e.preventDefault();
+            const item = this.pendingSellItem;
+            const action = this.pendingAction;
+            if (!item) return false;
+            if (action === "cancel") {
+                this.confirmSellModal.hide();
+                if (!item.id) return false;
+                this.account.cancelMarketListing(item.id, (error) => {
+                    this.setStatus(
+                        error ? `shop-market-error-${error}` : "shop-market-cancel-success",
+                    );
+                });
+                return false;
+            }
+
+            const price = this.getPendingSellPrice();
+            if (price === null) {
+                return false;
+            }
+
+            this.confirmSellModal.hide();
+            this.account.createMarketListing(item.type, price, (error) => {
+                this.setStatus(error ? `shop-market-error-${error}` : "shop-market-sell-success");
+            });
+            return false;
+        });
+
+        $("#confirm-sell-no").on("click", (e) => {
+            e.preventDefault();
+            this.confirmSellModal.hide();
+            return false;
+        });
+
+        $("#confirm-sell-price-input").on("input", () => {
+            if (this.pendingAction === "sell") {
+                this.updateSellPriceValidation();
+            }
         });
 
         $("#tab-shop").on("click", () => this.setTab("shop"));
@@ -205,33 +271,64 @@ export class ShopMenu {
     }
 
     buildMarketBuyListings() {
-        const listings: Listing[] = [];
-        for (const [type, def] of Object.entries(GameObjectDefs)) {
-            const defType = (def as any).type;
-            if (!supportedMarketTypes.has(defType)) continue;
-            const rarity = (def as any).rarity ?? Rarity.Stock;
-            if (rarity < Rarity.Rare) continue;
-            listings.push({
-                type,
-                category: defType,
-                name: this.localization.translate(`game-${type}`) || (def as any).name || type,
-                rarity,
-                image: helpers.getSvgFromGameType(type),
-                transform: helpers.getCssTransformFromGameType(type),
-                price: 150 + rarity * 125 + (hashString(type) % 125),
-                owned: this.account.items.some((item) => item.type === type),
-            });
-        }
-        return listings.sort((a, b) => a.price - b.price).slice(0, 180);
+        return this.account.marketListings
+            .map((listing) => {
+                const def = GameObjectDefs[listing.itemType] as any;
+                if (!def || !supportedMarketTypes.has(def.type)) return null;
+                return {
+                    id: listing.id,
+                    type: listing.itemType,
+                    category: def.type,
+                    name:
+                        this.localization.translate(`game-${listing.itemType}`) ||
+                        def.name ||
+                        listing.itemType,
+                    rarity: def.rarity ?? Rarity.Stock,
+                    image: helpers.getSvgFromGameType(listing.itemType),
+                    transform: helpers.getCssTransformFromGameType(listing.itemType),
+                    price: listing.price,
+                    owned: this.account.items.some((item) => item.type === listing.itemType),
+                    action: "buy",
+                    sellerName: listing.sellerSlug,
+                    createdAt: listing.createdAt,
+                } as Listing;
+            })
+            .filter((item): item is Listing => item !== null);
     }
 
     buildMarketSellListings() {
-        return this.account.items
+        const listedTypes = new Set(this.account.userMarketListings.map((listing) => listing.itemType));
+        const activeListings = this.account.userMarketListings
+            .map((listing) => {
+                const def = GameObjectDefs[listing.itemType] as any;
+                if (!def || !supportedMarketTypes.has(def.type)) return null;
+                return {
+                    id: listing.id,
+                    type: listing.itemType,
+                    category: def.type,
+                    name:
+                        this.localization.translate(`game-${listing.itemType}`) ||
+                        def.name ||
+                        listing.itemType,
+                    rarity: def.rarity ?? Rarity.Stock,
+                    image: helpers.getSvgFromGameType(listing.itemType),
+                    transform: helpers.getCssTransformFromGameType(listing.itemType),
+                    price: listing.price,
+                    owned: true,
+                    action: "cancel",
+                    sellerName: this.localization.translate("market-you") || "You",
+                    createdAt: listing.createdAt,
+                } as Listing;
+            })
+            .filter((item): item is Listing => item !== null);
+
+        const sellableItems = this.account.items
             .map((item) => {
                 const def = GameObjectDefs[item.type] as any;
                 if (!def || !supportedMarketTypes.has(def.type)) return null;
                 const rarity = def.rarity ?? Rarity.Stock;
                 if (rarity < Rarity.Rare) return null;
+                if (listedTypes.has(item.type)) return null;
                 return {
                     type: item.type,
                     category: def.type,
@@ -242,12 +339,16 @@ export class ShopMenu {
                     rarity,
                     image: helpers.getSvgFromGameType(item.type),
                     transform: helpers.getCssTransformFromGameType(item.type),
-                    price: 100 + rarity * 100 + (hashString(item.type) % 90),
+                    price: getSuggestedMarketSellPrice(item.type) ?? 0,
                     owned: true,
+                    action: "sell",
+                    sellerName: this.localization.translate("market-you") || "You",
                 } as Listing;
             })
             .filter((item): item is Listing => item !== null)
             .sort((a, b) => b.price - a.price);
+
+        return [...activeListings, ...sellableItems];
     }
 
     render() {
@@ -258,7 +359,9 @@ export class ShopMenu {
     }
 
     renderBalance() {
+        this.gpBalance = this.account.gpBalance;
         $("#shop-gp-balance").text(String(this.gpBalance));
+        $("#start-gp-display-amount, .currency-text").text(String(this.gpBalance));
     }
 
     renderFeatured() {
@@ -367,10 +470,22 @@ export class ShopMenu {
         );
         $("#market-no-items-available").css("display", items.length ? "none" : "block");
         items.forEach((item) => list.append(this.buildMarketItem(item)));
+        this.updateMarketTimers();
     }
 
     buildMarketItem(item: Listing) {
-        const actionLabel = this.activeTab === "sell" ? "Sell" : "Buy";
+        const actionLabel =
+            item.action === "cancel" ? "Cancel" : item.action === "sell" ? "Sell" : "Buy";
+        const sellerLabel =
+            item.action === "buy"
+                ? this.localization.translate("market-seller-label") || "Seller"
+                : this.localization.translate("market-listing-owner-label") || "Seller";
+        const sellerValue =
+            item.sellerName ||
+            (item.action === "buy"
+                ? this.localization.translate("market-unknown-seller") || "Unknown"
+                : this.localization.translate("market-you") || "You");
+        const timerLabel = this.localization.translate("market-listed-for-label") || "Listed For";
         const card = $("<div/>", { class: "market-list-item-container" });
         const image = $("<div/>", {
             class: "market-item-img",
@@ -398,19 +513,209 @@ export class ShopMenu {
                             "Unknown",
                     }),
                 ),
+                $("<div/>", { class: "market-item-stats-text market-item-meta-text" }).append(
+                    $("<span/>", { text: `${sellerLabel}: ` }),
+                    $("<p/>", { text: sellerValue }),
+                ),
+                $("<div/>", {
+                    class: "market-item-stats-text market-item-meta-text",
+                }).append(
+                    $("<span/>", { text: `${timerLabel}: ` }),
+                    $("<p/>", {
+                        class: "market-item-timer",
+                        "data-created-at": item.createdAt ? String(item.createdAt) : "",
+                        text:
+                            item.createdAt !== undefined
+                                ? this.formatListingDuration(Date.now() - item.createdAt)
+                                : this.localization.translate("market-ready-to-list") ||
+                                  "Ready",
+                    }),
+                ),
             ),
         );
         const action = $("<div/>", { class: "market-item-action-container" });
-        const button = $("<div/>", { class: "market-item-action-btn" }).append(
+        const button = $("<div/>", {
+            class:
+                item.action === "cancel"
+                    ? "market-item-action-btn market-item-action-btn-cancel"
+                    : "market-item-action-btn",
+        }).append(
             $("<span/>", { text: actionLabel }),
             $("<div/>", { class: "market-btn-price-container" }).append(
-                $("<div/>", { class: "market-btn-price-text", text: String(item.price) }),
+                $("<div/>", {
+                    class: "market-btn-price-text",
+                    text: this.formatMarketPrice(item.price),
+                }),
             ),
         );
-        button.on("click", () => this.setStatus("shop-market-action-disabled"));
+        button.on("click", () => this.handleMarketAction(item));
         action.append(button);
         card.append(image, info, action);
         return card;
+    }
+
+    handleMarketAction(item: Listing) {
+        if (item.action === "buy") {
+            if (!item.id) return;
+            this.account.buyMarketListing(item.id, (error) => {
+                this.setStatus(error ? `shop-market-error-${error}` : "shop-market-buy-success");
+            });
+            return;
+        }
+
+        if (item.action === "cancel") {
+            this.pendingAction = "cancel";
+            this.pendingSellItem = item;
+            $("#modal-confirm-sell-title").text(
+                this.localization.translate("confirm-cancel-modal-title") || "Cancel listing",
+            );
+            $("#modal-confirm-sell-desc").text(
+                this.localization.translate("confirm-cancel-modal-desc") ||
+                    "Are you sure you want to cancel this listing?",
+            );
+            $("#confirm-sell-no span").text(
+                this.localization.translate("confirm-cancel-modal-no") || "No",
+            );
+            $("#confirm-sell-yes span").text(
+                this.localization.translate("confirm-cancel-modal-yes") || "Yes!",
+            );
+            $(".confirm-sell-price-row").hide();
+            $("#confirm-sell-price-range").hide();
+            $("#confirm-sell-price-error").text("").hide();
+            this.confirmSellModal.show(true);
+            return;
+        }
+
+        this.pendingAction = "sell";
+        this.pendingSellItem = item;
+        const priceBounds = getMarketPriceBounds(item.type);
+        $("#modal-confirm-sell-title").text(
+            this.localization.translate("confirm-sell-modal-title") || "Confirm Sell",
+        );
+        $("#modal-confirm-sell-desc").text(
+            this.localization.translate("confirm-sell-modal-desc") ||
+                "Are you sure you want to sell the selected item?",
+        );
+        $("#confirm-sell-no span").text(
+            this.localization.translate("confirm-sell-modal-no") || "No, keep.",
+        );
+        $("#confirm-sell-yes span").text(
+            this.localization.translate("confirm-sell-modal-yes") || "Yes, sell.",
+        );
+        $("#confirm-sell-price-input").val(String(priceBounds?.min ?? item.price));
+        $("#confirm-sell-price-input").attr("min", String(priceBounds?.min ?? 0));
+        $("#confirm-sell-price-input").attr("max", String(priceBounds?.max ?? item.price));
+        $("#confirm-sell-price-range").text(this.formatPriceRangeText(item.type));
+        $(".confirm-sell-price-row").show();
+        $("#confirm-sell-price-range").show();
+        this.updateSellPriceValidation();
+        this.confirmSellModal.show(true);
+        $("#confirm-sell-price-input").trigger("focus");
+    }
+
+    startMarketTimers() {
+        this.stopMarketTimers();
+        this.marketTimerId = window.setInterval(() => this.updateMarketTimers(), 1000);
+    }
+
+    stopMarketTimers() {
+        if (this.marketTimerId !== null) {
+            window.clearInterval(this.marketTimerId);
+            this.marketTimerId = null;
+        }
+    }
+
+    updateMarketTimers() {
+        $(".market-item-timer").each((_, element) => {
+            const timer = $(element);
+            const createdAt = Number(timer.attr("data-created-at"));
+            if (!createdAt) return;
+            timer.text(this.formatListingDuration(Date.now() - createdAt));
+        });
+    }
+
+    formatListingDuration(elapsedMs: number) {
+        const totalSeconds = Math.max(0, Math.floor(elapsedMs / 1000));
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return [hours, minutes, seconds].map((value) => String(value).padStart(2, "0")).join(":");
+    }
+
+    formatPriceRangeText(itemType: string) {
+        const bounds = getMarketPriceBounds(itemType);
+        if (!bounds) return "";
+
+        const template =
+            this.localization.translate("market-price-range") || "Min {min} | Max {max}";
+        return template
+            .replace("{min}", String(bounds.min))
+            .replace("{max}", String(bounds.max));
+    }
+
+    formatMarketPrice(price: number) {
+        if (price >= 1000) {
+            return `${Math.floor(price / 1000)}k`;
+        }
+        return String(price);
+    }
+
+    getPendingSellPrice() {
+        const item = this.pendingSellItem;
+        if (!item) return null;
+
+        const rawValue = Number($("#confirm-sell-price-input").val());
+        const bounds = getMarketPriceBounds(item.type);
+        if (!bounds || !Number.isInteger(rawValue)) {
+            this.showSellPriceError("shop-market-error-invalid_price");
+            this.setStatus("shop-market-error-invalid_price");
+            return null;
+        }
+        if (rawValue < bounds.min) {
+            this.showSellPriceError("shop-market-error-price_too_low");
+            this.setStatus("shop-market-error-price_too_low");
+            return null;
+        }
+        if (rawValue > bounds.max) {
+            this.showSellPriceError("shop-market-error-price_too_high");
+            this.setStatus("shop-market-error-price_too_high");
+            return null;
+        }
+
+        this.showSellPriceError("");
+        return rawValue;
+    }
+
+    updateSellPriceValidation() {
+        const item = this.pendingSellItem;
+        if (!item || this.pendingAction !== "sell") return;
+
+        const rawValue = Number($("#confirm-sell-price-input").val());
+        const bounds = getMarketPriceBounds(item.type);
+        if (!bounds || !Number.isInteger(rawValue)) {
+            this.showSellPriceError("shop-market-error-invalid_price");
+            return;
+        }
+        if (rawValue < bounds.min) {
+            this.showSellPriceError("shop-market-error-price_too_low");
+            return;
+        }
+        if (rawValue > bounds.max) {
+            this.showSellPriceError("shop-market-error-price_too_high");
+            return;
+        }
+
+        this.showSellPriceError("");
+    }
+
+    showSellPriceError(key: string) {
+        const errorEl = $("#confirm-sell-price-error");
+        if (!key) {
+            errorEl.text("").hide();
+            return;
+        }
+
+        errorEl.text(this.localization.translate(key) || "That price is invalid.").show();
     }
 
     setStatus(key: string) {

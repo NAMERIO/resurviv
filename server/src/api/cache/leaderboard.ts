@@ -1,6 +1,6 @@
 import { MapId, TeamModeToString } from "../../../../shared/defs/types/misc";
 import type {
-    LeaderboardRequest,
+    LeaderboardParams,
     LeaderboardResponse,
 } from "../../../../shared/types/stats";
 import { Config } from "../../config";
@@ -14,7 +14,7 @@ const ONE_DAY_CACHE_TTL = 86400;
 type Prefix = "leaderboard" | "lowestscore";
 
 class LeaderBoardCache {
-    async set(params: LeaderboardRequest, data: LeaderboardResponse[]) {
+    async set(params: LeaderboardParams, data: LeaderboardResponse[]) {
         if (!Config.cachingEnabled) return;
 
         const client = await getRedisClient();
@@ -27,7 +27,7 @@ class LeaderBoardCache {
         await client.set(this.getCacheKey("lowestscore", params), lowestValue);
     }
 
-    async get(params: LeaderboardRequest): Promise<LeaderboardResponse[] | null> {
+    async get(params: LeaderboardParams): Promise<LeaderboardResponse[] | null> {
         if (!Config.cachingEnabled) return null;
 
         const client = await getRedisClient();
@@ -36,7 +36,7 @@ class LeaderBoardCache {
         return data ? JSON.parse(data) : null;
     }
 
-    async del(params: LeaderboardRequest): Promise<boolean> {
+    async del(params: LeaderboardParams): Promise<boolean> {
         if (!Config.cachingEnabled) return false;
         const client = await getRedisClient();
         const cacheKey = this.getCacheKey("leaderboard", params);
@@ -48,7 +48,7 @@ class LeaderBoardCache {
         return true;
     }
 
-    getCacheKey(prefix: Prefix, params: LeaderboardRequest) {
+    getCacheKey(prefix: Prefix, params: LeaderboardParams) {
         const { teamMode, mapId, type, interval } = params;
         const mapName = MapId[mapId].toLowerCase();
         return `${prefix}:${TeamModeToString[teamMode]}:${mapName}:${type}:${interval}`;
@@ -72,7 +72,7 @@ class LeaderBoardCache {
             for (const interval of intervals) {
                 if (type !== "most_damage_dealt" && type !== "most_kills") continue;
 
-                const params: LeaderboardRequest = {
+                const params: LeaderboardParams = {
                     type,
                     teamMode: matchData[0].teamMode,
                     mapId: matchData[0].mapId,
@@ -100,7 +100,7 @@ class LeaderBoardCache {
         }
     }
 
-    private _getCacheTTL(type: LeaderboardRequest["type"]) {
+    private _getCacheTTL(type: LeaderboardParams["type"]) {
         if (type === "most_kills" || type === "most_damage_dealt") {
             return ONE_DAY_CACHE_TTL;
         }

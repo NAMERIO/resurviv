@@ -1,15 +1,25 @@
-import { and, eq, inArray, ne, notInArray } from "drizzle-orm";
+import { and, eq, inArray, ne, notInArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
+import { GameObjectDefs } from "../../../../../shared/defs/gameObjectDefs";
 import { UnlockDefs } from "../../../../../shared/defs/gameObjects/unlockDefs";
+import { Rarity } from "../../../../../shared/gameConfig";
 import {
+    type BuyMarketListingResponse,
+    type CancelMarketListingResponse,
+    type CreateMarketListingResponse,
+    type GetMarketResponse,
     type LoadoutResponse,
     type ProfileResponse,
     type UsernameResponse,
+    zBuyMarketListingRequest,
+    zCancelMarketListingRequest,
+    zCreateMarketListingRequest,
     zLoadoutRequest,
     zSetItemStatusRequest,
     zUsernameRequest,
 } from "../../../../../shared/types/user";
 import loadout from "../../../../../shared/utils/loadout";
+import { getMarketPriceBounds } from "../../../../../shared/utils/marketPricing";
 import { validateUserName } from "../../../utils/serverHelpers";
 import { server } from "../../apiServer";
 import {
@@ -19,7 +29,12 @@ import {
     validateParams,
 } from "../../auth/middleware";
 import { db } from "../../db";
-import { itemsTable, matchDataTable, usersTable } from "../../db/schema";
+import {
+    itemsTable,
+    marketListingTable,
+    matchDataTable,
+    usersTable,
+} from "../../db/schema";
 import type { Context } from "../../index";
 import {
     getTimeUntilNextUsernameChange,
@@ -29,6 +44,97 @@ import {
 import { PassRouter } from "./PassRouter";
 
 export const UserRouter = new Hono<Context>();
+
+const MARKET_LISTING_EXPIRY_MS = 24 * 60 * 60 * 1000;
+
+function isSupportedMarketItem(itemType: string) {
+    return getMarketPriceBounds(itemType) !== null;
+}
+
+async function expireMarketListings(tx: any, targetUserId?: string) {
+    const cutoff = new Date(Date.now() - MARKET_LISTING_EXPIRY_MS);
+    const expiredNow = await tx
+        .update(marketListingTable)
+        .set({
+            status: "expired",
+            canceledAt: new Date(),
+        })
+        .where(
+            and(
+                eq(marketListingTable.status, "active"),
+                sql`${marketListingTable.createdAt} <= ${cutoff}`,
+            ),
+        )
+        .returning({
+            sellerUserId: marketListingTable.sellerUserId,
+            itemType: marketListingTable.itemType,
+        });
+
+    if (expiredNow.length === 0) {
+        return [];
+    }
+
+    await tx
+        .insert(itemsTable)
+        .values(
+            expiredNow.map((listing: { sellerUserId: string; itemType: string }) => ({
+                userId: listing.sellerUserId,
+                type: listing.itemType,
+                source: "Item expired",
+                timeAcquired: Date.now(),
+            })),
+        )
+        .onConflictDoNothing();
+
+    if (!targetUserId) {
+        return [];
+    }
+
+    return expiredNow
+        .filter(
+            (listing: { sellerUserId: string; itemType: string }) =>
+                listing.sellerUserId === targetUserId,
+        )
+        .map((listing: { sellerUserId: string; itemType: string }) => listing.itemType);
+}
+
+async function buildMarketState(userId: string) {
+    const expiredItemTypes = await expireMarketListings(db, userId);
+    const [publicListings, userListings, sellers] = await Promise.all([
+        db.query.marketListingTable.findMany({
+            where: eq(marketListingTable.status, "active"),
+            orderBy: (table, { asc }) => [asc(table.price), asc(table.createdAt)],
+        }),
+        db.query.marketListingTable.findMany({
+            where: and(
+                eq(marketListingTable.sellerUserId, userId),
+                eq(marketListingTable.status, "active"),
+            ),
+            orderBy: (table, { desc }) => [desc(table.createdAt)],
+        }),
+        db.query.usersTable.findMany({
+            columns: {
+                id: true,
+                slug: true,
+            },
+        }),
+    ]);
+
+    const slugByUserId = new Map(sellers.map((seller) => [seller.id, seller.slug]));
+    const toClientListing = (listing: (typeof publicListings)[number]) => ({
+        id: listing.id,
+        itemType: listing.itemType,
+        price: listing.price,
+        sellerSlug: slugByUserId.get(listing.sellerUserId) || "unknown",
+        createdAt: new Date(listing.createdAt).getTime(),
+    });
+
+    return {
+        listings: publicListings.map(toClientListing),
+        userListings: userListings.map(toClientListing),
+        expiredItemTypes,
+    };
+}
 
 UserRouter.use(databaseEnabledMiddleware);
 UserRouter.use(rateLimitMiddleware(40, 60 * 1000));
@@ -88,6 +194,7 @@ UserRouter.post("/profile", async (c) => {
                 usernameSet,
                 usernameChangeTime: timeUntilNextChange,
             },
+            gpBalance: user.gpBalance,
             loadout,
             items: items,
         },
@@ -216,6 +323,298 @@ UserRouter.post("/set_item_status", validateParams(zSetItemStatusRequest), async
 
     return c.json({}, 200);
 });
+
+UserRouter.post("/get_market", async (c) => {
+    const user = c.get("user")!;
+    const market = await buildMarketState(user.id);
+
+    return c.json<GetMarketResponse>(
+        {
+            success: true,
+            gpBalance: user.gpBalance,
+            listings: market.listings,
+            userListings: market.userListings,
+            expiredItemTypes: market.expiredItemTypes,
+        },
+        200,
+    );
+});
+
+UserRouter.post(
+    "/create_market_listing",
+    validateParams(zCreateMarketListingRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { itemType, price } = c.req.valid("json");
+        const priceBounds = getMarketPriceBounds(itemType);
+
+        if (!isSupportedMarketItem(itemType) || !priceBounds) {
+            return c.json<CreateMarketListingResponse>(
+                { success: false, error: "invalid_item" },
+                200,
+            );
+        }
+        if (!Number.isInteger(price)) {
+            return c.json<CreateMarketListingResponse>(
+                { success: false, error: "invalid_price" },
+                200,
+            );
+        }
+        if (price < priceBounds.min) {
+            return c.json<CreateMarketListingResponse>(
+                { success: false, error: "price_too_low" },
+                200,
+            );
+        }
+        if (price > priceBounds.max) {
+            return c.json<CreateMarketListingResponse>(
+                { success: false, error: "price_too_high" },
+                200,
+            );
+        }
+
+        try {
+            const result = await db.transaction(async (tx) => {
+                await expireMarketListings(tx, user.id);
+
+                const existingListing = await tx.query.marketListingTable.findFirst({
+                    where: and(
+                        eq(marketListingTable.sellerUserId, user.id),
+                        eq(marketListingTable.itemType, itemType),
+                        eq(marketListingTable.status, "active"),
+                    ),
+                    columns: { id: true },
+                });
+
+                if (existingListing) {
+                    return { ok: false as const, error: "already_listed" as const };
+                }
+
+                const ownedItem = await tx.query.itemsTable.findFirst({
+                    where: and(eq(itemsTable.userId, user.id), eq(itemsTable.type, itemType)),
+                });
+
+                if (!ownedItem) {
+                    return { ok: false as const, error: "item_not_owned" as const };
+                }
+
+                await tx.execute(sql`
+                    DELETE FROM "items"
+                    WHERE ctid IN (
+                        SELECT ctid
+                        FROM "items"
+                        WHERE "user_id" = ${user.id}
+                          AND "type" = ${itemType}
+                        ORDER BY "time_acquired" ASC
+                        LIMIT 1
+                    )
+                `);
+
+                const remainingItems = await tx
+                    .select({
+                        type: itemsTable.type,
+                        timeAcquired: itemsTable.timeAcquired,
+                        source: itemsTable.source,
+                        status: itemsTable.status,
+                    })
+                    .from(itemsTable)
+                    .where(eq(itemsTable.userId, user.id));
+
+                await tx
+                    .update(usersTable)
+                    .set({
+                        loadout: loadout.validateWithAvailableItems(user.loadout, remainingItems),
+                    })
+                    .where(eq(usersTable.id, user.id));
+
+                await tx.insert(marketListingTable).values({
+                    sellerUserId: user.id,
+                    itemType,
+                    price,
+                    status: "active",
+                });
+
+                return { ok: true as const };
+            });
+
+            if (!result.ok) {
+                return c.json<CreateMarketListingResponse>(
+                    { success: false, error: result.error },
+                    200,
+                );
+            }
+        } catch (err) {
+            server.logger.error("/api/user/create_market_listing error", err);
+            return c.json<CreateMarketListingResponse>(
+                { success: false, error: "server_error" },
+                500,
+            );
+        }
+
+        return c.json<CreateMarketListingResponse>(
+            { success: true, gpBalance: user.gpBalance },
+            200,
+        );
+    },
+);
+
+UserRouter.post("/buy_market_listing", validateParams(zBuyMarketListingRequest), async (c) => {
+    const user = c.get("user")!;
+    const { listingId } = c.req.valid("json");
+
+    try {
+        const result = await db.transaction(async (tx) => {
+            await expireMarketListings(tx, user.id);
+
+            const listing = await tx.query.marketListingTable.findFirst({
+                where: and(
+                    eq(marketListingTable.id, listingId),
+                    eq(marketListingTable.status, "active"),
+                ),
+            });
+
+            if (!listing) {
+                return { ok: false as const, error: "listing_not_found" as const };
+            }
+            if (listing.sellerUserId === user.id) {
+                return { ok: false as const, error: "cannot_buy_own_listing" as const };
+            }
+
+            const buyer = await tx.query.usersTable.findFirst({
+                where: eq(usersTable.id, user.id),
+            });
+            if (!buyer || buyer.gpBalance < listing.price) {
+                return { ok: false as const, error: "not_enough_gp" as const };
+            }
+
+            const claimedListing = await tx
+                .update(marketListingTable)
+                .set({
+                    status: "sold",
+                    buyerUserId: user.id,
+                    soldAt: new Date(),
+                })
+                .where(
+                    and(
+                        eq(marketListingTable.id, listingId),
+                        eq(marketListingTable.status, "active"),
+                    ),
+                )
+                .returning({ id: marketListingTable.id });
+
+            if (claimedListing.length === 0) {
+                return { ok: false as const, error: "listing_not_found" as const };
+            }
+
+            await tx.insert(itemsTable).values({
+                userId: user.id,
+                type: listing.itemType,
+                source: "market_buy",
+                timeAcquired: Date.now(),
+            });
+
+            await tx
+                .update(usersTable)
+                .set({
+                    gpBalance: buyer.gpBalance - listing.price,
+                })
+                .where(eq(usersTable.id, user.id));
+
+            await tx
+                .update(usersTable)
+                .set({
+                    gpBalance: sql`${usersTable.gpBalance} + ${listing.price}`,
+                })
+                .where(eq(usersTable.id, listing.sellerUserId));
+
+            return {
+                ok: true as const,
+                gpBalance: buyer.gpBalance - listing.price,
+            };
+        });
+
+        if (!result.ok) {
+            return c.json<BuyMarketListingResponse>(
+                { success: false, error: result.error },
+                200,
+            );
+        }
+
+        return c.json<BuyMarketListingResponse>(
+            { success: true, gpBalance: result.gpBalance },
+            200,
+        );
+    } catch (err) {
+        server.logger.error("/api/user/buy_market_listing error", err);
+        return c.json<BuyMarketListingResponse>(
+            { success: false, error: "server_error" },
+            500,
+        );
+    }
+});
+
+UserRouter.post(
+    "/cancel_market_listing",
+    validateParams(zCancelMarketListingRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { listingId } = c.req.valid("json");
+
+        try {
+            const result = await db.transaction(async (tx) => {
+                await expireMarketListings(tx, user.id);
+
+                const canceled = await tx
+                    .update(marketListingTable)
+                    .set({
+                        status: "cancelled",
+                        canceledAt: new Date(),
+                    })
+                    .where(
+                        and(
+                            eq(marketListingTable.id, listingId),
+                            eq(marketListingTable.sellerUserId, user.id),
+                            eq(marketListingTable.status, "active"),
+                        ),
+                    )
+                    .returning({
+                        itemType: marketListingTable.itemType,
+                    });
+
+                if (canceled.length === 0) {
+                    return { ok: false as const, error: "listing_not_found" as const };
+                }
+
+                await tx.insert(itemsTable).values({
+                    userId: user.id,
+                    type: canceled[0]!.itemType,
+                    source: "market_cancel",
+                    timeAcquired: Date.now(),
+                });
+
+                return { ok: true as const };
+            });
+
+            if (!result.ok) {
+                return c.json<CancelMarketListingResponse>(
+                    { success: false, error: result.error },
+                    200,
+                );
+            }
+        } catch (err) {
+            server.logger.error("/api/user/cancel_market_listing error", err);
+            return c.json<CancelMarketListingResponse>(
+                { success: false, error: "server_error" },
+                500,
+            );
+        }
+
+        return c.json<CancelMarketListingResponse>(
+            { success: true, gpBalance: user.gpBalance },
+            200,
+        );
+    },
+);
 
 UserRouter.post("/reset_stats", async (c) => {
     const user = c.get("user")!;

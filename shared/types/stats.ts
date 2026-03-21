@@ -152,3 +152,4 @@ export type LeaderboardResponse = {
 );
 
 export type LeaderboardRequest = z.input<typeof zLeaderboardsRequest>;
+export type LeaderboardParams = z.output<typeof zLeaderboardsRequest>;

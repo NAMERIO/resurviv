@@ -1590,10 +1590,11 @@ a:active {
   z-index: 2;
 }
 
-@media (max-height: 700px) {
+@media (max-height: 720px), (max-width: 1150px) {
   #start-top-right {
-    transform: scale(0.75);
+    transform: scale(0.8);
     transform-origin: top right;
+    right: 18px;
   }
 }
 
@@ -4593,6 +4594,184 @@ a:active {
   bottom: 12px;
   left: 0;
   width: 30px;
+}
+
+.currency-container {
+  color: #fff;
+  position: absolute;
+  left: 0;
+  top: 0;
+  user-select: none;
+  z-index: 2;
+}
+
+@media (max-width: 1600px) {
+  .currency-container {
+    transform: scale(0.9);
+    transform-origin: top left;
+  }
+}
+
+@media (max-width: 1440px) {
+  .currency-container {
+    transform: scale(0.78);
+    transform-origin: top left;
+  }
+}
+
+@media (max-width: 1300px) {
+  .currency-container {
+    transform: scale(0.7);
+    transform-origin: top left;
+  }
+}
+
+@media (max-width: 1200px) {
+  .currency-container {
+    transform: scale(0.68);
+    transform-origin: top left;
+  }
+}
+
+@media (max-width: 1024px) {
+  .currency-container {
+    transform: scale(0.56);
+    transform-origin: top left;
+  }
+}
+
+@media (max-width: 960px) {
+  .currency-container {
+    transform: scale(0.5);
+    transform-origin: top left;
+  }
+}
+
+@media (max-height: 650px) {
+  .currency-container {
+    transform: scale(0.68);
+    transform-origin: top left;
+  }
+}
+
+@media (max-width: 1024px) and (max-height: 600px) {
+  .currency-container {
+    transform: scale(0.55);
+    transform-origin: top left;
+  }
+}
+
+.spin-overview {
+  display: none;
+}
+
+#open-store-button {
+  display: block;
+  position: absolute;
+  left: 242px;
+  top: var(--side-pad);
+  width: 232px;
+}
+
+.currency-details-user {
+  display: flex;
+}
+
+.currency-details-block {
+  background:
+    linear-gradient(
+      139.75deg,
+      rgba(241, 242, 158, 0.81) 5.59%,
+      rgba(228, 232, 75, 0.845393) 14.44%,
+      rgba(244, 244, 209, 0.836292) 18.37%,
+      rgba(198, 171, 78, 0.862221) 30.98%,
+      rgba(217, 218, 157, 0.888115) 43.57%,
+      rgba(206, 210, 0, 0.9) 49.35%,
+      rgba(239, 239, 165, 0.9) 67.63%,
+      rgba(196, 189, 59, 0.9) 70.5%,
+      rgba(167, 165, 77, 0.856018) 81.7%,
+      rgba(244, 244, 209, 0.836292) 86.72%,
+      rgba(203, 184, 20, 0.9) 98.68%
+    ),
+    radial-gradient(64.2% 64.2% at 28.13% 35.8%, #ecf013 0%, #aeb110 100%);
+  border-radius: 5px;
+  box-sizing: border-box;
+  display: block;
+  left: 12px;
+  margin-left: auto;
+  position: absolute;
+  top: var(--side-pad);
+  width: 220px;
+}
+
+.currency-details {
+  display: flex;
+  height: 58px;
+  padding: 3px;
+  width: calc(100% - 6px);
+}
+
+.currency-gp {
+  align-items: center;
+  background-color: #292501;
+  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-position: 12px center;
+  background-repeat: no-repeat;
+  background-size: 10%;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.currency-text {
+  background-image:
+    linear-gradient(
+      177.77deg,
+      rgba(241, 242, 158, 0.81) 16.73%,
+      rgba(228, 232, 75, 0.845393) 23.35%,
+      rgba(244, 244, 209, 0.836292) 26.29%,
+      rgba(206, 210, 0, 0.9) 49.44%,
+      rgba(239, 239, 165, 0.9) 57.53%,
+      rgba(196, 189, 59, 0.9) 65.25%,
+      rgba(203, 184, 20, 0.9) 86.32%
+    ),
+    radial-gradient(64.2% 64.2% at 28.13% 35.8%, #ecf013 0%, #aeb110 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 26px;
+  font-weight: bold;
+  line-height: 30px;
+}
+
+.btn-open-iap {
+  background: #874c91;
+  background-image: url(../img/shop_icon.svg);
+  background-position: 19%;
+  background-repeat: no-repeat;
+  background-size: 28px;
+  border-bottom: 2px solid #614066;
+  box-shadow: inset 0 -2px #614066;
+  box-sizing: border-box;
+  color: #fff;
+  display: block;
+  font-size: 25px;
+  font-weight: bold;
+  height: 66px;
+  line-height: 69px;
+  padding-left: 10px;
+  text-decoration: none;
+}
+
+.index-offer-time-left-text {
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 14px;
+  margin-top: 6px;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 
 #featured-youtuber {
@@ -8915,6 +9094,173 @@ input [type="image"]:focus {
   min-width: 86px;
 }
 
+#modal-confirm-sell {
+  background-color: #000;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 1201;
+}
+
+#modal-confirm-sell a {
+  color: grey;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+#modal-confirm-sell > .modal-content {
+  animation-duration: 0.2s;
+  animation-name: fadeIn;
+  bottom: 40%;
+  left: 50%;
+  min-width: 330px;
+  position: absolute;
+  text-decoration: none;
+  transform: translateX(-50%);
+  width: auto;
+}
+
+@media (max-width: 960px) {
+  #modal-confirm-sell > .modal-content {
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+}
+
+@media (max-width: 850px) {
+  #modal-confirm-sell > .modal-content {
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+}
+
+#modal-confirm-sell > .modal-content .modal-header > h2 {
+  font-weight: bold;
+}
+
+#modal-confirm-sell > .modal-content > .modal-body {
+  background: #141414;
+  text-align: center;
+}
+
+#modal-confirm-sell > .modal-content > .modal-body > .modal-body-text {
+  font-size: 16px;
+}
+
+#modal-confirm-sell > .modal-content > .modal-footer > .close-footer {
+  display: flex;
+}
+
+.confirm-sell-price-row {
+  background: #3e3e3e;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 76%;
+  margin: 18px auto 10px;
+  padding: 15px 12px;
+  height: auto;
+}
+
+.confirm-sell-price-input-wrap {
+  align-items: center;
+  background: #2c2c2c;
+  border: 1px solid #5f5f5f;
+  border-radius: 4px;
+  display: inline-flex;
+  gap: 8px;
+  min-width: 148px;
+  padding: 6px 10px;
+}
+
+.confirm-sell-price-icon {
+  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-size: 18px 18px;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  flex: 0 0 18px;
+  height: 18px;
+  width: 18px;
+}
+
+#confirm-sell-price-input {
+  appearance: textfield;
+  background: transparent;
+  border: 0;
+  color: #f4db7c;
+  font-size: 25px;
+  font-weight: bold;
+  line-height: 30px;
+  min-height: 30px;
+  outline: 0;
+  padding: 0;
+  text-align: right;
+  width: 100%;
+}
+
+#confirm-sell-price-input::-webkit-outer-spin-button,
+#confirm-sell-price-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.confirm-sell-price-row > span:first-child {
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.confirm-sell-price-range {
+  color: #cfcfcf;
+  font-size: 13px;
+  margin: 0 auto 8px;
+  text-align: center;
+  width: 76%;
+}
+
+.confirm-sell-price-error {
+  color: #ff7c7c;
+  font-size: 13px;
+  font-weight: bold;
+  margin: 0 auto 8px;
+  min-height: 16px;
+  text-align: center;
+  width: 76%;
+}
+
+.modal-footer > .close > .btn-confirm-sell {
+  background-color: #00ff0a;
+  border-bottom: 2px solid #00a108;
+  border-radius: 5px;
+  box-shadow: inset 0 -2px #00a108;
+  color: #000;
+  height: 40px;
+  line-height: 40px;
+  margin: auto;
+  width: 140px;
+}
+
+.modal-footer > .close > .btn-cancel-sell {
+  background-color: #6d6d6d;
+  border-bottom: 2px solid #313131;
+  border-radius: 5px;
+  box-shadow: inset 0 -2px #313131;
+  color: #fff;
+  height: 40px;
+  line-height: 40px;
+  margin: auto;
+  width: 140px;
+}
+
+.modal-footer > .close > .btn-cancel-sell > span,
+.modal-footer > .close > .btn-confirm-sell > span {
+  display: block;
+  font-size: 18px;
+}
+
+.confirm-sell-price-row {
+  margin-top: 18px;
+  border-radius: 0;
+}
+
 #iap-modal {
   display: none;
   background: rgba(0, 0, 0, 0.72);
@@ -9130,13 +9476,22 @@ input [type="image"]:focus {
 
 #iap-modal .iap-screen .iap-container .iap-limited-offers .iap-lto-packs-container .iap-lto-pack .iap-currency-container {
   background-image: url(../img/gui/currency-golde-potato.svg);
+  background-size: 22px 22px;
   background-repeat: no-repeat;
-  background-position: 10px center;
-  background-size: 19%;
+  background-position: 12px center;
+  box-sizing: border-box;
+  height: 36px;
+  line-height: 36px;
+  overflow: hidden;
+  padding: 0 10px 0 36px;
+  text-align: center;
 }
 
 #iap-modal .iap-screen .iap-container .iap-limited-offers .iap-lto-packs-container .iap-lto-pack .iap-currency-container .iap-currency-text {
-  margin-left: 25px;
+  display: block;
+  line-height: 36px;
+  margin: 0;
+  min-height: 0;
   font-size: 24px;
 }
 
@@ -9299,13 +9654,14 @@ input [type="image"]:focus {
 .market-container .market-items-list-container #market-no-items-available {
   display: none;
   margin: auto;
+  margin: 20% 15% 20px;
 }
 
 .market-container .market-items-list-container #market-no-items-available .market-no-items-img {
   height: 88px;
-  width: 88px;
+  width: 500px;
   opacity: 0.3;
-  margin: auto auto 20px;
+  margin: auto 30% 20px;
   background-image: url(../img/loading-logo.svg);
   background-size: 88px !important;
   background-repeat: no-repeat !important;
@@ -9471,6 +9827,10 @@ input [type="image"]:focus {
   line-height: 20px;
 }
 
+.market-list-item-container .market-item-info-container .market-item-stats-container .market-item-meta-text {
+  color: rgba(255, 255, 255, 0.82);
+}
+
 .market-list-item-container .market-item-info-container .market-item-stats-container .market-item-stats-text p {
   display: inline;
   margin: 0;
@@ -9501,11 +9861,17 @@ input [type="image"]:focus {
   font-weight: bold;
   text-align: center;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  background: #d64545;
+  box-shadow: inset 0 -2px #9f2424;
+  border-bottom: 2px solid #9f2424;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.market-list-item-container .market-item-action-container .market-item-action-btn.market-item-action-btn-cancel {
   background: #1e90ff;
   box-shadow: inset 0 -2px #1871c8;
   border-bottom: 2px solid #1871c8;
-  border-radius: 5px;
-  cursor: pointer;
 }
 
 .market-list-item-container .market-item-action-container .market-item-action-btn .market-btn-price-container {

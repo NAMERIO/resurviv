@@ -1,8 +1,16 @@
 import $ from "jquery";
 import type {
+    BuyMarketListingRequest,
+    BuyMarketListingResponse,
+    CancelMarketListingRequest,
+    CancelMarketListingResponse,
+    CreateMarketListingRequest,
+    CreateMarketListingResponse,
     GetPassRequest,
+    GetMarketResponse,
     LoadoutRequest,
     LoadoutResponse,
+    MarketListing,
     ProfileResponse,
     RefreshQuestRequest,
     RefreshQuestResponse,
@@ -87,6 +95,7 @@ export class Account {
     requestsInFlight = 0;
     loggingIn = false;
     loggedIn = false;
+    gpBalance = 0;
     profile = {
         linked: false,
         usernameSet: false,
@@ -97,6 +106,8 @@ export class Account {
 
     loadout = loadouts.defaultLoadout();
     items: Item[] = [];
+    marketListings: MarketListing[] = [];
+    userMarketListings: MarketListing[] = [];
     quests: Quest[] = [];
     questPriv = "";
     pass: Record<string, PassType> = {};
@@ -200,6 +211,7 @@ export class Account {
             this.loggingIn = false;
             this.loggedIn = false;
             this.profile = {} as this["profile"];
+            this.gpBalance = 0;
             this.items = [];
             if (err) {
                 errorLogManager.storeGeneric("account", "load_profile_error");
@@ -208,6 +220,7 @@ export class Account {
             } else if (data.success) {
                 this.loggedIn = true;
                 this.profile = data.profile;
+                this.gpBalance = data.gpBalance;
                 this.items = data.items;
                 this.loadout = data.loadout;
                 const profile = this.config.get("profile") || { slug: "" };
@@ -222,6 +235,7 @@ export class Account {
             }
             this.emit("items", this.items);
             this.emit("loadout", this.loadout);
+            this.emit("gpBalance", this.gpBalance);
         });
     }
 
@@ -382,6 +396,95 @@ export class Account {
                     // Give the pass UI a chance to update quests
                     this.emit("pass", this.pass, this.quests, false);
                 }
+            },
+        );
+    }
+
+    loadMarket(callback?: (success: boolean) => void) {
+        this.ajaxRequest("/api/user/get_market", (err, res: GetMarketResponse) => {
+            if (err || !res.success) {
+                errorLogManager.storeGeneric("account", "get_market_error");
+                callback?.(false);
+                return;
+            }
+
+            this.gpBalance = res.gpBalance;
+            this.marketListings = res.listings || [];
+            this.userMarketListings = res.userListings || [];
+            this.emit("gpBalance", this.gpBalance);
+            this.emit("market", this.marketListings, this.userMarketListings);
+            if (res.expiredItemTypes?.length) {
+                this.loadProfile();
+            }
+            callback?.(true);
+        });
+    }
+
+    createMarketListing(itemType: string, price: number, callback?: (error?: string) => void) {
+        const args: CreateMarketListingRequest = { itemType, price };
+        this.ajaxRequest(
+            "/api/user/create_market_listing",
+            args,
+            (err, res: CreateMarketListingResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "create_market_listing_error");
+                    callback?.(res?.error || "server_error");
+                    return;
+                }
+
+                if (typeof res.gpBalance === "number") {
+                    this.gpBalance = res.gpBalance;
+                    this.emit("gpBalance", this.gpBalance);
+                }
+                this.loadProfile();
+                this.loadMarket();
+                callback?.();
+            },
+        );
+    }
+
+    buyMarketListing(listingId: string, callback?: (error?: string) => void) {
+        const args: BuyMarketListingRequest = { listingId };
+        this.ajaxRequest(
+            "/api/user/buy_market_listing",
+            args,
+            (err, res: BuyMarketListingResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "buy_market_listing_error");
+                    callback?.(res?.error || "server_error");
+                    return;
+                }
+
+                if (typeof res.gpBalance === "number") {
+                    this.gpBalance = res.gpBalance;
+                    this.emit("gpBalance", this.gpBalance);
+                }
+                this.loadProfile();
+                this.loadMarket();
+                callback?.();
+            },
+        );
+    }
+
+    cancelMarketListing(listingId: string, callback?: (error?: string) => void) {
+        const args: CancelMarketListingRequest = { listingId };
+        this.ajaxRequest(
+            "/api/user/cancel_market_listing",
+            args,
+            (err, res: CancelMarketListingResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "cancel_market_listing_error");
+                    callback?.(res?.error || "server_error");
+                    return;
+                }
+
+                if (typeof res.gpBalance === "number") {
+                    this.gpBalance = res.gpBalance;
+                    this.emit("gpBalance", this.gpBalance);
+                }
+                this.loadProfile();
+                this.loadMarket();
+                callback?.();
             },
         );
     }

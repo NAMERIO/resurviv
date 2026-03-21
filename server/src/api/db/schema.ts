@@ -42,6 +42,7 @@ export const usersTable = pgTable("users", {
     linked: boolean("linked").notNull().default(false),
     linkedGoogle: boolean("linked_google").notNull().default(false),
     linkedDiscord: boolean("linked_discord").notNull().default(false),
+    gpBalance: integer("gp_balance").notNull().default(0),
     loadout: json("loadout")
         .notNull()
         .default(loadout.validate({} as Loadout))
@@ -65,7 +66,7 @@ export const itemsTable = pgTable(
         source: text("source").notNull().default("unlock_new_account"),
         status: integer("status").notNull().default(ItemStatus.New),
     },
-    (table) => [uniqueIndex("uq_items_user_type").on(table.userId, table.type)],
+    (table) => [index("idx_items_user_type").on(table.userId, table.type)],
 );
 export const userPassTable = pgTable(
     "user_pass",
@@ -111,6 +112,35 @@ export const userQuestTable = pgTable(
 );
 
 export type UserQuestTableSelect = typeof userQuestTable.$inferSelect;
+
+export const marketListingTable = pgTable(
+    "market_listing",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        sellerUserId: text("seller_user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        buyerUserId: text("buyer_user_id").references(() => usersTable.id, {
+            onDelete: "set null",
+            onUpdate: "cascade",
+        }),
+        itemType: text("item_type").notNull(),
+        price: integer("price").notNull(),
+        status: text("status").notNull().default("active"),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        soldAt: timestamp("sold_at", { withTimezone: true }),
+        canceledAt: timestamp("canceled_at", { withTimezone: true }),
+    },
+    (table) => [
+        index("idx_market_listing_status_created").on(table.status, table.createdAt),
+        index("idx_market_listing_seller_status").on(table.sellerUserId, table.status),
+    ],
+);
+
+export type MarketListingTableSelect = typeof marketListingTable.$inferSelect;
 
 export const matchDataTable = pgTable(
     "match_data",

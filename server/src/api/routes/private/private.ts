@@ -268,6 +268,7 @@ export const PrivateRouter = new Hono<Context>()
             }
 
             let xpGain = 0;
+            let gpGain = 0;
 
             const deltaById = new Map(validEntries.map((e) => [e.id, e.delta]));
             const passDef = PassDefs[passType];
@@ -295,6 +296,7 @@ export const PrivateRouter = new Hono<Context>()
 
                     if (!wasComplete && nowComplete) {
                         xpGain += def.xp;
+                        gpGain += Math.max(5, Math.round(def.xp / 2));
                     }
 
                     if (nextProgress === quest.progress && wasComplete === nowComplete) {
@@ -310,7 +312,7 @@ export const PrivateRouter = new Hono<Context>()
                         .where(eq(userQuestTable.id, quest.id));
                 }
 
-                if (xpGain <= 0) return;
+                if (xpGain <= 0 && gpGain <= 0) return;
 
                 const oldTotalXp = pass.totalXp;
                 const newTotalXp = oldTotalXp + xpGain;
@@ -363,6 +365,15 @@ export const PrivateRouter = new Hono<Context>()
                             updatedAt: new Date(),
                         },
                     });
+
+                if (gpGain > 0) {
+                    await tx
+                        .update(usersTable)
+                        .set({
+                            gpBalance: sql`${usersTable.gpBalance} + ${gpGain}`,
+                        })
+                        .where(eq(usersTable.id, userId));
+                }
             });
 
             return c.json({ success: true }, 200);
@@ -390,17 +401,6 @@ export const PrivateRouter = new Hono<Context>()
 
             if (!userId) {
                 return c.json({ message: "User not found" }, 200);
-            }
-
-            const existing = await db.query.itemsTable.findFirst({
-                where: and(eq(itemsTable.userId, userId.id), eq(itemsTable.type, item)),
-                columns: {
-                    type: true,
-                },
-            });
-
-            if (existing) {
-                return c.json({ message: "User already has item" }, 200);
             }
 
             await db.insert(itemsTable).values({
