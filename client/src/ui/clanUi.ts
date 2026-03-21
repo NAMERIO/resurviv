@@ -600,9 +600,15 @@ export class ClanUi {
         $("#clan-detail-members-count, #clan-members-count").text(
             `${clan.memberCount} / ${clan.maxMembers}`,
         );
+        const owner = clan.members?.find(m => m.isOwner)?.username || 'Unknown';
+        $("#clan-detail-owner").text(`Owner: ${owner}`);
+        const createdDate = new Date(clan.createdAt).toLocaleDateString();
+        $("#clan-detail-created").text(`Created: ${createdDate}`);
         $("#clan-detail-kills").text(clan.totalKills.toLocaleString());
         $("#clan-detail-wins").text(clan.totalWins.toLocaleString());
         $("#clan-detail-games").text("0");
+        $("#clan-detail-kill-placement").text("N/A");
+        $("#clan-detail-win-placement").text("N/A");
         const membersContainer = $("#clan-members-list");
         membersContainer.empty();
 

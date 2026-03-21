@@ -7752,7 +7752,7 @@ input [type="image"]:focus {
   transform: translate(-50%, -50%);
   animation-name: fadeIn;
   animation-duration: 0.2s;
-  width: 700px;
+  width: 900px;
   max-width: 95vw;
 }
 
@@ -7779,7 +7779,6 @@ input [type="image"]:focus {
   padding: 10px;
 }
 
-/* Modal Header - Tab Style */
 .modal-clans-header {
   display: flex;
   background-color: #252525;
@@ -7837,26 +7836,24 @@ input [type="image"]:focus {
   filter: brightness(80%);
 }
 
-/* Modal Body */
 .modal-clans-body {
   background-color: #3a3a3a;
   padding: 25px;
   display: flex;
   gap: 25px;
-  min-height: 450px;
+  min-height: 550px;
 }
 
-/* Modal Footer */
-.modal-clans-footer {
+/* gonna use this to add text in the future*/
+/* .modal-clans-footer {
   background-color: #141414;
   padding: 15px 25px;
   border-radius: 0 0 5px 5px;
   display: flex;
   justify-content: center;
-  gap: 15px;
-}
+  gap: 0px;
+} */
 
-/* Clan Columns Layout */
 .clan-column {
   flex: 1;
   display: flex;
@@ -7871,14 +7868,12 @@ input [type="image"]:focus {
   text-shadow: 1px 1px 0px #000000;
 }
 
-/* Create New Clan Section */
 .clan-create-section {
   background-color: #282828;
   border-radius: 5px;
   padding: 20px;
 }
 
-/* My Clan Card Section */
 .clan-my-info {
   background-color: #282828;
   border-radius: 5px;
@@ -8492,6 +8487,11 @@ input [type="image"]:focus {
 .clan-detail-meta {
   font-size: 16px;
   color: #c4c4c4;
+}
+
+.clan-stat-box.kill-placement,
+.clan-stat-box.win-placement {
+  background-image: none;
 }
 
 .clan-detail-stats {
