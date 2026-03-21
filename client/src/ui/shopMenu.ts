@@ -7,8 +7,8 @@ import {
 } from "../../../shared/utils/marketPricing";
 import type { Account } from "../account";
 import { helpers } from "../helpers";
-import { MenuModal } from "./menuModal";
 import type { Localization } from "./localization";
+import { MenuModal } from "./menuModal";
 
 type ShopTab = "shop" | "buy" | "sell";
 type MarketSort = "price" | "item" | "rarity";
@@ -132,7 +132,9 @@ export class ShopMenu {
                 if (!item.id) return false;
                 this.account.cancelMarketListing(item.id, (error) => {
                     this.setStatus(
-                        error ? `shop-market-error-${error}` : "shop-market-cancel-success",
+                        error
+                            ? `shop-market-error-${error}`
+                            : "shop-market-cancel-success",
                     );
                 });
                 return false;
@@ -145,7 +147,9 @@ export class ShopMenu {
 
             this.confirmSellModal.hide();
             this.account.createMarketListing(item.type, price, (error) => {
-                this.setStatus(error ? `shop-market-error-${error}` : "shop-market-sell-success");
+                this.setStatus(
+                    error ? `shop-market-error-${error}` : "shop-market-sell-success",
+                );
             });
             return false;
         });
@@ -243,7 +247,9 @@ export class ShopMenu {
         });
 
         $(document).on("click", (e) => {
-            if ($(e.target).closest(`${triggerSelector}, ${panelSelector}`).length === 0) {
+            if (
+                $(e.target).closest(`${triggerSelector}, ${panelSelector}`).length === 0
+            ) {
                 $(panelSelector).hide();
             }
         });
@@ -256,10 +262,12 @@ export class ShopMenu {
 
     setTab(tab: ShopTab) {
         this.activeTab = tab;
-        $("#tab-shop, #tab-market-buy, #tab-market-sell").removeClass("store-tab-selected");
-        $(`#tab-${tab === "buy" ? "market-buy" : tab === "sell" ? "market-sell" : "shop"}`).addClass(
+        $("#tab-shop, #tab-market-buy, #tab-market-sell").removeClass(
             "store-tab-selected",
         );
+        $(
+            `#tab-${tab === "buy" ? "market-buy" : tab === "sell" ? "market-sell" : "shop"}`,
+        ).addClass("store-tab-selected");
 
         const shopVisible = tab === "shop";
         $(".iap-container").css("display", shopVisible ? "flex" : "none");
@@ -287,7 +295,9 @@ export class ShopMenu {
                     image: helpers.getSvgFromGameType(listing.itemType),
                     transform: helpers.getCssTransformFromGameType(listing.itemType),
                     price: listing.price,
-                    owned: this.account.items.some((item) => item.type === listing.itemType),
+                    owned: this.account.items.some(
+                        (item) => item.type === listing.itemType,
+                    ),
                     action: "buy",
                     sellerName: listing.sellerSlug,
                     createdAt: listing.createdAt,
@@ -297,7 +307,9 @@ export class ShopMenu {
     }
 
     buildMarketSellListings() {
-        const listedTypes = new Set(this.account.userMarketListings.map((listing) => listing.itemType));
+        const listedTypes = new Set(
+            this.account.userMarketListings.map((listing) => listing.itemType),
+        );
         const activeListings = this.account.userMarketListings
             .map((listing) => {
                 const def = GameObjectDefs[listing.itemType] as any;
@@ -386,7 +398,9 @@ export class ShopMenu {
                   ? "loadout-rarity"
                   : "market-sort-price";
         const orderKey =
-            this.marketOrder === "highlow" ? "market-mode-highlow" : "market-mode-lowhigh";
+            this.marketOrder === "highlow"
+                ? "market-mode-highlow"
+                : "market-mode-lowhigh";
 
         $("#market-type-selected")
             .attr("data-l10n", typeKey)
@@ -399,7 +413,10 @@ export class ShopMenu {
                   ? "url(img/emotes/tombstone.svg)"
                   : `url(img/gui/loadout-${this.marketType.replace("_effect", "")}.svg)`,
         );
-        $("#market-type-selected").toggleClass("right-market-btn-img", this.marketType !== "all");
+        $("#market-type-selected").toggleClass(
+            "right-market-btn-img",
+            this.marketType !== "all",
+        );
         $("#market-rarity-selected")
             .attr("data-l10n", rarityKey)
             .text(this.localization.translate(rarityKey) || "All");
@@ -419,10 +436,12 @@ export class ShopMenu {
         $(`#market-change-type-selection .right-market-btn#${this.marketType}`).addClass(
             "btn-darkened",
         );
-        $("#market-change-rarity-selection .right-market-btn").removeClass("btn-darkened");
-        $(`#market-change-rarity-selection .right-market-btn#${this.marketRarity}`).addClass(
+        $("#market-change-rarity-selection .right-market-btn").removeClass(
             "btn-darkened",
         );
+        $(
+            `#market-change-rarity-selection .right-market-btn#${this.marketRarity}`,
+        ).addClass("btn-darkened");
         $("#market-change-sort-selection .right-market-btn").removeClass("btn-darkened");
         $(`#market-change-sort-selection .right-market-btn#${this.marketSort}`).addClass(
             "btn-darkened",
@@ -437,7 +456,8 @@ export class ShopMenu {
         const source =
             this.activeTab === "sell" ? this.marketSellListings : this.marketBuyListings;
         const filtered = source.filter((item) => {
-            if (this.marketType !== "all" && item.category !== this.marketType) return false;
+            if (this.marketType !== "all" && item.category !== this.marketType)
+                return false;
             if (this.marketRarity !== "all" && item.rarity < Number(this.marketRarity)) {
                 return false;
             }
@@ -485,7 +505,8 @@ export class ShopMenu {
             (item.action === "buy"
                 ? this.localization.translate("market-unknown-seller") || "Unknown"
                 : this.localization.translate("market-you") || "You");
-        const timerLabel = this.localization.translate("market-listed-for-label") || "Listed For";
+        const timerLabel =
+            this.localization.translate("market-listed-for-label") || "Listed For";
         const card = $("<div/>", { class: "market-list-item-container" });
         const image = $("<div/>", {
             class: "market-item-img",
@@ -501,8 +522,9 @@ export class ShopMenu {
                     $("<span/>", { text: "Type: " }),
                     $("<p/>", {
                         text:
-                            this.localization.translate(categoryL10n[item.category] || "") ||
-                            item.category,
+                            this.localization.translate(
+                                categoryL10n[item.category] || "",
+                            ) || item.category,
                     }),
                 ),
                 $("<div/>", { class: "market-item-stats-text" }).append(
@@ -513,7 +535,9 @@ export class ShopMenu {
                             "Unknown",
                     }),
                 ),
-                $("<div/>", { class: "market-item-stats-text market-item-meta-text" }).append(
+                $("<div/>", {
+                    class: "market-item-stats-text market-item-meta-text",
+                }).append(
                     $("<span/>", { text: `${sellerLabel}: ` }),
                     $("<p/>", { text: sellerValue }),
                 ),
@@ -558,7 +582,9 @@ export class ShopMenu {
         if (item.action === "buy") {
             if (!item.id) return;
             this.account.buyMarketListing(item.id, (error) => {
-                this.setStatus(error ? `shop-market-error-${error}` : "shop-market-buy-success");
+                this.setStatus(
+                    error ? `shop-market-error-${error}` : "shop-market-buy-success",
+                );
             });
             return;
         }
@@ -567,7 +593,8 @@ export class ShopMenu {
             this.pendingAction = "cancel";
             this.pendingSellItem = item;
             $("#modal-confirm-sell-title").text(
-                this.localization.translate("confirm-cancel-modal-title") || "Cancel listing",
+                this.localization.translate("confirm-cancel-modal-title") ||
+                    "Cancel listing",
             );
             $("#modal-confirm-sell-desc").text(
                 this.localization.translate("confirm-cancel-modal-desc") ||
@@ -604,7 +631,10 @@ export class ShopMenu {
         );
         $("#confirm-sell-price-input").val(String(priceBounds?.min ?? item.price));
         $("#confirm-sell-price-input").attr("min", String(priceBounds?.min ?? 0));
-        $("#confirm-sell-price-input").attr("max", String(priceBounds?.max ?? item.price));
+        $("#confirm-sell-price-input").attr(
+            "max",
+            String(priceBounds?.max ?? item.price),
+        );
         $("#confirm-sell-price-range").text(this.formatPriceRangeText(item.type));
         $(".confirm-sell-price-row").show();
         $("#confirm-sell-price-range").show();
@@ -639,7 +669,9 @@ export class ShopMenu {
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         const seconds = totalSeconds % 60;
-        return [hours, minutes, seconds].map((value) => String(value).padStart(2, "0")).join(":");
+        return [hours, minutes, seconds]
+            .map((value) => String(value).padStart(2, "0"))
+            .join(":");
     }
 
     formatPriceRangeText(itemType: string) {

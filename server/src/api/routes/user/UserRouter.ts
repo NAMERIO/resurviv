@@ -391,7 +391,10 @@ UserRouter.post(
                 }
 
                 const ownedItem = await tx.query.itemsTable.findFirst({
-                    where: and(eq(itemsTable.userId, user.id), eq(itemsTable.type, itemType)),
+                    where: and(
+                        eq(itemsTable.userId, user.id),
+                        eq(itemsTable.type, itemType),
+                    ),
                 });
 
                 if (!ownedItem) {
@@ -423,7 +426,10 @@ UserRouter.post(
                 await tx
                     .update(usersTable)
                     .set({
-                        loadout: loadout.validateWithAvailableItems(user.loadout, remainingItems),
+                        loadout: loadout.validateWithAvailableItems(
+                            user.loadout,
+                            remainingItems,
+                        ),
                     })
                     .where(eq(usersTable.id, user.id));
 
@@ -458,100 +464,107 @@ UserRouter.post(
     },
 );
 
-UserRouter.post("/buy_market_listing", validateParams(zBuyMarketListingRequest), async (c) => {
-    const user = c.get("user")!;
-    const { listingId } = c.req.valid("json");
+UserRouter.post(
+    "/buy_market_listing",
+    validateParams(zBuyMarketListingRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { listingId } = c.req.valid("json");
 
-    try {
-        const result = await db.transaction(async (tx) => {
-            await expireMarketListings(tx, user.id);
+        try {
+            const result = await db.transaction(async (tx) => {
+                await expireMarketListings(tx, user.id);
 
-            const listing = await tx.query.marketListingTable.findFirst({
-                where: and(
-                    eq(marketListingTable.id, listingId),
-                    eq(marketListingTable.status, "active"),
-                ),
-            });
-
-            if (!listing) {
-                return { ok: false as const, error: "listing_not_found" as const };
-            }
-            if (listing.sellerUserId === user.id) {
-                return { ok: false as const, error: "cannot_buy_own_listing" as const };
-            }
-
-            const buyer = await tx.query.usersTable.findFirst({
-                where: eq(usersTable.id, user.id),
-            });
-            if (!buyer || buyer.gpBalance < listing.price) {
-                return { ok: false as const, error: "not_enough_gp" as const };
-            }
-
-            const claimedListing = await tx
-                .update(marketListingTable)
-                .set({
-                    status: "sold",
-                    buyerUserId: user.id,
-                    soldAt: new Date(),
-                })
-                .where(
-                    and(
+                const listing = await tx.query.marketListingTable.findFirst({
+                    where: and(
                         eq(marketListingTable.id, listingId),
                         eq(marketListingTable.status, "active"),
                     ),
-                )
-                .returning({ id: marketListingTable.id });
+                });
 
-            if (claimedListing.length === 0) {
-                return { ok: false as const, error: "listing_not_found" as const };
-            }
+                if (!listing) {
+                    return { ok: false as const, error: "listing_not_found" as const };
+                }
+                if (listing.sellerUserId === user.id) {
+                    return {
+                        ok: false as const,
+                        error: "cannot_buy_own_listing" as const,
+                    };
+                }
 
-            await tx.insert(itemsTable).values({
-                userId: user.id,
-                type: listing.itemType,
-                source: "market_buy",
-                timeAcquired: Date.now(),
+                const buyer = await tx.query.usersTable.findFirst({
+                    where: eq(usersTable.id, user.id),
+                });
+                if (!buyer || buyer.gpBalance < listing.price) {
+                    return { ok: false as const, error: "not_enough_gp" as const };
+                }
+
+                const claimedListing = await tx
+                    .update(marketListingTable)
+                    .set({
+                        status: "sold",
+                        buyerUserId: user.id,
+                        soldAt: new Date(),
+                    })
+                    .where(
+                        and(
+                            eq(marketListingTable.id, listingId),
+                            eq(marketListingTable.status, "active"),
+                        ),
+                    )
+                    .returning({ id: marketListingTable.id });
+
+                if (claimedListing.length === 0) {
+                    return { ok: false as const, error: "listing_not_found" as const };
+                }
+
+                await tx.insert(itemsTable).values({
+                    userId: user.id,
+                    type: listing.itemType,
+                    source: "market_buy",
+                    timeAcquired: Date.now(),
+                });
+
+                await tx
+                    .update(usersTable)
+                    .set({
+                        gpBalance: buyer.gpBalance - listing.price,
+                    })
+                    .where(eq(usersTable.id, user.id));
+
+                await tx
+                    .update(usersTable)
+                    .set({
+                        gpBalance: sql`${usersTable.gpBalance} + ${listing.price}`,
+                    })
+                    .where(eq(usersTable.id, listing.sellerUserId));
+
+                return {
+                    ok: true as const,
+                    gpBalance: buyer.gpBalance - listing.price,
+                };
             });
 
-            await tx
-                .update(usersTable)
-                .set({
-                    gpBalance: buyer.gpBalance - listing.price,
-                })
-                .where(eq(usersTable.id, user.id));
+            if (!result.ok) {
+                return c.json<BuyMarketListingResponse>(
+                    { success: false, error: result.error },
+                    200,
+                );
+            }
 
-            await tx
-                .update(usersTable)
-                .set({
-                    gpBalance: sql`${usersTable.gpBalance} + ${listing.price}`,
-                })
-                .where(eq(usersTable.id, listing.sellerUserId));
-
-            return {
-                ok: true as const,
-                gpBalance: buyer.gpBalance - listing.price,
-            };
-        });
-
-        if (!result.ok) {
             return c.json<BuyMarketListingResponse>(
-                { success: false, error: result.error },
+                { success: true, gpBalance: result.gpBalance },
                 200,
             );
+        } catch (err) {
+            server.logger.error("/api/user/buy_market_listing error", err);
+            return c.json<BuyMarketListingResponse>(
+                { success: false, error: "server_error" },
+                500,
+            );
         }
-
-        return c.json<BuyMarketListingResponse>(
-            { success: true, gpBalance: result.gpBalance },
-            200,
-        );
-    } catch (err) {
-        server.logger.error("/api/user/buy_market_listing error", err);
-        return c.json<BuyMarketListingResponse>(
-            { success: false, error: "server_error" },
-            500,
-        );
-    }
-});
+    },
+);
 
 UserRouter.post(
     "/cancel_market_listing",

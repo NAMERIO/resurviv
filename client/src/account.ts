@@ -6,8 +6,8 @@ import type {
     CancelMarketListingResponse,
     CreateMarketListingRequest,
     CreateMarketListingResponse,
-    GetPassRequest,
     GetMarketResponse,
+    GetPassRequest,
     LoadoutRequest,
     LoadoutResponse,
     MarketListing,
@@ -420,14 +420,21 @@ export class Account {
         });
     }
 
-    createMarketListing(itemType: string, price: number, callback?: (error?: string) => void) {
+    createMarketListing(
+        itemType: string,
+        price: number,
+        callback?: (error?: string) => void,
+    ) {
         const args: CreateMarketListingRequest = { itemType, price };
         this.ajaxRequest(
             "/api/user/create_market_listing",
             args,
             (err, res: CreateMarketListingResponse) => {
                 if (err || !res.success) {
-                    errorLogManager.storeGeneric("account", "create_market_listing_error");
+                    errorLogManager.storeGeneric(
+                        "account",
+                        "create_market_listing_error",
+                    );
                     callback?.(res?.error || "server_error");
                     return;
                 }
@@ -473,7 +480,10 @@ export class Account {
             args,
             (err, res: CancelMarketListingResponse) => {
                 if (err || !res.success) {
-                    errorLogManager.storeGeneric("account", "cancel_market_listing_error");
+                    errorLogManager.storeGeneric(
+                        "account",
+                        "cancel_market_listing_error",
+                    );
                     callback?.(res?.error || "server_error");
                     return;
                 }

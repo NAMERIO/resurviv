@@ -18041,8 +18041,8 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         tree_08c: "tree_08spc",
     }),
     logging_complex_01c: createLoggingComplex({
-        groundTintLt: 0x3E4954,
-        groundTintDk: 0x2E363F,
+        groundTintLt: 0x3e4954,
+        groundTintDk: 0x2e363f,
     }),
     logging_complex_02su: createLoggingComplex2({ groundTintDk: 0x4e7d13 }),
     logging_complex_02x: createLoggingComplex2({ groundTintDk: 0x9e9e9e }),
@@ -18124,19 +18124,19 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         mapGroundPatches: [
             {
                 bound: collider.createAabbExtents(v2.create(0, -3), v2.create(45, 55)),
-                color: 0x3E4954,
+                color: 0x3e4954,
                 roughness: 0.1,
                 offsetDist: 1,
             },
             {
                 bound: collider.createAabbExtents(v2.create(0, 0), v2.create(46, 10)),
-                color: 0x2E363F,
+                color: 0x2e363f,
                 roughness: 0.1,
                 offsetDist: 1,
             },
             {
                 bound: collider.createAabbExtents(v2.create(0, 2), v2.create(5, 50.5)),
-                color: 0x2E363F,
+                color: 0x2e363f,
                 roughness: 0.1,
                 offsetDist: 1,
             },

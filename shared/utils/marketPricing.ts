@@ -22,7 +22,9 @@ export const marketMinPriceByRarity: Record<Rarity, number> = {
 export const marketMaxSellPrice = 10000;
 
 export function getMarketItemRarity(itemType: string) {
-    const def = GameObjectDefs[itemType] as { type?: string; rarity?: Rarity } | undefined;
+    const def = GameObjectDefs[itemType] as
+        | { type?: string; rarity?: Rarity }
+        | undefined;
     if (!def || !def.type || !supportedMarketTypes.has(def.type)) return null;
     const rarity = def.rarity ?? Rarity.Stock;
     if (rarity < Rarity.Rare) return null;

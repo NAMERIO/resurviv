@@ -2013,11 +2013,16 @@ export class Player implements AbstractObject {
                 }
 
                 this.meleeSprite.pivot.set(-pos.x, -pos.y);
-                this.meleeSprite.scale.set(img.scale.x / bodyScale, img.scale.y / bodyScale);
+                this.meleeSprite.scale.set(
+                    img.scale.x / bodyScale,
+                    img.scale.y / bodyScale,
+                );
                 this.meleeSprite.rotation = img.rot;
                 this.meleeSprite.tint = img.tint;
                 this.meleeSprite.visible = true;
-                const handRSpriteIdx = this.handRContainer.getChildIndex(this.handRSprite);
+                const handRSpriteIdx = this.handRContainer.getChildIndex(
+                    this.handRSprite,
+                );
                 const maxHRSIdx = math.max(
                     img.renderOnHand ? handRSpriteIdx + 1 : handRSpriteIdx - 1,
                     0,
@@ -2032,7 +2037,9 @@ export class Player implements AbstractObject {
                     img.leftHandOntop ? handRContainerIdx + 1 : handRContainerIdx - 1,
                     0,
                 );
-                if (this.bodyContainer.getChildIndex(this.handLContainer) != maxHandRCIdx) {
+                if (
+                    this.bodyContainer.getChildIndex(this.handLContainer) != maxHandRCIdx
+                ) {
                     this.bodyContainer.addChildAt(this.handLContainer, maxHandRCIdx);
                 }
             } else {
