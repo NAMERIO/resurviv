@@ -858,6 +858,11 @@
                     <div class="account-link"><span>Clans</span></div>
                   </div>
                 </div>
+                <div class="account-details-button-wrapper menu-option btn-darken">
+                  <div class="account-details-button">
+                    <div class="account-link account-shop-link"><span data-l10n="index-shop">Shop</span></div>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="account-overview">
@@ -928,6 +933,7 @@
                 <div id="player-options">
                   <input type="text" class="menu-option player-name-input" tabindex="0" placeholder="Enter your name here" data-l10n="index-enter-name-here" id="player-name-input-solo" maxlength="16" />
                   <a class="btn-darken menu-option player-options-btn" id="btn-customize"></a>
+                  <a class="btn-darken menu-option player-options-btn btn-gp-shop" id="btn-gp-shop" data-l10n="index-shop">Shop</a>
                 </div>
                 <select id="server-select-main" class="server-select menu-option btn-hollow btn-hollow-selected">
                   <optgroup id="server-opts" label="Region" data-l10n="index-region">
@@ -1280,6 +1286,200 @@
           <div id="ui-modal-keybind-footer" class="modal-footer modal-footer-round">
             <a class="js-btn-keybind-share btn-game-menu btn-darken" data-l10n="game-share">Share</a>
             <a class="js-btn-keybind-restore btn-game-menu btn-darken" data-l10n="game-restore-defaults">Restore Defaults</a>
+          </div>
+        </div>
+      </div>
+      <div id="iap-modal" class="modal">
+        <div class="iap-screen">
+          <div id="lock-shop-container">
+            <img id="store-lock" src="../img/shop_seil.svg" />
+          </div>
+          <div class="store-tabs">
+            <span id="tab-shop" data-l10n="store-tab-shop">Shop</span>
+            <span id="tab-market-buy" data-l10n="market-tab-buy-items">Market Buy</span>
+            <span id="tab-market-sell" data-l10n="market-tab-sell-items">Market Sell</span>
+          </div>
+          <span class="close close-corner iap-close-corner"></span>
+          <div id="shop-balance-bar" class="shop-balance-bar">
+            <span data-l10n="shop-balance">GP</span>
+            <span id="shop-gp-balance">0</span>
+          </div>
+          <div id="shop-status" class="shop-status" data-l10n="shop-client-only-note">Client UI is enabled. Buy and sell actions need server routes before they can complete.</div>
+          <div class="iap-container">
+            <div class="iap-gp">
+              <div class="shop-earn-gp-card">
+                <div class="shop-earn-gp-title" data-l10n="shop-earn-gp-title">Earn Golden Potatoes</div>
+                <div class="shop-earn-gp-body" data-l10n="shop-earn-gp-body">GP is earned through quests, pass progress, and gameplay rewards. It is not sold for real money here.</div>
+                <div class="shop-earn-gp-list">
+                  <div class="shop-earn-gp-item" data-l10n="shop-earn-gp-quests">Complete quests</div>
+                  <div class="shop-earn-gp-item" data-l10n="shop-earn-gp-pass">Claim pass rewards</div>
+                  <div class="shop-earn-gp-item" data-l10n="shop-earn-gp-events">Play events and seasonal modes</div>
+                </div>
+              </div>
+            </div>
+            <div class="iap-limited-offers">
+              <div class="iap-lto-title-container">
+                <div class="iap-center">
+                  <div class="iap-lto-title" data-l10n="shop-limited-offers">Featured</div>
+                  <div class="iap-lto-time-left-text">
+                    <span data-l10n="shop-new-bundles">Reward highlights</span>
+                    <span id="iap-lto-time-left-number">00:00:00:00</span>
+                  </div>
+                </div>
+              </div>
+              <div class="iap-lto-packs-container">
+                <div id="iap-lto-pack-1" class="iap-lto-pack btn-darken menu-option">
+                  <div class="iap-discount">UI</div>
+                  <div class="iap-lto-item-container">
+                    <div class="iap-loadout-items"><div></div></div>
+                  </div>
+                  <div class="iap-currency-container"><div class="iap-currency-text">0</div></div>
+                </div>
+                <div id="iap-lto-pack-2" class="iap-lto-pack iap-lto-pack-big btn-darken menu-option">
+                  <div class="iap-discount">ONLY</div>
+                  <div class="iap-lto-item-container">
+                    <div class="iap-loadout-items"><div></div></div>
+                  </div>
+                  <div class="iap-currency-container"><div class="iap-currency-text">0</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="market-locked-container">
+            <div id="market-locked-welcome-text" data-l10n="market-welcome">Market locked</div>
+            <div class="market-locked-img"></div>
+            <div id="market-unlocks-text" data-l10n="market-unlocks">This needs market server support.</div>
+            <div id="market-unlocks-timer">--:--:--:--</div>
+          </div>
+          <div class="market-container">
+            <div class="market-btns-container">
+              <div class="menu-option market-filter-btn">
+                <div id="market-type-select-container" class="btn-market-filter-gray hide-on-desktop">
+                  <div class="left-market-btn index-play-mode" data-l10n="index-play-type">Type</div>
+                  <div class="btn-market-divider"></div>
+                  <select id="market-type-select" class="index-play-select market-mobile-filter-select">
+                    <option value="all" data-l10n="market-all">All</option>
+                    <option value="outfit" data-l10n="market-type-outfit">Outfit</option>
+                    <option value="melee" data-l10n="market-type-melee">Melee</option>
+                    <option value="emote" data-l10n="market-type-emote">Emote</option>
+                    <option value="heal_effect" data-l10n="market-type-heal">Heal</option>
+                    <option value="boost_effect" data-l10n="market-type-boost">Boost</option>
+                    <option value="death_effect" data-l10n="market-type-deathEffect">Death Effect</option>
+                  </select>
+                </div>
+                <div id="market-change-type" class="btn-market-filter-gray btn-darken hide-on-mobile">
+                  <div class="left-market-btn index-play-mode" data-l10n="index-play-type">Type</div>
+                  <div class="btn-market-divider"></div>
+                  <div id="market-type-selected" class="right-market-btn right-market-btn-img" data-l10n="market-all">All</div>
+                  <div class="index-dropdown-arrow"></div>
+                </div>
+                <div id="market-change-type-selection" class="btn-market-filter-gray market-change-selection hide-on-mobile">
+                  <div>
+                    <div class="right-market-btn btn-darken" id="all" data-l10n="market-all">All</div>
+                    <div class="right-market-btn right-market-btn-img btn-darken" id="outfit" data-l10n="market-type-outfit" style="background-image: url(img/gui/loadout-outfit.svg);"></div>
+                    <div class="right-market-btn right-market-btn-img btn-darken" id="melee" data-l10n="market-type-melee" style="background-image: url(img/gui/loadout-melee.svg);"></div>
+                    <div class="right-market-btn right-market-btn-img btn-darken" id="emote" data-l10n="market-type-emote" style="background-image: url(img/gui/loadout-emote.svg);"></div>
+                    <div class="right-market-btn right-market-btn-img btn-darken" id="heal_effect" data-l10n="market-type-heal" style="background-image: url(img/gui/loadout-heal.svg);"></div>
+                    <div class="right-market-btn right-market-btn-img btn-darken" id="boost_effect" data-l10n="market-type-boost" style="background-image: url(img/gui/loadout-boost.svg);"></div>
+                    <div class="right-market-btn right-market-btn-img btn-darken" id="death_effect" data-l10n="market-type-deathEffect" style="background-image: url(img/emotes/tombstone.svg);"></div>
+                    <div class="btn-market-divider"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="menu-option market-filter-btn">
+                <div id="market-rarity-select-container" class="btn-market-filter-gray hide-on-desktop">
+                  <div class="left-market-btn index-play-mode" data-l10n="market-rarity">Rarity</div>
+                  <div class="btn-market-divider"></div>
+                  <select id="market-rarity-select" class="index-play-select market-mobile-filter-select">
+                    <option value="all" data-l10n="market-all">All</option>
+                    <option value="3" data-l10n="loadout-rare">Rare</option>
+                    <option value="4" data-l10n="loadout-epic">Epic</option>
+                    <option value="5" data-l10n="loadout-mythic">Mythic</option>
+                  </select>
+                </div>
+                <div id="market-change-rarity" class="btn-market-filter-gray btn-darken hide-on-mobile">
+                  <div class="left-market-btn index-play-mode" data-l10n="market-rarity">Rarity</div>
+                  <div class="btn-market-divider"></div>
+                  <div id="market-rarity-selected" class="right-market-btn" data-l10n="market-all">All</div>
+                  <div class="index-dropdown-arrow"></div>
+                </div>
+                <div id="market-change-rarity-selection" class="btn-market-filter-gray market-change-selection hide-on-mobile">
+                  <div>
+                    <div class="right-market-btn btn-darken" id="all" data-l10n="market-all">All</div>
+                    <div class="right-market-btn btn-darken" id="3" data-l10n="loadout-rare">Rare</div>
+                    <div class="right-market-btn btn-darken" id="4" data-l10n="loadout-epic">Epic</div>
+                    <div class="right-market-btn btn-darken" id="5" data-l10n="loadout-mythic">Mythic</div>
+                    <div class="btn-market-divider"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="menu-option market-filter-btn market-filter-section-spacing">
+                <div id="market-sort-select-container" class="btn-market-filter-gray hide-on-desktop">
+                  <div class="left-market-btn index-play-mode" data-l10n="market-sort-by">Sort</div>
+                  <div class="btn-market-divider"></div>
+                  <select id="market-sort-select" class="index-play-select market-mobile-filter-select">
+                    <option value="price" data-l10n="market-sort-price">Price</option>
+                    <option value="item" data-l10n="market-sort-item">Item</option>
+                    <option value="rarity" data-l10n="loadout-rarity">Rarity</option>
+                  </select>
+                </div>
+                <div id="market-change-sort" class="btn-market-filter-gray btn-darken hide-on-mobile">
+                  <div class="left-market-btn index-play-mode" data-l10n="market-sort-by">Sort</div>
+                  <div class="btn-market-divider"></div>
+                  <div id="market-sort-selected" class="right-market-btn" data-l10n="market-sort-price">Price</div>
+                  <div class="index-dropdown-arrow"></div>
+                </div>
+                <div id="market-change-sort-selection" class="btn-market-filter-gray market-change-selection hide-on-mobile">
+                  <div>
+                    <div class="right-market-btn btn-darken" id="price" data-l10n="market-sort-price">Price</div>
+                    <div class="right-market-btn btn-darken" id="item" data-l10n="market-sort-item">Item</div>
+                    <div class="right-market-btn btn-darken" id="rarity" data-l10n="loadout-rarity">Rarity</div>
+                    <div class="btn-market-divider"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="menu-option market-filter-btn">
+                <div id="market-mode-select-container" class="btn-market-filter-gray hide-on-desktop">
+                  <div class="left-market-btn index-play-mode" data-l10n="index-play-mode">Mode</div>
+                  <div class="btn-market-divider"></div>
+                  <select id="market-mode-select" class="index-play-select market-mobile-filter-select">
+                    <option value="lowhigh" data-l10n="market-mode-lowhigh">Low to High</option>
+                    <option value="highlow" data-l10n="market-mode-highlow">High to Low</option>
+                  </select>
+                </div>
+                <div id="market-change-mode" class="btn-market-filter-gray btn-darken hide-on-mobile">
+                  <div class="left-market-btn index-play-mode" data-l10n="index-play-mode">Mode</div>
+                  <div class="btn-market-divider"></div>
+                  <div id="market-mode-selected" class="right-market-btn" data-l10n="market-mode-lowhigh">Low to High</div>
+                  <div class="index-dropdown-arrow"></div>
+                </div>
+                <div id="market-change-mode-selection" class="btn-market-filter-gray market-change-selection hide-on-mobile">
+                  <div>
+                    <div class="right-market-btn btn-darken" id="lowhigh" data-l10n="market-mode-lowhigh">Low to High</div>
+                    <div class="right-market-btn btn-darken" id="highlow" data-l10n="market-mode-highlow">High to Low</div>
+                    <div class="btn-market-divider"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="market-btn-search-items-container">
+                <div id="market-btn-search-items" class="btn-green menu-option btn-darken" data-l10n="market-search">Search</div>
+                <div class="market-cooldown-timer-text">
+                  <span data-l10n="market-cooldown"></span>
+                  <span id="market-search-cooldown-timer"></span>
+                </div>
+              </div>
+            </div>
+            <div class="market-items-list-container">
+              <div id="market-purchase-progress-container">
+                <div class="market-loading"></div>
+                <div class="market-msg-text" data-l10n="market-purchase-progress-text">Loading</div>
+              </div>
+              <div id="market-no-items-available">
+                <div class="market-no-items-img"></div>
+                <div id="market-no-items-text" class="market-msg-text" data-l10n="market-no-items">No items match the current filters.</div>
+              </div>
+              <div id="market-items-list"></div>
+            </div>
           </div>
         </div>
       </div>

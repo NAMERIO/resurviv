@@ -34,6 +34,7 @@ import { MenuModal } from "./ui/menuModal";
 import { LoadoutDisplay } from "./ui/opponentDisplay";
 import { Pass } from "./ui/pass";
 import { ProfileUi } from "./ui/profileUi";
+import { ShopMenu } from "./ui/shopMenu";
 import { TeamMenu } from "./ui/teamMenu";
 import { loadStaticDomImages } from "./ui/ui2";
 
@@ -65,6 +66,7 @@ export class Application {
     pass!: Pass;
     profileUi!: ProfileUi;
     clanUi!: ClanUi;
+    shopMenu!: ShopMenu;
 
     pingTest = new PingTest();
     audioManager = new AudioManager();
@@ -166,6 +168,7 @@ export class Application {
                 this.loadoutMenu,
                 this.errorModal,
             );
+            this.shopMenu = new ShopMenu(this.account, this.localization);
 
             // Initialize ClanUi
             this.clanUi = new ClanUi(this.account, this.localization);
