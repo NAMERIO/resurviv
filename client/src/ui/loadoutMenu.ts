@@ -202,6 +202,7 @@ export class LoadoutMenu {
     ];
 
     selectedItem: {
+        selectedElem: HTMLElement | null;
         prevSlot: JQuery<HTMLElement> | null;
         img: string;
         type: string;
@@ -212,6 +213,7 @@ export class LoadoutMenu {
         displayLore?: string;
         subcat?: number;
     } = {
+        selectedElem: null,
         prevSlot: null,
         img: "",
         type: "",
@@ -1032,6 +1034,7 @@ export class LoadoutMenu {
         if (!selectedItem) {
             this.itemSelected = false;
             this.selectedItem = {
+                selectedElem: null,
                 prevSlot: null,
                 img: "",
                 type: "",
@@ -1047,6 +1050,7 @@ export class LoadoutMenu {
             selectedItem.type == this.selectedItem.type &&
             selectedItem.loadoutType == "emote" &&
             this.selectedItem.loadoutType == "emote" &&
+            this.selectedItem.selectedElem === parent[0] &&
             deselect
         ) {
             this.deselectItem();
@@ -1056,6 +1060,7 @@ export class LoadoutMenu {
         this.itemSelected = true;
 
         this.selectedItem = {
+            selectedElem: parent[0],
             prevSlot: isListItem ? null : parent,
             img: image.data("img"),
             type: selectedItem.type,
@@ -1193,7 +1198,7 @@ export class LoadoutMenu {
     updateSlot(parent: JQuery<HTMLElement>, img: string, type: string) {
         const prevParent = this.selectedItem.prevSlot;
         this.selectedItem = {} as (typeof this)["selectedItem"];
-        if (prevParent) {
+        if (prevParent && prevParent[0] !== parent[0]) {
             const image = parent.find(".customize-item-image");
             const slotIdx = parent.data("idx");
             const slotItem = this.equippedItems[slotIdx];

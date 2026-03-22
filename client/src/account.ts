@@ -307,12 +307,10 @@ export class Account {
 
     setItemStatus(status: ItemStatus, itemTypes: string[]) {
         if (itemTypes.length != 0) {
-            // Preemptively mark the item status as modified on our local copy
-            for (let i = 0; i < itemTypes.length; i++) {
-                const item = this.items.find((x) => {
-                    return x.type == itemTypes[i];
-                });
-                if (item) {
+            const itemTypeSet = new Set(itemTypes);
+            for (let i = 0; i < this.items.length; i++) {
+                const item = this.items[i];
+                if (itemTypeSet.has(item.type)) {
                     item.status = Math.max(item.status!, status);
                 }
             }
