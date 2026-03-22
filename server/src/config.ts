@@ -32,7 +32,6 @@ util.mergeDeep(Config, {
             mine: 1,
             mirv: 1,
             snowball: 3,
-            antiFire: 2,
             bandage: GameConfig.bagSizes["bandage"][BACKPACK_LEVEL],
             healthkit: GameConfig.bagSizes["healthkit"][BACKPACK_LEVEL],
             soda: GameConfig.bagSizes["soda"][BACKPACK_LEVEL],

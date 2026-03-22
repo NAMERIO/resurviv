@@ -5252,7 +5252,9 @@ input [type="image"]:focus {
 }
 
 #modal-customize {
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
   z-index: 4;
 }
 
@@ -6169,10 +6171,11 @@ input [type="image"]:focus {
   animation-name: fadeIn;
   animation-duration: 0.2s;
   height: 600px;
+  max-height: calc(100vh - 24px);
   left: 52%;
   pointer-events: none;
   position: fixed;
-  top: 45%;
+  top: 50%;
   transform: translateY(-50%) translateX(-50%);
   width: 940px;
 }
@@ -6206,8 +6209,22 @@ input [type="image"]:focus {
 
 @media (max-height: 650px) {
   #modal-customize-wrapper {
-    top: 0;
+    top: 24px;
     transform: translateX(-50%) scale(0.75);
+    transform-origin: top center;
+  }
+
+  #modal-content-left {
+    top: 0;
+    transform: none;
+    height: calc((100vh - 24px) / 0.75);
+    max-height: calc((100vh - 24px) / 0.75);
+  }
+
+  .modal-content-right {
+    top: 0;
+    bottom: auto;
+    max-height: calc((100vh - 24px) / 0.75);
   }
 }
 
@@ -6225,7 +6242,8 @@ input [type="image"]:focus {
   top: 50%;
   transform: translateY(-50%);
   width: 600px;
-  height: 730px;
+  height: min(730px, calc(100vh - 24px));
+  max-height: calc(100vh - 24px);
   border-radius: 5px;
   overflow: hidden;
 }
@@ -6256,10 +6274,12 @@ input [type="image"]:focus {
   border-radius: 5px;
   bottom: 0;
   display: none;
+  max-height: calc(100vh - 24px);
   pointer-events: initial;
   position: fixed;
   right: 0;
   width: 330px;
+  overflow-y: auto;
 }
 
 .modal-content-right > .modal-spacer {
@@ -7639,9 +7659,11 @@ input [type="image"]:focus {
   }
 
   #modal-customize-wrapper {
-    top: 0;
+    top: 24px;
     transform: translateX(-50%) scale(0.9);
+    transform-origin: top center;
     width: 100%;
+    max-height: calc(100vh - 24px);
   }
 
   #modal-customize-wrapper > .modal-content-right {
@@ -7693,7 +7715,8 @@ input [type="image"]:focus {
     top: 0;
     transform: initial;
     width: 100%;
-    height: auto;
+    height: calc((100vh - 24px) / 0.9);
+    max-height: calc((100vh - 24px) / 0.9);
     grid-template-columns: 56px 1fr;
   }
 
