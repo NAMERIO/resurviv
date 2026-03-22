@@ -4,7 +4,10 @@ import { userQuestTable, usersTable } from "../api/db/schema";
 import type { FindGamePrivateBody } from "./types";
 
 export async function getFindGamePlayerData(
-    players: Pick<FindGamePrivateBody["playerData"][number], "token" | "userId" | "ip">[],
+    players: Pick<
+        FindGamePrivateBody["playerData"][number],
+        "token" | "userId" | "ip" | "roomId"
+    >[],
 ): Promise<FindGamePrivateBody["playerData"]> {
     const userIds = [
         ...new Set(players.map((p) => p.userId).filter((id) => id !== null)),
@@ -33,7 +36,8 @@ export async function getFindGamePlayerData(
               )
             : {};
 
-    return players.map(({ token, userId, ip }) => ({
+    return players.map(({ token, userId, ip, roomId }) => ({
+        roomId,
         token,
         userId,
         ip,

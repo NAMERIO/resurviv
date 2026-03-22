@@ -254,6 +254,7 @@ class Room {
                 const token = randomUUID();
                 tokenMap.set(player, token);
                 return {
+                    roomId: this.id,
                     token,
                     userId: player.userId,
                     ip: player.ip,
@@ -316,22 +317,24 @@ class Room {
 
         this.data.lastError = "";
 
-        player.inGame = true;
-        const token = tokenMap.get(player);
+        for (const roomPlayer of this.players) {
+            roomPlayer.inGame = true;
+            const token = tokenMap.get(roomPlayer);
 
-        if (!token) {
-            this.teamMenu.logger.warn(`Missing token for player ${player.name}`);
-            return;
+            if (!token) {
+                this.teamMenu.logger.warn(`Missing token for player ${roomPlayer.name}`);
+                continue;
+            }
+
+            roomPlayer.send("joinGame", {
+                zone: "",
+                data: token,
+                gameId: res.gameId,
+                addrs: res.addrs,
+                hosts: res.hosts,
+                useHttps: res.useHttps,
+            });
         }
-
-        player.send("joinGame", {
-            zone: "",
-            data: token,
-            gameId: res.gameId,
-            addrs: res.addrs,
-            hosts: res.hosts,
-            useHttps: res.useHttps,
-        });
 
         this.sendState();
     }

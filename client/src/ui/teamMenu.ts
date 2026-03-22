@@ -99,7 +99,7 @@ export class TeamMenu {
             this.setRoomProperty("gameModeIdx", 2);
         });
         this.fillAuto.click(() => {
-            this.setRoomProperty("autoFill", false);
+            this.setRoomProperty("autoFill", true);
         });
         this.fillNone.on("click", () => {
             this.setRoomProperty("autoFill", false);
@@ -458,7 +458,7 @@ export class TeamMenu {
             );
 
             // Fill mode
-            setButtonState(this.fillAuto, this.roomData.autoFill, false && this.isLeader);
+            setButtonState(this.fillAuto, this.roomData.autoFill, this.isLeader);
             setButtonState(this.fillNone, !this.roomData.autoFill, this.isLeader);
             this.serverSelect.prop("disabled", !this.isLeader);
 

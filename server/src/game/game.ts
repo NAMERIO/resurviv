@@ -563,9 +563,11 @@ export class Game {
     }
 
     addJoinTokens(tokens: FindGamePrivateBody["playerData"], autoFill: boolean) {
+        const groupHashToJoin =
+            tokens[0].roomId ?? Math.random().toString(16).slice(2);
         const groupData = {
             playerCount: tokens.length,
-            groupHashToJoin: tokens[0].roomId ?? "",
+            groupHashToJoin,
             autoFill,
         };
 
