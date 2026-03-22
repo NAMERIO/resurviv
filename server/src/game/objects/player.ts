@@ -3024,12 +3024,12 @@ export class Player extends BaseGameObject {
             params.source?.__type === ObjectType.Player
                 ? (params.source as Player)
                 : undefined;
+        const sourceTeamId = playerSource?.teamId ?? params.sourceTeamId;
 
         const preHealth = this._health;
 
-        // teammates can't deal damage to each other
-        if (playerSource && params.source !== this) {
-            if (playerSource.teamId === this.teamId && !this.disconnected) {
+        if (params.source !== this && sourceTeamId !== undefined) {
+            if (sourceTeamId === this.teamId && !this.disconnected) {
                 return;
             }
         }

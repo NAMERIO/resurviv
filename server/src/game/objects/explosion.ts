@@ -125,6 +125,7 @@ export class ExplosionBarn {
                     layer: explosion.layer,
                     damageType: explosion.damageParams.damageType,
                     playerId: explosion.damageParams.source?.__id ?? 0,
+                    sourceTeamId: explosion.damageParams.sourceTeamId,
                     shotFx: false,
                     damageMult: 1,
                     varianceT: Math.random(),
@@ -161,9 +162,13 @@ export class ExplosionBarn {
 
         if (obj.__type == ObjectType.Player) {
             const isSourceTeammate =
-                explosion.damageParams.source &&
-                explosion.damageParams.source.__type == ObjectType.Player &&
-                explosion.damageParams.source.teamId == obj.teamId;
+                explosion.damageParams.sourceTeamId !== undefined
+                    ? explosion.damageParams.sourceTeamId == obj.teamId
+                    : !!(
+                          explosion.damageParams.source &&
+                          explosion.damageParams.source.__type == ObjectType.Player &&
+                          explosion.damageParams.source.teamId == obj.teamId
+                      );
 
             if (def.healTeam && isSourceTeammate) {
                 const healAmount = def.healAmount ?? 5; // default to 5 if healValue is not defined

@@ -39,6 +39,7 @@ export interface DamageParams {
     gameSourceType?: string;
     mapSourceType?: string;
     source?: GameObject;
+    sourceTeamId?: number;
     killCreditSource?: Player;
     isExplosion?: boolean;
     /**

@@ -41,7 +41,12 @@ export class ProjectileBarn {
         damageType: DamageType,
         throwDir?: Vec2,
         weaponSourceType?: string,
+        sourceTeamId?: number,
     ): Projectile {
+        const sourceObj = this.game.objectRegister.getById(playerId);
+        const resolvedSourceTeamId =
+            sourceTeamId ??
+            (sourceObj?.__type === ObjectType.Player ? sourceObj.teamId : undefined);
         const proj = new Projectile(
             this.game,
             type,
@@ -49,6 +54,7 @@ export class ProjectileBarn {
             layer,
             posZ,
             playerId,
+            resolvedSourceTeamId,
             vel,
             fuseTime,
             damageType,
@@ -80,6 +86,7 @@ export class Projectile extends BaseGameObject {
     rad: number;
 
     playerId: number;
+    sourceTeamId?: number;
     fuseTime: number;
     damageType: DamageType;
 
@@ -109,6 +116,7 @@ export class Projectile extends BaseGameObject {
         layer: number,
         posZ: number,
         playerId: number,
+        sourceTeamId: number | undefined,
         vel: Vec2,
         fuseTime: number,
         damageType: DamageType,
@@ -120,6 +128,7 @@ export class Projectile extends BaseGameObject {
         this.type = type;
         this.posZ = posZ;
         this.playerId = playerId;
+        this.sourceTeamId = sourceTeamId;
         this.vel = vel;
         this.fuseTime = fuseTime;
         this.damageType = damageType;
@@ -417,6 +426,7 @@ export class Projectile extends BaseGameObject {
                     DamageType.Player,
                     undefined,
                     this.weaponSourceType,
+                    this.sourceTeamId,
                 );
             }
         }
@@ -438,6 +448,7 @@ export class Projectile extends BaseGameObject {
                     weaponSourceType: this.weaponSourceType,
                     damageType: this.damageType,
                     source,
+                    sourceTeamId: this.sourceTeamId,
                 },
                 this.obstacleBellowId,
             );

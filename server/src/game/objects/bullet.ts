@@ -55,6 +55,7 @@ export interface BulletParams {
     trailThick?: boolean;
     varianceT?: number;
     playerId: number;
+    sourceTeamId?: number;
     reflectCount?: number;
     reflectObjId?: number;
     onHitFx?: string;
@@ -135,6 +136,7 @@ export class Bullet {
     sentToClient!: boolean;
     collided!: boolean;
     playerId!: number;
+    sourceTeamId?: number;
     player?: Player;
     pos!: Vec2;
     endPos!: Vec2;
@@ -196,6 +198,7 @@ export class Bullet {
         this.pos = v2.copy(params.pos);
         this.dir = v2.normalize(params.dir);
         this.playerId = params.playerId;
+        this.sourceTeamId = params.sourceTeamId;
         this.startPos = v2.copy(params.pos);
         this.bulletType = params.bulletType;
         this.reflectCount = params.reflectCount ?? 0;
@@ -213,6 +216,7 @@ export class Bullet {
         const player = this.bulletManager.game.objectRegister.getById(this.playerId);
         if (player?.__type === ObjectType.Player) {
             this.player = player;
+            this.sourceTeamId ??= player.teamId;
         } else {
             this.player = undefined;
         }
@@ -389,6 +393,7 @@ export class Bullet {
                 this.layer,
                 {
                     source: this.player,
+                    sourceTeamId: this.sourceTeamId,
                     gameSourceType: this.shotSourceType,
                     weaponSourceType: this.shotSourceType,
                     mapSourceType: this.mapSourceType,
@@ -457,7 +462,7 @@ export class Bullet {
                     obj.hasPerk("windwalk") &&
                     obj.hasteType != GameConfig.HasteType.Windwalk && // can't stack windwalk
                     v2.distance(this.pos, obj.pos) <= 5 &&
-                    this.player?.teamId !== obj.teamId // bullet shooter or its teammates cant give the shooter winwalk
+                    this.sourceTeamId !== obj.teamId // bullet shooter or its teammates cant give the shooter winwalk
                 ) {
                     obj.giveHaste(GameConfig.HasteType.Windwalk, 3);
                 }
@@ -629,6 +634,7 @@ export class Bullet {
                     mapSourceType: this.mapSourceType,
                     damageType: this.damageType,
                     source: this.player,
+                    sourceTeamId: this.sourceTeamId,
                     amount: finalDamage * obstacleMult,
                     dir: this.dir,
                 });
@@ -655,6 +661,7 @@ export class Bullet {
                         weaponSourceType: this.shotSourceType,
                         mapSourceType: this.mapSourceType,
                         source: this.player,
+                        sourceTeamId: this.sourceTeamId,
                         damageType: this.damageType,
                         amount: multiplier * finalDamage,
                         dir: this.dir,
@@ -665,7 +672,7 @@ export class Bullet {
                     });
                     if (
                         this.player?.nitroLaceEffect &&
-                        this.player.teamId !== col.player!.teamId
+                        this.sourceTeamId !== col.player!.teamId
                     ) {
                         let burnDuration = GameConfig.player.burnDuration;
                         let burnDamage = GameConfig.player.burnDamage;
