@@ -13,7 +13,8 @@ export class PingTest {
             zone: config.zone,
             url: config.url,
             https: config.https,
-            ping: 9999,
+            ping: Infinity,
+            lastPing: Infinity,
             active: false,
             complete: false,
             ws: null as WebSocket | null,
@@ -79,6 +80,7 @@ export class PingTest {
                 ws.onopen = function () {};
                 ws.onmessage = function (_msg) {
                     const elapsed = (Date.now() - test.sendTime) / 1000;
+                    test.lastPing = elapsed;
                     test.ping = Math.min(test.ping, elapsed);
                     test.recvCount++;
                     test.sendDelay = 0.125;
@@ -164,5 +166,23 @@ export class PingTest {
             }
         }
         return zones;
+    }
+
+    getPingResult(region?: string) {
+        const candidates = region
+            ? this.tests.filter((test) => test.region === region)
+            : this.tests;
+        const activeTests = candidates.filter((test) => Number.isFinite(test.lastPing));
+        if (activeTests.length === 0) {
+            return undefined;
+        }
+
+        activeTests.sort((a, b) => a.lastPing - b.lastPing);
+        const best = activeTests[0];
+        return {
+            region: best.region,
+            zone: best.zone,
+            ping: Math.round(best.lastPing * 1000),
+        };
     }
 }

@@ -1,3 +1,5 @@
+import { PingTest } from "./pingTest";
+
 export class GameMod {
     lastFrameTime: number;
     frameCount: number;
@@ -13,6 +15,8 @@ export class GameMod {
     localRotation!: HTMLElement | null;
     currentServer!: string | null;
     pingTest!: PingTest | null;
+    pingDisplayTimer: number;
+    lastPingValue: number | null;
     private hasInitialized: boolean = false;
     animationFrameCallback: (callback: () => void) => void;
 
@@ -31,6 +35,8 @@ export class GameMod {
                 : true;
         this.isFpsVisible = true;
         this.isPingVisible = true;
+        this.pingDisplayTimer = 0;
+        this.lastPingValue = null;
 
         this.animationFrameCallback = (callback: () => void) => setTimeout(callback, 1);
         this.SettingsCheck();
@@ -134,32 +140,26 @@ export class GameMod {
                   ? mainSelectElement.value || mainSelectElement.getAttribute("value")
                   : null;
 
-        if (region && region !== this.currentServer) {
+        const shouldRestartPing =
+            !!region &&
+            (region !== this.currentServer || !this.pingTest || this.pingTest.isComplete());
+
+        if (shouldRestartPing && region) {
             this.currentServer = region;
             this.resetPing();
-
-            const servers = [
-                { region: "NA", url: "resurviv.biz" },
-                { region: "EU", url: "217.160.224.171" },
-            ];
-
-            const selectedServer = servers.find(
-                (server) => region.toUpperCase() === server.region.toUpperCase(),
-            );
-
-            if (selectedServer) {
-                this.pingTest = new PingTest(selectedServer);
-                this.pingTest.startPingTest();
-            } else {
-                this.resetPing();
-            }
+            this.pingTest = new PingTest();
+            this.pingTest.start([region]);
         }
     }
 
     resetPing() {
-        if (this.pingTest && this.pingTest.test.ws) {
-            this.pingTest.test.ws.close();
-            this.pingTest.test.ws = null;
+        if (this.pingTest) {
+            for (const test of this.pingTest.tests) {
+                if (test.ws) {
+                    test.ws.close();
+                    test.ws = null;
+                }
+            }
         }
         this.pingTest = null;
     }
@@ -454,6 +454,7 @@ export class GameMod {
     startUpdateLoop() {
         const now = performance.now();
         const delta = now - this.lastFrameTime;
+        const dt = Math.min(Math.max(delta / 1000, 0.001), 1 / 8);
 
         this.frameCount++;
 
@@ -466,10 +467,16 @@ export class GameMod {
                 this.fpsCounter.textContent = `FPS: ${this.fps}`;
             }
         }
-        if (this.pingCounter && this.isPingVisible) {
-            const pingRes = this.pingTest?.getPingResult();
-            const pingValue = typeof pingRes?.ping === "number" ? pingRes.ping : "N/A";
+        this.pingTest?.update(dt);
+        this.pingDisplayTimer -= dt;
+        if (this.pingCounter && this.isPingVisible && this.pingDisplayTimer <= 0) {
+            const pingRes = this.pingTest?.getPingResult(this.currentServer ?? undefined);
+            if (typeof pingRes?.ping === "number") {
+                this.lastPingValue = pingRes.ping;
+            }
+            const pingValue = this.lastPingValue ?? "N/A";
             this.pingCounter.textContent = `Ping: ${pingValue} ms`;
+            this.pingDisplayTimer = 3;
         }
 
         this.startPingTest();
@@ -479,78 +486,5 @@ export class GameMod {
         this.updateHealthBars();
         this.updateFpsToggle();
         this.SettingsCheck();
-    }
-}
-
-export class PingTest {
-    ptcDataBuf: ArrayBuffer;
-    test: {
-        region: string;
-        url: string;
-        ping: number | string;
-        ws: WebSocket | null;
-        sendTime: number;
-        retryCount: number;
-    };
-
-    constructor(selectedServer: { region: string; url: string }) {
-        this.ptcDataBuf = new ArrayBuffer(1);
-        this.test = {
-            region: selectedServer.region,
-            url: `wss://${selectedServer.url}/ptc`,
-            ping: 9999,
-            ws: null,
-            sendTime: 0,
-            retryCount: 0,
-        };
-    }
-
-    startPingTest() {
-        if (!this.test.ws) {
-            const ws = new WebSocket(this.test.url);
-            ws.binaryType = "arraybuffer";
-
-            ws.onopen = () => {
-                this.sendPing();
-                this.test.retryCount = 0;
-            };
-
-            ws.onmessage = () => {
-                const elapsed = (Date.now() - this.test.sendTime) / 1e3;
-                this.test.ping = Math.round(elapsed * 1000);
-                this.test.retryCount = 0;
-                setTimeout(() => this.sendPing(), 200);
-            };
-
-            ws.onerror = () => {
-                this.test.ping = "Error";
-                this.test.retryCount++;
-                if (this.test.retryCount < 5) {
-                    setTimeout(() => this.startPingTest(), 2000);
-                } else {
-                    this.test.ws = null;
-                }
-            };
-
-            ws.onclose = () => {
-                this.test.ws = null;
-            };
-
-            this.test.ws = ws;
-        }
-    }
-
-    sendPing() {
-        if (this.test.ws && this.test.ws.readyState === WebSocket.OPEN) {
-            this.test.sendTime = Date.now();
-            this.test.ws.send(this.ptcDataBuf);
-        }
-    }
-
-    getPingResult() {
-        return {
-            region: this.test.region,
-            ping: this.test.ping,
-        };
     }
 }
