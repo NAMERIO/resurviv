@@ -1248,6 +1248,7 @@ export class WeaponManager {
         this.cookingThrowable = false;
 
         if (this.cookTicker < GameConfig.player.cookTime) {
+            this.player.cancelAnim();
             return;
         }
 
