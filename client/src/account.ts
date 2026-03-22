@@ -419,11 +419,11 @@ export class Account {
     }
 
     createMarketListing(
-        itemType: string,
+        itemId: string,
         price: number,
         callback?: (error?: string) => void,
     ) {
-        const args: CreateMarketListingRequest = { itemType, price };
+        const args: CreateMarketListingRequest = { itemId, price };
         this.ajaxRequest(
             "/api/user/create_market_listing",
             args,

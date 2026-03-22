@@ -107,6 +107,7 @@ const sortTypes: Record<string, any> = {
 };
 
 export interface Item {
+    id?: string;
     type: string;
     source: string;
     timeAcquired: number;

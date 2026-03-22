@@ -26,6 +26,7 @@ export type ProfileResponse =
 
 export type MarketListing = {
     id: string;
+    itemId: string;
     itemType: string;
     price: number;
     sellerSlug: string;
@@ -119,7 +120,7 @@ export type GetMarketResponse = {
 };
 
 export const zCreateMarketListingRequest = z.object({
-    itemType: z.string(),
+    itemId: z.string().uuid(),
     price: z.number().int().max(marketMaxSellPrice),
 });
 export type CreateMarketListingRequest = z.infer<typeof zCreateMarketListingRequest>;

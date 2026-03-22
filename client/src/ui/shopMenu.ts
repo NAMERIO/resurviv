@@ -16,6 +16,7 @@ type MarketOrder = "lowhigh" | "highlow";
 
 type Listing = {
     id?: string;
+    itemId?: string;
     type: string;
     category: string;
     name: string;
@@ -146,7 +147,8 @@ export class ShopMenu {
             }
 
             this.confirmSellModal.hide();
-            this.account.createMarketListing(item.type, price, (error) => {
+            if (!item.itemId) return false;
+            this.account.createMarketListing(item.itemId, price, (error) => {
                 this.setStatus(
                     error ? `shop-market-error-${error}` : "shop-market-sell-success",
                 );
@@ -285,6 +287,7 @@ export class ShopMenu {
                 if (!def || !supportedMarketTypes.has(def.type)) return null;
                 return {
                     id: listing.id,
+                    itemId: listing.itemId,
                     type: listing.itemType,
                     category: def.type,
                     name:
@@ -307,8 +310,8 @@ export class ShopMenu {
     }
 
     buildMarketSellListings() {
-        const listedTypes = new Set(
-            this.account.userMarketListings.map((listing) => listing.itemType),
+        const listedItemIds = new Set(
+            this.account.userMarketListings.map((listing) => listing.itemId),
         );
         const activeListings = this.account.userMarketListings
             .map((listing) => {
@@ -316,6 +319,7 @@ export class ShopMenu {
                 if (!def || !supportedMarketTypes.has(def.type)) return null;
                 return {
                     id: listing.id,
+                    itemId: listing.itemId,
                     type: listing.itemType,
                     category: def.type,
                     name:
@@ -340,8 +344,9 @@ export class ShopMenu {
                 if (!def || !supportedMarketTypes.has(def.type)) return null;
                 const rarity = def.rarity ?? Rarity.Stock;
                 if (rarity < Rarity.Rare) return null;
-                if (listedTypes.has(item.type)) return null;
+                if (!item.id || listedItemIds.has(item.id)) return null;
                 return {
+                    itemId: item.id,
                     type: item.type,
                     category: def.type,
                     name:

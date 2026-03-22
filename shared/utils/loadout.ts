@@ -10,6 +10,7 @@ import { GameConfig } from "../gameConfig";
 import { deepEqual } from "./deepEqual";
 
 export type Item = {
+    id?: string;
     type: string;
     timeAcquired: number;
     source: string;

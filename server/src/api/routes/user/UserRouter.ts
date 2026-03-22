@@ -67,6 +67,7 @@ async function expireMarketListings(tx: any, targetUserId?: string) {
         )
         .returning({
             sellerUserId: marketListingTable.sellerUserId,
+            itemId: marketListingTable.itemId,
             itemType: marketListingTable.itemType,
         });
 
@@ -77,12 +78,19 @@ async function expireMarketListings(tx: any, targetUserId?: string) {
     await tx
         .insert(itemsTable)
         .values(
-            expiredNow.map((listing: { sellerUserId: string; itemType: string }) => ({
-                userId: listing.sellerUserId,
-                type: listing.itemType,
-                source: "Item expired",
-                timeAcquired: Date.now(),
-            })),
+            expiredNow.map(
+                (listing: {
+                    sellerUserId: string;
+                    itemId: string;
+                    itemType: string;
+                }) => ({
+                    id: listing.itemId,
+                    userId: listing.sellerUserId,
+                    type: listing.itemType,
+                    source: "Item expired",
+                    timeAcquired: Date.now(),
+                }),
+            ),
         )
         .onConflictDoNothing();
 
@@ -123,6 +131,7 @@ async function buildMarketState(userId: string) {
     const slugByUserId = new Map(sellers.map((seller) => [seller.id, seller.slug]));
     const toClientListing = (listing: (typeof publicListings)[number]) => ({
         id: listing.id,
+        itemId: listing.itemId,
         itemType: listing.itemType,
         price: listing.price,
         sellerSlug: slugByUserId.get(listing.sellerUserId) || "unknown",
@@ -171,6 +180,7 @@ UserRouter.post("/profile", async (c) => {
 
     const items = await db
         .select({
+            id: itemsTable.id,
             type: itemsTable.type,
             timeAcquired: itemsTable.timeAcquired,
             source: itemsTable.source,
@@ -260,6 +270,7 @@ UserRouter.post("/loadout", validateParams(zLoadoutRequest), async (c) => {
 
     const items = await db
         .select({
+            id: itemsTable.id,
             type: itemsTable.type,
             timeAcquired: itemsTable.timeAcquired,
             source: itemsTable.source,
@@ -345,42 +356,45 @@ UserRouter.post(
     validateParams(zCreateMarketListingRequest),
     async (c) => {
         const user = c.get("user")!;
-        const { itemType, price } = c.req.valid("json");
-        const priceBounds = getMarketPriceBounds(itemType);
-
-        if (!isSupportedMarketItem(itemType) || !priceBounds) {
-            return c.json<CreateMarketListingResponse>(
-                { success: false, error: "invalid_item" },
-                200,
-            );
-        }
+        const { itemId, price } = c.req.valid("json");
         if (!Number.isInteger(price)) {
             return c.json<CreateMarketListingResponse>(
                 { success: false, error: "invalid_price" },
                 200,
             );
         }
-        if (price < priceBounds.min) {
-            return c.json<CreateMarketListingResponse>(
-                { success: false, error: "price_too_low" },
-                200,
-            );
-        }
-        if (price > priceBounds.max) {
-            return c.json<CreateMarketListingResponse>(
-                { success: false, error: "price_too_high" },
-                200,
-            );
-        }
-
         try {
             const result = await db.transaction(async (tx) => {
                 await expireMarketListings(tx, user.id);
 
+                const ownedItem = await tx.query.itemsTable.findFirst({
+                    where: and(
+                        eq(itemsTable.userId, user.id),
+                        eq(itemsTable.id, itemId),
+                    ),
+                });
+
+                if (!ownedItem) {
+                    return { ok: false as const, error: "item_not_owned" as const };
+                }
+
+                const itemType = ownedItem.type;
+                const priceBounds = getMarketPriceBounds(itemType);
+
+                if (!isSupportedMarketItem(itemType) || !priceBounds) {
+                    return { ok: false as const, error: "invalid_item" as const };
+                }
+                if (price < priceBounds.min) {
+                    return { ok: false as const, error: "price_too_low" as const };
+                }
+                if (price > priceBounds.max) {
+                    return { ok: false as const, error: "price_too_high" as const };
+                }
+
                 const existingListing = await tx.query.marketListingTable.findFirst({
                     where: and(
                         eq(marketListingTable.sellerUserId, user.id),
-                        eq(marketListingTable.itemType, itemType),
+                        eq(marketListingTable.itemId, itemId),
                         eq(marketListingTable.status, "active"),
                     ),
                     columns: { id: true },
@@ -390,31 +404,11 @@ UserRouter.post(
                     return { ok: false as const, error: "already_listed" as const };
                 }
 
-                const ownedItem = await tx.query.itemsTable.findFirst({
-                    where: and(
-                        eq(itemsTable.userId, user.id),
-                        eq(itemsTable.type, itemType),
-                    ),
-                });
-
-                if (!ownedItem) {
-                    return { ok: false as const, error: "item_not_owned" as const };
-                }
-
-                await tx.execute(sql`
-                    DELETE FROM "items"
-                    WHERE ctid IN (
-                        SELECT ctid
-                        FROM "items"
-                        WHERE "user_id" = ${user.id}
-                          AND "type" = ${itemType}
-                        ORDER BY "time_acquired" ASC
-                        LIMIT 1
-                    )
-                `);
+                await tx.delete(itemsTable).where(eq(itemsTable.id, itemId));
 
                 const remainingItems = await tx
                     .select({
+                        id: itemsTable.id,
                         type: itemsTable.type,
                         timeAcquired: itemsTable.timeAcquired,
                         source: itemsTable.source,
@@ -435,6 +429,7 @@ UserRouter.post(
 
                 await tx.insert(marketListingTable).values({
                     sellerUserId: user.id,
+                    itemId,
                     itemType,
                     price,
                     status: "active",
@@ -519,6 +514,7 @@ UserRouter.post(
                 }
 
                 await tx.insert(itemsTable).values({
+                    id: listing.itemId,
                     userId: user.id,
                     type: listing.itemType,
                     source: "market_buy",
@@ -591,6 +587,7 @@ UserRouter.post(
                         ),
                     )
                     .returning({
+                        itemId: marketListingTable.itemId,
                         itemType: marketListingTable.itemType,
                     });
 
@@ -599,6 +596,7 @@ UserRouter.post(
                 }
 
                 await tx.insert(itemsTable).values({
+                    id: canceled[0]!.itemId,
                     userId: user.id,
                     type: canceled[0]!.itemType,
                     source: "market_cancel",

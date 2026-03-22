@@ -55,6 +55,7 @@ export type UsersTableSelect = typeof usersTable.$inferSelect;
 export const itemsTable = pgTable(
     "items",
     {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
         userId: text("user_id")
             .notNull()
             .references(() => usersTable.id, {
@@ -127,6 +128,7 @@ export const marketListingTable = pgTable(
             onDelete: "set null",
             onUpdate: "cascade",
         }),
+        itemId: uuid("item_id").notNull(),
         itemType: text("item_type").notNull(),
         price: integer("price").notNull(),
         status: text("status").notNull().default("active"),
@@ -137,6 +139,7 @@ export const marketListingTable = pgTable(
     (table) => [
         index("idx_market_listing_status_created").on(table.status, table.createdAt),
         index("idx_market_listing_seller_status").on(table.sellerUserId, table.status),
+        index("idx_market_listing_item_status").on(table.itemId, table.status),
     ],
 );
 
