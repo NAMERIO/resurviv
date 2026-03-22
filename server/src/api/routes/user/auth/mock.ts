@@ -4,15 +4,26 @@ import { setCookie } from "hono/cookie";
 import { Config } from "../../../../config";
 import { db } from "../../../db";
 import { usersTable } from "../../../db/schema";
-import { createNewUser, generateId, setSessionTokenCookie } from "./authUtils";
+import {
+    createNewUser,
+    generateId,
+    sanitizeSlug,
+    setSessionTokenCookie,
+} from "./authUtils";
 
 export const MockRouter = new Hono();
 
 export const MOCK_USER_ID = "MOCK_USER_ID";
 
 MockRouter.get("/", async (c) => {
+    const requestedUser = c.req.query("user")?.trim();
+    const mockUserKey = requestedUser || "default";
+    const mockAuthId = requestedUser ? `mock:${requestedUser}` : MOCK_USER_ID;
+    const mockSlug = requestedUser ? sanitizeSlug(`mock-${requestedUser}`) : MOCK_USER_ID;
+    const mockUsername = requestedUser ? `Mock ${requestedUser}` : MOCK_USER_ID;
+
     const existingUser = await db.query.usersTable.findFirst({
-        where: eq(usersTable.authId, MOCK_USER_ID),
+        where: eq(usersTable.authId, mockAuthId),
         columns: {
             id: true,
         },
@@ -30,10 +41,10 @@ MockRouter.get("/", async (c) => {
     const userId = generateId(15);
     await createNewUser({
         id: userId,
-        authId: MOCK_USER_ID,
-        username: MOCK_USER_ID,
+        authId: mockAuthId,
+        username: mockUsername,
         linked: true,
-        slug: MOCK_USER_ID,
+        slug: mockSlug || `mock-${mockUserKey}`,
     });
 
     await setSessionTokenCookie(userId, c);

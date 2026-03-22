@@ -4,6 +4,7 @@ import { GameObjectDefs } from "../../../../../shared/defs/gameObjectDefs";
 import { UnlockDefs } from "../../../../../shared/defs/gameObjects/unlockDefs";
 import { Rarity } from "../../../../../shared/gameConfig";
 import {
+    type AckSoldMarketListingsResponse,
     type BuyMarketListingResponse,
     type CancelMarketListingResponse,
     type CreateMarketListingResponse,
@@ -14,6 +15,7 @@ import {
     zBuyMarketListingRequest,
     zCancelMarketListingRequest,
     zCreateMarketListingRequest,
+    zAckSoldMarketListingsRequest,
     zLoadoutRequest,
     zSetItemStatusRequest,
     zUsernameRequest,
@@ -108,7 +110,7 @@ async function expireMarketListings(tx: any, targetUserId?: string) {
 
 async function buildMarketState(userId: string) {
     const expiredItemTypes = await expireMarketListings(db, userId);
-    const [publicListings, userListings, sellers] = await Promise.all([
+    const [publicListings, userListings, soldListings, sellers] = await Promise.all([
         db.query.marketListingTable.findMany({
             where: eq(marketListingTable.status, "active"),
             orderBy: (table, { asc }) => [asc(table.price), asc(table.createdAt)],
@@ -119,6 +121,14 @@ async function buildMarketState(userId: string) {
                 eq(marketListingTable.status, "active"),
             ),
             orderBy: (table, { desc }) => [desc(table.createdAt)],
+        }),
+        db.query.marketListingTable.findMany({
+            where: and(
+                eq(marketListingTable.sellerUserId, userId),
+                eq(marketListingTable.status, "sold"),
+                sql`${marketListingTable.sellerNotifiedAt} IS NULL`,
+            ),
+            orderBy: (table, { asc }) => [asc(table.soldAt)],
         }),
         db.query.usersTable.findMany({
             columns: {
@@ -141,6 +151,13 @@ async function buildMarketState(userId: string) {
     return {
         listings: publicListings.map(toClientListing),
         userListings: userListings.map(toClientListing),
+        soldListings: soldListings.map((listing) => ({
+            id: listing.id,
+            itemId: listing.itemId,
+            itemType: listing.itemType,
+            price: listing.price,
+            soldAt: listing.soldAt ? new Date(listing.soldAt).getTime() : Date.now(),
+        })),
         expiredItemTypes,
     };
 }
@@ -345,6 +362,7 @@ UserRouter.post("/get_market", async (c) => {
             gpBalance: user.gpBalance,
             listings: market.listings,
             userListings: market.userListings,
+            soldListings: market.soldListings,
             expiredItemTypes: market.expiredItemTypes,
         },
         200,
@@ -500,6 +518,7 @@ UserRouter.post(
                         status: "sold",
                         buyerUserId: user.id,
                         soldAt: new Date(),
+                        sellerNotifiedAt: null,
                     })
                     .where(
                         and(
@@ -559,6 +578,32 @@ UserRouter.post(
                 500,
             );
         }
+    },
+);
+
+UserRouter.post(
+    "/ack_sold_market_listings",
+    validateParams(zAckSoldMarketListingsRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { listingIds } = c.req.valid("json");
+
+        if (listingIds.length > 0) {
+            await db
+                .update(marketListingTable)
+                .set({
+                    sellerNotifiedAt: new Date(),
+                })
+                .where(
+                    and(
+                        eq(marketListingTable.sellerUserId, user.id),
+                        eq(marketListingTable.status, "sold"),
+                        inArray(marketListingTable.id, listingIds),
+                    ),
+                );
+        }
+
+        return c.json<AckSoldMarketListingsResponse>({ success: true }, 200);
     },
 );
 

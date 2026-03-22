@@ -60,9 +60,15 @@ const categoryL10n: Record<string, string> = {
 export class ShopMenu {
     modal = new MenuModal($("#iap-modal"));
     confirmSellModal = new MenuModal($("#modal-confirm-sell"));
+    soldNotificationModal = new MenuModal($("#market-modal-notification"));
     marketTimerId: number | null = null;
+    balanceAnimationId: number | null = null;
     pendingSellItem: Listing | null = null;
-    pendingAction: "sell" | "cancel" = "sell";
+    pendingAction: "buy" | "sell" | "cancel" = "sell";
+    pendingSoldListings: Listing[] = [];
+    pendingSoldListingIds = new Set<string>();
+    soldNotificationActive = false;
+    pendingExpiredItems: Listing[] = [];
     activeTab: ShopTab = "shop";
     marketType = "all";
     marketRarity = "all";
@@ -71,6 +77,10 @@ export class ShopMenu {
     marketBuyListings: Listing[] = [];
     marketSellListings: Listing[] = [];
     gpBalance = 0;
+    displayedGpBalance = 0;
+    pendingGpBalanceTarget: number | null = null;
+    marketRefreshCooldownUntil = 0;
+    marketRefreshInFlight = false;
 
     constructor(
         public account: Account,
@@ -84,16 +94,26 @@ export class ShopMenu {
         this.account.addEventListener("market", () => {
             this.refreshData();
             this.render();
+            this.updateMarketRefreshUi();
         });
         this.account.addEventListener("gpBalance", () => {
             this.renderBalance();
         });
+        this.account.addEventListener("soldMarketListings", (soldListings) => {
+            this.enqueueSoldListings(soldListings);
+        });
+        this.account.addEventListener("expiredMarketListings", (expiredItemTypes) => {
+            this.enqueueExpiredItems(expiredItemTypes);
+        });
         this.account.addEventListener("login", () => {
             this.refreshData();
             this.render();
+            this.account.loadMarket();
+            this.updateMarketRefreshUi();
         });
         this.refreshData();
         this.render();
+        this.updateMarketRefreshUi();
     }
 
     bindUi() {
@@ -116,6 +136,11 @@ export class ShopMenu {
             $("#confirm-sell-price-range").hide();
             $("#confirm-sell-price-error").text("").hide();
         });
+        this.soldNotificationModal.onHide(() => {
+            if (this.soldNotificationActive) {
+                this.onSoldNotificationConfirmed();
+            }
+        });
 
         $("#start-shop-shortcut, #open-store-button").on("click", (e) => {
             e.preventDefault();
@@ -128,6 +153,18 @@ export class ShopMenu {
             const item = this.pendingSellItem;
             const action = this.pendingAction;
             if (!item) return false;
+            if (action === "buy") {
+                this.confirmSellModal.hide();
+                if (!item.id) return false;
+                this.account.buyMarketListing(item.id, (error) => {
+                    this.setStatus(
+                        error
+                            ? `shop-market-error-${error}`
+                            : "shop-market-buy-success",
+                    );
+                });
+                return false;
+            }
             if (action === "cancel") {
                 this.confirmSellModal.hide();
                 if (!item.id) return false;
@@ -188,7 +225,7 @@ export class ShopMenu {
             this.marketOrder = (e.target as HTMLSelectElement).value as MarketOrder;
             this.syncFilterLabels();
         });
-        $("#market-btn-search-items").on("click", () => this.renderMarket());
+        $("#market-btn-search-items").on("click", () => this.refreshMarket());
 
         this.bindDesktopFilter(
             "#market-change-type",
@@ -377,8 +414,11 @@ export class ShopMenu {
 
     renderBalance() {
         this.gpBalance = this.account.gpBalance;
-        $("#shop-gp-balance").text(String(this.gpBalance));
-        $("#start-gp-display-amount, .currency-text").text(String(this.gpBalance));
+        if (this.pendingSoldListings.length > 0) {
+            this.pendingGpBalanceTarget = this.gpBalance;
+            return;
+        }
+        this.setDisplayedGpBalance(this.gpBalance);
     }
 
     renderFeatured() {
@@ -498,6 +538,22 @@ export class ShopMenu {
         this.updateMarketTimers();
     }
 
+    refreshMarket() {
+        if (this.marketRefreshInFlight) return;
+        if (Date.now() < this.marketRefreshCooldownUntil) return;
+
+        this.marketRefreshInFlight = true;
+        this.marketRefreshCooldownUntil = Date.now() + 3000;
+        this.updateMarketRefreshUi();
+        this.account.loadMarket((success) => {
+            this.marketRefreshInFlight = false;
+            this.updateMarketRefreshUi();
+            if (!success) {
+                this.setStatus("shop-market-load-failed");
+            }
+        });
+    }
+
     buildMarketItem(item: Listing) {
         const actionLabel =
             item.action === "cancel" ? "Cancel" : item.action === "sell" ? "Sell" : "Buy";
@@ -567,16 +623,20 @@ export class ShopMenu {
             class:
                 item.action === "cancel"
                     ? "market-item-action-btn market-item-action-btn-cancel"
+                    : item.action === "buy"
+                      ? "market-item-action-btn market-item-action-btn-buy"
                     : "market-item-action-btn",
-        }).append(
-            $("<span/>", { text: actionLabel }),
-            $("<div/>", { class: "market-btn-price-container" }).append(
-                $("<div/>", {
-                    class: "market-btn-price-text",
-                    text: this.formatMarketPrice(item.price),
-                }),
-            ),
-        );
+        }).append($("<span/>", { text: actionLabel }));
+        if (item.action !== "sell") {
+            button.append(
+                $("<div/>", { class: "market-btn-price-container" }).append(
+                    $("<div/>", {
+                        class: "market-btn-price-text",
+                        text: this.formatMarketPrice(item.price),
+                    }),
+                ),
+            );
+        }
         button.on("click", () => this.handleMarketAction(item));
         action.append(button);
         card.append(image, info, action);
@@ -585,12 +645,25 @@ export class ShopMenu {
 
     handleMarketAction(item: Listing) {
         if (item.action === "buy") {
-            if (!item.id) return;
-            this.account.buyMarketListing(item.id, (error) => {
-                this.setStatus(
-                    error ? `shop-market-error-${error}` : "shop-market-buy-success",
-                );
-            });
+            this.pendingAction = "buy";
+            this.pendingSellItem = item;
+            $("#modal-confirm-sell-title").text(
+                this.localization.translate("confirm-buy-modal-title") || "Confirm Buy",
+            );
+            $("#modal-confirm-sell-desc").text(
+                this.localization.translate("confirm-buy-modal-desc") ||
+                    "Are you sure you want to buy this item?",
+            );
+            $("#confirm-sell-no span").text(
+                this.localization.translate("confirm-buy-modal-no") || "No, cancel.",
+            );
+            $("#confirm-sell-yes span").text(
+                this.localization.translate("confirm-buy-modal-yes") || "Yes, buy.",
+            );
+            $(".confirm-sell-price-row").hide();
+            $("#confirm-sell-price-range").hide();
+            $("#confirm-sell-price-error").text("").hide();
+            this.confirmSellModal.show(true);
             return;
         }
 
@@ -667,6 +740,28 @@ export class ShopMenu {
             if (!createdAt) return;
             timer.text(this.formatListingDuration(Date.now() - createdAt));
         });
+        this.updateMarketRefreshUi();
+    }
+
+    updateMarketRefreshUi() {
+        const button = $("#market-btn-search-items");
+        const cooldownText = $("#market-search-cooldown-timer");
+        const cooldownContainer = $(".market-cooldown-timer-text");
+        const remainingMs = Math.max(0, this.marketRefreshCooldownUntil - Date.now());
+        const remainingSeconds = Math.ceil(remainingMs / 1000);
+        const buttonLabel =
+            this.localization.translate("market-refresh") || "Refresh";
+        const loadingLabel =
+            this.localization.translate("market-refreshing") || "Refreshing...";
+        const isCoolingDown = remainingSeconds > 0;
+
+        button.text(this.marketRefreshInFlight ? loadingLabel : buttonLabel);
+        button.toggleClass(
+            "market-refresh-disabled",
+            this.marketRefreshInFlight || isCoolingDown,
+        );
+        cooldownText.text(isCoolingDown ? `${remainingSeconds}s` : "");
+        cooldownContainer.css("display", isCoolingDown ? "block" : "none");
     }
 
     formatListingDuration(elapsedMs: number) {
@@ -760,5 +855,173 @@ export class ShopMenu {
             this.localization.translate(key) ||
                 "This market action needs server support before it can be enabled.",
         );
+    }
+
+    enqueueSoldListings(
+        soldListings: Array<{
+            id: string;
+            itemType: string;
+            price: number;
+        }>,
+    ) {
+        let added = false;
+        for (const sold of soldListings) {
+            if (this.pendingSoldListingIds.has(sold.id)) {
+                continue;
+            }
+            const def = GameObjectDefs[sold.itemType] as any;
+            if (!def) {
+                continue;
+            }
+            this.pendingSoldListingIds.add(sold.id);
+            this.pendingSoldListings.push({
+                id: sold.id,
+                itemId: sold.id,
+                type: sold.itemType,
+                category: def.type,
+                name:
+                    this.localization.translate(`game-${sold.itemType}`) ||
+                    def.name ||
+                    sold.itemType,
+                rarity: def.rarity ?? Rarity.Stock,
+                image: helpers.getSvgFromGameType(sold.itemType),
+                transform: helpers.getCssTransformFromGameType(sold.itemType),
+                price: sold.price,
+                action: "buy",
+            });
+            added = true;
+        }
+
+        if (!added) {
+            return;
+        }
+
+        this.pendingGpBalanceTarget = this.gpBalance;
+        this.showNextSoldNotification();
+    }
+
+    showNextSoldNotification() {
+        if (
+            this.soldNotificationActive ||
+            (this.pendingSoldListings.length === 0 && this.pendingExpiredItems.length === 0)
+        ) {
+            return;
+        }
+
+        const sold = this.pendingSoldListings[0];
+        const expired = !sold ? this.pendingExpiredItems[0]! : null;
+        const item = sold || expired!;
+        const modal = $("#market-modal-notification");
+        modal.find("#market-modal-notification-title-text").text(
+            sold
+                ? this.localization.translate("market-item-sold-title") || "Item Sold"
+                : this.localization.translate("market-item-expired-title") || "Item Expired",
+        );
+        modal
+            .find("#market-modal-notification-text")
+            .text(
+                sold
+                    ? this.localization.translate("market-item-sold-desc") ||
+                          "Your item has been sold."
+                    : this.localization.translate("market-item-expired-desc") ||
+                          "Your market listing expired.",
+            );
+        modal.find("#market-item-sell-img").css({
+            "background-image": `url(${item.image})`,
+            transform: item.transform,
+        });
+        modal.find("#market-item-name").text(item.name);
+        $("#market-modal-price-element").css("display", sold ? "flex" : "none");
+        if (sold) {
+            modal.find("#market-buy-price").text(String(sold.price));
+        }
+        modal
+            .find("#market-modal-notification-btn-text")
+            .text(this.localization.translate("index-confirm") || "Great!");
+        this.soldNotificationActive = true;
+        this.soldNotificationModal.show(true);
+    }
+
+    onSoldNotificationConfirmed() {
+        const sold = this.pendingSoldListings.shift();
+        this.soldNotificationActive = false;
+        if (!sold?.id) {
+            if (this.pendingExpiredItems.length > 0) {
+                this.pendingExpiredItems.shift();
+                this.showNextSoldNotification();
+            }
+            return;
+        }
+
+        this.account.ackSoldMarketListings([sold.id], () => {});
+        this.pendingSoldListingIds.delete(sold.id);
+
+        if (this.pendingSoldListings.length === 0) {
+            const target = this.pendingGpBalanceTarget ?? this.gpBalance;
+            this.pendingGpBalanceTarget = null;
+            this.animateDisplayedGpBalance(target);
+        } else {
+            this.showNextSoldNotification();
+        }
+    }
+
+    enqueueExpiredItems(expiredItemTypes: string[]) {
+        for (const itemType of expiredItemTypes) {
+            const def = GameObjectDefs[itemType] as any;
+            if (!def) {
+                continue;
+            }
+            this.pendingExpiredItems.push({
+                type: itemType,
+                category: def.type,
+                name:
+                    this.localization.translate(`game-${itemType}`) ||
+                    def.name ||
+                    itemType,
+                rarity: def.rarity ?? Rarity.Stock,
+                image: helpers.getSvgFromGameType(itemType),
+                transform: helpers.getCssTransformFromGameType(itemType),
+                price: 0,
+                action: "buy",
+            });
+        }
+        this.showNextSoldNotification();
+    }
+
+    animateDisplayedGpBalance(targetBalance: number) {
+        if (this.balanceAnimationId !== null) {
+            window.cancelAnimationFrame(this.balanceAnimationId);
+            this.balanceAnimationId = null;
+        }
+
+        const startBalance = this.displayedGpBalance;
+        const delta = targetBalance - startBalance;
+        if (delta === 0) {
+            this.setDisplayedGpBalance(targetBalance);
+            return;
+        }
+
+        const startTime = performance.now();
+        const duration = Math.min(900, Math.max(300, Math.abs(delta) * 2));
+        const step = (now: number) => {
+            const progress = Math.min(1, (now - startTime) / duration);
+            const eased = 1 - (1 - progress) * (1 - progress);
+            const current = Math.round(startBalance + delta * eased);
+            this.setDisplayedGpBalance(current);
+            if (progress < 1) {
+                this.balanceAnimationId = window.requestAnimationFrame(step);
+            } else {
+                this.balanceAnimationId = null;
+                this.setDisplayedGpBalance(targetBalance);
+            }
+        };
+
+        this.balanceAnimationId = window.requestAnimationFrame(step);
+    }
+
+    setDisplayedGpBalance(value: number) {
+        this.displayedGpBalance = value;
+        $("#shop-gp-balance").text(String(value));
+        $("#start-gp-display-amount, .currency-text").text(String(value));
     }
 }

@@ -9100,6 +9100,169 @@ input [type="image"]:focus {
   z-index: 1201;
 }
 
+#market-modal-notification {
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 1201;
+}
+
+#market-modal-notification .close-corner {
+  background-image: url(../img/gui/close-2.svg);
+}
+
+#market-modal-notification .modal-content {
+  animation-duration: 0.2s;
+  animation-name: fadeIn;
+  left: 50%;
+  min-width: 514px;
+  position: absolute;
+  text-decoration: none;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: auto;
+}
+
+@media (max-width: 960px) {
+  #market-modal-notification .modal-content {
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+}
+
+@media (max-width: 850px) {
+  #market-modal-notification .modal-content {
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+}
+
+#market-modal-notification .modal-header {
+  background: linear-gradient(180deg, #c68609 0%, #e5e802 64.69%, #fdff83 100%);
+}
+
+#market-modal-notification .modal-header h2 {
+  color: #000;
+  font-size: 35px;
+  font-weight: bold;
+  text-align: center;
+}
+
+#market-modal-notification .modal-body {
+  background: #141414;
+  min-width: 514px;
+  padding: 32px 0;
+  text-align: center;
+}
+
+#market-modal-notification .modal-footer {
+  display: flex;
+  min-height: 78px;
+}
+
+.market-modal-sell-explanation-container {
+  margin: 0 auto 24px;
+  width: 445px;
+}
+
+#market-modal-notification-text {
+  color: #fff;
+  font-size: 20px;
+}
+
+.market-modal-sell-item-container {
+  align-items: center;
+  background: #232323;
+  border: 1px solid #3a3a3a;
+  display: flex;
+  gap: 18px;
+  margin: 0 auto 26px;
+  min-height: 128px;
+  padding: 18px 22px;
+  width: 445px;
+}
+
+#market-item-sell-img {
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  flex: 0 0 108px;
+  height: 108px;
+  margin: 0;
+  position: relative;
+  width: 108px;
+}
+
+#market-item-sell-type {
+  bottom: -8px;
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.market-item-sell-stats {
+  flex: 1 1 auto;
+  text-align: left;
+}
+
+.market-item-sell-text {
+  color: #fff;
+  font-size: 28px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+#market-modal-price-element {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.market-modal-body-text {
+  color: #fff;
+  font-size: 20px;
+}
+
+.market-modal-price-container {
+  background-color: #3e3e3e;
+  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-position: 18px center;
+  background-repeat: no-repeat;
+  background-size: 30px;
+  margin: auto;
+  width: fit-content;
+}
+
+.market-modal-price {
+  color: transparent;
+  background-image: linear-gradient(177.77deg, rgba(241, 242, 158, 0.81) 16.73%, rgba(228, 232, 75, 0.845393) 23.35%, rgba(244, 244, 209, 0.836292) 26.29%, rgba(206, 210, 0, 0.9) 49.44%, rgba(239, 239, 165, 0.9) 57.53%, rgba(196, 189, 59, 0.9) 65.25%, rgba(203, 184, 20, 0.9) 86.32%), radial-gradient(64.2% 64.2% at 28.13% 35.8%, #ecf013 0%, #aeb110 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  font-size: 38px;
+  font-weight: bold;
+  line-height: 65px;
+  min-width: 200px;
+  padding: 0 35px 0 58px;
+  text-align: center;
+}
+
+.btn-modal-confirm {
+  background: #00ff0a;
+  border-bottom: 2px solid #00a108;
+  border-radius: 5px;
+  box-shadow: inset 0 -2px #00a108;
+  margin: auto;
+  min-height: 40px;
+  min-width: 172px;
+  text-align: center;
+  user-select: none;
+  width: fit-content;
+}
+
+.btn-modal-confirm span {
+  color: #000;
+  font-size: 19px;
+  font-weight: bold;
+  line-height: 35px;
+}
+
 #modal-confirm-sell a {
   color: grey;
   font-size: 16px;
@@ -9797,9 +9960,29 @@ input [type="image"]:focus {
   background-position: 10px 50% !important;
 }
 
+.market-change-selection.btn-market-filter-gray .right-market-btn,
+.market-change-selection.btn-market-filter-gray .right-market-btn-img {
+  left: 0;
+  margin: 0;
+  width: 100% !important;
+}
+
+.market-change-selection > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+
+.market-change-selection .right-market-btn:hover,
+.market-change-selection .right-market-btn:active {
+  background-color: rgba(0, 0, 0, 0.18);
+}
+
 .btn-market-filter-gray .left-market-btn {
   position: absolute;
-  right: 135px;
+  right: 125px;
   margin: 0;
   width: fit-content;
   height: fit-content;
@@ -9811,7 +9994,7 @@ input [type="image"]:focus {
   border-bottom: solid 24px #ffffff;
   content: "";
   cursor: default;
-  margin-left: 80px;
+  margin-left: 72px;
   position: absolute;
   width: 2px;
   padding: 4px 0;
@@ -9820,18 +10003,18 @@ input [type="image"]:focus {
 .btn-market-filter-gray .right-market-btn {
   position: relative;
   height: auto;
-  width: calc(100% - 95px) !important;
+  width: calc(100% - 82px) !important;
   padding-left: 15px;
   margin: 0 0 0 10px;
   font-weight: bold;
   text-align: left;
-  left: 75px;
+  left: 67px;
   white-space: nowrap;
 }
 
 .btn-market-filter-gray .right-market-btn-img {
   padding-left: 40px;
-  width: calc(100% - 120px) !important;
+  width: calc(100% - 107px) !important;
   background-size: 25px !important;
   background-repeat: no-repeat !important;
   background-position: 5px 50% !important;
@@ -9855,6 +10038,26 @@ input [type="image"]:focus {
   font-size: 20px;
   font-weight: bold;
   text-align: center;
+  background: #1e90ff;
+  box-shadow: inset 0 -2px #1871c8;
+  border-bottom: 2px solid #1871c8;
+  transition: background-color 120ms ease, opacity 120ms ease;
+}
+
+.market-btn-search-items-container #market-btn-search-items:hover {
+  background: #1879d8;
+}
+
+.market-btn-search-items-container #market-btn-search-items.market-refresh-disabled {
+  background: #1879d8;
+  box-shadow: inset 0 -2px #135faa;
+  border-bottom: 2px solid #135faa;
+  cursor: default;
+  opacity: 0.9;
+}
+
+.market-cooldown-timer-text {
+  display: none;
 }
 
 .market-list-item-container {
@@ -9940,6 +10143,9 @@ input [type="image"]:focus {
   cursor: pointer;
 }
 
+.market-list-item-container
+  .market-item-action-container
+  .market-item-action-btn.market-item-action-btn-buy,
 .market-list-item-container
   .market-item-action-container
   .market-item-action-btn.market-item-action-btn-cancel {

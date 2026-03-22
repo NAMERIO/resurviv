@@ -1478,7 +1478,7 @@
                 </div>
               </div>
               <div class="market-btn-search-items-container">
-                <div id="market-btn-search-items" class="btn-green menu-option btn-darken" data-l10n="market-search">Search</div>
+                <div id="market-btn-search-items" class="btn-green menu-option btn-darken" data-l10n="market-refresh">Refresh</div>
                 <div class="market-cooldown-timer-text">
                   <span data-l10n="market-cooldown"></span>
                   <span id="market-search-cooldown-timer"></span>
@@ -1810,6 +1810,38 @@
           </div>
           <div class="modal-footer modal-footer-round">
             <h3 class="close close-footer">OK</h3>
+          </div>
+        </div>
+      </div>
+      <div id="market-modal-notification" class="modal">
+        <div class="modal-content modal-close">
+          <div class="modal-header">
+            <span class="close close-corner"></span>
+            <h2 id="market-modal-notification-title-text">Notification</h2>
+          </div>
+          <div class="modal-body">
+            <div id="market-modal-notification-text-container" class="market-modal-sell-explanation-container">
+              <div id="market-modal-notification-text"></div>
+            </div>
+            <div class="market-modal-sell-item-container">
+              <div id="market-item-sell-img" class="market-item-img">
+                <div id="market-item-sell-type" class="item-rarity-style"></div>
+              </div>
+              <div class="market-item-sell-stats">
+                <span id="market-item-name" class="market-item-sell-text"></span>
+              </div>
+            </div>
+            <div id="market-modal-price-element">
+              <div class="market-modal-body-text">Sold for:</div>
+              <div class="market-modal-price-container">
+                <div id="market-buy-price" class="market-modal-price"></div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer modal-footer-round">
+            <div id="market-modal-notification-btn" class="btn-modal-confirm btn-darken close">
+              <span id="market-modal-notification-btn-text">Great!</span>
+            </div>
           </div>
         </div>
       </div>

@@ -237,6 +237,8 @@
   "market-mode-lowhigh": "Low to High",
   "market-mode-highlow": "High to Low",
   "market-search": "Search",
+  "market-refresh": "Refresh",
+  "market-refreshing": "Refreshing...",
   "market-no-items": "No items match the current filters.",
   "market-no-sell-items": "You do not own any sellable items yet.",
   "loadout-title-primary": "Primary Weapon",

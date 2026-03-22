@@ -134,6 +134,7 @@ export const marketListingTable = pgTable(
         status: text("status").notNull().default("active"),
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
         soldAt: timestamp("sold_at", { withTimezone: true }),
+        sellerNotifiedAt: timestamp("seller_notified_at", { withTimezone: true }),
         canceledAt: timestamp("canceled_at", { withTimezone: true }),
     },
     (table) => [

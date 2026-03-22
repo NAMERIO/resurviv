@@ -1,5 +1,7 @@
 import $ from "jquery";
 import type {
+    AckSoldMarketListingsRequest,
+    AckSoldMarketListingsResponse,
     BuyMarketListingRequest,
     BuyMarketListingResponse,
     CancelMarketListingRequest,
@@ -18,6 +20,7 @@ import type {
     SetPassUnlockRequest,
     SetPassUnlockResponse,
     SetQuestRequest,
+    SoldMarketListing,
     UsernameRequest,
     UsernameResponse,
 } from "../../shared/types/user";
@@ -108,6 +111,7 @@ export class Account {
     items: Item[] = [];
     marketListings: MarketListing[] = [];
     userMarketListings: MarketListing[] = [];
+    soldMarketListings: SoldMarketListing[] = [];
     quests: Quest[] = [];
     questPriv = "";
     pass: Record<string, PassType> = {};
@@ -409,9 +413,14 @@ export class Account {
             this.gpBalance = res.gpBalance;
             this.marketListings = res.listings || [];
             this.userMarketListings = res.userListings || [];
+            this.soldMarketListings = res.soldListings || [];
             this.emit("gpBalance", this.gpBalance);
             this.emit("market", this.marketListings, this.userMarketListings);
+            if (this.soldMarketListings.length > 0) {
+                this.emit("soldMarketListings", this.soldMarketListings);
+            }
             if (res.expiredItemTypes?.length) {
+                this.emit("expiredMarketListings", res.expiredItemTypes);
                 this.loadProfile();
             }
             callback?.(true);
@@ -493,6 +502,17 @@ export class Account {
                 this.loadProfile();
                 this.loadMarket();
                 callback?.();
+            },
+        );
+    }
+
+    ackSoldMarketListings(listingIds: string[], callback?: (success: boolean) => void) {
+        const args: AckSoldMarketListingsRequest = { listingIds };
+        this.ajaxRequest(
+            "/api/user/ack_sold_market_listings",
+            args,
+            (err, res: AckSoldMarketListingsResponse) => {
+                callback?.(!err && !!res?.success);
             },
         );
     }

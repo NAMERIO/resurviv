@@ -33,6 +33,14 @@ export type MarketListing = {
     createdAt: number;
 };
 
+export type SoldMarketListing = {
+    id: string;
+    itemId: string;
+    itemType: string;
+    price: number;
+    soldAt: number;
+};
+
 export const zUsernameRequest = z.object({
     username: z.string().trim().min(1).max(Constants.PlayerNameMaxLen),
 });
@@ -116,6 +124,7 @@ export type GetMarketResponse = {
     gpBalance: number;
     listings: MarketListing[];
     userListings: MarketListing[];
+    soldListings: SoldMarketListing[];
     expiredItemTypes: string[];
 };
 
@@ -160,4 +169,12 @@ export type CancelMarketListingResponse = {
     success: boolean;
     error?: "listing_not_found" | "server_error";
     gpBalance?: number;
+};
+
+export const zAckSoldMarketListingsRequest = z.object({
+    listingIds: z.array(z.string().uuid()).max(50),
+});
+export type AckSoldMarketListingsRequest = z.infer<typeof zAckSoldMarketListingsRequest>;
+export type AckSoldMarketListingsResponse = {
+    success: boolean;
 };
