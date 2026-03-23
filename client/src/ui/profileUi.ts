@@ -350,7 +350,10 @@ export class ProfileUi {
             account_banned: `Account banned: ${data}`,
             login_failed: "Login failed.",
         };
-        const text = typeText[type as keyof typeof typeText];
+        const text =
+            type === "market_error"
+                ? this.localization.translate(data || "") || data || ""
+                : typeText[type as keyof typeof typeText];
         if (text) {
             this.errorModal.selector.find(".modal-body-text").html(text);
             this.errorModal.show();

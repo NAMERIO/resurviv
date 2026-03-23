@@ -157,11 +157,11 @@ export class ShopMenu {
                 this.confirmSellModal.hide();
                 if (!item.id) return false;
                 this.account.buyMarketListing(item.id, (error) => {
-                    this.setStatus(
-                        error
-                            ? `shop-market-error-${error}`
-                            : "shop-market-buy-success",
-                    );
+                    if (error) {
+                        this.showMarketError(error);
+                    } else {
+                        this.setStatus("shop-market-buy-success");
+                    }
                 });
                 return false;
             }
@@ -169,11 +169,11 @@ export class ShopMenu {
                 this.confirmSellModal.hide();
                 if (!item.id) return false;
                 this.account.cancelMarketListing(item.id, (error) => {
-                    this.setStatus(
-                        error
-                            ? `shop-market-error-${error}`
-                            : "shop-market-cancel-success",
-                    );
+                    if (error) {
+                        this.showMarketError(error);
+                    } else {
+                        this.setStatus("shop-market-cancel-success");
+                    }
                 });
                 return false;
             }
@@ -186,9 +186,11 @@ export class ShopMenu {
             this.confirmSellModal.hide();
             if (!item.itemId) return false;
             this.account.createMarketListing(item.itemId, price, (error) => {
-                this.setStatus(
-                    error ? `shop-market-error-${error}` : "shop-market-sell-success",
-                );
+                if (error) {
+                    this.showMarketError(error);
+                } else {
+                    this.setStatus("shop-market-sell-success");
+                }
             });
             return false;
         });
@@ -309,6 +311,8 @@ export class ShopMenu {
         ).addClass("store-tab-selected");
 
         const shopVisible = tab === "shop";
+        $("#lock-shop-container").css("display", this.account.loggedIn ? "none" : "block");
+        $(".market-btns-container").toggleClass("market-ui-locked", !this.account.loggedIn);
         $(".iap-container").css("display", shopVisible ? "flex" : "none");
         $(".market-container").css("display", shopVisible ? "none" : "flex");
         $(".market-locked-container").css("display", "none");
@@ -850,11 +854,12 @@ export class ShopMenu {
         errorEl.text(this.localization.translate(key) || "That price is invalid.").show();
     }
 
+    showMarketError(error: string) {
+        this.account.emit("error", "market_error", `shop-market-error-${error}`);
+    }
+
     setStatus(key: string) {
-        $("#shop-status").text(
-            this.localization.translate(key) ||
-                "This market action needs server support before it can be enabled.",
-        );
+        void key;
     }
 
     enqueueSoldListings(

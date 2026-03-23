@@ -176,7 +176,6 @@
   "index-shop": "Shop",
   "shop-subtitle": "Golden Potato and market preview",
   "shop-balance": "GP",
-  "shop-client-only-note": "GP comes from quests and market sales. Buy, sell, and cancel listings from this menu.",
   "shop-market-action-disabled": "This market action is currently unavailable.",
   "shop-market-load-failed": "Failed to load market data.",
   "shop-market-buy-success": "Item purchased successfully.",
