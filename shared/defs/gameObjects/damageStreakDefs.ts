@@ -3,7 +3,6 @@ import { Rarity } from "../../gameConfig";
 export interface DamageStreakDef {
     readonly type: "streak";
     readonly name: string;
-    readonly rarity: Rarity;
     readonly lore: string;
     readonly rewardType: "perk" | "gun";
     readonly rewardItem: string;
@@ -35,7 +34,6 @@ export const DamageStreakDefs: Record<string, DamageStreakDef> = {
     streak_rapid_fire: {
         type: "streak",
         name: "Rapid Fire",
-        rarity: Rarity.Common,
         lore: "Increased fire rate for 10 seconds!",
         rewardType: "perk",
         rewardItem: "streak_rapid_fire_effect",
@@ -52,7 +50,6 @@ export const DamageStreakDefs: Record<string, DamageStreakDef> = {
     streak_heavy_hitter: {
         type: "streak",
         name: "Heavy Hitter",
-        rarity: Rarity.Rare,
         lore: "AWM-S sniper for 10 seconds!",
         rewardType: "gun",
         rewardItem: "awc",
@@ -69,7 +66,6 @@ export const DamageStreakDefs: Record<string, DamageStreakDef> = {
     streak_juggernaut: {
         type: "streak",
         name: "Juggernaut",
-        rarity: Rarity.Uncommon,
         lore: "Damage reduction + health regen for 10 seconds!",
         rewardType: "perk",
         rewardItem: "streak_juggernaut_effect",
