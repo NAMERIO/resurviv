@@ -145,6 +145,10 @@ export const helpers = {
                     return "item-deathEffect";
                 case "crosshair":
                     return "item-crosshair";
+                case "perk":
+                    return "item-perk";
+                case "streak":
+                    return "item-streak";
                 default:
                     return "";
             }
@@ -153,7 +157,7 @@ export const helpers = {
             return "";
         }
         const visuals = this.getRarityVisuals(rarity);
-        return `<div class="item-rarity-style" style="background-color: ${visuals.border};"><div class="${itemTypeClass}"></div></div>`;
+        return `<div class="item-rarity-style" style="background-color: ${visuals.border}; --item-rarity-color: ${visuals.border};"><div class="${itemTypeClass}"></div></div>`;
     },
     htmlEscape: function (str = "") {
         return str

@@ -5578,7 +5578,13 @@ input [type="image"]:focus {
 }
 
 .customize-list-item-selected .item-rarity-style > div {
-  background: #5a5a5a !important;
+  background: var(--item-rarity-color) !important;
+}
+
+.customize-list-item-selected .item-rarity-style .item-perk-custom,
+.customize-list-item-selected .item-rarity-style .item-streak-custom {
+  background-color: transparent !important;
+  filter: grayscale(1) brightness(0.6);
 }
 
 .item-rarity-style {
@@ -5597,9 +5603,24 @@ input [type="image"]:focus {
 .item-rarity-style .item-boost,
 .item-rarity-style .item-boost_effect,
 .item-rarity-style .item-deathEffect,
-.item-rarity-style .item-crosshair {
+.item-rarity-style .item-crosshair,
+.item-rarity-style .item-perk,
+.item-rarity-style .item-streak {
   width: 100%;
   height: 100%;
+}
+
+.item-rarity-style .item-outfit,
+.item-rarity-style .item-melee,
+.item-rarity-style .item-emote,
+.item-rarity-style .item-heal,
+.item-rarity-style .item-heal_effect,
+.item-rarity-style .item-boost,
+.item-rarity-style .item-boost_effect,
+.item-rarity-style .item-deathEffect,
+.item-rarity-style .item-crosshair,
+.item-rarity-style .item-perk,
+.item-rarity-style .item-streak {
   background: #fff;
   mask-position: center;
   mask-repeat: no-repeat;
@@ -5644,6 +5665,20 @@ input [type="image"]:focus {
 .item-rarity-style .item-crosshair {
   mask-image: url(/img/gui/item-crosshair-style.svg);
   -webkit-mask-image: url(/img/gui/item-crosshair-style.svg);
+}
+
+.item-rarity-style .item-perk {
+  mask-image: url(/img/loot/loot-perk-splinter.svg);
+  -webkit-mask-image: url(/img/loot/loot-perk-splinter.svg);
+  mask-size: 75%;
+  -webkit-mask-size: 75%;
+}
+
+.item-rarity-style .item-streak {
+  mask-image: url(/img/loot/loot-perk-firepower.svg);
+  -webkit-mask-image: url(/img/loot/loot-perk-firepower.svg);
+  mask-size: 75%;
+  -webkit-mask-size: 75%;
 }
 
 #customize-crosshair-selected {
@@ -8133,7 +8168,7 @@ input [type="image"]:focus {
   padding: 25px;
   display: flex;
   gap: 25px;
-  min-height: 550px;
+  min-height: 450px;
 }
 
 /* gonna use this to add text in the future*/
