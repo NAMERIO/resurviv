@@ -12,10 +12,10 @@ import {
     type LoadoutResponse,
     type ProfileResponse,
     type UsernameResponse,
+    zAckSoldMarketListingsRequest,
     zBuyMarketListingRequest,
     zCancelMarketListingRequest,
     zCreateMarketListingRequest,
-    zAckSoldMarketListingsRequest,
     zLoadoutRequest,
     zSetItemStatusRequest,
     zUsernameRequest,
@@ -386,10 +386,7 @@ UserRouter.post(
                 await expireMarketListings(tx, user.id);
 
                 const ownedItem = await tx.query.itemsTable.findFirst({
-                    where: and(
-                        eq(itemsTable.userId, user.id),
-                        eq(itemsTable.id, itemId),
-                    ),
+                    where: and(eq(itemsTable.userId, user.id), eq(itemsTable.id, itemId)),
                 });
 
                 if (!ownedItem) {

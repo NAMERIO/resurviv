@@ -239,7 +239,7 @@ export const RoleDefs: Record<string, RoleDef> = {
             alive: "player-medic.img",
             dead: "skull-leader.img",
         },
-        perks: ["aoe_heal",],
+        perks: ["aoe_heal"],
         defaultItems: createDefaultItems({
             weapons: [
                 { type: "", ammo: 0 },
