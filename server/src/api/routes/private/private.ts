@@ -319,12 +319,16 @@ export const PrivateRouter = new Hono<Context>()
                 const oldLevel = passUtil.getPassLevelAndXp(passType, oldTotalXp).level;
                 const newLevel = passUtil.getPassLevelAndXp(passType, newTotalXp).level;
 
-                const unlockedRewardItems = passDef.items
-                    .filter(
-                        (reward) => reward.level > oldLevel && reward.level <= newLevel,
-                    )
-                    .map((reward) => reward.item)
+                const unlockedRewards = passDef.items.filter(
+                    (reward) => reward.level > oldLevel && reward.level <= newLevel,
+                );
+                const unlockedRewardItems = unlockedRewards
+                    .flatMap((reward) => ("item" in reward ? [reward.item] : []))
                     .filter((item) => !!GameObjectDefs[item]);
+                const passGpGain = unlockedRewards.reduce(
+                    (total, reward) => total + ("gp" in reward ? reward.gp : 0),
+                    0,
+                );
 
                 let unlockedNewItems = false;
 
@@ -366,11 +370,11 @@ export const PrivateRouter = new Hono<Context>()
                         },
                     });
 
-                if (gpGain > 0) {
+                if (gpGain > 0 || passGpGain > 0) {
                     await tx
                         .update(usersTable)
                         .set({
-                            gpBalance: sql`${usersTable.gpBalance} + ${gpGain}`,
+                            gpBalance: sql`${usersTable.gpBalance} + ${gpGain + passGpGain}`,
                         })
                         .where(eq(usersTable.id, userId));
                 }

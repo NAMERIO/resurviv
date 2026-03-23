@@ -1,7 +1,7 @@
 import $ from "jquery";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import type { EmoteDef } from "../../../shared/defs/gameObjects/emoteDefs";
-import { PassDefs } from "../../../shared/defs/gameObjects/passDefs";
+import { PassDefs, type PassRewardDef } from "../../../shared/defs/gameObjects/passDefs";
 import { QuestDefs } from "../../../shared/defs/gameObjects/questDefs";
 import { math } from "../../../shared/utils/math";
 import { passUtil } from "../../../shared/utils/passUtil";
@@ -13,11 +13,34 @@ import type { Localization } from "./localization";
 function getNextPassUnlockItemId(passType: string, currentLevel: number) {
     const passDef = PassDefs[passType];
     for (let itemIndex = 0; itemIndex < passDef.items.length; itemIndex++) {
-        if (passDef.items[itemIndex].level == currentLevel + 1) {
-            return passDef.items[itemIndex].item;
+        const reward = passDef.items[itemIndex];
+        if (reward.level == currentLevel + 1) {
+            return reward;
         }
     }
-    return "";
+    return null;
+}
+
+function getPassRewardName(reward: PassRewardDef) {
+    if ("gp" in reward) {
+        return `${reward.gp} GP`;
+    }
+    const itemDef = GameObjectDefs[reward.item];
+    return (itemDef as any)?.name || reward.item;
+}
+
+function getPassRewardImage(reward: PassRewardDef) {
+    if ("gp" in reward) {
+        return "img/loot/loot-golde-potato.svg";
+    }
+    return helpers.getSvgFromGameType(reward.item);
+}
+
+function getPassRewardTransform(reward: PassRewardDef) {
+    if ("gp" in reward) {
+        return "";
+    }
+    return helpers.getCssTransformFromGameType(reward.item);
 }
 function humanizeTime(time: number, minutesFloor = false) {
     // const minutesFloor =
@@ -301,14 +324,10 @@ export class Pass {
 
         for (const passItem of passDef.items) {
             const itemLevel = passItem.level;
-            const itemId = passItem.item;
-            const itemDef = GameObjectDefs[itemId];
-
             const isUnlocked = itemLevel <= passLevel;
-
-            const itemName = (itemDef as any)?.name || itemId;
-            const svgUrl = helpers.getSvgFromGameType(itemId);
-            const transform = helpers.getCssTransformFromGameType(itemId);
+            const itemName = getPassRewardName(passItem);
+            const svgUrl = getPassRewardImage(passItem);
+            const transform = getPassRewardTransform(passItem);
             const itemDiv = $(`
                 <div class="pass-item ${isUnlocked ? "unlocked" : ""} ${!isUnlocked ? "pass-item-locked" : ""}">
                     <div class="pass-item-level">${itemLevel}</div>
@@ -361,15 +380,16 @@ export class Pass {
         }
     }
 
-    setPassUnlockImage(item: string) {
-        const emoteDef = GameObjectDefs[item] as EmoteDef;
-        const unlockImagePath = emoteDef
-            ? helpers.getSvgFromGameType(item)
+    setPassUnlockImage(reward: PassRewardDef | null) {
+        const item = reward && "item" in reward ? reward.item : "";
+        const emoteDef = item ? (GameObjectDefs[item] as EmoteDef) : undefined;
+        const unlockImagePath = reward
+            ? getPassRewardImage(reward)
             : "img/emotes/surviv.svg";
         const unlockImageUrl = `url(${unlockImagePath})`;
-        const unlockImageTransform = helpers.getCssTransformFromGameType(item);
+        const unlockImageTransform = reward ? getPassRewardTransform(reward) : "";
         $("#pass-progress-unlock").css({
-            opacity: emoteDef ? 1 : 0.15,
+            opacity: reward ? 1 : 0.15,
             transform: `translate(-50%, -50%) ${unlockImageTransform}`,
         });
         $("#pass-progress-unlock-image").css({
@@ -381,19 +401,25 @@ export class Pass {
                       `loadout-title-${this.loadoutMenu.getCategory(emoteDef.type)!.loadoutType}`,
                   )
                   .toUpperCase()
-            : "";
+            : reward && "gp" in reward
+              ? "CURRENCY"
+              : "";
         const tooltipElem = $("#pass-unlock-tooltip");
-        tooltipElem.css("opacity", emoteDef ? 1 : 0);
+        tooltipElem.css("opacity", reward ? 1 : 0);
         tooltipElem.find(".tooltip-pass-title").html(unlockTypeTitle);
-        tooltipElem.find(".tooltip-pass-desc").html(emoteDef ? emoteDef.name! : "");
+        tooltipElem
+            .find(".tooltip-pass-desc")
+            .html(reward ? getPassRewardName(reward) : "");
         const unlockTypeImageUrl = emoteDef
             ? `url(${this.loadoutMenu.getCategory(emoteDef.type)!.categoryImage})`
-            : "";
+            : reward && "gp" in reward
+              ? "url(img/loot/loot-golde-potato.svg)"
+              : "";
         $("#pass-progress-unlock-type-image").css({
             "background-image": unlockTypeImageUrl,
         });
         $("#pass-progress-unlock-type-wrapper").css({
-            display: emoteDef ? "block" : "none",
+            display: reward ? "block" : "none",
         });
     }
 
@@ -625,7 +651,7 @@ export class Pass {
         $("#pass-progress-level").html(1);
         $("#pass-progress-xp-current").html(0);
         $("#pass-progress-xp-target").html(def.xp[0]);
-        this.setPassUnlockImage(def.items[0].item);
+        this.setPassUnlockImage(def.items[0] ?? null);
         $("#pass-items-wrapper").addClass("logged-out");
         this.populatePassItems();
     }

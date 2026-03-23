@@ -1,11 +1,18 @@
 export interface PassDef {
     readonly type: "pass";
     xp: number[];
-    items: Array<{
-        level: number;
-        item: string;
-    }>;
+    items: PassRewardDef[];
 }
+
+export type PassRewardDef =
+    | {
+          level: number;
+          item: string;
+      }
+    | {
+          level: number;
+          gp: number;
+      };
 
 export const PassDefs: Record<string, PassDef> = {
     pass_survivr1: {
@@ -104,8 +111,12 @@ export const PassDefs: Record<string, PassDef> = {
                 item: "bayonet_rugged",
             },
             {
-                level: 99,
+                level: 95,
                 item: "bayonet_woodland",
+            },
+            {
+                level: 99,
+                gp: 1000,
             },
         ],
     },
