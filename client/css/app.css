@@ -260,6 +260,34 @@ a:active {
   width: 300px;
 }
 
+#market-error-toast {
+  display: none;
+}
+
+#market-error-toast.market-error-toast-visible {
+  background-color: #c61014;
+  border-bottom: 2px solid #6f0000;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 -2px #6f0000,
+    0 6px 18px rgba(0, 0, 0, 0.35);
+  color: #fff;
+  left: 50%;
+  line-height: 40px;
+  min-height: 40px;
+  padding: 0 18px;
+  position: fixed;
+  top: 18px;
+  transform: translateX(-50%);
+  width: auto;
+  max-width: min(520px, calc(100vw - 32px));
+  z-index: 99999;
+  bottom: auto;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+}
+
 @media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
   #server-warning {
     font-size: 12px;
@@ -4692,7 +4720,8 @@ a:active {
       rgba(167, 165, 77, 0.856018) 81.7%,
       rgba(244, 244, 209, 0.836292) 86.72%,
       rgba(203, 184, 20, 0.9) 98.68%
-    ), radial-gradient(64.2% 64.2% at 28.13% 35.8%, #ecf013 0%, #aeb110 100%);
+    ),
+    radial-gradient(64.2% 64.2% at 28.13% 35.8%, #ecf013 0%, #aeb110 100%);
   border-radius: 5px;
   box-sizing: border-box;
   display: block;
@@ -4734,7 +4763,8 @@ a:active {
       rgba(239, 239, 165, 0.9) 57.53%,
       rgba(196, 189, 59, 0.9) 65.25%,
       rgba(203, 184, 20, 0.9) 86.32%
-    ), radial-gradient(64.2% 64.2% at 28.13% 35.8%, #ecf013 0%, #aeb110 100%);
+    ),
+    radial-gradient(64.2% 64.2% at 28.13% 35.8%, #ecf013 0%, #aeb110 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -9390,7 +9420,8 @@ input [type="image"]:focus {
       rgba(239, 239, 165, 0.9) 57.53%,
       rgba(196, 189, 59, 0.9) 65.25%,
       rgba(203, 184, 20, 0.9) 86.32%
-    ), radial-gradient(64.2% 64.2% at 28.13% 35.8%, #ecf013 0%, #aeb110 100%);
+    ),
+    radial-gradient(64.2% 64.2% at 28.13% 35.8%, #ecf013 0%, #aeb110 100%);
   background-clip: text;
   -webkit-background-clip: text;
   font-size: 38px;
@@ -9886,7 +9917,8 @@ input [type="image"]:focus {
       rgba(239, 239, 165, 0.9) 57.53%,
       rgba(196, 189, 59, 0.9) 65.25%,
       rgba(203, 184, 20, 0.9) 86.32%
-    ), radial-gradient(64.2% 64.2% at 28.13% 35.8%, #ecf013 0%, #aeb110 100%);
+    ),
+    radial-gradient(64.2% 64.2% at 28.13% 35.8%, #ecf013 0%, #aeb110 100%);
   color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
@@ -10370,7 +10402,8 @@ input [type="image"]:focus {
       rgba(239, 239, 165, 0.9) 57.53%,
       rgba(196, 189, 59, 0.9) 65.25%,
       rgba(203, 184, 20, 0.9) 86.32%
-    ), radial-gradient(64.2% 64.2% at 28.13% 35.8%, #ecf013 0%, #aeb110 100%);
+    ),
+    radial-gradient(64.2% 64.2% at 28.13% 35.8%, #ecf013 0%, #aeb110 100%);
   -webkit-background-clip: text;
   background-clip: text;
 }

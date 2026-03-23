@@ -61,7 +61,9 @@ export class ShopMenu {
     modal = new MenuModal($("#iap-modal"));
     confirmSellModal = new MenuModal($("#modal-confirm-sell"));
     soldNotificationModal = new MenuModal($("#market-modal-notification"));
+    marketErrorToast = $("#market-error-toast");
     marketTimerId: number | null = null;
+    marketErrorTimeoutId: number | null = null;
     balanceAnimationId: number | null = null;
     pendingSellItem: Listing | null = null;
     pendingAction: "buy" | "sell" | "cancel" = "sell";
@@ -86,6 +88,11 @@ export class ShopMenu {
         public account: Account,
         public localization: Localization,
     ) {
+        if (!this.marketErrorToast.length) {
+            this.marketErrorToast = $("<div/>", {
+                id: "market-error-toast",
+            }).appendTo("body");
+        }
         this.bindUi();
         this.account.addEventListener("items", () => {
             this.refreshData();
@@ -876,7 +883,43 @@ export class ShopMenu {
     }
 
     showMarketError(error: string) {
-        this.account.emit("error", "market_error", `shop-market-error-${error}`);
+        const message =
+            this.localization.translate(`shop-market-error-${error}`) ||
+            this.localization.translate("shop-market-error-server_error") ||
+            "Market error.";
+
+        if (this.marketErrorTimeoutId !== null) {
+            window.clearTimeout(this.marketErrorTimeoutId);
+            this.marketErrorTimeoutId = null;
+        }
+
+        this.marketErrorToast
+            .stop(true, true)
+            .removeClass("market-error-toast-visible")
+            .text(message)
+            .css({
+                display: "block",
+                opacity: 1,
+            })
+            .addClass("market-error-toast-visible");
+
+        this.marketErrorTimeoutId = window.setTimeout(() => {
+            this.marketErrorToast.stop(true, true).animate(
+                {
+                    opacity: 0,
+                },
+                150,
+                () => {
+                    this.marketErrorToast
+                        .removeClass("market-error-toast-visible")
+                        .css({
+                            display: "none",
+                        })
+                        .text("");
+                },
+            );
+            this.marketErrorTimeoutId = null;
+        }, 1800);
     }
 
     setStatus(key: string) {
