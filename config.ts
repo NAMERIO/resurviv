@@ -67,6 +67,7 @@ export function getConfig(isProduction: boolean, dir: string) {
             spawnMode: "default",
             allowBots: isDev,
             allowEditMsg: isDev,
+            developerSlugs: [],
             allowMockAccount: isDev,
         },
         defaultItems: {},

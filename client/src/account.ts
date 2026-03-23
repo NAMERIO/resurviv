@@ -104,6 +104,7 @@ export class Account {
         usernameSet: false,
         username: "",
         slug: "",
+        canUseDeveloper: false,
         usernameChangeTime: 0,
     };
 
@@ -227,8 +228,12 @@ export class Account {
                 this.gpBalance = data.gpBalance;
                 this.items = data.items;
                 this.loadout = data.loadout;
-                const profile = this.config.get("profile") || { slug: "" };
+                const profile = this.config.get("profile") || {
+                    slug: "",
+                    canUseDeveloper: false,
+                };
                 profile.slug = data.profile.slug;
+                profile.canUseDeveloper = data.profile.canUseDeveloper;
                 this.config.set("profile", profile);
             }
             if (!this.loggedIn) {

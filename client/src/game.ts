@@ -13,9 +13,7 @@ import type { ConfigManager, DebugRenderOpts } from "./config";
 import { DebugHUD } from "./debug/debugHUD";
 import { debugLines } from "./debug/debugLines";
 
-/* STRIP_FROM_PROD_CLIENT:START */
 import { Editor } from "./debug/editor";
-/* STRIP_FROM_PROD_CLIENT:END */
 
 import { device } from "./device";
 import { discordPresence } from "./discordPresence";
@@ -111,7 +109,7 @@ export class Game {
     m_debugZoom!: number;
     m_useDebugZoom!: boolean;
 
-    editor!: Editor;
+    editor?: Editor;
     debugHUD!: DebugHUD;
 
     seq!: number;
@@ -145,9 +143,13 @@ export class Game {
         this.m_inputBindUi = m_inputBindUi;
         this.m_resourceManager = m_resourceManager;
 
-        if (IS_DEV) {
+        if (IS_DEV || this.canUseDeveloper()) {
             this.editor = new Editor(this.m_config);
         }
+    }
+
+    canUseDeveloper() {
+        return Boolean(this.m_config.get("profile")?.canUseDeveloper);
     }
 
     tryJoinGame(
@@ -417,11 +419,15 @@ export class Game {
     update(dt: number) {
         this.debugHUD.m_update(dt, this);
 
-        if (IS_DEV) {
-            if (this.m_input.keyPressed(Key.Tilde)) {
+        if (!this.editor && this.canUseDeveloper()) {
+            this.editor = new Editor(this.m_config);
+        }
+
+        if (IS_DEV || this.canUseDeveloper()) {
+            if (this.editor && this.m_input.keyPressed(Key.Tilde)) {
                 this.editor.setEnabled(!this.editor.enabled);
             }
-            if (this.editor.enabled) {
+            if (this.editor?.enabled) {
                 this.editor.m_update(this.m_input);
             }
         }
@@ -839,7 +845,7 @@ export class Game {
         // Clear cached data
         this.m_ui2Manager.flushInput();
 
-        if (IS_DEV && this.editor.enabled && this.editor.sendMsg) {
+        if ((IS_DEV || this.canUseDeveloper()) && this.editor?.enabled && this.editor.sendMsg) {
             var msg = this.editor.getMsg();
             this.m_sendMessage(net.MsgType.Edit, msg);
             this.editor.postSerialization();
@@ -1303,8 +1309,8 @@ export class Game {
                         channel: "ui",
                     });
                 }
-                if (IS_DEV) {
-                    if (this.editor.enabled) {
+                if (IS_DEV || this.canUseDeveloper()) {
+                    if (this.editor?.enabled) {
                         this.editor.sendMsg = true;
                     }
                 }
@@ -1348,7 +1354,7 @@ export class Game {
                     this.m_uiManager.setRoleMenuActive(false);
                 }
 
-                if (IS_DEV) {
+                if ((IS_DEV || this.canUseDeveloper()) && this.editor) {
                     this.editor.toolParams.mapSeed = msg.seed;
                     this.editor.pane.refresh();
                 }

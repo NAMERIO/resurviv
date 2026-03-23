@@ -38,6 +38,7 @@ import { Profiler } from "./profiler";
 export interface JoinTokenData {
     expiresAt: number;
     userId: string | null;
+    canUseDeveloper: boolean;
     findGameIp: string;
     loadout?: Loadout;
     quests?: string[];
@@ -574,6 +575,7 @@ export class Game {
             this.joinTokens.set(token.token, {
                 expiresAt: Date.now() + 10000,
                 userId: token.userId,
+                canUseDeveloper: token.canUseDeveloper ?? false,
                 groupData,
                 findGameIp: token.ip,
                 loadout: token.loadout,

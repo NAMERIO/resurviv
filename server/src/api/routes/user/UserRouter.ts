@@ -22,6 +22,7 @@ import {
 } from "../../../../../shared/types/user";
 import loadout from "../../../../../shared/utils/loadout";
 import { getMarketPriceBounds } from "../../../../../shared/utils/marketPricing";
+import { Config } from "../../../config";
 import { validateUserName } from "../../../utils/serverHelpers";
 import { server } from "../../apiServer";
 import {
@@ -48,6 +49,10 @@ import { PassRouter } from "./PassRouter";
 export const UserRouter = new Hono<Context>();
 
 const MARKET_LISTING_EXPIRY_MS = 24 * 60 * 60 * 1000;
+
+function canUseDeveloper(slug: string) {
+    return Config.debug.developerSlugs.includes(slug);
+}
 
 function isSupportedMarketItem(itemType: string) {
     return getMarketPriceBounds(itemType) !== null;
@@ -220,6 +225,7 @@ UserRouter.post("/profile", async (c) => {
                 username,
                 usernameSet,
                 usernameChangeTime: timeUntilNextChange,
+                canUseDeveloper: canUseDeveloper(slug),
             },
             gpBalance: user.gpBalance,
             loadout,

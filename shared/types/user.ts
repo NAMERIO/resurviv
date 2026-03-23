@@ -18,6 +18,7 @@ export type ProfileResponse =
               usernameSet: boolean;
               linked: boolean;
               usernameChangeTime: number;
+              canUseDeveloper: boolean;
           };
           gpBalance: number;
           loadout: Loadout;

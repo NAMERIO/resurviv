@@ -225,6 +225,7 @@ export class PlayerBarn {
             ip,
             joinData.findGameIp,
             joinData.userId,
+            joinData.canUseDeveloper,
             joinData.loadout,
             joinData.quests,
         );
@@ -1538,6 +1539,7 @@ export class Player extends BaseGameObject {
     matchDataId: number;
 
     userId: string | null = null;
+    canUseDeveloper = false;
     ip: string;
     encodedIp: string;
     // see comment on server/src/api/schema.ts
@@ -1555,6 +1557,7 @@ export class Player extends BaseGameObject {
         ip: string,
         findGameIp: string,
         userId: string | null,
+        canUseDeveloper = false,
         loadout?: Loadout,
         questIds?: string[],
     ) {
@@ -1571,6 +1574,7 @@ export class Player extends BaseGameObject {
         this.encodedIp = hashIp(ip);
         this.findGameEncodedIp = hashIp(findGameIp);
         this.userId = userId;
+        this.canUseDeveloper = canUseDeveloper;
 
         this.questManager.quests = (questIds ?? []).map((id) => ({ id, delta: 0 }));
 
@@ -5074,7 +5078,7 @@ export class Player extends BaseGameObject {
     }
 
     processEditMsg(msg: net.EditMsg) {
-        if (!Config.debug.allowEditMsg) return;
+        if (!Config.debug.allowEditMsg || !this.canUseDeveloper) return;
 
         if (msg.loadNewMap) {
             this.game.map.regenerate(msg.newMapSeed);

@@ -90,7 +90,7 @@ const defaultConfig = {
     touchMoveStyle: "anywhere" as "locked" | "anywhere",
     touchAimStyle: "anywhere" as "locked" | "anywhere",
     touchAimLine: true,
-    profile: null as { slug: string } | null,
+    profile: null as { slug: string; canUseDeveloper?: boolean } | null,
     playerName: "",
     region: "na",
     gameModeIdx: 2,
@@ -109,10 +109,8 @@ const defaultConfig = {
     binds: "",
     cachedBgImg: "img/main_splash.png",
     version: 1,
-    /* STRIP_FROM_PROD_CLIENT:START */
     debugTools: debugToolsConfig,
     debugRenderer: debugRenderConfig,
-    /* STRIP_FROM_PROD_CLIENT:END */
     debugHUD: debugHUDConfig,
     buildingEditor: BuildingEditorConfig,
 };

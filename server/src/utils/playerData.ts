@@ -1,6 +1,7 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../api/db";
 import { userQuestTable, usersTable } from "../api/db/schema";
+import { Config } from "../config";
 import type { FindGamePrivateBody } from "./types";
 
 export async function getFindGamePlayerData(
@@ -20,6 +21,7 @@ export async function getFindGamePlayerData(
                       await db
                           .select({
                               userId: usersTable.id,
+                              slug: usersTable.slug,
                               loadout: usersTable.loadout,
                               quests: sql<
                                   string[]
@@ -41,6 +43,10 @@ export async function getFindGamePlayerData(
         token,
         userId,
         ip,
+        canUseDeveloper: userId
+            ? !!accountData[userId]?.slug &&
+              Config.debug.developerSlugs.includes(accountData[userId].slug)
+            : false,
         loadout: userId ? accountData[userId]?.loadout : undefined,
         quests: userId ? (accountData[userId]?.quests ?? []) : [],
     }));

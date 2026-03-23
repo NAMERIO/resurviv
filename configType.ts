@@ -394,6 +394,10 @@ export interface ConfigType {
          */
         allowEditMsg: boolean;
         /**
+         * Account slugs allowed to use the in-game editor in production.
+         */
+        developerSlugs: string[];
+        /**
          * If the "mock" test account is enabled, used for testing account features without requiring discord or google oauth2 keys
          */
         allowMockAccount: boolean;
