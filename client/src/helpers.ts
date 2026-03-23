@@ -3,10 +3,51 @@ import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
 import type { MeleeDef } from "../../shared/defs/gameObjects/meleeDefs";
 import type { OutfitDef } from "../../shared/defs/gameObjects/outfitDefs";
 import { MapDefs } from "../../shared/defs/mapDefs";
+import { Rarity } from "../../shared/gameConfig";
 import * as net from "../../shared/net/net";
 import { device } from "./device";
 
 const truncateCanvas = document.createElement("canvas");
+
+const rarityVisuals: Record<
+    Rarity,
+    {
+        text: string;
+        border: string;
+        backgroundColor: string;
+    }
+> = {
+    [Rarity.Stock]: {
+        text: "#c5c5c5",
+        border: "#969696",
+        backgroundColor: "#282828",
+    },
+    [Rarity.Common]: {
+        text: "#c5c5c5",
+        border: "#A1A1A1",
+        backgroundColor: "#3E3E3E",
+    },
+    [Rarity.Uncommon]: {
+        text: "#1dff55",
+        border: "#80B251",
+        backgroundColor: "#141414",
+    },
+    [Rarity.Rare]: {
+        text: "#00deff",
+        border: "#50AFAB",
+        backgroundColor: "#141414",
+    },
+    [Rarity.Epic]: {
+        text: "#eb53ff",
+        border: "#874C90",
+        backgroundColor: "#141414",
+    },
+    [Rarity.Mythic]: {
+        text: "#ff5252",
+        border: "#C61014",
+        backgroundColor: "#141414",
+    },
+};
 
 export function getParameterByName<T extends string>(name: string, url?: string): T {
     const searchParams = new URLSearchParams(url || window.location.search);
@@ -77,6 +118,42 @@ export const helpers = {
         return `rgba(${(color >> 16) & 255}, ${(color >> 8) & 255}, ${
             color & 255
         }, ${alpha})`;
+    },
+    getRarityVisuals: function (rarity?: number) {
+        return (
+            rarityVisuals[(rarity ?? Rarity.Stock) as Rarity] ||
+            rarityVisuals[Rarity.Stock]
+        );
+    },
+    getItemRarityStyleMarkup: function (gameType: string, rarity?: number) {
+        const def = GameObjectDefs[gameType] as { type?: string } | undefined;
+        const itemTypeClass = (() => {
+            switch (def?.type) {
+                case "outfit":
+                    return "item-outfit";
+                case "melee":
+                    return "item-melee";
+                case "emote":
+                    return "item-emote";
+                case "heal":
+                case "heal_effect":
+                    return "item-heal_effect";
+                case "boost":
+                case "boost_effect":
+                    return "item-boost_effect";
+                case "death_effect":
+                    return "item-deathEffect";
+                case "crosshair":
+                    return "item-crosshair";
+                default:
+                    return "";
+            }
+        })();
+        if (!itemTypeClass) {
+            return "";
+        }
+        const visuals = this.getRarityVisuals(rarity);
+        return `<div class="item-rarity-style" style="background-color: ${visuals.border};"><div class="${itemTypeClass}"></div></div>`;
     },
     htmlEscape: function (str = "") {
         return str

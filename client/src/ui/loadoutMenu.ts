@@ -1099,20 +1099,13 @@ export class LoadoutMenu {
                 : this.selectedItem.displayLore;
         this.modalCustomizeItemLore.html(localizedLore!);
         const rarityNames = ["stock", "common", "uncommon", "rare", "epic", "mythic"];
-        const Rarities = [
-            "#c5c5c5",
-            "#c5c5c5",
-            "#12ff00",
-            "#00deff",
-            "#f600ff",
-            "#d96100",
-        ];
+        const rarityVisuals = helpers.getRarityVisuals(this.selectedItem.rarity);
         const localizedRarity = this.localization.translate(
             `loadout-${rarityNames[this.selectedItem.rarity!]}`,
         );
         this.modalCustomizeItemRarity.html(localizedRarity);
         this.modalCustomizeItemRarity.css({
-            color: Rarities[this.selectedItem.rarity!],
+            color: rarityVisuals.text,
         });
         if (this.selectedItem.loadoutType == "emote") {
             this.highlightedSlots.css({
@@ -1522,9 +1515,7 @@ export class LoadoutMenu {
             const item = loadoutItems[i];
 
             const objDef = GameObjectDefs[item.type] as MeleeDef;
-            const itemName = objDef.name;
             const itemRarity = objDef.rarity || Rarity.Stock;
-            const itemLore = objDef.lore || "";
             const svg = helpers.getSvgFromGameType(item.type);
             const transform = helpers.getCssTransformFromGameType(item.type);
 
@@ -1554,12 +1545,25 @@ export class LoadoutMenu {
             const innerDiv = $("<div/>", {
                 class: "customize-item-image",
                 css: {
-                    "background-image": `url(${svg})`,
-                    transform,
+                    "background-color":
+                        helpers.getRarityVisuals(itemRarity).backgroundColor,
+                    border: `2px solid ${helpers.getRarityVisuals(itemRarity).border}`,
+                    "border-radius": "0",
+                    "box-shadow": "inset 0 0 0 1px rgba(0,0,0,0.35)",
                 },
                 "data-img": `url(${svg})`,
                 draggable,
             });
+            innerDiv.append(
+                $("<div/>", {
+                    class: "customize-item-sprite",
+                    css: {
+                        "background-image": `url(${svg})`,
+                        transform,
+                    },
+                }),
+            );
+            innerDiv.append(helpers.getItemRarityStyleMarkup(item.type, itemRarity));
             outerDiv.append(innerDiv);
 
             // Notification pulse

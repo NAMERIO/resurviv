@@ -311,8 +311,14 @@ export class ShopMenu {
         ).addClass("store-tab-selected");
 
         const shopVisible = tab === "shop";
-        $("#lock-shop-container").css("display", this.account.loggedIn ? "none" : "block");
-        $(".market-btns-container").toggleClass("market-ui-locked", !this.account.loggedIn);
+        $("#lock-shop-container").css(
+            "display",
+            this.account.loggedIn ? "none" : "block",
+        );
+        $(".market-btns-container").toggleClass(
+            "market-ui-locked",
+            !this.account.loggedIn,
+        );
         $(".iap-container").css("display", shopVisible ? "flex" : "none");
         $(".market-container").css("display", shopVisible ? "none" : "flex");
         $(".market-locked-container").css("display", "none");
@@ -572,14 +578,27 @@ export class ShopMenu {
                 : this.localization.translate("market-you") || "You");
         const timerLabel =
             this.localization.translate("market-listed-for-label") || "Listed For";
+        const rarityVisuals = helpers.getRarityVisuals(item.rarity);
         const card = $("<div/>", { class: "market-list-item-container" });
         const image = $("<div/>", {
             class: "market-item-img",
             css: {
-                "background-image": `url(${item.image})`,
-                transform: item.transform,
+                "background-color": rarityVisuals.backgroundColor,
+                border: `2px solid ${rarityVisuals.border}`,
+                "border-radius": "0",
+                "box-shadow": "inset 0 0 0 1px rgba(0,0,0,0.35)",
             },
         });
+        image.append(
+            $("<div/>", {
+                class: "market-item-sprite",
+                css: {
+                    "background-image": `url(${item.image})`,
+                    transform: item.transform,
+                },
+            }),
+        );
+        image.append(helpers.getItemRarityStyleMarkup(item.type, item.rarity));
         const info = $("<div/>", { class: "market-item-info-container" }).append(
             $("<div/>", { class: "market-item-title", text: item.name }),
             $("<div/>", { class: "market-item-stats-container" }).append(
@@ -598,6 +617,9 @@ export class ShopMenu {
                         text:
                             this.localization.translate(rarityL10n[item.rarity] || "") ||
                             "Unknown",
+                        css: {
+                            color: rarityVisuals.text,
+                        },
                     }),
                 ),
                 $("<div/>", {
@@ -629,7 +651,7 @@ export class ShopMenu {
                     ? "market-item-action-btn market-item-action-btn-cancel"
                     : item.action === "buy"
                       ? "market-item-action-btn market-item-action-btn-buy"
-                    : "market-item-action-btn",
+                      : "market-item-action-btn",
         }).append($("<span/>", { text: actionLabel }));
         if (item.action !== "sell") {
             button.append(
@@ -753,8 +775,7 @@ export class ShopMenu {
         const cooldownContainer = $(".market-cooldown-timer-text");
         const remainingMs = Math.max(0, this.marketRefreshCooldownUntil - Date.now());
         const remainingSeconds = Math.ceil(remainingMs / 1000);
-        const buttonLabel =
-            this.localization.translate("market-refresh") || "Refresh";
+        const buttonLabel = this.localization.translate("market-refresh") || "Refresh";
         const loadingLabel =
             this.localization.translate("market-refreshing") || "Refreshing...";
         const isCoolingDown = remainingSeconds > 0;
@@ -908,7 +929,8 @@ export class ShopMenu {
     showNextSoldNotification() {
         if (
             this.soldNotificationActive ||
-            (this.pendingSoldListings.length === 0 && this.pendingExpiredItems.length === 0)
+            (this.pendingSoldListings.length === 0 &&
+                this.pendingExpiredItems.length === 0)
         ) {
             return;
         }
@@ -917,11 +939,14 @@ export class ShopMenu {
         const expired = !sold ? this.pendingExpiredItems[0]! : null;
         const item = sold || expired!;
         const modal = $("#market-modal-notification");
-        modal.find("#market-modal-notification-title-text").text(
-            sold
-                ? this.localization.translate("market-item-sold-title") || "Item Sold"
-                : this.localization.translate("market-item-expired-title") || "Item Expired",
-        );
+        modal
+            .find("#market-modal-notification-title-text")
+            .text(
+                sold
+                    ? this.localization.translate("market-item-sold-title") || "Item Sold"
+                    : this.localization.translate("market-item-expired-title") ||
+                          "Item Expired",
+            );
         modal
             .find("#market-modal-notification-text")
             .text(
@@ -932,9 +957,26 @@ export class ShopMenu {
                           "Your market listing expired.",
             );
         modal.find("#market-item-sell-img").css({
-            "background-image": `url(${item.image})`,
-            transform: item.transform,
+            "background-color": helpers.getRarityVisuals(item.rarity).backgroundColor,
+            border: `2px solid ${helpers.getRarityVisuals(item.rarity).border}`,
+            "border-radius": "0",
+            "box-shadow": "inset 0 0 0 1px rgba(0,0,0,0.35)",
         });
+        modal.find("#market-item-sell-img .market-item-sprite").remove();
+        modal.find("#market-item-sell-img").prepend(
+            $("<div/>", {
+                class: "market-item-sprite",
+                css: {
+                    "background-image": `url(${item.image})`,
+                    transform: item.transform,
+                },
+            }),
+        );
+        const rarityBadge = $(helpers.getItemRarityStyleMarkup(item.type, item.rarity));
+        modal
+            .find("#market-item-sell-type")
+            .attr("style", rarityBadge.attr("style") || "")
+            .html(rarityBadge.html() || "");
         modal.find("#market-item-name").text(item.name);
         $("#market-modal-price-element").css("display", sold ? "flex" : "none");
         if (sold) {
