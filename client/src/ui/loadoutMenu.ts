@@ -47,17 +47,17 @@ function itemSort(sortFn: (a: Item, b: Item) => void) {
     return function (a: Item, b: Item) {
         // Always put stock items at the front of the list;
         // if not stock, sort by the given sort routine
-        const rarityA = (GameObjectDefs[a.type] as EmoteDef).rarity || Rarity.Stock;
-        const rarityB = (GameObjectDefs[b.type] as EmoteDef).rarity || Rarity.Stock;
-        if (rarityA == Rarity.Stock && rarityB == Rarity.Stock) {
-            return sortAlphabetical(a, b);
-        }
-        if (rarityA == Rarity.Stock) {
-            return -1;
-        }
-        if (rarityB == Rarity.Stock) {
-            return 1;
-        }
+        // const rarityA = (GameObjectDefs[a.type] as EmoteDef).rarity || Rarity.Stock;
+        // const rarityB = (GameObjectDefs[b.type] as EmoteDef).rarity || Rarity.Stock;
+        // if (rarityA == Rarity.Stock && rarityB == Rarity.Stock) {
+        //     return sortAlphabetical(a, b);
+        // }
+        // if (rarityA == Rarity.Stock) {
+        //     return -1;
+        // }
+        // if (rarityB == Rarity.Stock) {
+        //     return 1;
+        // }
         return sortFn(a, b);
     };
 }
@@ -1441,7 +1441,7 @@ export class LoadoutMenu {
 
         let sortType = this.itemSort.val() as string;
         if (!displaySubcatSort && sortType == "subcat") {
-            sortType = "newest";
+            sortType = "rarity";
             this.itemSort.val(sortType);
         }
 

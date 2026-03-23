@@ -5542,6 +5542,9 @@ input [type="image"]:focus {
   opacity: 1;
   border: 6px solid #fff !important;
   box-sizing: border-box;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.65),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
 .customize-list-item > .customize-item-image {

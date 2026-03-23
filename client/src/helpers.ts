@@ -30,22 +30,22 @@ const rarityVisuals: Record<
     [Rarity.Uncommon]: {
         text: "#1dff55",
         border: "#80B251",
-        backgroundColor: "#141414",
+        backgroundColor: "#465C33",
     },
     [Rarity.Rare]: {
         text: "#00deff",
         border: "#50AFAB",
-        backgroundColor: "#141414",
+        backgroundColor: "#1D4745",
     },
     [Rarity.Epic]: {
         text: "#eb53ff",
         border: "#874C90",
-        backgroundColor: "#141414",
+        backgroundColor: "#614066",
     },
     [Rarity.Mythic]: {
         text: "#ff5252",
         border: "#C61014",
-        backgroundColor: "#141414",
+        backgroundColor: "#6F0000",
     },
 };
 
