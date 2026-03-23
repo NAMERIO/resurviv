@@ -80,6 +80,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     }),
     outfitDemo: defineOutfitSkin("outfitBase", {
         noDrop: true,
+        rarity: Rarity.Stock,
         skinImg: {
             baseTint: 0xc76a67,
             baseSprite: "player-base-02.img",
@@ -257,7 +258,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             sprite: "loot-shirt-outfitMod.img",
             tint: 0xffffff,
         },
-        rarity: Rarity.Epic,
+        rarity: Rarity.Rare,
         lore: "For those who wield the power of the pan.",
     }),
     outfitGrich: defineOutfitSkin("outfitBase", {
@@ -277,7 +278,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             sprite: "loot-shirt-grinch.img",
             tint: 0xffffff,
         },
-        rarity: 3,
+        rarity: 5,
         lore: "For those who wield the power of the pan.",
     }),
     outfitCheckmate: defineOutfitSkin("outfitBase", {
@@ -414,7 +415,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             sprite: "loot-Police.img",
             tint: 0xffffff,
         },
-        rarity: 3,
+        rarity: 5,
         lore: "For those who wield the power of the pan.",
     }),
 
@@ -437,7 +438,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             sprite: "loot-chewie-cheese-outfit.img",
             tint: 0xffffff,
         },
-        rarity: 3,
+        rarity: 2,
         lore: "For those who wield the power of the pan.",
     }),
     outfitStepz: defineOutfitSkin("outfitBase", {
@@ -540,7 +541,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             sprite: "loot-shirt-outfitFireball.img",
             tint: 0xffffff,
         },
-        rarity: 3,
+        rarity: 5,
         lore: "For those who wield the power of the pan.",
     }),
     outfitWolf: defineOutfitSkin("outfitBase", {
@@ -677,7 +678,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             sprite: "loot-shirt-outfitChromesis.img",
             tint: 16777215,
         },
-        rarity: 3,
+        rarity: 5,
         lore: "For those who wield the power of the pan.",
     }),
     outfitMultiTusking: defineOutfitSkin("outfitBase", {
@@ -766,12 +767,13 @@ const SkinDefs: Record<string, OutfitDef> = {
             sprite: "loot-shirt-outfitSpeedoSunburn.img",
             tint: 16777215,
         },
-        rarity: 3,
+        rarity: 2,
         lore: "For those who wield the power of the pan.",
     }),
 
     outfitWheat: defineOutfitSkin("outfitBase", {
         name: "Splintered Wheat",
+        rarity: Rarity.Stock,
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-outfitWheat.img",
@@ -1356,7 +1358,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     outfitDarkGloves: defineOutfitSkin("outfitBase", {
         name: "The Professional",
         // noDropOnDeath: true,
-        rarity: Rarity.Uncommon,
+        rarity: Rarity.Common,
         lore: "True survivrs wear the dark gloves.",
         skinImg: {
             baseTint: 0xf8c574,
@@ -1376,7 +1378,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     outfitDarkShirt: defineOutfitSkin("outfitBase", {
         name: "The Semi-Pro",
         noDropOnDeath: true,
-        rarity: Rarity.Common,
+        rarity: Rarity.Stock,
         lore: "Some survivrs wear the dark shirt.",
         skinImg: {
             baseTint: 0xbe7800,
@@ -1451,7 +1453,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     outfitRed: defineOutfitSkin("outfitBase", {
         name: "Target Practice",
         // noDropOnDeath: true,
-        rarity: Rarity.Common,
+        rarity: Rarity.Uncommon,
         lore: "On the plus side, they won't see you bleed.",
         skinImg: {
             baseTint: 0xff0000,
@@ -1586,6 +1588,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         name: "Barrel Costume",
         obstacleType: "barrel_01",
         baseScale: 0.8,
+        rarity: Rarity.Common,
         lootImg: {
             tint: 0x393939,
         },

@@ -1277,7 +1277,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_blueVelvet: defineMeleeSkin("fists", {
         name: "Blue Velvet",
-        rarity: Rarity.Uncommon,
+        rarity: Rarity.Common,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1293,7 +1293,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_split: defineMeleeSkin("fists", {
         name: "Split the diff",
-        rarity: Rarity.Rare,
+        rarity: Rarity.Uncommon,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1309,7 +1309,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_frostpunch: defineMeleeSkin("fists", {
         name: "Frostpunch",
-        rarity: Rarity.Mythic,
+        rarity: Rarity.Epic,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1325,7 +1325,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_immolate: defineMeleeSkin("fists", {
         name: "Immolate",
-        rarity: Rarity.Uncommon,
+        rarity: Rarity.Common,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1341,7 +1341,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_bulletbills: defineMeleeSkin("fists", {
         name: "Bullet Bills",
-        rarity: Rarity.Uncommon,
+        rarity: Rarity.Common,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1357,7 +1357,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_moss: defineMeleeSkin("fists", {
         name: "Moss",
-        rarity: Rarity.Uncommon,
+        rarity: Rarity.Common,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1373,7 +1373,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_blackholes: defineMeleeSkin("fists", {
         name: "Black Holes",
-        rarity: Rarity.Rare,
+        rarity: Rarity.Uncommon,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lore: "Created by Shad0wy_F1gure",
@@ -1390,7 +1390,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_rainbowhands: defineMeleeSkin("fists", {
         name: "Rainbow Hands",
-        rarity: Rarity.Epic,
+        rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1406,7 +1406,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_darklets: defineMeleeSkin("fists", {
         name: "Darklets",
-        rarity: Rarity.Rare,
+        rarity: Rarity.Uncommon,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1422,7 +1422,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_scifi: defineMeleeSkin("fists", {
         name: "Flynn",
-        rarity: Rarity.Epic,
+        rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1438,7 +1438,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_poke: defineMeleeSkin("fists", {
         name: "Poke",
-        rarity: Rarity.Mythic,
+        rarity: Rarity.Epic,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1454,7 +1454,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_paws: defineMeleeSkin("fists", {
         name: "Paws",
-        rarity: Rarity.Mythic,
+        rarity: Rarity.Epic,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1470,7 +1470,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_dinoclaws: defineMeleeSkin("fists", {
         name: "Raptor",
-        rarity: Rarity.Mythic,
+        rarity: Rarity.Epic,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1486,7 +1486,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_leaf: defineMeleeSkin("fists", {
         name: "Tree Puncher",
-        rarity: Rarity.Epic,
+        rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1502,7 +1502,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_ranger: defineMeleeSkin("fists", {
         name: "Ranger",
-        rarity: Rarity.Rare,
+        rarity: Rarity.Uncommon,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1518,7 +1518,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_linedUp: defineMeleeSkin("fists", {
         name: "Lined Up",
-        rarity: Rarity.Rare,
+        rarity: Rarity.Uncommon,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1534,7 +1534,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_lit: defineMeleeSkin("fists", {
         name: "Lit",
-        rarity: Rarity.Uncommon,
+        rarity: Rarity.Common,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1550,7 +1550,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_gift_punch: defineMeleeSkin("fists", {
         name: "Gift Punch",
-        rarity: Rarity.Rare,
+        rarity: Rarity.Uncommon,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1566,7 +1566,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_ember: defineMeleeSkin("fists", {
         name: "Ember",
-        rarity: Rarity.Uncommon,
+        rarity: Rarity.Common,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1582,7 +1582,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_santa: defineMeleeSkin("fists", {
         name: "Santa Mittens",
-        rarity: Rarity.Rare,
+        rarity: Rarity.Uncommon,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1598,7 +1598,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_purptog: defineMeleeSkin("fists", {
         name: "Purptog",
-        rarity: Rarity.Epic,
+        rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1614,7 +1614,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_golden_lobster: defineMeleeSkin("fists", {
         name: "Golden Lobster",
-        rarity: Rarity.Mythic,
+        rarity: Rarity.Epic,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1630,7 +1630,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_pineFury: defineMeleeSkin("fists", {
         name: "Pine Fury",
-        rarity: Rarity.Mythic,
+        rarity: Rarity.Epic,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1646,7 +1646,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_dreidel: defineMeleeSkin("fists", {
         name: "Dreidel",
-        rarity: Rarity.Epic,
+        rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -1662,7 +1662,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_bePresent: defineMeleeSkin("fists", {
         name: "Be Present",
-        rarity: Rarity.Epic,
+        rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -2638,7 +2638,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     knuckles_rusted: defineMeleeSkin("knuckles", {
         name: "Knuckles Rusted",
-        rarity: Rarity.Uncommon,
+        rarity: Rarity.Common,
         lore: "Rust up for the dust up.",
         noPotatoSwap: false,
         lootImg: {
@@ -2650,7 +2650,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     knuckles_heroic: defineMeleeSkin("knuckles", {
         name: "Knuckles Heroic",
-        rarity: Rarity.Rare,
+        rarity: Rarity.Epic,
         lore: "Give 'em a hero sandwich.",
         noPotatoSwap: false,
         lootImg: {
@@ -2710,7 +2710,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     bayonet_woodland: defineMeleeSkin("bayonet", {
         name: "Bayonet Woodland",
-        rarity: Rarity.Epic,
+        rarity: Rarity.Mythic,
         noPotatoSwap: false,
         lootImg: {
             sprite: "loot-melee-bayonet-woodland.img",
