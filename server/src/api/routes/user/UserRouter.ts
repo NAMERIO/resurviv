@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { and, eq, inArray, ne, notInArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { UnlockDefs } from "../../../../../shared/defs/gameObjects/unlockDefs";
@@ -27,7 +28,7 @@ import {
 import loadout from "../../../../../shared/utils/loadout";
 import { getMarketPriceBounds } from "../../../../../shared/utils/marketPricing";
 import { Config } from "../../../config";
-import { validateUserName } from "../../../utils/serverHelpers";
+import { getHonoIp, validateUserName } from "../../../utils/serverHelpers";
 import { server } from "../../apiServer";
 import {
     authMiddleware,
@@ -40,6 +41,7 @@ import {
     itemsTable,
     marketListingTable,
     matchDataTable,
+    rewardClaimsTable,
     usersTable,
 } from "../../db/schema";
 import type { Context } from "../../index";
@@ -53,6 +55,99 @@ import { PassRouter } from "./PassRouter";
 export const UserRouter = new Hono<Context>();
 
 const MARKET_LISTING_EXPIRY_MS = 24 * 60 * 60 * 1000;
+const APRIL_THANKS_REWARD_KEY = "thanks_gift_april_2026";
+const APRIL_THANKS_REWARD_GP = 500;
+const APRIL_THANKS_REWARD_IP_LIMIT = 2;
+const APRIL_THANKS_REWARD_MIN_PLAYTIME_SECONDS = 30;
+const APRIL_THANKS_REWARD_END_AT = new Date("2026-04-26T00:00:00.000Z").getTime();
+
+function hashRewardIp(ip: string) {
+    return createHash("sha256")
+        .update(Config.secrets.SURVEV_IP_SECRET + ip)
+        .digest("hex");
+}
+
+function tryClaimAprilThanksReward(c: any, userId: string) {
+    if (Date.now() >= APRIL_THANKS_REWARD_END_AT) {
+        return null;
+    }
+
+    const ip = getHonoIp(c, Config.apiServer.proxyIPHeader);
+    if (!ip) {
+        return null;
+    }
+
+    const encodedIp = hashRewardIp(ip);
+
+    return db.transaction(async (tx) => {
+        const existingClaim = await tx.query.rewardClaimsTable.findFirst({
+            where: and(
+                eq(rewardClaimsTable.rewardKey, APRIL_THANKS_REWARD_KEY),
+                eq(rewardClaimsTable.userId, userId),
+            ),
+            columns: {
+                id: true,
+            },
+        });
+
+        if (existingClaim) {
+            return null;
+        }
+
+        const playtimeRows = await tx
+            .select({
+                totalTimeAlive: sql<number>`COALESCE(SUM(${matchDataTable.timeAlive}), 0)::int`,
+            })
+            .from(matchDataTable)
+            .where(eq(matchDataTable.userId, userId));
+
+        const totalTimeAlive = playtimeRows[0]?.totalTimeAlive ?? 0;
+        if (totalTimeAlive < APRIL_THANKS_REWARD_MIN_PLAYTIME_SECONDS) {
+            return null;
+        }
+
+        const ipClaimRows = await tx
+            .select({
+                count: sql<number>`COUNT(*)::int`,
+            })
+            .from(rewardClaimsTable)
+            .where(
+                and(
+                    eq(rewardClaimsTable.rewardKey, APRIL_THANKS_REWARD_KEY),
+                    eq(rewardClaimsTable.encodedIp, encodedIp),
+                ),
+            );
+
+        const ipClaimCount = ipClaimRows[0]?.count ?? 0;
+        if (ipClaimCount >= APRIL_THANKS_REWARD_IP_LIMIT) {
+            return null;
+        }
+
+        await tx.insert(rewardClaimsTable).values({
+            rewardKey: APRIL_THANKS_REWARD_KEY,
+            userId,
+            encodedIp,
+            grantedGp: APRIL_THANKS_REWARD_GP,
+        });
+
+        const [updatedUser] = await tx
+            .update(usersTable)
+            .set({
+                gpBalance: sql`${usersTable.gpBalance} + ${APRIL_THANKS_REWARD_GP}`,
+            })
+            .where(eq(usersTable.id, userId))
+            .returning({
+                gpBalance: usersTable.gpBalance,
+            });
+
+        return updatedUser
+            ? {
+                  amount: APRIL_THANKS_REWARD_GP,
+                  gpBalance: updatedUser.gpBalance,
+              }
+            : null;
+    });
+}
 
 function canUseDeveloper(slug: string) {
     return Config.debug.developerSlugs.includes(slug);
@@ -224,6 +319,7 @@ UserRouter.post("/profile", async (c) => {
     }
 
     const timeUntilNextChange = getTimeUntilNextUsernameChange(lastUsernameChangeTime);
+    const claimedThanksReward = await tryClaimAprilThanksReward(c, user.id);
 
     const defaultUnlockItems = UnlockDefs["unlock_default"].unlocks;
 
@@ -254,7 +350,12 @@ UserRouter.post("/profile", async (c) => {
                 usernameChangeTime: timeUntilNextChange,
                 canUseDeveloper: canUseDeveloper(slug),
             },
-            gpBalance: user.gpBalance,
+            gpBalance: claimedThanksReward?.gpBalance ?? user.gpBalance,
+            thankYouGift: claimedThanksReward
+                ? {
+                      amount: claimedThanksReward.amount,
+                  }
+                : undefined,
             loadout,
             items: items,
         },

@@ -102,6 +102,7 @@ export class Account {
     loggingIn = false;
     loggedIn = false;
     gpBalance = 0;
+    pendingThankYouGift: { amount: number } | null = null;
     profile = {
         linked: false,
         usernameSet: false,
@@ -221,6 +222,7 @@ export class Account {
             this.loggedIn = false;
             this.profile = {} as this["profile"];
             this.gpBalance = 0;
+            this.pendingThankYouGift = null;
             this.items = [];
             if (err) {
                 errorLogManager.storeGeneric("account", "load_profile_error");
@@ -230,6 +232,7 @@ export class Account {
                 this.loggedIn = true;
                 this.profile = data.profile;
                 this.gpBalance = data.gpBalance;
+                this.pendingThankYouGift = data.thankYouGift || null;
                 this.items = data.items;
                 this.loadout = data.loadout;
                 const profile = this.config.get("profile") || {
@@ -249,6 +252,10 @@ export class Account {
             this.emit("items", this.items);
             this.emit("loadout", this.loadout);
             this.emit("gpBalance", this.gpBalance);
+            if (this.pendingThankYouGift) {
+                this.emit("thankYouGift", this.pendingThankYouGift);
+                this.pendingThankYouGift = null;
+            }
         });
     }
 

@@ -43,6 +43,13 @@
       "when": 1774076000000,
       "tag": "0009_duplicate_items",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1774560000000,
+      "tag": "0012_april_thanks_reward",
+      "breakpoints": true
     }
   ]
 }

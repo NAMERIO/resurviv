@@ -116,7 +116,7 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 99,
-                gp: 1000,
+                gp: 1500,
             },
         ],
     },

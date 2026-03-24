@@ -86,6 +86,7 @@ export class ProfileUi {
     userSettingsModal: MenuModal | null = null;
     loginOptionsModal: MenuModal | null = null;
     createAccountModal: MenuModal | null = null;
+    thankYouGiftModal: MenuModal | null = null;
 
     loginOptionsModalMobile!: MenuModal;
     modalMobileAccount!: MenuModal;
@@ -106,6 +107,7 @@ export class ProfileUi {
         account.addEventListener("loadout", this.onLoadoutUpdated.bind(this));
         account.addEventListener("items", this.onItemsUpdated.bind(this));
         account.addEventListener("request", this.render.bind(this));
+        account.addEventListener("thankYouGift", this.showThankYouGiftModal.bind(this));
         this.initUi();
         this.render();
     }
@@ -223,6 +225,11 @@ export class ProfileUi {
         this.createAccountModal = new MenuModal($("#modal-create-account"));
         this.createAccountModal.onHide(() => {
             this.loadoutMenu.hide();
+        });
+
+        this.thankYouGiftModal = new MenuModal($("#modal-account-incentive"));
+        $("#modal-account-incentive-btn").on("click", () => {
+            this.thankYouGiftModal?.hide();
         });
 
         // Mobile Accounts Modal
@@ -367,6 +374,18 @@ export class ProfileUi {
         if (!this.account.profile.usernameSet) {
             this.setNameModal!.show(true);
         }
+    }
+
+    showThankYouGiftModal(reward: { amount: number }) {
+        $("#modal-account-incentive-title").text(
+            this.localization.translate("shop-thanks-gift-title") || "THANK YOU GIFT",
+        );
+        $("#modal-account-incentive-text").text(
+            this.localization.translate("shop-thanks-gift-body") ||
+                "Here is a thank-you for playing the game. Go get yourself a little something.",
+        );
+        $("#modal-account-incentive-amount").text(`${reward.amount} GP`);
+        this.thankYouGiftModal?.show(true);
     }
 
     onLoadoutUpdated() {

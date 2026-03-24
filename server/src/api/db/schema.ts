@@ -69,6 +69,27 @@ export const itemsTable = pgTable(
     },
     (table) => [index("idx_items_user_type").on(table.userId, table.type)],
 );
+
+export const rewardClaimsTable = pgTable(
+    "reward_claims",
+    {
+        id: serial("id").primaryKey(),
+        rewardKey: text("reward_key").notNull(),
+        userId: text("user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        encodedIp: text("encoded_ip").notNull(),
+        grantedGp: integer("granted_gp").notNull().default(0),
+        claimedAt: timestamp("claimed_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        uniqueIndex("reward_claims_reward_user_unique").on(table.rewardKey, table.userId),
+        index("reward_claims_reward_ip_idx").on(table.rewardKey, table.encodedIp),
+    ],
+);
 export const userPassTable = pgTable(
     "user_pass",
     {

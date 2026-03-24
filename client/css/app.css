@@ -9773,7 +9773,7 @@ input [type="image"]:focus {
 #iap-modal .iap-screen .iap-container .iap-limited-offers {
   background: #3a3a3a;
   height: 420px;
-  width: 500px;
+  width: 298px;
   flex: 1 1 auto;
   border-radius: 5px;
   overflow: hidden;
@@ -10686,4 +10686,142 @@ input [type="image"]:focus {
     transform: translate(-50%, -50%) scale(0.5);
     top: 50%;
   }
+}
+
+#modal-account-incentive {
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 10;
+  display: none;
+}
+
+#modal-account-incentive .modal-content {
+  animation-name: fadeIn;
+  animation-duration: 0.2s;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+}
+
+@media (max-width: 850px), (max-width: 900px), (max-width: 930px) {
+  #modal-account-incentive .modal-content {
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+}
+
+@media (max-width: 851px) and (max-height: 376px) {
+  #modal-account-incentive .modal-content {
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+}
+
+@media (max-height: 319px) {
+  #modal-account-incentive .modal-content {
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+}
+
+#modal-account-incentive .modal-header {
+  background: linear-gradient(180deg, #ffcf1a 0%, #fff200 100%);
+  box-sizing: border-box;
+  height: 64px;
+}
+
+#modal-account-incentive .modal-header h2 {
+  font-weight: bold;
+  font-size: 28px;
+  line-height: 64px;
+  text-align: center;
+  color: #111;
+  text-shadow: none;
+  margin: 0;
+  padding: 0 56px 0 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#modal-account-incentive .modal-body {
+  background-color: #141414;
+  box-sizing: border-box;
+  min-height: 206px;
+  display: block;
+  width: 100%;
+  padding: 22px 10px 18px;
+  text-align: center;
+}
+
+#modal-account-incentive .modal-body-text {
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 24px;
+  max-width: 620px;
+  margin: 0 auto 18px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+#modal-account-incentive .modal-body-received {
+  color: #d6d6d6;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 18px;
+  margin-bottom: 12px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+#modal-account-incentive .modal-body .modal-body-item.reward {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 240px;
+  height: 84px;
+  margin: 0 auto;
+  background: #4a4a4a;
+  border: 1px solid #3a3a3a;
+}
+
+#modal-account-incentive .modal-body .modal-body-item .modal-body-item-img {
+  width: 34px;
+  height: 34px;
+  margin-right: 18px;
+  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+#modal-account-incentive #modal-account-incentive-amount {
+  font-size: 28px;
+  font-weight: bold;
+  color: #f4db7c;
+  text-shadow: 1px 1px 0 #000;
+}
+
+#modal-account-incentive .modal-footer {
+  background-color: #4a4a4a;
+  height: 62px;
+  box-sizing: border-box;
+  padding-top: 6px;
+}
+
+#modal-account-incentive .modal-footer .btn-green {
+  width: 136px;
+  margin: 0 auto;
+  background: #1df11d;
+  box-shadow: 0 4px 0 #0ca90c;
+  border-radius: 4px;
+  border: none;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#modal-account-incentive .modal-footer .btn-green span {
+  font-weight: bold;
+  font-size: 16px;
+  letter-spacing: 0;
+  color: #0d250d;
+  text-shadow: none;
 }

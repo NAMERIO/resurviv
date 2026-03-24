@@ -22,6 +22,9 @@ export type ProfileResponse =
               canUseDeveloper: boolean;
           };
           gpBalance: number;
+          thankYouGift?: {
+              amount: number;
+          };
           loadout: Loadout;
           items: Item[];
       };
