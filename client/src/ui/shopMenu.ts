@@ -31,6 +31,8 @@ type Listing = {
     createdAt?: number;
 };
 
+const marketListingDurationMs = 24 * 60 * 60 * 1000;
+
 const supportedMarketTypes = new Set([
     "outfit",
     "melee",
@@ -463,6 +465,11 @@ export class ShopMenu {
                 ? this.formatBundleCountdown(nextRefreshAt - Date.now())
                 : "00:00:00",
         );
+        $("#index-offer-time-left").text(
+            nextRefreshAt > 0
+                ? ` ${this.formatBundleCountdown(nextRefreshAt - Date.now())}`
+                : " 00:00:00",
+        );
 
         const packMappings: Array<[string, FeaturedBundleOffer | undefined]> = [
             ["#iap-lto-pack-1", bundles.find((bundle) => bundle.size === "small")],
@@ -628,20 +635,38 @@ export class ShopMenu {
 
     buildMarketItem(item: Listing) {
         const actionLabel =
-            item.action === "cancel" ? "Cancel" : item.action === "sell" ? "Sell" : "Buy";
+            item.action === "cancel"
+                ? this.localization.translate("confirm-cancel-modal-title") ||
+                  "Cancel listing"
+                : item.action === "sell"
+                  ? this.localization.translate("market-sell-item-action") || "Sell item"
+                  : "Buy";
         const sellerLabel =
             item.action === "buy"
                 ? this.localization.translate("market-seller-label") || "Seller"
-                : this.localization.translate("market-listing-owner-label") || "Seller";
+                : this.localization.translate("market-sort-makr") ||
+                  this.localization.translate("market-listing-owner-label") ||
+                  "Seller";
         const sellerValue =
             item.sellerName ||
             (item.action === "buy"
                 ? this.localization.translate("market-unknown-seller") || "Unknown"
                 : this.localization.translate("market-you") || "You");
-        const timerLabel =
-            this.localization.translate("market-listed-for-label") || "Listed For";
+        const isSellPageCard = item.action !== "buy";
+        const isActiveListing = item.action === "cancel";
+        const expiresAt = item.createdAt
+            ? item.createdAt + marketListingDurationMs
+            : undefined;
         const rarityVisuals = helpers.getRarityVisuals(item.rarity);
-        const card = $("<div/>", { class: "market-list-item-container" });
+        const card = $("<div/>", {
+            class: [
+                "market-list-item-container",
+                isSellPageCard ? "market-list-item-sell" : "market-list-item-buy",
+                isActiveListing ? "market-list-item-active" : "",
+            ]
+                .filter(Boolean)
+                .join(" "),
+        });
         const image = $("<div/>", {
             class: "market-item-img",
             css: {
@@ -661,72 +686,158 @@ export class ShopMenu {
             }),
         );
         image.append(helpers.getItemRarityStyleMarkup(item.type, item.rarity));
-        const info = $("<div/>", { class: "market-item-info-container" }).append(
-            $("<div/>", { class: "market-item-title", text: item.name }),
-            $("<div/>", { class: "market-item-stats-container" }).append(
-                $("<div/>", { class: "market-item-stats-text" }).append(
-                    $("<span/>", { text: "Type: " }),
-                    $("<p/>", {
-                        text:
-                            this.localization.translate(
-                                categoryL10n[item.category] || "",
-                            ) || item.category,
-                    }),
+        const info = $("<div/>", {
+            class: [
+                "market-item-info-container",
+                isSellPageCard ? "market-item-info-sell" : "",
+            ]
+                .filter(Boolean)
+                .join(" "),
+        }).append($("<div/>", { class: "market-item-title", text: item.name }));
+
+        if (isSellPageCard) {
+            info.append(
+                $("<div/>", { class: "market-item-stats-container" }).append(
+                    $("<div/>", { class: "market-item-stats-text" }).append(
+                        $("<span/>", { text: `${sellerLabel}: ` }),
+                        $("<p/>", { text: sellerValue }),
+                    ),
+                    $("<div/>", { class: "market-stats-second-line-container" }).append(
+                        $("<div/>", { class: "market-item-stats-text" }).append(
+                            $("<span/>", {
+                                text: `${this.localization.translate("market-type-label") || "Type"}: `,
+                            }),
+                            $("<p/>", {
+                                text:
+                                    this.localization.translate(
+                                        categoryL10n[item.category] || "",
+                                    ) || item.category,
+                            }),
+                        ),
+                        $("<div/>", { class: "market-item-stats-text" }).append(
+                            $("<span/>", {
+                                text: `${this.localization.translate("market-rarity") || "Rarity"}: `,
+                            }),
+                            $("<p/>", {
+                                text:
+                                    this.localization.translate(
+                                        rarityL10n[item.rarity] || "",
+                                    ) || "Unknown",
+                                css: {
+                                    color: rarityVisuals.text,
+                                },
+                            }),
+                        ),
+                        $("<div/>", { class: "market-item-stats-text" }).append(
+                            $("<span/>", { text: "GP: " }),
+                            $("<p/>", { text: this.formatMarketPrice(item.price) }),
+                        ),
+                    ),
                 ),
-                $("<div/>", { class: "market-item-stats-text" }).append(
-                    $("<span/>", { text: " Rarity: " }),
-                    $("<p/>", {
-                        text:
-                            this.localization.translate(rarityL10n[item.rarity] || "") ||
-                            "Unknown",
-                        css: {
-                            color: rarityVisuals.text,
-                        },
-                    }),
-                ),
-                $("<div/>", {
-                    class: "market-item-stats-text market-item-meta-text",
-                }).append(
-                    $("<span/>", { text: `${sellerLabel}: ` }),
-                    $("<p/>", { text: sellerValue }),
-                ),
-                $("<div/>", {
-                    class: "market-item-stats-text market-item-meta-text",
-                }).append(
-                    $("<span/>", { text: `${timerLabel}: ` }),
-                    $("<p/>", {
-                        class: "market-item-timer",
-                        "data-created-at": item.createdAt ? String(item.createdAt) : "",
-                        text:
-                            item.createdAt !== undefined
-                                ? this.formatListingDuration(Date.now() - item.createdAt)
-                                : this.localization.translate("market-ready-to-list") ||
-                                  "Ready",
-                    }),
-                ),
-            ),
-        );
-        const action = $("<div/>", { class: "market-item-action-container" });
-        const button = $("<div/>", {
-            class:
-                item.action === "cancel"
-                    ? "market-item-action-btn market-item-action-btn-cancel"
-                    : item.action === "buy"
-                      ? "market-item-action-btn market-item-action-btn-buy"
-                      : "market-item-action-btn",
-        }).append($("<span/>", { text: actionLabel }));
-        if (item.action !== "sell") {
-            button.append(
-                $("<div/>", { class: "market-btn-price-container" }).append(
+            );
+        } else {
+            info.append(
+                $("<div/>", { class: "market-item-stats-container" }).append(
+                    $("<div/>", { class: "market-item-stats-text" }).append(
+                        $("<span/>", { text: "Type: " }),
+                        $("<p/>", {
+                            text:
+                                this.localization.translate(
+                                    categoryL10n[item.category] || "",
+                                ) || item.category,
+                        }),
+                    ),
+                    $("<div/>", { class: "market-item-stats-text" }).append(
+                        $("<span/>", { text: " Rarity: " }),
+                        $("<p/>", {
+                            text:
+                                this.localization.translate(
+                                    rarityL10n[item.rarity] || "",
+                                ) || "Unknown",
+                            css: {
+                                color: rarityVisuals.text,
+                            },
+                        }),
+                    ),
                     $("<div/>", {
-                        class: "market-btn-price-text",
-                        text: this.formatMarketPrice(item.price),
-                    }),
+                        class: "market-item-stats-text market-item-meta-text",
+                    }).append(
+                        $("<span/>", { text: `${sellerLabel}: ` }),
+                        $("<p/>", { text: sellerValue }),
+                    ),
                 ),
             );
         }
-        button.on("click", () => this.handleMarketAction(item));
-        action.append(button);
+        const action = $("<div/>", { class: "market-item-action-container" });
+        if (isActiveListing) {
+            action.addClass("market-item-action-container-active");
+            action.append(
+                $("<div/>", { class: "market-item-action-timer" }).append(
+                    $("<span/>", {
+                        class: "market-item-action-timer-label",
+                        text:
+                            this.localization.translate("market-timer-expires-in") ||
+                            "EXPIRES IN",
+                    }),
+                    $("<span/>", {
+                        class: "market-item-timer market-bold-text",
+                        "data-expire-at": expiresAt ? String(expiresAt) : "",
+                        "data-timer-kind": "expires",
+                        text: expiresAt
+                            ? this.formatCountdown(expiresAt - Date.now())
+                            : this.localization.translate("market-timer-expired") ||
+                              "EXPIRED",
+                    }),
+                ),
+                $("<div/>", {
+                    class: "market-item-action-state",
+                    text:
+                        this.localization.translate("market-sale-in-progress") ||
+                        "SALE IN PROGRESS",
+                }),
+            );
+        } else {
+            if (item.action === "buy") {
+                action.addClass("market-item-action-container-active");
+                action.append(
+                    $("<div/>", { class: "market-item-action-timer" }).append(
+                        $("<span/>", {
+                            class: "market-item-action-timer-label",
+                            text:
+                                this.localization.translate("market-timer-expires-in") ||
+                                "EXPIRES IN",
+                        }),
+                        $("<span/>", {
+                            class: "market-item-timer market-bold-text",
+                            "data-expire-at": expiresAt ? String(expiresAt) : "",
+                            "data-timer-kind": "expires",
+                            text: expiresAt
+                                ? this.formatCountdown(expiresAt - Date.now())
+                                : this.localization.translate("market-timer-expired") ||
+                                  "EXPIRED",
+                        }),
+                    ),
+                );
+            }
+            const button = $("<div/>", {
+                class:
+                    item.action === "buy"
+                        ? "market-item-action-btn market-item-action-btn-buy"
+                        : "market-item-action-btn market-item-action-btn-sell",
+            }).append($("<span/>", { text: actionLabel }));
+            if (item.action === "buy") {
+                button.append(
+                    $("<div/>", { class: "market-btn-price-container" }).append(
+                        $("<div/>", {
+                            class: "market-btn-price-text",
+                            text: this.formatMarketPrice(item.price),
+                        }),
+                    ),
+                );
+            }
+            button.on("click", () => this.handleMarketAction(item));
+            action.append(button);
+        }
         card.append(image, info, action);
         return card;
     }
@@ -877,6 +988,18 @@ export class ShopMenu {
         this.renderFeatured();
         $(".market-item-timer").each((_, element) => {
             const timer = $(element);
+            const timerKind = timer.attr("data-timer-kind");
+            if (timerKind === "expires") {
+                const expireAt = Number(timer.attr("data-expire-at"));
+                if (!expireAt) return;
+                timer.text(
+                    expireAt > Date.now()
+                        ? this.formatCountdown(expireAt - Date.now())
+                        : this.localization.translate("market-timer-expired") ||
+                              "EXPIRED",
+                );
+                return;
+            }
             const createdAt = Number(timer.attr("data-created-at"));
             if (!createdAt) return;
             timer.text(this.formatListingDuration(Date.now() - createdAt));
@@ -915,6 +1038,16 @@ export class ShopMenu {
     }
 
     formatBundleCountdown(remainingMs: number) {
+        const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return [hours, minutes, seconds]
+            .map((value) => String(value).padStart(2, "0"))
+            .join(":");
+    }
+
+    formatCountdown(remainingMs: number) {
         const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);

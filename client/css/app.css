@@ -4793,13 +4793,21 @@ a:active {
 }
 
 .index-offer-time-left-text {
-  color: #fff;
-  font-size: 12px;
-  font-weight: bold;
+  position: relative;
+  width: fit-content;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #f2c8f9;
+  font-size: 14px;
   line-height: 14px;
-  margin-top: 6px;
+  margin-top: -10px;
+  padding: 3px 10px;
+  background-color: #1f1e1e;
   text-align: center;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.index-offer-time-left-text #index-offer-time-left {
+  font-weight: bold;
 }
 
 #featured-youtuber {
@@ -10409,8 +10417,8 @@ input [type="image"]:focus {
   margin-bottom: 10px;
   justify-content: space-between;
   background-color: #555555;
-  border-radius: 5px;
-  padding: 8px 12px;
+  border-radius: 0;
+  padding: 8px 10px;
   box-sizing: border-box;
 }
 
@@ -10428,12 +10436,41 @@ input [type="image"]:focus {
   margin-bottom: 4px;
 }
 
+.market-list-item-container.market-list-item-sell {
+  min-height: fit-content;
+  justify-content: flex-start;
+  padding: 0;
+}
+
+.market-list-item-container.market-list-item-sell .market-item-info-container {
+  flex: 0 0 270px;
+  width: 270px;
+  height: 90%;
+  margin: auto 0 auto 6px;
+}
+
+.market-list-item-container.market-list-item-sell
+  .market-item-info-container
+  .market-item-title {
+  font-size: 30px;
+  line-height: 40px;
+  margin-bottom: 0;
+}
+
 .market-list-item-container
   .market-item-info-container
   .market-item-stats-container
   .market-item-stats-text {
   font-size: 15px;
   line-height: 20px;
+}
+
+.market-list-item-container.market-list-item-sell
+  .market-item-info-container
+  .market-item-stats-container {
+  display: inline-block;
+  margin: 0 auto 5px;
+  width: fit-content;
 }
 
 .market-list-item-container
@@ -10538,11 +10575,22 @@ input [type="image"]:focus {
   background-clip: text;
 }
 
+.market-list-item-container .market-stats-second-line-container {
+  display: flex;
+  gap: 0;
+}
+
+.market-list-item-container.market-list-item-sell
+  .market-stats-second-line-container
+  .market-item-stats-text {
+  width: 80px;
+}
+
 .market-item-img {
   height: 80px;
   width: 80px;
   min-width: 80px;
-  margin: 0;
+  margin: 8px 10px;
   position: relative;
 }
 
@@ -10552,6 +10600,85 @@ input [type="image"]:focus {
   background-position: center;
   height: 100%;
   width: 100%;
+}
+
+.market-list-item-container.market-list-item-sell .market-item-action-container {
+  flex: 0 0 170px;
+  width: 170px;
+  height: 90%;
+  margin: auto 0 auto 0;
+  transform: translateX(-35px);
+}
+
+.market-list-item-container.market-list-item-sell .market-item-action-btn {
+  width: 100%;
+  height: 45px;
+  justify-content: space-evenly;
+  padding: 0;
+  margin: auto;
+  font-size: 20px;
+  line-height: 40px;
+  background: #1e90ff;
+  box-shadow: inset 0 -2px #1871c8;
+  border-bottom: 2px solid #1871c8;
+}
+
+.market-list-item-container.market-list-item-sell
+  .market-item-action-btn.market-item-action-btn-sell {
+  background: #1e90ff;
+  box-shadow: inset 0 -2px #1871c8;
+  border-bottom: 2px solid #1871c8;
+}
+
+.market-list-item-container .market-item-action-container-active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.market-list-item-container.market-list-item-buy .market-item-action-container {
+  transform: none;
+}
+
+.market-list-item-container.market-list-item-buy .market-item-action-timer {
+  transform: translateX(-85px);
+}
+
+.market-list-item-container .market-item-action-timer {
+  position: relative;
+  width: fit-content;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  margin-bottom: -10px;
+  padding: 3px 6px;
+  background: #1f1e1e;
+  color: #fff;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.market-list-item-container .market-item-action-timer .market-item-action-timer-label,
+.market-list-item-container .market-item-action-timer .market-item-timer {
+  display: inline;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.market-list-item-container .market-item-action-timer .market-item-timer {
+  margin-left: 0;
+}
+
+.market-list-item-container .market-item-action-state {
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 24px;
+  color: #fff;
+  text-align: center;
+  width: 100%;
+  transform: translateX(20px);
 }
 
 @media (max-width: 960px) {
