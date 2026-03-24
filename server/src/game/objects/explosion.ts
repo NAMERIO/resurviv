@@ -56,6 +56,17 @@ export class ExplosionBarn {
         }
 
         const coll = collider.createCircle(explosion.pos, explosion.rad);
+        const isMineExplosion = explosion.damageParams.gameSourceType === "mine";
+        const mineCanAffectLayer = (layer: number) => {
+            const explosionOnStairs = !!(explosion.layer & 0x2);
+            const targetOnStairs = !!(layer & 0x2);
+
+            if (explosionOnStairs && targetOnStairs) {
+                return true;
+            }
+
+            return util.toGroundLayer(layer) === util.toGroundLayer(explosion.layer);
+        };
 
         // List of all near objects
         const objects = this.game.grid.intersectCollider(coll);
@@ -71,7 +82,10 @@ export class ExplosionBarn {
             );
 
             for (const obj of objects) {
-                if (!util.sameLayer(obj.layer, explosion.layer)) continue;
+                const sameExplosionLayer = isMineExplosion
+                    ? mineCanAffectLayer(obj.layer)
+                    : util.sameLayer(obj.layer, explosion.layer);
+                if (!sameExplosionLayer) continue;
                 if ((obj as { dead?: boolean }).dead) continue;
                 if (obj.__type === ObjectType.Obstacle && obj.height <= 0.25) continue;
                 if (

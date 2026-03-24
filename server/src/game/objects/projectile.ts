@@ -95,9 +95,11 @@ export class Projectile extends BaseGameObject {
     dead = false;
 
     obstacleBellowId = 0;
+    bombArmed = false;
 
     private activateTime: number = 0;
     private triggeredTime: number | null = null;
+    private mineLanded = false;
 
     strobe?: {
         timeToPing: number;
@@ -189,55 +191,7 @@ export class Projectile extends BaseGameObject {
         }
 
         if (this.type === "mine") {
-            this.activateTime += dt;
-            if (this.activateTime >= 1.5) {
-                if (this.triggeredTime !== null) {
-                    this.triggeredTime += dt;
-                    if (this.triggeredTime >= 0.5) {
-                        this.game.explosionBarn.addExplosion(
-                            "explosion_mine",
-                            this.pos,
-                            this.layer,
-                            {
-                                damageType: GameConfig.DamageType.Player,
-                                gameSourceType: this.type,
-                                source: this.game.playerBarn.players.find(
-                                    (p) => p.__id === this.playerId,
-                                ),
-                                mapSourceType: "",
-                            },
-                        );
-                        this.destroy();
-                    }
-                } else {
-                    let mineTrigger = false;
-                    for (const player of this.game.playerBarn.players.values()) {
-                        if (v2.distance(this.pos, player.pos) < 3) {
-                            mineTrigger = true;
-                            break;
-                        }
-                    }
-                    if (!mineTrigger) {
-                        for (const bullet of this.game.bulletBarn.bullets) {
-                            if (v2.distance(this.pos, bullet.pos) < 1.5) {
-                                mineTrigger = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!mineTrigger) {
-                        for (const explosion of this.game.explosionBarn.explosions) {
-                            if (v2.distance(this.pos, explosion.pos) < 10) {
-                                mineTrigger = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (mineTrigger) {
-                        this.triggeredTime = 0;
-                    }
-                }
-            }
+            this.updateMine(dt);
         }
 
         const def = GameObjectDefs[this.type] as ThrowableDef;
@@ -257,6 +211,18 @@ export class Projectile extends BaseGameObject {
         this.velZ -= gravity * dt;
         this.posZ += this.velZ * dt;
         this.posZ = math.clamp(this.posZ, 0, GameConfig.projectile.maxHeight);
+
+        if (
+            this.type === "mine" &&
+            !this.mineLanded &&
+            this.posZ === 0 &&
+            this.velZ <= 0
+        ) {
+            this.mineLanded = true;
+            this.vel = v2.create(0, 0);
+            this.velZ = 0;
+        }
+
         let height = this.posZ;
         if (def.throwPhysics.fixedCollisionHeight) {
             height = def.throwPhysics.fixedCollisionHeight;
@@ -374,6 +340,139 @@ export class Projectile extends BaseGameObject {
                 this.explode();
             }
         }
+    }
+
+    private updateMine(dt: number) {
+        this.activateTime += dt;
+        if (!this.bombArmed && this.activateTime >= 1.5) {
+            this.bombArmed = true;
+            this.setDirty();
+        }
+
+        if (!this.bombArmed || !this.mineLanded) {
+            return;
+        }
+
+        if (this.triggeredTime !== null) {
+            this.triggeredTime += dt;
+            if (this.triggeredTime >= 0.5) {
+                this.game.explosionBarn.addExplosion(
+                    "explosion_mine",
+                    this.pos,
+                    this.layer,
+                    {
+                        damageType: GameConfig.DamageType.Player,
+                        gameSourceType: this.type,
+                        source: this.game.playerBarn.players.find(
+                            (p) => p.__id === this.playerId,
+                        ),
+                        sourceTeamId: this.sourceTeamId,
+                        mapSourceType: "",
+                    },
+                );
+                this.destroy();
+            }
+            return;
+        }
+
+        let mineTrigger = false;
+        for (const player of this.game.playerBarn.players.values()) {
+            if (player.dead || !this.mineCanAffectLayer(player.layer)) {
+                continue;
+            }
+
+            if (
+                v2.distance(this.pos, player.pos) < 3 &&
+                this.mineHasLineOfSight(player.pos, player.layer)
+            ) {
+                mineTrigger = true;
+                break;
+            }
+        }
+
+        if (!mineTrigger) {
+            for (const bullet of this.game.bulletBarn.bullets) {
+                if (
+                    bullet.active &&
+                    this.mineCanAffectLayer(bullet.layer) &&
+                    v2.distance(this.pos, bullet.pos) < 1.5 &&
+                    this.mineHasLineOfSight(bullet.pos, bullet.layer)
+                ) {
+                    mineTrigger = true;
+                    break;
+                }
+            }
+        }
+
+        if (!mineTrigger) {
+            for (const explosion of this.game.explosionBarn.newExplosions) {
+                if (
+                    this.mineCanAffectLayer(explosion.layer) &&
+                    v2.distance(this.pos, explosion.pos) <= explosion.rad &&
+                    this.mineHasLineOfSight(explosion.pos, explosion.layer)
+                ) {
+                    mineTrigger = true;
+                    break;
+                }
+            }
+        }
+
+        if (mineTrigger) {
+            this.triggeredTime = 0;
+        }
+    }
+
+    private mineCanAffectLayer(layer: number) {
+        const mineOnStairs = !!(this.layer & 0x2);
+        const targetOnStairs = !!(layer & 0x2);
+
+        if (mineOnStairs && targetOnStairs) {
+            return true;
+        }
+
+        return util.toGroundLayer(this.layer) === util.toGroundLayer(layer);
+    }
+
+    private mineHasLineOfSight(targetPos: Vec2, targetLayer: number) {
+        if (!this.mineCanAffectLayer(targetLayer)) {
+            return false;
+        }
+
+        const distance = v2.distance(this.pos, targetPos);
+        if (distance <= 0.001) {
+            return true;
+        }
+
+        const queryCollider = collider.createCircle(this.pos, distance);
+        const nearbyObjects = this.game.grid.intersectCollider(queryCollider);
+
+        for (const obj of nearbyObjects) {
+            if (
+                obj.__type !== ObjectType.Obstacle ||
+                obj.dead ||
+                !obj.collidable ||
+                obj.height <= 0.25 ||
+                obj.__id === this.obstacleBellowId ||
+                util.toGroundLayer(obj.layer) !== util.toGroundLayer(this.layer)
+            ) {
+                continue;
+            }
+
+            const intersection = collider.intersectSegment(
+                obj.collider,
+                this.pos,
+                targetPos,
+            );
+            if (!intersection) {
+                continue;
+            }
+
+            if (v2.distance(this.pos, intersection.point) < distance - 0.05) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

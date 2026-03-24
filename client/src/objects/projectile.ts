@@ -73,7 +73,7 @@ class Projectile implements AbstractObject {
         ticker: 0,
         dir: 1,
         scale: 0,
-        scaleMax: 1.5,
+        scaleMax: 1.9,
         speed: 1.25,
         armed: false,
     };
@@ -97,6 +97,9 @@ class Projectile implements AbstractObject {
         if (this.strobeSprite) {
             this.strobeSprite.visible = false;
         }
+        if (this.mineEffect.sprite) {
+            this.mineEffect.sprite.visible = false;
+        }
     }
 
     m_updateData(
@@ -110,6 +113,7 @@ class Projectile implements AbstractObject {
             const itemDef = GameObjectDefs[data.type] as ThrowableDef;
             this.layer = data.layer;
             this.type = data.type;
+            this.mineEffect.armed = data.bombArmed;
 
             this.rad = itemDef.rad * 0.5;
         }
@@ -193,6 +197,23 @@ class Projectile implements AbstractObject {
                 this.strobeTicker = 0;
                 this.strobeDir = 1;
                 this.strobeSpeed = 1.25;
+            }
+            if (this.type === "mine") {
+                if (!this.mineEffect.sprite) {
+                    this.mineEffect.sprite = new PIXI.Sprite();
+                    this.mineEffect.sprite.texture = PIXI.Texture.from("part-strobe-01.img");
+                    this.mineEffect.sprite.tint = 0xff0000;
+                    this.mineEffect.sprite.anchor.set(0.5, 0.5);
+                    this.container.addChild(this.mineEffect.sprite);
+                }
+                this.mineEffect.sprite.scale.set(0, 0);
+                this.mineEffect.sprite.visible = true;
+                this.mineEffect.ticker = 0;
+                this.mineEffect.dir = 1;
+                this.mineEffect.scale = 0;
+                this.mineEffect.scaleMax = 1.9;
+                this.mineEffect.speed = 1.25;
+                this.mineEffect.armed = data.bombArmed;
             }
             this.container.visible = isVisible;
         }
@@ -339,6 +360,11 @@ export class ProjectileBarn {
                             filter: "muffled",
                         });
                     }
+
+                    if (p.type === "mine") {
+                        p.rotVel = 0;
+                        p.rot = 0;
+                    }
                 }
 
                 // Strobe effects
@@ -358,12 +384,17 @@ export class ProjectileBarn {
                 if (p.type === "mine" && p.mineEffect.sprite) {
                     const m = p.mineEffect;
                     m.ticker = math.clamp(m.ticker + dt * m.dir * m.speed, 0, 1);
-                    m.scale = m.armed
-                        ? m.scaleMax / 2
-                        : math.easeInExpo(m.ticker) * m.scaleMax;
+                    if (m.armed) {
+                        const pulseT = math.easeInExpo(m.ticker);
+                        const minScale = m.scaleMax * 0.35;
+                        const maxScale = m.scaleMax * 0.75;
+                        m.scale = math.lerp(pulseT, minScale, maxScale);
+                    } else {
+                        m.scale = math.easeInExpo(m.ticker) * m.scaleMax;
+                    }
 
                     m.sprite!.scale.set(m.scale);
-                    if (m.scale >= m.scaleMax || m.ticker <= 0) {
+                    if (m.ticker >= 1 || m.ticker <= 0) {
                         m.dir *= -1;
                     }
                 }

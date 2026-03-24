@@ -152,10 +152,10 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
                 Math.min(killer.inventory["snowball"] + 3, 8),
             );
         }
-        killer.invManager.set(
-            "nitroLace",
-            Math.min(killer.inventory["nitroLace"] + 1, 15),
-        );
+        // killer.invManager.set(
+        //     "nitroLace",
+        //     Math.min(killer.inventory["nitroLace"] + 1, 15),
+        // );
 
         killer.inventoryDirty = true;
         killer.weapsDirty = true;

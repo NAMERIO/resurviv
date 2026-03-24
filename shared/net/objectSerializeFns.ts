@@ -170,6 +170,7 @@ export interface ObjectsFullData {
     [ObjectType.Projectile]: {
         type: string;
         layer: number;
+        bombArmed: boolean;
     };
     [ObjectType.Smoke]: {
         layer: number;
@@ -594,6 +595,7 @@ export const ObjectSerializeFns: {
         serializeFull: (s, data) => {
             s.writeGameType(data.type);
             s.writeBits(data.layer, 2);
+            s.writeBoolean(data.bombArmed);
         },
         /* STRIP_FROM_PROD_CLIENT:END */
 
@@ -605,6 +607,7 @@ export const ObjectSerializeFns: {
         deserializeFull: (s, data) => {
             data.type = s.readGameType();
             data.layer = s.readBits(2);
+            data.bombArmed = s.readBoolean();
         },
     },
     [ObjectType.Smoke]: {
