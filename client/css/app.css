@@ -9822,9 +9822,10 @@ input [type="image"]:focus {
   background: #874c90;
   width: 120px;
   height: 305px;
-  margin: 0;
+  margin: 0 10px 10px;
   border-radius: 5px;
-  display: block;
+  display: inline-block;
+  position: relative;
   line-height: 20px;
   border-bottom: 2px solid #614066;
   box-shadow: inset 0 -2px #614066;
@@ -9846,6 +9847,69 @@ input [type="image"]:focus {
   color: #aa1313;
   transform: rotate(-45deg);
   font-weight: bold;
+  background-image: url(../img/gui/iap-discount-tag.svg);
+  background-repeat: no-repeat;
+  background-position: left -30px;
+  background-size: 100%;
+  text-align: center;
+  line-height: 10px;
+  padding-top: 6px;
+  pointer-events: none;
+}
+
+#iap-modal
+  .iap-screen
+  .iap-container
+  .iap-limited-offers
+  .iap-lto-packs-container
+  .iap-lto-pack
+  .iap-sold-container {
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+#iap-modal
+  .iap-screen
+  .iap-container
+  .iap-limited-offers
+  .iap-lto-packs-container
+  .iap-lto-pack
+  .iap-sold {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  display: none;
+  background-image: url(../img/iap_got_stamp.svg);
+  background-repeat: no-repeat;
+  background-size: 100%;
+  pointer-events: none;
+}
+
+#iap-modal
+  .iap-screen
+  .iap-container
+  .iap-limited-offers
+  .iap-lto-packs-container
+  .iap-lto-pack.iap-pack-purchased
+  .iap-sold {
+  display: block;
+}
+
+#iap-modal
+  .iap-screen
+  .iap-container
+  .iap-limited-offers
+  .iap-lto-packs-container
+  .iap-lto-pack.iap-pack-purchased
+  .iap-lto-item-container {
+  filter: brightness(65%);
 }
 
 #iap-modal
@@ -9861,6 +9925,72 @@ input [type="image"]:focus {
   height: 250px;
   padding-top: 5px;
   padding-bottom: 5px;
+}
+
+.iap-loadout-items {
+  height: 75%;
+  width: 90%;
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translate(calc(-50% + 2px), -50%);
+}
+
+.iap-loadout-items > div {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.iap-loadout-items > div .iap-item-img {
+  position: relative;
+  display: inline-block;
+  margin-top: 5px;
+  margin-right: 5px;
+  margin-left: auto !important;
+  width: 66px;
+  height: 66px;
+  background-size: 66%;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.iap-loadout-items > div .iap-item-img .iap-item-sprite {
+  width: 100%;
+  height: 100%;
+  background-size: 66%;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.iap-loadout-items .item-rarity-style {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  top: -2px;
+  left: -2px;
+}
+
+.iap-lto-pack-big .iap-currency-container {
+  background-size: 8%;
+  background-position: 90px center;
+}
+
+.iap-bundle-title,
+.iap-bundle-subtitle,
+.iap-bundle-owned {
+  display: none;
+}
+
+.iap-bundle-owned {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #8df0a1;
+  font-size: 13px;
+  font-weight: bold;
 }
 
 #iap-modal

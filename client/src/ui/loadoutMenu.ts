@@ -1122,8 +1122,11 @@ export class LoadoutMenu {
             parent.find(".ui-emote-hl").css("opacity", 1);
         }
 
-        if (["primary", "secondary", "melee"].includes(this.selectedItem.loadoutType!)) {
+        if (["primary", "secondary"].includes(this.selectedItem.loadoutType!)) {
             this.populateWeaponStats(this.selectedItem.type);
+        } else {
+            $("#modal-content-right-weapon").css("display", "none");
+            this.clearWeaponStats();
         }
 
         if (this.selectedItem.loadoutType == "crosshair") {
@@ -1356,34 +1359,9 @@ export class LoadoutMenu {
                     `url(img/loot/${svgName}.svg)`,
                 );
             }
-            const clampPct = (val: number, max: number) =>
-                Math.min(100, Math.max(0, (val / max) * 100));
-            const meleeFireRate =
-                meleeDef.attack.cooldownTime > 0 ? 1 / meleeDef.attack.cooldownTime : 0;
-            $("#weapon-stat-damage").css(
-                "width",
-                `${clampPct(meleeDef.damage, MAX_DAMAGE)}%`,
-            );
-            $("#weapon-val-damage").html(`${meleeDef.damage}`);
-            $("#weapon-stat-firerate").css(
-                "width",
-                `${clampPct(meleeFireRate, MAX_FIRERATE)}%`,
-            );
-            $("#weapon-val-firerate").html(`${Math.round(meleeFireRate * 10) / 10}`);
-            $("#weapon-stat-range").css(
-                "width",
-                `${clampPct(meleeDef.attack.rad * 10, MAX_RANGE)}%`,
-            );
-            $("#weapon-val-range").html(`${meleeDef.attack.rad}`);
-            $("#weapon-stat-accuracy").css("width", "100%");
-            $("#weapon-val-accuracy").html("--");
-            $("#weapon-stat-magazine").css("width", "0%");
-            $("#weapon-val-magazine").html("--");
-            $("#weapon-stat-reload").css("width", "0%");
-            $("#weapon-val-reload").html("--");
-            $("#weapon-detail-ammo").html("Melee");
-            $("#weapon-detail-firemode").html("Melee");
-            $("#weapon-detail-headshot").html("N/A");
+            $(".weapon-stat-bar-inner").css("width", "0%");
+            $(".weapon-stat-value").html("");
+            $(".weapon-detail-value").html("");
         } else {
             this.clearWeaponStats();
         }
@@ -1483,9 +1461,7 @@ export class LoadoutMenu {
             "display",
             category.loadoutType == "emote" ? "block" : "none",
         );
-        const isWeaponCat = ["primary", "secondary", "melee"].includes(
-            category.loadoutType,
-        );
+        const isWeaponCat = ["primary", "secondary"].includes(category.loadoutType);
         $("#modal-content-right-weapon").css("display", isWeaponCat ? "block" : "none");
         if (isWeaponCat) {
             this.clearWeaponStats();

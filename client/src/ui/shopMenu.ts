@@ -1,6 +1,7 @@
 import $ from "jquery";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { Rarity } from "../../../shared/gameConfig";
+import type { FeaturedBundleOffer } from "../../../shared/utils/featuredBundles";
 import {
     getMarketPriceBounds,
     getSuggestedMarketSellPrice,
@@ -66,7 +67,8 @@ export class ShopMenu {
     marketErrorTimeoutId: number | null = null;
     balanceAnimationId: number | null = null;
     pendingSellItem: Listing | null = null;
-    pendingAction: "buy" | "sell" | "cancel" = "sell";
+    pendingFeaturedBundle: FeaturedBundleOffer | null = null;
+    pendingAction: "buy" | "sell" | "cancel" | "bundle" = "sell";
     pendingSoldListings: Listing[] = [];
     pendingSoldListingIds = new Set<string>();
     soldNotificationActive = false;
@@ -140,6 +142,7 @@ export class ShopMenu {
 
         this.confirmSellModal.onHide(() => {
             this.pendingSellItem = null;
+            this.pendingFeaturedBundle = null;
             $("#confirm-sell-price-range").hide();
             $("#confirm-sell-price-error").text("").hide();
         });
@@ -158,7 +161,18 @@ export class ShopMenu {
         $("#confirm-sell-yes").on("click", (e) => {
             e.preventDefault();
             const item = this.pendingSellItem;
+            const bundle = this.pendingFeaturedBundle;
             const action = this.pendingAction;
+            if (action === "bundle") {
+                if (!bundle) return false;
+                this.confirmSellModal.hide();
+                this.account.buyFeaturedBundle(bundle.id, (error) => {
+                    if (error) {
+                        this.showMarketError(error);
+                    }
+                });
+                return false;
+            }
             if (!item) return false;
             if (action === "buy") {
                 this.confirmSellModal.hide();
@@ -439,12 +453,53 @@ export class ShopMenu {
     }
 
     renderFeatured() {
-        $("#iap-lto-time-left-number").text("00:00:00:00");
-        $("#iap-lto-pack-1 .iap-currency-text").text("850");
-        $("#iap-lto-pack-2 .iap-currency-text").text("2200");
-        $("#iap-lto-pack-1 .iap-discount").text("QUEST");
-        $("#iap-lto-pack-2 .iap-discount").text("PLAY");
-        $("#iap-lto-pack-1, #iap-lto-pack-2").off("click");
+        const bundles = this.account.featuredBundles || [];
+        const nextRefreshAt = bundles.reduce(
+            (max, bundle) => Math.max(max, bundle.refreshesAt || 0),
+            0,
+        );
+        $("#iap-lto-time-left-number").text(
+            nextRefreshAt > 0
+                ? this.formatBundleCountdown(nextRefreshAt - Date.now())
+                : "00:00:00",
+        );
+
+        const packMappings: Array<[string, FeaturedBundleOffer | undefined]> = [
+            ["#iap-lto-pack-1", bundles.find((bundle) => bundle.size === "small")],
+            ["#iap-lto-pack-2", bundles.find((bundle) => bundle.size === "large")],
+        ];
+
+        for (const [selector, bundle] of packMappings) {
+            const pack = $(selector);
+            const itemsContainer = pack.find(".iap-loadout-items");
+            itemsContainer.empty();
+
+            if (!bundle) {
+                pack.off("click").addClass("market-refresh-disabled");
+                pack.removeClass("iap-pack-purchased");
+                pack.find(".iap-currency-text").text("0");
+                pack.find(".iap-discount").text("--");
+                continue;
+            }
+
+            pack.toggleClass("iap-pack-purchased", bundle.purchased);
+            pack.find(".iap-currency-text").text(String(bundle.price));
+            pack.find(".iap-discount").text(`${bundle.discountPercent}% OFF`);
+            const itemRow = $("<div/>");
+
+            for (const itemType of bundle.itemTypes) {
+                itemRow.append(this.buildFeaturedBundleItem(itemType));
+            }
+            itemsContainer.append(itemRow);
+
+            if (bundle.purchased) {
+                pack.off("click").addClass("market-refresh-disabled");
+                continue;
+            }
+
+            pack.removeClass("market-refresh-disabled");
+            pack.off("click").on("click", () => this.handleFeaturedAction(bundle));
+        }
     }
 
     syncFilterLabels() {
@@ -754,6 +809,58 @@ export class ShopMenu {
         $("#confirm-sell-price-input").trigger("focus");
     }
 
+    handleFeaturedAction(bundle: FeaturedBundleOffer) {
+        this.pendingAction = "bundle";
+        this.pendingFeaturedBundle = bundle;
+        this.pendingSellItem = null;
+        $("#modal-confirm-sell-title").text(
+            this.localization.translate("shop-featured-bundle-confirm-title") ||
+                "Buy bundle",
+        );
+        $("#modal-confirm-sell-desc").text(
+            this.localization.translate("shop-featured-bundle-confirm-desc") ||
+                "Spend GP to unlock every item in this bundle?",
+        );
+        $("#confirm-sell-no span").text(
+            this.localization.translate("confirm-buy-modal-no") || "No, cancel.",
+        );
+        $("#confirm-sell-yes span").text(
+            this.localization.translate("shop-featured-bundle-confirm-yes") ||
+                "Yes, buy it.",
+        );
+        $(".confirm-sell-price-row").hide();
+        $("#confirm-sell-price-range").hide();
+        $("#confirm-sell-price-error").text("").hide();
+        this.confirmSellModal.show(true);
+    }
+
+    buildFeaturedBundleItem(itemType: string) {
+        const def = GameObjectDefs[itemType] as any;
+        const rarity = def?.rarity ?? Rarity.Stock;
+        const rarityVisuals = helpers.getRarityVisuals(rarity);
+        const label =
+            this.localization.translate(`game-${itemType}`) || def?.name || itemType;
+        const image = $("<div/>", {
+            class: "iap-item-img",
+            title: label,
+            css: {
+                "background-color": rarityVisuals.backgroundColor,
+                border: `2px solid ${rarityVisuals.border}`,
+            },
+        });
+        image.append(
+            $("<div/>", {
+                class: "iap-item-sprite",
+                css: {
+                    "background-image": `url(${helpers.getSvgFromGameType(itemType)})`,
+                    transform: helpers.getCssTransformFromGameType(itemType),
+                },
+            }),
+        );
+        image.append(helpers.getItemRarityStyleMarkup(itemType, rarity));
+        return image;
+    }
+
     startMarketTimers() {
         this.stopMarketTimers();
         this.marketTimerId = window.setInterval(() => this.updateMarketTimers(), 1000);
@@ -767,6 +874,7 @@ export class ShopMenu {
     }
 
     updateMarketTimers() {
+        this.renderFeatured();
         $(".market-item-timer").each((_, element) => {
             const timer = $(element);
             const createdAt = Number(timer.attr("data-created-at"));
@@ -798,6 +906,16 @@ export class ShopMenu {
 
     formatListingDuration(elapsedMs: number) {
         const totalSeconds = Math.max(0, Math.floor(elapsedMs / 1000));
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return [hours, minutes, seconds]
+            .map((value) => String(value).padStart(2, "0"))
+            .join(":");
+    }
+
+    formatBundleCountdown(remainingMs: number) {
+        const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         const seconds = totalSeconds % 60;
@@ -1112,6 +1230,6 @@ export class ShopMenu {
     setDisplayedGpBalance(value: number) {
         this.displayedGpBalance = value;
         $("#shop-gp-balance").text(String(value));
-        $("#start-gp-display-amount, .currency-text").text(String(value));
+        $("#start-gp-display-amount").text(String(value));
     }
 }

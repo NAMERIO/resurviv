@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Constants } from "../../shared/net/net";
+import type { FeaturedBundleOffer } from "../utils/featuredBundles";
 import { type Item, ItemStatus, type Loadout, loadoutSchema } from "../utils/loadout";
 import { marketMaxSellPrice } from "../utils/marketPricing";
 
@@ -127,6 +128,7 @@ export type GetMarketResponse = {
     userListings: MarketListing[];
     soldListings: SoldMarketListing[];
     expiredItemTypes: string[];
+    featuredBundles: FeaturedBundleOffer[];
 };
 
 export const zCreateMarketListingRequest = z.object({
@@ -159,6 +161,16 @@ export type BuyMarketListingResponse = {
         | "already_owned"
         | "not_enough_gp"
         | "server_error";
+    gpBalance?: number;
+};
+
+export const zBuyFeaturedBundleRequest = z.object({
+    bundleId: z.string().min(1).max(64),
+});
+export type BuyFeaturedBundleRequest = z.infer<typeof zBuyFeaturedBundleRequest>;
+export type BuyFeaturedBundleResponse = {
+    success: boolean;
+    error?: "bundle_not_found" | "already_purchased" | "not_enough_gp" | "server_error";
     gpBalance?: number;
 };
 

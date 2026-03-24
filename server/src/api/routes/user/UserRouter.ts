@@ -1,10 +1,9 @@
 import { and, eq, inArray, ne, notInArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
-import { GameObjectDefs } from "../../../../../shared/defs/gameObjectDefs";
 import { UnlockDefs } from "../../../../../shared/defs/gameObjects/unlockDefs";
-import { Rarity } from "../../../../../shared/gameConfig";
 import {
     type AckSoldMarketListingsResponse,
+    type BuyFeaturedBundleResponse,
     type BuyMarketListingResponse,
     type CancelMarketListingResponse,
     type CreateMarketListingResponse,
@@ -13,6 +12,7 @@ import {
     type ProfileResponse,
     type UsernameResponse,
     zAckSoldMarketListingsRequest,
+    zBuyFeaturedBundleRequest,
     zBuyMarketListingRequest,
     zCancelMarketListingRequest,
     zCreateMarketListingRequest,
@@ -20,6 +20,10 @@ import {
     zSetItemStatusRequest,
     zUsernameRequest,
 } from "../../../../../shared/types/user";
+import {
+    getFeaturedBundleOffers,
+    getFeaturedBundleSource,
+} from "../../../../../shared/utils/featuredBundles";
 import loadout from "../../../../../shared/utils/loadout";
 import { getMarketPriceBounds } from "../../../../../shared/utils/marketPricing";
 import { Config } from "../../../config";
@@ -115,7 +119,15 @@ async function expireMarketListings(tx: any, targetUserId?: string) {
 
 async function buildMarketState(userId: string) {
     const expiredItemTypes = await expireMarketListings(db, userId);
-    const [publicListings, userListings, soldListings, sellers] = await Promise.all([
+    const [
+        { offers },
+        publicListings,
+        userListings,
+        soldListings,
+        sellers,
+        purchasedBundles,
+    ] = await Promise.all([
+        Promise.resolve(getFeaturedBundleOffers()),
         db.query.marketListingTable.findMany({
             where: eq(marketListingTable.status, "active"),
             orderBy: (table, { asc }) => [asc(table.price), asc(table.createdAt)],
@@ -141,9 +153,20 @@ async function buildMarketState(userId: string) {
                 slug: true,
             },
         }),
+        db
+            .select({
+                source: itemsTable.source,
+            })
+            .from(itemsTable)
+            .where(eq(itemsTable.userId, userId)),
     ]);
 
     const slugByUserId = new Map(sellers.map((seller) => [seller.id, seller.slug]));
+    const purchasedBundleSources = new Set(
+        purchasedBundles
+            .map((item) => item.source)
+            .filter((source) => source.startsWith("featured_bundle:")),
+    );
     const toClientListing = (listing: (typeof publicListings)[number]) => ({
         id: listing.id,
         itemId: listing.itemId,
@@ -164,6 +187,10 @@ async function buildMarketState(userId: string) {
             soldAt: listing.soldAt ? new Date(listing.soldAt).getTime() : Date.now(),
         })),
         expiredItemTypes,
+        featuredBundles: offers.map((offer) => ({
+            ...offer,
+            purchased: purchasedBundleSources.has(getFeaturedBundleSource(offer.id)),
+        })),
     };
 }
 
@@ -370,6 +397,7 @@ UserRouter.post("/get_market", async (c) => {
             userListings: market.userListings,
             soldListings: market.soldListings,
             expiredItemTypes: market.expiredItemTypes,
+            featuredBundles: market.featuredBundles,
         },
         200,
     );
@@ -577,6 +605,90 @@ UserRouter.post(
         } catch (err) {
             server.logger.error("/api/user/buy_market_listing error", err);
             return c.json<BuyMarketListingResponse>(
+                { success: false, error: "server_error" },
+                500,
+            );
+        }
+    },
+);
+
+UserRouter.post(
+    "/buy_featured_bundle",
+    validateParams(zBuyFeaturedBundleRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { bundleId } = c.req.valid("json");
+
+        try {
+            const result = await db.transaction(async (tx) => {
+                const { offers } = getFeaturedBundleOffers();
+                const offer = offers.find((entry) => entry.id === bundleId);
+
+                if (!offer) {
+                    return { ok: false as const, error: "bundle_not_found" as const };
+                }
+
+                const bundleSource = getFeaturedBundleSource(offer.id);
+                const buyer = await tx.query.usersTable.findFirst({
+                    where: eq(usersTable.id, user.id),
+                });
+
+                if (!buyer) {
+                    return { ok: false as const, error: "server_error" as const };
+                }
+
+                const existingBundleItem = await tx.query.itemsTable.findFirst({
+                    where: and(
+                        eq(itemsTable.userId, user.id),
+                        eq(itemsTable.source, bundleSource),
+                    ),
+                    columns: { id: true },
+                });
+
+                if (existingBundleItem) {
+                    return { ok: false as const, error: "already_purchased" as const };
+                }
+
+                if (buyer.gpBalance < offer.price) {
+                    return { ok: false as const, error: "not_enough_gp" as const };
+                }
+
+                await tx.insert(itemsTable).values(
+                    offer.itemTypes.map((itemType) => ({
+                        userId: user.id,
+                        type: itemType,
+                        source: bundleSource,
+                        timeAcquired: Date.now(),
+                    })),
+                );
+
+                await tx
+                    .update(usersTable)
+                    .set({
+                        gpBalance: buyer.gpBalance - offer.price,
+                    })
+                    .where(eq(usersTable.id, user.id));
+
+                return {
+                    ok: true as const,
+                    gpBalance: buyer.gpBalance - offer.price,
+                };
+            });
+
+            if (!result.ok) {
+                return c.json<BuyFeaturedBundleResponse>(
+                    { success: false, error: result.error },
+                    200,
+                );
+            }
+
+            return c.json<BuyFeaturedBundleResponse>(
+                { success: true, gpBalance: result.gpBalance },
+                200,
+            );
+        } catch (err) {
+            server.logger.error("/api/user/buy_featured_bundle error", err);
+            return c.json<BuyFeaturedBundleResponse>(
                 { success: false, error: "server_error" },
                 500,
             );

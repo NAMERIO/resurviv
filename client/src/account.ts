@@ -2,6 +2,8 @@ import $ from "jquery";
 import type {
     AckSoldMarketListingsRequest,
     AckSoldMarketListingsResponse,
+    BuyFeaturedBundleRequest,
+    BuyFeaturedBundleResponse,
     BuyMarketListingRequest,
     BuyMarketListingResponse,
     CancelMarketListingRequest,
@@ -24,6 +26,7 @@ import type {
     UsernameRequest,
     UsernameResponse,
 } from "../../shared/types/user";
+import type { FeaturedBundleOffer } from "../../shared/utils/featuredBundles";
 import type { ItemStatus } from "../../shared/utils/loadout";
 import { type Loadout, loadout as loadouts } from "../../shared/utils/loadout";
 import { util } from "../../shared/utils/util";
@@ -110,6 +113,7 @@ export class Account {
 
     loadout = loadouts.defaultLoadout();
     items: Item[] = [];
+    featuredBundles: FeaturedBundleOffer[] = [];
     marketListings: MarketListing[] = [];
     userMarketListings: MarketListing[] = [];
     soldMarketListings: SoldMarketListing[] = [];
@@ -416,6 +420,7 @@ export class Account {
             }
 
             this.gpBalance = res.gpBalance;
+            this.featuredBundles = res.featuredBundles || [];
             this.marketListings = res.listings || [];
             this.userMarketListings = res.userListings || [];
             this.soldMarketListings = res.soldListings || [];
@@ -430,6 +435,29 @@ export class Account {
             }
             callback?.(true);
         });
+    }
+
+    buyFeaturedBundle(bundleId: string, callback?: (error?: string) => void) {
+        const args: BuyFeaturedBundleRequest = { bundleId };
+        this.ajaxRequest(
+            "/api/user/buy_featured_bundle",
+            args,
+            (err, res: BuyFeaturedBundleResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "buy_featured_bundle_error");
+                    callback?.(res?.error || "server_error");
+                    return;
+                }
+
+                if (typeof res.gpBalance === "number") {
+                    this.gpBalance = res.gpBalance;
+                    this.emit("gpBalance", this.gpBalance);
+                }
+                this.loadProfile();
+                this.loadMarket();
+                callback?.();
+            },
+        );
     }
 
     createMarketListing(
