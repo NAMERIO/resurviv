@@ -201,7 +201,8 @@ class Projectile implements AbstractObject {
             if (this.type === "mine") {
                 if (!this.mineEffect.sprite) {
                     this.mineEffect.sprite = new PIXI.Sprite();
-                    this.mineEffect.sprite.texture = PIXI.Texture.from("part-strobe-01.img");
+                    this.mineEffect.sprite.texture =
+                        PIXI.Texture.from("part-strobe-01.img");
                     this.mineEffect.sprite.tint = 0xff0000;
                     this.mineEffect.sprite.anchor.set(0.5, 0.5);
                     this.container.addChild(this.mineEffect.sprite);

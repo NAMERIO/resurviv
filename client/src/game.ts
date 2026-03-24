@@ -845,7 +845,11 @@ export class Game {
         // Clear cached data
         this.m_ui2Manager.flushInput();
 
-        if ((IS_DEV || this.canUseDeveloper()) && this.editor?.enabled && this.editor.sendMsg) {
+        if (
+            (IS_DEV || this.canUseDeveloper()) &&
+            this.editor?.enabled &&
+            this.editor.sendMsg
+        ) {
             var msg = this.editor.getMsg();
             this.m_sendMessage(net.MsgType.Edit, msg);
             this.editor.postSerialization();
