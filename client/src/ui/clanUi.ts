@@ -875,9 +875,15 @@ export class ClanUi {
     }
 
     cancelNameEdit() {
+        const canEditViewedClan =
+            !!this.viewingClan &&
+            !!this.account.profile?.slug &&
+            this.viewingClan.members.some(
+                (m) => m.slug === this.account.profile!.slug && m.isOwner,
+            );
         $("#clan-detail-name-edit").hide();
         $("#clan-detail-name").show();
-        $("#btn-clan-edit-name").show();
+        $("#btn-clan-edit-name").toggle(canEditViewedClan);
     }
 
     updateClan(updates: { name?: string; icon?: string }) {
