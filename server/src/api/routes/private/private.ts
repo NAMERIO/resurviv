@@ -268,7 +268,6 @@ export const PrivateRouter = new Hono<Context>()
             }
 
             let xpGain = 0;
-            let gpGain = 0;
 
             const deltaById = new Map(validEntries.map((e) => [e.id, e.delta]));
             const passDef = PassDefs[passType];
@@ -296,7 +295,6 @@ export const PrivateRouter = new Hono<Context>()
 
                     if (!wasComplete && nowComplete) {
                         xpGain += def.xp;
-                        gpGain += Math.max(5, Math.round(def.xp / 2));
                     }
 
                     if (nextProgress === quest.progress && wasComplete === nowComplete) {
@@ -312,7 +310,7 @@ export const PrivateRouter = new Hono<Context>()
                         .where(eq(userQuestTable.id, quest.id));
                 }
 
-                if (xpGain <= 0 && gpGain <= 0) return;
+                if (xpGain <= 0) return;
 
                 const oldTotalXp = pass.totalXp;
                 const newTotalXp = oldTotalXp + xpGain;
@@ -370,11 +368,11 @@ export const PrivateRouter = new Hono<Context>()
                         },
                     });
 
-                if (gpGain > 0 || passGpGain > 0) {
+                if (passGpGain > 0) {
                     await tx
                         .update(usersTable)
                         .set({
-                            gpBalance: sql`${usersTable.gpBalance} + ${gpGain + passGpGain}`,
+                            gpBalance: sql`${usersTable.gpBalance} + ${passGpGain}`,
                         })
                         .where(eq(usersTable.id, userId));
                 }
