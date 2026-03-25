@@ -7,8 +7,6 @@
     "./shared/tsconfig.json",
     "./tests/tsconfig.json"
   ],
-  "compilerOptions": {
-    "types": []
-  },
-  "include": ["./**/*.ts", "./**/*.js"]
+  "include": ["./**/*.ts", "./**/*.js"],
+  "exclude": ["./**/node_modules/**", "./**/dist/**", "./**/reference/**"]
 }
