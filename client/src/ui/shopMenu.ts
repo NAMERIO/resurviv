@@ -1082,6 +1082,7 @@ export class ShopMenu {
         const modalContent = $("#modal-crate-contain > .modal-content");
         const odds = $("#modal-crate-odds");
         const items = $("#modal-crate-items");
+        const bodyText = $("#modal-crate-contain .modal-body-text");
         modalContent.removeClass("crate-theme-green crate-theme-blue crate-theme-red");
         modalContent.addClass(
             lootBox.id === "loot_box_02"
@@ -1091,18 +1092,25 @@ export class ShopMenu {
                   : "crate-theme-green",
         );
         $("#modal-crate-contain-title").text(lootBox.name);
+        bodyText.text(`Open a ${lootBox.name} for a chance at classic Surviv cosmetics.`);
         odds.empty();
         items.empty();
-        for (const chance of lootBox.chances) {
-            if (chance.weight <= 0) continue;
-            const rarityKey = rarityL10n[chance.rarity] || "loadout-common";
+        for (const rarity of [
+            Rarity.Common,
+            Rarity.Uncommon,
+            Rarity.Rare,
+            Rarity.Epic,
+            Rarity.Mythic,
+        ]) {
+            const weight =
+                lootBox.chances.find((chance) => chance.rarity === rarity)?.weight ?? 0;
+            const rarityKey = rarityL10n[rarity] || "loadout-common";
             const label =
-                this.localization.translate(rarityKey) ||
-                this.getRarityLabel(chance.rarity);
+                this.localization.translate(rarityKey) || this.getRarityLabel(rarity);
             odds.append(
                 $("<div/>", {
                     class: "shop-lootbox-odds-item",
-                    text: `${label} ${chance.weight}%`,
+                    text: `${label} ${weight}%`,
                 }),
             );
         }
