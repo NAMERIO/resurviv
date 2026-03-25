@@ -1322,6 +1322,11 @@
           </div>
           <div class="iap-container">
             <div class="iap-gp">
+              <div class="spin-overview">
+                <a id="shop-lootbox-button" class="btn-pharma-crates btn-darken menu-option">
+                  <span data-l10n="shop-lootbox-button">Get PARMA Crates</span>
+                </a>
+              </div>
               <div class="shop-earn-gp-card">
                 <div class="shop-earn-gp-title" data-l10n="shop-earn-gp-title">Earn Golden Potatoes</div>
                 <div class="shop-earn-gp-body" data-l10n="shop-earn-gp-body">GP is earned through quests, pass progress, and gameplay rewards. It is not sold for real money here.</div>
@@ -1331,7 +1336,7 @@
                   <div class="shop-earn-gp-item" data-l10n="shop-earn-gp-events">Play events and seasonal modes</div>
                 </div>
                 <div class="shop-earn-gp-warning" data-l10n="shop-earn-gp-warning"></div>
-              </div>
+                </div>
             </div>
             <div class="iap-limited-offers">
               <div class="iap-lto-title-container">
@@ -2124,6 +2129,97 @@
             <div id="modal-account-incentive-btn" class="btn-green btn-darken menu-option">
               <span data-l10n="shop-thanks-gift-button">Awesome!</span>
             </div>
+          </div>
+        </div>
+      </div>
+      <div id="crates-modal">
+        <div class="crates-screen">
+          <span class="close close-corner"></span>
+          <div class="crates-title" data-l10n="shop-lootbox-modal-title">CHOOSE SHIPMENT</div>
+          <div class="crates-loot-info" data-l10n="shop-lootbox-modal-subtitle">Tap a crate for loot info</div>
+          <div class="crates-container">
+            <div class="crate-display">
+              <div id="btn-contains-crate-1" class="crate-img">
+                <div class="crate-info"></div>
+              </div>
+              <div id="open-crate-1" class="btn-green btn-darken menu-option crate-btn">
+                <div class="crate-text" data-l10n="shop-lootbox-buy-for">Buy for</div>
+                <div id="crate-price-1" class="crate-price">100</div>
+                <div class="crate-gp-icon"></div>
+              </div>
+            </div>
+            <div class="crate-display">
+              <div id="btn-contains-crate-2" class="crate-img blue">
+                <div class="crate-info"></div>
+              </div>
+              <div id="open-crate-2" class="btn-green btn-darken menu-option crate-btn blue">
+                <div class="crate-text" data-l10n="shop-lootbox-buy-for">Buy for</div>
+                <div id="crate-price-2" class="crate-price">250</div>
+                <div class="crate-gp-icon"></div>
+              </div>
+            </div>
+            <div class="crate-display">
+              <div id="btn-contains-crate-3" class="crate-img red">
+                <div class="crate-info"></div>
+              </div>
+              <div id="open-crate-3" class="btn-green btn-darken menu-option crate-btn red">
+                <div class="crate-text" data-l10n="shop-lootbox-buy-for">Buy for</div>
+                <div id="crate-price-3" class="crate-price">700</div>
+                <div class="crate-gp-icon"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="modal-crate-contain" class="modal">
+        <div class="modal-content modal-close">
+          <div class="modal-header">
+            <span class="close close-corner"></span>
+            <h2 id="modal-crate-contain-title">PARMA Chest</h2>
+          </div>
+          <div class="modal-body">
+            <div class="modal-body-text" data-l10n="shop-lootbox-body">Open a PARMA chest for a chance at classic Surviv cosmetics.</div>
+            <div class="modal-items-odds">
+              <div class="gear-odds-info" data-l10n="shop-lootbox-odds-title">Drop rates</div>
+              <div id="modal-crate-odds" class="info-items-odds"></div>
+            </div>
+            <div id="modal-crate-items" class="items-crate"></div>
+          </div>
+          <div class="modal-footer">
+            <a class="close close-footer btn-green btn-darken btn-okay" data-l10n="menu-close">Close</a>
+          </div>
+        </div>
+      </div>
+      <div id="spin-modal">
+        <div class="spin-screen">
+          <div class="roulette_container">
+            <div class="roulette-overlay"></div>
+            <div class="roulette-arrows">
+              <div class="roulette-top-arrow">
+                <div class="roulette-top-arrow-left"></div>
+                <div class="roulette-top-arrow-right"></div>
+              </div>
+              <div class="roulette-bottom-arrow">
+                <div class="roulette-bottom-arrow-left"></div>
+                <div class="roulette-bottom-arrow-right"></div>
+              </div>
+            </div>
+            <div class="price-marker"></div>
+            <div id="modal-lootbox-roulette-strip" class="roulette"></div>
+          </div>
+        </div>
+      </div>
+      <div id="reward-modal">
+        <div class="reward-screen">
+          <div class="reward-title" data-l10n="shop-lootbox-reveal-title">YOU GOT</div>
+          <div id="reward-item-name" class="reward-type">Item</div>
+          <div class="reward-item">
+            <div class="reward-effect"></div>
+            <div id="reward-item-image" class="reward-img"></div>
+          </div>
+          <div class="reward-btns">
+            <div id="reward-modal-close" class="btn-green btn-darken menu-option reward-btn-blue" data-l10n="shop-lootbox-reveal-button">HUZZAH!</div>
+            <div id="reward-modal-equip" class="btn-green btn-darken menu-option reward-btn-blue green">Equip now</div>
           </div>
         </div>
       </div>

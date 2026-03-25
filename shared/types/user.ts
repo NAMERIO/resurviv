@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Constants } from "../../shared/net/net";
+import type { LootBoxDef } from "../defs/gameObjects/lootBoxDefs";
 import type { FeaturedBundleOffer } from "../utils/featuredBundles";
 import { type Item, ItemStatus, type Loadout, loadoutSchema } from "../utils/loadout";
 import { marketMaxSellPrice } from "../utils/marketPricing";
@@ -118,6 +119,26 @@ export type GetPassResponse = {
     quests: QuestState[];
 };
 
+export const zOpenLootBoxRequest = z.object({
+    boxId: z.string().trim().min(1),
+});
+
+export type OpenLootBoxRequest = z.infer<typeof zOpenLootBoxRequest>;
+export type OpenLootBoxResponse =
+    | {
+          success: true;
+          gpBalance: number;
+          itemType: string;
+      }
+    | {
+          success: false;
+          error: "box_not_found" | "not_enough_gp" | "server_error";
+      };
+
+export type ShopLootBox = Pick<LootBoxDef, "id" | "name" | "price" | "chances"> & {
+    itemTypes: string[];
+};
+
 export const zRefreshQuestRequest = z.object({
     idx: z.number(),
 });
@@ -132,6 +153,7 @@ export type GetMarketResponse = {
     soldListings: SoldMarketListing[];
     expiredItemTypes: string[];
     featuredBundles: FeaturedBundleOffer[];
+    lootBoxes: ShopLootBox[];
 };
 
 export const zCreateMarketListingRequest = z.object({

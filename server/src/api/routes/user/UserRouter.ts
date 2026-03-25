@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
-import { and, eq, inArray, ne, notInArray, sql } from "drizzle-orm";
+import { and, eq, inArray, ne, sql } from "drizzle-orm";
 import { Hono } from "hono";
-import { UnlockDefs } from "../../../../../shared/defs/gameObjects/unlockDefs";
 import {
     type AckSoldMarketListingsResponse,
     type BuyFeaturedBundleResponse,
@@ -10,6 +9,7 @@ import {
     type CreateMarketListingResponse,
     type GetMarketResponse,
     type LoadoutResponse,
+    type OpenLootBoxResponse,
     type ProfileResponse,
     type UsernameResponse,
     zAckSoldMarketListingsRequest,
@@ -18,6 +18,7 @@ import {
     zCancelMarketListingRequest,
     zCreateMarketListingRequest,
     zLoadoutRequest,
+    zOpenLootBoxRequest,
     zSetItemStatusRequest,
     zUsernameRequest,
 } from "../../../../../shared/types/user";
@@ -26,6 +27,12 @@ import {
     getFeaturedBundleSource,
 } from "../../../../../shared/utils/featuredBundles";
 import loadout from "../../../../../shared/utils/loadout";
+import {
+    getLootBox,
+    getLootBoxItems,
+    lootBoxes,
+    pickLootBoxReward,
+} from "../../../../../shared/utils/lootBoxes";
 import { getMarketPriceBounds } from "../../../../../shared/utils/marketPricing";
 import { Config } from "../../../config";
 import { getHonoIp, validateUserName } from "../../../utils/serverHelpers";
@@ -60,6 +67,16 @@ const APRIL_THANKS_REWARD_GP = 500;
 const APRIL_THANKS_REWARD_IP_LIMIT = 2;
 const APRIL_THANKS_REWARD_MIN_PLAYTIME_SECONDS = 30;
 const APRIL_THANKS_REWARD_END_AT = new Date("2026-04-26T00:00:00.000Z").getTime();
+
+function getShopLootBoxes() {
+    return Object.values(lootBoxes).map((box) => ({
+        id: box.id,
+        name: box.name,
+        price: box.price,
+        chances: box.chances,
+        itemTypes: getLootBoxItems(box.id),
+    }));
+}
 
 function hashRewardIp(ip: string) {
     return createHash("sha256")
@@ -321,8 +338,6 @@ UserRouter.post("/profile", async (c) => {
     const timeUntilNextChange = getTimeUntilNextUsernameChange(lastUsernameChangeTime);
     const claimedThanksReward = await tryClaimAprilThanksReward(c, user.id);
 
-    const defaultUnlockItems = UnlockDefs["unlock_default"].unlocks;
-
     const items = await db
         .select({
             id: itemsTable.id,
@@ -332,12 +347,7 @@ UserRouter.post("/profile", async (c) => {
             status: itemsTable.status,
         })
         .from(itemsTable)
-        .where(
-            and(
-                eq(itemsTable.userId, user.id),
-                notInArray(itemsTable.type, defaultUnlockItems),
-            ),
-        );
+        .where(eq(itemsTable.userId, user.id));
 
     return c.json<ProfileResponse>(
         {
@@ -499,6 +509,7 @@ UserRouter.post("/get_market", async (c) => {
             soldListings: market.soldListings,
             expiredItemTypes: market.expiredItemTypes,
             featuredBundles: market.featuredBundles,
+            lootBoxes: getShopLootBoxes(),
         },
         200,
     );
@@ -796,6 +807,80 @@ UserRouter.post(
         }
     },
 );
+
+UserRouter.post("/open_loot_box", validateParams(zOpenLootBoxRequest), async (c) => {
+    const user = c.get("user")!;
+    const { boxId } = c.req.valid("json");
+
+    try {
+        const result = await db.transaction(async (tx) => {
+            await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${user.id}))`);
+            const box = getLootBox(boxId);
+            if (!box) {
+                return { ok: false as const, error: "box_not_found" as const };
+            }
+
+            const buyer = await tx.query.usersTable.findFirst({
+                where: eq(usersTable.id, user.id),
+            });
+
+            if (!buyer) {
+                return { ok: false as const, error: "server_error" as const };
+            }
+
+            if (buyer.gpBalance < box.price) {
+                return { ok: false as const, error: "not_enough_gp" as const };
+            }
+
+            const reward = pickLootBoxReward(boxId);
+            if (!reward) {
+                return { ok: false as const, error: "server_error" as const };
+            }
+
+            await tx.insert(itemsTable).values({
+                userId: user.id,
+                type: reward.itemType,
+                source: box.source,
+                timeAcquired: Date.now(),
+            });
+
+            await tx
+                .update(usersTable)
+                .set({
+                    gpBalance: buyer.gpBalance - box.price,
+                })
+                .where(eq(usersTable.id, user.id));
+
+            return {
+                ok: true as const,
+                gpBalance: buyer.gpBalance - box.price,
+                itemType: reward.itemType,
+            };
+        });
+
+        if (!result.ok) {
+            return c.json<OpenLootBoxResponse>(
+                { success: false, error: result.error },
+                200,
+            );
+        }
+
+        return c.json<OpenLootBoxResponse>(
+            {
+                success: true,
+                gpBalance: result.gpBalance,
+                itemType: result.itemType,
+            },
+            200,
+        );
+    } catch (err) {
+        server.logger.error("/api/user/open_loot_box error", err);
+        return c.json<OpenLootBoxResponse>(
+            { success: false, error: "server_error" },
+            500,
+        );
+    }
+});
 
 UserRouter.post(
     "/ack_sold_market_listings",

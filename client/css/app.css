@@ -9283,7 +9283,7 @@ input [type="image"]:focus {
 #modal-confirm-sell {
   background-color: #000;
   background-color: rgba(0, 0, 0, 0.75);
-  z-index: 1201;
+  z-index: 1303;
 }
 
 #market-modal-notification {
@@ -9712,14 +9712,16 @@ input [type="image"]:focus {
   width: 300px;
   flex: 0 0 300px;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .shop-earn-gp-card {
   background: rgba(58, 58, 58, 0.651);
   border-radius: 5px;
   margin: 0;
-  padding: 24px 22px;
-  min-height: 100%;
+  padding: 22px 20px;
   box-sizing: border-box;
 }
 
@@ -9768,6 +9770,536 @@ input [type="image"]:focus {
   font-size: 14px;
   font-weight: bold;
   line-height: 18px;
+}
+
+.iap-gp .spin-overview {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.btn-pharma-crates {
+  display: block;
+  margin-bottom: 0;
+  background: #50afab;
+  border-bottom: 2px solid #387c79;
+  box-shadow: inset 0 -2px #387c79;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  line-height: 44px;
+}
+
+#shop-lootbox-button.market-refresh-disabled {
+  background: #6d6d6d;
+  border-bottom: 2px solid #3f3f3f;
+  box-shadow: inset 0 -2px #3f3f3f;
+  cursor: default;
+}
+
+#crates-modal {
+  display: none;
+  position: fixed;
+  z-index: 1301;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.72);
+}
+
+#crates-modal .crates-screen {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1120px;
+  padding: 34px 0 42px;
+  background: #141414;
+  transform: translate(-50%, -50%);
+}
+
+#crates-modal .crates-screen .close-corner {
+  margin-top: -18px;
+  margin-right: 14px;
+}
+
+#crates-modal .crates-title {
+  color: #fff;
+  font-size: 52px;
+  line-height: 60px;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgb(0 0 0 / 75%);
+}
+
+#crates-modal .crates-loot-info {
+  margin-top: 8px;
+  margin-bottom: 32px;
+  color: #fff;
+  font-size: 18px;
+  font-style: italic;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgb(0 0 0 / 75%);
+}
+
+#crates-modal .crates-container {
+  display: flex;
+  justify-content: space-around;
+  margin: 0 9%;
+}
+
+#crates-modal .crate-display {
+  position: relative;
+}
+
+#crates-modal .crate-img {
+  position: relative;
+  width: 237px;
+  height: 237px;
+  margin-bottom: 12px;
+  background-image: url(../img/gui/loot-crate-01.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100%;
+  cursor: pointer;
+}
+
+#crates-modal .crate-img .crate-info {
+  position: absolute;
+  right: -16px;
+  bottom: -8px;
+  width: 55px;
+  height: 55px;
+  background-image: url(../img/gui/loot-i-01.svg);
+  background-repeat: no-repeat;
+  background-size: 100%;
+}
+
+#crates-modal .crate-img.blue {
+  background-image: url(../img/gui/loot-crate-02.svg);
+}
+
+#crates-modal .crate-img.red {
+  background-image: url(../img/gui/loot-crate-03.svg);
+}
+
+#crates-modal .crate-btn {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 46px;
+  color: #152c1a;
+  background: #4a734e;
+  border-bottom: 2px solid #2a5133;
+  box-shadow: inset 0 -2px #2a5133;
+}
+
+#crates-modal .crate-btn.disable {
+  pointer-events: none;
+  color: #323232;
+  background: #6d6d6d;
+  border-bottom: 2px solid #3f3f3f;
+  box-shadow: inset 0 -2px #3f3f3f;
+}
+
+#crates-modal .crate-btn.blue {
+  color: #096465;
+  background: #2fc9cb;
+  border-bottom: 2px solid #108b8c;
+  box-shadow: inset 0 -2px #108b8c;
+}
+
+#crates-modal .crate-btn.red {
+  color: #690a10;
+  background: #ea333d;
+  border-bottom: 2px solid #aa1921;
+  box-shadow: inset 0 -2px #aa1921;
+}
+
+#crates-modal .crate-text,
+#crates-modal .crate-price {
+  margin: 0;
+  margin-top: 4px;
+  font-size: 26px;
+  line-height: 30px;
+  font-weight: bold;
+}
+
+#crates-modal .crate-gp-icon {
+  width: 19px;
+  height: 24px;
+  margin-top: 6px;
+  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-repeat: no-repeat;
+  background-size: 100%;
+}
+
+#modal-crate-contain > .modal-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: min(840px, calc(100vw - 40px));
+  background: #222;
+  overflow: hidden;
+  transform: translate(-50%, -50%);
+}
+
+#modal-crate-contain {
+  z-index: 1302;
+}
+
+#modal-crate-contain > .modal-content > .modal-header {
+  background: #4a734e;
+}
+
+#modal-crate-contain > .modal-content.crate-theme-blue > .modal-header {
+  background: #2fc9cb;
+}
+
+#modal-crate-contain > .modal-content.crate-theme-red > .modal-header {
+  background: #ea333d;
+}
+
+#modal-crate-contain > .modal-content > .modal-body {
+  padding: 18px 26px 26px;
+  background: #222;
+  box-sizing: border-box;
+}
+
+#modal-crate-contain .modal-body-text {
+  margin-bottom: 12px;
+}
+
+#modal-crate-contain .modal-items-odds {
+  margin-bottom: 16px;
+}
+
+#modal-crate-contain .gear-odds-info {
+  margin-bottom: 8px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+#modal-crate-contain .info-items-odds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#modal-crate-contain .shop-lootbox-odds-item {
+  padding: 4px 8px;
+  background: #151515;
+  color: #fff;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+#modal-crate-contain .items-crate {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
+  justify-content: stretch;
+  gap: 10px;
+  max-height: 340px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  align-content: start;
+}
+
+#modal-crate-contain .shop-lootbox-item.iap-item-img {
+  position: relative;
+  display: inline-block;
+  width: 58px;
+  height: 58px;
+  background-size: 66%;
+  background-repeat: no-repeat;
+  background-position: center;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+#modal-crate-contain .shop-lootbox-item.iap-item-img .iap-item-sprite {
+  width: 100%;
+  height: 100%;
+  background-size: 66%;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+#modal-crate-contain .shop-lootbox-item .item-rarity-style {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  top: -2px;
+  left: -2px;
+}
+
+#modal-crate-contain > .modal-content > .modal-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 16px 14px;
+  background: #4a734e;
+}
+
+#modal-crate-contain > .modal-content.crate-theme-blue > .modal-footer {
+  background: #2fc9cb;
+}
+
+#modal-crate-contain > .modal-content.crate-theme-red > .modal-footer {
+  background: #ea333d;
+}
+
+#modal-crate-contain > .modal-content > .modal-footer > .close-footer {
+  width: 160px;
+  display: inline-block;
+  padding: 6px 0;
+  line-height: 24px;
+}
+
+#spin-modal,
+#reward-modal {
+  display: none;
+  background: transparent;
+  height: 100%;
+  position: fixed;
+  width: 100%;
+  z-index: 1304;
+}
+
+#spin-modal .spin-screen,
+#reward-modal .reward-screen {
+  display: block;
+  background: #141414;
+  position: absolute;
+  width: 1044.7px;
+  height: 470.21px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#reward-modal .reward-item .reward-effect {
+  position: absolute;
+  height: 500px;
+  width: 500px;
+  background-image: url(../img/gui/loot-spinner-01.svg);
+  background-repeat: no-repeat;
+  background-size: 114%;
+  background-position: center;
+  top: -129px;
+  left: 50%;
+  margin-left: -250px;
+  animation: spin 4s linear infinite;
+  pointer-events: none;
+}
+
+div.roulette_container {
+  width: 100%;
+  height: 207px;
+  margin: auto;
+  margin-top: 14.5%;
+  position: relative;
+  overflow: hidden;
+}
+
+.roulette-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.roulette-overlay::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 100%;
+  width: 280px;
+  height: 280px;
+  box-shadow: 0 0 0 2000px rgba(20, 20, 20, 0.5);
+}
+
+.roulette-arrows {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.roulette-top-arrow {
+  position: absolute;
+  display: flex;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.roulette-top-arrow-left {
+  width: 0;
+  height: 0;
+  border-left: 22px solid transparent;
+  border-right: 0 solid transparent;
+  border-top: 41px solid #ffd600;
+}
+
+.roulette-top-arrow-right {
+  width: 0;
+  height: 0;
+  border-left: 0 solid transparent;
+  border-right: 22px solid transparent;
+  border-top: 41px solid #ffea7e;
+}
+
+.roulette-bottom-arrow {
+  position: absolute;
+  display: flex;
+  bottom: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.roulette-bottom-arrow-left {
+  width: 0;
+  height: 0;
+  border-left: 22px solid transparent;
+  border-right: 0 solid transparent;
+  border-bottom: 41px solid #ffea7e;
+}
+
+.roulette-bottom-arrow-right {
+  width: 0;
+  height: 0;
+  border-left: 0 solid transparent;
+  border-right: 22px solid transparent;
+  border-bottom: 41px solid #ffd600;
+}
+
+div.price-marker {
+  height: 208px;
+  position: absolute;
+  top: 0;
+  width: 2px;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: orange;
+  z-index: 2;
+}
+
+div.roulette {
+  margin-top: 30px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  will-change: transform;
+  z-index: 1;
+}
+
+.lootbox-roulette-item {
+  width: 148px;
+  height: 148px;
+  margin: 4px 10px 0;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+#reward-modal .reward-img > div,
+.lootbox-roulette-sprite,
+.lootbox-reward-sprite {
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.lootbox-roulette-sprite {
+  width: 100%;
+  height: 100%;
+  background-size: 120px;
+}
+
+#reward-modal .reward-title {
+  color: #fff;
+  text-shadow: 1.66941px 1.66941px 2px rgba(0, 0, 0, 0.75);
+  font-style: normal;
+  font-weight: normal;
+  font-size: 30.3361px;
+  line-height: 36px;
+  text-align: center;
+  position: relative;
+  margin: 16px 0 0;
+}
+
+#reward-modal .reward-type {
+  color: #fff;
+  text-shadow: 1.66941px 1.66941px 2px rgba(0, 0, 0, 0.75);
+  font-style: normal;
+  font-weight: bold;
+  font-size: 58px;
+  line-height: 68px;
+  text-align: center;
+}
+
+#reward-modal .reward-btns {
+  display: flex;
+  justify-content: center;
+  margin-top: 17px;
+}
+
+#reward-modal .reward-btn-blue {
+  background-color: #1e90ff;
+  border-bottom: 2px solid #1871c8;
+  box-shadow: inset 0 -2px #1871c8;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 22.7521px;
+  width: 291px;
+}
+
+#reward-modal .reward-btn-blue.green {
+  background-color: #83af50;
+  border-bottom: 2px solid #5b7a38;
+  box-shadow: inset 0 -2px #5b7a38;
+}
+
+#reward-modal .reward-img {
+  margin: 0 auto 30px;
+  display: flex;
+  justify-content: center;
+}
+
+#reward-modal .reward-img > div {
+  margin-top: 10px;
+  height: 225px;
+  width: 225px;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.lootbox-reward-sprite {
+  width: 100%;
+  height: 100%;
+  background-size: 170px;
+}
+
+#reward-modal .reward-img > div .item-rarity-style {
+  width: 31px;
+  height: 29px;
+}
+
+#reward-modal .reward-item {
+  position: relative;
+  height: 255px;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 #iap-modal .iap-screen .iap-container .iap-limited-offers {

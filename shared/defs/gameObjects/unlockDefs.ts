@@ -17,8 +17,8 @@ export const privateOutfits = [
     "outfitStepz",
 ];
 
-const _allowedHealEffects = Object.keys(HealEffectDefs);
-const _allowedDeathEffects = Object.keys(DeathEffectDefs);
+const _allowedHealEffects = ["heal_basic", "boost_basic"];
+const _allowedDeathEffects = ["death_none", "death_basic"];
 const _allowedStreaks = ["streak_rapid_fire", "streak_heavy_hitter", "streak_juggernaut"];
 const _allowedMeleeSkins = [
     "fists",
@@ -172,7 +172,7 @@ const _allowedOutfits = [
     "outfitCobaltShell",
     "outfitCarbonFiber",
     "outfitDarkGloves",
-    "outfitDarkShirt",
+    // "outfitDarkShirt",
     "outfitDesertCamo",
     "outfitCamo",
     "outfitRed",

@@ -15,6 +15,8 @@ import type {
     LoadoutRequest,
     LoadoutResponse,
     MarketListing,
+    OpenLootBoxRequest,
+    OpenLootBoxResponse,
     ProfileResponse,
     RefreshQuestRequest,
     RefreshQuestResponse,
@@ -22,6 +24,7 @@ import type {
     SetPassUnlockRequest,
     SetPassUnlockResponse,
     SetQuestRequest,
+    ShopLootBox,
     SoldMarketListing,
     UsernameRequest,
     UsernameResponse,
@@ -115,6 +118,7 @@ export class Account {
     loadout = loadouts.defaultLoadout();
     items: Item[] = [];
     featuredBundles: FeaturedBundleOffer[] = [];
+    lootBoxes: ShopLootBox[] = [];
     marketListings: MarketListing[] = [];
     userMarketListings: MarketListing[] = [];
     soldMarketListings: SoldMarketListing[] = [];
@@ -428,6 +432,7 @@ export class Account {
 
             this.gpBalance = res.gpBalance;
             this.featuredBundles = res.featuredBundles || [];
+            this.lootBoxes = res.lootBoxes || [];
             this.marketListings = res.listings || [];
             this.userMarketListings = res.userListings || [];
             this.soldMarketListings = res.soldListings || [];
@@ -463,6 +468,32 @@ export class Account {
                 this.loadProfile();
                 this.loadMarket();
                 callback?.();
+            },
+        );
+    }
+
+    openLootBox(
+        boxId: string,
+        callback?: (error?: string, reward?: { itemType: string }) => void,
+    ) {
+        const args: OpenLootBoxRequest = { boxId };
+        this.ajaxRequest(
+            "/api/user/open_loot_box",
+            args,
+            (err, res: OpenLootBoxResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "open_loot_box_error");
+                    const errorCode =
+                        !err && res && "error" in res ? res.error : "server_error";
+                    callback?.(errorCode);
+                    return;
+                }
+
+                this.gpBalance = res.gpBalance;
+                this.emit("gpBalance", this.gpBalance);
+                this.loadProfile();
+                this.loadMarket();
+                callback?.(undefined, { itemType: res.itemType });
             },
         );
     }

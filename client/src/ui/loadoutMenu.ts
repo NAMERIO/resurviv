@@ -115,6 +115,7 @@ export interface Item {
     ackd?: ItemStatus.Ackd;
 }
 interface ItemInfo {
+    itemKey: string;
     type: string;
     loadoutType: string;
     rarity: number;
@@ -136,7 +137,13 @@ interface EquippedItem {
     displayLore?: string;
     subcat: EmoteCategory;
     displaySource?: string;
+    itemKey?: string;
 }
+
+function getItemIdentity(item: Pick<Item, "type" | "id" | "timeAcquired" | "source">) {
+    return item.id || `${item.type}:${item.timeAcquired}:${item.source}`;
+}
+
 export class LoadoutMenu {
     initialized = false;
     active = false;
@@ -213,6 +220,7 @@ export class LoadoutMenu {
         loadoutType?: string;
         displayLore?: string;
         subcat?: number;
+        itemKey?: string;
     } = {
         selectedElem: null,
         prevSlot: null,
@@ -610,10 +618,10 @@ export class LoadoutMenu {
             if (
                 item.status! < loadout.ItemStatus.Confirmed &&
                 !this.localPendingConfirm.find((x) => {
-                    return x.type == item.type;
+                    return getItemIdentity(x) == getItemIdentity(item);
                 }) &&
                 !this.localConfirmed.find((x) => {
-                    return x.type == item.type;
+                    return getItemIdentity(x) == getItemIdentity(item);
                 })
             ) {
                 this.localPendingConfirm.push(item);
@@ -621,7 +629,7 @@ export class LoadoutMenu {
             if (
                 item.status! < loadout.ItemStatus.Ackd &&
                 !this.localAckItems.find((x) => {
-                    return x.type == item.type;
+                    return getItemIdentity(x) == getItemIdentity(item);
                 })
             ) {
                 this.localAckItems.push(item);
@@ -1071,6 +1079,7 @@ export class LoadoutMenu {
             displayLore: selectedItem.displayLore || "",
             loadoutType: selectedItem.loadoutType,
             subcat: selectedItem.subcat,
+            itemKey: selectedItem.itemKey,
         };
         this.modalCustomizeItemName.html(this.selectedItem.displayName!);
         const source =
@@ -1173,7 +1182,7 @@ export class LoadoutMenu {
 
         // Mark item as ackd
         const itemIdx = this.localAckItems.findIndex((x) => {
-            return x.type == this.selectedItem.type;
+            return getItemIdentity(x) == this.selectedItem.itemKey;
         });
         if (itemIdx !== -1) {
             selector
@@ -1496,6 +1505,7 @@ export class LoadoutMenu {
             const transform = helpers.getCssTransformFromGameType(item.type);
 
             const itemInfo: ItemInfo = {
+                itemKey: getItemIdentity(item),
                 loadoutType: category.loadoutType,
                 type: item.type,
                 rarity: objDef.rarity || Rarity.Stock,
@@ -1545,7 +1555,7 @@ export class LoadoutMenu {
             // Notification pulse
             if (
                 this.localAckItems.findIndex((x) => {
-                    return x.type == item.type;
+                    return getItemIdentity(x) == getItemIdentity(item);
                 }) !== -1
             ) {
                 const alertDiv = $("<div/>", {

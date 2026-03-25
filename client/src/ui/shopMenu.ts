@@ -1,6 +1,7 @@
 import $ from "jquery";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { Rarity } from "../../../shared/gameConfig";
+import type { ShopLootBox } from "../../../shared/types/user";
 import type { FeaturedBundleOffer } from "../../../shared/utils/featuredBundles";
 import {
     getMarketPriceBounds,
@@ -64,13 +65,17 @@ export class ShopMenu {
     modal = new MenuModal($("#iap-modal"));
     confirmSellModal = new MenuModal($("#modal-confirm-sell"));
     soldNotificationModal = new MenuModal($("#market-modal-notification"));
+    cratesModal = new MenuModal($("#crates-modal"));
+    crateContainModal = new MenuModal($("#modal-crate-contain"));
+    rewardModal = new MenuModal($("#reward-modal"));
     marketErrorToast = $("#market-error-toast");
     marketTimerId: number | null = null;
     marketErrorTimeoutId: number | null = null;
     balanceAnimationId: number | null = null;
     pendingSellItem: Listing | null = null;
     pendingFeaturedBundle: FeaturedBundleOffer | null = null;
-    pendingAction: "buy" | "sell" | "cancel" | "bundle" = "sell";
+    pendingLootBox: ShopLootBox | null = null;
+    pendingAction: "buy" | "sell" | "cancel" | "bundle" | "lootbox" = "sell";
     pendingSoldListings: Listing[] = [];
     pendingSoldListingIds = new Set<string>();
     soldNotificationActive = false;
@@ -87,6 +92,8 @@ export class ShopMenu {
     pendingGpBalanceTarget: number | null = null;
     marketRefreshCooldownUntil = 0;
     marketRefreshInFlight = false;
+    lootBoxRevealTimeoutId: number | null = null;
+    openingLootBox = false;
 
     constructor(
         public account: Account,
@@ -140,11 +147,21 @@ export class ShopMenu {
         });
         this.modal.onHide(() => {
             this.stopMarketTimers();
+            this.cratesModal.hide();
+            this.crateContainModal.hide();
+            $("#spin-modal").hide();
+            this.rewardModal.hide();
+            this.openingLootBox = false;
+            if (this.lootBoxRevealTimeoutId !== null) {
+                window.clearTimeout(this.lootBoxRevealTimeoutId);
+                this.lootBoxRevealTimeoutId = null;
+            }
         });
 
         this.confirmSellModal.onHide(() => {
             this.pendingSellItem = null;
             this.pendingFeaturedBundle = null;
+            this.pendingLootBox = null;
             $("#confirm-sell-price-range").hide();
             $("#confirm-sell-price-error").text("").hide();
         });
@@ -157,6 +174,42 @@ export class ShopMenu {
         $("#start-shop-shortcut, #open-store-button").on("click", (e) => {
             e.preventDefault();
             this.modal.show(true);
+            return false;
+        });
+        $("#shop-lootbox-button").on("click", (e) => {
+            e.preventDefault();
+            if (this.getOrderedLootBoxes().length === 0) return false;
+            this.cratesModal.show();
+            return false;
+        });
+        for (const [index, selectorSuffix] of ["1", "2", "3"].entries()) {
+            $(`#btn-contains-crate-${selectorSuffix}`).on("click", (e) => {
+                e.preventDefault();
+                const lootBox = this.getOrderedLootBoxes()[index];
+                if (!lootBox) return false;
+                this.showLootBoxContents(lootBox);
+                return false;
+            });
+            $(`#open-crate-${selectorSuffix}`).on("click", (e) => {
+                e.preventDefault();
+                const lootBox = this.getOrderedLootBoxes()[index];
+                if (!lootBox) return false;
+                this.handleLootBoxAction(lootBox);
+                return false;
+            });
+        }
+        $("#reward-modal-close").on("click", (e) => {
+            e.preventDefault();
+            this.rewardModal.hide();
+            return false;
+        });
+        $("#reward-modal-equip").on("click", (e) => {
+            e.preventDefault();
+            this.rewardModal.hide();
+            this.cratesModal.hide();
+            this.crateContainModal.hide();
+            this.modal.hide();
+            $("#btn-customize").trigger("click");
             return false;
         });
 
@@ -172,6 +225,28 @@ export class ShopMenu {
                     if (error) {
                         this.showMarketError(error);
                     }
+                });
+                return false;
+            }
+            if (action === "lootbox") {
+                const lootBox = this.pendingLootBox;
+                if (!lootBox || this.openingLootBox) return false;
+                this.openingLootBox = true;
+                this.confirmSellModal.hide();
+                this.cratesModal.hide();
+                this.crateContainModal.hide();
+                this.account.openLootBox(lootBox.id, (error, reward) => {
+                    this.openingLootBox = false;
+                    if (error) {
+                        this.showMarketError(error);
+                        return;
+                    }
+                    const itemType = reward?.itemType;
+                    if (!itemType) {
+                        this.showMarketError("server_error");
+                        return;
+                    }
+                    this.startLootBoxSpin(lootBox, itemType);
                 });
                 return false;
             }
@@ -440,6 +515,7 @@ export class ShopMenu {
 
     render() {
         this.renderFeatured();
+        this.renderLootBoxes();
         this.renderBalance();
         this.syncFilterLabels();
         this.setTab(this.activeTab);
@@ -506,6 +582,37 @@ export class ShopMenu {
 
             pack.removeClass("market-refresh-disabled");
             pack.off("click").on("click", () => this.handleFeaturedAction(bundle));
+        }
+    }
+
+    renderLootBoxes() {
+        const lootBoxes = this.getOrderedLootBoxes();
+        const shopButton = $("#shop-lootbox-button");
+        const crateTitle = $("#modal-crate-contain-title");
+
+        if (lootBoxes.length === 0) {
+            shopButton.addClass("market-refresh-disabled");
+            for (const selectorSuffix of ["1", "2", "3"]) {
+                $(`#open-crate-${selectorSuffix}`).addClass("disable");
+                $(`#crate-price-${selectorSuffix}`).text("0");
+            }
+            crateTitle.text(
+                this.localization.translate("shop-lootbox-unavailable") || "Unavailable",
+            );
+            return;
+        }
+
+        shopButton.removeClass("market-refresh-disabled");
+        crateTitle.text(lootBoxes[0]!.name);
+        for (const [index, selectorSuffix] of ["1", "2", "3"].entries()) {
+            const lootBox = lootBoxes[index];
+            if (!lootBox) {
+                $(`#open-crate-${selectorSuffix}`).addClass("disable");
+                $(`#crate-price-${selectorSuffix}`).text("0");
+                continue;
+            }
+            $(`#open-crate-${selectorSuffix}`).removeClass("disable");
+            $(`#crate-price-${selectorSuffix}`).text(String(lootBox.price));
         }
     }
 
@@ -945,6 +1052,168 @@ export class ShopMenu {
         this.confirmSellModal.show(true);
     }
 
+    handleLootBoxAction(lootBox: ShopLootBox) {
+        this.pendingAction = "lootbox";
+        this.pendingLootBox = lootBox;
+        this.pendingSellItem = null;
+        this.pendingFeaturedBundle = null;
+        $("#modal-confirm-sell-title").text(
+            this.localization.translate("shop-lootbox-confirm-title") || "Open loot box",
+        );
+        $("#modal-confirm-sell-desc").text(
+            (
+                this.localization.translate("shop-lootbox-confirm-desc") ||
+                "Spend {gp} GP to open this loot box?"
+            ).replace("{gp}", String(lootBox.price)),
+        );
+        $("#confirm-sell-no span").text(
+            this.localization.translate("confirm-buy-modal-no") || "No, cancel.",
+        );
+        $("#confirm-sell-yes span").text(
+            this.localization.translate("shop-lootbox-open") || "Open Loot Box",
+        );
+        $(".confirm-sell-price-row").hide();
+        $("#confirm-sell-price-range").hide();
+        $("#confirm-sell-price-error").text("").hide();
+        this.confirmSellModal.show(true);
+    }
+
+    showLootBoxContents(lootBox: ShopLootBox) {
+        const modalContent = $("#modal-crate-contain > .modal-content");
+        const odds = $("#modal-crate-odds");
+        const items = $("#modal-crate-items");
+        modalContent.removeClass("crate-theme-green crate-theme-blue crate-theme-red");
+        modalContent.addClass(
+            lootBox.id === "loot_box_02"
+                ? "crate-theme-blue"
+                : lootBox.id === "loot_box_03"
+                  ? "crate-theme-red"
+                  : "crate-theme-green",
+        );
+        $("#modal-crate-contain-title").text(lootBox.name);
+        odds.empty();
+        items.empty();
+        for (const chance of lootBox.chances) {
+            if (chance.weight <= 0) continue;
+            const rarityKey = rarityL10n[chance.rarity] || "loadout-common";
+            const label =
+                this.localization.translate(rarityKey) ||
+                this.getRarityLabel(chance.rarity);
+            odds.append(
+                $("<div/>", {
+                    class: "shop-lootbox-odds-item",
+                    text: `${label} ${chance.weight}%`,
+                }),
+            );
+        }
+        for (const itemType of lootBox.itemTypes) {
+            items.append(
+                this.buildFeaturedBundleItem(itemType).addClass("shop-lootbox-item"),
+            );
+        }
+        this.crateContainModal.show(true);
+    }
+
+    showLootBoxOpening() {
+        const strip = $("#modal-lootbox-roulette-strip");
+        strip.empty();
+        strip.css({
+            transition: "none",
+            transform: "translateX(0px)",
+        });
+        $("#spin-modal").show();
+    }
+
+    startLootBoxSpin(lootBox: ShopLootBox, rewardItemType: string) {
+        this.showLootBoxOpening();
+        const strip = $("#modal-lootbox-roulette-strip");
+        const rouletteContainer = $(".roulette_container");
+        const pool = lootBox.itemTypes.length > 0 ? lootBox.itemTypes : [rewardItemType];
+        const totalItems = 60;
+        const winningIndex = 56;
+
+        for (let i = 0; i < totalItems; i++) {
+            const itemType =
+                i === winningIndex
+                    ? rewardItemType
+                    : pool[Math.floor(Math.random() * pool.length)] || rewardItemType;
+            strip.append(this.buildRouletteItem(itemType));
+        }
+
+        window.setTimeout(() => {
+            const containerWidth = rouletteContainer.width() || 760;
+            const winningItem = strip.children().eq(winningIndex) as JQuery<HTMLElement>;
+            const itemStep = winningItem.outerWidth(true) || 128;
+            const itemLeft = winningItem.position()?.left ?? winningIndex * itemStep;
+            const targetCenter = itemLeft + itemStep / 2;
+            const translateX = containerWidth / 2 - targetCenter;
+            strip.css({
+                transition: "transform 4.2s cubic-bezier(0.12, 0.8, 0.18, 1)",
+                transform: `translateX(${translateX}px)`,
+            });
+        }, 30);
+
+        if (this.lootBoxRevealTimeoutId !== null) {
+            window.clearTimeout(this.lootBoxRevealTimeoutId);
+        }
+        this.lootBoxRevealTimeoutId = window.setTimeout(() => {
+            this.revealLootBoxReward(rewardItemType);
+            this.lootBoxRevealTimeoutId = null;
+        }, 4600);
+    }
+
+    revealLootBoxReward(itemType: string) {
+        const def = GameObjectDefs[itemType] as any;
+        const rarity = def?.rarity ?? Rarity.Stock;
+        const rarityVisuals = helpers.getRarityVisuals(rarity);
+        $("#spin-modal").hide();
+        $("#reward-item-name").text(
+            this.localization.translate(`game-${itemType}`) || def?.name || itemType,
+        );
+        $("#reward-modal .reward-title").text(
+            this.localization.translate("shop-lootbox-reveal-title") || "YOU GOT",
+        );
+        const rewardImage = $("<div/>", {
+            css: {
+                border: `4px solid ${rarityVisuals.border}`,
+                "background-color": rarityVisuals.backgroundColor,
+            },
+        });
+        rewardImage.append(
+            $("<div/>", {
+                class: "lootbox-reward-sprite",
+                css: {
+                    "background-image": `url(${helpers.getSvgFromGameType(itemType)})`,
+                    transform: helpers.getCssTransformFromGameType(itemType),
+                },
+            }),
+        );
+        rewardImage.append(helpers.getItemRarityStyleMarkup(itemType, rarity));
+        $("#reward-item-image").empty().append(rewardImage);
+        this.rewardModal.show(true);
+    }
+
+    buildRouletteItem(itemType: string) {
+        const def = GameObjectDefs[itemType] as any;
+        const rarity = def?.rarity ?? Rarity.Stock;
+        const rarityVisuals = helpers.getRarityVisuals(rarity);
+        return $("<div/>", {
+            class: "lootbox-roulette-item",
+            css: {
+                outline: `solid 4px ${rarityVisuals.border}`,
+                background: rarityVisuals.backgroundColor,
+            },
+        }).append(
+            $("<div/>", {
+                class: "lootbox-roulette-sprite",
+                css: {
+                    "background-image": `url(${helpers.getSvgFromGameType(itemType)})`,
+                    transform: helpers.getCssTransformFromGameType(itemType),
+                },
+            }),
+        );
+    }
+
     buildFeaturedBundleItem(itemType: string) {
         const def = GameObjectDefs[itemType] as any;
         const rarity = def?.rarity ?? Rarity.Stock;
@@ -1073,6 +1342,24 @@ export class ShopMenu {
             return `${Math.floor(price / 1000)}k`;
         }
         return String(price);
+    }
+
+    getRarityLabel(rarity: number) {
+        return (
+            this.localization.translate(rarityL10n[rarity] || "") ||
+            {
+                [Rarity.Common]: "Common",
+                [Rarity.Uncommon]: "Uncommon",
+                [Rarity.Rare]: "Rare",
+                [Rarity.Epic]: "Epic",
+                [Rarity.Mythic]: "Mythic",
+            }[rarity] ||
+            "Unknown"
+        );
+    }
+
+    getOrderedLootBoxes() {
+        return [...(this.account.lootBoxes || [])].sort((a, b) => a.price - b.price);
     }
 
     getPendingSellPrice() {
