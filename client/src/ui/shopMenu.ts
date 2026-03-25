@@ -488,7 +488,7 @@ export class ShopMenu {
                 const def = GameObjectDefs[item.type] as any;
                 if (!def || !supportedMarketTypes.has(def.type)) return null;
                 const rarity = def.rarity ?? Rarity.Stock;
-                if (rarity < Rarity.Rare) return null;
+                if (rarity < Rarity.Common) return null;
                 if (!item.id || listedItemIds.has(item.id)) return null;
                 return {
                     itemId: item.id,

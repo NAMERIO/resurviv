@@ -27,7 +27,7 @@ export function getMarketItemRarity(itemType: string) {
         | undefined;
     if (!def || !def.type || !supportedMarketTypes.has(def.type)) return null;
     const rarity = def.rarity ?? Rarity.Stock;
-    if (rarity < Rarity.Rare) return null;
+    if (rarity < Rarity.Common) return null;
     return rarity;
 }
 
