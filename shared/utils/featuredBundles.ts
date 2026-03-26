@@ -33,7 +33,7 @@ const FEATURED_BUNDLE_CONFIG: Record<
     },
 };
 
-const bundleMinPrice: Record<Rarity, number> = {
+export const bundleMinPrice: Record<Rarity, number> = {
     [Rarity.Stock]: 100,
     [Rarity.Common]: 100,
     [Rarity.Uncommon]: 100,
@@ -118,6 +118,10 @@ function getBundleBasePrice(itemType: string) {
     const rarity = getMarketItemRarity(itemType);
     if (rarity === null) return null;
     return bundleMinPrice[rarity];
+}
+
+export function getBundleMinPrice(itemType: string) {
+    return getBundleBasePrice(itemType);
 }
 
 function buildBundleOffer(

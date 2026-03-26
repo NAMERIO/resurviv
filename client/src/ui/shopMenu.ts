@@ -2,11 +2,11 @@ import $ from "jquery";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { Rarity } from "../../../shared/gameConfig";
 import type { ShopLootBox } from "../../../shared/types/user";
-import type { FeaturedBundleOffer } from "../../../shared/utils/featuredBundles";
 import {
-    getMarketPriceBounds,
-    getSuggestedMarketSellPrice,
-} from "../../../shared/utils/marketPricing";
+    type FeaturedBundleOffer,
+    getBundleMinPrice,
+} from "../../../shared/utils/featuredBundles";
+import { getMarketPriceBounds } from "../../../shared/utils/marketPricing";
 import type { Account } from "../account";
 import { helpers } from "../helpers";
 import type { Localization } from "./localization";
@@ -501,7 +501,7 @@ export class ShopMenu {
                     rarity,
                     image: helpers.getSvgFromGameType(item.type),
                     transform: helpers.getCssTransformFromGameType(item.type),
-                    price: getSuggestedMarketSellPrice(item.type) ?? 0,
+                    price: getBundleMinPrice(item.type) ?? 0,
                     owned: true,
                     action: "sell",
                     sellerName: this.localization.translate("market-you") || "You",
@@ -1013,7 +1013,7 @@ export class ShopMenu {
         $("#confirm-sell-yes span").text(
             this.localization.translate("confirm-sell-modal-yes") || "Yes, sell.",
         );
-        $("#confirm-sell-price-input").val(String(priceBounds?.min ?? item.price));
+        $("#confirm-sell-price-input").val("0");
         $("#confirm-sell-price-input").attr("min", String(priceBounds?.min ?? 0));
         $("#confirm-sell-price-input").attr(
             "max",
