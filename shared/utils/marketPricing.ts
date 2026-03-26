@@ -11,12 +11,12 @@ const supportedMarketTypes = new Set([
 ]);
 
 export const marketMinPriceByRarity: Record<Rarity, number> = {
-    [Rarity.Stock]: 300,
-    [Rarity.Common]: 300,
-    [Rarity.Uncommon]: 300,
-    [Rarity.Rare]: 750,
-    [Rarity.Epic]: 750,
-    [Rarity.Mythic]: 3000,
+    [Rarity.Stock]: 1,
+    [Rarity.Common]: 1,
+    [Rarity.Uncommon]: 1,
+    [Rarity.Rare]: 1,
+    [Rarity.Epic]: 1,
+    [Rarity.Mythic]: 1,
 };
 
 export const marketMaxSellPrice = 10000;

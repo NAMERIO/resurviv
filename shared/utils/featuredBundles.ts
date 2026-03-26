@@ -1,8 +1,8 @@
 import { GameObjectDefs } from "../defs/gameObjectDefs";
 import { PassDefs } from "../defs/gameObjects/passDefs";
 import { UnlockDefs } from "../defs/gameObjects/unlockDefs";
-import type { Rarity } from "../gameConfig";
-import { getMarketPriceBounds } from "./marketPricing";
+import { Rarity } from "../gameConfig";
+import { getMarketItemRarity, getMarketPriceBounds } from "./marketPricing";
 
 export type FeaturedBundleSize = "small" | "large";
 
@@ -31,6 +31,15 @@ const FEATURED_BUNDLE_CONFIG: Record<
         minItems: 4,
         maxItems: 6,
     },
+};
+
+const bundleMinPrice: Record<Rarity, number> = {
+    [Rarity.Stock]: 100,
+    [Rarity.Common]: 100,
+    [Rarity.Uncommon]: 100,
+    [Rarity.Rare]: 500,
+    [Rarity.Epic]: 500,
+    [Rarity.Mythic]: 1500,
 };
 
 type BundleWindow = {
@@ -105,6 +114,12 @@ function getEligibleBundleItems() {
         .sort();
 }
 
+function getBundleBasePrice(itemType: string) {
+    const rarity = getMarketItemRarity(itemType);
+    if (rarity === null) return null;
+    return bundleMinPrice[rarity];
+}
+
 function buildBundleOffer(
     size: FeaturedBundleSize,
     window: BundleWindow,
@@ -139,10 +154,10 @@ function buildBundleOffer(
         }
     }
 
-    const basePrice = itemTypes.reduce((total, itemType) => {
-        const priceBounds = getMarketPriceBounds(itemType);
-        return total + (priceBounds?.min ?? 0);
-    }, 0);
+    const basePrice = itemTypes.reduce(
+        (total, itemType) => total + (getBundleBasePrice(itemType) ?? 0),
+        0,
+    );
     const discountPercent = 5 + randomInt(seed, 21);
     const discountedPrice = Math.max(
         1,
