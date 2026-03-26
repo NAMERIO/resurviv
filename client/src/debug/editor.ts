@@ -241,6 +241,9 @@ export class Editor {
             folder.addBinding(this.toolParams, "teleportToPings", {
                 label: "Teleport To Pings",
             });
+            folder.addBinding(this.toolParams, "invisible", {
+                label: "Invisible",
+            });
             folder.addBinding(this.toolParams, "godMode", {
                 label: "God Mode",
             });
@@ -413,6 +416,7 @@ export class Editor {
 
         msg.noClip = this.toolParams.noClip;
         msg.teleportToPings = this.toolParams.teleportToPings;
+        msg.invisible = this.toolParams.invisible;
         msg.godMode = this.toolParams.godMode;
         msg.moveObjs = this.toolParams.moveObjs;
 

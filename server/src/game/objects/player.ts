@@ -1453,6 +1453,7 @@ export class Player extends BaseGameObject {
 
         noClip: false,
         teleportToPings: false,
+        invisible: false,
         godMode: false,
 
         /** drag and drop loot, obstacles, and buildings */
@@ -2635,6 +2636,10 @@ export class Player extends BaseGameObject {
     visibleObjects = new Set<GameObject>();
     visibleMapIndicators = new Set<MapIndicator>();
 
+    isInvisibleTo(viewer: Player) {
+        return this !== viewer && this.debug.invisible;
+    }
+
     msgStream = new net.MsgStream(new ArrayBuffer(65536));
     sendMsgs(): void {
         const msgStream = this.msgStream;
@@ -2714,6 +2719,14 @@ export class Player extends BaseGameObject {
         const rect = collider.createAabbExtents(this.pos, v2.create(width, height));
 
         const newVisibleObjects = game.grid.intersectColliderSet(rect);
+        for (const obj of newVisibleObjects) {
+            if (
+                obj.__type === ObjectType.Player &&
+                (obj as Player).isInvisibleTo(this)
+            ) {
+                newVisibleObjects.delete(obj);
+            }
+        }
         // client crashes if active player is not visible
         // so make sure its always added to visible objects
         newVisibleObjects.add(this);
@@ -4254,9 +4267,14 @@ export class Player extends BaseGameObject {
     getPlayerStatus() {
         const players: Player[] = this.game.modeManager.getPlayerStatusPlayers(this)!;
         return players.map((p) => {
-            const visible = p.teamId === this.teamId || p.timeUntilHidden > 0;
+            const hiddenByDebug = p.isInvisibleTo(this);
+            const visible =
+                !hiddenByDebug && (p.teamId === this.teamId || p.timeUntilHidden > 0);
             return {
-                hasData: visible || p.playerStatusDirty,
+                hasData:
+                    (!hiddenByDebug && visible) ||
+                    (!hiddenByDebug && p.playerStatusDirty) ||
+                    (hiddenByDebug && p.teamId === this.teamId),
                 pos: p.pos,
                 visible,
                 dead: p.dead,
@@ -5099,7 +5117,13 @@ export class Player extends BaseGameObject {
 
         this.debug.noClip = msg.noClip;
         this.debug.teleportToPings = msg.teleportToPings;
+        const invisibleChanged = this.debug.invisible !== msg.invisible;
+        this.debug.invisible = msg.invisible;
         this.debug.godMode = msg.godMode;
+
+        if (invisibleChanged) {
+            this.playerStatusDirty = true;
+        }
 
         this.debug.moveObjMode.enabled = msg.moveObjs;
 

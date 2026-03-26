@@ -457,6 +457,7 @@ export class Game {
             this.m_emoteBarn.wheelKeyTriggered,
             this.m_uiManager.displayingStats,
             this.m_spectating,
+            Boolean(this.m_config.get("debugTools")?.invisible),
         );
         this.updateAmbience();
 

@@ -22,6 +22,7 @@ export const debugToolsConfig = {
     noClip: false,
     godMode: false,
     teleportToPings: false,
+    invisible: false,
     moveObjs: false,
 };
 

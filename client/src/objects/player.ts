@@ -344,6 +344,7 @@ export class Player implements AbstractObject {
     renderLayer = 0;
     renderZOrd = 18;
     renderZIdx = 0;
+    localInvisiblePreview = false;
 
     m_action!: {
         type: Action;
@@ -1620,6 +1621,7 @@ export class Player implements AbstractObject {
         this.container.position.set(screenPos.x, screenPos.y);
         this.container.scale.set(screenScale, screenScale);
         this.container.visible = !this.m_netData.m_dead;
+        this.container.alpha = this.localInvisiblePreview ? 0.45 : 1;
         this.auraContainer.position.set(screenPos.x, screenPos.y);
         this.auraContainer.scale.set(screenScale, screenScale);
 
@@ -2996,12 +2998,15 @@ export class PlayerBarn {
         preventInput: boolean,
         displayingStats: boolean,
         isSpectating?: boolean,
+        localInvisible?: boolean,
     ) {
         // Update players
         const players = this.playerPool.m_getPool();
         for (let i = 0; i < players.length; i++) {
             const p = players[i];
             if (p.active) {
+                p.localInvisiblePreview =
+                    Boolean(localInvisible) && !isSpectating && p.__id === activeId;
                 p.m_update(
                     dt,
                     this,
