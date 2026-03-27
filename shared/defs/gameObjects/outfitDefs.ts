@@ -35,6 +35,7 @@ export interface OutfitDef {
     obstacleType?: string;
     baseScale?: number;
     ghillie?: boolean;
+    moveEmitter?: string;
 }
 
 function defineOutfitSkin(baseType: string, params: DeepPartial<OutfitDef>): OutfitDef {
@@ -638,6 +639,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     outfitVillageNinja: defineOutfitSkin("outfitBase", {
         name: "Village Ninja",
         noDropOnDeath: true,
+        moveEmitter: "village_ninja_trail",
         skinImg: {
             baseTint: 16777215,
             baseSprite: "player-base-village-ninja.img",
@@ -729,6 +731,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     }),
     outfitLustrousPaladin: defineOutfitSkin("outfitBase", {
         name: "Lustrous Paladin",
+        moveEmitter: "paladinParticle",
         noDropOnDeath: true,
         skinImg: {
             baseTint: 16777215,

@@ -313,6 +313,7 @@ export class Player implements AbstractObject {
     hasteEmitter: Emitter | null = null;
     passiveHealEmitter: Emitter | null = null;
     burningEmitter: Emitter | null = null;
+    outfitMoveEmitter: Emitter | null = null;
     downed = false;
     wasDowned = false;
     bleedTicker = 0;
@@ -599,6 +600,14 @@ export class Player implements AbstractObject {
         if (this.passiveHealEmitter) {
             this.passiveHealEmitter.stop();
             this.passiveHealEmitter = null;
+        }
+        if (this.burningEmitter) {
+            this.burningEmitter.stop();
+            this.burningEmitter = null;
+        }
+        if (this.outfitMoveEmitter) {
+            this.outfitMoveEmitter.stop();
+            this.outfitMoveEmitter = null;
         }
     }
 
@@ -1418,6 +1427,35 @@ export class Player implements AbstractObject {
             this.burningEmitter.pos = v2.add(this.m_pos, v2.create(0, 0.1));
             this.burningEmitter.layer = this.renderLayer;
             this.burningEmitter.zOrd = this.renderZOrd + 1;
+        }
+        
+        const outfitDef = GameObjectDefs[this.m_netData.m_outfit] as OutfitDef;
+        const moveEmitterType = outfitDef.moveEmitter;
+        const moveDelta = v2.sub(this.m_posOld, this.m_pos);
+        const moveDist = v2.length(moveDelta);
+        const isMoving = moveDist > 0.015;
+        if (moveEmitterType && !this.m_netData.m_dead) {
+            if (!this.outfitMoveEmitter || this.outfitMoveEmitter.type !== moveEmitterType) {
+                this.outfitMoveEmitter?.stop();
+                this.outfitMoveEmitter = particleBarn.addEmitter(moveEmitterType, {
+                    pos: this.m_pos,
+                    layer: this.layer,
+                });
+            }
+        } else if (this.outfitMoveEmitter) {
+            this.outfitMoveEmitter.stop();
+            this.outfitMoveEmitter = null;
+        }
+        if (this.outfitMoveEmitter) {
+            const idleDir = v2.mul(this.m_dir, -1);
+            const moveDir = isMoving ? v2.normalizeSafe(moveDelta, idleDir) : idleDir;
+            const moveSpeed = moveDist / math.max(dt, 0.0001);
+            const moveFactor = math.clamp(moveSpeed / 3, 0, 1);
+            this.outfitMoveEmitter.pos = v2.add(this.m_pos, v2.create(0, 0.1));
+            this.outfitMoveEmitter.dir = moveDir;
+            this.outfitMoveEmitter.layer = this.renderLayer;
+            this.outfitMoveEmitter.zOrd = this.renderZOrd + 1;
+            this.outfitMoveEmitter.rateMult = math.lerp(moveFactor, 0.75, 1.15);
         }
 
         if (isActivePlayer && !isSpectating) {
