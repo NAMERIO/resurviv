@@ -621,6 +621,8 @@ export class Bullet {
                 const mapDef = MapObjectDefs[col.obstacleType!] as ObstacleDef;
 
                 const def = GameObjectDefs[this.bulletType] as BulletDef;
+                const reflectOnHit =
+                    !!def.reflectOnAnyObstacle || !!mapDef.reflectBullets;
                 // AP Obstacle Multiplier Buff
                 let obstacleMult = def.obstacleDamage;
                 if (this.apRounds) {
@@ -639,12 +641,12 @@ export class Bullet {
                     dir: this.dir,
                 });
 
-                if (mapDef.reflectBullets) {
+                if (reflectOnHit) {
                     this.reflect(col.point, col.normal, col.obj!.__id);
                 }
 
-                // Continue travelling if non-collidable
-                hit = col.collidable;
+                // Laser rounds should bounce off any obstacle they touch.
+                hit = col.collidable || reflectOnHit;
             } else if (col.type == "player") {
                 if (!shooterDead) {
                     const isHighValueTarget =

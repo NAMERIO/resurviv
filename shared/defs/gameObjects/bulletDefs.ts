@@ -20,6 +20,7 @@ export interface BulletDef {
     onHit?: string;
     noDistAdj?: boolean;
     useExplosiveRoundsAlt?: boolean;
+    reflectOnAnyObstacle?: boolean;
 }
 
 function defineBulletSkin(baseType: string, params: Partial<BulletDef>): BulletDef {
@@ -940,6 +941,7 @@ const SkinDefs: Record<string, BulletDef> = {
         tracerColor: "laser",
         tracerWidth: 0.12,
         tracerLength: 0.8,
+        reflectOnAnyObstacle: true,
     },
     bullet_m9A17: {
         type: "bullet",

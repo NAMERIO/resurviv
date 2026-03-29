@@ -69,6 +69,7 @@ export class BulletBarn {
         layer: number;
         speed: number;
         distance: number;
+        bulletType: string;
         damageSelf: boolean;
         reflectCount: number;
         reflectObjId: number;
@@ -149,6 +150,7 @@ export class BulletBarn {
         b.layer = bullet.layer;
         b.speed = bulletDef.speed * bullet.speedMult * variance;
         b.distance = distance * bullet.distanceMult * variance + distAdj;
+        b.bulletType = bullet.bulletType;
         b.damageSelf = bulletDef.shrapnel || bullet.reflectCount > 0;
         b.reflectCount = bullet.reflectCount;
         b.reflectObjId = bullet.reflectObjId;
@@ -439,6 +441,10 @@ export class BulletBarn {
                     const col = colObjs[i];
                     if (col.type == "obstacle") {
                         const mapDef = MapObjectDefs[col?.obstacleType!] as ObstacleDef;
+                        const bulletDef = BulletDefs[b.bulletType];
+                        const reflectOnHit =
+                            !!bulletDef.reflectOnAnyObstacle ||
+                            !!mapDef.reflectBullets;
                         playHitFx(
                             mapDef.hitParticle,
                             mapDef.sound.bullet!,
@@ -449,8 +455,7 @@ export class BulletBarn {
                             audioManager,
                         );
 
-                        // Continue travelling if non-collidable
-                        hit = col.collidable;
+                        hit = col.collidable || reflectOnHit;
                     } else if (col.type == "player") {
                         // Don't create a hit particle if the shooting
                         // player is dead; this helps avoid confusion around

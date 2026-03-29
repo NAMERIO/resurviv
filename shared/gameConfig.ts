@@ -366,6 +366,7 @@ export const GameConfig = {
             regular: 0xff0000,
             saturated: 0xff0000,
             chambered: 0xff0000,
+            apSaturated: 0x9f0000,
         },
         water: {
             regular: 3633658,
