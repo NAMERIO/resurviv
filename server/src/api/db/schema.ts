@@ -263,6 +263,7 @@ export const clansTable = pgTable("clans", {
     name: text("name").notNull().unique(),
     slug: text("slug").notNull().unique(),
     icon: text("icon").notNull(), // Emote type for clan icon
+    tagColor: text("tag_color").notNull().default(""),
     ownerId: text("owner_id")
         .notNull()
         .references(() => usersTable.id, {

@@ -38,6 +38,8 @@ import { Profiler } from "./profiler";
 export interface JoinTokenData {
     expiresAt: number;
     userId: string | null;
+    clanName?: string | null;
+    clanTagColor?: string | null;
     canUseDeveloper: boolean;
     findGameIp: string;
     loadout?: Loadout;
@@ -575,6 +577,8 @@ export class Game {
             this.joinTokens.set(token.token, {
                 expiresAt: Date.now() + 10000,
                 userId: token.userId,
+                clanName: token.clanName,
+                clanTagColor: token.clanTagColor,
                 canUseDeveloper: token.canUseDeveloper ?? false,
                 groupData,
                 findGameIp: token.ip,

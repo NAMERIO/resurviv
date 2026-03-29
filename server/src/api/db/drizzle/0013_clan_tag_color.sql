@@ -1,0 +1,2 @@
+ALTER TABLE "clans"
+ADD COLUMN IF NOT EXISTS "tag_color" text NOT NULL DEFAULT '';

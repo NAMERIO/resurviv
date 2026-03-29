@@ -167,6 +167,16 @@ export const helpers = {
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;");
     },
+    getClanTagHtml: function (clanName = "", tagColor = "") {
+        if (!clanName) {
+            return "";
+        }
+        const escapedTag = `[${this.htmlEscape(clanName)}]`;
+        if (!tagColor) {
+            return escapedTag;
+        }
+        return `<span style="color:${this.htmlEscape(tagColor)}">${escapedTag}</span>`;
+    },
     truncateString: function (str: string, font: string, maxWidthPixels: number) {
         const context = truncateCanvas.getContext("2d")!;
         context.font = font;

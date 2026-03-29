@@ -201,6 +201,8 @@ export interface PlayerInfo {
     teamId: number;
     groupId: number;
     name: string;
+    clanName: string;
+    clanTagColor: string;
 
     loadout: {
         heal: string;
@@ -214,6 +216,14 @@ function serializePlayerInfo(s: BitStream, data: PlayerInfo) {
     s.writeUint8(data.teamId);
     s.writeUint8(data.groupId);
     s.writeString(data.name);
+    s.writeBoolean(Boolean(data.clanName));
+    if (data.clanName) {
+        s.writeString(data.clanName);
+    }
+    s.writeBoolean(Boolean(data.clanTagColor));
+    if (data.clanTagColor) {
+        s.writeString(data.clanTagColor);
+    }
 
     s.writeGameType(data.loadout.heal);
     s.writeGameType(data.loadout.boost);
@@ -227,6 +237,8 @@ function deserializePlayerInfo(s: BitStream, data: PlayerInfo) {
     data.teamId = s.readUint8();
     data.groupId = s.readUint8();
     data.name = s.readString();
+    data.clanName = s.readBoolean() ? s.readString() : "";
+    data.clanTagColor = s.readBoolean() ? s.readString() : "";
     data.loadout = {} as PlayerInfo["loadout"];
     data.loadout.heal = s.readGameType();
     data.loadout.boost = s.readGameType();

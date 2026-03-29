@@ -4,14 +4,17 @@ import { Constants } from "../net/net";
 // Clan constants
 export const ClanConstants = {
     MaxMembers: 20,
-    NameMinLen: 3,
+    NameMinLen: 2,
     NameMaxLen: 16,
     RejoinCooldownMs: 0, // none cooldown for now
 } as const;
 
+export const ClanTagColorRegex = /^(|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|[a-zA-Z]+)$/;
+
 export const zCreateClanRequest = z.object({
     name: z.string().trim().min(ClanConstants.NameMinLen).max(ClanConstants.NameMaxLen),
     icon: z.string().min(1),
+    tagColor: z.string().trim().regex(ClanTagColorRegex).optional().default(""),
 });
 export type CreateClanRequest = z.infer<typeof zCreateClanRequest>;
 
@@ -41,6 +44,7 @@ export const zUpdateClanRequest = z.object({
         .max(ClanConstants.NameMaxLen)
         .optional(),
     icon: z.string().min(1).optional(),
+    tagColor: z.string().trim().regex(ClanTagColorRegex).optional(),
 });
 export type UpdateClanRequest = z.infer<typeof zUpdateClanRequest>;
 
@@ -83,6 +87,7 @@ export type ClanInfo = {
     id: string;
     name: string;
     icon: string;
+    tagColor: string;
     ownerId: string;
     memberCount: number;
     maxMembers: number;

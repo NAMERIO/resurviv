@@ -1076,7 +1076,7 @@ export class Player implements AbstractObject {
         const activeGroupId = playerBarn.getPlayerInfo(activeId).groupId;
         const playerInfo = playerBarn.getPlayerInfo(this.__id);
         const inSameGroup = playerInfo.groupId == activeGroupId;
-        this.nameText.text = playerInfo.name;
+        this.nameText.text = playerBarn.getPlayerName(this.__id, activeId, false);
         this.nameText.visible = !isActivePlayer && inSameGroup;
 
         // Locate nearby obstacles that may play interaction effects
@@ -3022,6 +3022,7 @@ export class PlayerBarn {
 
     playerStatus: Record<number, PlayerStatus> = {};
     anonPlayerNames = false;
+    showClanTags = false;
 
     m_update(
         dt: number,
@@ -3163,6 +3164,8 @@ export class PlayerBarn {
             teamId: info.teamId,
             groupId: info.groupId,
             name: info.name,
+            clanName: info.clanName || "",
+            clanTagColor: info.clanTagColor || "",
             nameTruncated: helpers.truncateString(
                 info.name || "",
                 "bold 16px arial",
@@ -3193,6 +3196,8 @@ export class PlayerBarn {
                 group: 0,
                 teamId: 0,
                 name: "",
+                clanName: "",
+                clanTagColor: "",
                 nameTruncated: "",
                 anonName: "",
                 loadout: {},
@@ -3368,11 +3373,7 @@ export class PlayerBarn {
         if (!info) {
             return "";
         }
-        let name = info.name;
-
-        if (truncateForKillfeed) {
-            name = info.nameTruncated;
-        }
+        let name = truncateForKillfeed ? info.nameTruncated : info.name;
 
         // Anonymize player name if they aren't in the active player's group
         if (
@@ -3381,7 +3382,38 @@ export class PlayerBarn {
         ) {
             name = info.anonName;
         }
+
+        if (this.showClanTags && info.clanName) {
+            name = `[${info.clanName}]${name}`;
+            if (truncateForKillfeed) {
+                name = helpers.truncateString(name, "bold 16px arial", 180);
+            }
+        }
         return name;
+    }
+
+    getPlayerNameHtml(
+        playerId: number,
+        activePlayerId: number,
+        truncateForKillfeed: boolean,
+    ) {
+        const info = this.getPlayerInfo(playerId);
+        if (!info) {
+            return "";
+        }
+        const sameGroup = this.getPlayerInfo(activePlayerId).groupId == info.groupId;
+        const baseName =
+            this.anonPlayerNames && !sameGroup
+                ? info.anonName
+                : truncateForKillfeed
+                  ? info.nameTruncated
+                  : info.name;
+
+        if (!this.showClanTags || !info.clanName) {
+            return helpers.htmlEscape(baseName);
+        }
+
+        return `${helpers.getClanTagHtml(info.clanName, info.clanTagColor)}${helpers.htmlEscape(baseName)}`;
     }
 
     addDeathEffect(

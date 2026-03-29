@@ -560,6 +560,14 @@ export class Application {
             this.game?.debugHUD?.onConfigModified();
         }
 
+        if (key === "anonPlayerNames" || key === "showClanTags" || key === undefined) {
+            if (this.game?.m_playerBarn) {
+                this.game.m_playerBarn.anonPlayerNames =
+                    this.config.get("anonPlayerNames")!;
+                this.game.m_playerBarn.showClanTags = this.config.get("showClanTags")!;
+            }
+        }
+
         if (key === "loadout" || key === undefined) {
             const currentLoadout = this.config.get("loadout");
             if (currentLoadout?.crosshair) {

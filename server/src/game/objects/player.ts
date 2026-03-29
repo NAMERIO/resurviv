@@ -225,6 +225,8 @@ export class PlayerBarn {
             ip,
             joinData.findGameIp,
             joinData.userId,
+            joinData.clanName,
+            joinData.clanTagColor,
             joinData.canUseDeveloper,
             joinData.loadout,
             joinData.quests,
@@ -314,6 +316,8 @@ export class PlayerBarn {
             new net.JoinMsg(),
             "",
             "",
+            null,
+            null,
             null,
         );
 
@@ -1540,6 +1544,8 @@ export class Player extends BaseGameObject {
     matchDataId: number;
 
     userId: string | null = null;
+    clanName = "";
+    clanTagColor = "";
     canUseDeveloper = false;
     ip: string;
     encodedIp: string;
@@ -1558,6 +1564,8 @@ export class Player extends BaseGameObject {
         ip: string,
         findGameIp: string,
         userId: string | null,
+        clanName: string | null | undefined,
+        clanTagColor: string | null | undefined,
         canUseDeveloper = false,
         loadout?: Loadout,
         questIds?: string[],
@@ -1575,6 +1583,8 @@ export class Player extends BaseGameObject {
         this.encodedIp = hashIp(ip);
         this.findGameEncodedIp = hashIp(findGameIp);
         this.userId = userId;
+        this.clanName = clanName?.trim() || "";
+        this.clanTagColor = clanTagColor?.trim() || "";
         this.canUseDeveloper = canUseDeveloper;
 
         this.questManager.quests = (questIds ?? []).map((id) => ({ id, delta: 0 }));

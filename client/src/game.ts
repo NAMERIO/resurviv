@@ -369,6 +369,7 @@ export class Game {
         this.m_camera.m_setInterpEnabled(this.m_config.get("interpolation")!);
         this.m_camera.m_setRotationEnabled(this.m_config.get("localRotation")!);
         this.m_playerBarn.anonPlayerNames = this.m_config.get("anonPlayerNames")!;
+        this.m_playerBarn.showClanTags = this.m_config.get("showClanTags")!;
         this.initialized = true;
     }
 
@@ -1261,9 +1262,15 @@ export class Game {
 
         // Update kill leader
         if (msg.killLeaderDirty) {
-            const leaderNameText = helpers.htmlEscape(
-                this.m_playerBarn.getPlayerName(msg.killLeaderId, this.m_activeId, true),
-            );
+            const leaderNameText =
+                this.m_playerBarn.getPlayerNameHtml(
+                    msg.killLeaderId,
+                    this.m_activeId,
+                    true,
+                ) ||
+                helpers.htmlEscape(
+                    this.m_playerBarn.getPlayerName(msg.killLeaderId, this.m_activeId, true),
+                );
             this.m_uiManager.updateKillLeader(
                 msg.killLeaderId,
                 leaderNameText,
@@ -1412,9 +1419,24 @@ export class Game {
                     this.m_activeId,
                     true,
                 );
-                targetName = helpers.htmlEscape(targetName);
-                killerName = helpers.htmlEscape(killerName);
-                killfeedKillerName = helpers.htmlEscape(killfeedKillerName);
+                targetName =
+                    this.m_playerBarn.getPlayerNameHtml(
+                        targetInfo.playerId,
+                        this.m_activeId,
+                        true,
+                    ) || helpers.htmlEscape(targetName);
+                killerName =
+                    this.m_playerBarn.getPlayerNameHtml(
+                        killerInfo.playerId,
+                        this.m_activeId,
+                        true,
+                    ) || helpers.htmlEscape(killerName);
+                killfeedKillerName =
+                    this.m_playerBarn.getPlayerNameHtml(
+                        killfeedKillerInfo.playerId,
+                        this.m_activeId,
+                        true,
+                    ) || helpers.htmlEscape(killfeedKillerName);
                 // Display the kill / downed notification for the active player
                 if (msg.killCreditId == this.m_activeId) {
                     const completeKill = msg.killerId == this.m_activeId;
@@ -1497,9 +1519,11 @@ export class Game {
                     break;
                 }
                 const playerInfo = this.m_playerBarn.getPlayerInfo(msg.playerId);
-                const nameText = helpers.htmlEscape(
-                    this.m_playerBarn.getPlayerName(msg.playerId, this.m_activeId, true),
-                );
+                const nameText =
+                    this.m_playerBarn.getPlayerNameHtml(msg.playerId, this.m_activeId, true) ||
+                    helpers.htmlEscape(
+                        this.m_playerBarn.getPlayerName(msg.playerId, this.m_activeId, true),
+                    );
                 if (msg.assigned) {
                     if (roleDef.sound?.assign) {
                         if (
@@ -1548,13 +1572,19 @@ export class Game {
                     }
                 } else if (msg.killed) {
                     if (roleDef.killFeed?.dead) {
-                        let killerName = helpers.htmlEscape(
-                            this.m_playerBarn.getPlayerName(
+                        let killerName =
+                            this.m_playerBarn.getPlayerNameHtml(
                                 msg.killerId,
                                 this.m_activeId,
                                 true,
-                            ),
-                        );
+                            ) ||
+                            helpers.htmlEscape(
+                                this.m_playerBarn.getPlayerName(
+                                    msg.killerId,
+                                    this.m_activeId,
+                                    true,
+                                ),
+                            );
 
                         if (msg.playerId == msg.killerId) {
                             killerName = "";

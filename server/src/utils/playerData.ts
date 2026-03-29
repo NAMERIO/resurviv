@@ -1,6 +1,11 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../api/db";
-import { userQuestTable, usersTable } from "../api/db/schema";
+import {
+    clanMembersTable,
+    clansTable,
+    userQuestTable,
+    usersTable,
+} from "../api/db/schema";
 import { Config } from "../config";
 import type { FindGamePrivateBody } from "./types";
 
@@ -22,6 +27,8 @@ export async function getFindGamePlayerData(
                           .select({
                               userId: usersTable.id,
                               slug: usersTable.slug,
+                              clanName: clansTable.name,
+                              clanTagColor: clansTable.tagColor,
                               loadout: usersTable.loadout,
                               quests: sql<
                                   string[]
@@ -32,8 +39,16 @@ export async function getFindGamePlayerData(
                               userQuestTable,
                               and(eq(userQuestTable.userId, usersTable.id)),
                           )
+                          .leftJoin(
+                              clanMembersTable,
+                              eq(clanMembersTable.userId, usersTable.id),
+                          )
+                          .leftJoin(
+                              clansTable,
+                              eq(clansTable.id, clanMembersTable.clanId),
+                          )
                           .where(inArray(usersTable.id, userIds))
-                          .groupBy(usersTable.id)
+                          .groupBy(usersTable.id, clansTable.name, clansTable.tagColor)
                   ).map((r) => [r.userId, r]),
               )
             : {};
@@ -43,6 +58,8 @@ export async function getFindGamePlayerData(
         token,
         userId,
         ip,
+        clanName: userId ? (accountData[userId]?.clanName ?? null) : null,
+        clanTagColor: userId ? (accountData[userId]?.clanTagColor ?? null) : null,
         canUseDeveloper: userId
             ? !!accountData[userId]?.slug &&
               Config.debug.developerSlugs.includes(accountData[userId].slug)

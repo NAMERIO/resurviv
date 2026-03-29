@@ -61,6 +61,17 @@ function formatTimeRemaining(ms: number): string {
     return `${minutes}m`;
 }
 
+function normalizeColorInputValue(color?: string | null) {
+    const value = (color || "").trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(value)) {
+        return value;
+    }
+    if (/^#[0-9a-fA-F]{3}$/.test(value)) {
+        return `#${value[1]}${value[1]}${value[2]}${value[2]}${value[3]}${value[3]}`;
+    }
+    return "#ffffff";
+}
+
 export class ClanUi {
     mainModal: MenuModal;
     iconModal: MenuModal;
@@ -139,6 +150,10 @@ export class ClanUi {
             } else {
                 this.cancelNameEdit();
             }
+        });
+        $("#clan-tag-color-input").on("change", () => {
+            const tagColor = ($("#clan-tag-color-input").val() as string) || "";
+            this.updateClan({ tagColor });
         });
         $("#btn-clan-cancel-name").on("click", () => {
             this.cancelNameEdit();
@@ -597,6 +612,7 @@ export class ClanUi {
             `url(${getClanIconUrl(clan.icon)})`,
         );
         $("#clan-detail-name").text(clan.name);
+        $("#clan-detail-name").css("color", clan.tagColor || "");
         $("#clan-detail-members-count, #clan-members-count").text(
             `${clan.memberCount} / ${clan.maxMembers}`,
         );
@@ -621,9 +637,12 @@ export class ClanUi {
         if (isOwner) {
             $("#btn-clan-edit-icon").show();
             $("#btn-clan-edit-name").show();
+            $("#clan-tag-color-input").show();
+            $("#clan-tag-color-input").val(normalizeColorInputValue(clan.tagColor));
         } else {
             $("#btn-clan-edit-icon").hide();
             $("#btn-clan-edit-name").hide();
+            $("#clan-tag-color-input").hide();
         }
         this.cancelNameEdit();
 
@@ -886,7 +905,7 @@ export class ClanUi {
         $("#btn-clan-edit-name").toggle(canEditViewedClan);
     }
 
-    updateClan(updates: { name?: string; icon?: string }) {
+    updateClan(updates: { name?: string; icon?: string; tagColor?: string }) {
         clanRequest<UpdateClanResponse>("/api/clan/update", updates, (err, res) => {
             if (err) {
                 this.showError("Server error. Please try again.");

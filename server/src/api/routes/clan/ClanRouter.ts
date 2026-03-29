@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import slugify from "slugify";
 import {
     ClanConstants,
+    ClanTagColorRegex,
     type ClanDetail,
     type ClanInfo,
     type ClanLeaderboardResponse,
@@ -64,6 +65,14 @@ function sanitizeClanSlug(name: string): string {
     return slug;
 }
 
+function sanitizeClanTagColor(color: string | null | undefined): string {
+    const normalized = (color ?? "").trim();
+    if (!normalized || !ClanTagColorRegex.test(normalized)) {
+        return "";
+    }
+    return normalized;
+}
+
 async function getClanInfo(clanId: string): Promise<ClanInfo | null> {
     const clan = await db.query.clansTable.findFirst({
         where: eq(clansTable.id, clanId),
@@ -88,6 +97,7 @@ async function getClanInfo(clanId: string): Promise<ClanInfo | null> {
         id: clan.id,
         name: clan.name,
         icon: clan.icon,
+        tagColor: clan.tagColor,
         ownerId: clan.ownerId,
         memberCount: memberCountResult[0]?.count || 0,
         maxMembers: ClanConstants.MaxMembers,
@@ -177,7 +187,7 @@ ClanRouter.post("/my_clan", async (c) => {
 
 ClanRouter.post("/create", validateParams(zCreateClanRequest), async (c) => {
     const user = c.get("user")!;
-    const { name, icon } = c.req.valid("json");
+    const { name, icon, tagColor } = c.req.valid("json");
 
     const existingMembership = await db.query.clanMembersTable.findFirst({
         where: eq(clanMembersTable.userId, user.id),
@@ -210,6 +220,7 @@ ClanRouter.post("/create", validateParams(zCreateClanRequest), async (c) => {
             name: validName,
             slug,
             icon,
+            tagColor: sanitizeClanTagColor(tagColor),
             ownerId: user.id,
         })
         .returning();
@@ -463,7 +474,7 @@ ClanRouter.post("/transfer", validateParams(zTransferOwnershipRequest), async (c
 
 ClanRouter.post("/update", validateParams(zUpdateClanRequest), async (c) => {
     const user = c.get("user")!;
-    const { name, icon } = c.req.valid("json");
+    const { name, icon, tagColor } = c.req.valid("json");
 
     const membership = await db.query.clanMembersTable.findFirst({
         where: eq(clanMembersTable.userId, user.id),
@@ -481,7 +492,12 @@ ClanRouter.post("/update", validateParams(zUpdateClanRequest), async (c) => {
         return c.json<UpdateClanResponse>({ success: false, error: "not_owner" }, 403);
     }
 
-    const updates: Partial<{ name: string; slug: string; icon: string }> = {};
+    const updates: Partial<{
+        name: string;
+        slug: string;
+        icon: string;
+        tagColor: string;
+    }> = {};
 
     if (name && name !== clan.name) {
         const { validName, originalWasInvalid } = validateUserName(name);
@@ -511,6 +527,13 @@ ClanRouter.post("/update", validateParams(zUpdateClanRequest), async (c) => {
 
     if (icon && icon !== clan.icon) {
         updates.icon = icon;
+    }
+
+    if (tagColor !== undefined) {
+        const sanitizedTagColor = sanitizeClanTagColor(tagColor);
+        if (sanitizedTagColor !== clan.tagColor) {
+            updates.tagColor = sanitizedTagColor;
+        }
     }
 
     if (Object.keys(updates).length > 0) {
@@ -586,6 +609,7 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
             id: clansTable.id,
             name: clansTable.name,
             icon: clansTable.icon,
+            tagColor: clansTable.tagColor,
             ownerId: clansTable.ownerId,
             createdAt: clansTable.createdAt,
             memberCount: sql<number>`(
@@ -614,6 +638,7 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
         id: c.id,
         name: c.name,
         icon: c.icon,
+        tagColor: c.tagColor,
         ownerId: c.ownerId,
         memberCount: c.memberCount,
         maxMembers: ClanConstants.MaxMembers,
@@ -643,6 +668,7 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
             id: clansTable.id,
             name: clansTable.name,
             icon: clansTable.icon,
+            tagColor: clansTable.tagColor,
             ownerId: clansTable.ownerId,
             createdAt: clansTable.createdAt,
             memberCount: sql<number>`(
@@ -675,6 +701,7 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
             id: c.id,
             name: c.name,
             icon: c.icon,
+            tagColor: c.tagColor,
             ownerId: c.ownerId,
             memberCount: c.memberCount,
             maxMembers: ClanConstants.MaxMembers,

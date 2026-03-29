@@ -810,7 +810,7 @@ export class UiManager {
                 // Team UI
                 this.updateTeam(
                     i,
-                    helpers.htmlEscape(playerInfo.name),
+                    playerBarn.getPlayerNameHtml(playerId, localPlayer.__id, false),
                     playerStatus.health!,
                     {
                         disconnected: playerStatus.disconnected,
@@ -1506,7 +1506,11 @@ export class UiManager {
                 B.append(
                     $("<div/>", {
                         class: "ui-stats-info-player-name",
-                        html: helpers.htmlEscape(playerInfo.name),
+                        html: playerBarn.getPlayerNameHtml(
+                            stats.playerId,
+                            this.game.m_localId,
+                            false,
+                        ),
                     }),
                 );
                 B.append(T(this.localization.translate("game-kills"), `${stats.kills}`))

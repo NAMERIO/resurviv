@@ -8828,6 +8828,27 @@ input [type="image"]:focus {
   filter: brightness(80%);
 }
 
+.clan-tag-color-inline {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 2px solid #1d1d1d;
+  border-radius: 4px;
+  background: #1f1f1f;
+  cursor: pointer;
+  margin-bottom: 5px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.clan-tag-color-inline::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.clan-tag-color-inline::-webkit-color-swatch {
+  border: none;
+  border-radius: 2px;
+}
+
 .clan-detail-name-edit {
   display: flex;
   align-items: center;
@@ -8853,6 +8874,7 @@ input [type="image"]:focus {
   font-size: 16px;
   color: #c4c4c4;
 }
+
 
 .clan-stat-box.kill-placement,
 .clan-stat-box.win-placement {
