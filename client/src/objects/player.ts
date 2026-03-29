@@ -3026,6 +3026,7 @@ export class PlayerBarn {
     playerStatus: Record<number, PlayerStatus> = {};
     anonPlayerNames = false;
     showClanTags = false;
+    localPlayerId = 0;
 
     m_update(
         dt: number,
@@ -3386,7 +3387,7 @@ export class PlayerBarn {
             name = info.anonName;
         }
 
-        if (this.showClanTags && info.clanName) {
+        if (info.clanName) {
             name = `[${info.clanName}]${name}`;
             if (truncateForKillfeed) {
                 name = helpers.truncateString(name, "bold 16px arial", 180);
@@ -3412,7 +3413,7 @@ export class PlayerBarn {
                   ? info.nameTruncated
                   : info.name;
 
-        if (!this.showClanTags || !info.clanName) {
+        if (!info.clanName) {
             return helpers.htmlEscape(baseName);
         }
 

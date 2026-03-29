@@ -1602,8 +1602,8 @@ export class Player extends BaseGameObject {
         this.encodedIp = hashIp(ip);
         this.findGameEncodedIp = hashIp(findGameIp);
         this.userId = userId;
-        this.clanName = clanName?.trim() || "";
-        this.clanTagColor = clanTagColor?.trim() || "";
+        this.clanName = joinMsg.showClanTag ? clanName?.trim() || "" : "";
+        this.clanTagColor = joinMsg.showClanTag ? clanTagColor?.trim() || "" : "";
         this.canUseDeveloper = canUseDeveloper;
 
         this.questManager.quests = (questIds ?? []).map((id) => ({ id, delta: 0 }));

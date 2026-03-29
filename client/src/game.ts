@@ -187,6 +187,7 @@ export class Game {
                     joinMessage.useTouch = device.touch;
                     joinMessage.isMobile = device.mobile || window.mobile!;
                     joinMessage.bot = false;
+                    joinMessage.showClanTag = this.m_config.get("showClanTags")!;
                     const playerLoadout = this.m_config.get("loadout")!;
                     joinMessage.loadout = {
                         ...playerLoadout,
@@ -370,6 +371,7 @@ export class Game {
         this.m_camera.m_setRotationEnabled(this.m_config.get("localRotation")!);
         this.m_playerBarn.anonPlayerNames = this.m_config.get("anonPlayerNames")!;
         this.m_playerBarn.showClanTags = this.m_config.get("showClanTags")!;
+        this.m_playerBarn.localPlayerId = this.m_localId;
         this.initialized = true;
     }
 
@@ -1190,6 +1192,7 @@ export class Game {
             this.m_objectCreator.m_updateObjPart(obj.__id, obj, ctx);
         }
         this.m_spectating = this.m_activeId != this.m_localId;
+        this.m_playerBarn.localPlayerId = this.m_localId;
         this.m_activePlayer = this.m_playerBarn.getPlayerById(this.m_activeId)!;
         this.m_activePlayer.m_setLocalData(msg.activePlayerData);
         if (msg.activePlayerData.weapsDirty) {
@@ -1309,6 +1312,7 @@ export class Game {
                 this.onJoin();
                 this.teamMode = msg.teamMode;
                 this.m_localId = msg.playerId;
+                this.m_playerBarn.localPlayerId = this.m_localId;
                 this.m_validateAlpha = true;
                 this.m_emoteBarn.updateEmoteWheel(msg.emotes);
                 if (!msg.started) {

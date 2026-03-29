@@ -8,6 +8,7 @@ export class JoinMsg implements AbstractMsg {
     useTouch = false;
     isMobile = false;
     bot = false;
+    showClanTag = false;
     loadout = {
         outfit: "",
         melee: "",
@@ -31,6 +32,7 @@ export class JoinMsg implements AbstractMsg {
         s.writeBoolean(this.useTouch);
         s.writeBoolean(this.isMobile);
         s.writeBoolean(this.bot);
+        s.writeBoolean(this.showClanTag);
 
         s.writeGameType(this.loadout.outfit);
         s.writeGameType(this.loadout.melee);
@@ -56,6 +58,7 @@ export class JoinMsg implements AbstractMsg {
         this.useTouch = s.readBoolean();
         this.isMobile = s.readBoolean();
         this.bot = s.readBoolean();
+        this.showClanTag = s.readBoolean();
 
         this.loadout.outfit = s.readGameType();
         this.loadout.melee = s.readGameType();
