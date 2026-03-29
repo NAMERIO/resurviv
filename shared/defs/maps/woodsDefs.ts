@@ -155,7 +155,7 @@ const mapDef: PartialMapDef = {
         ],
         tier_airdrop_melee: [
             { name: "", count: 1, weight: 13 },
-            { name: "stonehammer", count: 1, weight: 1 },
+            { name: "stonehammer", count: 1, weight: 3 },
             { name: "pan", count: 1, weight: 1 },
         ],
     },

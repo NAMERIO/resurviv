@@ -130,7 +130,7 @@ export const GameConfig = {
     // the protocol we originated from was 78
     // remember to bump this every time a serialization function is changed
     // or a definition item added, removed or moved
-    protocolVersion: 1013,
+    protocolVersion: 1014,
     Input,
     EmoteSlot,
     WeaponSlot,
@@ -156,9 +156,9 @@ export const GameConfig = {
         health: 100,
         reviveHealth: 24,
         minActiveTime: 10,
-        boostDecay: 0.33,
+        boostDecay: 0.375,
         boostMoveSpeed: 1.85,
-        boostHealAmount: 0.33,
+        boostHealAmounts: [0.5, 1.25, 1.5, 1.75],
         boostBreakpoints: [1, 1, 1.5, 0.5],
         scopeDelay: 0.25,
         baseSwitchDelay: 0.25,

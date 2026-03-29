@@ -90,6 +90,20 @@ interface Emote {
     itemType: string;
 }
 
+const boostHeals: Array<{ maxBoost: number; heal: number }> = [];
+{
+    const boostBreakPoints = GameConfig.player.boostBreakpoints;
+    const max = GameConfig.player.boostBreakpoints.reduce((a, b) => a + b, 0);
+
+    for (let i = 0, boost = 0; i < boostBreakPoints.length; i++) {
+        boost += (boostBreakPoints[i] / max) * 100;
+        boostHeals.push({
+            maxBoost: boost,
+            heal: GameConfig.player.boostHealAmounts[i],
+        });
+    }
+}
+
 export class PlayerBarn {
     players: Player[] = [];
     livingPlayers: Player[] = [];
@@ -784,6 +798,11 @@ export class Player extends BaseGameObject {
 
         this._disconnected = disconnected;
         this.setGroupStatuses();
+    }
+
+    disconnect(reason?: string) {
+        this.disconnected = true;
+        this.game.closeSocket(this.socketId, reason);
     }
 
     private _spectatorCount = 0;
@@ -1747,14 +1766,20 @@ export class Player extends BaseGameObject {
         // Boost logic
         //
         if (!this.downed) {
-            if (this.boost > 0 && this.boost <= 25) this.health += 0.5 * dt;
-            else if (this.boost >= 25 && this.boost <= 50) this.health += 1.25 * dt;
-            else if (this.boost >= 50 && this.boost <= 87.5) this.health += 1.5 * dt;
-            else if (this.boost >= 87.5 && this.boost <= 100) this.health += 1.75 * dt;
-
-            this.boost -= 0.375 * dt;
-
             this.boost = math.clamp(this.boost, this.minBoost, 100);
+
+            if (this.boost > 0) {
+                let healAmount = boostHeals.findLast((b, i) => {
+                    const prev = boostHeals[i - 1]?.maxBoost ?? 0;
+                    return this.boost >= prev && this.boost <= b.maxBoost;
+                });
+
+                this.health += healAmount!.heal * dt;
+
+                if (this.boost > this.minBoost) {
+                    this.boost -= GameConfig.player.boostDecay * dt;
+                }
+            }
         } else {
             this.boost = 0;
         }
@@ -1857,7 +1882,7 @@ export class Player extends BaseGameObject {
 
         if (this.game.gas.doDamage && this.game.gas.isInGas(this.pos)) {
             this.damage({
-                amount: this.game.gas.damage,
+                amount: this.disconnected ? 22 : this.game.gas.damage,
                 damageType: GameConfig.DamageType.Gas,
                 dir: this.dir,
             });
@@ -2726,7 +2751,7 @@ export class Player extends BaseGameObject {
             width = height;
             height = tmp;
         }
-        const rect = collider.createAabbExtents(this.pos, v2.create(width, height));
+        const rect = collider.createAabbExtents(player.pos, v2.create(width, height));
 
         const newVisibleObjects = game.grid.intersectColliderSet(rect);
         for (const obj of newVisibleObjects) {
@@ -2740,6 +2765,7 @@ export class Player extends BaseGameObject {
         // client crashes if active player is not visible
         // so make sure its always added to visible objects
         newVisibleObjects.add(this);
+        newVisibleObjects.add(player);
 
         for (const obj of this.visibleObjects) {
             if (!newVisibleObjects.has(obj)) {
@@ -2964,7 +2990,7 @@ export class Player extends BaseGameObject {
             this.spectateCooldownCount++;
 
             if (this.spectateCooldownCount > 10) {
-                this.game.closeSocket(this.socketId);
+                this.disconnect();
                 this.game.logger.error(
                     `Game ${this.game.id} - Player ${this.name} disconnected for spamming SpectateMsg (cooldown)`,
                 );
@@ -2976,7 +3002,7 @@ export class Player extends BaseGameObject {
         this.spectateMsgCount++;
 
         if (this.spectateMsgCount > 50) {
-            this.game.closeSocket(this.socketId);
+            this.disconnect();
             this.game.logger.error(
                 `Game ${this.game.id} - Player ${this.name} Player ${this.name} disconnected for spamming SpectateMsg (count)`,
             );
@@ -3312,6 +3338,8 @@ export class Player extends BaseGameObject {
         this.animType = GameConfig.Anim.None;
         this.animSeq++;
         this.healEffect = false;
+        this.boostDirty = true;
+        this.inventoryDirty = true;
         this.setDirty();
 
         this.shootHold = false;
@@ -3637,6 +3665,13 @@ export class Player extends BaseGameObject {
         }
         this._perks.length = 0;
         this._perkTypes.length = 0;
+
+        // Wipe inventory
+        this.invManager.wipeInventory();
+        this.chest = "";
+        this.helmet = "";
+        this.backpack = "backpack00";
+        this.weaponManager.showNextThrowable();
 
         // death emote
         this.sendDeathEmoteTicker = 0.3;

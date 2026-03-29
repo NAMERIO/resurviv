@@ -27,5 +27,6 @@ export const TurkeyAtlas: AtlasDef = {
 
         "map/map-stone-03tr.svg",
         "map/map-chest-03tr.svg",
+        "map/map-stone-res-02x.svg",
     ],
 };

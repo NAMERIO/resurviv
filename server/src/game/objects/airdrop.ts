@@ -76,15 +76,22 @@ export class Airdrop extends BaseGameObject {
                 if (!util.sameLayer(obj.layer, this.layer)) continue;
 
                 if (
-                    (obj.__type === ObjectType.Player ||
-                        obj.__type === ObjectType.Obstacle) &&
-                    coldet.test(obj.collider, this.crateCollision)
+                    obj.__type === ObjectType.Player ||
+                    obj.__type === ObjectType.Obstacle
                 ) {
-                    obj.damage({
-                        amount: obj.__type === ObjectType.Player ? 100 : 1e10,
-                        damageType: GameConfig.DamageType.Airdrop,
-                        dir: "dir" in obj ? obj.dir : v2.create(0, 0),
-                    });
+                    let collider: Collider;
+                    if (obj.__type === ObjectType.Player) {
+                        collider = obj.collider;
+                    } else {
+                        collider = obj.obstacleAABB || obj.collider;
+                    }
+                    if (coldet.test(collider, this.crateCollision)) {
+                        obj.damage({
+                            amount: obj.__type === ObjectType.Player ? 100 : 1e10,
+                            damageType: GameConfig.DamageType.Airdrop,
+                            dir: "dir" in obj ? obj.dir : v2.create(0, 0),
+                        });
+                    }
                 } else if (
                     obj.__type === ObjectType.Building &&
                     !obj.ceilingDead &&

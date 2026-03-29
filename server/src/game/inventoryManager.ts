@@ -76,6 +76,12 @@ export class InventoryManager {
         return this.bagSizes[item][bagLevel];
     }
 
+    wipeInventory() {
+        for (const item of Object.keys(this._items) as InventoryItem[]) {
+            this._items[item] = 0;
+        }
+    }
+
     /**
      * Gives an amount of an item to this inventory
      */

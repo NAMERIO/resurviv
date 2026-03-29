@@ -510,6 +510,13 @@ export class Obstacle implements AbstractObject {
 
             const color = def.collidable ? 0xff0000 : 0xffff00;
             debugLines.addCollider(this.collider, color, 0.1);
+
+            // don't feel like adding a debug option for this rn
+            // but its only used for trees
+            // if (def.aabb) {
+            //     const aabb = collider.transform(def.aabb, this.pos, this.rot, this.scale);
+            //     debugLines.addCollider(aabb, 0x00ff00, 0.2);
+            // }
         }
     }
 }

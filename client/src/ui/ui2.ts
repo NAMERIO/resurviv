@@ -1261,16 +1261,15 @@ export class UiManager2 {
             }
         }
         if (patch.boost) {
-            const v = GameConfig.player.boostBreakpoints;
-            let I = 0;
-            for (let T = 0; T < v.length; T++) {
-                I += v[T];
-            }
-            for (let P = state.boost / 100, C = 0; C < dom.boost.bars.length; C++) {
-                const A = v[C] / I;
-                const O = math.clamp(P / A, 0, 1);
-                P = math.max(P - A, 0);
-                dom.boost.bars[C].style.width = `${O * 100}%`;
+            const breakPoints = GameConfig.player.boostBreakpoints;
+            const max = breakPoints.reduce((a, b) => a + b, 0);
+
+            let boostT = state.boost / 100;
+            for (let i = 0; i < dom.boost.bars.length; i++) {
+                const breakPointT = breakPoints[i] / max;
+                const widthT = math.clamp(boostT / breakPointT, 0, 1);
+                boostT = math.max(boostT - breakPointT, 0);
+                dom.boost.bars[i].style.width = `${widthT * 100}%`;
             }
             dom.boost.div.style.opacity = String(state.boost == 0 ? 0 : 1);
         }

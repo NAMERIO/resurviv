@@ -1116,7 +1116,7 @@ export class WeaponManager {
                             this.player.pos,
                             normalized,
                             lineEnd,
-                            GameConfig.player.meleeHeight,
+                            obstacle.height,
                             this.player.layer,
                             false,
                         );

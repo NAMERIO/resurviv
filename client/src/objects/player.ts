@@ -2760,7 +2760,7 @@ export class Player implements AbstractObject {
                             this.m_pos,
                             meleeDir,
                             meleeDist,
-                            GameConfig.player.meleeHeight,
+                            obstacle.height,
                             this.layer,
                             false,
                         );
