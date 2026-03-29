@@ -1428,14 +1428,17 @@ export class Player implements AbstractObject {
             this.burningEmitter.layer = this.renderLayer;
             this.burningEmitter.zOrd = this.renderZOrd + 1;
         }
-        
+
         const outfitDef = GameObjectDefs[this.m_netData.m_outfit] as OutfitDef;
         const moveEmitterType = outfitDef.moveEmitter;
         const moveDelta = v2.sub(this.m_posOld, this.m_pos);
         const moveDist = v2.length(moveDelta);
         const isMoving = moveDist > 0.015;
         if (moveEmitterType && !this.m_netData.m_dead) {
-            if (!this.outfitMoveEmitter || this.outfitMoveEmitter.type !== moveEmitterType) {
+            if (
+                !this.outfitMoveEmitter ||
+                this.outfitMoveEmitter.type !== moveEmitterType
+            ) {
                 this.outfitMoveEmitter?.stop();
                 this.outfitMoveEmitter = particleBarn.addEmitter(moveEmitterType, {
                     pos: this.m_pos,

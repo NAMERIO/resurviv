@@ -1269,7 +1269,11 @@ export class Game {
                     true,
                 ) ||
                 helpers.htmlEscape(
-                    this.m_playerBarn.getPlayerName(msg.killLeaderId, this.m_activeId, true),
+                    this.m_playerBarn.getPlayerName(
+                        msg.killLeaderId,
+                        this.m_activeId,
+                        true,
+                    ),
                 );
             this.m_uiManager.updateKillLeader(
                 msg.killLeaderId,
@@ -1520,9 +1524,17 @@ export class Game {
                 }
                 const playerInfo = this.m_playerBarn.getPlayerInfo(msg.playerId);
                 const nameText =
-                    this.m_playerBarn.getPlayerNameHtml(msg.playerId, this.m_activeId, true) ||
+                    this.m_playerBarn.getPlayerNameHtml(
+                        msg.playerId,
+                        this.m_activeId,
+                        true,
+                    ) ||
                     helpers.htmlEscape(
-                        this.m_playerBarn.getPlayerName(msg.playerId, this.m_activeId, true),
+                        this.m_playerBarn.getPlayerName(
+                            msg.playerId,
+                            this.m_activeId,
+                            true,
+                        ),
                     );
                 if (msg.assigned) {
                     if (roleDef.sound?.assign) {

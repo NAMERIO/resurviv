@@ -3,11 +3,11 @@ import { Hono } from "hono";
 import slugify from "slugify";
 import {
     ClanConstants,
-    ClanTagColorRegex,
     type ClanDetail,
     type ClanInfo,
     type ClanLeaderboardResponse,
     type ClanMember,
+    ClanTagColorRegex,
     type CreateClanResponse,
     type DeleteClanResponse,
     type GetClanResponse,

@@ -2755,10 +2755,7 @@ export class Player extends BaseGameObject {
 
         const newVisibleObjects = game.grid.intersectColliderSet(rect);
         for (const obj of newVisibleObjects) {
-            if (
-                obj.__type === ObjectType.Player &&
-                (obj as Player).isInvisibleTo(this)
-            ) {
+            if (obj.__type === ObjectType.Player && (obj as Player).isInvisibleTo(this)) {
                 newVisibleObjects.delete(obj);
             }
         }
