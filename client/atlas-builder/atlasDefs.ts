@@ -52,6 +52,7 @@ export const Atlases: Record<Atlas, AtlasDef> = {
     valentine: ValentineAtlas,
     inferno: InfernoAtlas,
     beach: BeachAtlas,
+    april_fools: MainAtlas,
 };
 export type AtlasRes = "high" | "low";
 

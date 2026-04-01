@@ -199,10 +199,12 @@ export const ObjectSerializeFns: {
             s.writeUnitVec(data.dir, 8);
         },
         serializeFull: (s, data) => {
+            const serverPlayerData = data as unknown as {
+                getNetActiveWeapon?: () => string;
+            };
             const netActiveWeapon =
-                typeof (data as { getNetActiveWeapon?: () => string }).getNetActiveWeapon ===
-                "function"
-                    ? (data as { getNetActiveWeapon: () => string }).getNetActiveWeapon()
+                typeof serverPlayerData.getNetActiveWeapon === "function"
+                    ? serverPlayerData.getNetActiveWeapon()
                     : data.activeWeapon;
 
             s.writeGameType(data.outfit);
