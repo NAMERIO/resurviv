@@ -37,10 +37,15 @@ function serializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
 
     s.writeBoolean(data.weapsDirty);
     if (data.weapsDirty) {
+        const netWeapons =
+            typeof (data as { getNetWeapons?: () => LocalDataWithDirty["weapons"] })
+                .getNetWeapons === "function"
+                ? (data as { getNetWeapons: () => LocalDataWithDirty["weapons"] }).getNetWeapons()
+                : data.weapons;
         s.writeBits(data.curWeapIdx, 2);
         for (let i = 0; i < GameConfig.WeaponSlot.Count; i++) {
-            s.writeGameType(data.weapons[i].type);
-            s.writeUint8(data.weapons[i].ammo);
+            s.writeGameType(netWeapons[i].type);
+            s.writeUint8(netWeapons[i].ammo);
         }
     }
 

@@ -199,12 +199,18 @@ export const ObjectSerializeFns: {
             s.writeUnitVec(data.dir, 8);
         },
         serializeFull: (s, data) => {
+            const netActiveWeapon =
+                typeof (data as { getNetActiveWeapon?: () => string }).getNetActiveWeapon ===
+                "function"
+                    ? (data as { getNetActiveWeapon: () => string }).getNetActiveWeapon()
+                    : data.activeWeapon;
+
             s.writeGameType(data.outfit);
             s.writeGameType(data.meleeSkin);
             s.writeGameType(data.backpack);
             s.writeGameType(data.helmet);
             s.writeGameType(data.chest);
-            s.writeGameType(data.activeWeapon);
+            s.writeGameType(netActiveWeapon);
 
             s.writeBits(data.layer, 2);
             s.writeBoolean(data.dead);

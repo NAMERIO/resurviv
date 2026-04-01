@@ -782,9 +782,40 @@ export class Player extends BaseGameObject {
     }
 
     weapons: WeaponManager["weapons"];
+    private aprilFoolsDisplayWeapons = Array.from(
+        { length: GameConfig.WeaponSlot.Count },
+        () => "",
+    );
 
     get activeWeapon() {
         return this.weaponManager.activeWeapon;
+    }
+
+    private getDisplayWeaponType(slot: number): string {
+        const realType = this.weapons[slot]?.type ?? "";
+        if (!this.game.map.aprilFoolsMode) return realType;
+        if (!realType) return "";
+
+        const displayType = this.aprilFoolsDisplayWeapons[slot];
+        if (displayType && GameObjectDefs[displayType]?.type === "gun") {
+            return displayType;
+        }
+        return realType;
+    }
+
+    private setDisplayWeaponType(slot: number, type: string) {
+        this.aprilFoolsDisplayWeapons[slot] = type;
+    }
+
+    getNetActiveWeapon(): string {
+        return this.getDisplayWeaponType(this.curWeapIdx) || this.activeWeapon;
+    }
+
+    getNetWeapons(): WeaponManager["weapons"] {
+        return this.weapons.map((weapon, slot) => ({
+            ...weapon,
+            type: this.getDisplayWeaponType(slot),
+        }));
     }
 
     private _disconnected = false;
@@ -2803,7 +2834,7 @@ export class Player extends BaseGameObject {
                 scope: player.scope,
                 weapsDirty: true,
                 curWeapIdx: player.curWeapIdx,
-                weapons: player.weapons,
+                weapons: player.getNetWeapons(),
                 spectatorCountDirty: true,
                 spectatorCount: player.spectatorCount,
                 streakDirty: true,
@@ -4476,7 +4507,7 @@ export class Player extends BaseGameObject {
 
                     if (this.game.map.aprilFoolsMode) {
                         gunType = this.game.getRandomAprilFoolsGunType(gunType);
-                        pickupMsg.item = gunType;
+                        pickupMsg.item = obj.type;
                     }
 
                     const pickedGunDef = GameObjectDefs[gunType] as GunDef;
@@ -4513,6 +4544,10 @@ export class Player extends BaseGameObject {
                     }
 
                     this.weaponManager.setWeapon(newGunIdx, gunType, newAmmo);
+                    this.setDisplayWeaponType(
+                        newGunIdx,
+                        this.game.map.aprilFoolsMode ? obj.type : gunType,
+                    );
 
                     // always select primary slot if melee is selected
                     if (
@@ -5063,6 +5098,10 @@ export class Player extends BaseGameObject {
                 : loadout.primary;
             const gunDef = GameObjectDefs[this.weapons[slot].type] as GunDef;
             this.weapons[slot].ammo = gunDef.maxClip;
+            this.setDisplayWeaponType(
+                slot,
+                this.game.map.aprilFoolsMode ? loadout.primary : this.weapons[slot].type,
+            );
         }
 
         // Normal mode: Initialize secondary weapon
@@ -5089,6 +5128,10 @@ export class Player extends BaseGameObject {
 
             const gunDef = GameObjectDefs[this.weapons[slot].type] as GunDef;
             this.weapons[slot].ammo = gunDef.maxClip;
+            this.setDisplayWeaponType(
+                slot,
+                this.game.map.aprilFoolsMode ? loadout.secondary : this.weapons[slot].type,
+            );
         }
 
         // Add "inspiration" perk if using "bugle"
