@@ -197,6 +197,7 @@ export class GameMap {
     mapId: MapId;
 
     factionMode: boolean;
+    aprilFoolsMode: boolean;
     perkMode: boolean;
     turkeyMode: boolean;
     woodsMode: boolean;
@@ -289,6 +290,7 @@ export class GameMap {
             v2.create(this.width, this.height),
         );
         this.factionMode = !!this.mapDef.gameMode.factionMode;
+        this.aprilFoolsMode = !!this.mapDef.gameMode.aprilFoolsMode;
         this.perkMode = !!this.mapDef.gameMode.perkMode;
         this.turkeyMode = !!this.mapDef.gameMode.turkeyMode;
         this.woodsMode = !!this.mapDef.gameMode.woodsMode;

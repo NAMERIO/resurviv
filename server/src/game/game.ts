@@ -1,10 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
+import { WeaponTypeToDefs } from "../../../shared/defs/gameObjectDefs";
 import type { MapDefs } from "../../../shared/defs/mapDefs";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import type { Loadout } from "../../../shared/utils/loadout";
 import { math } from "../../../shared/utils/math";
+import { util } from "../../../shared/utils/util";
 import { v2 } from "../../../shared/utils/v2";
 import { Config } from "../config";
 import { ServerLogger } from "../utils/logger";
@@ -65,6 +67,7 @@ export class Game {
     config: ServerGameConfig;
     pluginManager = new PluginManager(this);
     modeManager: GameModeManager;
+    readonly aprilFoolsGunTypes: string[];
 
     leaderboard = new Map<
         string,
@@ -146,6 +149,9 @@ export class Game {
         this.isTeamMode = this.teamMode !== TeamMode.Solo;
 
         this.map = new GameMap(this);
+        this.aprilFoolsGunTypes = Object.entries(WeaponTypeToDefs.gun)
+            .filter(([, def]) => !def.noDrop)
+            .map(([type]) => type);
         this.grid = new Grid(this.map.width, this.map.height);
         this.objectRegister = new ObjectRegister(this.grid);
 
@@ -172,6 +178,33 @@ export class Game {
                 this.playerBarn.addTeam(i);
             }
         }
+    }
+
+    getRandomAprilFoolsGunType(excludeType?: string): string {
+        if (!this.map.aprilFoolsMode || this.aprilFoolsGunTypes.length === 0) {
+            return excludeType ?? "";
+        }
+
+        if (this.aprilFoolsGunTypes.length === 1) {
+            return this.aprilFoolsGunTypes[0];
+        }
+
+        let selected =
+            this.aprilFoolsGunTypes[
+                util.randomInt(0, this.aprilFoolsGunTypes.length - 1)
+            ];
+
+        if (excludeType && selected === excludeType) {
+            let guard = 24;
+            while (selected === excludeType && guard-- > 0) {
+                selected =
+                    this.aprilFoolsGunTypes[
+                        util.randomInt(0, this.aprilFoolsGunTypes.length - 1)
+                    ];
+            }
+        }
+
+        return selected;
     }
 
     async init() {

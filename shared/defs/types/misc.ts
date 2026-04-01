@@ -13,6 +13,7 @@ export enum MapId {
     Perks = 18,
     Valentine = 19,
     Inferno = 20,
+    AprilFools = 21,
     Beach = 9,
 }
 

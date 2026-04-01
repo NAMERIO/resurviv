@@ -4449,15 +4449,10 @@ export class Player extends BaseGameObject {
                         return;
                     }
 
-                    // if "preloaded" gun add ammo to inventory
-                    if (obj.isPreloadedGun) {
-                        this.invManager.giveAndDrop(
-                            def.ammo as InventoryItem,
-                            def.ammoSpawnCount,
-                        );
-                    }
-
-                    if (freeGunSlot.cause === net.PickupMsgType.AlreadyOwned) {
+                    if (
+                        freeGunSlot.cause === net.PickupMsgType.AlreadyOwned &&
+                        !this.game.map.aprilFoolsMode
+                    ) {
                         amountLeft = 1;
                         break;
                     }
@@ -4477,6 +4472,20 @@ export class Player extends BaseGameObject {
                                 this.weaponManager.scheduledReload = true;
                             }
                         }
+                    }
+
+                    if (this.game.map.aprilFoolsMode) {
+                        gunType = this.game.getRandomAprilFoolsGunType(gunType);
+                        pickupMsg.item = gunType;
+                    }
+
+                    const pickedGunDef = GameObjectDefs[gunType] as GunDef;
+
+                    if (obj.isPreloadedGun) {
+                        this.invManager.giveAndDrop(
+                            pickedGunDef.ammo as InventoryItem,
+                            pickedGunDef.ammoSpawnCount,
+                        );
                     }
 
                     // replaces the gun
@@ -5049,7 +5058,9 @@ export class Player extends BaseGameObject {
         // Normal mode: Initialize primary weapon
         if (isItemInLoadout(loadout.primary, "gun")) {
             const slot = GameConfig.WeaponSlot.Primary;
-            this.weapons[slot].type = loadout.primary;
+            this.weapons[slot].type = this.game.map.aprilFoolsMode
+                ? this.game.getRandomAprilFoolsGunType(loadout.primary)
+                : loadout.primary;
             const gunDef = GameObjectDefs[this.weapons[slot].type] as GunDef;
             this.weapons[slot].ammo = gunDef.maxClip;
         }
@@ -5057,7 +5068,9 @@ export class Player extends BaseGameObject {
         // Normal mode: Initialize secondary weapon
         if (isItemInLoadout(loadout.secondary, "gun")) {
             const slot = GameConfig.WeaponSlot.Secondary;
-            this.weapons[slot].type = loadout.secondary;
+            this.weapons[slot].type = this.game.map.aprilFoolsMode
+                ? this.game.getRandomAprilFoolsGunType(loadout.secondary)
+                : loadout.secondary;
 
             // Disable dual spas in normal mode
             if (

@@ -1,5 +1,6 @@
 import { DeatchmatchCobalt } from "../../server/src/deathmatch/maps/cobalt";
 import { DeatchmatchDesert } from "../../server/src/deathmatch/maps/desert";
+import { DeathmatchAprilFools } from "../../server/src/deathmatch/maps/aprilFools";
 import { FactionPotato } from "../../server/src/deathmatch/maps/faction_potato";
 import { gun_game } from "../../server/src/deathmatch/maps/gun_game";
 import { DeatchmatchHalloween } from "../../server/src/deathmatch/maps/halloween";
@@ -31,6 +32,7 @@ export type Atlas =
     | "main"
     | "desert"
     | "faction"
+    | "april_fools"
     | "halloween"
     | "potato"
     | "snow"
@@ -48,6 +50,7 @@ export const MapDefs = {
     main_spring: MainSpring,
     main_summer: MainSummer,
     desert: DeatchmatchDesert,
+    april_fools: DeathmatchAprilFools,
     faction: FactionPotato,
     halloween: DeatchmatchHalloween,
     gun_game: gun_game,
@@ -119,6 +122,7 @@ export interface MapDef {
     gameMode: {
         maxPlayers: number;
         killLeaderEnabled: boolean;
+        aprilFoolsMode?: boolean;
         desertMode?: boolean;
         factionMode?: boolean;
         factions?: number;
