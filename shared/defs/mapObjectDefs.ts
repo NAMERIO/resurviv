@@ -18009,8 +18009,8 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     }),
     logging_complex_01: createLoggingComplex({}),
     logging_complex_01tw: createLoggingComplex({
-        groundTintLt: 0x2a2530,
-        groundTintDk: 0x1e1a21,
+        groundTintLt: 0x739E41,
+        groundTintDk: 0x668C3A,
     }),
     logging_complex_01v: createLoggingComplex({
         groundTintLt: 0x6b9940,

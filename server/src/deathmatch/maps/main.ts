@@ -19,15 +19,15 @@ export const mapDef: PartialMapDef = {
     },
     biome: {
         colors: {
-            background: 0x4a3a5c,
-            water: 0x2a1a3c,
-            waterRipple: 0x6a5a7c,
-            beach: 0x3a3540,
-            riverbank: 0x2a2530,
-            grass: 0x4a4550,
-            underground: 0x1a1520,
-            playerSubmerge: 0x8a7a9c,
-            playerGhillie: 0x4a4550,
+            background: 0x20536e,
+            water: 0x3282ab,
+            waterRipple: 0xb3f0ff,
+            beach: 0xcdb35b,
+            riverbank: 0x905e24,
+            grass: 0x80af49,
+            underground: 0x1b0d03,
+            playerSubmerge: 0x2b8ca4,
+            playerGhillie: 0x83af50,
         },
         particles: { camera: "falling_leaf_spring" },
     },
@@ -139,18 +139,13 @@ export const mapDef: PartialMapDef = {
         ],
         spawnReplacements: [
             {
-                tree_07: "tree_01tw",
-                tree_01: "tree_01tw",
-                stone_03: "stone_03tw",
-                stone_01: "stone_01cb",
-                bush_01: "bush_01cb",
-                bush_04: "bush_04cb",
+                tree_07: "tree_01",
             },
         ],
     },
 };
 
-export const DeatchmatchMain: MapDef = util.mergeDeep(Main, mapDef);
+export const DeatchmatchMain: MapDef = util.mergeDeep({}, Main, mapDef);
 
 DeatchmatchMain["lootTable"] = {
     tier_mansion_floor: [{ name: "outfitCasanova", count: 1, weight: 1 }],
