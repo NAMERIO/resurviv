@@ -5092,6 +5092,71 @@ a:active {
   background-repeat: no-repeat;
   cursor: pointer;
 }
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #battle-spectator-code-note {
+  width: 335px;
+  margin: 4px auto 0;
+  font-family: Roboto Condensed;
+  font-size: 12px;
+  line-height: 1.2;
+  color: #9ea5ad;
+  text-align: left;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #battle-spectator-code-note.hide {
+  display: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-invite-codes {
+  width: 335px;
+  margin: 0 auto;
+  border-radius: 4px;
+  padding: 8px;
+  box-sizing: border-box;
+  background: #2a2d30;
+  box-shadow: inset 0 -2px #1f2326;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-invite-codes.hide {
+  display: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-invite-codes .arena-invite-code-row {
+  display: flex;
+  align-items: center;
+  min-height: 26px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.22);
+  padding: 4px 6px;
+  gap: 6px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-invite-codes .arena-invite-code-label {
+  font-family: Roboto Condensed;
+  font-weight: bold;
+  font-size: 13px;
+  color: #cfd4da;
+  min-width: 124px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-invite-codes .arena-invite-code-value {
+  flex: 1;
+  font-family: Roboto Condensed;
+  font-weight: bold;
+  font-size: 17px;
+  color: #fff;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-invite-codes .arena-mini-copy {
+  width: 28px;
+  height: 24px;
+  border: none;
+  background: #7a7a7a;
+  box-shadow: inset 0 -2px #242424;
+  border-radius: 3px;
+  background-image: url(../img/prestige-copy-link.svg);
+  background-size: 12px 14px;
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
 #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .battle-mode,
 #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .battle-mode {
   width: 335px;
@@ -5224,6 +5289,45 @@ a:active {
 #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board.hide {
   display: none;
 }
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-spectators-board {
+  width: 335px;
+  margin: 0 auto;
+  border-radius: 4px;
+  padding: 8px;
+  box-sizing: border-box;
+  background: #2b2b2b;
+  box-shadow: inset 0 -2px #1d1d1d;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-spectators-board.hide {
+  display: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-spectators-board .arena-spectators-title {
+  font-family: Roboto Condensed;
+  font-weight: bold;
+  font-size: 16px;
+  text-transform: uppercase;
+  color: #fff;
+  margin-bottom: 6px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-spectators-board .arena-spectator-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 118px;
+  overflow-y: auto;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-spectators-board .arena-spectator-item {
+  min-height: 24px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.28);
+  display: flex;
+  align-items: center;
+  padding: 4px 6px;
+  color: #fff;
+  font-family: Roboto Condensed;
+  font-size: 14px;
+  overflow: hidden;
+}
 #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-team-column {
   flex: 1;
   border-radius: 4px;
@@ -5273,26 +5377,29 @@ a:active {
   text-overflow: ellipsis;
   flex: 1;
 }
-#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-slot-actions {
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .arena-slot-actions {
   display: flex;
   gap: 4px;
 }
-#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-action-btn {
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .arena-action-btn {
   border: none;
-  border-radius: 2px;
+  border-radius: 3px;
   height: 18px;
   min-width: 18px;
-  line-height: 18px;
-  font-family: Roboto Condensed;
-  font-size: 11px;
+  line-height: 0;
+  font-size: 0;
   color: #fff;
   cursor: pointer;
 }
-#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-action-btn.swap {
-  background: #6c4ba5;
-}
-#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-action-btn.kick {
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .arena-action-btn.kick {
   background: #a04646;
+  background-image: url(/img/gui/close.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 11px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .arena-action-btn.kick:hover {
+  filter: brightness(0.85);
 }
 
 /* Joined battle layout: split info/actions and team board into two columns */
@@ -5302,9 +5409,11 @@ a:active {
   grid-template-areas:
     "counter teams"
     "code teams"
-    "mode teams"
-    "type teams"
-    "actions teams";
+    "note teams"
+    "invite teams"
+    "mode specs"
+    "type specs"
+    "actions specs";
   gap: 10px;
   padding: 18px 20px 16px;
   box-sizing: border-box;
@@ -5317,6 +5426,16 @@ a:active {
 }
 #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window.arena-joined-layout #battle-code-row {
   grid-area: code;
+  width: 100%;
+  margin: 0;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window.arena-joined-layout #battle-spectator-code-note {
+  grid-area: note;
+  width: 100%;
+  margin: -2px 0 0;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window.arena-joined-layout #arena-invite-codes {
+  grid-area: invite;
   width: 100%;
   margin: 0;
 }
@@ -5335,7 +5454,12 @@ a:active {
   width: 100%;
   margin: 0;
   align-self: stretch;
-  min-height: 390px;
+  min-height: 250px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window.arena-joined-layout #arena-spectators-board {
+  grid-area: specs;
+  width: 100%;
+  margin: 0;
 }
 #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window.arena-joined-layout .button-group {
   grid-area: actions;
@@ -5368,9 +5492,12 @@ a:active {
   }
   #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window.arena-joined-layout #battle-player-counter,
   #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window.arena-joined-layout #battle-code-row,
+  #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window.arena-joined-layout #battle-spectator-code-note,
+  #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window.arena-joined-layout #arena-invite-codes,
   #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window.arena-joined-layout .battle-mode,
   #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window.arena-joined-layout .battle-type,
-  #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window.arena-joined-layout #arena-teams-board {
+  #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window.arena-joined-layout #arena-teams-board,
+  #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window.arena-joined-layout #arena-spectators-board {
     width: 335px;
     margin: 0 auto;
   }

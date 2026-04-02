@@ -850,7 +850,7 @@
               </div>
             </div>
             <div class="spin-overview" id="open-arena-button">
-              <a id="btn-prestige-arena" class="btn-green btn-darken menu-option btn-open-arena" data-l10n="modal-open-arena">Prestige Arena</a>
+              <a id="btn-prestige-arena" class="btn-green btn-darken menu-option btn-open-arena" data-l10n="modal-open-arena">Private Lobby</a>
             </div>
           </div>
         </div>
@@ -1076,7 +1076,7 @@
                     </div>
                     <div id="modal-battle-window">
                       <div class="input-group">
-                        <input class="battle-link-entry" maxlength="6" autocomplete="off" spellcheck="false" role="combobox" placeholder="ENTER INVITE CODE" aria-live="polite" />
+                        <input class="battle-link-entry" maxlength="16" autocomplete="off" spellcheck="false" role="combobox" placeholder="ENTER INVITE CODE" aria-live="polite" />
                         <div id="battle-search-button" class="btn-darken"></div>
                       </div>
                       <div id="battle-player-counter">
@@ -1089,6 +1089,19 @@
                         <div id="battle-code-label" data-l10n="index-invite-code">Invite code</div>
                         <div id="battle-room-code"></div>
                         <button id="battle-copy-code" class="btn-darken" type="button" aria-label="Copy invite code"></button>
+                      </div>
+                      <div id="battle-spectator-code-note" class="hide" data-l10n="index-arena-spectator-code-note">Spectator code (use normal code)</div>
+                      <div id="arena-invite-codes" class="hide">
+                        <div class="arena-invite-code-row">
+                          <div class="arena-invite-code-label">Team A code</div>
+                          <div id="arena-team-a-code" class="arena-invite-code-value"></div>
+                          <button id="arena-team-a-code-copy" class="arena-mini-copy btn-darken" type="button" aria-label="Copy Team A code"></button>
+                        </div>
+                        <div class="arena-invite-code-row">
+                          <div class="arena-invite-code-label">Team B code</div>
+                          <div id="arena-team-b-code" class="arena-invite-code-value"></div>
+                          <button id="arena-team-b-code-copy" class="arena-mini-copy btn-darken" type="button" aria-label="Copy Team B code"></button>
+                        </div>
                       </div>
                       <div class="battle-mode active">
                         <div class="battle-game-mode" data-l10n="spectate-game-mode"></div>
@@ -1107,6 +1120,10 @@
                           <div class="arena-team-title">Team B</div>
                           <div id="arena-team-b-list" class="arena-team-list"></div>
                         </div>
+                      </div>
+                      <div id="arena-spectators-board" class="hide">
+                        <div class="arena-spectators-title">Spectators</div>
+                        <div id="arena-spectator-list" class="arena-spectator-list"></div>
                       </div>
                       <div class="button-group">
                         <div class="battle-timer hide">

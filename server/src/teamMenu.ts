@@ -102,8 +102,10 @@ class Player {
 }
 
 class Room {
+    static readonly MaxArenaSpectators = 5;
     players: Player[] = [];
     arenaTeams = new Map<Player, "A" | "B">();
+    arenaSpectators = new Set<Player>();
 
     data: RoomData = {
         roomUrl: "",
@@ -135,13 +137,45 @@ class Room {
         this.setProps(initialData);
     }
 
-    addPlayer(player: Player) {
-        if (this.players.length >= this.data.maxPlayers) return;
+    addPlayer(
+        player: Player,
+        opts?: {
+            preferredTeam?: "A" | "B";
+            spectator?: boolean;
+        },
+    ): { ok: true } | { ok: false; error: TeamMenuErrorType } {
+        if (!this.data.arena && this.players.length >= this.data.maxPlayers) {
+            return { ok: false, error: "join_full" };
+        }
 
         if (this.data.arena) {
-            const team = this.getNextArenaTeam();
-            if (!team) return;
-            this.arenaTeams.set(player, team);
+            const cap = this.getArenaTeamCapacity();
+            const teamA = this.getArenaTeamCount("A");
+            const teamB = this.getArenaTeamCount("B");
+            const teamSlotsFull = teamA >= cap && teamB >= cap;
+            const spectatorsFull =
+                this.getArenaSpectatorCount() >= Room.MaxArenaSpectators;
+
+            if (opts?.spectator || (teamSlotsFull && !opts?.preferredTeam)) {
+                if (spectatorsFull) {
+                    return { ok: false, error: "spectator_full" };
+                }
+                this.arenaSpectators.add(player);
+            } else if (opts?.preferredTeam) {
+                if (this.getArenaTeamCount(opts.preferredTeam) >= cap) {
+                    return { ok: false, error: "team_full" };
+                }
+                this.arenaTeams.set(player, opts.preferredTeam);
+            } else {
+                const team = this.getNextArenaTeam();
+                if (!team) {
+                    this.arenaSpectators.add(player);
+                } else {
+                    this.arenaTeams.set(player, team);
+                }
+            }
+        } else if (this.players.length >= this.data.maxPlayers) {
+            return { ok: false, error: "join_full" };
         }
 
         this.players.push(player);
@@ -150,6 +184,7 @@ class Room {
         clearTimeout(player.disconnectTimeout);
 
         this.sendState();
+        return { ok: true };
     }
 
     onMsg(player: Player, msg: ClientToServerTeamMsg) {
@@ -186,8 +221,7 @@ class Room {
                 break;
             }
             case "swapTeam": {
-                if (!player.isLeader || !this.data.arena) break;
-                this.swapTeam(msg.data.playerId, msg.data.team);
+                // Team swapping is disabled in arena lobby; leaders can only kick.
                 break;
             }
             case "playGame": {
@@ -223,8 +257,21 @@ class Room {
         this.data.autoFill = this.data.arena ? false : props.autoFill;
 
         // kick players that don't fit on the new max players
-        while (this.players.length > this.data.maxPlayers) {
-            this.kick(this.players.length - 1);
+        if (!this.data.arena) {
+            while (this.players.length > this.data.maxPlayers) {
+                this.kick(this.players.length - 1);
+            }
+        } else {
+            while (
+                this.players.filter((p) => !this.isArenaSpectator(p)).length >
+                this.data.maxPlayers
+            ) {
+                const overflowPlayer = [...this.players]
+                    .reverse()
+                    .find((p) => !this.isArenaSpectator(p));
+                if (!overflowPlayer) break;
+                this.kick(overflowPlayer.playerId);
+            }
         }
 
         this.rebalanceArenaTeams();
@@ -249,6 +296,7 @@ class Room {
         }
 
         this.arenaTeams.delete(player);
+        this.arenaSpectators.delete(player);
         player.room = undefined;
         player.socket.close();
 
@@ -294,10 +342,22 @@ class Room {
         return this.arenaTeams.get(player);
     }
 
+    isArenaSpectator(player: Player) {
+        return this.arenaSpectators.has(player);
+    }
+
+    getArenaSpectatorCount() {
+        let count = 0;
+        for (const p of this.players) {
+            if (this.arenaSpectators.has(p)) count++;
+        }
+        return count;
+    }
+
     getArenaTeamCount(team: "A" | "B") {
         let count = 0;
         for (const p of this.players) {
-            if (this.arenaTeams.get(p) === team) count++;
+            if (this.arenaTeams.get(p) === team && !this.arenaSpectators.has(p)) count++;
         }
         return count;
     }
@@ -316,13 +376,22 @@ class Room {
     rebalanceArenaTeams() {
         if (!this.data.arena) {
             this.arenaTeams.clear();
+            this.arenaSpectators.clear();
             return;
         }
         const cap = this.getArenaTeamCapacity();
         for (const p of this.players) {
+            if (this.arenaSpectators.has(p)) {
+                this.arenaTeams.delete(p);
+                continue;
+            }
             if (!this.arenaTeams.has(p)) {
                 const team = this.getNextArenaTeam();
-                if (team) this.arenaTeams.set(p, team);
+                if (team) {
+                    this.arenaTeams.set(p, team);
+                } else {
+                    this.arenaSpectators.add(p);
+                }
             }
         }
         const overflow = (team: "A" | "B") =>
@@ -337,17 +406,6 @@ class Room {
                 this.arenaTeams.set(p, "A");
             }
         }
-    }
-
-    swapTeam(playerId: number, toTeam: "A" | "B") {
-        const target = this.players[playerId];
-        if (!target) return;
-        const cur = this.arenaTeams.get(target);
-        if (!cur || cur === toTeam) return;
-        const cap = this.getArenaTeamCapacity();
-        if (this.getArenaTeamCount(toTeam) >= cap) return;
-        this.arenaTeams.set(target, toTeam);
-        this.sendState();
     }
 
     async findGame(data: TeamPlayGameMsg["data"], player: Player) {
@@ -374,9 +432,12 @@ class Room {
         this.data.region = region;
 
         const tokenMap = new Map<Player, string>();
+        const activePlayers = this.data.arena
+            ? this.players.filter((p) => !this.isArenaSpectator(p))
+            : this.players;
 
         const playerData = await getFindGamePlayerData(
-            this.players.map((player) => {
+            activePlayers.map((player) => {
                 const token = randomUUID();
                 tokenMap.set(player, token);
                 return {
@@ -448,6 +509,10 @@ class Room {
         this.data.lastError = "";
 
         for (const roomPlayer of this.players) {
+            if (this.data.arena && this.isArenaSpectator(roomPlayer)) {
+                roomPlayer.inGame = false;
+                continue;
+            }
             roomPlayer.inGame = true;
             const token = tokenMap.get(roomPlayer);
 
@@ -473,6 +538,7 @@ class Room {
         const players = this.players.map((p) => ({
             ...p.data,
             team: this.data.arena ? this.getPlayerTeam(p) : undefined,
+            spectator: this.data.arena ? this.isArenaSpectator(p) : undefined,
         }));
         // all players must be logged in to disable it
         this.data.captchaEnabled =
@@ -581,6 +647,8 @@ export class TeamMenu {
             mapName: mode.mapName,
             teamMode: mode.teamMode,
             findingGame: room.data.findingGame,
+            teamACount: room.getArenaTeamCount("A"),
+            teamBCount: room.getArenaTeamCount("B"),
         };
     }
 
@@ -755,7 +823,14 @@ export class TeamMenu {
                     if (arena) {
                         room.arenaOwnerKey = ownerKey;
                     }
-                    room.addPlayer(player);
+                    const createJoinRes = room.addPlayer(
+                        player,
+                        arena ? { preferredTeam: "A", spectator: false } : undefined,
+                    );
+                    if (!createJoinRes.ok) {
+                        player.send("error", { type: createJoinRes.error });
+                        break;
+                    }
 
                     break;
                 }
@@ -777,9 +852,14 @@ export class TeamMenu {
                         break;
                     }
 
-                    if (room.players.length >= room.data.maxPlayers) {
+                    const roomParticipantCount = room.data.arena
+                        ? room.players.filter((p) => !room.isArenaSpectator(p)).length
+                        : room.players.length;
+                    const roomParticipantsFull =
+                        roomParticipantCount >= room.data.maxPlayers;
+                    if (roomParticipantsFull && !room.data.arena) {
                         this.logger.debug(
-                            `Join rejected: room full (${room.players.length}/${room.data.maxPlayers})`,
+                            `Join rejected: room full (${roomParticipantCount}/${room.data.maxPlayers})`,
                         );
                         player.send("error", { type: "join_full" });
                         break;
@@ -787,7 +867,8 @@ export class TeamMenu {
 
                     const gameInProgress =
                         room.data.findingGame || room.players.some((p) => p.inGame);
-                    if (gameInProgress) {
+                    const wantsSpectator = !!msg.data.spectator;
+                    if (gameInProgress && !(room.data.arena && wantsSpectator)) {
                         this.logger.debug(
                             `Join rejected: game already started (${room.id})`,
                         );
@@ -796,8 +877,18 @@ export class TeamMenu {
                     }
 
                     player.setName(msg.data.playerData.name);
-
-                    room.addPlayer(player);
+                    const joinRes = room.addPlayer(player, {
+                        preferredTeam: msg.data.preferredTeam,
+                        spectator:
+                            wantsSpectator ||
+                            (room.data.arena &&
+                                roomParticipantsFull &&
+                                !msg.data.preferredTeam),
+                    });
+                    if (!joinRes.ok) {
+                        player.send("error", { type: joinRes.error });
+                        break;
+                    }
                 }
             }
         }

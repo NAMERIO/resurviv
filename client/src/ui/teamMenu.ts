@@ -22,6 +22,8 @@ import type { Localization } from "./localization";
 function errorTypeToString(type: string, localization: Localization) {
     const typeMap = {
         join_full: localization.translate("index-team-is-full"),
+        team_full: localization.translate("index-arena-team-full"),
+        spectator_full: localization.translate("index-arena-spectator-full"),
         join_not_found: localization.translate("index-failed-joining-team"),
         game_in_progress: localization.translate("index-game-in-progress"),
         create_failed: localization.translate("index-failed-creating-team"),
@@ -72,7 +74,12 @@ export class TeamMenu {
         name: string;
         isLeader: boolean;
         team?: "A" | "B";
+        spectator?: boolean;
     }> = [];
+    joinPrefs: {
+        preferredTeam?: "A" | "B";
+        spectator?: boolean;
+    } = {};
 
     prevPlayerCount = 0;
     localPlayerId = 0;
@@ -181,7 +188,15 @@ export class TeamMenu {
         });
     }
 
-    connect(create: boolean, roomUrl: string, arena = false) {
+    connect(
+        create: boolean,
+        roomUrl: string,
+        arena = false,
+        joinPrefs?: {
+            preferredTeam?: "A" | "B";
+            spectator?: boolean;
+        },
+    ) {
         if (!this.active || roomUrl !== this.roomData.roomUrl) {
             const roomHost = api.resolveRoomHost();
             const url = `w${
@@ -193,6 +208,7 @@ export class TeamMenu {
             this.arena = arena;
             this.joiningGame = false;
             this.editingName = false;
+            this.joinPrefs = joinPrefs || {};
 
             // Load properties from config
             this.playerData = {
@@ -245,6 +261,8 @@ export class TeamMenu {
                         this.sendMessage("join", {
                             roomUrl: this.roomData.roomUrl,
                             arena: this.arena,
+                            preferredTeam: this.joinPrefs.preferredTeam,
+                            spectator: this.joinPrefs.spectator,
                             playerData: this.playerData,
                         });
                     }
@@ -269,6 +287,7 @@ export class TeamMenu {
             this.joined = false;
             this.joiningGame = false;
             this.arena = false;
+            this.joinPrefs = {};
             this.refreshUi();
             this.onStateUpdated?.();
 

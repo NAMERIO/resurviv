@@ -5,6 +5,8 @@ import type { FindGameMatchData } from "./api";
 
 export type TeamMenuErrorType =
     | "join_full"
+    | "team_full"
+    | "spectator_full"
     | "join_not_found"
     | "game_in_progress"
     | "join_failed"
@@ -55,6 +57,7 @@ export interface TeamMenuPlayer {
     isLeader: boolean;
     inGame: boolean;
     team?: "A" | "B";
+    spectator?: boolean;
 }
 
 /**
@@ -119,6 +122,8 @@ export const zTeamJoinMsg = z.object({
     data: z.object({
         roomUrl: z.string(),
         arena: z.boolean().optional(),
+        preferredTeam: z.enum(["A", "B"]).optional(),
+        spectator: z.boolean().optional(),
         playerData: z.object({
             name: z.string(),
         }),
