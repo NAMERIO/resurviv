@@ -1,5 +1,6 @@
 import type { Hono } from "hono";
 import type { UpgradeWebSocket } from "hono/ws";
+import { TeamMode } from "../../../shared/gameConfig";
 import type { SiteInfoRes } from "../../../shared/types/api";
 import { Config } from "../config";
 import { TeamMenu } from "../teamMenu";
@@ -60,11 +61,45 @@ export class ApiServer {
     regions: Record<string, Region> = {};
 
     modes = [...Config.modes];
+    privateLobbyMaps = new Set<(typeof Config.modes)[number]["mapName"]>();
     clientTheme = Config.clientTheme;
 
     captchaEnabled = Config.captchaEnabled;
 
     constructor() {
+        const forcedPrivateMaps: Array<(typeof Config.modes)[number]["mapName"]> = [
+            "main",
+            "snow",
+            "cobalt",
+            "perks",
+            "desert",
+            "valentine",
+            "inferno",
+            "woods",
+        ];
+
+        for (const mapName of forcedPrivateMaps) {
+            this.privateLobbyMaps.add(mapName);
+        }
+
+        const privateTeamModes = [TeamMode.Solo, TeamMode.Duo, TeamMode.Squad] as const;
+        const hasMode = (
+            mapName: (typeof Config.modes)[number]["mapName"],
+            teamMode: (typeof Config.modes)[number]["teamMode"],
+        ) =>
+            this.modes.some((m) => m.mapName === mapName && m.teamMode === teamMode);
+
+        for (const mapName of this.privateLobbyMaps) {
+            for (const teamMode of privateTeamModes) {
+                if (hasMode(mapName, teamMode)) continue;
+                this.modes.push({
+                    mapName,
+                    teamMode,
+                    enabled: false,
+                });
+            }
+        }
+
         for (const region in Config.regions) {
             this.regions[region] = new Region(region);
         }

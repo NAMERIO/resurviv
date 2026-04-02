@@ -23,6 +23,7 @@ function errorTypeToString(type: string, localization: Localization) {
     const typeMap = {
         join_full: localization.translate("index-team-is-full"),
         join_not_found: localization.translate("index-failed-joining-team"),
+        game_in_progress: localization.translate("index-game-in-progress"),
         create_failed: localization.translate("index-failed-creating-team"),
         join_failed: localization.translate("index-failed-joining-team"),
         join_game_failed: localization.translate("index-failed-joining-game"),

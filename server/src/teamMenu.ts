@@ -212,9 +212,7 @@ class Room {
         if (!this.data.enabledGameModeIdxs.includes(gameModeIdx)) {
             // we don't allow creating teams if there's no valid team mode
             // so this will never be -1
-            gameModeIdx = this.data.arena
-                ? this.data.enabledGameModeIdxs[0]
-                : modes.findIndex((mode) => mode.enabled && mode.teamMode > 1);
+            gameModeIdx = this.data.enabledGameModeIdxs[0];
         }
 
         this.data.gameModeIdx = gameModeIdx;
@@ -244,6 +242,8 @@ class Room {
     }
 
     removePlayer(player: Player) {
+        const wasLeader = this.players[0] === player;
+
         if (!util.removeFrom(this.players, player)) {
             return;
         }
@@ -251,6 +251,14 @@ class Room {
         this.arenaTeams.delete(player);
         player.room = undefined;
         player.socket.close();
+
+        // Keep arena ownership aligned with current leader after owner leaves.
+        if (this.data.arena && wasLeader) {
+            const nextLeader = this.players[0];
+            this.arenaOwnerKey = nextLeader
+                ? nextLeader.userId || nextLeader.encodedIp
+                : undefined;
+        }
 
         this.sendState();
 
@@ -384,7 +392,7 @@ class Room {
         );
 
         const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
-        if (!mode || !mode.enabled) {
+        if (!mode) {
             return;
         }
 
@@ -531,25 +539,19 @@ export class TeamMenu {
             .map((_, i) => i)
             .filter((i) => {
                 const mode = this.server.modes[i];
-                return mode.enabled && mode.teamMode > 1;
+                // Private lobbies should not be constrained by public rotation.
+                return mode.teamMode > 1;
             });
     }
 
     allowedArenaGameModeIdxs() {
-        const allowedArenaMaps = new Set([
-            "main",
-            "woods",
-            "potato",
-            "desert",
-            "savannah",
-            "snow",
-            "stPatrick",
-        ]);
         return this.server.modes
             .map((_, i) => i)
             .filter((i) => {
                 const mode = this.server.modes[i];
-                return mode.enabled && allowedArenaMaps.has(mode.mapName);
+                // Arena private lobbies should use map names discovered from
+                // server/src/deathmatch/maps.
+                return this.server.privateLobbyMaps.has(mode.mapName);
             });
     }
 
@@ -761,6 +763,17 @@ export class TeamMenu {
                         player.send("error", { type: "join_full" });
                         break;
                     }
+
+                    const gameInProgress =
+                        room.data.findingGame || room.players.some((p) => p.inGame);
+                    if (gameInProgress) {
+                        this.logger.debug(
+                            `Join rejected: game already started (${room.id})`,
+                        );
+                        player.send("error", { type: "game_in_progress" });
+                        break;
+                    }
+
                     player.setName(msg.data.playerData.name);
 
                     room.addPlayer(player);

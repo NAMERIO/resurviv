@@ -616,14 +616,18 @@ export class Game {
     }
 
     addJoinTokens(tokens: FindGamePrivateBody["playerData"], autoFill: boolean) {
-        const groupHashToJoin = tokens[0].roomId ?? Math.random().toString(16).slice(2);
-        const groupData = {
-            playerCount: tokens.length,
-            groupHashToJoin,
-            autoFill,
-        };
+        // Use one shared fallback hash for tokens that don't provide a roomId.
+        // This keeps legacy behavior (party joins together) while allowing
+        // arena tokens to split by per-player roomId suffixes (e.g. ROOM-A/ROOM-B).
+        const fallbackGroupHash = Math.random().toString(16).slice(2);
 
         for (const token of tokens) {
+            const groupData = {
+                playerCount: tokens.length,
+                groupHashToJoin: token.roomId ?? fallbackGroupHash,
+                autoFill,
+            };
+
             this.joinTokens.set(token.token, {
                 expiresAt: Date.now() + 10000,
                 userId: token.userId,

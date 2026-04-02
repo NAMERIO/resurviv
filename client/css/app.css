@@ -308,6 +308,7 @@ a:active {
 
 #start-main-center {
   position: relative;
+  z-index: 3;
 }
 
 @media (min-width: 851px) and (max-height: 832px), (max-width: 1200px) {
@@ -4828,7 +4829,7 @@ a:active {
 
 #modal-prestige-arena {
   background-color: rgba(0, 0, 0, 0.4);
-  z-index: 1200;
+  z-index: 1305 !important;
 }
 #modal-prestige-arena #modal-prestige-wrapper {
   color: white;
@@ -5724,6 +5725,11 @@ a:active {
   font-weight: bold;
   cursor: pointer;
 }
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-mode-group #create-mode[class*="btn-mode-"] {
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+  background-repeat: no-repeat;
+}
 #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-mode-group #create-mode .create-game-mode {
   text-transform: uppercase;
   font-size: 20px;
@@ -5767,6 +5773,7 @@ a:active {
 }
 #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-mode-group #create-mode-selection {
   overflow-y: auto;
+  overflow-x: hidden;
   height: -webkit-fit-content;
   height: -moz-fit-content;
   height: fit-content;
@@ -5785,8 +5792,23 @@ a:active {
   font-style: normal;
   font-weight: bold;
 }
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-mode-group #create-mode-selection::-webkit-scrollbar,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-type-group #create-type-selection::-webkit-scrollbar {
+  width: 8px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-mode-group #create-mode-selection::-webkit-scrollbar-track,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-type-group #create-type-selection::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 8px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-mode-group #create-mode-selection::-webkit-scrollbar-thumb,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-type-group #create-type-selection::-webkit-scrollbar-thumb {
+  background: rgba(20, 20, 20, 0.6);
+  border-radius: 8px;
+}
 #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-mode-group #create-mode-selection .selection-button-mode {
-  width: auto;
+  width: 100%;
+  box-sizing: border-box;
   border-bottom: none !important;
   box-shadow: none !important;
   color: #ffffff;
@@ -5805,10 +5827,20 @@ a:active {
   letter-spacing: -0.02em;
   background-size: 31px;
   background-repeat: no-repeat;
-  background-position: 118px center;
+  background-position: 14px center;
   position: relative;
   z-index: 10;
-  padding-left: 158px;
+  padding-left: 56px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-mode-group #create-mode-selection .selection-button-mode.arena-mode-option {
+  text-indent: 0 !important;
+  background-position: 14px center;
+  background-size: 24px;
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+  border-bottom: revert !important;
+  box-shadow: revert !important;
+  padding-right: 14px;
 }
 #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-type-group {
   margin: 0 auto;

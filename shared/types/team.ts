@@ -6,6 +6,7 @@ import type { FindGameMatchData } from "./api";
 export type TeamMenuErrorType =
     | "join_full"
     | "join_not_found"
+    | "game_in_progress"
     | "join_failed"
     | "create_failed"
     | "lost_conn"

@@ -81,7 +81,7 @@
   "index-no-fill": "No Fill",
   "index-waiting-for-leader": "Waiting for leader to start game",
   "index-joining-game": "Joining game",
-  "index-game-in-progress": "Game in progress",
+  "index-game-in-progress": "Game already started",
   "index-play": "Play",
   "game-mod_abuse": "Mod Abuse",
   "index-customize-loadout": "Customize Emotes",
