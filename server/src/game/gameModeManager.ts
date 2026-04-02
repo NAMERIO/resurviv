@@ -145,6 +145,9 @@ export class GameModeManager {
     }
 
     isGameStarted(): boolean {
+        if (this.game.arenaPrivate && this.game.arenaStartLockTimer > 0) {
+            return false;
+        }
         return this.cantDespawnAliveCount() > 1;
     }
 
@@ -182,6 +185,9 @@ export class GameModeManager {
     }
 
     getPlayerStatusPlayers(player: Player): Player[] {
+        if (this.game.arenaPrivate) {
+            return this.game.playerBarn.players;
+        }
         switch (this.mode) {
             case GameMode.Solo:
                 return [];

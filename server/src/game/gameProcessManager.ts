@@ -30,6 +30,7 @@ class GameProcess implements GameData {
     creating = false;
     teamMode: TeamMode = 1;
     mapName = "";
+    arenaPrivate = false;
     id = "";
     aliveCount = 0;
     startedTime = 0;
@@ -72,6 +73,7 @@ class GameProcess implements GameData {
                     this.canJoin = msg.canJoin;
                     this.teamMode = msg.teamMode;
                     this.mapName = msg.mapName;
+                    this.arenaPrivate = !!msg.arenaPrivate;
                     if (this.id !== msg.id) {
                         this.manager.processById.delete(this.id);
                         this.id = msg.id;
@@ -129,6 +131,7 @@ class GameProcess implements GameData {
         this.id = id;
         this.teamMode = config.teamMode;
         this.mapName = config.mapName;
+        this.arenaPrivate = !!config.arenaPrivate;
         this.stopped = false;
         this.creating = true;
         this.groupHash = undefined;
@@ -308,6 +311,7 @@ export class GameProcessManager implements GameManager {
                     proc.avaliableSlots > 0 &&
                     proc.teamMode === body.teamMode &&
                     proc.mapName === body.mapName &&
+                    !!proc.arenaPrivate === !!body.arenaPrivate &&
                     (requestedGroupHash
                         ? proc.groupHash === requestedGroupHash
                         : !proc.groupHash)
@@ -321,7 +325,14 @@ export class GameProcessManager implements GameManager {
             game = this.newGame({
                 teamMode: body.teamMode,
                 mapName: body.mapName as keyof typeof MapDefs,
+                arenaPrivate: !!body.arenaPrivate,
             });
+        }
+
+        // Reserve creating/idle process immediately for private-lobby hash so
+        // subsequent findGame calls (eg pressing Play during warmup) reuse it.
+        if (requestedGroupHash && !game.groupHash) {
+            game.groupHash = requestedGroupHash;
         }
 
         const autoFill = game.aliveCount <= 1 ? false : body.autoFill;

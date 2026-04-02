@@ -3035,6 +3035,7 @@ export class PlayerBarn {
         particleBarn: ParticleBarn,
         camera: Camera,
         map: Map,
+        arenaPrivate: boolean,
         inputBinds: InputBinds,
         audioManager: AudioManager,
         ui2Manager: UiManager2,
@@ -3088,7 +3089,8 @@ export class PlayerBarn {
             visible: true,
         });
 
-        const statusUpdateRate = getPlayerStatusUpdateRate(map.factionMode);
+        const fullStatusMode = map.factionMode || arenaPrivate;
+        const statusUpdateRate = getPlayerStatusUpdateRate(fullStatusMode);
         const keys = Object.keys(this.playerStatus);
         for (let i = 0; i < keys.length; i++) {
             const status = this.playerStatus[keys[i] as unknown as number];
@@ -3134,7 +3136,7 @@ export class PlayerBarn {
             // @HACK: Fix issue in non-faction mode when spectating and swapping
             // between teams. We don't want the old player indicators to fade out
             // after moving to the new team
-            if (!map.factionMode && playerInfo.teamId != activeInfo.teamId) {
+            if (!fullStatusMode && playerInfo.teamId != activeInfo.teamId) {
                 status.minimapAlpha = 0;
             }
             status.minimapVisible = status.minimapAlpha > 0.01;

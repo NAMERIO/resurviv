@@ -116,6 +116,7 @@ export class Game {
     seqInFlight!: boolean;
     seqSendTime!: number;
     pings!: number[];
+    m_arenaPrivate = false;
     debugPingTime!: number;
     lastUpdateTime!: number;
     updateIntervals!: number[];
@@ -454,6 +455,7 @@ export class Game {
             this.m_particleBarn,
             this.m_camera,
             this.m_map,
+            this.m_arenaPrivate,
             this.m_inputBinds,
             this.m_audioManager,
             this.m_ui2Manager,
@@ -1162,10 +1164,11 @@ export class Game {
         // Update player status
         if (msg.playerStatusDirty) {
             const teamId = this.m_playerBarn.getPlayerInfo(this.m_activeId).teamId;
+            const fullStatusMode = this.m_map.factionMode || this.m_arenaPrivate;
             this.m_playerBarn.updatePlayerStatus(
                 teamId,
                 msg.playerStatus,
-                this.m_map.factionMode,
+                fullStatusMode,
             );
         }
 
@@ -1311,10 +1314,17 @@ export class Game {
                 msg.deserialize(stream);
                 this.onJoin();
                 this.teamMode = msg.teamMode;
+                this.m_arenaPrivate = !!msg.arenaPrivate;
                 this.m_localId = msg.playerId;
                 this.m_playerBarn.localPlayerId = this.m_localId;
                 this.m_validateAlpha = true;
                 this.m_emoteBarn.updateEmoteWheel(msg.emotes);
+                if (this.m_arenaPrivate && msg.arenaCountdown > 0) {
+                    this.m_ui2Manager.addKillFeedMessage(
+                        `${msg.arenaCountdown}`,
+                        "#ffd166",
+                    );
+                }
                 if (!msg.started) {
                     this.m_uiManager.setWaitingForPlayers(true);
                 }
@@ -1346,6 +1356,15 @@ export class Game {
                               : "Squad",
                     kills: 0,
                 });
+                break;
+            }
+            case net.MsgType.ArenaCountdown: {
+                const msg = new net.ArenaCountdownMsg();
+                msg.deserialize(stream);
+                this.m_ui2Manager.addKillFeedMessage(
+                    msg.go ? "GO!" : `${msg.seconds}`,
+                    msg.go ? "#58d06f" : "#ffd166",
+                );
                 break;
             }
             case net.MsgType.Map: {

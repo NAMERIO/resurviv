@@ -40,12 +40,14 @@ export interface SaveGameBody {
 export interface ServerGameConfig {
     readonly mapName: keyof typeof MapDefs;
     readonly teamMode: TeamMode;
+    readonly arenaPrivate?: boolean;
 }
 
 export interface GameData {
     id: string;
     teamMode: TeamMode;
     mapName: string;
+    arenaPrivate?: boolean;
     canJoin: boolean;
     aliveCount: number;
     startedTime: number;
@@ -58,6 +60,7 @@ export const zFindGamePrivateBody = z.object({
     autoFill: z.boolean(),
     mapName: z.string(),
     teamMode: z.number(),
+    arenaPrivate: z.boolean().optional(),
     groupHash: z.string().optional(),
     playerData: z.array(
         z.object({

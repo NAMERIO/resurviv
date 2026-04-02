@@ -75,6 +75,7 @@ class GameServer {
             autoFill: data.autoFill,
             mapName: data.mapName,
             teamMode: data.teamMode,
+            arenaPrivate: !!data.arenaPrivate,
             playerData: data.playerData,
             groupHash: data.groupHash,
         });
@@ -220,13 +221,6 @@ app.post("/api/kick_player_by_ip", (res, req) => {
             }
         },
         () => {
-            if (res.aborted) return;
-            res.cork(() => {
-                if (res.aborted) return;
-                res.writeStatus("500 Internal Server Error");
-                res.write("500 Internal Server Error");
-                res.end();
-            });
             server.logger.warn("/api/kick_player_by_ip: Error retrieving body");
         },
     );
@@ -268,13 +262,8 @@ app.post("/api/find_game", (res, req) => {
             }
         },
         () => {
-            if (res.aborted) return;
-            res.cork(() => {
-                if (res.aborted) return;
-                res.writeStatus("500 Internal Server Error");
-                res.write("500 Internal Server Error");
-                res.end();
-            });
+            // readPostedJSON may invoke this via onAborted or after a forced close;
+            // do not touch HttpResponse here to avoid uWS invalid-access crashes.
             server.logger.warn("/api/find_game: Error retrieving body");
         },
     );

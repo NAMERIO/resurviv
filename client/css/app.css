@@ -4611,6 +4611,7 @@ a:active {
   color: #fff;
   top: var(--side-pad);
   left: var(--side-pad);
+  z-index: 4;
 }
 
 @media (max-height: 720px) {
@@ -4638,7 +4639,7 @@ a:active {
   left: 0;
   top: 0;
   user-select: none;
-  z-index: 2;
+  z-index: 6;
 }
 
 @media (max-width: 1600px) {
@@ -4707,6 +4708,7 @@ a:active {
   left: 242px;
   top: var(--side-pad);
   width: 232px;
+  z-index: 5;
 }
 
 #open-arena-button {
@@ -4828,19 +4830,43 @@ a:active {
 }
 
 #modal-prestige-arena {
+  display: none !important;
   background-color: rgba(0, 0, 0, 0.4);
+  z-index: -999 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  top: 11%;
+}
+
+#modal-prestige-arena.is-open {
+  display: block !important;
   z-index: 1305 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  top: 11%;
+}
+
+#modal-prestige-arena:not(.is-open),
+#modal-prestige-arena:not(.is-open) * {
+  pointer-events: none !important;
 }
 #modal-prestige-arena #modal-prestige-wrapper {
   color: white;
   width: 577px;
   height: 528px;
   left: calc(50% + 48px);
-  top: 48%;
+  top: 55%;
   position: fixed;
   z-index: 1201;
   -webkit-transform: translateY(-50%) translateX(-50%);
           transform: translateY(-50%) translateX(-50%);
+  pointer-events: none;
+}
+#modal-prestige-arena.is-open #modal-prestige-wrapper {
+  pointer-events: auto;
+}
+#modal-prestige-arena:not(.is-open) #modal-prestige-wrapper {
+  display: none !important;
 }
 #modal-prestige-arena #modal-prestige-wrapper.arena-joined-shell {
   width: 880px;
@@ -11230,6 +11256,7 @@ input [type="image"]:focus {
   width: 100%;
   z-index: 1200;
   user-select: none;
+  pointer-events: none;
 }
 
 #iap-modal .iap-screen {
@@ -11244,6 +11271,15 @@ input [type="image"]:focus {
   transform: translate(-50%, -50%);
   border-radius: 5px;
   border-top-left-radius: 0;
+  pointer-events: none;
+}
+
+#iap-modal.is-open {
+  pointer-events: auto;
+}
+
+#iap-modal.is-open .iap-screen {
+  pointer-events: auto;
 }
 
 #iap-modal .iap-screen .close-corner {

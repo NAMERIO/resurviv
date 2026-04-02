@@ -355,6 +355,7 @@ export enum MsgType {
     AliveCounts,
     PerkModeRoleSelect,
     Leaderboard,
+    ArenaCountdown,
 }
 
 export enum PickupMsgType {
@@ -372,6 +373,7 @@ export class UpdatePassMsg {
 }
 
 export { AliveCountsMsg } from "./aliveCountsMsg";
+export { ArenaCountdownMsg } from "./arenaCountdownMsg";
 export { DisconnectMsg } from "./disconnectMsg";
 export { DropItemMsg } from "./dropItemMsg";
 export { EditMsg } from "./editMsg";

@@ -4,6 +4,7 @@ import type { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 import type { UpgradeWebSocket, WSContext } from "hono/ws";
 import type { FindGameError } from "../../shared/types/api";
+import { GameConfig } from "../../shared/gameConfig";
 import {
     type ClientRoomData,
     type ClientToServerTeamMsg,
@@ -121,6 +122,7 @@ class Room {
     };
 
     arenaOwnerKey?: string;
+    arenaWarmupKey = "";
 
     constructor(
         public teamMenu: TeamMenu,
@@ -275,8 +277,41 @@ class Room {
         }
 
         this.rebalanceArenaTeams();
+        this.queueArenaWarmup();
 
         this.sendState();
+    }
+
+    queueArenaWarmup() {
+        if (!this.data.arena) return;
+        const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
+        if (!mode) return;
+        const warmupKey = `${this.data.region}:${mode.mapName}:${mode.teamMode}`;
+        if (this.arenaWarmupKey === warmupKey) return;
+        this.arenaWarmupKey = warmupKey;
+        void this.teamMenu.server
+            .findGame({
+                region: this.data.region,
+                version: GameConfig.protocolVersion,
+                autoFill: false,
+                mapName: mode.mapName,
+                teamMode: mode.teamMode,
+                arenaPrivate: true,
+                groupHash: this.id,
+                playerData: [],
+            } satisfies FindGamePrivateBody)
+            .then((res) => {
+                if ("error" in res) {
+                    this.arenaWarmupKey = "";
+                }
+            })
+            .catch((err) => {
+                this.arenaWarmupKey = "";
+                this.teamMenu.logger.warn(
+                    `Arena warmup failed for room ${this.id}:`,
+                    err,
+                );
+            });
     }
 
     kick(playerId: number) {
@@ -484,6 +519,7 @@ class Room {
             autoFill: this.data.arena ? false : this.data.autoFill,
             region: region,
             version: data.version,
+            arenaPrivate: this.data.arena,
             groupHash: this.data.arena ? this.id : undefined,
             playerData,
         });

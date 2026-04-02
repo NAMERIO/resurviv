@@ -65,6 +65,10 @@ export class Game {
     mapName: keyof typeof MapDefs;
     isTeamMode: boolean;
     config: ServerGameConfig;
+    arenaPrivate: boolean;
+    arenaStartLockTimer = 0;
+    arenaLastCountdownSecond = -1;
+    arenaGoBroadcasted = false;
     pluginManager = new PluginManager(this);
     modeManager: GameModeManager;
     readonly aprilFoolsGunTypes: string[];
@@ -143,6 +147,7 @@ export class Game {
         this.logger.info("Creating");
 
         this.config = config;
+        this.arenaPrivate = !!config.arenaPrivate;
 
         this.teamMode = config.teamMode;
         this.mapName = config.mapName;
@@ -227,6 +232,25 @@ export class Game {
         dt ??= math.clamp((now - this.now) / 1000, 0.001, 1 / 8);
 
         this.now = now;
+
+        if (this.arenaPrivate && this.arenaStartLockTimer > 0) {
+            const secondsLeft = Math.ceil(this.arenaStartLockTimer);
+            if (secondsLeft !== this.arenaLastCountdownSecond) {
+                this.arenaLastCountdownSecond = secondsLeft;
+                const countdownMsg = new net.ArenaCountdownMsg();
+                countdownMsg.seconds = secondsLeft;
+                countdownMsg.go = false;
+                this.broadcastMsg(net.MsgType.ArenaCountdown, countdownMsg);
+            }
+            this.arenaStartLockTimer = Math.max(0, this.arenaStartLockTimer - dt);
+            if (this.arenaStartLockTimer <= 0 && !this.arenaGoBroadcasted) {
+                this.arenaGoBroadcasted = true;
+                const countdownMsg = new net.ArenaCountdownMsg();
+                countdownMsg.seconds = 0;
+                countdownMsg.go = true;
+                this.broadcastMsg(net.MsgType.ArenaCountdown, countdownMsg);
+            }
+        }
 
         if (this.over) {
             this.stopTicker -= dt;
@@ -656,6 +680,7 @@ export class Game {
             id: this.id,
             teamMode: this.teamMode,
             mapName: this.mapName,
+            arenaPrivate: this.arenaPrivate,
             canJoin: this.canJoin,
             aliveCount: this.aliveCount,
             startedTime: this.startedTime,

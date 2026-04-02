@@ -284,6 +284,11 @@ export class PlayerBarn {
         this.game.objectRegister.register(player);
         this.players.push(player);
         this.livingPlayers.push(player);
+        if (this.game.arenaPrivate && this.players.length === 1) {
+            this.game.arenaStartLockTimer = 5;
+            this.game.arenaLastCountdownSecond = -1;
+            this.game.arenaGoBroadcasted = false;
+        }
         if (!this.game.modeManager.isSolo) {
             this.livingPlayers.sort((a, b) => a.teamId - b.teamId);
         }
@@ -2718,6 +2723,8 @@ export class Player extends BaseGameObject {
             joinedMsg.teamMode = this.game.teamMode;
             joinedMsg.playerId = this.__id;
             joinedMsg.started = game.started;
+            joinedMsg.arenaPrivate = this.game.arenaPrivate;
+            joinedMsg.arenaCountdown = Math.ceil(this.game.arenaStartLockTimer);
             joinedMsg.teamMode = game.teamMode;
             joinedMsg.emotes = this.loadout.emotes;
             this.sendMsg(net.MsgType.Joined, joinedMsg);
@@ -4052,6 +4059,18 @@ export class Player extends BaseGameObject {
 
         if (this.dead) return;
         if (this.game.map.perkMode && !this.role) return;
+        if (this.game.arenaPrivate && this.game.arenaStartLockTimer > 0) {
+            this.moveLeft = false;
+            this.moveRight = false;
+            this.moveUp = false;
+            this.moveDown = false;
+            this.touchMoveActive = false;
+            this.touchMoveDir = v2.create(0, 0);
+            this.touchMoveLen = 0;
+            this.shootHold = false;
+            this.shootStart = false;
+            return;
+        }
 
         this.dirNew = v2.normalizeSafe(msg.toMouseDir);
 
@@ -4341,10 +4360,12 @@ export class Player extends BaseGameObject {
         const players: Player[] = this.game.modeManager.getPlayerStatusPlayers(this)!;
         return players.map((p) => {
             const hiddenByDebug = p.isInvisibleTo(this);
-            const visible =
-                !hiddenByDebug && (p.teamId === this.teamId || p.timeUntilHidden > 0);
+            const visible = this.game.arenaPrivate
+                ? true
+                : !hiddenByDebug && (p.teamId === this.teamId || p.timeUntilHidden > 0);
             return {
                 hasData:
+                    (this.game.arenaPrivate && visible) ||
                     (!hiddenByDebug && visible) ||
                     (!hiddenByDebug && p.playerStatusDirty) ||
                     (hiddenByDebug && p.teamId === this.teamId),

@@ -1016,10 +1016,13 @@ export class UiManager {
             } else if (playerStatus.downed) {
                 texture = sameGroup ? "player-map-inner.img" : "player-map-downed.img";
             }
-            let tint = sameGroup
-                ? playerBarn.getGroupColor(playerId)
-                : playerBarn.getTeamColor(playerInfo.teamId);
-            if (map.factionMode && customMapIcon) {
+            const arenaTeamVision = this.game.m_arenaPrivate;
+            let tint = arenaTeamVision
+                ? playerBarn.getTeamColor(playerInfo.teamId)
+                : sameGroup
+                  ? playerBarn.getGroupColor(playerId)
+                  : playerBarn.getTeamColor(playerInfo.teamId);
+            if ((map.factionMode || arenaTeamVision) && customMapIcon) {
                 tint = playerBarn.getTeamColor(playerInfo.teamId);
             }
             const dotScale = device.uiLayout == device.UiLayout.Sm ? 0.15 : 0.2;

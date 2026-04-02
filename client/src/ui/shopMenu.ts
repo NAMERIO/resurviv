@@ -136,6 +136,7 @@ export class ShopMenu {
 
     bindUi() {
         this.modal.onShow(() => {
+            this.modal.selector.addClass("is-open");
             this.refreshData();
             this.render();
             this.startMarketTimers();
@@ -146,6 +147,7 @@ export class ShopMenu {
             });
         });
         this.modal.onHide(() => {
+            this.modal.selector.removeClass("is-open");
             this.stopMarketTimers();
             this.cratesModal.hide();
             this.crateContainModal.hide();

@@ -95,6 +95,7 @@ export class Application {
     prestigeArenaBattleModeLabel = $("#battle-link-mode");
     prestigeArenaBattleTypeLabel = $("#battle-link-type");
     prestigeArenaPreviewReqId = 0;
+    lastArenaPreloadedMapName = "";
     prestigeArenaSummaryTab = $("#prestige-game-summary-button");
     prestigeArenaSpectateTab = $("#prestige-spectate-button");
     errorModal = new MenuModal($("#modal-notification"));
@@ -145,6 +146,7 @@ export class Application {
     prestigeArenaSelectedModeIdx = 0;
     prestigeArenaSelectedMap = "main";
     prestigeArenaSelectedTeamMode = 2;
+    prestigeArenaModalRequestedOpen = false;
     modeDisplayNameByMap: Record<string, string> = {
         main: "Classic",
         woods: "Woods",
@@ -333,6 +335,7 @@ export class Application {
             });
             $("#modal-prestige-close").on("click", () => {
                 if (this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined) {
+                    this.hidePrestigeArenaModal();
                     if (window.history) {
                         window.history.replaceState("", "", "/");
                     }
@@ -1232,6 +1235,7 @@ export class Application {
 
     showPrestigeArenaModal() {
         if (!this.account.loggedIn || device.mobile) return;
+        this.prestigeArenaModalRequestedOpen = true;
         this.prestigeArenaSummaryTab.addClass("hide");
         this.prestigeArenaSpectateTab.addClass("hide");
         this.prestigeArenaBattleTab.removeClass("hide");
@@ -1243,23 +1247,43 @@ export class Application {
             this.localization.translate("prestige-create-battle"),
         );
         this.setPrestigeArenaUnjoinedUi();
-        this.prestigeArenaModal.css("display", "block");
+        this.setPrestigeArenaModalVisible(true);
     }
 
     hidePrestigeArenaModal() {
+        this.prestigeArenaModalRequestedOpen = false;
         this.prestigeArenaModeSelection.css("display", "none");
-        this.prestigeArenaModal.css("display", "none");
+        this.setPrestigeArenaModalVisible(false);
+    }
+
+    setPrestigeArenaModalVisible(visible: boolean) {
+        this.prestigeArenaModal.toggleClass("is-open", visible);
+        this.prestigeArenaModal.css({
+            display: visible ? "block" : "none",
+            "pointer-events": visible ? "auto" : "none",
+        });
+        this.prestigeArenaWrapper.css({
+            display: visible ? "block" : "none",
+            "pointer-events": visible ? "auto" : "none",
+        });
     }
 
     syncPrestigeArenaRoomUi() {
         if (!(this.teamMenu.active && this.teamMenu.arena)) {
             this.prestigeArenaBattlePane.removeClass("arena-joined-layout");
             this.prestigeArenaWrapper.removeClass("arena-joined-shell");
+            this.lastArenaPreloadedMapName = "";
+            this.prestigeArenaModalRequestedOpen = false;
+            this.setPrestigeArenaModalVisible(false);
             return;
         }
 
-        // Keep arena flow in the Prestige modal instead of the public team menu.
-        this.prestigeArenaModal.css("display", "block");
+        if (!this.prestigeArenaModalRequestedOpen) {
+            this.setPrestigeArenaModalVisible(false);
+            return;
+        }
+
+        this.setPrestigeArenaModalVisible(true);
         this.prestigeArenaSummaryTab.addClass("hide");
         this.prestigeArenaSpectateTab.addClass("hide");
 
@@ -1280,6 +1304,7 @@ export class Application {
                 );
             }
             this.setPrestigeArenaUnjoinedUi();
+            this.lastArenaPreloadedMapName = "";
             return;
         }
 
@@ -1297,6 +1322,7 @@ export class Application {
         this.prestigeArenaBattlePane.addClass("arena-joined-layout");
         this.prestigeArenaBattleInputGroup.css("display", "none");
         this.prestigeArenaPlayerCounter.css("display", "flex");
+        this.warmupArenaLobbyMapAssets();
         this.renderPrestigeArenaTeams();
         const joinedCount = this.teamMenu.players.length;
         const maxPlayers = this.teamMenu.roomData.maxPlayers || 80;
@@ -1484,6 +1510,17 @@ export class Application {
                 this.refreshUi();
             }
         }
+    }
+
+    warmupArenaLobbyMapAssets() {
+        if (!(this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined)) return;
+        if (!this.resourceManager) return;
+        const mode = this.siteInfo.info.modes?.[this.teamMenu.roomData.gameModeIdx];
+        const mapName = mode?.mapName;
+        if (!mapName) return;
+        if (mapName === this.lastArenaPreloadedMapName) return;
+        this.lastArenaPreloadedMapName = mapName;
+        this.resourceManager.loadMapAssets(mapName);
     }
 
     tryQuickStartGame(gameModeIdx: number) {
