@@ -60,6 +60,7 @@ export class Application {
     prestigeArenaCreateTab = $("#prestige-create-button");
     prestigeArenaBattlePane = $("#modal-battle-window");
     prestigeArenaCreatePane = $("#modal-create-window");
+    prestigeArenaBattleModeRow = $("#modal-battle-window .battle-mode");
     prestigeArenaCodeInput = $<HTMLInputElement>(".battle-link-entry");
     prestigeArenaBattleInputGroup = $("#modal-battle-window .input-group");
     prestigeArenaJoinBtn = $("#battle-button");
@@ -131,6 +132,25 @@ export class Application {
     prestigeArenaSelectedModeIdx = 0;
     prestigeArenaSelectedMap = "main";
     prestigeArenaSelectedTeamMode = 2;
+
+    getModeDisplayName(mapName: string) {
+        const modes = this.siteInfo.info.modes || [];
+        const styles = this.siteInfo.getGameModeStyles();
+        for (let i = 0; i < modes.length; i++) {
+            if (modes[i].mapName !== mapName) continue;
+            return styles[i]?.buttonText || mapName;
+        }
+        return mapName;
+    }
+
+    getTeamModeDisplayName(teamMode: number) {
+        const teamModeMap: Record<number, string> = {
+            1: "Solo",
+            2: "Duo",
+            4: "Squad",
+        };
+        return teamModeMap[teamMode] || "Duo";
+    }
 
     updateLogoBasedOnLanguage(lang: string) {
         const header = $("#start-row-header");
@@ -786,24 +806,6 @@ export class Application {
             "inferno",
             "woods",
         ]);
-        const modeLabelMap: Record<string, string> = {
-            main: "Classic",
-            woods: "Woods",
-            potato: "Potato",
-            desert: "Desert",
-            savannah: "Savannah",
-            snow: "Snow",
-            cobalt: "Cobalt",
-            perks: "Perks",
-            valentine: "Valentine",
-            inferno: "Inferno",
-            stPatrick: "Saint Patrick",
-        };
-        const teamModeMap: Record<number, string> = {
-            1: "Solo",
-            2: "Duo",
-            4: "Squad",
-        };
         const gameModeStyles = this.siteInfo.getGameModeStyles();
         const arenaModes = modes.filter((m) => allowedPrivateMaps.has(m.mapName));
         if (!arenaModes.length) {
@@ -858,8 +860,8 @@ export class Application {
             this.prestigeArenaSelectedMap = modes[idx].mapName;
             this.prestigeArenaSelectedTeamMode = modes[idx].teamMode;
 
-            const mapLabel = modeLabelMap[this.prestigeArenaSelectedMap] || this.prestigeArenaSelectedMap;
-            const teamLabel = teamModeMap[this.prestigeArenaSelectedTeamMode] || "Duo";
+            const mapLabel = this.getModeDisplayName(this.prestigeArenaSelectedMap);
+            const teamLabel = this.getTeamModeDisplayName(this.prestigeArenaSelectedTeamMode);
             this.prestigeArenaModeLabel.text(mapLabel);
             this.prestigeArenaBattleModeLabel.text(mapLabel);
             this.prestigeArenaTypeLabel.text(teamLabel);
@@ -880,11 +882,21 @@ export class Application {
                 "background-image",
                 selectedStyle?.icon ? `url(${selectedStyle.icon})` : "none",
             );
+            this.prestigeArenaBattleModeLabel.css(
+                "background-image",
+                selectedStyle?.icon ? `url(${selectedStyle.icon})` : "none",
+            );
+            this.prestigeArenaBattleModeRow.removeClass((_idx, className) => {
+                return (className.match(/\bbtn-mode-[^\s]+/g) || []).join(" ");
+            });
+            if (selectedStyle?.buttonCss) {
+                this.prestigeArenaBattleModeRow.addClass(selectedStyle.buttonCss);
+            }
         };
 
         for (let i = 0; i < maps.length; i++) {
             const mapName = maps[i];
-            const mapLabel = modeLabelMap[mapName] || mapName;
+            const mapLabel = this.getModeDisplayName(mapName);
             const style = mapStyleByName.get(mapName);
             const btn = $("<div>", {
                 class: "selection-button-mode arena-mode-option",
@@ -905,7 +917,7 @@ export class Application {
 
         for (let i = 0; i < teamModes.length; i++) {
             const teamMode = teamModes[i];
-            const teamLabel = teamModeMap[teamMode];
+            const teamLabel = this.getTeamModeDisplayName(teamMode);
             const btn = $("<div>", {
                 class: "selection-button-type",
                 text: teamLabel,
@@ -958,13 +970,28 @@ export class Application {
 
         const mode = this.siteInfo.info.modes?.[this.teamMenu.roomData.gameModeIdx];
         const teamSize = Math.max(1, mode?.teamMode ?? 2);
+        const modeStyle = this.siteInfo.getGameModeStyles()[this.teamMenu.roomData.gameModeIdx];
+        if (mode) {
+            this.prestigeArenaBattleModeLabel.text(this.getModeDisplayName(mode.mapName));
+            this.prestigeArenaBattleTypeLabel.text(this.getTeamModeDisplayName(mode.teamMode));
+        }
+        this.prestigeArenaBattleModeLabel.css(
+            "background-image",
+            modeStyle?.icon ? `url(${modeStyle.icon})` : "none",
+        );
+        this.prestigeArenaBattleModeRow.removeClass((_idx, className) => {
+            return (className.match(/\bbtn-mode-[^\s]+/g) || []).join(" ");
+        });
+        if (modeStyle?.buttonCss) {
+            this.prestigeArenaBattleModeRow.addClass(modeStyle.buttonCss);
+        }
         const teamA = this.teamMenu.players.filter((p) => p.team === "A");
         const teamB = this.teamMenu.players.filter((p) => p.team === "B");
         const canManage = this.teamMenu.isLeader;
 
         const buildSlot = (
             list: JQuery<HTMLElement>,
-            player: (typeof this.teamMenu.players)[number] | undefined,
+            player: (typeof teamA)[number] | undefined,
             team: "A" | "B",
         ) => {
             const slot = $("<div>", {
