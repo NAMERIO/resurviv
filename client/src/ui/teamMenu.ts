@@ -525,14 +525,14 @@ export class TeamMenu {
                     roomUrl.hash = this.roomData.roomUrl;
 
                     const url = new URL(window.location.href);
-                    url.search = this.arena ? "?arena=1" : "";
+                    url.search = this.arena ? "?arena" : "";
                     url.hash = this.roomData.roomUrl;
 
                     $("#team-url").text(url.toString());
 
                     if (window.history) {
                         const historyPath = this.arena
-                            ? `/?arena=1${this.roomData.roomUrl}`
+                            ? `/?arena${this.roomData.roomUrl}`
                             : this.roomData.roomUrl;
                         window.history.replaceState("", "", historyPath);
                     }

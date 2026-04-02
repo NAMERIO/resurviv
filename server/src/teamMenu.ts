@@ -563,6 +563,27 @@ export class TeamMenu {
         this.arenaOwnerCooldowns.set(ownerKey, Date.now() + 3 * 60 * 1000);
     }
 
+    getRoomPreview(roomUrl: string, arena: boolean) {
+        const roomId = roomUrl.replace(/^#/, "");
+        const room = this.rooms.get(roomId);
+        if (!room) {
+            return null;
+        }
+        if (room.data.arena !== arena) {
+            return null;
+        }
+        const mode = this.server.modes[room.data.gameModeIdx];
+        if (!mode) {
+            return null;
+        }
+        return {
+            gameModeIdx: room.data.gameModeIdx,
+            mapName: mode.mapName,
+            teamMode: mode.teamMode,
+            findingGame: room.data.findingGame,
+        };
+    }
+
     init(app: Hono, upgradeWebSocket: UpgradeWebSocket) {
         const teamMenu = this;
 

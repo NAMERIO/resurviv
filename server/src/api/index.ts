@@ -86,6 +86,23 @@ app.get("/api/site_info", (c) => {
     return c.json<SiteInfoRes>(server.getSiteInfo(), 200);
 });
 
+app.get("/api/team_preview", (c) => {
+    const roomUrl = (c.req.query("roomUrl") || "").trim();
+    const arenaParam = (c.req.query("arena") || "").toLowerCase();
+    const arena = arenaParam === "1" || arenaParam === "true" || arenaParam === "arena";
+    if (!roomUrl) {
+        return c.json({ exists: false });
+    }
+    const preview = server.teamMenu.getRoomPreview(roomUrl, arena);
+    if (!preview) {
+        return c.json({ exists: false });
+    }
+    return c.json({
+        exists: true,
+        ...preview,
+    });
+});
+
 // not using the middleware here to not add extra indentation... smh
 const findGameRateLimit = new HTTPRateLimit(5, 3000);
 
