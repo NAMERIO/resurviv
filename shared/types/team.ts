@@ -18,7 +18,10 @@ export type TeamMenuErrorType =
     | "banned"
     | "behind_proxy"
     | "invalid_ip"
-    | "rate_limited";
+    | "rate_limited"
+    | "arena_cooldown"
+    | "arena_round_finished"
+    | "arena_need_teams";
 
 export interface RoomData {
     roomUrl: string;
@@ -30,6 +33,7 @@ export interface RoomData {
     gameModeIdx: number;
     maxPlayers: number;
     captchaEnabled: boolean;
+    arena: boolean;
 }
 
 //
@@ -49,6 +53,7 @@ export interface TeamMenuPlayer {
     playerId: number;
     isLeader: boolean;
     inGame: boolean;
+    team?: "A" | "B";
 }
 
 /**
@@ -75,6 +80,7 @@ export interface TeamErrorMsg {
     readonly type: "error";
     data: {
         type: TeamMenuErrorType;
+        retryAfterSec?: number;
     };
 }
 
@@ -96,6 +102,7 @@ export const zClientRoomData = z.object({
     region: z.string(),
     autoFill: z.boolean(),
     gameModeIdx: z.number(),
+    arena: z.boolean().optional(),
 });
 
 export type ClientRoomData = z.infer<typeof zClientRoomData>;
@@ -110,6 +117,7 @@ export const zTeamJoinMsg = z.object({
     type: z.literal("join"),
     data: z.object({
         roomUrl: z.string(),
+        arena: z.boolean().optional(),
         playerData: z.object({
             name: z.string(),
         }),
@@ -136,6 +144,7 @@ export type TeamSetRoomPropsMsg = z.infer<typeof zTeamSetRoomPropsMsg>;
 export const zTeamCreateMsg = z.object({
     type: z.literal("create"),
     data: z.object({
+        arena: z.boolean().optional(),
         roomData: zClientRoomData,
         playerData: z.object({
             name: z.string(),
@@ -153,6 +162,16 @@ export const zTeamKickMsg = z.object({
 });
 
 export type TeamKickMsg = z.infer<typeof zTeamKickMsg>;
+
+export const zTeamSwapTeamMsg = z.object({
+    type: z.literal("swapTeam"),
+    data: z.object({
+        playerId: z.number(),
+        team: z.enum(["A", "B"]),
+    }),
+});
+
+export type TeamSwapTeamMsg = z.infer<typeof zTeamSwapTeamMsg>;
 
 export const zTeamPlayGameMsg = z.object({
     type: z.literal("playGame"),
@@ -179,6 +198,7 @@ export const zTeamClientMsg = z.discriminatedUnion("type", [
     zTeamJoinMsg,
     zTeamPlayGameMsg,
     zTeamKickMsg,
+    zTeamSwapTeamMsg,
     zTeamChangeNameMsg,
     zGameCompleteMsg,
     zKeepAliveMsg,
@@ -191,5 +211,6 @@ export type ClientToServerTeamMsg =
     | TeamSetRoomPropsMsg
     | TeamCreateMsg
     | TeamKickMsg
+    | TeamSwapTeamMsg
     | TeamGameCompleteMsg
     | TeamPlayGameMsg;

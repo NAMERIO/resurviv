@@ -244,20 +244,26 @@ a:active {
 #server-warning {
   background-color: rgba(0, 0, 0, 0.4);
   border-radius: 5px;
-  bottom: -35px;
+  bottom: auto;
   box-sizing: border-box;
   color: red;
   font-size: 18px;
   font-weight: 700;
   height: 30px;
-  left: 0;
+  left: 50%;
   line-height: 30px;
   margin: auto;
   opacity: 0;
-  position: absolute;
-  right: 0;
+  position: fixed;
+  right: auto;
+  top: 220px;
+  transform: translateX(-50%);
+  z-index: 1302 !important;
+  pointer-events: none;
   text-align: center;
-  width: 300px;
+  width: auto;
+  min-width: 300px;
+  max-width: calc(100vw - 24px);
 }
 
 #market-error-toast {
@@ -293,9 +299,10 @@ a:active {
     font-size: 12px;
     height: 18px;
     line-height: 20px;
-    position: relative;
-    top: 82px;
-    width: 200px;
+    position: fixed;
+    top: 10px;
+    width: auto;
+    min-width: 200px;
   }
 }
 
@@ -4701,6 +4708,14 @@ a:active {
   width: 232px;
 }
 
+#open-arena-button {
+  display: none;
+  position: absolute;
+  left: 482px;
+  top: var(--side-pad);
+  width: 232px;
+}
+
 .currency-details-user {
   display: flex;
 }
@@ -4790,6 +4805,1238 @@ a:active {
   line-height: 69px;
   padding-left: 10px;
   text-decoration: none;
+}
+
+.btn-open-arena {
+  background: #80b251;
+  box-shadow: inset 0 -2px #597c39;
+  background-image: url(../img/prestige-arena-icon.svg);
+  background-position: 13%;
+  background-repeat: no-repeat;
+  background-size: 26px;
+  padding-left: 51px;
+  box-sizing: border-box;
+  color: #fff;
+  display: block;
+  font-size: 18px;
+  font-weight: bold;
+  height: 66px;
+  line-height: 69px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+#modal-prestige-arena {
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1200;
+}
+#modal-prestige-arena #modal-prestige-wrapper {
+  color: white;
+  width: 577px;
+  height: 528px;
+  left: calc(50% + 48px);
+  top: 48%;
+  position: fixed;
+  z-index: 1201;
+  -webkit-transform: translateY(-50%) translateX(-50%);
+          transform: translateY(-50%) translateX(-50%);
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header {
+  width: 100%;
+  height: auto;
+  display: -webkit-inline-box;
+  display: inline-flex;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header #prestige-game-summary-button,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header #prestige-create-button,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header #prestige-spectate-button,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header #prestige-battle-button {
+  width: 124px;
+  height: 57px;
+  background: #373737;
+  border-radius: 10px 10px 0px 0px;
+  background-position: 13%;
+  background-repeat: no-repeat;
+  background-size: 26px;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 25px;
+  line-height: 29px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  color: #FFFFFF;
+  padding-left: 66px;
+  cursor: pointer;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header #prestige-game-summary-button.selected,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header #prestige-create-button.selected,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header #prestige-spectate-button.selected,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header #prestige-battle-button.selected {
+  background-color: #030303;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header #prestige-game-summary-button.hide,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header #prestige-create-button.hide,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header #prestige-spectate-button.hide,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header #prestige-battle-button.hide {
+  display: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header #prestige-game-summary-button {
+  background-image: url(../img/prestige-arena-icon.svg);
+  margin-right: 10px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header #prestige-battle-button {
+  background-image: url(../img/prestige-arena-icon.svg);
+  margin-right: 10px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header #prestige-create-button {
+  background-image: url(../img/prestige-arena-icon.svg);
+  margin-right: 10px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-header #prestige-spectate-button {
+  background-image: url(../img/prestige-spectate-icon.svg);
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body {
+  background: #030303;
+  width: 100%;
+  height: 100%;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+          justify-content: center;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body #modal-prestige-close {
+  position: absolute;
+  right: 16px;
+  top: 72px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body #modal-prestige-close .close-corner {
+  margin-top: 0px;
+  margin-right: 0px;
+  width: 27px;
+  height: 27px;
+  background-size: 27px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner {
+  background: #3E3E3E;
+  box-shadow: 10px 10px 8px rgba(0, 0, 0, 0.75);
+  border-radius: 5px;
+  width: 451px;
+  height: 409px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window {
+  width: 100%;
+  height: 100%;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+          flex-direction: column;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window.hide,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window.hide {
+  display: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .input-group,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .input-group {
+  width: auto;
+  height: 37px;
+  display: -webkit-inline-box;
+  display: inline-flex;
+  margin: 0 auto;
+  margin-top: 52px;
+  margin-bottom: 26px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .input-group .battle-summary-entry,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .input-group .battle-summary-entry,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .input-group .battle-link-entry,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .input-group .battle-link-entry {
+  width: 280px;
+  height: 37px;
+  background: #1F1F1F;
+  margin-right: 10px;
+  color: #FFFFFF;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 15.5898px;
+  line-height: 18px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: center;
+  letter-spacing: 0.015em;
+  border: none;
+  padding: 0;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .input-group #battle-search-button-2,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .input-group #battle-search-button-2,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .input-group #battle-search-button,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .input-group #battle-search-button {
+  height: 37px;
+  width: 42px;
+  background-image: url(../img/prestige-search-battle.svg);
+  background-size: 20px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #1E90FF;
+  box-shadow: 0px 6px 0px #1871C8;
+  box-shadow: inset 0 -2px #1871C8;
+  border-radius: 2.10978px;
+  cursor: pointer;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window #battle-player-counter,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #battle-player-counter {
+  width: 335px;
+  height: 50px;
+  margin: 0 auto;
+  margin-bottom: 14px;
+  background: #4C3950;
+  border-radius: 3.72381px;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 28px;
+  line-height: 33px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: center;
+  color: #549e9a;
+  text-transform: lowercase;
+  -webkit-box-pack: center;
+          justify-content: center;
+  pointer-events: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window #battle-player-counter.active,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #battle-player-counter.active {
+  background: #5B3561;
+  color: #FFFFFF;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window #battle-player-counter #battle-total,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #battle-player-counter #battle-total {
+  margin-right: 5px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window #battle-player-counter div,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #battle-player-counter div {
+  font-family: Roboto Condensed;
+  font-size: 28px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window #battle-player-counter .counter-text.hide,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #battle-player-counter .counter-text.hide {
+  display: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .battle-mode,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .battle-mode {
+  width: 335px;
+  height: 50px;
+  margin: 0 auto;
+  margin-bottom: 14px;
+  display: -webkit-inline-box;
+  display: inline-flex;
+  background: #313439;
+  border-radius: 3.72381px;
+  color: #549e9a;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  pointer-events: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .battle-mode .battle-game-mode,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .battle-mode .battle-game-mode {
+  text-transform: uppercase;
+  font-size: 20px;
+  line-height: 23px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: right;
+  background-image: url(../img/prestige-division-line.svg);
+  background-size: 3px 27px;
+  background-position: right;
+  background-repeat: no-repeat;
+  padding-left: 27px;
+  padding-right: 4px;
+  width: 64px;
+  margin-right: 22px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .battle-mode #battle-link-mode,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .battle-mode #battle-link-mode {
+  text-transform: capitalize;
+  font-size: 23.5px;
+  line-height: 28px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  letter-spacing: -0.02em;
+  background-size: 31px;
+  background-repeat: no-repeat;
+  background-position: left;
+  padding-left: 40px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .battle-mode.active,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .battle-mode.active {
+  background-color: #83af50;
+  box-shadow: inset 0 -2px #5b7a38;
+  color: #FFFFFF;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .battle-type,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .battle-type {
+  width: 335px;
+  height: 50px;
+  margin: 0 auto;
+  margin-bottom: 45px;
+  display: -webkit-inline-box;
+  display: inline-flex;
+  background: #395857;
+  border-radius: 3.72381px;
+  color: #549e9a;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  pointer-events: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .battle-type .battle-game-type,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .battle-type .battle-game-type {
+  text-transform: uppercase;
+  font-size: 20px;
+  line-height: 23px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: right;
+  background-image: url(../img/prestige-division-line.svg);
+  background-size: 3px 27px;
+  background-position: right;
+  background-repeat: no-repeat;
+  padding-left: 27px;
+  padding-right: 4px;
+  width: 64px;
+  margin-right: 22px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .battle-type #battle-link-type,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .battle-type #battle-link-type {
+  text-transform: capitalize;
+  font-size: 23.5px;
+  line-height: 28px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  letter-spacing: -0.02em;
+  background-size: 31px;
+  background-repeat: no-repeat;
+  background-position: left;
+  padding-left: 40px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .battle-type.active,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .battle-type.active {
+  background: #347370;
+  color: #FFFFFF;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board {
+  width: 335px;
+  margin: 0 auto;
+  margin-top: -24px;
+  margin-bottom: 14px;
+  display: flex;
+  gap: 10px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board.hide {
+  display: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-team-column {
+  flex: 1;
+  border-radius: 4px;
+  padding: 8px;
+  min-height: 120px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-team-a {
+  background: #2f5f94;
+  box-shadow: inset 0 -2px #1e4067;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-team-b {
+  background: #8a3a3a;
+  box-shadow: inset 0 -2px #642b2b;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-team-title {
+  font-family: Roboto Condensed;
+  font-weight: bold;
+  font-size: 18px;
+  text-transform: uppercase;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 6px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-team-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-team-slot {
+  height: 24px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.28);
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  color: #fff;
+  font-family: Roboto Condensed;
+  font-size: 14px;
+  overflow: hidden;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-team-slot.empty {
+  opacity: 0.55;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-player-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-slot-actions {
+  display: flex;
+  gap: 4px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-action-btn {
+  border: none;
+  border-radius: 2px;
+  height: 18px;
+  min-width: 18px;
+  line-height: 18px;
+  font-family: Roboto Condensed;
+  font-size: 11px;
+  color: #fff;
+  cursor: pointer;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-action-btn.swap {
+  background: #6c4ba5;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window #arena-teams-board .arena-action-btn.kick {
+  background: #a04646;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .button-group,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .button-group {
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+          flex-direction: column;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .button-group .battle-timer,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .button-group .battle-timer {
+  margin: 0 auto;
+  display: -webkit-box;
+  display: flex;
+  margin-top: -21px;
+  margin-bottom: 3px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .button-group .battle-timer div,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .button-group .battle-timer div {
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 20px;
+  line-height: 23px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: right;
+  letter-spacing: -0.02em;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .button-group .battle-timer .battle-timer-text,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .button-group .battle-timer .battle-timer-text {
+  margin-right: 2px;
+  color: #FFFFFF;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .button-group .battle-timer .timer-group,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .button-group .battle-timer .timer-group {
+  margin-left: 4px;
+  color: #FFE400;
+  text-shadow: 1px 1px 0px #000000;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .button-group .battle-timer.hide,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .button-group .battle-timer.hide {
+  display: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .button-group #battle-button,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .button-group #battle-button {
+  width: 176px;
+  height: 40px;
+  background: #477674;
+  margin: 0 auto;
+  box-shadow: 0px 6px 0px #3B5D5B;
+  box-shadow: inset 0 -2px #3B5D5B;
+  border-radius: 3px;
+  color: #549e9a;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 20px;
+  line-height: 23px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: center;
+  text-transform: capitalize;
+  -webkit-box-pack: center;
+          justify-content: center;
+  cursor: pointer;
+  pointer-events: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .button-group #battle-button.active,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .button-group #battle-button.active {
+  color: #ffffff;
+  background: #50AFAB;
+  box-shadow: 0px 5px 0px #387C79;
+  box-shadow: inset 0 -2px #387C79;
+  pointer-events: all;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .button-group #game-status,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .button-group #game-status {
+  display: -webkit-box;
+  display: flex;
+  background: #1F1E1E;
+  margin: 0 auto;
+  width: 284px;
+  height: 38px;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 16.4633px;
+  line-height: 19px;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: center;
+  -webkit-box-pack: center;
+          justify-content: center;
+  color: #FFFFFF;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .button-group #game-status #game-status-started.hide,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .button-group #game-status #game-status-started.hide,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .button-group #game-status #game-status-to-start.hide,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .button-group #game-status #game-status-to-start.hide {
+  display: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-summary-window .button-group #game-status.hide,
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-battle-window .button-group #game-status.hide {
+  display: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window {
+  width: 100%;
+  height: 100%;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+          flex-direction: column;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window.hide {
+  display: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window .input-group {
+  width: auto;
+  height: 37px;
+  display: -webkit-inline-box;
+  display: inline-flex;
+  margin: 0 auto;
+  margin-top: 52px;
+  margin-bottom: 26px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window .input-group .spectate-link-entry {
+  width: 280px;
+  height: 37px;
+  background: #1F1F1F;
+  margin-right: 10px;
+  color: #FFFFFF;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 15.5898px;
+  line-height: 18px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: center;
+  letter-spacing: 0.015em;
+  border: none;
+  padding: 0;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window .input-group #spectate-search-button {
+  height: 37px;
+  width: 42px;
+  background-image: url(../img/prestige-search-battle.svg);
+  background-size: 20px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #1E90FF;
+  box-shadow: 0px 6px 0px #1871C8;
+  box-shadow: inset 0 -2px #1871C8;
+  border-radius: 2.10978px;
+  cursor: pointer;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window #spectate-player-counter {
+  width: 335px;
+  height: 50px;
+  margin: 0 auto;
+  margin-bottom: 14px;
+  background: #4C3950;
+  border-radius: 3.72381px;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 28px;
+  line-height: 33px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: center;
+  color: #549e9a;
+  text-transform: lowercase;
+  -webkit-box-pack: center;
+          justify-content: center;
+  pointer-events: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window #spectate-player-counter.active {
+  background: #5B3561;
+  color: #FFFFFF;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window .spectate-mode {
+  width: 335px;
+  height: 50px;
+  margin: 0 auto;
+  margin-bottom: 14px;
+  display: -webkit-inline-box;
+  display: inline-flex;
+  background-color: #313439;
+  border-radius: 3.72381px;
+  color: #549e9a;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  pointer-events: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window .spectate-mode .spectate-game-mode {
+  text-transform: uppercase;
+  font-size: 20px;
+  line-height: 23px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: right;
+  background-image: url(../img/prestige-division-line.svg);
+  background-size: 3px 27px;
+  background-position: right;
+  background-repeat: no-repeat;
+  padding-left: 27px;
+  padding-right: 4px;
+  width: 64px;
+  margin-right: 22px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window .spectate-mode #battle-link-mode {
+  text-transform: capitalize;
+  font-size: 23.5px;
+  line-height: 28px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  letter-spacing: -0.02em;
+  background-size: 31px;
+  background-repeat: no-repeat;
+  background-position: left;
+  padding-left: 40px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window .spectate-mode.active {
+  background-color: #83af50;
+  box-shadow: inset 0 -2px #5b7a38;
+  color: #FFFFFF;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window .spectate-type {
+  width: 335px;
+  height: 50px;
+  margin: 0 auto;
+  margin-bottom: 45px;
+  display: -webkit-inline-box;
+  display: inline-flex;
+  background: #395857;
+  border-radius: 3.72381px;
+  color: #549e9a;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  pointer-events: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window .spectate-type .spectate-game-type {
+  text-transform: uppercase;
+  font-size: 20px;
+  line-height: 23px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: right;
+  background-image: url(../img/prestige-division-line.svg);
+  background-size: 3px 27px;
+  background-position: right;
+  background-repeat: no-repeat;
+  padding-left: 27px;
+  padding-right: 4px;
+  width: 64px;
+  margin-right: 22px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window .spectate-type #battle-link-type {
+  text-transform: capitalize;
+  font-size: 23.5px;
+  line-height: 28px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  letter-spacing: -0.02em;
+  background-size: 31px;
+  background-repeat: no-repeat;
+  background-position: left;
+  padding-left: 40px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window .spectate-type.active {
+  background: #347370;
+  color: #FFFFFF;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window #spectate-button {
+  width: 176px;
+  height: 40px;
+  background: #477674;
+  margin: 0 auto;
+  box-shadow: 0px 6px 0px #3B5D5B;
+  box-shadow: inset 0 -2px #3B5D5B;
+  border-radius: 3px;
+  color: #549e9a;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 20px;
+  line-height: 23px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: center;
+  text-transform: capitalize;
+  -webkit-box-pack: center;
+          justify-content: center;
+  cursor: pointer;
+  pointer-events: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-spectate-window #spectate-button.active {
+  color: #ffffff;
+  background: #50AFAB;
+  box-shadow: 0px 5px 0px #387C79;
+  box-shadow: inset 0 -2px #387C79;
+  pointer-events: all;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window {
+  width: 100%;
+  height: 100%;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+          flex-direction: column;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window.hide {
+  display: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .input-group {
+  width: auto;
+  height: 37px;
+  display: -webkit-inline-box;
+  display: inline-flex;
+  margin: 0 auto;
+  margin-top: 52px;
+  margin-bottom: 26px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .input-group .create-csv-entry {
+  width: 280px;
+  height: 37px;
+  background: #1F1F1F;
+  color: #FFFFFF;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 15.5898px;
+  line-height: 18px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: center;
+  letter-spacing: 0.015em;
+  border: none;
+  padding: 0;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .input-group #create-upload-button {
+  height: 37px;
+  width: 42px;
+  background-image: url(../img/prestige-upload-csv.svg);
+  background-size: 20px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #1E90FF;
+  box-shadow: 0px 6px 0px #1871C8;
+  box-shadow: inset 0 -2px #1871C8;
+  border-radius: 2.10978px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .input-group #player-list-upload {
+  display: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .hide-admin-filter {
+  visibility: hidden;
+  pointer-events: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-counter-group {
+  margin: 0 auto;
+  pointer-events: none;
+  display: none;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-counter-group #create-player-counter {
+  width: 335px;
+  height: 50px;
+  position: relative;
+  margin: 0 auto;
+  margin-bottom: 14px;
+  background: #5B3561;
+  border-radius: 3.72381px;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 28px;
+  line-height: 33px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: center;
+  color: #FFFFFF;
+  text-transform: lowercase;
+  -webkit-box-pack: center;
+          justify-content: center;
+  cursor: pointer;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-counter-group #create-player-counter div {
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 28px;
+  line-height: 33px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: center;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-counter-group #create-player-counter .create-link-arrow {
+  position: absolute;
+  right: 19px;
+  height: 50px;
+  width: 30px;
+  background: url(../img/gui/index-dropdown-arrow.svg);
+  background-repeat: no-repeat;
+  background-position: 12px 50%;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-counter-group #create-counter-selection {
+  overflow-y: auto;
+  height: -webkit-fit-content;
+  height: -moz-fit-content;
+  height: fit-content;
+  max-height: 140px;
+  width: 335px;
+  margin-top: -10px;
+  display: none;
+  padding-bottom: 4px;
+  position: absolute;
+  z-index: 10;
+  background: #5B3561;
+  border-radius: 3.72381px;
+  color: #ffffff;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-counter-group #create-counter-selection .selection-button-counter {
+  width: 80%;
+  height: 50px;
+  margin: 0 auto;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  color: #ffffff;
+  cursor: pointer;
+  text-transform: capitalize;
+  position: relative;
+  z-index: 10;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 28px;
+  line-height: 33px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: center;
+  -webkit-box-pack: center;
+          justify-content: center;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-mode-group {
+  margin: 0 auto;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-mode-group #create-mode {
+  width: 335px;
+  height: 50px;
+  position: relative;
+  margin: 0 auto;
+  margin-bottom: 14px;
+  display: -webkit-inline-box;
+  display: inline-flex;
+  background: #83af50;
+  box-shadow: inset 0 -2px #5b7a38;
+  border-radius: 3.72381px;
+  color: #ffffff;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  cursor: pointer;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-mode-group #create-mode .create-game-mode {
+  text-transform: uppercase;
+  font-size: 20px;
+  line-height: 23px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: right;
+  background-image: url(../img/prestige-division-line.svg);
+  background-size: 3px 27px;
+  background-position: right;
+  background-repeat: no-repeat;
+  padding-left: 27px;
+  padding-right: 4px;
+  width: 64px;
+  margin-right: 22px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-mode-group #create-mode #create-link-mode {
+  text-transform: capitalize;
+  font-size: 23.5px;
+  line-height: 28px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  letter-spacing: -0.02em;
+  background-size: 31px;
+  background-repeat: no-repeat;
+  background-position: left;
+  padding-left: 40px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-mode-group #create-mode .create-link-arrow {
+  position: absolute;
+  right: 19px;
+  height: 50px;
+  width: 30px;
+  background: url(../img/gui/index-dropdown-arrow.svg);
+  background-repeat: no-repeat;
+  background-position: 12px 50%;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-mode-group #create-mode-selection {
+  overflow-y: auto;
+  height: -webkit-fit-content;
+  height: -moz-fit-content;
+  height: fit-content;
+  max-height: 140px;
+  width: 335px;
+  margin-top: -10px;
+  display: none;
+  padding-bottom: 4px;
+  position: absolute;
+  z-index: 10;
+  background: #83af50;
+  box-shadow: inset 0 -2px #5b7a38;
+  border-radius: 3.72381px;
+  color: #ffffff;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-mode-group #create-mode-selection .selection-button-mode {
+  width: auto;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  color: #ffffff;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: capitalize;
+  font-size: 23.5px;
+  line-height: 28px;
+  height: 50px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+  align-items: center;
+  letter-spacing: -0.02em;
+  background-size: 31px;
+  background-repeat: no-repeat;
+  background-position: 118px center;
+  position: relative;
+  z-index: 10;
+  padding-left: 158px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-type-group {
+  margin: 0 auto;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-type-group #create-type {
+  width: 335px;
+  height: 50px;
+  position: relative;
+  margin: 0 auto;
+  margin-bottom: 45px;
+  display: -webkit-inline-box;
+  display: inline-flex;
+  background: #347370;
+  border-radius: 3.72381px;
+  color: #FFFFFF;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  cursor: pointer;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-type-group #create-type .create-game-type {
+  text-transform: uppercase;
+  font-size: 20px;
+  line-height: 23px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: right;
+  background-image: url(../img/prestige-division-line.svg);
+  background-size: 3px 27px;
+  background-position: right;
+  background-repeat: no-repeat;
+  padding-left: 27px;
+  padding-right: 4px;
+  width: 64px;
+  margin-right: 22px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-type-group #create-type #create-link-type {
+  text-transform: capitalize;
+  font-size: 23.5px;
+  line-height: 28px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  letter-spacing: -0.02em;
+  background-size: 31px;
+  background-repeat: no-repeat;
+  background-position: left;
+  padding-left: 40px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-type-group #create-type .create-link-arrow {
+  position: absolute;
+  right: 19px;
+  height: 50px;
+  width: 30px;
+  background: url(../img/gui/index-dropdown-arrow.svg);
+  background-repeat: no-repeat;
+  background-position: 12px 50%;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-type-group #create-type-selection {
+  overflow-y: auto;
+  height: -webkit-fit-content;
+  height: -moz-fit-content;
+  height: fit-content;
+  max-height: 140px;
+  width: 335px;
+  margin-top: -41px;
+  display: none;
+  padding-bottom: 4px;
+  position: absolute;
+  z-index: 10;
+  background: #347370;
+  border-radius: 3.72381px;
+  color: #FFFFFF;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .create-type-group #create-type-selection .selection-button-type {
+  width: auto;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  color: #ffffff;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: capitalize;
+  font-size: 23.5px;
+  line-height: 28px;
+  height: 50px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+  align-items: center;
+  letter-spacing: -0.02em;
+  background-size: 31px;
+  background-repeat: no-repeat;
+  background-position: 118px center;
+  position: relative;
+  z-index: 10;
+  padding-left: 158px;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .option-buttons {
+  display: -webkit-box;
+  display: flex;
+  margin: 0 auto;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .option-buttons #create-button {
+  width: 176px;
+  height: 40px;
+  background: #80B251;
+  margin-right: 10px;
+  box-shadow: 0px 6px 0px #597C39;
+  box-shadow: inset 0 -2px #597C39;
+  border-radius: 3px;
+  color: #FFFFFF;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 20px;
+  line-height: 23px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: center;
+  text-transform: capitalize;
+  -webkit-box-pack: center;
+          justify-content: center;
+  cursor: pointer;
+}
+#modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body .modal-prestige-body-inner #modal-create-window .option-buttons #copy-button {
+  width: 52px;
+  height: 40px;
+  background: #7A7A7A;
+  box-shadow: 0px 7px 0px #242424;
+  box-shadow: inset 0 -2px #242424;
+  border-radius: 3px;
+  background-image: url(../img/prestige-copy-link.svg);
+  background-size: 23px 27px;
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+#modal-prestige-arena #modal-prestige-wrapper #check-summary {
+  width: 176px;
+  height: 40px;
+  margin-right: 10px;
+  box-shadow: 0px 6px 0px #597C39;
+  box-shadow: inset 0 -2px #597C39;
+  border-radius: 3px;
+  color: #FFFFFF;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 20px;
+  line-height: 23px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  text-align: center;
+  text-transform: capitalize;
+  -webkit-box-pack: center;
+          justify-content: center;
+  cursor: pointer;
+  margin: auto;
+  pointer-events: none;
+  background: gray;
+}
+#modal-prestige-arena #modal-prestige-wrapper #check-summary.active {
+  background: #80B251;
+  pointer-events: all;
+}
+@media (max-width: 1550px) {
+  #modal-prestige-arena #modal-prestige-wrapper {
+    left: 54%;
+  }
+}
+@media (max-width: 1300px) {
+  #modal-prestige-arena #modal-prestige-wrapper {
+    -webkit-transform: translateY(-50%) translateX(-50%) scale(0.9);
+            transform: translateY(-50%) translateX(-50%) scale(0.9);
+  }
+}
+@media (max-width: 1200px) {
+  #modal-prestige-arena #modal-prestige-wrapper {
+    -webkit-transform: translateY(-50%) translateX(-50%) scale(0.75);
+            transform: translateY(-50%) translateX(-50%) scale(0.75);
+  }
+}
+@media (max-width: 960px) {
+  #modal-prestige-arena #modal-prestige-wrapper {
+    left: 52%;
+    -webkit-transform: translateY(-50%) translateX(-50%) scale(0.75);
+            transform: translateY(-50%) translateX(-50%) scale(0.75);
+  }
+}
+@media (max-height: 650px) {
+  #modal-prestige-arena #modal-prestige-wrapper {
+    top: 0px;
+    -webkit-transform: translateX(-50%) scale(0.75);
+            transform: translateX(-50%) scale(0.75);
+  }
+}
+@media (max-height: 600px) {
+  #modal-prestige-arena #modal-prestige-wrapper {
+    top: 0px;
+    -webkit-transform: translateX(-50%) scale(0.65);
+            transform: translateX(-50%) scale(0.65);
+  }
+}
+@media (max-height: 420px) {
+  #modal-prestige-arena #modal-prestige-wrapper {
+    top: 192px;
+    -webkit-transform: translateY(-50%) translateX(-50%) scale(0.45);
+            transform: translateY(-50%) translateX(-50%) scale(0.45);
+  }
+}
+@media (max-height: 320px) {
+  #modal-prestige-arena #modal-prestige-wrapper {
+    top: 162px;
+    -webkit-transform: translateY(-50%) translateX(-50%) scale(0.4);
+            transform: translateY(-50%) translateX(-50%) scale(0.4);
+  }
 }
 
 .index-offer-time-left-text {
@@ -5171,7 +6418,7 @@ input [type="image"]:focus {
 #modal-notification {
   background-color: #000;
   background-color: rgba(0, 0, 0, 0.75);
-  z-index: 5;
+  z-index: 1300 !important;
 }
 
 #modal-notification .modal-body {
@@ -11378,3 +12625,4 @@ div.roulette {
   color: #0d250d;
   text-shadow: none;
 }
+

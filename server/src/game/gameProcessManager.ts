@@ -45,6 +45,7 @@ class GameProcess implements GameData {
     stoppedTime = Date.now();
 
     avaliableSlots = 0;
+    groupHash?: string;
 
     constructor(manager: GameProcessManager, id: string, config: ServerGameConfig) {
         this.manager = manager;
@@ -130,18 +131,26 @@ class GameProcess implements GameData {
         this.mapName = config.mapName;
         this.stopped = false;
         this.creating = true;
+        this.groupHash = undefined;
 
         const mapDef = MapDefs[this.mapName as keyof typeof MapDefs] as MapDef;
         this.avaliableSlots = mapDef.gameMode.maxPlayers;
     }
 
-    addJoinTokens(tokens: FindGamePrivateBody["playerData"], autoFill: boolean) {
+    addJoinTokens(
+        tokens: FindGamePrivateBody["playerData"],
+        autoFill: boolean,
+        groupHash?: string,
+    ) {
+        if (groupHash && !this.groupHash) {
+            this.groupHash = groupHash;
+        }
         this.send({
             type: ProcessMsgType.AddJoinToken,
             autoFill,
             tokens,
         });
-        this.avaliableSlots--;
+        this.avaliableSlots = Math.max(0, this.avaliableSlots - tokens.length);
     }
 
     handleMsg(data: ArrayBuffer, socketId: string, ip: string) {
@@ -291,13 +300,17 @@ export class GameProcessManager implements GameManager {
     }
 
     async findGame(body: FindGamePrivateBody): Promise<string> {
+        const requestedGroupHash = body.groupHash;
         let game = this.processes
             .filter((proc) => {
                 return (
                     (proc.canJoin || proc.creating) &&
                     proc.avaliableSlots > 0 &&
                     proc.teamMode === body.teamMode &&
-                    proc.mapName === body.mapName
+                    proc.mapName === body.mapName &&
+                    (requestedGroupHash
+                        ? proc.groupHash === requestedGroupHash
+                        : !proc.groupHash)
                 );
             })
             .sort((a, b) => {
@@ -317,13 +330,13 @@ export class GameProcessManager implements GameManager {
         if (!game.created) {
             return await new Promise((resolve) => {
                 game.onCreatedCbs.push((game) => {
-                    game.addJoinTokens(body.playerData, autoFill);
+                    game.addJoinTokens(body.playerData, autoFill, requestedGroupHash);
                     resolve(game.id);
                 });
             });
         }
 
-        game.addJoinTokens(body.playerData, autoFill);
+        game.addJoinTokens(body.playerData, autoFill, requestedGroupHash);
 
         return game.id;
     }

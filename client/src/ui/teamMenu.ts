@@ -31,6 +31,9 @@ function errorTypeToString(type: string, localization: Localization) {
         find_game_full: localization.translate("index-failed-finding-game"),
         find_game_invalid_protocol: localization.translate("index-invalid-protocol"),
         find_game_invalid_captcha: localization.translate("index-invalid-captcha"),
+        arena_cooldown: localization.translate("index-arena-cooldown"),
+        arena_round_finished: localization.translate("index-arena-round-finished"),
+        arena_need_teams: localization.translate("index-arena-need-teams"),
         kicked: localization.translate("index-team-kicked"),
         banned: localization.translate("index-ip-banned"),
         behind_proxy: "behind_proxy", // this will get passed to the main app to show a modal
@@ -67,6 +70,7 @@ export class TeamMenu {
         inGame: boolean;
         name: string;
         isLeader: boolean;
+        team?: "A" | "B";
     }> = [];
 
     prevPlayerCount = 0;
@@ -74,6 +78,8 @@ export class TeamMenu {
     isLeader = true;
     editingName = false;
     displayedInvalidProtocolModal = false;
+    arena = false;
+    onStateUpdated?: () => void;
 
     hideUrl!: boolean;
 
@@ -174,7 +180,7 @@ export class TeamMenu {
         });
     }
 
-    connect(create: boolean, roomUrl: string) {
+    connect(create: boolean, roomUrl: string, arena = false) {
         if (!this.active || roomUrl !== this.roomData.roomUrl) {
             const roomHost = api.resolveRoomHost();
             const url = `w${
@@ -183,6 +189,7 @@ export class TeamMenu {
             this.active = true;
             this.joined = false;
             this.create = create;
+            this.arena = arena;
             this.joiningGame = false;
             this.editingName = false;
 
@@ -194,13 +201,15 @@ export class TeamMenu {
                 roomUrl,
                 region: this.config.get("region")!,
                 gameModeIdx: this.config.get("gameModeIdx")!,
-                autoFill: this.config.get("teamAutoFill")!,
+                autoFill: arena ? false : this.config.get("teamAutoFill")!,
+                arena,
                 findingGame: false,
                 lastError: "",
             } as RoomData;
             this.displayedInvalidProtocolModal = false;
 
             this.refreshUi();
+            this.onStateUpdated?.();
 
             if (this.ws) {
                 this.ws.onclose = function () {};
@@ -227,12 +236,14 @@ export class TeamMenu {
                 this.ws.onopen = () => {
                     if (this.create) {
                         this.sendMessage("create", {
+                            arena: this.arena,
                             roomData: this.roomData,
                             playerData: this.playerData,
                         });
                     } else {
                         this.sendMessage("join", {
                             roomUrl: this.roomData.roomUrl,
+                            arena: this.arena,
                             playerData: this.playerData,
                         });
                     }
@@ -256,7 +267,9 @@ export class TeamMenu {
             this.active = false;
             this.joined = false;
             this.joiningGame = false;
+            this.arena = false;
             this.refreshUi();
+            this.onStateUpdated?.();
 
             // Save state to config for the menu
             this.config.set("gameModeIdx", this.roomData.gameModeIdx);
@@ -307,8 +320,12 @@ export class TeamMenu {
                     this.roomData.autoFill = ourRoomData.autoFill;
                 }
                 this.refreshUi();
+                this.onStateUpdated?.();
                 // Since the only way to get the roomID (ig?) is from state, each time receiving state, we can show the invite button
-                SDK.showInviteButton(stateData.room.roomUrl.replace("#", ""));
+                const inviteRoomId = this.arena
+                    ? `a:${stateData.room.roomUrl.replace("#", "")}`
+                    : stateData.room.roomUrl.replace("#", "");
+                SDK.showInviteButton(inviteRoomId);
                 break;
             }
             case "joinGame":
@@ -340,10 +357,28 @@ export class TeamMenu {
     }
 
     setRoomProperty<T extends keyof RoomData>(prop: T, val: RoomData[T]) {
+        if (this.arena && prop === "autoFill") {
+            return;
+        }
         if (this.isLeader && this.roomData[prop] != val) {
             this.roomData[prop] = val;
             this.sendMessage("setRoomProps", this.roomData);
         }
+    }
+
+    kickPlayer(playerId: number) {
+        if (!this.isLeader) return;
+        this.sendMessage("kick", {
+            playerId,
+        });
+    }
+
+    swapPlayerTeam(playerId: number, team: "A" | "B") {
+        if (!this.isLeader || !this.arena) return;
+        this.sendMessage("swapTeam", {
+            playerId,
+            team,
+        });
     }
 
     tryStartGame() {
@@ -364,6 +399,10 @@ export class TeamMenu {
                 region,
                 zones,
             };
+
+            if (this.arena) {
+                this.roomData.autoFill = false;
+            }
 
             helpers.verifyTurnstile(this.roomData.captchaEnabled, (token) => {
                 matchArgs.turnstileToken = token;
@@ -394,10 +433,11 @@ export class TeamMenu {
             }
             el.prop("disabled", !enabled);
         };
-        $("#team-menu").css("display", this.active ? "block" : "none");
-        $("#start-menu").css("display", this.active ? "none" : "block");
-        $("#right-column").css("display", this.active ? "none" : "block");
-        $("#social-share-block").css("display", this.active ? "none" : "block");
+        const showLegacyTeamMenu = this.active && !this.arena;
+        $("#team-menu").css("display", showLegacyTeamMenu ? "block" : "none");
+        $("#start-menu").css("display", showLegacyTeamMenu ? "none" : "block");
+        $("#right-column").css("display", showLegacyTeamMenu ? "none" : "block");
+        $("#social-share-block").css("display", showLegacyTeamMenu ? "none" : "block");
 
         // Error text
         const hasError = this.roomData.lastError != "";
@@ -458,17 +498,24 @@ export class TeamMenu {
             );
 
             // Fill mode
+            if (this.arena) {
+                this.roomData.autoFill = false;
+            }
             setButtonState(this.fillAuto, this.roomData.autoFill, this.isLeader);
             setButtonState(this.fillNone, !this.roomData.autoFill, this.isLeader);
+            const fillVisible = !this.arena;
+            this.fillAuto.css("display", fillVisible ? "block" : "none");
+            this.fillNone.css("display", fillVisible ? "block" : "none");
             this.serverSelect.prop("disabled", !this.isLeader);
 
             // Invite link
             if (this.roomData.roomUrl) {
                 const roomCode = this.roomData.roomUrl.substring(1);
                 $("#team-code").text(roomCode);
+                const inviteRoomId = this.arena ? `a:${roomCode}` : roomCode;
 
                 if (SDK.supportsInviteLink()) {
-                    SDK.getInviteLink(roomCode).then((sdkUrl) => {
+                    SDK.getInviteLink(inviteRoomId).then((sdkUrl) => {
                         $("#team-url").text(sdkUrl!);
                     });
                 } else {
@@ -477,13 +524,16 @@ export class TeamMenu {
                     roomUrl.hash = this.roomData.roomUrl;
 
                     const url = new URL(window.location.href);
-                    url.search = "";
+                    url.search = this.arena ? "?arena=1" : "";
                     url.hash = this.roomData.roomUrl;
 
                     $("#team-url").text(url.toString());
 
                     if (window.history) {
-                        window.history.replaceState("", "", this.roomData.roomUrl);
+                        const historyPath = this.arena
+                            ? `/?arena=1${this.roomData.roomUrl}`
+                            : this.roomData.roomUrl;
+                        window.history.replaceState("", "", historyPath);
                     }
                 }
             }

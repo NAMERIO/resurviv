@@ -849,6 +849,9 @@
                 <span id="index-offer-time-left"> 00:00:00</span>
               </div>
             </div>
+            <div class="spin-overview" id="open-arena-button">
+              <a id="btn-prestige-arena" class="btn-green btn-darken menu-option btn-open-arena" data-l10n="modal-open-arena">Prestige Arena</a>
+            </div>
           </div>
         </div>
 
@@ -1048,6 +1051,125 @@
               <input type="text" class="menu-option" contenteditable="false" tabindex="0" autofocus placeholder="Paste team link or enter code here" id="team-link-input" />
               <a class="btn-darken menu-option btn-team-option" id="btn-team-mobile-link-join" data-l10n="index-join-team">Join Team</a>
               <a class="btn-darken menu-option" id="btn-team-mobile-link-leave" data-l10n="index-back-to-main">Back to Main Menu</a>
+            </div>
+            <div id="modal-prestige-arena" class="modal">
+              <div id="modal-prestige-wrapper">
+                <div id="modal-prestige-header">
+                  <div id="prestige-game-summary-button" data-l10n="prestige-game-summary-button"></div>
+                  <div id="prestige-battle-button" data-l10n="prestige-battle-button"></div>
+                  <div id="prestige-create-button" data-l10n="prestige-create-button"></div>
+                  <div id="prestige-spectate-button" data-l10n="prestige-spectate-button"></div>
+                </div>
+                <div id="modal-prestige-body">
+                  <div id="modal-prestige-close">
+                    <span class="close close-corner"></span>
+                  </div>
+                  <div class="modal-prestige-body-inner">
+                    <div id="modal-summary-window" class="hide">
+                      <div class="input-group">
+                        <input class="battle-summary-entry" autocomplete="off" spellcheck="false" role="combobox" placeholder="ENTER BATTLE CODE" aria-live="polite" />
+                        <div id="battle-search-button-2" class="btn-darken"></div>
+                      </div>
+                      <div class="option-buttons">
+                        <div id="check-summary" class="btn-darken" data-l10n="prestige-game-summary-export"></div>
+                      </div>
+                    </div>
+                    <div id="modal-battle-window">
+                      <div class="input-group">
+                        <input class="battle-link-entry" maxlength="6" autocomplete="off" spellcheck="false" role="combobox" placeholder="ENTER INVITE CODE" aria-live="polite" />
+                        <div id="battle-search-button" class="btn-darken"></div>
+                      </div>
+                      <div id="battle-player-counter">
+                        <div id="battle-total">0</div>
+                        <div>/</div>
+                        <div id="battle-max">80</div>
+                        <div class="counter-text">joined</div>
+                      </div>
+                      <div class="battle-mode active">
+                        <div class="battle-game-mode" data-l10n="spectate-game-mode"></div>
+                        <div id="battle-link-mode"></div>
+                      </div>
+                      <div class="battle-type active">
+                        <div class="battle-game-type" data-l10n="spectate-game-type"></div>
+                        <div id="battle-link-type"></div>
+                      </div>
+                      <div id="arena-teams-board" class="hide">
+                        <div class="arena-team-column arena-team-a">
+                          <div class="arena-team-title">Team A</div>
+                          <div id="arena-team-a-list" class="arena-team-list"></div>
+                        </div>
+                        <div class="arena-team-column arena-team-b">
+                          <div class="arena-team-title">Team B</div>
+                          <div id="arena-team-b-list" class="arena-team-list"></div>
+                        </div>
+                      </div>
+                      <div class="button-group">
+                        <div class="battle-timer hide">
+                          <div class="battle-timer-text" data-l10n="battle-timer-text"></div>:
+                          <div class="timer-group">
+                            <div id="battle-timer-hour">00</div>:
+                            <div id="battle-timer-min">00</div>:
+                            <div id="battle-timer-sec">00</div>
+                          </div>
+                        </div>
+                        <div id="game-status">
+                          <div id="game-status-to-start" data-l10n="game-status-to-start"></div>
+                          <div id="game-status-started" class="hide" data-l10n="game-status-started"></div>
+                        </div>
+                        <div id="battle-button" class="btn-darken" data-l10n="index-join-team"></div>
+                      </div>
+                    </div>
+                    <div id="modal-create-window" class="hide">
+                      <div class="input-group hide-admin-filter">
+                        <label for="player-list-upload" id="create-upload-button" class="btn-darken"></label>
+                        <input type="file" id="player-list-upload" />
+                        <input disabled="disabled" class="create-csv-entry" autocomplete="off" spellcheck="false" role="combobox" placeholder="UPLOAD CSV" aria-live="polite" />
+                      </div>
+                      <div class="create-counter-group">
+                        <div id="create-player-counter" class="btn-darken">
+                          <div class="create-counter" data-l10n="player-counter-50">50 players</div>
+                          <div class="create-link-arrow"></div>
+                        </div>
+                        <div id="create-counter-selection"></div>
+                      </div>
+                      <div class="create-mode-group">
+                        <div id="create-mode" class="btn-darken">
+                          <div class="create-game-mode" data-l10n="spectate-game-mode"></div>
+                          <div id="create-link-mode"></div>
+                          <div class="create-link-arrow"></div>
+                        </div>
+                        <div id="create-mode-selection"></div>
+                      </div>
+                      <div class="create-type-group">
+                        <div id="create-type" class="btn-darken">
+                          <div class="create-game-type" data-l10n="spectate-game-type"></div>
+                          <div id="create-link-type"></div>
+                          <div class="create-link-arrow"></div>
+                        </div>
+                        <div id="create-type-selection"></div>
+                      </div>
+                      <div class="option-buttons">
+                        <div id="create-button" class="btn-darken" data-l10n="prestige-create-battle"></div>
+                      </div>
+                    </div>
+                    <div id="modal-spectate-window" class="hide">
+                      <div class="input-group">
+                        <input class="spectate-link-entry" autocomplete="off" spellcheck="false" role="combobox" placeholder="ENTER INVITE CODE" aria-live="polite" />
+                        <div id="spectate-search-button" class="btn-darken"></div>
+                      </div>
+                      <div class="spectate-mode">
+                        <div class="spectate-game-mode" data-l10n="spectate-game-mode"></div>
+                        <div id="battle-link-mode"></div>
+                      </div>
+                      <div class="spectate-type">
+                        <div class="spectate-game-type" data-l10n="spectate-game-type"></div>
+                        <div id="battle-link-type"></div>
+                      </div>
+                      <div id="spectate-button" class="btn-darken" data-l10n="index-play-spectate"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             <div id="right-column" class="menu-column">
               <div id="pass-wrapper">
