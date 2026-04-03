@@ -90,6 +90,8 @@ export class Application {
     prestigeArenaModeSelection = $("#create-mode-selection");
     prestigeArenaTypeDropdown = $("#create-type");
     prestigeArenaTypeSelection = $("#create-type-selection");
+    prestigeArenaRegionSelect = $("#create-region-select");
+    prestigeArenaRegionOpts = $("#create-region-opts");
     prestigeArenaModeLabel = $("#create-link-mode");
     prestigeArenaTypeLabel = $("#create-link-type");
     prestigeArenaBattleModeLabel = $("#battle-link-mode");
@@ -449,6 +451,12 @@ export class Application {
                     this.prestigeArenaModeSelection.css("display", "none");
                 }
             });
+            this.prestigeArenaRegionSelect.on("change", () => {
+                const region = this.prestigeArenaRegionSelect.find(":selected").val();
+                if (region) {
+                    this.config.set("region", region as string);
+                }
+            });
             this.prestigeArenaCreateBtn.on("click", () => {
                 if (this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined) {
                     this.setPrestigeArenaTab("battle");
@@ -724,7 +732,27 @@ export class Application {
                 ? ele.value === spellSyncLang
                 : ele.value === configRegion;
         });
+        this.syncPrestigeArenaRegions();
         this.languageSelect.val(this.localization.getLocale());
+    }
+
+    syncPrestigeArenaRegions() {
+        this.prestigeArenaRegionOpts.empty();
+        $("#server-opts")
+            .children("option")
+            .each((_i, sourceOption) => {
+                this.prestigeArenaRegionOpts.append($(sourceOption).clone());
+            });
+
+        const configRegion = this.config.get("region");
+        let foundSelected = false;
+        this.prestigeArenaRegionSelect.find("option").each((_i, option) => {
+            option.selected = option.value === configRegion;
+            foundSelected = foundSelected || option.selected;
+        });
+        if (!foundSelected) {
+            this.prestigeArenaRegionSelect.find("option").first().prop("selected", true);
+        }
     }
 
     onConfigModified(key?: string) {
@@ -1257,6 +1285,7 @@ export class Application {
         this.prestigeArenaSpectateTab.addClass("hide");
         this.prestigeArenaBattleTab.removeClass("hide");
         this.prestigeArenaCreateTab.removeClass("hide");
+        this.syncPrestigeArenaRegions();
         this.setPrestigeArenaTab("battle");
         this.populatePrestigeArenaModes();
         this.prestigeArenaCodeInput.val("");
@@ -1492,7 +1521,11 @@ export class Application {
                 if (this.teamMenu.active && !this.teamMenu.joined) {
                     this.teamMenu.leave();
                 }
+                const createRegion = this.prestigeArenaRegionSelect.find(":selected").val();
                 this.setConfigFromDOM();
+                if (createRegion) {
+                    this.config.set("region", createRegion as string);
+                }
                 this.teamMenu.connect(true, "", true, { spectator: false });
                 this.refreshUi();
                 return;
