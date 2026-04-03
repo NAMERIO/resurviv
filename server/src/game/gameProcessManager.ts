@@ -198,9 +198,9 @@ export class GameProcessManager implements GameManager {
                     type: ProcessMsgType.KeepAlive,
                 });
 
-                if (Date.now() - gameProc.lastMsgTime > 10000) {
+                if (Date.now() - gameProc.lastMsgTime > 60000) {
                     this.logger.warn(
-                        `Process ${gameProc.process.pid} - #${gameProc.id.substring(0, 4)} did not send a message in more 10 seconds, killing`,
+                        `Process ${gameProc.process.pid} - #${gameProc.id.substring(0, 4)} did not send a message in more than 60 seconds, killing`,
                     );
                     // sigquit can dump a core of the process
                     // useful for debugging infinite loops

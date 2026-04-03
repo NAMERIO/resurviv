@@ -80,8 +80,8 @@ process.on("message", async (msg: ProcessMsg) => {
 });
 
 setInterval(() => {
-    if (Date.now() - lastMsgTime > 10000) {
-        console.log("Game process has not received a message in 10 seconds, exiting");
+    if (Date.now() - lastMsgTime > 60000) {
+        console.log("Game process has not received a message in 60 seconds, exiting");
         process.exit();
     }
 
