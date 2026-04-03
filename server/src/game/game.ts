@@ -611,6 +611,10 @@ export class Game {
     }
 
     sendQuestProgress(userId: string, progress: Array<{ id: string; delta: number }>) {
+        if (this.arenaPrivate) {
+            return;
+        }
+
         try {
             apiPrivateRouter.quest_progress.$post({
                 json: {
@@ -704,6 +708,10 @@ export class Game {
     }
 
     private async _saveGameToDatabase() {
+        if (this.arenaPrivate) {
+            return;
+        }
+
         const players = this.modeManager.getPlayersSortedByRank();
         /**
          * teamTotal is for total teams that started the match, i hope?
