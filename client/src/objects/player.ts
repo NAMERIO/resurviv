@@ -3390,7 +3390,7 @@ export class PlayerBarn {
         }
 
         if (info.clanName) {
-            name = `[${info.clanName}]${name}`;
+            name = `[${info.clanName}] ${name}`;
             if (truncateForKillfeed) {
                 name = helpers.truncateString(name, "bold 16px arial", 180);
             }
@@ -3419,7 +3419,7 @@ export class PlayerBarn {
             return helpers.htmlEscape(baseName);
         }
 
-        return `${helpers.getClanTagHtml(info.clanName, info.clanTagColor)}${helpers.htmlEscape(baseName)}`;
+        return `${helpers.getClanTagHtml(info.clanName, info.clanTagColor)} ${helpers.htmlEscape(baseName)}`;
     }
 
     addDeathEffect(

@@ -56,6 +56,8 @@ export interface TeamMenuPlayer {
     playerId: number;
     isLeader: boolean;
     inGame: boolean;
+    clanName?: string;
+    clanTagColor?: string;
     team?: "A" | "B";
     spectator?: boolean;
 }

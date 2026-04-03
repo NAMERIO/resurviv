@@ -43,6 +43,8 @@ class Player {
     room?: Room;
 
     name = "Player";
+    clanName = "";
+    clanTagColor = "";
 
     inGame = false;
 
@@ -61,6 +63,8 @@ class Player {
             inGame: this.inGame,
             isLeader: this.isLeader,
             playerId: this.playerId,
+            clanName: this.clanName,
+            clanTagColor: this.clanTagColor,
         };
     }
 
@@ -800,6 +804,23 @@ export class TeamMenu {
             this.playersByIp.set(player.encodedIp, players);
         }
         players.add(player);
+
+        if (userId) {
+            void getFindGamePlayerData([
+                {
+                    roomId: "",
+                    token: "",
+                    userId,
+                    ip,
+                },
+            ]).then(([playerData]) => {
+                player.clanName = playerData?.clanName ?? "";
+                player.clanTagColor = playerData?.clanTagColor ?? "";
+                if (player.room) {
+                    player.room.sendState();
+                }
+            });
+        }
     }
 
     onMsg(ws: WSContext<SocketData>, data: string) {

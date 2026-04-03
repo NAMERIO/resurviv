@@ -1145,6 +1145,10 @@ export class Application {
             (p) => p.spectator || (!p.team && this.teamMenu.arena),
         );
         const canManage = this.teamMenu.isLeader;
+        const formatArenaPlayerName = (playerName: string, clanName?: string, clanTagColor?: string) =>
+            clanName
+                ? `${helpers.getClanTagHtml(clanName, clanTagColor || "")} ${helpers.htmlEscape(playerName)}`
+                : helpers.htmlEscape(playerName);
 
         const buildSlot = (
             list: JQuery<HTMLElement>,
@@ -1161,7 +1165,7 @@ export class Application {
             slot.append(
                 $("<div>", {
                     class: "arena-player-name",
-                    text: player.name,
+                    html: formatArenaPlayerName(player.name, player.clanName, player.clanTagColor),
                 }),
             );
 
@@ -1209,7 +1213,11 @@ export class Application {
                 row.append(
                     $("<div>", {
                         class: "arena-player-name",
-                        text: spec.name || "Spectator",
+                        html: formatArenaPlayerName(
+                            spec.name || "Spectator",
+                            spec.clanName,
+                            spec.clanTagColor,
+                        ),
                     }),
                 );
                 if (canManage && spec.playerId !== this.teamMenu.localPlayerId) {

@@ -72,6 +72,8 @@ export class TeamMenu {
         playerId: number;
         inGame: boolean;
         name: string;
+        clanName?: string;
+        clanTagColor?: string;
         isLeader: boolean;
         team?: "A" | "B";
         spectator?: boolean;
