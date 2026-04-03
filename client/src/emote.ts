@@ -1138,7 +1138,8 @@ export class EmoteBarn {
         // Update indicators and pings (world positioned)
         const activePlayerInfo = playerBarn.getPlayerInfo(player.__id);
         const groupId = activePlayerInfo.groupId;
-        let groupInfo = groupId !== undefined ? playerBarn.getGroupInfo(groupId) : undefined;
+        let groupInfo =
+            groupId !== undefined ? playerBarn.getGroupInfo(groupId) : undefined;
 
         if (!groupInfo && spectating) {
             const groups = Object.keys(playerBarn.groupInfo);

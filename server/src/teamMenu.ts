@@ -488,8 +488,8 @@ class Room {
                         this.data.arena && arenaSpectator
                             ? `${this.id}-S-${player.playerId}`
                             : this.data.arena && this.getPlayerTeam(player)
-                            ? `${this.id}-${this.getPlayerTeam(player)}`
-                            : this.id,
+                              ? `${this.id}-${this.getPlayerTeam(player)}`
+                              : this.id,
                     spectator: arenaSpectator,
                     token,
                     userId: player.userId,

@@ -780,7 +780,8 @@ export class UiManager {
         // Update team UI elements
         const playerInfo = playerBarn.getPlayerInfo(player.__id);
         const groupId = playerInfo.groupId;
-        let groupInfo = groupId !== undefined ? playerBarn.getGroupInfo(groupId) : undefined;
+        let groupInfo =
+            groupId !== undefined ? playerBarn.getGroupInfo(groupId) : undefined;
 
         if (!groupInfo && this.spectating) {
             const groups = Object.keys(playerBarn.groupInfo);

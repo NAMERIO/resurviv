@@ -1404,7 +1404,8 @@ export class Application {
         this.warmupArenaLobbyMapAssets();
         this.renderPrestigeArenaTeams();
         const mode = this.siteInfo.info.modes?.[this.teamMenu.roomData.gameModeIdx];
-        const lobbyRegion = this.teamMenu.roomData.region || this.config.get("region") || "";
+        const lobbyRegion =
+            this.teamMenu.roomData.region || this.config.get("region") || "";
         if (mode && lobbyRegion) {
             this.prestigeArenaBattleModeLabel.html(
                 `${helpers.htmlEscape(this.getModeDisplayName(mode.mapName))} <span class="battle-mode-region">(${helpers.htmlEscape(lobbyRegion.toUpperCase())})</span>`,
@@ -1573,7 +1574,9 @@ export class Application {
                     this.teamMenu.leave();
                 }
                 this.prestigeArenaModalRequestedOpen = true;
-                const createRegion = this.prestigeArenaRegionSelect.find(":selected").val();
+                const createRegion = this.prestigeArenaRegionSelect
+                    .find(":selected")
+                    .val();
                 this.setConfigFromDOM();
                 if (createRegion) {
                     this.config.set("region", createRegion as string);
