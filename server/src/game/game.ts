@@ -44,6 +44,7 @@ export interface JoinTokenData {
     clanTagColor?: string | null;
     canUseDeveloper: boolean;
     findGameIp: string;
+    spectator?: boolean;
     loadout?: Loadout;
     quests?: string[];
     groupData: {
@@ -664,6 +665,7 @@ export class Game {
                 canUseDeveloper: token.canUseDeveloper ?? false,
                 groupData,
                 findGameIp: token.ip,
+                spectator: token.spectator,
                 loadout: token.loadout,
                 quests: token.quests,
             });

@@ -249,6 +249,22 @@ export class PlayerBarn {
         this.socketIdToPlayer.set(socketId, player);
 
         this.activatePlayer(player, group, team);
+        if (joinData.spectator) {
+            // Arena lobby spectators should join the match as viewers only.
+            player.dead = true;
+            player.health = 0;
+            util.removeFrom(this.livingPlayers, player);
+            if (player.group) {
+                player.group.checkPlayers();
+            }
+            if (player.team) {
+                player.team.checkPlayers();
+            }
+            this.aliveCountDirty = true;
+            if (this.livingPlayers.length > 0) {
+                player.spectating = this.randomPlayer(player);
+            }
+        }
 
         return player;
     }
@@ -285,7 +301,7 @@ export class PlayerBarn {
         this.players.push(player);
         this.livingPlayers.push(player);
         if (this.game.arenaPrivate && this.players.length === 1) {
-            this.game.arenaStartLockTimer = 5;
+            this.game.arenaStartLockTimer = 0;
             this.game.arenaLastCountdownSecond = -1;
             this.game.arenaGoBroadcasted = false;
         }

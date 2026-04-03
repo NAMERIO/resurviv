@@ -696,9 +696,9 @@ export class Application {
     }
 
     onTeamMenuJoinGame(data: FindGameMatchData) {
-        this.waitOnAccount(() => {
-            this.joinGame(data);
-        });
+        // Team/private lobby joins should start immediately; delaying on account
+        // requests can cause hidden-tab clients to miss the join window.
+        this.joinGame(data);
     }
 
     onTeamMenuLeave(errTxt = "") {
@@ -1212,20 +1212,34 @@ export class Application {
                 }),
             );
 
+            if (player.inGame) {
+                slot.append(
+                    $("<div>", {
+                        class: "icon icon-in-game",
+                    }),
+                );
+            }
+
             if (canManage && player.playerId !== this.teamMenu.localPlayerId) {
-                const actions = $("<div>", { class: "arena-slot-actions" });
-                const kick = $("<button>", {
-                    class: "arena-action-btn kick",
+                const kick = $("<div>", {
+                    class: "icon icon-kick",
                     "aria-label": "Kick player",
-                    type: "button",
+                    role: "button",
+                    tabindex: 0,
                 });
                 kick.on("click", (e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     this.teamMenu.kickPlayer(player.playerId);
                 });
-                actions.append(kick);
-                slot.append(actions);
+                kick.on("keydown", (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.teamMenu.kickPlayer(player.playerId);
+                    }
+                });
+                slot.append(kick);
             }
             list.append(slot);
         };
@@ -1263,20 +1277,33 @@ export class Application {
                         ),
                     }),
                 );
+                if (spec.inGame) {
+                    row.append(
+                        $("<div>", {
+                            class: "icon icon-in-game",
+                        }),
+                    );
+                }
                 if (canManage && spec.playerId !== this.teamMenu.localPlayerId) {
-                    const actions = $("<div>", { class: "arena-slot-actions" });
-                    const kick = $("<button>", {
-                        class: "arena-action-btn kick",
+                    const kick = $("<div>", {
+                        class: "icon icon-kick",
                         "aria-label": "Kick player",
-                        type: "button",
+                        role: "button",
+                        tabindex: 0,
                     });
                     kick.on("click", (e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         this.teamMenu.kickPlayer(spec.playerId);
                     });
-                    actions.append(kick);
-                    row.append(actions);
+                    kick.on("keydown", (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            this.teamMenu.kickPlayer(spec.playerId);
+                        }
+                    });
+                    row.append(kick);
                 }
                 this.prestigeArenaSpectatorList.append(row);
             }
@@ -1388,9 +1415,20 @@ export class Application {
         this.prestigeArenaPlayerCount.text(String(joinedCount));
         this.prestigeArenaPlayerMax.text(String(maxPlayers));
         this.prestigeArenaPlayerCounter.toggleClass("active", joinedCount > 0);
-        const started =
-            this.teamMenu.roomData.findingGame ||
-            this.teamMenu.players.some((player) => player.inGame);
+        const hasInGamePlayers = this.teamMenu.players.some((player) => player.inGame);
+        const started = this.teamMenu.roomData.findingGame || hasInGamePlayers;
+        if (hasInGamePlayers && !this.teamMenu.roomData.findingGame) {
+            this.prestigeArenaGameStatusStarted.text(
+                `${this.localization.translate("game-waiting-for-players")}...`,
+            );
+        } else {
+            this.prestigeArenaGameStatusStarted.text(
+                this.localization.translate("game-status-started"),
+            );
+        }
+        this.prestigeArenaGameStatusToStart.text(
+            this.localization.translate("index-ready-to-start"),
+        );
         this.prestigeArenaGameStatusStarted.toggleClass("hide", !started);
         this.prestigeArenaGameStatusToStart.toggleClass("hide", started);
         this.prestigeArenaGameStatus.toggleClass("hide", false);

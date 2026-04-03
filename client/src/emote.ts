@@ -617,14 +617,17 @@ export class EmoteBarn {
                     indicator = this.pingIndicators[airstrikeIdx].ping;
                 } else {
                     const playerInfo = this.playerBarn.getPlayerInfo(ping.playerId);
-                    if (playerInfo) {
-                        const activeGroupId = this.playerBarn.getPlayerInfo(
-                            this.activePlayer.__id,
-                        ).groupId;
-                        const groupId = playerInfo.groupId;
-                        if (activeGroupId == groupId) {
-                            const l = this.playerBarn.getGroupInfo(groupId);
-                            const c = l.playerIds.indexOf(ping.playerId);
+                    const activeGroupId = this.playerBarn.getPlayerInfo(
+                        this.activePlayer.__id,
+                    ).groupId;
+                    const groupId = playerInfo.groupId;
+                    if (activeGroupId == groupId) {
+                        const groupInfo =
+                            groupId !== undefined
+                                ? this.playerBarn.getGroupInfo(groupId)
+                                : undefined;
+                        if (groupInfo) {
+                            const c = groupInfo.playerIds.indexOf(ping.playerId);
                             if (c !== -1) {
                                 indicator = this.pingIndicators[c].ping;
                             }
@@ -1133,8 +1136,21 @@ export class EmoteBarn {
             max: v2.add(camera.m_pos, camExtents),
         };
         // Update indicators and pings (world positioned)
-        const groupId = playerBarn.getPlayerInfo(player.__id).groupId;
-        const groupInfo = playerBarn.getGroupInfo(groupId);
+        const activePlayerInfo = playerBarn.getPlayerInfo(player.__id);
+        const groupId = activePlayerInfo.groupId;
+        let groupInfo = groupId !== undefined ? playerBarn.getGroupInfo(groupId) : undefined;
+
+        if (!groupInfo && spectating) {
+            const groups = Object.keys(playerBarn.groupInfo);
+            for (let i = 0; i < groups.length; i++) {
+                const candidate = playerBarn.groupInfo[groups[i] as unknown as number];
+                if (candidate && candidate.playerIds.length > 0) {
+                    groupInfo = candidate;
+                    break;
+                }
+            }
+        }
+        const groupPlayerIds = groupInfo ? groupInfo.playerIds : [];
 
         for (
             // te = (groupInfo.playerIds.length, 0);
@@ -1143,7 +1159,7 @@ export class EmoteBarn {
             te++
         ) {
             const indicator = this.pingIndicators[te].ping;
-            const playerId = groupInfo.playerIds[te];
+            const playerId = groupPlayerIds[te];
             const indContainer = indicator.indContainer;
             const pingContainer = indicator.pingContainer;
 

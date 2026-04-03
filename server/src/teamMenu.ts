@@ -210,6 +210,12 @@ class Room {
             case "gameComplete": {
                 player.inGame = false;
                 if (this.data.arena) {
+                    if (this.players.some((p) => p.inGame)) {
+                        this.data.findingGame = false;
+                        this.data.lastError = "";
+                        this.sendState();
+                        break;
+                    }
                     this.endArenaRound();
                     break;
                 }
@@ -444,6 +450,12 @@ class Room {
 
     async findGame(data: TeamPlayGameMsg["data"], player: Player) {
         if (this.data.findingGame) return;
+        if (this.players.some((p) => p.inGame)) {
+            this.data.lastError = "game_in_progress";
+            this.data.findingGame = false;
+            this.sendState();
+            return;
+        }
 
         if (this.data.arena) {
             const teamACount = this.getArenaTeamCount("A");
@@ -466,19 +478,19 @@ class Room {
         this.data.region = region;
 
         const tokenMap = new Map<Player, string>();
-        const activePlayers = this.data.arena
-            ? this.players.filter((p) => !this.isArenaSpectator(p))
-            : this.players;
-
         const playerData = await getFindGamePlayerData(
-            activePlayers.map((player) => {
+            this.players.map((player) => {
                 const token = randomUUID();
                 tokenMap.set(player, token);
+                const arenaSpectator = this.data.arena && this.isArenaSpectator(player);
                 return {
                     roomId:
-                        this.data.arena && this.getPlayerTeam(player)
+                        this.data.arena && arenaSpectator
+                            ? `${this.id}-S-${player.playerId}`
+                            : this.data.arena && this.getPlayerTeam(player)
                             ? `${this.id}-${this.getPlayerTeam(player)}`
                             : this.id,
+                    spectator: arenaSpectator,
                     token,
                     userId: player.userId,
                     ip: player.ip,
@@ -544,10 +556,6 @@ class Room {
         this.data.lastError = "";
 
         for (const roomPlayer of this.players) {
-            if (this.data.arena && this.isArenaSpectator(roomPlayer)) {
-                roomPlayer.inGame = false;
-                continue;
-            }
             roomPlayer.inGame = true;
             const token = tokenMap.get(roomPlayer);
 

@@ -3199,7 +3199,7 @@ export class PlayerBarn {
         return (
             this.playerInfo[id] || {
                 playerId: 0,
-                group: 0,
+                groupId: 0,
                 teamId: 0,
                 name: "",
                 clanName: "",

@@ -778,8 +778,20 @@ export class UiManager {
         };
 
         // Update team UI elements
-        const groupId = playerBarn.getPlayerInfo(player.__id).groupId;
-        const groupInfo = playerBarn.getGroupInfo(groupId);
+        const playerInfo = playerBarn.getPlayerInfo(player.__id);
+        const groupId = playerInfo.groupId;
+        let groupInfo = groupId !== undefined ? playerBarn.getGroupInfo(groupId) : undefined;
+
+        if (!groupInfo && this.spectating) {
+            const groups = Object.keys(playerBarn.groupInfo);
+            for (let i = 0; i < groups.length; i++) {
+                const candidate = playerBarn.groupInfo[groups[i] as unknown as number];
+                if (candidate && candidate.playerIds.length > 0) {
+                    groupInfo = candidate;
+                    break;
+                }
+            }
+        }
 
         if (!groupInfo) {
             const err = {
@@ -793,11 +805,12 @@ export class UiManager {
         }
 
         const layoutSm = device.uiLayout == device.UiLayout.Sm;
-        const groupPlayerCount = groupInfo.playerIds.length;
+        const groupPlayerIds = groupInfo ? groupInfo.playerIds : [];
+        const groupPlayerCount = groupPlayerIds.length;
 
         for (let i = 0; i < groupPlayerCount; i++) {
             const teamElems = this.teamSelectors[i];
-            const playerId = groupInfo.playerIds[i];
+            const playerId = groupPlayerIds[i];
             const playerInfo = playerBarn.getPlayerInfo(playerId);
             const isLocalPlayer = playerId == localPlayer.__id;
             const playerStatus = playerBarn.getPlayerStatus(playerId);

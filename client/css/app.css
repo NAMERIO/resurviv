@@ -308,7 +308,7 @@ a:active {
 
 #start-main-center {
   position: relative;
-  z-index: 3;
+  z-index: 4;
 }
 
 @media (min-width: 851px) and (max-height: 832px), (max-width: 1200px) {
@@ -5901,23 +5901,45 @@ a:active {
   #modal-prestige-body
   .modal-prestige-body-inner
   #modal-battle-window
-  .arena-slot-actions {
-  display: flex;
-  gap: 4px;
+  #arena-teams-board
+  .arena-team-slot
+  > .icon,
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  #arena-spectators-board
+  .arena-spectator-item
+  > .icon {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100%;
+  border-radius: 3px;
+  height: 18px;
+  min-width: 18px;
+  margin-left: 4px;
 }
 #modal-prestige-arena
   #modal-prestige-wrapper
   #modal-prestige-body
   .modal-prestige-body-inner
   #modal-battle-window
-  .arena-action-btn {
-  border: none;
-  border-radius: 3px;
-  height: 18px;
-  min-width: 18px;
-  line-height: 0;
-  font-size: 0;
-  color: #fff;
+  #arena-teams-board
+  .arena-team-slot
+  > .icon-kick,
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  #arena-spectators-board
+  .arena-spectator-item
+  > .icon-kick {
+  background-image: url(/img/gui/close.svg);
+  background-position: 49%;
+  background-size: 65%;
+  opacity: 1;
   cursor: pointer;
 }
 #modal-prestige-arena
@@ -5925,20 +5947,38 @@ a:active {
   #modal-prestige-body
   .modal-prestige-body-inner
   #modal-battle-window
-  .arena-action-btn.kick {
-  background: #a04646;
-  background-image: url(/img/gui/close.svg);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 11px;
+  #arena-teams-board
+  .arena-team-slot
+  > .icon-kick:hover,
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  #arena-spectators-board
+  .arena-spectator-item
+  > .icon-kick:hover {
+  filter: brightness(60%);
 }
 #modal-prestige-arena
   #modal-prestige-wrapper
   #modal-prestige-body
   .modal-prestige-body-inner
   #modal-battle-window
-  .arena-action-btn.kick:hover {
-  filter: brightness(0.85);
+  #arena-teams-board
+  .arena-team-slot
+  > .icon-in-game,
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  #arena-spectators-board
+  .arena-spectator-item
+  > .icon-in-game {
+  background-image: url(/img/gui/player-gui.svg);
+  background-size: 85%;
+  animation: msgStartWaitingPulse 3s ease-out infinite;
 }
 
 /* Joined battle layout: split info/actions and team board into two columns */
@@ -7017,11 +7057,18 @@ a:active {
   .modal-prestige-body-inner
   #modal-battle-window
   #arena-teams-board
-  .arena-action-btn {
+  .arena-team-slot
+  > .icon,
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-joined-shell
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  #arena-spectators-board
+  .arena-spectator-item
+  > .icon {
   height: 24px;
   min-width: 24px;
-  line-height: 24px;
-  font-size: 13px;
 }
 #modal-prestige-arena
   #modal-prestige-wrapper
@@ -10855,12 +10902,12 @@ input [type="image"]:focus {
 #modal-clan-create,
 #modal-clan-page,
 #modal-clan-leaderboard {
-  z-index: 2;
+  z-index: 101;
   background-color: rgba(0, 0, 0, 0.75);
 }
 
 #modal-clan-icons {
-  z-index: 3;
+  z-index: 102;
   background-color: rgba(0, 0, 0, 0.75);
 }
 

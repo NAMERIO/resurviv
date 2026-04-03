@@ -148,6 +148,9 @@ export class GameModeManager {
         if (this.game.arenaPrivate && this.game.arenaStartLockTimer > 0) {
             return false;
         }
+        if (this.game.arenaPrivate) {
+            return this.aliveCount() > 1;
+        }
         return this.cantDespawnAliveCount() > 1;
     }
 

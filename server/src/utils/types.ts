@@ -65,6 +65,7 @@ export const zFindGamePrivateBody = z.object({
     playerData: z.array(
         z.object({
             roomId: z.string().optional(),
+            spectator: z.boolean().optional(),
             token: z.string(),
             userId: z.string().nullable(),
             ip: z.string(),
