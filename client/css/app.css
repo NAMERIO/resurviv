@@ -5524,6 +5524,48 @@ a:active {
   background-position: left;
   padding-left: 40px;
 }
+/* Keep mode text + region compact inside the battle mode box */
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .battle-mode
+  .battle-game-mode {
+  margin-right: 12px;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .battle-mode
+  #battle-link-mode {
+  font-size: 23.5px;
+  line-height: 28px;
+  min-width: 0;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 10px;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .battle-mode
+  #battle-link-mode
+  .battle-mode-region {
+  display: inline-block;
+  font-size: 14px;
+  line-height: 1;
+  vertical-align: baseline;
+  margin-left: 4px;
+  transform: translateY(2px);
+  opacity: 0.9;
+}
 #modal-prestige-arena
   #modal-prestige-wrapper
   #modal-prestige-body

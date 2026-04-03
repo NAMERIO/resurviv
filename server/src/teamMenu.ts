@@ -355,18 +355,13 @@ class Room {
     }
 
     endArenaRound() {
-        if (this.arenaOwnerKey) {
-            this.teamMenu.setArenaOwnerCooldown(this.arenaOwnerKey);
+        // Keep private arena lobbies alive between rounds.
+        this.data.findingGame = false;
+        this.data.lastError = "";
+        for (const player of this.players) {
+            player.inGame = false;
         }
-
-        const players = [...this.players];
-        this.players = [];
-        for (const player of players) {
-            player.room = undefined;
-            player.send("error", { type: "arena_round_finished" });
-            player.socket.close();
-        }
-        this.teamMenu.removeRoom(this);
+        this.sendState();
     }
 
     findGameCooldown = 0;

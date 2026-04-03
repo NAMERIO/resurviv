@@ -409,7 +409,10 @@ export class Application {
             this.prestigeArenaCopyCodeBtn.on("click", (e) => {
                 const code = (this.prestigeArenaRoomCode.text() || "").trim();
                 if (!code) return;
-                helpers.copyTextToClipboard(code);
+                const inviteUrl = new URL(window.location.href);
+                inviteUrl.search = "?arena";
+                inviteUrl.hash = `#${code}`;
+                helpers.copyTextToClipboard(inviteUrl.toString());
                 this.showCopyToast(
                     this.prestigeArenaCopyCodeBtn.offset()?.left ?? e.pageX,
                     this.prestigeArenaCopyCodeBtn.offset()?.top ?? e.pageY,
@@ -422,7 +425,10 @@ export class Application {
                 button.on("click", (e) => {
                     const code = (valueEl.text() || "").trim();
                     if (!code) return;
-                    helpers.copyTextToClipboard(code);
+                    const inviteUrl = new URL(window.location.href);
+                    inviteUrl.search = "?arena";
+                    inviteUrl.hash = `#${code}`;
+                    helpers.copyTextToClipboard(inviteUrl.toString());
                     this.showCopyToast(
                         button.offset()?.left ?? e.pageX,
                         button.offset()?.top ?? e.pageY,
@@ -1370,6 +1376,13 @@ export class Application {
         this.prestigeArenaPlayerCounter.css("display", "flex");
         this.warmupArenaLobbyMapAssets();
         this.renderPrestigeArenaTeams();
+        const mode = this.siteInfo.info.modes?.[this.teamMenu.roomData.gameModeIdx];
+        const lobbyRegion = this.teamMenu.roomData.region || this.config.get("region") || "";
+        if (mode && lobbyRegion) {
+            this.prestigeArenaBattleModeLabel.html(
+                `${helpers.htmlEscape(this.getModeDisplayName(mode.mapName))} <span class="battle-mode-region">(${helpers.htmlEscape(lobbyRegion.toUpperCase())})</span>`,
+            );
+        }
         const joinedCount = this.teamMenu.players.length;
         const maxPlayers = this.teamMenu.roomData.maxPlayers || 80;
         this.prestigeArenaPlayerCount.text(String(joinedCount));
@@ -1521,6 +1534,7 @@ export class Application {
                 if (this.teamMenu.active && !this.teamMenu.joined) {
                     this.teamMenu.leave();
                 }
+                this.prestigeArenaModalRequestedOpen = true;
                 const createRegion = this.prestigeArenaRegionSelect.find(":selected").val();
                 this.setConfigFromDOM();
                 if (createRegion) {
@@ -1561,6 +1575,7 @@ export class Application {
                 // DOM elements for input, such as player name and
                 // selected region. We will stash the menu values
                 // into the config so the team menu can read them.
+                this.prestigeArenaModalRequestedOpen = targetArena;
                 this.setConfigFromDOM();
                 this.teamMenu.connect(create, roomUrl, targetArena, effectiveJoinPrefs);
                 this.refreshUi();
