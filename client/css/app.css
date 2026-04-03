@@ -4831,11 +4831,14 @@ a:active {
 
 #modal-prestige-arena {
   display: none !important;
-  background-color: rgba(0, 0, 0, 0.4);
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.72);
+  position: fixed;
   z-index: -999 !important;
   pointer-events: none !important;
   visibility: hidden !important;
-  top: 11%;
 }
 
 #modal-prestige-arena.is-open {
@@ -4843,7 +4846,6 @@ a:active {
   z-index: 1305 !important;
   pointer-events: auto !important;
   visibility: visible !important;
-  top: 11%;
 }
 
 #modal-prestige-arena:not(.is-open),
@@ -4855,7 +4857,7 @@ a:active {
   width: 577px;
   height: 528px;
   left: calc(50% + 48px);
-  top: 55%;
+  top: 45%;
   position: fixed;
   z-index: 1201;
   -webkit-transform: translateY(-50%) translateX(-50%);
