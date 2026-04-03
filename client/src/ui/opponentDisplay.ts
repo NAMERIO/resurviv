@@ -572,6 +572,7 @@ export class LoadoutDisplay {
             this.particleBarn,
             this.camera,
             this.map,
+            false,
             this.inputBinds,
             this.audioManager,
             // ui2 manager is only used for updating perks, as long as we dont add any perks

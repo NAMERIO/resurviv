@@ -1,6 +1,6 @@
+import { DeathmatchAprilFools } from "../../server/src/deathmatch/maps/aprilFools";
 import { DeatchmatchCobalt } from "../../server/src/deathmatch/maps/cobalt";
 import { DeatchmatchDesert } from "../../server/src/deathmatch/maps/desert";
-import { DeathmatchAprilFools } from "../../server/src/deathmatch/maps/aprilFools";
 import { FactionPotato } from "../../server/src/deathmatch/maps/faction_potato";
 import { gun_game } from "../../server/src/deathmatch/maps/gun_game";
 import { DeatchmatchHalloween } from "../../server/src/deathmatch/maps/halloween";

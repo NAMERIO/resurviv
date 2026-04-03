@@ -5151,7 +5151,9 @@ export class Player extends BaseGameObject {
             this.weapons[slot].ammo = gunDef.maxClip;
             this.setDisplayWeaponType(
                 slot,
-                this.game.map.aprilFoolsMode ? loadout.secondary : this.weapons[slot].type,
+                this.game.map.aprilFoolsMode
+                    ? loadout.secondary
+                    : this.weapons[slot].type,
             );
         }
 

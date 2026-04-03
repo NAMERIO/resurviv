@@ -3,8 +3,8 @@ import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 import type { UpgradeWebSocket, WSContext } from "hono/ws";
-import type { FindGameError } from "../../shared/types/api";
 import { GameConfig } from "../../shared/gameConfig";
+import type { FindGameError } from "../../shared/types/api";
 import {
     type ClientRoomData,
     type ClientToServerTeamMsg,
@@ -954,9 +954,7 @@ export class TeamMenu {
         // if we don't have a room at this point it meant both creation and joining failed
         // so close the socket
         if (!player.room) {
-            this.logger.debug(
-                `Player not in room after ${msg.type}, closing socket.`,
-            );
+            this.logger.debug(`Player not in room after ${msg.type}, closing socket.`);
             ws.close();
             return;
         }

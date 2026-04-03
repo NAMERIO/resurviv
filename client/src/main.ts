@@ -352,7 +352,9 @@ export class Application {
                     return;
                 }
                 this.setPrestigeArenaTab("battle");
-                if (!(this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined)) {
+                if (
+                    !(this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined)
+                ) {
                     this.setPrestigeArenaUnjoinedUi();
                 }
             });
@@ -362,16 +364,14 @@ export class Application {
                     return;
                 }
                 this.setPrestigeArenaTab("create");
-                if (!(this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined)) {
+                if (
+                    !(this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined)
+                ) {
                     this.setPrestigeArenaUnjoinedUi();
                 }
             });
             this.prestigeArenaJoinBtn.on("click", () => {
-                if (
-                    this.teamMenu.active &&
-                    this.teamMenu.arena &&
-                    this.teamMenu.joined
-                ) {
+                if (this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined) {
                     if (this.teamMenu.isLeader) {
                         this.teamMenu.tryStartGame();
                     }
@@ -431,24 +431,26 @@ export class Application {
             bindCodeCopy(this.prestigeArenaTeamBCopyCodeBtn, this.prestigeArenaTeamBCode);
             this.prestigeArenaModeDropdown.on("click", () => {
                 const visible = this.prestigeArenaModeSelection.css("display") !== "none";
-                this.prestigeArenaModeSelection.css("display", visible ? "none" : "block");
+                this.prestigeArenaModeSelection.css(
+                    "display",
+                    visible ? "none" : "block",
+                );
                 if (!visible) {
                     this.prestigeArenaTypeSelection.css("display", "none");
                 }
             });
             this.prestigeArenaTypeDropdown.on("click", () => {
                 const visible = this.prestigeArenaTypeSelection.css("display") !== "none";
-                this.prestigeArenaTypeSelection.css("display", visible ? "none" : "block");
+                this.prestigeArenaTypeSelection.css(
+                    "display",
+                    visible ? "none" : "block",
+                );
                 if (!visible) {
                     this.prestigeArenaModeSelection.css("display", "none");
                 }
             });
             this.prestigeArenaCreateBtn.on("click", () => {
-                if (
-                    this.teamMenu.active &&
-                    this.teamMenu.arena &&
-                    this.teamMenu.joined
-                ) {
+                if (this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined) {
                     this.setPrestigeArenaTab("battle");
                     return;
                 }
@@ -884,9 +886,7 @@ export class Application {
             });
         }
         const findModeIdx = (mapName: string, teamMode: number) =>
-            modes.findIndex(
-                (m) => m.mapName === mapName && m.teamMode === teamMode,
-            );
+            modes.findIndex((m) => m.mapName === mapName && m.teamMode === teamMode);
 
         const applySelection = (mapName: string, teamMode: number) => {
             let idx = findModeIdx(mapName, teamMode);
@@ -914,7 +914,9 @@ export class Application {
             this.prestigeArenaSelectedTeamMode = modes[idx].teamMode;
 
             const mapLabel = this.getModeDisplayName(this.prestigeArenaSelectedMap);
-            const teamLabel = this.getTeamModeDisplayName(this.prestigeArenaSelectedTeamMode);
+            const teamLabel = this.getTeamModeDisplayName(
+                this.prestigeArenaSelectedTeamMode,
+            );
             this.prestigeArenaModeLabel.text(mapLabel);
             this.prestigeArenaBattleModeLabel.text(mapLabel);
             this.prestigeArenaTypeLabel.text(teamLabel);
@@ -927,10 +929,7 @@ export class Application {
             if (selectedStyle?.buttonCss) {
                 this.prestigeArenaModeDropdown.addClass(selectedStyle.buttonCss);
             }
-            this.prestigeArenaModeDropdown.css(
-                "background-image",
-                "none",
-            );
+            this.prestigeArenaModeDropdown.css("background-image", "none");
             this.prestigeArenaModeLabel.css(
                 "background-image",
                 selectedStyle?.icon ? `url(${selectedStyle.icon})` : "none",
@@ -1004,7 +1003,9 @@ export class Application {
         const mode = this.siteInfo.info.modes?.[modeIdx];
         if (!mode) return;
         this.prestigeArenaBattleModeLabel.text(this.getModeDisplayName(mode.mapName));
-        this.prestigeArenaBattleTypeLabel.text(this.getTeamModeDisplayName(mode.teamMode));
+        this.prestigeArenaBattleTypeLabel.text(
+            this.getTeamModeDisplayName(mode.teamMode),
+        );
 
         const modeStyle = this.siteInfo.getGameModeStyles()[modeIdx];
         this.prestigeArenaBattleModeLabel.css(
@@ -1026,7 +1027,9 @@ export class Application {
         const codeInput = (this.prestigeArenaCodeInput.val() || "").trim();
         const parsedInvite = this.parseInviteTarget(codeInput, true);
         if (parsedInvite.roomUrl.length !== 6) {
-            this.prestigeArenaJoinBtn.text(this.localization.translate("index-join-team"));
+            this.prestigeArenaJoinBtn.text(
+                this.localization.translate("index-join-team"),
+            );
             this.applyBattleModeStyleByIdx(this.prestigeArenaSelectedModeIdx);
             this.prestigeArenaPreviewReqId++;
             return;
@@ -1065,7 +1068,9 @@ export class Application {
             },
             error: () => {
                 if (reqId !== this.prestigeArenaPreviewReqId) return;
-                this.prestigeArenaJoinBtn.text(this.localization.translate("index-join-team"));
+                this.prestigeArenaJoinBtn.text(
+                    this.localization.translate("index-join-team"),
+                );
                 this.applyBattleModeStyleByIdx(this.prestigeArenaSelectedModeIdx);
             },
         });
@@ -1135,17 +1140,17 @@ export class Application {
         const mode = this.siteInfo.info.modes?.[this.teamMenu.roomData.gameModeIdx];
         const teamSize = Math.max(1, mode?.teamMode ?? 2);
         this.applyBattleModeStyleByIdx(this.teamMenu.roomData.gameModeIdx);
-        const teamA = this.teamMenu.players.filter(
-            (p) => p.team === "A" && !p.spectator,
-        );
-        const teamB = this.teamMenu.players.filter(
-            (p) => p.team === "B" && !p.spectator,
-        );
+        const teamA = this.teamMenu.players.filter((p) => p.team === "A" && !p.spectator);
+        const teamB = this.teamMenu.players.filter((p) => p.team === "B" && !p.spectator);
         const spectators = this.teamMenu.players.filter(
             (p) => p.spectator || (!p.team && this.teamMenu.arena),
         );
         const canManage = this.teamMenu.isLeader;
-        const formatArenaPlayerName = (playerName: string, clanName?: string, clanTagColor?: string) =>
+        const formatArenaPlayerName = (
+            playerName: string,
+            clanName?: string,
+            clanTagColor?: string,
+        ) =>
             clanName
                 ? `${helpers.getClanTagHtml(clanName, clanTagColor || "")} ${helpers.htmlEscape(playerName)}`
                 : helpers.htmlEscape(playerName);
@@ -1165,7 +1170,11 @@ export class Application {
             slot.append(
                 $("<div>", {
                     class: "arena-player-name",
-                    html: formatArenaPlayerName(player.name, player.clanName, player.clanTagColor),
+                    html: formatArenaPlayerName(
+                        player.name,
+                        player.clanName,
+                        player.clanTagColor,
+                    ),
                 }),
             );
 
@@ -1443,7 +1452,11 @@ export class Application {
                 const hashCode = url.hash ? url.hash.slice(1) : "";
                 source = paramCode || hashCode;
                 const arenaParam = (url.searchParams.get("arena") || "").toLowerCase();
-                if (arenaParam === "1" || arenaParam === "true" || arenaParam === "arena") {
+                if (
+                    arenaParam === "1" ||
+                    arenaParam === "true" ||
+                    arenaParam === "arena"
+                ) {
                     arena = true;
                 }
             } catch {
@@ -1487,7 +1500,9 @@ export class Application {
 
             // Join team if the url contains a team address
             let roomUrlRaw = url || window.location.hash.slice(1);
-            const urlArenaParam = (helpers.getParameterByName("arena") || "").toLowerCase();
+            const urlArenaParam = (
+                helpers.getParameterByName("arena") || ""
+            ).toLowerCase();
             let targetArena =
                 arena ||
                 urlArenaParam === "1" ||
@@ -1521,7 +1536,8 @@ export class Application {
     }
 
     warmupArenaLobbyMapAssets() {
-        if (!(this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined)) return;
+        if (!(this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined))
+            return;
         if (!this.resourceManager) return;
         const mode = this.siteInfo.info.modes?.[this.teamMenu.roomData.gameModeIdx];
         const mapName = mode?.mapName;
@@ -1904,4 +1920,3 @@ navigator.serviceWorker?.getRegistrations().then((registrations) => {
         registration.unregister();
     }
 });
-

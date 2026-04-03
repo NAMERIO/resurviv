@@ -443,8 +443,7 @@ export class BulletBarn {
                         const mapDef = MapObjectDefs[col?.obstacleType!] as ObstacleDef;
                         const bulletDef = BulletDefs[b.bulletType];
                         const reflectOnHit =
-                            !!bulletDef.reflectOnAnyObstacle ||
-                            !!mapDef.reflectBullets;
+                            !!bulletDef.reflectOnAnyObstacle || !!mapDef.reflectBullets;
                         playHitFx(
                             mapDef.hitParticle,
                             mapDef.sound.bullet!,

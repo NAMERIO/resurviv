@@ -86,8 +86,7 @@ export class ApiServer {
         const hasMode = (
             mapName: (typeof Config.modes)[number]["mapName"],
             teamMode: (typeof Config.modes)[number]["teamMode"],
-        ) =>
-            this.modes.some((m) => m.mapName === mapName && m.teamMode === teamMode);
+        ) => this.modes.some((m) => m.mapName === mapName && m.teamMode === teamMode);
 
         for (const mapName of this.privateLobbyMaps) {
             for (const teamMode of privateTeamModes) {

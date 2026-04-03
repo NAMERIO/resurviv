@@ -97,9 +97,9 @@ export class SiteInfo {
                 btn.toggle(style.enabled);
             }
             const supportsTeam = this.info.modes.some((s) => s.enabled && s.teamMode > 1);
-            $("#btn-join-team, #btn-create-team, #btn-prestige-arena, #open-arena-button").toggle(
-                supportsTeam,
-            );
+            $(
+                "#btn-join-team, #btn-create-team, #btn-prestige-arena, #open-arena-button",
+            ).toggle(supportsTeam);
 
             // Region pops
             const pops = this.info.pops;
