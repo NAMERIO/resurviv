@@ -209,10 +209,10 @@ class Room {
             }
             case "gameComplete": {
                 player.inGame = false;
+                this.data.findingGame = false;
+                this.data.lastError = "";
                 if (this.data.arena) {
                     if (this.players.some((p) => p.inGame)) {
-                        this.data.findingGame = false;
-                        this.data.lastError = "";
                         this.sendState();
                         break;
                     }
@@ -648,8 +648,7 @@ export class TeamMenu {
             .map((_, i) => i)
             .filter((i) => {
                 const mode = this.server.modes[i];
-                // Private lobbies should not be constrained by public rotation.
-                return mode.teamMode > 1;
+                return mode.enabled && mode.teamMode > 1;
             });
     }
 
@@ -658,8 +657,6 @@ export class TeamMenu {
             .map((_, i) => i)
             .filter((i) => {
                 const mode = this.server.modes[i];
-                // Arena private lobbies should use map names discovered from
-                // server/src/deathmatch/maps.
                 return this.server.privateLobbyMaps.has(mode.mapName);
             });
     }

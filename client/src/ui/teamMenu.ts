@@ -199,7 +199,17 @@ export class TeamMenu {
             spectator?: boolean;
         },
     ) {
-        if (!this.active || roomUrl !== this.roomData.roomUrl) {
+        const shouldReconnect =
+            !this.active ||
+            roomUrl !== this.roomData.roomUrl ||
+            create !== this.create ||
+            arena !== this.arena ||
+            !this.joined ||
+            !this.ws ||
+            this.ws.readyState === WebSocket.CLOSING ||
+            this.ws.readyState === WebSocket.CLOSED;
+
+        if (shouldReconnect) {
             const roomHost = api.resolveRoomHost();
             const url = `w${
                 window.location.protocol === "https:" ? "ss" : "s"
@@ -312,6 +322,14 @@ export class TeamMenu {
     onGameComplete() {
         if (this.active) {
             this.joiningGame = false;
+            this.roomData.findingGame = false;
+            this.roomData.lastError = "";
+            const localPlayer = this.getPlayerById(this.localPlayerId);
+            if (localPlayer) {
+                localPlayer.inGame = false;
+            }
+            this.refreshUi();
+            this.onStateUpdated?.();
             this.sendMessage("gameComplete");
         }
     }
