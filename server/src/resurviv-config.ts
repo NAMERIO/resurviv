@@ -9,12 +9,14 @@ const mapName: Record<typeof THIS_REGION, keyof typeof MapDefs> = {
     local: "main",
     na: "main",
     eu: "main",
+    as: "main",
 };
 
 const serverDataConfig = {
     local: {},
     na: {},
     eu: {},
+    as: {},
 };
 
 export const CustomConfig: DeepPartial<ConfigType> = {
