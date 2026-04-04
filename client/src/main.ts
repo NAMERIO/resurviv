@@ -254,6 +254,12 @@ export class Application {
             // Initialize ClanUi
             this.clanUi = new ClanUi(this.account, this.localization);
             $("#btn-clans").on("click", () => {
+                if (!this.account.loggedIn) {
+                    this.profileUi.showLoginMenu({
+                        modal: true,
+                    });
+                    return;
+                }
                 this.clanUi.showMainModal();
             });
 
@@ -1312,7 +1318,13 @@ export class Application {
     }
 
     showPrestigeArenaModal() {
-        if (!this.account.loggedIn || device.mobile) return;
+        if (!this.account.loggedIn) {
+            this.profileUi.showLoginMenu({
+                modal: true,
+            });
+            return;
+        }
+        if (device.mobile) return;
         this.prestigeArenaModalRequestedOpen = true;
         this.prestigeArenaSummaryTab.addClass("hide");
         this.prestigeArenaSpectateTab.addClass("hide");
