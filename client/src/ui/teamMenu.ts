@@ -608,16 +608,19 @@ export class TeamMenu {
 
             const waitReason = $("#msg-wait-reason");
 
-            if (this.isLeader) {
-                waitReason.html(
-                    `${this.localization.translate(
-                        "index-game-in-progress",
-                    )}<span> ...</span>`,
-                );
+            if (this.isLeader || !this.arena) {
+                if (this.joiningGame) {
+                    waitReason.html(
+                        `<div class="ui-spinner" style="margin-right:16px"></div>${this.localization.translate(
+                            "index-joining-game",
+                        )}<span> ...</span>`,
+                    );
+                } else {
+                    waitReason.html("");
+                }
 
-                const showWaitMessage = playersInGame && !this.joiningGame;
+                const showWaitMessage = this.joiningGame;
                 waitReason.css("display", showWaitMessage ? "block" : "none");
-                // this.playBtn.css("display", showWaitMessage ? "none" : "block");
             } else {
                 if (this.roomData.findingGame || this.joiningGame) {
                     waitReason.html(

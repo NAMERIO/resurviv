@@ -237,7 +237,7 @@ class Room {
                 break;
             }
             case "playGame": {
-                if (!player.isLeader) break;
+                if (this.data.arena && !player.isLeader) break;
                 this.findGame(msg.data, player);
                 break;
             }
@@ -450,7 +450,7 @@ class Room {
 
     async findGame(data: TeamPlayGameMsg["data"], player: Player) {
         if (this.data.findingGame) return;
-        if (this.players.some((p) => p.inGame)) {
+        if (this.data.arena && this.players.some((p) => p.inGame)) {
             this.data.lastError = "game_in_progress";
             this.data.findingGame = false;
             this.sendState();
@@ -468,8 +468,10 @@ class Room {
             }
         }
 
-        this.data.findingGame = true;
-        this.sendState();
+        if (this.data.arena) {
+            this.data.findingGame = true;
+            this.sendState();
+        }
 
         let region = data.region;
         if (!(region in Config.regions)) {
@@ -477,9 +479,10 @@ class Room {
         }
         this.data.region = region;
 
+        const queuedPlayers = this.data.arena ? this.players : [player];
         const tokenMap = new Map<Player, string>();
         const playerData = await getFindGamePlayerData(
-            this.players.map((player) => {
+            queuedPlayers.map((player) => {
                 const token = randomUUID();
                 tokenMap.set(player, token);
                 const arenaSpectator = this.data.arena && this.isArenaSpectator(player);
@@ -487,7 +490,7 @@ class Room {
                     roomId:
                         this.data.arena && arenaSpectator
                             ? `${this.id}-S-${player.playerId}`
-                            : this.data.arena && this.getPlayerTeam(player)
+                        : this.data.arena && this.getPlayerTeam(player)
                               ? `${this.id}-${this.getPlayerTeam(player)}`
                               : this.id,
                     spectator: arenaSpectator,
@@ -505,21 +508,27 @@ class Room {
 
         if (this.data.captchaEnabled) {
             if (!data.turnstileToken) {
-                this.data.lastError = "find_game_invalid_captcha";
-                this.sendState();
+                if (this.data.arena) {
+                    this.data.lastError = "find_game_invalid_captcha";
+                    this.sendState();
+                }
                 return;
             }
 
             try {
                 if (!(await verifyTurnsStile(data.turnstileToken, player.ip))) {
-                    this.data.lastError = "find_game_invalid_captcha";
-                    this.sendState();
+                    if (this.data.arena) {
+                        this.data.lastError = "find_game_invalid_captcha";
+                        this.sendState();
+                    }
                     return;
                 }
             } catch (err) {
                 this.teamMenu.logger.error("Failed verifying turnstile:", err);
-                this.data.lastError = "find_game_error";
-                this.sendState();
+                if (this.data.arena) {
+                    this.data.lastError = "find_game_error";
+                    this.sendState();
+                }
                 return;
             }
         }
@@ -536,15 +545,17 @@ class Room {
         });
 
         if ("error" in res) {
-            const errMap: Partial<Record<FindGameError, TeamMenuErrorType>> = {
-                full: "find_game_full",
-                invalid_protocol: "find_game_invalid_protocol",
-            };
+            if (this.data.arena) {
+                const errMap: Partial<Record<FindGameError, TeamMenuErrorType>> = {
+                    full: "find_game_full",
+                    invalid_protocol: "find_game_invalid_protocol",
+                };
 
-            this.data.lastError = errMap[res.error] || "find_game_error";
-            this.sendState();
-            // 1 second cooldown on error
-            this.findGameCooldown = Date.now() + 1000;
+                this.data.lastError = errMap[res.error] || "find_game_error";
+                this.sendState();
+                // 1 second cooldown on error
+                this.findGameCooldown = Date.now() + 1000;
+            }
             return;
         }
 
@@ -553,9 +564,11 @@ class Room {
         const joinData = res;
         if (!joinData) return;
 
-        this.data.lastError = "";
+        if (this.data.arena) {
+            this.data.lastError = "";
+        }
 
-        for (const roomPlayer of this.players) {
+        for (const roomPlayer of queuedPlayers) {
             roomPlayer.inGame = true;
             const token = tokenMap.get(roomPlayer);
 
@@ -925,7 +938,7 @@ export class TeamMenu {
                     const gameInProgress =
                         room.data.findingGame || room.players.some((p) => p.inGame);
                     const wantsSpectator = !!msg.data.spectator;
-                    if (gameInProgress && !(room.data.arena && wantsSpectator)) {
+                    if (room.data.arena && gameInProgress && !wantsSpectator) {
                         this.logger.debug(
                             `Join rejected: game already started (${room.id})`,
                         );
