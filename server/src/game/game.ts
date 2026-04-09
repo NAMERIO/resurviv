@@ -603,8 +603,7 @@ export class Game {
             player.game.playerBarn.removePlayer(player);
         }
 
-        // Private/lobby matches should be reclaimed immediately when empty.
-        if (this.playerBarn.players.length === 0) {
+        if (this.arenaPrivate && this.playerBarn.players.length === 0) {
             this.stop();
         }
     }

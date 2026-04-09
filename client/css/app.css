@@ -308,7 +308,7 @@ a:active {
 
 #start-main-center {
   position: relative;
-  z-index: 4;
+  z-index: 2;
 }
 
 @media (min-width: 851px) and (max-height: 832px), (max-width: 1200px) {

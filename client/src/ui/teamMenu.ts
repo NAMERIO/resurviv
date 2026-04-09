@@ -199,7 +199,17 @@ export class TeamMenu {
             spectator?: boolean;
         },
     ) {
-        if (!this.active || roomUrl !== this.roomData.roomUrl) {
+        const shouldReconnect =
+            !this.active ||
+            roomUrl !== this.roomData.roomUrl ||
+            create !== this.create ||
+            arena !== this.arena ||
+            !this.joined ||
+            !this.ws ||
+            this.ws.readyState === WebSocket.CLOSING ||
+            this.ws.readyState === WebSocket.CLOSED;
+
+        if (shouldReconnect) {
             const roomHost = api.resolveRoomHost();
             const url = `w${
                 window.location.protocol === "https:" ? "ss" : "s"
@@ -312,6 +322,14 @@ export class TeamMenu {
     onGameComplete() {
         if (this.active) {
             this.joiningGame = false;
+            this.roomData.findingGame = false;
+            this.roomData.lastError = "";
+            const localPlayer = this.getPlayerById(this.localPlayerId);
+            if (localPlayer) {
+                localPlayer.inGame = false;
+            }
+            this.refreshUi();
+            this.onStateUpdated?.();
             this.sendMessage("gameComplete");
         }
     }
@@ -590,16 +608,19 @@ export class TeamMenu {
 
             const waitReason = $("#msg-wait-reason");
 
-            if (this.isLeader) {
-                waitReason.html(
-                    `${this.localization.translate(
-                        "index-game-in-progress",
-                    )}<span> ...</span>`,
-                );
+            if (this.isLeader || !this.arena) {
+                if (this.joiningGame) {
+                    waitReason.html(
+                        `<div class="ui-spinner" style="margin-right:16px"></div>${this.localization.translate(
+                            "index-joining-game",
+                        )}<span> ...</span>`,
+                    );
+                } else {
+                    waitReason.html("");
+                }
 
-                const showWaitMessage = playersInGame && !this.joiningGame;
+                const showWaitMessage = this.joiningGame;
                 waitReason.css("display", showWaitMessage ? "block" : "none");
-                // this.playBtn.css("display", showWaitMessage ? "none" : "block");
             } else {
                 if (this.roomData.findingGame || this.joiningGame) {
                     waitReason.html(

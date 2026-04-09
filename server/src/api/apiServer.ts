@@ -41,11 +41,21 @@ class Region {
     }
 
     async findGame(body: FindGamePrivateBody): Promise<FindGamePrivateRes> {
-        const data = await this.fetch<FindGamePrivateRes>("api/find_game", body);
-        if (!data) {
-            return { error: "find_game_failed" };
+        for (let attempt = 0; attempt < 3; attempt++) {
+            const data = await this.fetch<FindGamePrivateRes>("api/find_game", body);
+            if (data) {
+                return data;
+            }
+
+            if (attempt < 2) {
+                defaultLogger.warn(
+                    `Retrying region ${this.id} find_game request (attempt ${attempt + 2}/3)`,
+                );
+                await new Promise((resolve) => setTimeout(resolve, 250));
+            }
         }
-        return data;
+
+        return { error: "find_game_failed" };
     }
 }
 

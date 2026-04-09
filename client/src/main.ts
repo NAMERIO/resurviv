@@ -254,6 +254,12 @@ export class Application {
             // Initialize ClanUi
             this.clanUi = new ClanUi(this.account, this.localization);
             $("#btn-clans").on("click", () => {
+                if (!this.account.loggedIn) {
+                    this.profileUi.showLoginMenu({
+                        modal: true,
+                    });
+                    return;
+                }
                 this.clanUi.showMainModal();
             });
 
@@ -1312,7 +1318,13 @@ export class Application {
     }
 
     showPrestigeArenaModal() {
-        if (!this.account.loggedIn || device.mobile) return;
+        if (!this.account.loggedIn) {
+            this.profileUi.showLoginMenu({
+                modal: true,
+            });
+            return;
+        }
+        if (device.mobile) return;
         this.prestigeArenaModalRequestedOpen = true;
         this.prestigeArenaSummaryTab.addClass("hide");
         this.prestigeArenaSpectateTab.addClass("hide");
@@ -1784,6 +1796,14 @@ export class Application {
             }, 250);
             return;
         }
+
+        // Team/private-lobby joins can arrive while a previous Game instance is
+        // still flagged as initialized/connected. In that case tryJoinGame()
+        // would silently no-op and leave the menu spinner stuck forever.
+        if (this.game.initialized || this.game.connected || this.game.connecting) {
+            this.game.free();
+        }
+
         const hosts = matchData.hosts || [];
         const urls: string[] = [];
         for (let i = 0; i < hosts.length; i++) {
