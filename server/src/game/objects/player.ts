@@ -190,7 +190,10 @@ export class PlayerBarn {
                     p.findGameIp == joinData.findGameIp ||
                     (joinData.userId !== null && p.userId === joinData.userId),
             );
-            if (count.length >= 5) {
+            if (count.length >= 3) {
+                if (this.game.joinSpamRateLimit.isRateLimited(ip)) {
+                    void this.game.autoBanIpForJoinSpam(ip);
+                }
                 this.game.closeSocket(socketId, "rate_limited");
                 return;
             }
