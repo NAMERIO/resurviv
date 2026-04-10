@@ -10,7 +10,13 @@ import { MessageFlags, PermissionFlagsBits } from "discord.js";
 import { hc } from "hono/client";
 import type { PrivateRouteApp } from "../../server/src/api/routes/private/private";
 import { Logger } from "../../shared/utils/logger";
-import { API_URL, Config, DISCORD_GUILD_ID, DISCORD_ROLE_ID } from "./config";
+import {
+    API_URL,
+    Config,
+    DISCORD_GUILD_ID,
+    DISCORD_OWNER_ROLE_ID,
+    DISCORD_ROLE_ID,
+} from "./config";
 
 // we love enums
 export const enum Command {
@@ -24,6 +30,9 @@ export const enum Command {
     SetAccountName = "set_account_name",
     GiveItem = "give_item",
     RemoveItem = "remove_item",
+    GiveGp = "give_gp",
+    RemoveGp = "remove_gp",
+    GetGp = "get_gp",
     SetGameMode = "set_game_mode",
     SetClientTheme = "set_client_theme",
 }
@@ -56,10 +65,25 @@ export function hasBotPermission(interaction: Interaction): boolean {
     }
 
     if (interaction.inCachedGuild()) {
-        return interaction.member.roles.cache.has(DISCORD_ROLE_ID);
+        return (
+            interaction.member.roles.cache.has(DISCORD_ROLE_ID) ||
+            interaction.member.roles.cache.has(DISCORD_OWNER_ROLE_ID)
+        );
     }
 
     return false;
+}
+
+export function hasOwnerPermission(interaction: Interaction): boolean {
+    if (interaction.guild?.id !== DISCORD_GUILD_ID) {
+        return false;
+    }
+
+    if (!interaction.inCachedGuild()) {
+        return false;
+    }
+
+    return interaction.member.roles.cache.has(DISCORD_OWNER_ROLE_ID);
 }
 
 const TIMEOUT_IN_SECONDS = 60;

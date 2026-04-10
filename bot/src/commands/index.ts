@@ -8,7 +8,10 @@ import {
     zBanAccountParams,
     zBanIpParams,
     zFindDiscordUserSlugParams,
+    zGetGpParams,
+    zGiveGpParams,
     zGiveItemParams,
+    zRemoveGpParams,
     zRemoveItemParams,
     zSetAccountNameParams,
     zSetMatchDataNameParams,
@@ -222,6 +225,63 @@ const commands = {
             },
         ],
     }),
+    [Command.GiveGp]: createCommand({
+        name: Command.GiveGp,
+        description: "Give GP to a user",
+        optionValidator: zGiveGpParams,
+        isPrivateRoute: true,
+        ownerOnly: true,
+        options: [
+            {
+                name: "slug",
+                description: "The account slug to give GP to",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "value",
+                description: "The amount of GP to add",
+                required: true,
+                type: ApplicationCommandOptionType.Integer,
+            },
+        ],
+    }),
+    [Command.RemoveGp]: createCommand({
+        name: Command.RemoveGp,
+        description: "Remove GP from a user",
+        optionValidator: zRemoveGpParams,
+        isPrivateRoute: true,
+        ownerOnly: true,
+        options: [
+            {
+                name: "slug",
+                description: "The account slug to remove GP from",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "value",
+                description: "The amount of GP to remove",
+                required: true,
+                type: ApplicationCommandOptionType.Integer,
+            },
+        ],
+    }),
+    [Command.GetGp]: createCommand({
+        name: Command.GetGp,
+        description: "Get a user's GP balance",
+        optionValidator: zGetGpParams,
+        isPrivateRoute: true,
+        ownerOnly: true,
+        options: [
+            {
+                name: "slug",
+                description: "The account slug to check",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+            },
+        ],
+    }),
     [Command.SetGameMode]: createCommand({
         name: Command.SetGameMode,
         description: "Sets a game mode in the API",
@@ -287,6 +347,7 @@ export const commandHandlers: CommandHandlers = (
                 interaction,
                 commands[key].optionValidator,
                 commands[key].isPrivateRoute,
+                commands[key].ownerOnly,
             );
         return obj;
     },

@@ -5,13 +5,20 @@ import {
     SlashCommandBuilder,
 } from "discord.js";
 import type z from "zod";
-import { botLogger, type Command, honoClient, isAdmin } from "../utils";
+import {
+    botLogger,
+    type Command,
+    hasOwnerPermission,
+    honoClient,
+    isAdmin,
+} from "../utils";
 
 export function createCommand<T extends z.ZodSchema = z.ZodSchema>(config: {
     name: Command;
     description: string;
     optionValidator: T;
     isPrivateRoute?: boolean;
+    ownerOnly?: boolean;
     options: {
         name: keyof z.input<T>;
         description: string;
@@ -31,6 +38,7 @@ export async function genericExecute<N extends Exclude<Command, "search_player">
     interaction: ChatInputCommandInteraction,
     validator: z.ZodTypeAny,
     isPrivateRoute = false,
+    ownerOnly = false,
 ) {
     await interaction.deferReply();
 
@@ -49,7 +57,7 @@ export async function genericExecute<N extends Exclude<Command, "search_player">
 
     if (!args.success) {
         botLogger.error("Failed to parse arguments", options, args.error);
-        await interaction.reply({
+        await interaction.followUp({
             content: "Invalid arguments",
             flags: MessageFlags.Ephemeral,
         });
@@ -57,7 +65,7 @@ export async function genericExecute<N extends Exclude<Command, "search_player">
     }
 
     if (isPrivateRoute) {
-        await handlePrivateRoute(interaction, name, args.data);
+        await handlePrivateRoute(interaction, name, args.data, ownerOnly);
         return;
     }
 
@@ -73,8 +81,14 @@ async function handlePrivateRoute(
     interaction: ChatInputCommandInteraction,
     name: any,
     payload: any,
+    ownerOnly = false,
 ) {
-    if (!isAdmin(interaction)) {
+    if (ownerOnly) {
+        if (!hasOwnerPermission(interaction)) {
+            await sendNoPermissionMessage(interaction);
+            return;
+        }
+    } else if (!isAdmin(interaction)) {
         await sendNoPermissionMessage(interaction);
         return;
     }

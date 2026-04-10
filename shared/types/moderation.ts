@@ -72,3 +72,17 @@ export const zRemoveItemParams = z.object({
     item: z.string(),
     slug: z.string(),
 });
+
+export const zGiveGpParams = z.object({
+    slug: z.string(),
+    value: z.number().int().positive(),
+});
+
+export const zRemoveGpParams = z.object({
+    slug: z.string(),
+    value: z.number().int().positive(),
+});
+
+export const zGetGpParams = z.object({
+    slug: z.string(),
+});
