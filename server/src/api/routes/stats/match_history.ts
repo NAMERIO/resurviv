@@ -114,17 +114,14 @@ matchHistoryRouter.post(
                 team_kills: teamMatches.team_kills,
                 damage_dealt: playerMatches.damage_dealt,
                 damage_taken: playerMatches.damage_taken,
-                slug: usersTable.slug,
+                slug: sql<string>`${slug}`.as("slug"),
             })
             .from(playerMatches)
             .leftJoin(
                 teamMatches,
-                and(
-                    eq(teamMatches.guid, playerMatches.guid),
-                    eq(teamMatches.team_id, playerMatches.team_id),
-                ),
+                sql`"team_matches"."game_id" = "player_matches"."game_id"
+                    AND "team_matches"."team_id" = "player_matches"."team_id"`,
             )
-            .innerJoin(usersTable, eq(usersTable.id, userId))
             .orderBy(desc(playerMatches.end_time))
             .offset(offset)
             .limit(10);

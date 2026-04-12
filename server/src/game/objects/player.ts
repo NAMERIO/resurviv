@@ -316,11 +316,13 @@ export class PlayerBarn {
         onPlayerJoin(player);
 
         // update leaderboard entry
-        const data = this.game.leaderboard.get(player.encodedIp) ?? {
+        const leaderboardKey = player.getLeaderboardKey();
+        const data = this.game.leaderboard.get(leaderboardKey) ?? {
             name: player.name,
             kills: 0,
         };
-        this.game.leaderboard.set(player.encodedIp, { ...data, name: player.name });
+        player.kills = data.kills;
+        this.game.leaderboard.set(leaderboardKey, { ...data, name: player.name });
 
         this.game.updateData();
     }
@@ -632,8 +634,8 @@ export class PlayerBarn {
             .sort((a, b) => this.getTrackedKills(b) - this.getTrackedKills(a))[0];
     }
 
-    getTrackedKills(player: Pick<Player, "encodedIp" | "kills">): number {
-        return this.game.leaderboard.get(player.encodedIp)?.kills ?? player.kills;
+    getTrackedKills(player: Pick<Player, "kills"> & { getLeaderboardKey(): string }): number {
+        return this.game.leaderboard.get(player.getLeaderboardKey())?.kills ?? player.kills;
     }
 
     addEmote(type: string, playerId: number, itemType = "") {
@@ -1634,6 +1636,10 @@ export class Player extends BaseGameObject {
     // about logging find_game IP's
     findGameIp: string;
     findGameEncodedIp: string;
+
+    getLeaderboardKey() {
+        return this.userId ? `user:${this.userId}` : `ip:${this.encodedIp}`;
+    }
 
     constructor(
         game: Game,
@@ -3464,8 +3470,9 @@ export class Player extends BaseGameObject {
                     this.game.playerBarn.killLeaderDirty = true;
                 }
 
-                const original = this.game.leaderboard.get(killCreditSource.encodedIp)!;
-                this.game.leaderboard.set(killCreditSource.encodedIp, {
+                const leaderboardKey = killCreditSource.getLeaderboardKey();
+                const original = this.game.leaderboard.get(leaderboardKey)!;
+                this.game.leaderboard.set(leaderboardKey, {
                     ...original,
                     kills: original.kills + 1,
                 });
