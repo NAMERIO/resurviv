@@ -58,6 +58,7 @@ const passRewardItems = new Set(
     ),
 );
 const defaultUnlockItems = new Set(UnlockDefs.unlock_default.unlocks);
+const featuredBundleUnlockItems = new Set(UnlockDefs.unlock_featured_bundles.unlocks);
 
 function nextSeed(seed: number) {
     return (Math.imul(seed, 1664525) + 1013904223) >>> 0;
@@ -101,16 +102,17 @@ function getBundleWindow(now = Date.now()): BundleWindow {
 }
 
 function getEligibleBundleItems() {
-    return Object.entries(GameObjectDefs)
-        .filter(([itemType, def]) => {
-            const itemDef = def as { type?: string; rarity?: Rarity };
-            if (!itemDef.type) return false;
+    return [...featuredBundleUnlockItems]
+        .filter((itemType) => {
+            const itemDef = GameObjectDefs[itemType] as
+                | { type?: string; rarity?: Rarity }
+                | undefined;
+            if (!itemDef?.type) return false;
             if (defaultUnlockItems.has(itemType)) return false;
             if (passRewardItems.has(itemType)) return false;
             if (getMarketPriceBounds(itemType) === null) return false;
             return true;
         })
-        .map(([itemType]) => itemType)
         .sort();
 }
 
