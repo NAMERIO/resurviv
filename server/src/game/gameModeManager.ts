@@ -259,13 +259,15 @@ export class GameModeManager {
                 const blueLeader = this.game.playerBarn.teams[TeamColor.Blue - 1].leader;
                 const highestKiller = this.game.playerBarn.players.reduce(
                     (highestKiller, p) => {
-                        if (highestKiller.kills === p.kills) {
-                            return highestKiller.damageDealt > p.damageDealt
-                                ? highestKiller
-                                : p;
+                        const highestKillerKills =
+                            this.game.playerBarn.getTrackedKills(highestKiller);
+                        const playerKills = this.game.playerBarn.getTrackedKills(p);
+
+                        if (highestKillerKills === playerKills) {
+                            return highestKiller.damageDealt > p.damageDealt ? highestKiller : p;
                         }
 
-                        return highestKiller.kills > p.kills ? highestKiller : p;
+                        return highestKillerKills > playerKills ? highestKiller : p;
                     },
                 );
 

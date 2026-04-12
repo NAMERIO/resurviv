@@ -50,7 +50,45 @@ import { isBanned, logPlayerIPs, ModerationRouter } from "./ModerationRouter";
 // Helper function to update clan stats for players who are in clans
 async function updateClanStats(matchData: MatchDataTable[]) {
     try {
+        const aggregatedMatchData = new Map<
+            string,
+            {
+                userId: string;
+                createdAt: Date | string | undefined;
+                kills: number;
+                rank: number;
+            }
+        >();
+
         for (const data of matchData) {
+            if (!data.userId) continue;
+
+            const key = `${data.gameId}:${data.userId}`;
+            const existing = aggregatedMatchData.get(key);
+
+            if (existing) {
+                existing.kills += data.kills || 0;
+                existing.rank = Math.min(existing.rank, data.rank || Infinity);
+                if (
+                    data.createdAt &&
+                    (!existing.createdAt ||
+                        new Date(data.createdAt).getTime() >
+                            new Date(existing.createdAt).getTime())
+                ) {
+                    existing.createdAt = data.createdAt;
+                }
+                continue;
+            }
+
+            aggregatedMatchData.set(key, {
+                userId: data.userId,
+                createdAt: data.createdAt,
+                kills: data.kills || 0,
+                rank: data.rank || Infinity,
+            });
+        }
+
+        for (const data of aggregatedMatchData.values()) {
             if (!data.userId) continue;
 
             // Check if the player is in a clan

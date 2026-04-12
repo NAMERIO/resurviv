@@ -625,8 +625,15 @@ export class PlayerBarn {
 
     getPlayerWithHighestKills(): Player | undefined {
         return this.game.playerBarn.livingPlayers
-            .filter((p) => p.kills >= GameConfig.player.killLeaderMinKills)
-            .sort((a, b) => b.kills - a.kills)[0];
+            .filter(
+                (p) =>
+                    this.getTrackedKills(p) >= GameConfig.player.killLeaderMinKills,
+            )
+            .sort((a, b) => this.getTrackedKills(b) - this.getTrackedKills(a))[0];
+    }
+
+    getTrackedKills(player: Pick<Player, "encodedIp" | "kills">): number {
+        return this.game.leaderboard.get(player.encodedIp)?.kills ?? player.kills;
     }
 
     addEmote(type: string, playerId: number, itemType = "") {
@@ -3284,13 +3291,15 @@ export class Player extends BaseGameObject {
 
         if (this.game.modeManager.showStatsMsg(this)) {
             const statsMsg = new net.PlayerStatsMsg();
-            statsMsg.playerStats = this;
+            statsMsg.playerStats = this.getPlayerStatsSnapshot(this);
             this.msgsToSend.push({ type: net.MsgType.PlayerStats, msg: statsMsg });
         } else {
             const gameOverMsg = new net.GameOverMsg();
 
             const statsArr: net.PlayerStatsMsg["playerStats"][] =
-                this.game.modeManager.getGameoverPlayers(this);
+                this.game.modeManager
+                    .getGameoverPlayers(this)
+                    .map((player) => this.getPlayerStatsSnapshot(player));
             gameOverMsg.playerStats = statsArr;
             gameOverMsg.teamRank = teamRank; // gameover msg sent after alive count updated
             gameOverMsg.teamId = this.teamId;
@@ -3361,6 +3370,17 @@ export class Player extends BaseGameObject {
 
     killedBy: Player | undefined;
     killedIds: number[] = [];
+
+    private getPlayerStatsSnapshot(player: Player): net.PlayerStatsMsg["playerStats"] {
+        return {
+            playerId: player.playerId,
+            timeAlive: Math.round(player.timeAlive),
+            kills: this.game.playerBarn.getTrackedKills(player),
+            dead: player.dead,
+            damageDealt: Math.round(player.damageDealt),
+            damageTaken: Math.round(player.damageTaken),
+        };
+    }
 
     private getKillsLeaderboardMsg() {
         const killLeaderboardPlayers = Array.from(this.game.leaderboard.entries())
@@ -3591,7 +3611,7 @@ export class Player extends BaseGameObject {
             let killLeaderKills = 0;
 
             if (killLeader && !killLeader.dead) {
-                killLeaderKills = killLeader.kills;
+                killLeaderKills = this.game.playerBarn.getTrackedKills(killLeader);
             }
 
             const newKillLeader = this.game.playerBarn.getPlayerWithHighestKills();
@@ -3599,7 +3619,7 @@ export class Player extends BaseGameObject {
                 killLeader !== newKillLeader &&
                 killCreditSource &&
                 newKillLeader === killCreditSource &&
-                newKillLeader.kills > killLeaderKills
+                this.game.playerBarn.getTrackedKills(newKillLeader) > killLeaderKills
             ) {
                 if (killLeader && killLeader.role === "the_hunted") {
                     killLeader.removeRole();
