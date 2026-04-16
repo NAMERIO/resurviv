@@ -8,7 +8,10 @@ import { QuestDefs } from "../../../../../shared/defs/gameObjects/questDefs";
 import { MapDefs } from "../../../../../shared/defs/mapDefs";
 import { TeamMode } from "../../../../../shared/gameConfig";
 import {
+    zGetGpParams,
+    zGiveGpParams,
     zGiveItemParams,
+    zRemoveGpParams,
     zRemoveItemParams,
 } from "../../../../../shared/types/moderation";
 import { passUtil } from "../../../../../shared/utils/passUtil";
@@ -47,7 +50,45 @@ import { isBanned, logPlayerIPs, ModerationRouter } from "./ModerationRouter";
 // Helper function to update clan stats for players who are in clans
 async function updateClanStats(matchData: MatchDataTable[]) {
     try {
+        const aggregatedMatchData = new Map<
+            string,
+            {
+                userId: string;
+                createdAt: Date | string | undefined;
+                kills: number;
+                rank: number;
+            }
+        >();
+
         for (const data of matchData) {
+            if (!data.userId) continue;
+
+            const key = `${data.gameId}:${data.userId}`;
+            const existing = aggregatedMatchData.get(key);
+
+            if (existing) {
+                existing.kills += data.kills || 0;
+                existing.rank = Math.min(existing.rank, data.rank || Infinity);
+                if (
+                    data.createdAt &&
+                    (!existing.createdAt ||
+                        new Date(data.createdAt).getTime() >
+                            new Date(existing.createdAt).getTime())
+                ) {
+                    existing.createdAt = data.createdAt;
+                }
+                continue;
+            }
+
+            aggregatedMatchData.set(key, {
+                userId: data.userId,
+                createdAt: data.createdAt,
+                kills: data.kills || 0,
+                rank: data.rank || Infinity,
+            });
+        }
+
+        for (const data of aggregatedMatchData.values()) {
             if (!data.userId) continue;
 
             // Check if the player is in a clan
@@ -379,6 +420,99 @@ export const PrivateRouter = new Hono<Context>()
             });
 
             return c.json({ success: true }, 200);
+        },
+    )
+    .post(
+        "/give_gp",
+        databaseEnabledMiddleware,
+        validateParams(zGiveGpParams),
+        async (c) => {
+            const { slug, value } = c.req.valid("json");
+
+            const user = await db.query.usersTable.findFirst({
+                where: eq(usersTable.slug, slug),
+                columns: {
+                    gpBalance: true,
+                },
+            });
+
+            if (!user) {
+                return c.json({ message: "User not found" }, 200);
+            }
+
+            const [updatedUser] = await db
+                .update(usersTable)
+                .set({
+                    gpBalance: sql`${usersTable.gpBalance} + ${value}`,
+                })
+                .where(eq(usersTable.slug, slug))
+                .returning({
+                    gpBalance: usersTable.gpBalance,
+                });
+
+            return c.json(
+                {
+                    message: `Added ${value} GP to ${slug}. New balance: ${updatedUser?.gpBalance ?? user.gpBalance + value}`,
+                },
+                200,
+            );
+        },
+    )
+    .post(
+        "/remove_gp",
+        databaseEnabledMiddleware,
+        validateParams(zRemoveGpParams),
+        async (c) => {
+            const { slug, value } = c.req.valid("json");
+
+            const user = await db.query.usersTable.findFirst({
+                where: eq(usersTable.slug, slug),
+                columns: {
+                    gpBalance: true,
+                },
+            });
+
+            if (!user) {
+                return c.json({ message: "User not found" }, 200);
+            }
+
+            const [updatedUser] = await db
+                .update(usersTable)
+                .set({
+                    gpBalance: sql`GREATEST(${usersTable.gpBalance} - ${value}, 0)`,
+                })
+                .where(eq(usersTable.slug, slug))
+                .returning({
+                    gpBalance: usersTable.gpBalance,
+                });
+
+            return c.json(
+                {
+                    message: `Removed ${value} GP from ${slug}. New balance: ${updatedUser?.gpBalance ?? Math.max(0, user.gpBalance - value)}`,
+                },
+                200,
+            );
+        },
+    )
+    .post(
+        "/get_gp",
+        databaseEnabledMiddleware,
+        validateParams(zGetGpParams),
+        async (c) => {
+            const { slug } = c.req.valid("json");
+
+            const user = await db.query.usersTable.findFirst({
+                where: eq(usersTable.slug, slug),
+                columns: {
+                    gpBalance: true,
+                },
+            });
+
+            if (!user) {
+                return c.json({ message: "User not found" }, 200);
+            }
+
+            return c.json({ message: `${slug} has ${user.gpBalance} GP` }, 200);
         },
     )
     .post(

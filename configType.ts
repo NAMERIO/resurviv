@@ -338,6 +338,11 @@ export interface ConfigType {
     discordRoleId?: string;
 
     /**
+     * Role ID for users allowed to use owner only bot actions.
+     */
+    discordOwnerRoleId?: string;
+
+    /**
      * Guild ID
      */
     discordGuildId?: string;

@@ -8,6 +8,7 @@ export const Config = getConfig(isProd, serverConfigPath);
 if (
     !Config.discordGuildId ||
     !Config.discordRoleId ||
+    !Config.discordOwnerRoleId ||
     !Config.secrets.DISCORD_CLIENT_ID ||
     !Config.secrets.DISCORD_BOT_TOKEN ||
     !Config.gameServer.apiServerUrl
@@ -20,6 +21,7 @@ const API_URL = `${Config.gameServer.apiServerUrl}/private`;
 const {
     discordGuildId: DISCORD_GUILD_ID,
     discordRoleId: DISCORD_ROLE_ID,
+    discordOwnerRoleId: DISCORD_OWNER_ROLE_ID,
     secrets: { DISCORD_CLIENT_ID, DISCORD_BOT_TOKEN },
 } = Config;
 
@@ -28,5 +30,6 @@ export {
     DISCORD_BOT_TOKEN,
     DISCORD_CLIENT_ID,
     DISCORD_GUILD_ID,
+    DISCORD_OWNER_ROLE_ID,
     DISCORD_ROLE_ID,
 };

@@ -64,29 +64,19 @@ async function userStatsSqlQuery(
     mapIdFilter: string,
     interval: UserStatsRequest["interval"],
 ): Promise<UserStatsResponse> {
-    const withSelect = db.$with("mode_stats").as(
+    const aggregatedMatches = db.$with("player_matches").as(
         db
             .select({
                 team_mode: matchDataTable.teamMode,
-                games: sql`COUNT(*)`.as("games"),
-                wins: sql`SUM(CASE WHEN ${matchDataTable.rank} = 1 THEN 1 ELSE 0 END)`.as(
-                    "wins",
-                ),
-                kills: sum(matchDataTable.kills).as("kills"),
-                winPct: sql`ROUND(SUM(CASE WHEN ${matchDataTable.rank} = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1)`.as(
-                    "winpct",
-                ),
-                most_kills: max(matchDataTable.kills).as("most_kills"),
-                most_damage: max(matchDataTable.damageDealt).as("most_damage"),
-                kpg: sql`ROUND(SUM(${matchDataTable.kills}) * 1.0 / COUNT(*), 1)`.as(
-                    "kpg",
-                ),
-                avg_damage: sql`ROUND(AVG(${matchDataTable.damageDealt}))`.as(
-                    "avg_damage",
-                ),
-                avg_time_alive: sql`ROUND(AVG(${matchDataTable.timeAlive}))`.as(
-                    "avg_time_alive",
-                ),
+                game_id: matchDataTable.gameId,
+                kills: sql<number>`SUM(${matchDataTable.kills})`.mapWith(Number).as("kills"),
+                rank: sql<number>`MIN(${matchDataTable.rank})`.mapWith(Number).as("rank"),
+                damage_dealt: sql<number>`SUM(${matchDataTable.damageDealt})`
+                    .mapWith(Number)
+                    .as("damage_dealt"),
+                time_alive: sql<number>`SUM(${matchDataTable.timeAlive})`
+                    .mapWith(Number)
+                    .as("time_alive"),
             })
             .from(matchDataTable)
             .where(
@@ -98,11 +88,39 @@ async function userStatsSqlQuery(
                     interval in intervalFilter ? intervalFilter[interval] : undefined,
                 ),
             )
-            .groupBy(matchDataTable.teamMode),
+            .groupBy(matchDataTable.teamMode, matchDataTable.gameId),
+    );
+
+    const withSelect = db.$with("mode_stats").as(
+        db
+            .select({
+                team_mode: aggregatedMatches.team_mode,
+                games: sql`COUNT(*)`.as("games"),
+                wins: sql`SUM(CASE WHEN ${aggregatedMatches.rank} = 1 THEN 1 ELSE 0 END)`.as(
+                    "wins",
+                ),
+                kills: sum(aggregatedMatches.kills).as("kills"),
+                winPct: sql`ROUND(SUM(CASE WHEN ${aggregatedMatches.rank} = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1)`.as(
+                    "winpct",
+                ),
+                most_kills: max(aggregatedMatches.kills).as("most_kills"),
+                most_damage: max(aggregatedMatches.damage_dealt).as("most_damage"),
+                kpg: sql`ROUND(SUM(${aggregatedMatches.kills}) * 1.0 / COUNT(*), 1)`.as(
+                    "kpg",
+                ),
+                avg_damage: sql`ROUND(AVG(${aggregatedMatches.damage_dealt}))`.as(
+                    "avg_damage",
+                ),
+                avg_time_alive: sql`ROUND(AVG(${aggregatedMatches.time_alive}))`.as(
+                    "avg_time_alive",
+                ),
+            })
+            .from(aggregatedMatches)
+            .groupBy(aggregatedMatches.team_mode),
     );
 
     const res = await db
-        .with(withSelect)
+        .with(aggregatedMatches, withSelect)
         .select({
             slug: usersTable.slug,
             username: usersTable.username,

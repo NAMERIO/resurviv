@@ -10,7 +10,7 @@ import { util } from "../../../shared/utils/util";
 import { v2 } from "../../../shared/utils/v2";
 import { Config } from "../config";
 import { ServerLogger } from "../utils/logger";
-import { apiPrivateRouter } from "../utils/serverHelpers";
+import { apiPrivateRouter, HTTPRateLimit } from "../utils/serverHelpers";
 import {
     type FindGamePrivateBody,
     ProcessMsgType,
@@ -94,6 +94,8 @@ export class Game {
     objectRegister: ObjectRegister;
 
     joinTokens = new Map<string, JoinTokenData>();
+    joinSpamRateLimit = new HTTPRateLimit(3, 10000);
+    autoBanningIps = new Set<string>();
 
     get aliveCount(): number {
         return this.playerBarn.livingPlayers.length;
@@ -676,6 +678,44 @@ export class Game {
             if (player.encodedIp == encodedIp) {
                 this.closeSocket(player.socketId, "banned");
             }
+        }
+    }
+
+    kickPlayersByRawIp(ip: string) {
+        for (const player of this.playerBarn.livingPlayers) {
+            if (player.ip === ip) {
+                this.closeSocket(player.socketId, "banned");
+            }
+        }
+    }
+
+    async autoBanIpForJoinSpam(ip: string) {
+        if (this.autoBanningIps.has(ip)) return;
+
+        this.autoBanningIps.add(ip);
+        this.logger.warn(
+            `Auto-banning IP ${ip} for suspicious join spam in game ${this.id}`,
+        );
+        this.kickPlayersByRawIp(ip);
+
+        if (!Config.database.enabled) {
+            return;
+        }
+
+        try {
+            await apiPrivateRouter.moderation.ban_ip.$post({
+                json: {
+                    ips: [ip],
+                    is_encoded: false,
+                    permanent: false,
+                    ban_associated_account: false,
+                    ip_ban_duration: 30,
+                    ban_reason: "Suspicious join spam / botting",
+                    executor_id: "auto_join_spam",
+                },
+            });
+        } catch (err) {
+            this.logger.error(`Failed to auto-ban IP ${ip}`, err);
         }
     }
 

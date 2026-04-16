@@ -23,6 +23,18 @@ import { db } from "../../db";
 import { bannedIpsTable, ipLogsTable, matchDataTable, usersTable } from "../../db/schema";
 import { sanitizeSlug } from "../user/auth/authUtils";
 
+async function disconnectBannedIp(encodedIp: string) {
+    server.teamMenu.disconnectPlayers(encodedIp);
+
+    await Promise.all(
+        Object.values(server.regions).map((region) =>
+            region.fetch("api/kick_player_by_ip", {
+                encodedIp,
+            }),
+        ),
+    );
+}
+
 export const ModerationRouter = new Hono()
     .use(databaseEnabledMiddleware)
     .post("/ban_account", validateParams(zBanAccountParams), async (c) => {
@@ -95,7 +107,7 @@ export const ModerationRouter = new Hono()
             }
 
             for (const ban of bans) {
-                server.teamMenu.disconnectPlayers(ban.encodedIp);
+                await disconnectBannedIp(ban.encodedIp);
             }
         }
 
@@ -116,16 +128,13 @@ export const ModerationRouter = new Hono()
         async (c) => {
             const { encodedIp } = c.req.valid("json");
 
-            await fetch(`http://localhost:8001/api/kick_player_by_ip`, {
-                method: "POST",
-                headers: {
-                    "content-type": "application/json",
-                    "survev-api-key": Config.secrets.SURVEV_API_KEY,
-                },
-                body: JSON.stringify({
-                    encodedIp,
-                }),
-            });
+            await Promise.all(
+                Object.values(server.regions).map((region) =>
+                    region.fetch("api/kick_player_by_ip", {
+                        encodedIp,
+                    }),
+                ),
+            );
 
             return c.json({ message: "kicked" }, 200);
         },
@@ -214,7 +223,7 @@ export const ModerationRouter = new Hono()
         }
 
         for (const encodedIp of encodedIps) {
-            server.teamMenu.disconnectPlayers(encodedIp);
+            await disconnectBannedIp(encodedIp);
         }
 
         const baseMessage = permanent

@@ -73,39 +73,79 @@ async function soloLeaderboardQuery(params: LeaderboardParams) {
     const { interval, mapId, teamMode, type } = params;
     const minGames = type === "kpg" ? MinGames[type][interval] : 1;
 
+    const aggregatedMatches = db.$with("player_matches").as(
+        db
+            .select({
+                userId: matchDataTable.userId,
+                username: matchDataTable.username,
+                mapId: matchDataTable.mapId,
+                region: matchDataTable.region,
+                teamMode: matchDataTable.teamMode,
+                gameId: matchDataTable.gameId,
+                kills: sql<number>`SUM(${matchDataTable.kills})`.mapWith(Number).as("kills"),
+                rank: sql<number>`MIN(${matchDataTable.rank})`.mapWith(Number).as("rank"),
+                damageDealt: sql<number>`SUM(${matchDataTable.damageDealt})`
+                    .mapWith(Number)
+                    .as("damage_dealt"),
+            })
+            .from(matchDataTable)
+            .where(
+                and(
+                    eq(matchDataTable.teamMode, teamMode),
+                    interval === "alltime" ? undefined : intervalFilter[interval],
+                    ne(matchDataTable.userId, ""),
+                    eq(matchDataTable.mapId, mapId),
+                ),
+            )
+            .groupBy(
+                matchDataTable.userId,
+                matchDataTable.username,
+                matchDataTable.mapId,
+                matchDataTable.region,
+                matchDataTable.teamMode,
+                matchDataTable.gameId,
+            ),
+    );
+
     const usernameQuery =
-        type === "most_kills" ? matchDataTable.username : usersTable.username;
+        type === "most_kills" ? aggregatedMatches.username : usersTable.username;
 
     const result = await db
+        .with(aggregatedMatches)
         .select({
             username: usernameQuery,
-            mapId: matchDataTable.mapId,
-            region: matchDataTable.region,
-            teamMode: matchDataTable.teamMode,
-            games: count(sql`DISTINCT(match_data.game_id)`),
+            mapId: aggregatedMatches.mapId,
+            region: aggregatedMatches.region,
+            teamMode: aggregatedMatches.teamMode,
+            games: sql<number>`COUNT(*)`.mapWith(Number),
             slug: usersTable.slug,
-            val: sql.raw(`${typeToQuery[type]} as val`) as SQL<number>,
+            val: sql.raw(
+                `${
+                    {
+                        kills: 'SUM("player_matches"."kills")',
+                        most_damage_dealt: 'MAX("player_matches"."damage_dealt")',
+                        kpg: 'ROUND(SUM("player_matches"."kills") * 1.0 / COUNT(*), 1)',
+                        most_kills: 'MAX("player_matches"."kills")',
+                        wins: 'COUNT(CASE WHEN "player_matches"."rank" = 1 THEN 1 END)',
+                    }[type]
+                } as val`,
+            ) as SQL<number>,
         })
-        .from(matchDataTable)
-        .leftJoin(usersTable, eq(usersTable.id, matchDataTable.userId))
+        .from(aggregatedMatches)
+        .leftJoin(usersTable, eq(usersTable.id, aggregatedMatches.userId))
         .where(
             and(
-                eq(matchDataTable.teamMode, teamMode),
                 eq(usersTable.banned, false),
-                interval === "alltime" ? undefined : intervalFilter[interval],
-                ne(matchDataTable.userId, ""),
-                eq(matchDataTable.mapId, mapId),
             ),
         )
         .groupBy(
-            matchDataTable.mapId,
+            aggregatedMatches.mapId,
             usersTable.slug,
-            matchDataTable.region,
-            matchDataTable.teamMode,
+            aggregatedMatches.region,
+            aggregatedMatches.teamMode,
             usernameQuery,
-            sql`${type === "most_kills" ? matchDataTable.kills : ""}`,
         )
-        .having(gte(count(sql`DISTINCT(match_data.game_id)`), minGames))
+        .having(sql`COUNT(*) >= ${minGames}`)
         .orderBy(sql`val DESC`)
         .limit(MAX_RESULT_COUNT);
 
