@@ -868,7 +868,6 @@ export class Application {
         const canShowArenaButton =
             this.active &&
             !device.mobile &&
-            this.account.loggedIn &&
             this.siteInfo.info.modes?.some((s) => s.enabled && s.teamMode > 1);
         $("#open-arena-button").css("display", canShowArenaButton ? "block" : "none");
 
