@@ -732,7 +732,7 @@ UserRouter.post(
                     where: eq(ipLogsTable.userId, user.id),
                     orderBy: (table, { desc }) => [desc(table.createdAt)],
                     columns: {
-                        ip: true,
+                        encodedIp: true,
                     },
                 }),
             ]);
@@ -742,7 +742,7 @@ UserRouter.post(
                 sellerSlug: sellerInfo?.slug || "unknown",
                 itemType: result.itemType,
                 price: result.price,
-                ip: latestIpLog?.ip,
+                encodedIp: latestIpLog?.encodedIp,
             });
 
             return c.json<BuyMarketListingResponse>(

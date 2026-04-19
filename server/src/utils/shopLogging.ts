@@ -28,7 +28,7 @@ type ShopPurchaseLog = {
     sellerSlug: string;
     itemType: string;
     price: number;
-    ip?: string;
+    encodedIp?: string;
     purchasedAt?: Date;
 };
 
@@ -37,7 +37,7 @@ export function logMarketPurchaseToDiscord({
     sellerSlug,
     itemType,
     price,
-    ip,
+    encodedIp,
     purchasedAt = new Date(),
 }: ShopPurchaseLog) {
     if (process.env.NODE_ENV !== "production") return;
@@ -46,7 +46,7 @@ export function logMarketPurchaseToDiscord({
     const buyer = sanitizeDiscordText(buyerSlug);
     const seller = sanitizeDiscordText(sellerSlug);
     const itemName = sanitizeDiscordText(getItemDisplayName(itemType));
-    const formattedIp = ip ? sanitizeDiscordText(ip) : "unknown_ip";
+    const formattedIp = encodedIp ? sanitizeDiscordText(encodedIp) : "unknown_ip";
     const formattedTime = formatEasternTime(purchasedAt);
     const message =
         `${buyer} bought ${itemName} (${itemType}) from ${seller} ` +
