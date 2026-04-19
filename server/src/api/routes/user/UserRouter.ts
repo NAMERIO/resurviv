@@ -36,6 +36,7 @@ import {
 import { getMarketPriceBounds } from "../../../../../shared/utils/marketPricing";
 import { Config } from "../../../config";
 import { getHonoIp, validateUserName } from "../../../utils/serverHelpers";
+import { logMarketPurchaseToDiscord } from "../../../utils/shopLogging";
 import { server } from "../../apiServer";
 import {
     authMiddleware,
@@ -45,6 +46,7 @@ import {
 } from "../../auth/middleware";
 import { db } from "../../db";
 import {
+    ipLogsTable,
     itemsTable,
     marketListingTable,
     matchDataTable,
@@ -700,6 +702,9 @@ UserRouter.post(
                 return {
                     ok: true as const,
                     gpBalance: buyer.gpBalance - listing.price,
+                    price: listing.price,
+                    itemType: listing.itemType,
+                    sellerUserId: listing.sellerUserId,
                 };
             });
 
@@ -709,6 +714,36 @@ UserRouter.post(
                     200,
                 );
             }
+
+            const [buyerInfo, sellerInfo, latestIpLog] = await Promise.all([
+                db.query.usersTable.findFirst({
+                    where: eq(usersTable.id, user.id),
+                    columns: {
+                        slug: true,
+                    },
+                }),
+                db.query.usersTable.findFirst({
+                    where: eq(usersTable.id, result.sellerUserId),
+                    columns: {
+                        slug: true,
+                    },
+                }),
+                db.query.ipLogsTable.findFirst({
+                    where: eq(ipLogsTable.userId, user.id),
+                    orderBy: (table, { desc }) => [desc(table.createdAt)],
+                    columns: {
+                        ip: true,
+                    },
+                }),
+            ]);
+
+            void logMarketPurchaseToDiscord({
+                buyerSlug: buyerInfo?.slug || "unknown",
+                sellerSlug: sellerInfo?.slug || "unknown",
+                itemType: result.itemType,
+                price: result.price,
+                ip: latestIpLog?.ip,
+            });
 
             return c.json<BuyMarketListingResponse>(
                 { success: true, gpBalance: result.gpBalance },

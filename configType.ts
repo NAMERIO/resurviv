@@ -215,6 +215,11 @@ export interface ConfigType {
          * Webhook URL to log maps generated.
          */
         mapGeneration?: string;
+
+        /**
+         * Webhook URL to log shop and market purchases.
+         */
+        shopLogs?: string;
     };
 
     /**
