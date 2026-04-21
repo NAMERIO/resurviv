@@ -1463,6 +1463,7 @@
             <span id="tab-shop" data-l10n="store-tab-shop">Shop</span>
             <span id="tab-market-buy" data-l10n="market-tab-buy-items">Market Buy</span>
             <span id="tab-market-sell" data-l10n="market-tab-sell-items">Market Sell</span>
+            <span id="tab-market-auction" data-l10n="market-tab-auction-items">Auctions</span>
           </div>
           <span class="close close-corner iap-close-corner"></span>
           <div id="shop-balance-bar" class="shop-balance-bar">
@@ -1684,6 +1685,46 @@
               </div>
               <div id="confirm-sell-yes" class="btn-confirm-sell btn-darken">
                 <span data-l10n="confirm-sell-modal-yes">Yes, sell.</span>
+              </div>
+            </h3>
+          </div>
+        </div>
+      </div>
+      <div id="modal-auction-bid" class="modal" style="display:none;">
+        <div class="modal-content modal-close auction-bid-modal-content">
+          <div class="modal-header">
+            <span class="close close-corner"></span>
+            <h2 data-l10n="auction-bid-modal-title">Auction Bid</h2>
+          </div>
+          <div class="modal-body auction-bid-modal-body">
+            <div class="auction-bid-top">
+              <div id="auction-bid-item-image" class="auction-bid-item-image"></div>
+              <div class="auction-bid-summary">
+                <div id="auction-bid-item-name" class="auction-bid-item-name"></div>
+                <div class="auction-bid-summary-line"><span data-l10n="market-seller-label">Seller</span><strong id="auction-bid-seller"></strong></div>
+                <div class="auction-bid-summary-line"><span data-l10n="auction-current-bid">Current Bid</span><strong id="auction-bid-current"></strong></div>
+                <div class="auction-bid-summary-line"><span data-l10n="auction-start-price">Start Price</span><strong id="auction-bid-start"></strong></div>
+                <div class="auction-bid-summary-line"><span data-l10n="auction-reference-value">Worth</span><strong id="auction-bid-reference"></strong></div>
+                <div class="auction-bid-summary-line"><span data-l10n="auction-highest-bidder">Top Bidder</span><strong id="auction-bid-leader"></strong></div>
+              </div>
+            </div>
+            <div class="auction-bid-history-panel">
+              <div class="auction-bid-history-title" data-l10n="auction-bid-activity">Bidding Activity</div>
+              <div id="auction-bid-activity" class="auction-bid-activity-list"></div>
+            </div>
+            <div class="confirm-sell-price-row auction-bid-input-row">
+              <span data-l10n="auction-place-bid">Place Bid:</span>
+              <label class="confirm-sell-price-input-wrap" for="auction-bid-input">
+                <span class="confirm-sell-price-icon"></span>
+                <input id="auction-bid-input" type="text" inputmode="numeric" value="0">
+              </label>
+            </div>
+            <div id="auction-bid-error" class="confirm-sell-price-error"></div>
+          </div>
+          <div class="modal-footer modal-footer-round">
+            <h3 class="close close-footer">
+              <div class="btn-confirm-sell btn-darken" id="auction-bid-submit">
+                <span data-l10n="auction-bid-action">Bid</span>
               </div>
             </h3>
           </div>

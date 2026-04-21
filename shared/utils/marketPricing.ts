@@ -20,6 +20,16 @@ export const marketMinPriceByRarity: Record<Rarity, number> = {
 };
 
 export const marketMaxSellPrice = 10000;
+export const auctionStartPriceCapPercent = 0.6;
+
+export const marketReferenceValueByRarity: Record<Rarity, number> = {
+    [Rarity.Stock]: 0,
+    [Rarity.Common]: 100,
+    [Rarity.Uncommon]: 250,
+    [Rarity.Rare]: 500,
+    [Rarity.Epic]: 1200,
+    [Rarity.Mythic]: 2500,
+};
 
 export function getMarketItemRarity(itemType: string) {
     const def = GameObjectDefs[itemType] as
@@ -42,6 +52,27 @@ export function getMarketPriceBounds(itemType: string) {
     };
 }
 
+export function getMarketReferencePrice(itemType: string) {
+    const rarity = getMarketItemRarity(itemType);
+    if (rarity === null) return null;
+    return marketReferenceValueByRarity[rarity];
+}
+
+export function getAuctionPriceBounds(itemType: string) {
+    const rarity = getMarketItemRarity(itemType);
+    if (rarity === null) return null;
+
+    const referenceValue = marketReferenceValueByRarity[rarity];
+    const max = Math.max(1, Math.floor(referenceValue * auctionStartPriceCapPercent));
+
+    return {
+        rarity,
+        min: 1,
+        max,
+        referenceValue,
+    };
+}
+
 export function getSuggestedMarketSellPrice(itemType: string) {
     const bounds = getMarketPriceBounds(itemType);
     if (!bounds) return null;
@@ -50,6 +81,12 @@ export function getSuggestedMarketSellPrice(itemType: string) {
 
 export function isValidMarketSellPrice(itemType: string, price: number) {
     const bounds = getMarketPriceBounds(itemType);
+    if (!bounds || !Number.isInteger(price)) return false;
+    return price >= bounds.min && price <= bounds.max;
+}
+
+export function isValidAuctionStartPrice(itemType: string, price: number) {
+    const bounds = getAuctionPriceBounds(itemType);
     if (!bounds || !Number.isInteger(price)) return false;
     return price >= bounds.min && price <= bounds.max;
 }

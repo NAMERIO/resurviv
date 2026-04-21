@@ -167,6 +167,65 @@ export const marketListingTable = pgTable(
 
 export type MarketListingTableSelect = typeof marketListingTable.$inferSelect;
 
+export const auctionListingTable = pgTable(
+    "auction_listing",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        sellerUserId: text("seller_user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        highestBidUserId: text("highest_bid_user_id").references(() => usersTable.id, {
+            onDelete: "set null",
+            onUpdate: "cascade",
+        }),
+        itemId: uuid("item_id").notNull(),
+        itemType: text("item_type").notNull(),
+        startPrice: integer("start_price").notNull(),
+        highestBid: integer("highest_bid").notNull().default(0),
+        status: text("status").notNull().default("active"),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        soldAt: timestamp("sold_at", { withTimezone: true }),
+        canceledAt: timestamp("canceled_at", { withTimezone: true }),
+    },
+    (table) => [
+        index("idx_auction_listing_status_created").on(table.status, table.createdAt),
+        index("idx_auction_listing_seller_status").on(table.sellerUserId, table.status),
+        index("idx_auction_listing_item_status").on(table.itemId, table.status),
+    ],
+);
+
+export type AuctionListingTableSelect = typeof auctionListingTable.$inferSelect;
+
+export const auctionBidTable = pgTable(
+    "auction_bid",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        auctionId: uuid("auction_id")
+            .notNull()
+            .references(() => auctionListingTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        bidderUserId: text("bidder_user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        amount: integer("amount").notNull(),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        index("idx_auction_bid_auction_created").on(table.auctionId, table.createdAt),
+        index("idx_auction_bid_bidder_created").on(table.bidderUserId, table.createdAt),
+    ],
+);
+
+export type AuctionBidTableSelect = typeof auctionBidTable.$inferSelect;
+
 export const matchDataTable = pgTable(
     "match_data",
     {

@@ -2,12 +2,17 @@ import $ from "jquery";
 import type {
     AckSoldMarketListingsRequest,
     AckSoldMarketListingsResponse,
+    AuctionListing,
     BuyFeaturedBundleRequest,
     BuyFeaturedBundleResponse,
     BuyMarketListingRequest,
     BuyMarketListingResponse,
+    CancelAuctionListingRequest,
+    CancelAuctionListingResponse,
     CancelMarketListingRequest,
     CancelMarketListingResponse,
+    CreateAuctionListingRequest,
+    CreateAuctionListingResponse,
     CreateMarketListingRequest,
     CreateMarketListingResponse,
     GetMarketResponse,
@@ -17,6 +22,8 @@ import type {
     MarketListing,
     OpenLootBoxRequest,
     OpenLootBoxResponse,
+    PlaceAuctionBidRequest,
+    PlaceAuctionBidResponse,
     ProfileResponse,
     RefreshQuestRequest,
     RefreshQuestResponse,
@@ -121,6 +128,8 @@ export class Account {
     lootBoxes: ShopLootBox[] = [];
     marketListings: MarketListing[] = [];
     userMarketListings: MarketListing[] = [];
+    auctionListings: AuctionListing[] = [];
+    userAuctionListings: AuctionListing[] = [];
     soldMarketListings: SoldMarketListing[] = [];
     quests: Quest[] = [];
     questPriv = "";
@@ -435,6 +444,8 @@ export class Account {
             this.lootBoxes = res.lootBoxes || [];
             this.marketListings = res.listings || [];
             this.userMarketListings = res.userListings || [];
+            this.auctionListings = res.auctions || [];
+            this.userAuctionListings = res.userAuctions || [];
             this.soldMarketListings = res.soldListings || [];
             this.emit("gpBalance", this.gpBalance);
             this.emit("market", this.marketListings, this.userMarketListings);
@@ -528,6 +539,36 @@ export class Account {
         );
     }
 
+    createAuctionListing(
+        itemId: string,
+        startPrice: number,
+        callback?: (error?: string) => void,
+    ) {
+        const args: CreateAuctionListingRequest = { itemId, startPrice };
+        this.ajaxRequest(
+            "/api/user/create_auction_listing",
+            args,
+            (err, res: CreateAuctionListingResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric(
+                        "account",
+                        "create_auction_listing_error",
+                    );
+                    callback?.(res?.error || "server_error");
+                    return;
+                }
+
+                if (typeof res.gpBalance === "number") {
+                    this.gpBalance = res.gpBalance;
+                    this.emit("gpBalance", this.gpBalance);
+                }
+                this.loadProfile();
+                this.loadMarket();
+                callback?.();
+            },
+        );
+    }
+
     buyMarketListing(listingId: string, callback?: (error?: string) => void) {
         const args: BuyMarketListingRequest = { listingId };
         this.ajaxRequest(
@@ -561,6 +602,54 @@ export class Account {
                     errorLogManager.storeGeneric(
                         "account",
                         "cancel_market_listing_error",
+                    );
+                    callback?.(res?.error || "server_error");
+                    return;
+                }
+
+                if (typeof res.gpBalance === "number") {
+                    this.gpBalance = res.gpBalance;
+                    this.emit("gpBalance", this.gpBalance);
+                }
+                this.loadProfile();
+                this.loadMarket();
+                callback?.();
+            },
+        );
+    }
+
+    placeAuctionBid(auctionId: string, amount: number, callback?: (error?: string) => void) {
+        const args: PlaceAuctionBidRequest = { auctionId, amount };
+        this.ajaxRequest(
+            "/api/user/place_auction_bid",
+            args,
+            (err, res: PlaceAuctionBidResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "place_auction_bid_error");
+                    callback?.(res?.error || "server_error");
+                    return;
+                }
+
+                if (typeof res.gpBalance === "number") {
+                    this.gpBalance = res.gpBalance;
+                    this.emit("gpBalance", this.gpBalance);
+                }
+                this.loadMarket();
+                callback?.();
+            },
+        );
+    }
+
+    cancelAuctionListing(auctionId: string, callback?: (error?: string) => void) {
+        const args: CancelAuctionListingRequest = { auctionId };
+        this.ajaxRequest(
+            "/api/user/cancel_auction_listing",
+            args,
+            (err, res: CancelAuctionListingResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric(
+                        "account",
+                        "cancel_auction_listing_error",
                     );
                     callback?.(res?.error || "server_error");
                     return;

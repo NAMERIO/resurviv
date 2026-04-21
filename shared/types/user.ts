@@ -47,6 +47,25 @@ export type SoldMarketListing = {
     soldAt: number;
 };
 
+export type AuctionBidActivity = {
+    bidderSlug: string;
+    amount: number;
+    createdAt: number;
+};
+
+export type AuctionListing = {
+    id: string;
+    itemId: string;
+    itemType: string;
+    sellerSlug: string;
+    startPrice: number;
+    highestBid: number;
+    bidCount: number;
+    highestBidderSlug?: string;
+    createdAt: number;
+    activities: AuctionBidActivity[];
+};
+
 export const zUsernameRequest = z.object({
     username: z.string().trim().min(1).max(Constants.PlayerNameMaxLen),
 });
@@ -150,6 +169,8 @@ export type GetMarketResponse = {
     gpBalance: number;
     listings: MarketListing[];
     userListings: MarketListing[];
+    auctions: AuctionListing[];
+    userAuctions: AuctionListing[];
     soldListings: SoldMarketListing[];
     expiredItemTypes: string[];
     featuredBundles: FeaturedBundleOffer[];
@@ -170,6 +191,43 @@ export type CreateMarketListingResponse = {
         | "invalid_price"
         | "price_too_low"
         | "price_too_high"
+        | "server_error";
+    gpBalance?: number;
+};
+
+export const zCreateAuctionListingRequest = z.object({
+    itemId: z.string().uuid(),
+    startPrice: z
+        .number()
+        .int()
+        .refine((value) => value <= marketMaxSellPrice),
+});
+export type CreateAuctionListingRequest = z.infer<typeof zCreateAuctionListingRequest>;
+export type CreateAuctionListingResponse = {
+    success: boolean;
+    error?:
+        | "item_not_owned"
+        | "invalid_item"
+        | "already_listed"
+        | "invalid_price"
+        | "price_too_low"
+        | "price_too_high"
+        | "server_error";
+    gpBalance?: number;
+};
+
+export const zPlaceAuctionBidRequest = z.object({
+    auctionId: z.string().uuid(),
+    amount: z.number().int().min(1).max(marketMaxSellPrice),
+});
+export type PlaceAuctionBidRequest = z.infer<typeof zPlaceAuctionBidRequest>;
+export type PlaceAuctionBidResponse = {
+    success: boolean;
+    error?:
+        | "auction_not_found"
+        | "cannot_bid_own_auction"
+        | "bid_too_low"
+        | "not_enough_gp"
         | "server_error";
     gpBalance?: number;
 };
@@ -196,6 +254,16 @@ export type BuyFeaturedBundleRequest = z.infer<typeof zBuyFeaturedBundleRequest>
 export type BuyFeaturedBundleResponse = {
     success: boolean;
     error?: "bundle_not_found" | "already_purchased" | "not_enough_gp" | "server_error";
+    gpBalance?: number;
+};
+
+export const zCancelAuctionListingRequest = z.object({
+    auctionId: z.string().uuid(),
+});
+export type CancelAuctionListingRequest = z.infer<typeof zCancelAuctionListingRequest>;
+export type CancelAuctionListingResponse = {
+    success: boolean;
+    error?: "auction_not_found" | "server_error";
     gpBalance?: number;
 };
 

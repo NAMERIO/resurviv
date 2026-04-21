@@ -1,24 +1,31 @@
 import { createHash } from "node:crypto";
-import { and, eq, inArray, ne, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, ne, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import {
     type AckSoldMarketListingsResponse,
+    type AuctionBidActivity,
     type BuyFeaturedBundleResponse,
     type BuyMarketListingResponse,
+    type CancelAuctionListingResponse,
     type CancelMarketListingResponse,
+    type CreateAuctionListingResponse,
     type CreateMarketListingResponse,
     type GetMarketResponse,
     type LoadoutResponse,
     type OpenLootBoxResponse,
+    type PlaceAuctionBidResponse,
     type ProfileResponse,
     type UsernameResponse,
     zAckSoldMarketListingsRequest,
     zBuyFeaturedBundleRequest,
     zBuyMarketListingRequest,
+    zCancelAuctionListingRequest,
     zCancelMarketListingRequest,
+    zCreateAuctionListingRequest,
     zCreateMarketListingRequest,
     zLoadoutRequest,
     zOpenLootBoxRequest,
+    zPlaceAuctionBidRequest,
     zSetItemStatusRequest,
     zUsernameRequest,
 } from "../../../../../shared/types/user";
@@ -33,7 +40,10 @@ import {
     lootBoxes,
     pickLootBoxReward,
 } from "../../../../../shared/utils/lootBoxes";
-import { getMarketPriceBounds } from "../../../../../shared/utils/marketPricing";
+import {
+    getAuctionPriceBounds,
+    getMarketPriceBounds,
+} from "../../../../../shared/utils/marketPricing";
 import { Config } from "../../../config";
 import { getHonoIp, validateUserName } from "../../../utils/serverHelpers";
 import { logMarketPurchaseToDiscord } from "../../../utils/shopLogging";
@@ -46,6 +56,8 @@ import {
 } from "../../auth/middleware";
 import { db } from "../../db";
 import {
+    auctionBidTable,
+    auctionListingTable,
     ipLogsTable,
     itemsTable,
     marketListingTable,
@@ -64,6 +76,7 @@ import { PassRouter } from "./PassRouter";
 export const UserRouter = new Hono<Context>();
 
 const MARKET_LISTING_EXPIRY_MS = 24 * 60 * 60 * 1000;
+const AUCTION_LISTING_EXPIRY_MS = 24 * 60 * 60 * 1000;
 const APRIL_THANKS_REWARD_KEY = "thanks_gift_april_2026";
 const APRIL_THANKS_REWARD_GP = 500;
 const APRIL_THANKS_REWARD_IP_LIMIT = 2;
@@ -231,12 +244,62 @@ async function expireMarketListings(tx: any, targetUserId?: string) {
         .map((listing: { sellerUserId: string; itemType: string }) => listing.itemType);
 }
 
+async function expireAuctionListings(tx: any) {
+    const cutoff = new Date(Date.now() - AUCTION_LISTING_EXPIRY_MS);
+    const expiredAuctions = await tx.query.auctionListingTable.findMany({
+        where: and(
+            eq(auctionListingTable.status, "active"),
+            sql`${auctionListingTable.createdAt} <= ${cutoff}`,
+        ),
+    });
+
+    for (const auction of expiredAuctions) {
+        await tx
+            .update(auctionListingTable)
+            .set({
+                status: auction.highestBidUserId ? "sold" : "expired",
+                soldAt: auction.highestBidUserId ? new Date() : auction.soldAt,
+                canceledAt: !auction.highestBidUserId ? new Date() : auction.canceledAt,
+            })
+            .where(eq(auctionListingTable.id, auction.id));
+
+        if (auction.highestBidUserId && auction.highestBid > 0) {
+            await tx.insert(itemsTable).values({
+                id: auction.itemId,
+                userId: auction.highestBidUserId,
+                type: auction.itemType,
+                source: "auction_win",
+                timeAcquired: Date.now(),
+            });
+
+            await tx
+                .update(usersTable)
+                .set({
+                    gpBalance: sql`${usersTable.gpBalance} + ${auction.highestBid}`,
+                })
+                .where(eq(usersTable.id, auction.sellerUserId));
+        } else {
+            await tx.insert(itemsTable).values({
+                id: auction.itemId,
+                userId: auction.sellerUserId,
+                type: auction.itemType,
+                source: "auction_expired",
+                timeAcquired: Date.now(),
+            });
+        }
+    }
+}
+
 async function buildMarketState(userId: string) {
     const expiredItemTypes = await expireMarketListings(db, userId);
+    await expireAuctionListings(db);
     const [
         { offers },
         publicListings,
         userListings,
+        publicAuctions,
+        userAuctions,
+        auctionBids,
         soldListings,
         sellers,
         purchasedBundles,
@@ -251,6 +314,20 @@ async function buildMarketState(userId: string) {
                 eq(marketListingTable.sellerUserId, userId),
                 eq(marketListingTable.status, "active"),
             ),
+            orderBy: (table, { desc }) => [desc(table.createdAt)],
+        }),
+        db.query.auctionListingTable.findMany({
+            where: eq(auctionListingTable.status, "active"),
+            orderBy: (table, { desc }) => [desc(table.highestBid), desc(table.createdAt)],
+        }),
+        db.query.auctionListingTable.findMany({
+            where: and(
+                eq(auctionListingTable.sellerUserId, userId),
+                eq(auctionListingTable.status, "active"),
+            ),
+            orderBy: (table, { desc }) => [desc(table.createdAt)],
+        }),
+        db.query.auctionBidTable.findMany({
             orderBy: (table, { desc }) => [desc(table.createdAt)],
         }),
         db.query.marketListingTable.findMany({
@@ -289,10 +366,35 @@ async function buildMarketState(userId: string) {
         sellerSlug: slugByUserId.get(listing.sellerUserId) || "unknown",
         createdAt: new Date(listing.createdAt).getTime(),
     });
+    const buildAuctionActivities = (auctionId: string): AuctionBidActivity[] =>
+        auctionBids
+            .filter((bid) => bid.auctionId === auctionId)
+            .slice(0, 12)
+            .map((bid) => ({
+                bidderSlug: slugByUserId.get(bid.bidderUserId) || "unknown",
+                amount: bid.amount,
+                createdAt: new Date(bid.createdAt).getTime(),
+            }));
+    const toClientAuction = (auction: (typeof publicAuctions)[number]) => ({
+        id: auction.id,
+        itemId: auction.itemId,
+        itemType: auction.itemType,
+        sellerSlug: slugByUserId.get(auction.sellerUserId) || "unknown",
+        startPrice: auction.startPrice,
+        highestBid: auction.highestBid,
+        bidCount: auctionBids.filter((bid) => bid.auctionId === auction.id).length,
+        highestBidderSlug: auction.highestBidUserId
+            ? (slugByUserId.get(auction.highestBidUserId) ?? "unknown")
+            : undefined,
+        createdAt: new Date(auction.createdAt).getTime(),
+        activities: buildAuctionActivities(auction.id),
+    });
 
     return {
         listings: publicListings.map(toClientListing),
         userListings: userListings.map(toClientListing),
+        auctions: publicAuctions.map(toClientAuction),
+        userAuctions: userAuctions.map(toClientAuction),
         soldListings: soldListings.map((listing) => ({
             id: listing.id,
             itemId: listing.itemId,
@@ -508,6 +610,8 @@ UserRouter.post("/get_market", async (c) => {
             gpBalance: user.gpBalance,
             listings: market.listings,
             userListings: market.userListings,
+            auctions: market.auctions,
+            userAuctions: market.userAuctions,
             soldListings: market.soldListings,
             expiredItemTypes: market.expiredItemTypes,
             featuredBundles: market.featuredBundles,
@@ -760,6 +864,206 @@ UserRouter.post(
 );
 
 UserRouter.post(
+    "/create_auction_listing",
+    validateParams(zCreateAuctionListingRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { itemId, startPrice } = c.req.valid("json");
+        if (!Number.isInteger(startPrice)) {
+            return c.json<CreateAuctionListingResponse>(
+                { success: false, error: "invalid_price" },
+                200,
+            );
+        }
+
+        try {
+            const result = await db.transaction(async (tx) => {
+                await expireMarketListings(tx, user.id);
+                await expireAuctionListings(tx);
+
+                const ownedItem = await tx.query.itemsTable.findFirst({
+                    where: and(eq(itemsTable.userId, user.id), eq(itemsTable.id, itemId)),
+                });
+                if (!ownedItem) {
+                    return { ok: false as const, error: "item_not_owned" as const };
+                }
+
+                const priceBounds = getAuctionPriceBounds(ownedItem.type);
+                if (!isSupportedMarketItem(ownedItem.type) || !priceBounds) {
+                    return { ok: false as const, error: "invalid_item" as const };
+                }
+                if (startPrice < priceBounds.min) {
+                    return { ok: false as const, error: "price_too_low" as const };
+                }
+                if (startPrice > priceBounds.max) {
+                    return { ok: false as const, error: "price_too_high" as const };
+                }
+
+                const existingAuction = await tx.query.auctionListingTable.findFirst({
+                    where: and(
+                        eq(auctionListingTable.sellerUserId, user.id),
+                        eq(auctionListingTable.itemId, itemId),
+                        eq(auctionListingTable.status, "active"),
+                    ),
+                    columns: { id: true },
+                });
+                if (existingAuction) {
+                    return { ok: false as const, error: "already_listed" as const };
+                }
+
+                await tx.delete(itemsTable).where(eq(itemsTable.id, itemId));
+
+                const remainingItems = await tx
+                    .select({
+                        id: itemsTable.id,
+                        type: itemsTable.type,
+                        timeAcquired: itemsTable.timeAcquired,
+                        source: itemsTable.source,
+                        status: itemsTable.status,
+                    })
+                    .from(itemsTable)
+                    .where(eq(itemsTable.userId, user.id));
+
+                await tx
+                    .update(usersTable)
+                    .set({
+                        loadout: loadout.validateWithAvailableItems(
+                            user.loadout,
+                            remainingItems,
+                        ),
+                    })
+                    .where(eq(usersTable.id, user.id));
+
+                await tx.insert(auctionListingTable).values({
+                    sellerUserId: user.id,
+                    itemId,
+                    itemType: ownedItem.type,
+                    startPrice,
+                    highestBid: 0,
+                    status: "active",
+                });
+
+                return { ok: true as const };
+            });
+
+            if (!result.ok) {
+                return c.json<CreateAuctionListingResponse>(
+                    { success: false, error: result.error },
+                    200,
+                );
+            }
+        } catch (err) {
+            server.logger.error("/api/user/create_auction_listing error", err);
+            return c.json<CreateAuctionListingResponse>(
+                { success: false, error: "server_error" },
+                500,
+            );
+        }
+
+        return c.json<CreateAuctionListingResponse>(
+            { success: true, gpBalance: user.gpBalance },
+            200,
+        );
+    },
+);
+
+UserRouter.post(
+    "/place_auction_bid",
+    validateParams(zPlaceAuctionBidRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { auctionId, amount } = c.req.valid("json");
+
+        try {
+            const result = await db.transaction(async (tx) => {
+                await expireAuctionListings(tx);
+
+                const auction = await tx.query.auctionListingTable.findFirst({
+                    where: and(
+                        eq(auctionListingTable.id, auctionId),
+                        eq(auctionListingTable.status, "active"),
+                    ),
+                });
+                if (!auction) {
+                    return { ok: false as const, error: "auction_not_found" as const };
+                }
+                if (auction.sellerUserId === user.id) {
+                    return {
+                        ok: false as const,
+                        error: "cannot_bid_own_auction" as const,
+                    };
+                }
+
+                const minimumBid = Math.max(auction.startPrice, auction.highestBid + 1);
+                if (amount < minimumBid) {
+                    return { ok: false as const, error: "bid_too_low" as const };
+                }
+
+                const bidder = await tx.query.usersTable.findFirst({
+                    where: eq(usersTable.id, user.id),
+                });
+                if (!bidder || bidder.gpBalance < amount) {
+                    return { ok: false as const, error: "not_enough_gp" as const };
+                }
+
+                if (auction.highestBidUserId && auction.highestBid > 0) {
+                    await tx
+                        .update(usersTable)
+                        .set({
+                            gpBalance: sql`${usersTable.gpBalance} + ${auction.highestBid}`,
+                        })
+                        .where(eq(usersTable.id, auction.highestBidUserId));
+                }
+
+                await tx
+                    .update(usersTable)
+                    .set({
+                        gpBalance: bidder.gpBalance - amount,
+                    })
+                    .where(eq(usersTable.id, user.id));
+
+                await tx
+                    .update(auctionListingTable)
+                    .set({
+                        highestBidUserId: user.id,
+                        highestBid: amount,
+                    })
+                    .where(eq(auctionListingTable.id, auction.id));
+
+                await tx.insert(auctionBidTable).values({
+                    auctionId: auction.id,
+                    bidderUserId: user.id,
+                    amount,
+                });
+
+                return {
+                    ok: true as const,
+                    gpBalance: bidder.gpBalance - amount,
+                };
+            });
+
+            if (!result.ok) {
+                return c.json<PlaceAuctionBidResponse>(
+                    { success: false, error: result.error },
+                    200,
+                );
+            }
+
+            return c.json<PlaceAuctionBidResponse>(
+                { success: true, gpBalance: result.gpBalance },
+                200,
+            );
+        } catch (err) {
+            server.logger.error("/api/user/place_auction_bid error", err);
+            return c.json<PlaceAuctionBidResponse>(
+                { success: false, error: "server_error" },
+                500,
+            );
+        }
+    },
+);
+
+UserRouter.post(
     "/buy_featured_bundle",
     validateParams(zBuyFeaturedBundleRequest),
     async (c) => {
@@ -1002,6 +1306,83 @@ UserRouter.post(
         }
 
         return c.json<CancelMarketListingResponse>(
+            { success: true, gpBalance: user.gpBalance },
+            200,
+        );
+    },
+);
+
+UserRouter.post(
+    "/cancel_auction_listing",
+    validateParams(zCancelAuctionListingRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { auctionId } = c.req.valid("json");
+
+        try {
+            const result = await db.transaction(async (tx) => {
+                await expireAuctionListings(tx);
+
+                const canceled = await tx
+                    .update(auctionListingTable)
+                    .set({
+                        status: "cancelled",
+                        canceledAt: new Date(),
+                    })
+                    .where(
+                        and(
+                            eq(auctionListingTable.id, auctionId),
+                            eq(auctionListingTable.sellerUserId, user.id),
+                            eq(auctionListingTable.status, "active"),
+                        ),
+                    )
+                    .returning({
+                        itemId: auctionListingTable.itemId,
+                        itemType: auctionListingTable.itemType,
+                        highestBid: auctionListingTable.highestBid,
+                        highestBidUserId: auctionListingTable.highestBidUserId,
+                    });
+
+                if (canceled.length === 0) {
+                    return { ok: false as const, error: "auction_not_found" as const };
+                }
+
+                const auction = canceled[0]!;
+                if (auction.highestBidUserId && auction.highestBid > 0) {
+                    await tx
+                        .update(usersTable)
+                        .set({
+                            gpBalance: sql`${usersTable.gpBalance} + ${auction.highestBid}`,
+                        })
+                        .where(eq(usersTable.id, auction.highestBidUserId));
+                }
+
+                await tx.insert(itemsTable).values({
+                    id: auction.itemId,
+                    userId: user.id,
+                    type: auction.itemType,
+                    source: "auction_cancel",
+                    timeAcquired: Date.now(),
+                });
+
+                return { ok: true as const };
+            });
+
+            if (!result.ok) {
+                return c.json<CancelAuctionListingResponse>(
+                    { success: false, error: result.error },
+                    200,
+                );
+            }
+        } catch (err) {
+            server.logger.error("/api/user/cancel_auction_listing error", err);
+            return c.json<CancelAuctionListingResponse>(
+                { success: false, error: "server_error" },
+                500,
+            );
+        }
+
+        return c.json<CancelAuctionListingResponse>(
             { success: true, gpBalance: user.gpBalance },
             200,
         );

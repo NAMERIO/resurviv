@@ -714,6 +714,18 @@ a:active {
   }
 }
 
+#modal-auction-bid {
+  position: fixed;
+  z-index: 2000;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .player-name-input {
   background-color: #fff;
   color: #000;
@@ -13446,7 +13458,7 @@ div.roulette {
 .store-tabs span {
   background-color: rgba(37, 37, 37, 0.8);
   display: inline-block;
-  min-width: 150px;
+  min-width: 100px;
   padding: 10px 18px 10px 56px;
   font-size: 22px;
   font-weight: bold;
@@ -13475,6 +13487,17 @@ div.roulette {
   background-position: 20px;
   background-repeat: no-repeat;
   background-size: 28px;
+}
+
+.store-tabs #tab-market-auction {
+  background-image: url(../img/gui/gui-market-buy.svg);
+  background-position: 20px;
+  background-repeat: no-repeat;
+  background-size: 28px;
+}
+
+.store-tabs #tab-market-sell {
+  min-width: 220px;
 }
 
 .store-tab-selected {
@@ -13990,6 +14013,18 @@ div.roulette {
   border-bottom: 2px solid #1871c8;
 }
 
+.market-list-item-container .market-item-action-container.market-item-action-container-dual {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+
+.market-list-item-container .market-item-action-btn.market-item-action-btn-half {
+  height: 38px;
+  font-size: 17px;
+}
+
 .market-list-item-container.market-list-item-sell
   .market-item-action-btn.market-item-action-btn-sell {
   background: #1e90ff;
@@ -14046,6 +14081,180 @@ div.roulette {
   text-align: center;
   width: 100%;
   transform: translateX(20px);
+}
+
+.auction-bid-modal-content {
+  width: 680px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1305;
+  background: #222;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+  border-radius: 10px;
+  padding: 0;
+}
+
+.auction-bid-modal-body {
+  background: #141414;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+}
+
+.auction-bid-top {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.auction-bid-item-image {
+  width: 110px;
+  min-width: 110px;
+  height: 110px;
+  position: relative;
+}
+
+.auction-bid-item-image .market-item-sprite {
+  background-size: 86px;
+}
+
+.auction-bid-summary {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+}
+
+.auction-bid-item-name {
+  grid-column: 1 / -1;
+  font-size: 28px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.auction-bid-summary-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  background: #2a2a2a;
+  padding: 8px 10px;
+}
+
+.auction-bid-summary-line span {
+  color: #bdbdbd;
+  font-size: 14px;
+}
+
+.auction-bid-summary-line strong {
+  color: #ffe400;
+  font-size: 16px;
+}
+
+.auction-bid-history-panel {
+  background: #202020;
+  border: 1px solid #3a3a3a;
+  max-height: 180px;
+  overflow: hidden;
+}
+
+.auction-bid-history-title {
+  background: #303030;
+  padding: 8px 12px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.auction-bid-activity-list {
+  max-height: 136px;
+  overflow-y: auto;
+}
+
+.auction-bid-activity-item {
+  padding: 10px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 14px;
+  color: #f1f1f1;
+}
+
+.auction-bid-input-row {
+  display: flex;
+}
+
+.auction-list-item-container {
+  min-height: fit-content;
+  justify-content: flex-start;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  width: 99%;
+  background-color: #555555;
+  border-radius: 0;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
+.auction-list-item-container .market-item-img {
+  height: 80px;
+  width: 80px;
+  min-width: 80px;
+  margin: 8px 10px;
+}
+
+.auction-list-item-container .market-item-sprite {
+  background-size: 65px;
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 100%;
+  width: 100%;
+}
+
+.auction-list-item-container .market-item-title {
+  font-size: 30px;
+  line-height: 40px;
+  margin-bottom: 0;
+}
+
+.auction-list-item-container .market-item-info-container.auction-item-info-container {
+  flex: 0 0 270px;
+  width: 270px;
+  height: 90%;
+  margin: auto 0 auto 6px;
+}
+
+.auction-list-item-container .market-item-stats-container {
+  display: inline-block;
+  margin: 0 auto 5px;
+  width: fit-content;
+}
+
+.auction-item-action-container {
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+}
+
+.auction-item-action-timer {
+  left: auto;
+  bottom: auto;
+  transform: none;
+  margin: 0;
+  align-self: flex-end;
+}
+
+.auction-item-action-btn {
+  width: 120px;
+  margin: 0;
+  align-self: flex-end;
+}
+
+.auction-item-action-state {
+  width: auto;
+  transform: none;
+  text-align: right;
+  align-self: flex-end;
 }
 
 @media (max-width: 960px) {

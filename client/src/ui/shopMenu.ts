@@ -1,18 +1,22 @@
 import $ from "jquery";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { Rarity } from "../../../shared/gameConfig";
-import type { ShopLootBox } from "../../../shared/types/user";
+import type { AuctionListing, ShopLootBox } from "../../../shared/types/user";
 import {
     type FeaturedBundleOffer,
     getBundleMinPrice,
 } from "../../../shared/utils/featuredBundles";
-import { getMarketPriceBounds } from "../../../shared/utils/marketPricing";
+import {
+    getAuctionPriceBounds,
+    getMarketPriceBounds,
+    getMarketReferencePrice,
+} from "../../../shared/utils/marketPricing";
 import type { Account } from "../account";
 import { helpers } from "../helpers";
 import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
 
-type ShopTab = "shop" | "buy" | "sell";
+type ShopTab = "shop" | "buy" | "sell" | "auction";
 type MarketSort = "price" | "item" | "rarity";
 type MarketOrder = "lowhigh" | "highlow";
 
@@ -27,9 +31,29 @@ type Listing = {
     transform: string;
     price: number;
     owned?: boolean;
-    action: "buy" | "sell" | "cancel";
+    action: "buy" | "sell" | "sell_or_auction" | "cancel" | "auction_live";
     sellerName?: string;
     createdAt?: number;
+};
+
+type AuctionViewListing = {
+    id?: string;
+    itemId?: string;
+    type: string;
+    category: string;
+    name: string;
+    rarity: number;
+    image: string;
+    transform: string;
+    startPrice: number;
+    highestBid: number;
+    bidCount: number;
+    sellerName?: string;
+    highestBidderName?: string;
+    createdAt?: number;
+    referenceValue: number;
+    activities: AuctionListing["activities"];
+    action: "bid" | "auction" | "auction_live";
 };
 
 const marketListingDurationMs = 24 * 60 * 60 * 1000;
@@ -64,6 +88,7 @@ const categoryL10n: Record<string, string> = {
 export class ShopMenu {
     modal = new MenuModal($("#iap-modal"));
     confirmSellModal = new MenuModal($("#modal-confirm-sell"));
+    auctionBidModal = new MenuModal($("#modal-auction-bid"));
     soldNotificationModal = new MenuModal($("#market-modal-notification"));
     cratesModal = new MenuModal($("#crates-modal"));
     crateContainModal = new MenuModal($("#modal-crate-contain"));
@@ -73,9 +98,16 @@ export class ShopMenu {
     marketErrorTimeoutId: number | null = null;
     balanceAnimationId: number | null = null;
     pendingSellItem: Listing | null = null;
+    pendingAuctionItem: AuctionViewListing | null = null;
     pendingFeaturedBundle: FeaturedBundleOffer | null = null;
     pendingLootBox: ShopLootBox | null = null;
-    pendingAction: "buy" | "sell" | "cancel" | "bundle" | "lootbox" = "sell";
+    pendingAction:
+        | "buy"
+        | "sell"
+        | "cancel"
+        | "bundle"
+        | "lootbox"
+        | "auction" = "sell";
     pendingSoldListings: Listing[] = [];
     pendingSoldListingIds = new Set<string>();
     soldNotificationActive = false;
@@ -87,6 +119,7 @@ export class ShopMenu {
     marketOrder: MarketOrder = "lowhigh";
     marketBuyListings: Listing[] = [];
     marketSellListings: Listing[] = [];
+    marketAuctionListings: AuctionViewListing[] = [];
     gpBalance = 0;
     displayedGpBalance = 0;
     pendingGpBalanceTarget: number | null = null;
@@ -162,10 +195,15 @@ export class ShopMenu {
 
         this.confirmSellModal.onHide(() => {
             this.pendingSellItem = null;
+            this.pendingAuctionItem = null;
             this.pendingFeaturedBundle = null;
             this.pendingLootBox = null;
             $("#confirm-sell-price-range").hide();
             $("#confirm-sell-price-error").text("").hide();
+        });
+        this.auctionBidModal.onHide(() => {
+            this.pendingAuctionItem = null;
+            $("#auction-bid-error").text("").hide();
         });
         this.soldNotificationModal.onHide(() => {
             if (this.soldNotificationActive) {
@@ -218,6 +256,7 @@ export class ShopMenu {
         $("#confirm-sell-yes").on("click", (e) => {
             e.preventDefault();
             const item = this.pendingSellItem;
+            const auctionItem = this.pendingAuctionItem;
             const bundle = this.pendingFeaturedBundle;
             const action = this.pendingAction;
             if (action === "bundle") {
@@ -252,8 +291,8 @@ export class ShopMenu {
                 });
                 return false;
             }
-            if (!item) return false;
             if (action === "buy") {
+                if (!item) return false;
                 this.confirmSellModal.hide();
                 if (!item.id) return false;
                 this.account.buyMarketListing(item.id, (error) => {
@@ -266,6 +305,7 @@ export class ShopMenu {
                 return false;
             }
             if (action === "cancel") {
+                if (!item) return false;
                 this.confirmSellModal.hide();
                 if (!item.id) return false;
                 this.account.cancelMarketListing(item.id, (error) => {
@@ -277,12 +317,28 @@ export class ShopMenu {
                 });
                 return false;
             }
+            if (action === "auction") {
+                const price = this.getPendingSellPrice();
+                if (price === null || !auctionItem?.itemId) {
+                    return false;
+                }
+                this.confirmSellModal.hide();
+                this.account.createAuctionListing(auctionItem.itemId, price, (error) => {
+                    if (error) {
+                        this.showMarketError(error);
+                    } else {
+                        this.setStatus("auction-create-success");
+                    }
+                });
+                return false;
+            }
 
             const price = this.getPendingSellPrice();
             if (price === null) {
                 return false;
             }
 
+            if (!item) return false;
             this.confirmSellModal.hide();
             if (!item.itemId) return false;
             this.account.createMarketListing(item.itemId, price, (error) => {
@@ -304,12 +360,20 @@ export class ShopMenu {
         $("#confirm-sell-price-input").on("input", () => {
             if (this.pendingAction === "sell") {
                 this.updateSellPriceValidation();
+            } else if (this.pendingAction === "auction") {
+                this.updateAuctionPriceValidation();
             }
         });
 
         $("#tab-shop").on("click", () => this.setTab("shop"));
         $("#tab-market-buy").on("click", () => this.setTab("buy"));
         $("#tab-market-sell").on("click", () => this.setTab("sell"));
+        $("#tab-market-auction").on("click", () => this.setTab("auction"));
+        $("#auction-bid-submit").on("click", (e) => {
+            e.preventDefault();
+            this.submitAuctionBid();
+            return false;
+        });
 
         $("#market-type-select").on("change", (e) => {
             this.marketType = String((e.target as HTMLSelectElement).value);
@@ -399,16 +463,23 @@ export class ShopMenu {
     refreshData() {
         this.marketBuyListings = this.buildMarketBuyListings();
         this.marketSellListings = this.buildMarketSellListings();
+        this.marketAuctionListings = this.buildAuctionListings();
     }
 
     setTab(tab: ShopTab) {
         this.activeTab = tab;
-        $("#tab-shop, #tab-market-buy, #tab-market-sell").removeClass(
+        $("#tab-shop, #tab-market-buy, #tab-market-sell, #tab-market-auction").removeClass(
             "store-tab-selected",
         );
-        $(
-            `#tab-${tab === "buy" ? "market-buy" : tab === "sell" ? "market-sell" : "shop"}`,
-        ).addClass("store-tab-selected");
+        const tabSelector =
+            tab === "buy"
+                ? "#tab-market-buy"
+                : tab === "sell"
+                  ? "#tab-market-sell"
+                  : tab === "auction"
+                    ? "#tab-market-auction"
+                    : "#tab-shop";
+        $(tabSelector).addClass("store-tab-selected");
 
         const shopVisible = tab === "shop";
         $("#lock-shop-container").css(
@@ -423,7 +494,11 @@ export class ShopMenu {
         $(".market-container").css("display", shopVisible ? "none" : "flex");
         $(".market-locked-container").css("display", "none");
         if (!shopVisible) {
-            this.renderMarket();
+            if (tab === "auction") {
+                this.renderAuction();
+            } else {
+                this.renderMarket();
+            }
         }
     }
 
@@ -460,6 +535,9 @@ export class ShopMenu {
         const listedItemIds = new Set(
             this.account.userMarketListings.map((listing) => listing.itemId),
         );
+        const auctionedItemIds = new Set(
+            this.account.userAuctionListings.map((auction) => auction.itemId),
+        );
         const activeListings = this.account.userMarketListings
             .map((listing) => {
                 const def = GameObjectDefs[listing.itemType] as any;
@@ -484,6 +562,31 @@ export class ShopMenu {
                 } as Listing;
             })
             .filter((item): item is Listing => item !== null);
+        const activeAuctions = this.account.userAuctionListings
+            .map((auction) => {
+                const def = GameObjectDefs[auction.itemType] as any;
+                if (!def || !supportedMarketTypes.has(def.type)) return null;
+                const currentPrice = Math.max(auction.highestBid, auction.startPrice);
+                return {
+                    id: auction.id,
+                    itemId: auction.itemId,
+                    type: auction.itemType,
+                    category: def.type,
+                    name:
+                        this.localization.translate(`game-${auction.itemType}`) ||
+                        def.name ||
+                        auction.itemType,
+                    rarity: def.rarity ?? Rarity.Stock,
+                    image: helpers.getSvgFromGameType(auction.itemType),
+                    transform: helpers.getCssTransformFromGameType(auction.itemType),
+                    price: currentPrice,
+                    owned: false,
+                    action: "auction_live",
+                    sellerName: this.localization.translate("market-you") || "You",
+                    createdAt: auction.createdAt,
+                } as Listing;
+            })
+            .filter((item): item is Listing => item !== null);
 
         const sellableItems = this.account.items
             .map((item) => {
@@ -491,7 +594,13 @@ export class ShopMenu {
                 if (!def || !supportedMarketTypes.has(def.type)) return null;
                 const rarity = def.rarity ?? Rarity.Stock;
                 if (rarity < Rarity.Common) return null;
-                if (!item.id || listedItemIds.has(item.id)) return null;
+                if (
+                    !item.id ||
+                    listedItemIds.has(item.id) ||
+                    auctionedItemIds.has(item.id)
+                ) {
+                    return null;
+                }
                 return {
                     itemId: item.id,
                     type: item.type,
@@ -505,14 +614,60 @@ export class ShopMenu {
                     transform: helpers.getCssTransformFromGameType(item.type),
                     price: getBundleMinPrice(item.type) ?? 0,
                     owned: true,
-                    action: "sell",
+                    action: "sell_or_auction",
                     sellerName: this.localization.translate("market-you") || "You",
                 } as Listing;
             })
             .filter((item): item is Listing => item !== null)
             .sort((a, b) => b.price - a.price);
 
-        return [...activeListings, ...sellableItems];
+        return [...activeListings, ...activeAuctions, ...sellableItems];
+    }
+
+    buildAuctionListings() {
+        const ownActiveAuctions = this.account.userAuctionListings
+            .map((auction) => {
+                const listing = this.mapAuctionToViewListing(auction, "auction_live");
+                if (!listing) return null;
+                listing.sellerName = this.localization.translate("market-you") || "You";
+                return listing;
+            })
+            .filter((item): item is AuctionViewListing => item !== null);
+        const publicAuctions = this.account.auctionListings
+            .filter((auction) => auction.sellerSlug !== this.account.profile.slug)
+            .map((auction) => this.mapAuctionToViewListing(auction, "bid"))
+            .filter((item): item is AuctionViewListing => item !== null);
+        return [...ownActiveAuctions, ...publicAuctions];
+    }
+
+    mapAuctionToViewListing(
+        auction: AuctionListing,
+        action: AuctionViewListing["action"],
+    ): AuctionViewListing | null {
+        const def = GameObjectDefs[auction.itemType] as any;
+        if (!def || !supportedMarketTypes.has(def.type)) return null;
+        return {
+            id: auction.id,
+            itemId: auction.itemId,
+            type: auction.itemType,
+            category: def.type,
+            name:
+                this.localization.translate(`game-${auction.itemType}`) ||
+                def.name ||
+                auction.itemType,
+            rarity: def.rarity ?? Rarity.Stock,
+            image: helpers.getSvgFromGameType(auction.itemType),
+            transform: helpers.getCssTransformFromGameType(auction.itemType),
+            startPrice: auction.startPrice,
+            highestBid: auction.highestBid,
+            bidCount: auction.bidCount,
+            sellerName: auction.sellerSlug,
+            highestBidderName: auction.highestBidderSlug,
+            createdAt: auction.createdAt,
+            referenceValue: getMarketReferencePrice(auction.itemType) ?? 0,
+            activities: auction.activities,
+            action,
+        };
     }
 
     render() {
@@ -726,6 +881,41 @@ export class ShopMenu {
         this.updateMarketTimers();
     }
 
+    renderAuction() {
+        const list = $("#market-items-list");
+        list.empty();
+        const items = this.marketAuctionListings.filter((item) => {
+            if (this.marketType !== "all" && item.category !== this.marketType) return false;
+            if (this.marketRarity !== "all" && item.rarity < Number(this.marketRarity)) {
+                return false;
+            }
+            return true;
+        });
+        items.sort((a, b) => {
+            const aBid = Math.max(a.highestBid, a.startPrice);
+            const bBid = Math.max(b.highestBid, b.startPrice);
+            if (this.marketSort === "item") return a.name.localeCompare(b.name);
+            if (this.marketSort === "rarity") {
+                return a.rarity - b.rarity || a.name.localeCompare(b.name);
+            }
+            return aBid - bBid || a.name.localeCompare(b.name);
+        });
+        if (this.marketOrder === "highlow") items.reverse();
+        items.sort((a, b) => {
+            const aOwn = a.action === "auction_live" ? 0 : 1;
+            const bOwn = b.action === "auction_live" ? 0 : 1;
+            if (aOwn !== bOwn) return aOwn - bOwn;
+            return 0;
+        });
+        $("#market-no-items-text").text(
+            this.localization.translate("auction-no-items") ||
+                "No auction items match the current filters.",
+        );
+        $("#market-no-items-available").css("display", items.length ? "none" : "block");
+        items.forEach((item) => list.append(this.buildAuctionItem(item)));
+        this.updateMarketTimers();
+    }
+
     refreshMarket() {
         if (this.marketRefreshInFlight) return;
         if (Date.now() < this.marketRefreshCooldownUntil) return;
@@ -747,7 +937,9 @@ export class ShopMenu {
             item.action === "cancel"
                 ? this.localization.translate("confirm-cancel-modal-title") ||
                   "Cancel listing"
-                : item.action === "sell"
+                : item.action === "auction_live"
+                  ? this.localization.translate("auction-live-label") || "Auction live"
+                : item.action === "sell" || item.action === "sell_or_auction"
                   ? this.localization.translate("market-sell-item-action") || "Sell item"
                   : "Buy";
         const sellerLabel =
@@ -762,7 +954,7 @@ export class ShopMenu {
                 ? this.localization.translate("market-unknown-seller") || "Unknown"
                 : this.localization.translate("market-you") || "You");
         const isSellPageCard = item.action !== "buy";
-        const isActiveListing = item.action === "cancel";
+        const isActiveListing = item.action === "cancel" || item.action === "auction_live";
         const expiresAt = item.createdAt
             ? item.createdAt + marketListingDurationMs
             : undefined;
@@ -770,7 +962,11 @@ export class ShopMenu {
         const card = $("<div/>", {
             class: [
                 "market-list-item-container",
-                isSellPageCard ? "market-list-item-sell" : "market-list-item-buy",
+                item.action === "auction_live"
+                    ? "market-list-item-auction-live"
+                    : isSellPageCard
+                      ? "market-list-item-sell"
+                      : "market-list-item-buy",
                 isActiveListing ? "market-list-item-active" : "",
             ]
                 .filter(Boolean)
@@ -901,8 +1097,11 @@ export class ShopMenu {
                 $("<div/>", {
                     class: "market-item-action-state",
                     text:
-                        this.localization.translate("market-sale-in-progress") ||
-                        "SALE IN PROGRESS",
+                        item.action === "auction_live"
+                            ? this.localization.translate("auction-live-state") ||
+                              "YOUR AUCTION IS LIVE"
+                            : this.localization.translate("market-sale-in-progress") ||
+                              "SALE IN PROGRESS",
                 }),
             );
         } else {
@@ -928,24 +1127,174 @@ export class ShopMenu {
                     ),
                 );
             }
-            const button = $("<div/>", {
-                class:
-                    item.action === "buy"
-                        ? "market-item-action-btn market-item-action-btn-buy"
-                        : "market-item-action-btn market-item-action-btn-sell",
-            }).append($("<span/>", { text: actionLabel }));
-            if (item.action === "buy") {
-                button.append(
-                    $("<div/>", { class: "market-btn-price-container" }).append(
-                        $("<div/>", {
-                            class: "market-btn-price-text",
-                            text: this.formatMarketPrice(item.price),
-                        }),
-                    ),
+            if (item.action === "sell_or_auction") {
+                const sellButton = $("<div/>", {
+                    class: "market-item-action-btn market-item-action-btn-sell market-item-action-btn-half",
+                }).append(
+                    $("<span/>", {
+                        text:
+                            this.localization.translate("market-sell-item-action") ||
+                            "Sell item",
+                    }),
                 );
+                sellButton.on("click", () =>
+                    this.handleMarketAction({
+                        ...item,
+                        action: "sell",
+                    }),
+                );
+                const auctionButton = $("<div/>", {
+                    class: "market-item-action-btn market-item-action-btn-buy market-item-action-btn-half",
+                }).append(
+                    $("<span/>", {
+                        text:
+                            this.localization.translate("auction-create-action") ||
+                            "Auction item",
+                    }),
+                );
+                auctionButton.on("click", () => this.handleCreateAuctionFromListing(item));
+                action.addClass("market-item-action-container-dual");
+                action.append(sellButton, auctionButton);
+            } else {
+                const button = $("<div/>", {
+                    class:
+                        item.action === "buy"
+                            ? "market-item-action-btn market-item-action-btn-buy"
+                            : "market-item-action-btn market-item-action-btn-sell",
+                }).append($("<span/>", { text: actionLabel }));
+                if (item.action === "buy") {
+                    button.append(
+                        $("<div/>", { class: "market-btn-price-container" }).append(
+                            $("<div/>", {
+                                class: "market-btn-price-text",
+                                text: this.formatMarketPrice(item.price),
+                            }),
+                        ),
+                    );
+                }
+                button.on("click", () => this.handleMarketAction(item));
+                action.append(button);
             }
-            button.on("click", () => this.handleMarketAction(item));
+        }
+        card.append(image, info, action);
+        return card;
+    }
+
+    handleCreateAuctionFromListing(item: Listing) {
+        if (!item.itemId) return;
+        this.handleAuctionAction({
+            itemId: item.itemId,
+            type: item.type,
+            category: item.category,
+            name: item.name,
+            rarity: item.rarity,
+            image: item.image,
+            transform: item.transform,
+            startPrice: getAuctionPriceBounds(item.type)?.min ?? 1,
+            highestBid: 0,
+            bidCount: 0,
+            sellerName: item.sellerName,
+            referenceValue: getMarketReferencePrice(item.type) ?? 0,
+            activities: [],
+            action: "auction",
+        });
+    }
+
+    buildAuctionItem(item: AuctionViewListing) {
+        const rarityVisuals = helpers.getRarityVisuals(item.rarity);
+        const currentBid = Math.max(item.highestBid, item.startPrice);
+        const card = $("<div/>", {
+            class: [
+                "market-list-item-container",
+                "market-list-item-buy",
+                "auction-list-item-container",
+            ].join(" "),
+        });
+        const image = $("<div/>", {
+            class: "market-item-img",
+            css: {
+                "background-color": rarityVisuals.backgroundColor,
+                border: `2px solid ${rarityVisuals.border}`,
+                "box-shadow": "inset 0 0 0 1px rgba(0,0,0,0.35)",
+            },
+        }).append(
+            $("<div/>", {
+                class: "market-item-sprite",
+                css: {
+                    "background-image": `url(${item.image})`,
+                    transform: item.transform,
+                },
+            }),
+            helpers.getItemRarityStyleMarkup(item.type, item.rarity),
+        );
+        const info = $("<div/>", {
+            class: "market-item-info-container auction-item-info-container",
+        }).append(
+            $("<div/>", { class: "market-item-title", text: item.name }),
+            $("<div/>", { class: "market-item-stats-container" }).append(
+                $("<div/>", { class: "market-item-stats-text" }).append(
+                    $("<span/>", {
+                        text: `${this.localization.translate("auction-start-price") || "Price"}: `,
+                    }),
+                    $("<p/>", { text: this.formatMarketPrice(item.startPrice) }),
+                ),
+                $("<div/>", { class: "market-item-stats-text" }).append(
+                    $("<span/>", {
+                        text: `${this.localization.translate("auction-current-bid") || "Current"}: `,
+                    }),
+                    $("<p/>", { text: this.formatMarketPrice(currentBid) }),
+                ),
+            ),
+        );
+        const action = $("<div/>", {
+            class: "market-item-action-container market-item-action-container-active auction-item-action-container",
+        }).append(
+            $("<div/>", { class: "market-item-action-timer auction-item-action-timer" }).append(
+                $("<span/>", {
+                    class: "market-item-action-timer-label",
+                    text:
+                        this.localization.translate("market-timer-expires-in") ||
+                        "EXPIRES IN",
+                }),
+                $("<span/>", {
+                    class: "market-item-timer market-bold-text",
+                    "data-expire-at": item.createdAt
+                        ? String(item.createdAt + marketListingDurationMs)
+                        : "",
+                    "data-timer-kind": "expires",
+                    text: item.createdAt
+                        ? this.formatCountdown(
+                              item.createdAt + marketListingDurationMs - Date.now(),
+                          )
+                        : this.localization.translate("market-timer-expired") || "EXPIRED",
+                }),
+            ),
+        );
+        if (item.action === "bid") {
+            const button = $("<div/>", {
+                class: "market-item-action-btn market-item-action-btn-buy auction-item-action-btn",
+            }).append(
+                $("<span/>", {
+                    text: this.localization.translate("auction-bid-action") || "Bid",
+                }),
+                $("<div/>", { class: "market-btn-price-container" }).append(
+                    $("<div/>", {
+                        class: "market-btn-price-text",
+                        text: this.formatMarketPrice(currentBid),
+                    }),
+                ),
+            );
+            button.on("click", () => this.handleAuctionAction(item));
             action.append(button);
+        } else {
+            action.append(
+                $("<div/>", {
+                    class: "market-item-action-state auction-item-action-state",
+                    text:
+                        this.localization.translate("auction-live-state") ||
+                        "YOUR AUCTION IS LIVE",
+                }),
+            );
         }
         card.append(image, info, action);
         return card;
@@ -1027,6 +1376,128 @@ export class ShopMenu {
         this.updateSellPriceValidation();
         this.confirmSellModal.show(true);
         $("#confirm-sell-price-input").trigger("focus");
+    }
+
+    handleAuctionAction(item: AuctionViewListing) {
+        if (item.action === "bid") {
+            this.pendingAuctionItem = item;
+            this.renderAuctionBidModal(item);
+            this.auctionBidModal.show(true);
+            return;
+        }
+
+        this.pendingAction = "auction";
+        this.pendingAuctionItem = item;
+        this.pendingSellItem = null;
+        const priceBounds = getAuctionPriceBounds(item.type);
+        $("#modal-confirm-sell-title").text(
+            this.localization.translate("auction-create-title") || "Create auction",
+        );
+        $("#modal-confirm-sell-desc").text(
+            this.localization.translate("auction-create-desc") ||
+                "List this skin for bidding. The starting price is capped by its value.",
+        );
+        $("#confirm-sell-no span").text(
+            this.localization.translate("confirm-sell-modal-no") || "No, keep.",
+        );
+        $("#confirm-sell-yes span").text(
+            this.localization.translate("auction-create-submit") || "Start auction",
+        );
+        $("#confirm-sell-price-input").val(String(priceBounds?.min ?? 1));
+        $("#confirm-sell-price-input").attr("min", String(priceBounds?.min ?? 1));
+        $("#confirm-sell-price-input").attr("max", String(priceBounds?.max ?? item.startPrice));
+        $("#confirm-sell-price-range").text(this.formatAuctionRangeText(item.type));
+        $(".confirm-sell-price-row").show();
+        $("#confirm-sell-price-range").show();
+        this.updateAuctionPriceValidation();
+        this.confirmSellModal.show(true);
+        $("#confirm-sell-price-input").trigger("focus");
+    }
+
+    renderAuctionBidModal(item: AuctionViewListing) {
+        const currentBid = Math.max(item.highestBid, item.startPrice);
+        const nextMinimum = Math.max(item.startPrice, item.highestBid + 1);
+        const rarityVisuals = helpers.getRarityVisuals(item.rarity);
+        $("#auction-bid-item-name").text(item.name);
+        $("#auction-bid-seller").text(item.sellerName || "Unknown");
+        $("#auction-bid-current").text(this.formatMarketPrice(currentBid));
+        $("#auction-bid-start").text(this.formatMarketPrice(item.startPrice));
+        $("#auction-bid-reference").text(this.formatMarketPrice(item.referenceValue));
+        $("#auction-bid-leader").text(
+            item.highestBidderName ||
+                this.localization.translate("auction-no-bids-yet") ||
+                "No bids yet",
+        );
+        $("#auction-bid-activity").empty();
+        const itemImage = $("#auction-bid-item-image").empty();
+        itemImage
+            .css({
+                "background-color": rarityVisuals.backgroundColor,
+                border: `2px solid ${rarityVisuals.border}`,
+            })
+            .append(
+                $("<div/>", {
+                    class: "market-item-sprite",
+                    css: {
+                        "background-image": `url(${item.image})`,
+                        transform: item.transform,
+                    },
+                }),
+                helpers.getItemRarityStyleMarkup(item.type, item.rarity),
+            );
+        for (const activity of item.activities) {
+            $("#auction-bid-activity").append(
+                $("<div/>", {
+                    class: "auction-bid-activity-item",
+                    text: `${activity.bidderSlug} bid ${this.formatMarketPrice(activity.amount)} ${this.formatRelativeTime(activity.createdAt)}`,
+                }),
+            );
+        }
+        if (!item.activities.length) {
+            $("#auction-bid-activity").append(
+                $("<div/>", {
+                    class: "auction-bid-activity-item",
+                    text:
+                        this.localization.translate("auction-no-bids-yet") ||
+                        "No bids yet",
+                }),
+            );
+        }
+        $("#auction-bid-input").val(String(nextMinimum));
+        $("#auction-bid-input").attr("min", String(nextMinimum));
+        $("#auction-bid-error").text("").hide();
+    }
+
+    submitAuctionBid() {
+        const item = this.pendingAuctionItem;
+        if (!item?.id) return;
+        const amount = Number($("#auction-bid-input").val());
+        const minimumBid = Math.max(item.startPrice, item.highestBid + 1);
+        if (!Number.isInteger(amount) || amount < minimumBid) {
+            $("#auction-bid-error")
+                .text(
+                    (
+                        this.localization.translate("auction-bid-minimum") ||
+                        "Your bid must be at least {gp} GP."
+                    ).replace("{gp}", String(minimumBid)),
+                )
+                .show();
+            return;
+        }
+        this.account.placeAuctionBid(item.id, amount, (error) => {
+            if (error) {
+                $("#auction-bid-error")
+                    .text(
+                        this.localization.translate(`shop-market-error-${error}`) ||
+                            this.localization.translate("shop-market-error-server_error") ||
+                            "The auction request failed.",
+                    )
+                    .show();
+                return;
+            }
+            this.auctionBidModal.hide();
+            this.setStatus("auction-bid-success");
+        });
     }
 
     handleFeaturedAction(bundle: FeaturedBundleOffer) {
@@ -1347,11 +1818,32 @@ export class ShopMenu {
             .replace("{max}", String(bounds.max));
     }
 
+    formatAuctionRangeText(itemType: string) {
+        const bounds = getAuctionPriceBounds(itemType);
+        if (!bounds) return "";
+
+        const template =
+            this.localization.translate("auction-price-range") ||
+            "Start {min} | Cap {max} | Worth {worth}";
+        return template
+            .replace("{min}", String(bounds.min))
+            .replace("{max}", String(bounds.max))
+            .replace("{worth}", String(bounds.referenceValue));
+    }
+
     formatMarketPrice(price: number) {
         if (price >= 1000) {
             return `${Math.floor(price / 1000)}k`;
         }
         return String(price);
+    }
+
+    formatRelativeTime(timestamp: number) {
+        const diffSeconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
+        if (diffSeconds < 60) return `${diffSeconds}s ago`;
+        if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}m ago`;
+        if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)}h ago`;
+        return `${Math.floor(diffSeconds / 86400)}d ago`;
     }
 
     getRarityLabel(rarity: number) {
@@ -1373,11 +1865,14 @@ export class ShopMenu {
     }
 
     getPendingSellPrice() {
-        const item = this.pendingSellItem;
+        const item = this.pendingAction === "auction" ? this.pendingAuctionItem : this.pendingSellItem;
         if (!item) return null;
 
         const rawValue = Number($("#confirm-sell-price-input").val());
-        const bounds = getMarketPriceBounds(item.type);
+        const bounds =
+            this.pendingAction === "auction"
+                ? getAuctionPriceBounds(item.type)
+                : getMarketPriceBounds(item.type);
         if (!bounds || !Number.isInteger(rawValue)) {
             this.showSellPriceError("shop-market-error-invalid_price");
             this.setStatus("shop-market-error-invalid_price");
@@ -1404,6 +1899,28 @@ export class ShopMenu {
 
         const rawValue = Number($("#confirm-sell-price-input").val());
         const bounds = getMarketPriceBounds(item.type);
+        if (!bounds || !Number.isInteger(rawValue)) {
+            this.showSellPriceError("shop-market-error-invalid_price");
+            return;
+        }
+        if (rawValue < bounds.min) {
+            this.showSellPriceError("shop-market-error-price_too_low");
+            return;
+        }
+        if (rawValue > bounds.max) {
+            this.showSellPriceError("shop-market-error-price_too_high");
+            return;
+        }
+
+        this.showSellPriceError("");
+    }
+
+    updateAuctionPriceValidation() {
+        const item = this.pendingAuctionItem;
+        if (!item || this.pendingAction !== "auction") return;
+
+        const rawValue = Number($("#confirm-sell-price-input").val());
+        const bounds = getAuctionPriceBounds(item.type);
         if (!bounds || !Number.isInteger(rawValue)) {
             this.showSellPriceError("shop-market-error-invalid_price");
             return;
