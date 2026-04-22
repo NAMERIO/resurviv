@@ -12378,7 +12378,8 @@ input [type="image"]:focus {
   width: 18px;
 }
 
-#confirm-sell-price-input {
+#confirm-sell-price-input,
+#auction-bid-input {
   appearance: textfield;
   background: transparent;
   border: 0;
@@ -12394,7 +12395,9 @@ input [type="image"]:focus {
 }
 
 #confirm-sell-price-input::-webkit-outer-spin-button,
-#confirm-sell-price-input::-webkit-inner-spin-button {
+#confirm-sell-price-input::-webkit-inner-spin-button,
+#auction-bid-input::-webkit-outer-spin-button,
+#auction-bid-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
@@ -13547,7 +13550,7 @@ div.roulette {
 .market-container {
   display: none;
   height: 420px;
-  width: 88%;
+  width: 93%;
   align-items: stretch;
   justify-content: space-between;
   gap: 16px;
@@ -13572,7 +13575,7 @@ div.roulette {
 
 .market-container .market-items-list-container {
   display: flex;
-  width: 75%;
+  width: 85%;
   height: 100%;
   margin: 0;
   justify-content: space-evenly;
@@ -13827,24 +13830,24 @@ div.roulette {
 }
 
 .market-list-item-container.market-list-item-sell {
-  min-height: fit-content;
-  justify-content: flex-start;
-  padding: 0;
+  min-height: 96px;
+  justify-content: space-between;
+  padding: 8px 10px;
 }
 
 .market-list-item-container.market-list-item-sell .market-item-info-container {
-  flex: 0 0 270px;
-  width: 270px;
-  height: 90%;
-  margin: auto 0 auto 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0 12px;
+  width: auto;
 }
 
 .market-list-item-container.market-list-item-sell
   .market-item-info-container
   .market-item-title {
-  font-size: 30px;
-  line-height: 40px;
-  margin-bottom: 0;
+  font-size: 24px;
+  line-height: 30px;
+  margin-bottom: 4px;
 }
 
 .market-list-item-container
@@ -13858,9 +13861,9 @@ div.roulette {
 .market-list-item-container.market-list-item-sell
   .market-item-info-container
   .market-item-stats-container {
-  display: inline-block;
-  margin: 0 auto 5px;
-  width: fit-content;
+  display: block;
+  margin: 0;
+  width: auto;
 }
 
 .market-list-item-container
@@ -13973,7 +13976,7 @@ div.roulette {
 .market-list-item-container.market-list-item-sell
   .market-stats-second-line-container
   .market-item-stats-text {
-  width: 80px;
+  width: auto;
 }
 
 .market-item-img {
@@ -13995,34 +13998,34 @@ div.roulette {
 .market-list-item-container.market-list-item-sell .market-item-action-container {
   flex: 0 0 170px;
   width: 170px;
-  height: 90%;
-  margin: auto 0 auto 0;
-  transform: translateX(-35px);
+  margin: 0;
+  transform: none;
 }
 
 .market-list-item-container.market-list-item-sell .market-item-action-btn {
   width: 100%;
   height: 45px;
-  justify-content: space-evenly;
-  padding: 0;
-  margin: auto;
-  font-size: 20px;
+  justify-content: space-between;
+  padding: 0 10px 0 14px;
+  margin: 0;
+  font-size: 18px;
   line-height: 40px;
-  background: #1e90ff;
-  box-shadow: inset 0 -2px #1871c8;
-  border-bottom: 2px solid #1871c8;
 }
 
 .market-list-item-container .market-item-action-container.market-item-action-container-dual {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   justify-content: center;
+  padding-left: 0;
+  box-sizing: border-box;
 }
 
 .market-list-item-container .market-item-action-btn.market-item-action-btn-half {
   height: 38px;
   font-size: 17px;
+  width: 150px;
+  margin-left: auto;
 }
 
 .market-list-item-container.market-list-item-sell
@@ -14045,7 +14048,7 @@ div.roulette {
 }
 
 .market-list-item-container.market-list-item-buy .market-item-action-timer {
-  transform: translateX(-85px);
+  transform: translateX(-95px);
 }
 
 .market-list-item-container .market-item-action-timer {
@@ -14081,6 +14084,38 @@ div.roulette {
   text-align: center;
   width: 100%;
   transform: translateX(20px);
+}
+
+.market-list-item-container.market-list-item-active .market-item-action-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  width: 170px;
+  min-width: 170px;
+  margin: 0;
+  padding-right: 0;
+  box-sizing: border-box;
+  transform: none;
+}
+
+.market-list-item-container.market-list-item-active .market-item-action-timer {
+  position: static;
+  width: 100%;
+  left: auto;
+  bottom: auto;
+  margin-bottom: 0;
+  transform: none;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.market-list-item-container.market-list-item-active .market-item-action-state {
+  width: 100%;
+  transform: none;
+  text-align: left;
+  box-sizing: border-box;
 }
 
 .auction-bid-modal-content {
@@ -14177,6 +14212,51 @@ div.roulette {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   font-size: 14px;
   color: #f1f1f1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.auction-bid-activity-main {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.auction-bid-activity-bidder {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.auction-bid-activity-label {
+  color: #a8a8a8;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.auction-bid-activity-amount {
+  color: #ffe400;
+  font-weight: 700;
+  background: #141414;
+  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-repeat: no-repeat;
+  background-position: 6px center;
+  background-size: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2px 8px 2px 28px;
+  border-radius: 2px;
+}
+
+.auction-bid-activity-time {
+  color: #9fb4c9;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .auction-bid-input-row {
@@ -14184,9 +14264,9 @@ div.roulette {
 }
 
 .auction-list-item-container {
-  min-height: fit-content;
-  justify-content: flex-start;
-  padding: 0;
+  min-height: 96px;
+  justify-content: space-between;
+  padding: 8px 10px;
   display: flex;
   align-items: center;
   width: 99%;
@@ -14212,28 +14292,33 @@ div.roulette {
 }
 
 .auction-list-item-container .market-item-title {
-  font-size: 30px;
-  line-height: 40px;
-  margin-bottom: 0;
+  font-size: 24px;
+  line-height: 30px;
+  margin-bottom: 4px;
 }
 
 .auction-list-item-container .market-item-info-container.auction-item-info-container {
-  flex: 0 0 270px;
-  width: 270px;
-  height: 90%;
-  margin: auto 0 auto 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0 12px;
+  width: auto;
 }
 
 .auction-list-item-container .market-item-stats-container {
-  display: inline-block;
-  margin: 0 auto 5px;
-  width: fit-content;
+  display: block;
+  margin: 0;
+  width: auto;
 }
 
 .auction-item-action-container {
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: center;
   gap: 6px;
+  width: 170px;
+  min-width: 170px;
+  padding-left: 0;
+  padding-right: 0;
+  box-sizing: border-box;
 }
 
 .auction-item-action-timer {
@@ -14241,20 +14326,26 @@ div.roulette {
   bottom: auto;
   transform: none;
   margin: 0;
-  align-self: flex-end;
+  align-self: flex-start;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .auction-item-action-btn {
-  width: 120px;
+  width: 150px;
   margin: 0;
-  align-self: flex-end;
+  align-self: flex-start;
 }
 
-.auction-item-action-state {
-  width: auto;
+.auction-list-item-container .market-item-action-state.auction-item-action-state {
+  width: 100%;
   transform: none;
-  text-align: right;
-  align-self: flex-end;
+  text-align: left;
+  align-self: flex-start;
+  box-sizing: border-box;
+  padding-left: 0;
+  padding-right: 16px;
 }
 
 @media (max-width: 960px) {

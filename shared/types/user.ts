@@ -218,7 +218,7 @@ export type CreateAuctionListingResponse = {
 
 export const zPlaceAuctionBidRequest = z.object({
     auctionId: z.string().uuid(),
-    amount: z.number().int().min(1).max(marketMaxSellPrice),
+    amount: z.number().int().min(1).max(999_999_999),
 });
 export type PlaceAuctionBidRequest = z.infer<typeof zPlaceAuctionBidRequest>;
 export type PlaceAuctionBidResponse = {

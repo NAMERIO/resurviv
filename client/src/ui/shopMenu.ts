@@ -125,6 +125,9 @@ export class ShopMenu {
     pendingGpBalanceTarget: number | null = null;
     marketRefreshCooldownUntil = 0;
     marketRefreshInFlight = false;
+    auctionBidRefreshInFlight = false;
+    auctionBidRefreshIntervalMs = 3000;
+    auctionBidRefreshAt = 0;
     lootBoxRevealTimeoutId: number | null = null;
     openingLootBox = false;
 
@@ -146,6 +149,7 @@ export class ShopMenu {
             this.refreshData();
             this.render();
             this.updateMarketRefreshUi();
+            this.syncAuctionBidModalFromLatestMarket();
         });
         this.account.addEventListener("gpBalance", () => {
             this.renderBalance();
@@ -203,6 +207,8 @@ export class ShopMenu {
         });
         this.auctionBidModal.onHide(() => {
             this.pendingAuctionItem = null;
+            this.auctionBidRefreshAt = 0;
+            this.auctionBidRefreshInFlight = false;
             $("#auction-bid-error").text("").hide();
         });
         this.soldNotificationModal.onHide(() => {
@@ -373,6 +379,13 @@ export class ShopMenu {
             e.preventDefault();
             this.submitAuctionBid();
             return false;
+        });
+        $("#auction-bid-input").on("input", (e) => {
+            const input = e.target as HTMLInputElement;
+            const numericValue = input.value.replace(/\D/g, "");
+            if (input.value !== numericValue) {
+                input.value = numericValue;
+            }
         });
 
         $("#market-type-select").on("change", (e) => {
@@ -1294,6 +1307,17 @@ export class ShopMenu {
                         this.localization.translate("auction-live-state") ||
                         "YOUR AUCTION IS LIVE",
                 }),
+                $("<div/>", {
+                    class: "market-item-action-btn market-item-action-btn-buy auction-item-action-btn",
+                }).append(
+                    $("<span/>", {
+                        text: "View",
+                    }),
+                ).on("click", () => {
+                    this.pendingAuctionItem = item;
+                    this.renderAuctionBidModal(item);
+                    this.auctionBidModal.show(true);
+                }),
             );
         }
         card.append(image, info, action);
@@ -1414,10 +1438,16 @@ export class ShopMenu {
         $("#confirm-sell-price-input").trigger("focus");
     }
 
-    renderAuctionBidModal(item: AuctionViewListing) {
+    renderAuctionBidModal(item: AuctionViewListing, currentInputValue?: string) {
         const currentBid = Math.max(item.highestBid, item.startPrice);
         const nextMinimum = Math.max(item.startPrice, item.highestBid + 1);
         const rarityVisuals = helpers.getRarityVisuals(item.rarity);
+        const expiresAt = item.createdAt
+            ? item.createdAt + marketListingDurationMs
+            : 0;
+        const isViewOnly = item.action === "auction_live";
+        const isCurrentTopBidder = item.highestBidderName === this.account.profile.slug;
+        const minimumInput = isCurrentTopBidder ? 1 : nextMinimum;
         $("#auction-bid-item-name").text(item.name);
         $("#auction-bid-seller").text(item.sellerName || "Unknown");
         $("#auction-bid-current").text(this.formatMarketPrice(currentBid));
@@ -1427,6 +1457,16 @@ export class ShopMenu {
             item.highestBidderName ||
                 this.localization.translate("auction-no-bids-yet") ||
                 "No bids yet",
+        );
+        $("#auction-bid-ends-in")
+            .attr("data-expire-at", expiresAt ? String(expiresAt) : "")
+            .text(
+                expiresAt
+                    ? this.formatCountdown(expiresAt - Date.now())
+                    : this.localization.translate("market-timer-expired") || "EXPIRED",
+            );
+        $(".auction-bid-input-row > span:first-child").text(
+            isCurrentTopBidder ? "Add More:" : this.localization.translate("auction-place-bid") || "Place Bid:",
         );
         $("#auction-bid-activity").empty();
         const itemImage = $("#auction-bid-item-image").empty();
@@ -1449,8 +1489,29 @@ export class ShopMenu {
             $("#auction-bid-activity").append(
                 $("<div/>", {
                     class: "auction-bid-activity-item",
-                    text: `${activity.bidderSlug} bid ${this.formatMarketPrice(activity.amount)} ${this.formatRelativeTime(activity.createdAt)}`,
-                }),
+                }).append(
+                    $("<div/>", {
+                        class: "auction-bid-activity-main",
+                    }).append(
+                        $("<span/>", {
+                            class: "auction-bid-activity-bidder",
+                            text: activity.bidderSlug,
+                        }),
+                        $("<span/>", {
+                            class: "auction-bid-activity-label",
+                            text: "bid",
+                        }),
+                        $("<span/>", {
+                            class: "auction-bid-activity-amount",
+                            text: `${this.formatMarketPrice(activity.amount)} GP`,
+                        }),
+                    ),
+                    $("<span/>", {
+                        class: "auction-bid-activity-time",
+                        "data-relative-time": String(activity.createdAt),
+                        text: this.formatRelativeTime(activity.createdAt),
+                    }),
+                ),
             );
         }
         if (!item.activities.length) {
@@ -1463,23 +1524,37 @@ export class ShopMenu {
                 }),
             );
         }
-        $("#auction-bid-input").val(String(nextMinimum));
-        $("#auction-bid-input").attr("min", String(nextMinimum));
+        const preservedValue =
+            currentInputValue !== undefined ? Number(currentInputValue) : NaN;
+        const nextValue =
+            Number.isInteger(preservedValue) && preservedValue >= minimumInput
+                ? preservedValue
+                : minimumInput;
+        $("#auction-bid-input").val(String(nextValue));
+        $("#auction-bid-input").attr("min", String(minimumInput));
+        $(".auction-bid-input-row").toggle(!isViewOnly);
+        $("#auction-bid-submit").closest(".close-footer").toggle(!isViewOnly);
         $("#auction-bid-error").text("").hide();
     }
 
     submitAuctionBid() {
         const item = this.pendingAuctionItem;
         if (!item?.id) return;
-        const amount = Number($("#auction-bid-input").val());
+        const rawInput = Number($("#auction-bid-input").val());
+        const currentBid = Math.max(item.highestBid, item.startPrice);
         const minimumBid = Math.max(item.startPrice, item.highestBid + 1);
-        if (!Number.isInteger(amount) || amount < minimumBid) {
+        const isCurrentTopBidder = item.highestBidderName === this.account.profile.slug;
+        const amount = isCurrentTopBidder ? currentBid + rawInput : rawInput;
+        const minimumInput = isCurrentTopBidder ? 1 : minimumBid;
+        if (!Number.isInteger(rawInput) || rawInput < minimumInput) {
             $("#auction-bid-error")
                 .text(
-                    (
-                        this.localization.translate("auction-bid-minimum") ||
-                        "Your bid must be at least {gp} GP."
-                    ).replace("{gp}", String(minimumBid)),
+                    isCurrentTopBidder
+                        ? "You must add at least 1 GP."
+                        : (
+                              this.localization.translate("auction-bid-minimum") ||
+                              "Your bid must be at least {gp} GP."
+                          ).replace("{gp}", String(minimumBid)),
                 )
                 .show();
             return;
@@ -1754,7 +1829,47 @@ export class ShopMenu {
             if (!createdAt) return;
             timer.text(this.formatListingDuration(Date.now() - createdAt));
         });
+        this.updateAuctionBidRelativeTimes();
+        this.refreshAuctionBidModalLive();
         this.updateMarketRefreshUi();
+    }
+
+    refreshAuctionBidModalLive() {
+        if (!this.auctionBidModal.selector.is(":visible")) return;
+        if (!this.pendingAuctionItem?.id) return;
+        if (this.auctionBidRefreshInFlight) return;
+        if (Date.now() < this.auctionBidRefreshAt) return;
+
+        this.auctionBidRefreshInFlight = true;
+        this.auctionBidRefreshAt = Date.now() + this.auctionBidRefreshIntervalMs;
+        this.account.loadMarket((success) => {
+            this.auctionBidRefreshInFlight = false;
+            if (!success) {
+                this.auctionBidRefreshAt = Date.now() + this.auctionBidRefreshIntervalMs;
+            }
+        });
+    }
+
+    syncAuctionBidModalFromLatestMarket() {
+        if (!this.auctionBidModal.selector.is(":visible")) return;
+        const auctionId = this.pendingAuctionItem?.id;
+        if (!auctionId) return;
+
+        const latestItem = this.marketAuctionListings.find((item) => item.id === auctionId);
+        if (!latestItem) return;
+
+        const currentInputValue = String($("#auction-bid-input").val() ?? "");
+        this.pendingAuctionItem = latestItem;
+        this.renderAuctionBidModal(latestItem, currentInputValue);
+    }
+
+    updateAuctionBidRelativeTimes() {
+        $("#auction-bid-activity [data-relative-time]").each((_, element) => {
+            const node = $(element);
+            const createdAt = Number(node.attr("data-relative-time"));
+            if (!createdAt) return;
+            node.text(this.formatRelativeTime(createdAt));
+        });
     }
 
     updateMarketRefreshUi() {
@@ -1832,9 +1947,6 @@ export class ShopMenu {
     }
 
     formatMarketPrice(price: number) {
-        if (price >= 1000) {
-            return `${Math.floor(price / 1000)}k`;
-        }
         return String(price);
     }
 

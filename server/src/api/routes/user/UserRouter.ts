@@ -1002,11 +1002,19 @@ UserRouter.post(
                 const bidder = await tx.query.usersTable.findFirst({
                     where: eq(usersTable.id, user.id),
                 });
-                if (!bidder || bidder.gpBalance < amount) {
+                const isCurrentTopBidder = auction.highestBidUserId === user.id;
+                const additionalAmount = isCurrentTopBidder
+                    ? amount - auction.highestBid
+                    : amount;
+                if (!bidder || additionalAmount < 1 || bidder.gpBalance < additionalAmount) {
                     return { ok: false as const, error: "not_enough_gp" as const };
                 }
 
-                if (auction.highestBidUserId && auction.highestBid > 0) {
+                if (
+                    auction.highestBidUserId &&
+                    auction.highestBid > 0 &&
+                    auction.highestBidUserId !== user.id
+                ) {
                     await tx
                         .update(usersTable)
                         .set({
@@ -1018,7 +1026,7 @@ UserRouter.post(
                 await tx
                     .update(usersTable)
                     .set({
-                        gpBalance: bidder.gpBalance - amount,
+                        gpBalance: bidder.gpBalance - additionalAmount,
                     })
                     .where(eq(usersTable.id, user.id));
 
@@ -1038,7 +1046,7 @@ UserRouter.post(
 
                 return {
                     ok: true as const,
-                    gpBalance: bidder.gpBalance - amount,
+                    gpBalance: bidder.gpBalance - additionalAmount,
                 };
             });
 
