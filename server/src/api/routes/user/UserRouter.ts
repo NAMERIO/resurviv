@@ -1006,7 +1006,11 @@ UserRouter.post(
                 const additionalAmount = isCurrentTopBidder
                     ? amount - auction.highestBid
                     : amount;
-                if (!bidder || additionalAmount < 1 || bidder.gpBalance < additionalAmount) {
+                if (
+                    !bidder ||
+                    additionalAmount < 1 ||
+                    bidder.gpBalance < additionalAmount
+                ) {
                     return { ok: false as const, error: "not_enough_gp" as const };
                 }
 

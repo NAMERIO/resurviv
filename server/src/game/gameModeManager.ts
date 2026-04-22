@@ -264,7 +264,9 @@ export class GameModeManager {
                         const playerKills = this.game.playerBarn.getTrackedKills(p);
 
                         if (highestKillerKills === playerKills) {
-                            return highestKiller.damageDealt > p.damageDealt ? highestKiller : p;
+                            return highestKiller.damageDealt > p.damageDealt
+                                ? highestKiller
+                                : p;
                         }
 
                         return highestKillerKills > playerKills ? highestKiller : p;

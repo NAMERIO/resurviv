@@ -69,7 +69,9 @@ async function userStatsSqlQuery(
             .select({
                 team_mode: matchDataTable.teamMode,
                 game_id: matchDataTable.gameId,
-                kills: sql<number>`SUM(${matchDataTable.kills})`.mapWith(Number).as("kills"),
+                kills: sql<number>`SUM(${matchDataTable.kills})`
+                    .mapWith(Number)
+                    .as("kills"),
                 rank: sql<number>`MIN(${matchDataTable.rank})`.mapWith(Number).as("rank"),
                 damage_dealt: sql<number>`SUM(${matchDataTable.damageDealt})`
                     .mapWith(Number)

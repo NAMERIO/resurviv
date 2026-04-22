@@ -618,7 +618,11 @@ export class Account {
         );
     }
 
-    placeAuctionBid(auctionId: string, amount: number, callback?: (error?: string) => void) {
+    placeAuctionBid(
+        auctionId: string,
+        amount: number,
+        callback?: (error?: string) => void,
+    ) {
         const args: PlaceAuctionBidRequest = { auctionId, amount };
         this.ajaxRequest(
             "/api/user/place_auction_bid",

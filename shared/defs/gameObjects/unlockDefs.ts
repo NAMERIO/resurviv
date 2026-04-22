@@ -719,10 +719,7 @@ export interface UnlockDef {
     free?: boolean;
 }
 
-type UnlockDefKey =
-    | "unlock_default"
-    | "unlock_new_account"
-    | "unlock_featured_bundles";
+type UnlockDefKey = "unlock_default" | "unlock_new_account" | "unlock_featured_bundles";
 export const UnlockDefs: Record<UnlockDefKey, UnlockDef> = {
     unlock_default: {
         type: "unlock",

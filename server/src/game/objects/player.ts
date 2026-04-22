@@ -628,14 +628,17 @@ export class PlayerBarn {
     getPlayerWithHighestKills(): Player | undefined {
         return this.game.playerBarn.livingPlayers
             .filter(
-                (p) =>
-                    this.getTrackedKills(p) >= GameConfig.player.killLeaderMinKills,
+                (p) => this.getTrackedKills(p) >= GameConfig.player.killLeaderMinKills,
             )
             .sort((a, b) => this.getTrackedKills(b) - this.getTrackedKills(a))[0];
     }
 
-    getTrackedKills(player: Pick<Player, "kills"> & { getLeaderboardKey(): string }): number {
-        return this.game.leaderboard.get(player.getLeaderboardKey())?.kills ?? player.kills;
+    getTrackedKills(
+        player: Pick<Player, "kills"> & { getLeaderboardKey(): string },
+    ): number {
+        return (
+            this.game.leaderboard.get(player.getLeaderboardKey())?.kills ?? player.kills
+        );
     }
 
     addEmote(type: string, playerId: number, itemType = "") {
@@ -3302,10 +3305,9 @@ export class Player extends BaseGameObject {
         } else {
             const gameOverMsg = new net.GameOverMsg();
 
-            const statsArr: net.PlayerStatsMsg["playerStats"][] =
-                this.game.modeManager
-                    .getGameoverPlayers(this)
-                    .map((player) => this.getPlayerStatsSnapshot(player));
+            const statsArr: net.PlayerStatsMsg["playerStats"][] = this.game.modeManager
+                .getGameoverPlayers(this)
+                .map((player) => this.getPlayerStatsSnapshot(player));
             gameOverMsg.playerStats = statsArr;
             gameOverMsg.teamRank = teamRank; // gameover msg sent after alive count updated
             gameOverMsg.teamId = this.teamId;

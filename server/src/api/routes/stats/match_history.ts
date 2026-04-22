@@ -55,7 +55,9 @@ matchHistoryRouter.post(
                     time_alive: sql<number>`SUM(${matchDataTable.timeAlive})`
                         .mapWith(Number)
                         .as("time_alive"),
-                    rank: sql<number>`MIN(${matchDataTable.rank})`.mapWith(Number).as("rank"),
+                    rank: sql<number>`MIN(${matchDataTable.rank})`
+                        .mapWith(Number)
+                        .as("rank"),
                     kills: sql<number>`SUM(${matchDataTable.kills})`
                         .mapWith(Number)
                         .as("kills"),
@@ -76,7 +78,10 @@ matchHistoryRouter.post(
                         eq(matchDataTable.teamMode, teamModeFilter as TeamMode).if(
                             teamModeFilter != ALL_TEAM_MODES,
                         ),
-                        gt(matchDataTable.createdAt, new Date(Date.now() - util.daysToMs(7))),
+                        gt(
+                            matchDataTable.createdAt,
+                            new Date(Date.now() - util.daysToMs(7)),
+                        ),
                     ),
                 )
                 .groupBy(

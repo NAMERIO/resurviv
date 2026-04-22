@@ -82,7 +82,9 @@ async function soloLeaderboardQuery(params: LeaderboardParams) {
                 region: matchDataTable.region,
                 teamMode: matchDataTable.teamMode,
                 gameId: matchDataTable.gameId,
-                kills: sql<number>`SUM(${matchDataTable.kills})`.mapWith(Number).as("kills"),
+                kills: sql<number>`SUM(${matchDataTable.kills})`
+                    .mapWith(Number)
+                    .as("kills"),
                 rank: sql<number>`MIN(${matchDataTable.rank})`.mapWith(Number).as("rank"),
                 damageDealt: sql<number>`SUM(${matchDataTable.damageDealt})`
                     .mapWith(Number)
@@ -133,11 +135,7 @@ async function soloLeaderboardQuery(params: LeaderboardParams) {
         })
         .from(aggregatedMatches)
         .leftJoin(usersTable, eq(usersTable.id, aggregatedMatches.userId))
-        .where(
-            and(
-                eq(usersTable.banned, false),
-            ),
-        )
+        .where(and(eq(usersTable.banned, false)))
         .groupBy(
             aggregatedMatches.mapId,
             usersTable.slug,

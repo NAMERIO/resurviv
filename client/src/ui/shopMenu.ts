@@ -101,13 +101,7 @@ export class ShopMenu {
     pendingAuctionItem: AuctionViewListing | null = null;
     pendingFeaturedBundle: FeaturedBundleOffer | null = null;
     pendingLootBox: ShopLootBox | null = null;
-    pendingAction:
-        | "buy"
-        | "sell"
-        | "cancel"
-        | "bundle"
-        | "lootbox"
-        | "auction" = "sell";
+    pendingAction: "buy" | "sell" | "cancel" | "bundle" | "lootbox" | "auction" = "sell";
     pendingSoldListings: Listing[] = [];
     pendingSoldListingIds = new Set<string>();
     soldNotificationActive = false;
@@ -481,9 +475,9 @@ export class ShopMenu {
 
     setTab(tab: ShopTab) {
         this.activeTab = tab;
-        $("#tab-shop, #tab-market-buy, #tab-market-sell, #tab-market-auction").removeClass(
-            "store-tab-selected",
-        );
+        $(
+            "#tab-shop, #tab-market-buy, #tab-market-sell, #tab-market-auction",
+        ).removeClass("store-tab-selected");
         const tabSelector =
             tab === "buy"
                 ? "#tab-market-buy"
@@ -898,7 +892,8 @@ export class ShopMenu {
         const list = $("#market-items-list");
         list.empty();
         const items = this.marketAuctionListings.filter((item) => {
-            if (this.marketType !== "all" && item.category !== this.marketType) return false;
+            if (this.marketType !== "all" && item.category !== this.marketType)
+                return false;
             if (this.marketRarity !== "all" && item.rarity < Number(this.marketRarity)) {
                 return false;
             }
@@ -952,9 +947,10 @@ export class ShopMenu {
                   "Cancel listing"
                 : item.action === "auction_live"
                   ? this.localization.translate("auction-live-label") || "Auction live"
-                : item.action === "sell" || item.action === "sell_or_auction"
-                  ? this.localization.translate("market-sell-item-action") || "Sell item"
-                  : "Buy";
+                  : item.action === "sell" || item.action === "sell_or_auction"
+                    ? this.localization.translate("market-sell-item-action") ||
+                      "Sell item"
+                    : "Buy";
         const sellerLabel =
             item.action === "buy"
                 ? this.localization.translate("market-seller-label") || "Seller"
@@ -967,7 +963,8 @@ export class ShopMenu {
                 ? this.localization.translate("market-unknown-seller") || "Unknown"
                 : this.localization.translate("market-you") || "You");
         const isSellPageCard = item.action !== "buy";
-        const isActiveListing = item.action === "cancel" || item.action === "auction_live";
+        const isActiveListing =
+            item.action === "cancel" || item.action === "auction_live";
         const expiresAt = item.createdAt
             ? item.createdAt + marketListingDurationMs
             : undefined;
@@ -1165,7 +1162,9 @@ export class ShopMenu {
                             "Auction item",
                     }),
                 );
-                auctionButton.on("click", () => this.handleCreateAuctionFromListing(item));
+                auctionButton.on("click", () =>
+                    this.handleCreateAuctionFromListing(item),
+                );
                 action.addClass("market-item-action-container-dual");
                 action.append(sellButton, auctionButton);
             } else {
@@ -1262,7 +1261,9 @@ export class ShopMenu {
         const action = $("<div/>", {
             class: "market-item-action-container market-item-action-container-active auction-item-action-container",
         }).append(
-            $("<div/>", { class: "market-item-action-timer auction-item-action-timer" }).append(
+            $("<div/>", {
+                class: "market-item-action-timer auction-item-action-timer",
+            }).append(
                 $("<span/>", {
                     class: "market-item-action-timer-label",
                     text:
@@ -1279,7 +1280,8 @@ export class ShopMenu {
                         ? this.formatCountdown(
                               item.createdAt + marketListingDurationMs - Date.now(),
                           )
-                        : this.localization.translate("market-timer-expired") || "EXPIRED",
+                        : this.localization.translate("market-timer-expired") ||
+                          "EXPIRED",
                 }),
             ),
         );
@@ -1309,15 +1311,17 @@ export class ShopMenu {
                 }),
                 $("<div/>", {
                     class: "market-item-action-btn market-item-action-btn-buy auction-item-action-btn",
-                }).append(
-                    $("<span/>", {
-                        text: "View",
+                })
+                    .append(
+                        $("<span/>", {
+                            text: "View",
+                        }),
+                    )
+                    .on("click", () => {
+                        this.pendingAuctionItem = item;
+                        this.renderAuctionBidModal(item);
+                        this.auctionBidModal.show(true);
                     }),
-                ).on("click", () => {
-                    this.pendingAuctionItem = item;
-                    this.renderAuctionBidModal(item);
-                    this.auctionBidModal.show(true);
-                }),
             );
         }
         card.append(image, info, action);
@@ -1429,7 +1433,10 @@ export class ShopMenu {
         );
         $("#confirm-sell-price-input").val(String(priceBounds?.min ?? 1));
         $("#confirm-sell-price-input").attr("min", String(priceBounds?.min ?? 1));
-        $("#confirm-sell-price-input").attr("max", String(priceBounds?.max ?? item.startPrice));
+        $("#confirm-sell-price-input").attr(
+            "max",
+            String(priceBounds?.max ?? item.startPrice),
+        );
         $("#confirm-sell-price-range").text(this.formatAuctionRangeText(item.type));
         $(".confirm-sell-price-row").show();
         $("#confirm-sell-price-range").show();
@@ -1442,9 +1449,7 @@ export class ShopMenu {
         const currentBid = Math.max(item.highestBid, item.startPrice);
         const nextMinimum = Math.max(item.startPrice, item.highestBid + 1);
         const rarityVisuals = helpers.getRarityVisuals(item.rarity);
-        const expiresAt = item.createdAt
-            ? item.createdAt + marketListingDurationMs
-            : 0;
+        const expiresAt = item.createdAt ? item.createdAt + marketListingDurationMs : 0;
         const isViewOnly = item.action === "auction_live";
         const isCurrentTopBidder = item.highestBidderName === this.account.profile.slug;
         const minimumInput = isCurrentTopBidder ? 1 : nextMinimum;
@@ -1466,7 +1471,9 @@ export class ShopMenu {
                     : this.localization.translate("market-timer-expired") || "EXPIRED",
             );
         $(".auction-bid-input-row > span:first-child").text(
-            isCurrentTopBidder ? "Add More:" : this.localization.translate("auction-place-bid") || "Place Bid:",
+            isCurrentTopBidder
+                ? "Add More:"
+                : this.localization.translate("auction-place-bid") || "Place Bid:",
         );
         $("#auction-bid-activity").empty();
         const itemImage = $("#auction-bid-item-image").empty();
@@ -1564,7 +1571,9 @@ export class ShopMenu {
                 $("#auction-bid-error")
                     .text(
                         this.localization.translate(`shop-market-error-${error}`) ||
-                            this.localization.translate("shop-market-error-server_error") ||
+                            this.localization.translate(
+                                "shop-market-error-server_error",
+                            ) ||
                             "The auction request failed.",
                     )
                     .show();
@@ -1855,7 +1864,9 @@ export class ShopMenu {
         const auctionId = this.pendingAuctionItem?.id;
         if (!auctionId) return;
 
-        const latestItem = this.marketAuctionListings.find((item) => item.id === auctionId);
+        const latestItem = this.marketAuctionListings.find(
+            (item) => item.id === auctionId,
+        );
         if (!latestItem) return;
 
         const currentInputValue = String($("#auction-bid-input").val() ?? "");
@@ -1977,7 +1988,10 @@ export class ShopMenu {
     }
 
     getPendingSellPrice() {
-        const item = this.pendingAction === "auction" ? this.pendingAuctionItem : this.pendingSellItem;
+        const item =
+            this.pendingAction === "auction"
+                ? this.pendingAuctionItem
+                : this.pendingSellItem;
         if (!item) return null;
 
         const rawValue = Number($("#confirm-sell-price-input").val());
