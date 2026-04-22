@@ -1314,7 +1314,9 @@ export class ShopMenu {
                 })
                     .append(
                         $("<span/>", {
-                            text: "View",
+                            text:
+                                this.localization.translate("auction-view-action") ||
+                                "View",
                         }),
                     )
                     .on("click", () => {
@@ -1472,7 +1474,7 @@ export class ShopMenu {
             );
         $(".auction-bid-input-row > span:first-child").text(
             isCurrentTopBidder
-                ? "Add More:"
+                ? this.localization.translate("auction-add-more") || "Add More:"
                 : this.localization.translate("auction-place-bid") || "Place Bid:",
         );
         $("#auction-bid-activity").empty();
