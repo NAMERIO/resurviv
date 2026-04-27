@@ -45,8 +45,9 @@
                         <%
                             var modeText = env.games[i].summary.team_mode;
                             modeText = modeText.charAt(0).toUpperCase() + modeText.slice(1);
+                            var statusText = env.games[i].summary.game_mode == 'battleroyale' ? 'BR' : 'DM';
                         %>
-                        <div class='match-link-stat-name match-link-stat-name-lg'><%= modeText %> Rank</div>
+                        <div class='match-link-stat-name match-link-stat-name-lg'><%= statusText %> <%= modeText %> Rank</div>
                         <div class='match-link-stat-value match-link-stat-value-lg'>
                             <span class='match-link-stat-rank match-link-stat-<%= env.games[i].summary.rank %>'>#<%= env.games[i].summary.rank %></span>
                             /<%= env.games[i].summary.team_total || 80 %>

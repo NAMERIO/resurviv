@@ -1,6 +1,7 @@
 import { and, eq, gte, max, type SQL, sql, sum } from "drizzle-orm";
 import { Hono } from "hono";
 import {
+    ALL_GAME_MODE_STATUS,
     ALL_MAPS,
     type UserStatsRequest,
     type UserStatsResponse,
@@ -32,7 +33,7 @@ UserStatsRouter.post(
     rateLimitMiddleware(40, 60 * 1000),
     validateParams(zUserStatsRequest),
     async (c) => {
-        const { interval, mapIdFilter, slug } = c.req.valid("json");
+        const { gameModeFilter, interval, mapIdFilter, slug } = c.req.valid("json");
 
         const result = await db.query.usersTable.findFirst({
             where: eq(usersTable.slug, slug),
@@ -48,7 +49,7 @@ UserStatsRouter.post(
 
         const { id: userId } = result;
 
-        const data = await userStatsSqlQuery(userId, mapIdFilter, interval);
+        const data = await userStatsSqlQuery(userId, mapIdFilter, gameModeFilter, interval);
 
         return c.json<UserStatsResponse>(data, 200);
     },
@@ -62,12 +63,14 @@ const intervalFilter: Record<string, SQL<unknown>> = {
 async function userStatsSqlQuery(
     userId: string,
     mapIdFilter: string,
+    gameModeFilter: UserStatsRequest["gameModeFilter"],
     interval: UserStatsRequest["interval"],
 ): Promise<UserStatsResponse> {
     const aggregatedMatches = db.$with("player_matches").as(
         db
             .select({
                 team_mode: matchDataTable.teamMode,
+                game_mode: matchDataTable.gameMode,
                 game_id: matchDataTable.gameId,
                 kills: sql<number>`SUM(${matchDataTable.kills})`
                     .mapWith(Number)
@@ -87,16 +90,20 @@ async function userStatsSqlQuery(
                     mapIdFilter !== ALL_MAPS
                         ? eq(matchDataTable.mapId, parseInt(mapIdFilter))
                         : undefined,
+                    gameModeFilter !== ALL_GAME_MODE_STATUS
+                        ? eq(matchDataTable.gameMode, gameModeFilter)
+                        : undefined,
                     interval in intervalFilter ? intervalFilter[interval] : undefined,
                 ),
             )
-            .groupBy(matchDataTable.teamMode, matchDataTable.gameId),
+            .groupBy(matchDataTable.teamMode, matchDataTable.gameMode, matchDataTable.gameId),
     );
 
     const withSelect = db.$with("mode_stats").as(
         db
             .select({
                 team_mode: aggregatedMatches.team_mode,
+                game_mode: aggregatedMatches.game_mode,
                 games: sql`COUNT(*)`.as("games"),
                 wins: sql`SUM(CASE WHEN ${aggregatedMatches.rank} = 1 THEN 1 ELSE 0 END)`.as(
                     "wins",
@@ -118,7 +125,7 @@ async function userStatsSqlQuery(
                 ),
             })
             .from(aggregatedMatches)
-            .groupBy(aggregatedMatches.team_mode),
+            .groupBy(aggregatedMatches.team_mode, aggregatedMatches.game_mode),
     );
 
     const res = await db
@@ -139,6 +146,7 @@ async function userStatsSqlQuery(
                     'wins', "mode_stats".wins,
                     'kills', "mode_stats".kills,
                     'teamMode', "mode_stats".team_mode,
+                    'gameMode', "mode_stats".game_mode,
                     'avgDamage', "mode_stats".avg_damage,
                     'avgTimeAlive', "mode_stats".avg_time_alive,
                     'mostDamage', "mode_stats".most_damage,

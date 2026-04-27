@@ -13,6 +13,7 @@ import {
     uuid,
 } from "drizzle-orm/pg-core";
 import { TeamMode } from "../../../../shared/gameConfig";
+import { GameModeStatus } from "../../../../shared/types/stats";
 import { ItemStatus, type Loadout, loadout } from "../../../../shared/utils/loadout";
 
 export const sessionTable = pgTable("session", {
@@ -234,6 +235,10 @@ export const matchDataTable = pgTable(
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
         region: text("region").notNull(),
         mapId: integer("map_id").notNull(),
+        gameMode: text("game_mode")
+            .$type<GameModeStatus>()
+            .notNull()
+            .default(GameModeStatus.Deathmatch),
         gameId: uuid("game_id").notNull(),
         mapSeed: bigint("map_seed", { mode: "number" }).notNull(),
         username: text("username").notNull(),
@@ -256,6 +261,7 @@ export const matchDataTable = pgTable(
         index("idx_match_data_user_stats").on(
             table.userId,
             table.teamMode,
+            table.gameMode,
             table.rank,
             table.kills,
             table.damageDealt,
@@ -265,6 +271,7 @@ export const matchDataTable = pgTable(
         index("idx_user_id").on(table.userId),
         index("idx_match_data_team_query").on(
             table.teamMode,
+            table.gameMode,
             table.mapId,
             table.createdAt,
             table.gameId,

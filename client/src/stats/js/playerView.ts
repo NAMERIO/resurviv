@@ -3,8 +3,10 @@ import { EmotesDefs } from "../../../../shared/defs/gameObjects/emoteDefs";
 import { TeamModeToString } from "../../../../shared/defs/types/misc";
 import type { TeamMode } from "../../../../shared/gameConfig";
 import {
+    ALL_GAME_MODE_STATUS,
     ALL_MAPS,
     ALL_TEAM_MODES,
+    type GameModeStatus,
     type LeaderboardRequest,
     type MatchData,
     type MatchDataRequest,
@@ -35,8 +37,10 @@ const templates = {
 
 export interface TeamModes {
     teamMode: TeamMode;
+    gameMode: GameModeStatus;
     games: number;
     name: string;
+    teamName: string;
     botStats: { name: string; val: string }[];
     midStats: { name: string; val: string }[];
 }
@@ -45,6 +49,7 @@ function getPlayerCardData(
     userData: UserStatsResponse,
     error: boolean,
     teamModeFilter: number,
+    gameModeFilter: UserStatsRequest["gameModeFilter"],
 ) {
     // get_user_stats currently returns data rows for all teamModes;
     // transform the data a bit for the player card.
@@ -110,6 +115,7 @@ function getPlayerCardData(
 
         teamModes.push({
             teamMode: mode.teamMode,
+            gameMode: mode.gameMode,
             games: mode.games,
             midStats: mid,
             botStats: bot,
@@ -118,30 +124,45 @@ function getPlayerCardData(
 
     // Insert blank cards for all teammodes
     const keys = Object.keys(TeamModeToString) as unknown as TeamMode[];
+    const gameModes =
+        gameModeFilter === ALL_GAME_MODE_STATUS
+            ? (["deathmatch", "battleroyale"] as GameModeStatus[])
+            : ([gameModeFilter] as GameModeStatus[]);
 
-    for (let i = 0; i < keys.length; i++) {
-        const teamMode = keys[i];
-        if (!teamModes.find((x) => x.teamMode == teamMode)) {
-            teamModes.push({
-                teamMode,
-                games: 0,
-            });
+    for (const gameMode of gameModes) {
+        for (let i = 0; i < keys.length; i++) {
+            const teamMode = keys[i];
+            if (!teamModes.find((x) => x.teamMode == teamMode && x.gameMode == gameMode)) {
+                teamModes.push({
+                    teamMode,
+                    gameMode,
+                    games: 0,
+                });
+            }
         }
     }
-    teamModes.sort((a, b) => a.teamMode! - b.teamMode!);
+    teamModes.sort((a, b) => {
+        if (a.gameMode !== b.gameMode) {
+            return a.gameMode === "deathmatch" ? -1 : 1;
+        }
+        return a.teamMode! - b.teamMode!;
+    });
     for (let i = 0; i < teamModes.length; i++) {
         const teamMode = teamModes[i].teamMode!;
-        teamModes[i].name = TeamModeToString[teamMode];
+        const teamName = TeamModeToString[teamMode];
+        teamModes[i].teamName = teamName;
+        teamModes[i].name =
+            teamModes[i].gameMode === "battleroyale"
+                ? `Battle Royale ${teamName}`
+                : `Deathmatch ${teamName}`;
     }
-
-    const gameModes = helpers.getGameModes();
 
     return {
         profile: profile,
         error: error,
         teamModes: teamModes,
         teamModeFilter: teamModeFilter,
-        gameModes: gameModes,
+        gameModes: helpers.getGameModes(),
     };
 }
 
@@ -221,12 +242,16 @@ export class PlayerView {
         const slug = params.get("slug") || "";
         const interval = params.get("time") || "alltime";
         const mapId = params.get("mapId") || ALL_MAPS;
+        const gameMode =
+            params.get("gameMode") ||
+            ALL_GAME_MODE_STATUS;
         const gameId = params.get("gameId") || "";
 
         return {
             slug,
             interval,
             mapId,
+            gameMode,
             gameId,
         };
     }
@@ -238,8 +263,9 @@ export class PlayerView {
         const slug = getUrlParams.slug;
         const interval = getUrlParams.interval as UserStatsRequest["interval"];
         const mapId = getUrlParams.mapId;
+        const gameMode = getUrlParams.gameMode as UserStatsRequest["gameModeFilter"];
 
-        this.loadUserStats(slug, interval, mapId);
+        this.loadUserStats(slug, interval, mapId, gameMode);
         this.loadMatchHistory(slug, 0, 7);
 
         this.render();
@@ -248,14 +274,16 @@ export class PlayerView {
         slug: string,
         interval: UserStatsRequest["interval"],
         mapIdFilter: string,
+        gameModeFilter: UserStatsRequest["gameModeFilter"],
     ) {
         const args: UserStatsRequest = {
             slug: slug,
             interval: interval,
             mapIdFilter: mapIdFilter,
+            gameModeFilter: gameModeFilter,
         };
 
-        const cacheKey = `${interval}${mapIdFilter}`;
+        const cacheKey = `${interval}${mapIdFilter}${gameModeFilter}`;
         if (this.userStatsCache[cacheKey]) {
             const { error, data } = this.userStatsCache[cacheKey];
             this.userStats.data = data;
@@ -372,11 +400,13 @@ export class PlayerView {
         const slug = this.getUrlParams().slug;
         const time = $("#player-time").val();
         const mapId = $("#player-map-id").val();
+        const gameMode = $("#player-game-mode").val();
 
         let searchP = new URLSearchParams();
         searchP.set("slug", slug);
         searchP.set("time", time as string);
         searchP.set("mapId", mapId as string);
+        searchP.set("gameMode", gameMode as string);
 
         const selectedGame = this.games.find((g) => g.expanded);
         if (selectedGame) {
@@ -394,6 +424,7 @@ export class PlayerView {
             params.slug,
             params.interval as LeaderboardRequest["interval"],
             params.mapId,
+            params.gameMode as UserStatsRequest["gameModeFilter"],
         );
     }
     render() {
@@ -410,6 +441,7 @@ export class PlayerView {
                 this.userStats.data!,
                 this.userStats.error,
                 this.teamModeFilter,
+                params.gameMode as UserStatsRequest["gameModeFilter"],
             );
             content = templates.playerCards(cardData);
         }
@@ -427,6 +459,14 @@ export class PlayerView {
         if (mapIdSelector) {
             mapIdSelector.val(params.mapId);
             mapIdSelector.on("change", () => {
+                this.onChangedParams();
+            });
+        }
+
+        const gameModeSelector = this.el.find("#player-game-mode");
+        if (gameModeSelector) {
+            gameModeSelector.val(params.gameMode);
+            gameModeSelector.on("change", () => {
                 this.onChangedParams();
             });
         }

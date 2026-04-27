@@ -3,6 +3,7 @@ import path from "node:path";
 import { WeaponTypeToDefs } from "../../../shared/defs/gameObjectDefs";
 import type { MapDefs } from "../../../shared/defs/mapDefs";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
+import { GameModeStatus } from "../../../shared/types/stats";
 import * as net from "../../../shared/net/net";
 import type { Loadout } from "../../../shared/utils/loadout";
 import { math } from "../../../shared/utils/math";
@@ -782,6 +783,9 @@ export class Game {
                 region: Config.gameServer.thisRegion,
                 username: player.name,
                 playerId: player.matchDataId,
+                gameMode: isBattleRoyaleMapName(this.mapName)
+                    ? GameModeStatus.BattleRoyale
+                    : GameModeStatus.Deathmatch,
                 teamMode: this.teamMode,
                 teamCount: player.group?.players.length ?? 1,
                 teamTotal: teamTotal,

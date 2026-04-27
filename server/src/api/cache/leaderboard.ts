@@ -1,4 +1,5 @@
 import { MapId, TeamModeToString } from "../../../../shared/defs/types/misc";
+import { GameModeStatus } from "../../../../shared/types/stats";
 import type {
     LeaderboardParams,
     LeaderboardResponse,
@@ -49,9 +50,9 @@ class LeaderBoardCache {
     }
 
     getCacheKey(prefix: Prefix, params: LeaderboardParams) {
-        const { teamMode, mapId, type, interval } = params;
+        const { gameMode, teamMode, mapId, type, interval } = params;
         const mapName = MapId[mapId].toLowerCase();
-        return `${prefix}:${TeamModeToString[teamMode]}:${mapName}:${type}:${interval}`;
+        return `${prefix}:${gameMode}:${TeamModeToString[teamMode]}:${mapName}:${type}:${interval}`;
     }
 
     async invalidateCache(matchData: MatchDataTable[]) {
@@ -74,6 +75,7 @@ class LeaderBoardCache {
 
                 const params: LeaderboardParams = {
                     type,
+                    gameMode: matchData[0].gameMode ?? GameModeStatus.Deathmatch,
                     teamMode: matchData[0].teamMode,
                     mapId: matchData[0].mapId,
                     interval,

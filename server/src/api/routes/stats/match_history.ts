@@ -45,6 +45,7 @@ matchHistoryRouter.post(
                     region: matchDataTable.region,
                     map_id: matchDataTable.mapId,
                     team_mode: matchDataTable.teamMode,
+                    game_mode: matchDataTable.gameMode,
                     team_count: sql<number>`MAX(${matchDataTable.teamCount})`
                         .mapWith(Number)
                         .as("team_count"),
@@ -89,6 +90,7 @@ matchHistoryRouter.post(
                     matchDataTable.region,
                     matchDataTable.mapId,
                     matchDataTable.teamMode,
+                    matchDataTable.gameMode,
                 ),
         );
         const teamMatches = db.$with("team_matches").as(
@@ -110,6 +112,7 @@ matchHistoryRouter.post(
                 region: playerMatches.region,
                 map_id: playerMatches.map_id,
                 team_mode: playerMatches.team_mode,
+                game_mode: playerMatches.game_mode,
                 team_count: playerMatches.team_count,
                 team_total: playerMatches.team_total,
                 end_time: playerMatches.end_time,

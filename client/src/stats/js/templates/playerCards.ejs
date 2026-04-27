@@ -67,6 +67,13 @@
         <% } %>
       </select>
     </div>
+    <div class='col-lg-2 col-6 pl-lg-0 mt-2 mt-lg-0'>
+      <select id="player-game-mode" class="player-opt custom-select">
+        <option value="all">All statuses</option>
+        <option value="deathmatch">Deathmatch</option>
+        <option value="battleroyale">Battle Royale</option>
+      </select>
+    </div>
     <div class='offset-6 col-2 col-rating-help'>
       <div class='rating-help'>What is Rating?<div class='rating-help-desc'><span class='highlight'>This feature coming soon!</span></br>Rating will be based on placement and kills within an individual game mode.</div></div>
     </div>
@@ -91,10 +98,10 @@
         <div class="card-body p-1">
           <div class='row card-mode-row-top'>
             <div class='col-2 p-0'>
-              <div class='mode-image mode-image-<%= env.teamModes[i].name %>'></div>
+              <div class='mode-image mode-image-<%= env.teamModes[i].teamName %>'></div>
             </div>
             <div class='col-5 p-0'>
-              <div class="mode-name mode-name-<%= env.teamModes[i].name %>" data-l10n='stats-<%= env.teamModes[i].name %>' data-caps='true'><%= env.teamModes[i].name.toUpperCase() %></div>
+              <div class="mode-name mode-name-<%= env.teamModes[i].teamName %>" data-caps='true'><%= env.teamModes[i].name.toUpperCase() %></div>
             </div>
             <div class='col-5 mt-2'>
               <% if (env.teamModes[i].games > 0) { %>

@@ -2,6 +2,13 @@ import { z } from "zod";
 import { MapId } from "../defs/types/misc";
 import { TeamMode } from "../gameConfig";
 
+export const GameModeStatus = {
+    Deathmatch: "deathmatch",
+    BattleRoyale: "battleroyale",
+} as const;
+export type GameModeStatus = (typeof GameModeStatus)[keyof typeof GameModeStatus];
+export const ALL_GAME_MODE_STATUS = "all";
+
 //
 // Match History
 //
@@ -29,6 +36,7 @@ export type MatchHistory = {
     region: string;
     map_id: number;
     team_mode: TeamMode;
+    game_mode: GameModeStatus;
     team_count: number;
     team_total: number;
     end_time: string | Date;
@@ -78,6 +86,13 @@ export const zUserStatsRequest = z.object({
     interval: z.enum(["daily", "weekly", "alltime"]),
     slug: z.string().min(1),
     mapIdFilter: z.enum([ALL_MAPS, ...VALID_MAP_IDS]),
+    gameModeFilter: z
+        .enum([
+            ALL_GAME_MODE_STATUS,
+            GameModeStatus.Deathmatch,
+            GameModeStatus.BattleRoyale,
+        ])
+        .default(ALL_GAME_MODE_STATUS),
 });
 
 export type UserStatsRequest = z.infer<typeof zUserStatsRequest>;
@@ -96,6 +111,7 @@ export type UserStatsResponse = {
 
 export interface Mode {
     teamMode: number;
+    gameMode: GameModeStatus;
     games: number;
     wins: number;
     kills: number;
@@ -127,6 +143,9 @@ export const zLeaderboardsRequest = z.object({
         .transform((mapId) => Number(mapId)),
     type: z.enum(["most_kills", "most_damage_dealt", "kpg", "kills", "wins"]),
     teamMode: z.enum(["solo", "duo", "squad"]).transform((mode) => teamModeMap[mode]),
+    gameMode: z
+        .enum([GameModeStatus.Deathmatch, GameModeStatus.BattleRoyale])
+        .default(GameModeStatus.Deathmatch),
 });
 
 export type LeaderboardResponse = {

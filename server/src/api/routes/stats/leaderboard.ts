@@ -70,7 +70,7 @@ const intervalFilter = {
 };
 
 async function soloLeaderboardQuery(params: LeaderboardParams) {
-    const { interval, mapId, teamMode, type } = params;
+    const { gameMode, interval, mapId, teamMode, type } = params;
     const minGames = type === "kpg" ? MinGames[type][interval] : 1;
 
     const aggregatedMatches = db.$with("player_matches").as(
@@ -81,6 +81,7 @@ async function soloLeaderboardQuery(params: LeaderboardParams) {
                 mapId: matchDataTable.mapId,
                 region: matchDataTable.region,
                 teamMode: matchDataTable.teamMode,
+                gameMode: matchDataTable.gameMode,
                 gameId: matchDataTable.gameId,
                 kills: sql<number>`SUM(${matchDataTable.kills})`
                     .mapWith(Number)
@@ -94,6 +95,7 @@ async function soloLeaderboardQuery(params: LeaderboardParams) {
             .where(
                 and(
                     eq(matchDataTable.teamMode, teamMode),
+                    eq(matchDataTable.gameMode, gameMode),
                     interval === "alltime" ? undefined : intervalFilter[interval],
                     ne(matchDataTable.userId, ""),
                     eq(matchDataTable.mapId, mapId),
@@ -105,6 +107,7 @@ async function soloLeaderboardQuery(params: LeaderboardParams) {
                 matchDataTable.mapId,
                 matchDataTable.region,
                 matchDataTable.teamMode,
+                matchDataTable.gameMode,
                 matchDataTable.gameId,
             ),
     );
@@ -152,6 +155,7 @@ async function soloLeaderboardQuery(params: LeaderboardParams) {
 
 async function multiplePlayersQuery({
     interval,
+    gameMode,
     mapId,
     teamMode,
 }: LeaderboardParams): Promise<LeaderboardResponse[]> {
@@ -177,6 +181,7 @@ async function multiplePlayersQuery({
                 interval === "alltime" ? undefined : intervalFilter[interval],
                 eq(matchDataTable.userBanned, false),
                 eq(matchDataTable.teamMode, teamMode),
+                eq(matchDataTable.gameMode, gameMode),
                 eq(matchDataTable.mapId, mapId),
             ),
         )

@@ -63,6 +63,8 @@ export class MainView {
             helpers.getParameterByName<LeaderboardRequest["interval"]>("t") || "daily";
         const teamMode =
             helpers.getParameterByName<LeaderboardRequest["teamMode"]>("team") || "solo";
+        const gameMode = (helpers.getParameterByName("gameMode") ||
+            "deathmatch") as LeaderboardRequest["gameMode"];
         const mapId = helpers.getParameterByName("mapId") || "0";
         // Change to most_damage_dealt if faction mode and most_kills selected
         if (type == "most_kills" && Number(mapId) == 3) {
@@ -73,6 +75,7 @@ export class MainView {
             type: type,
             interval: interval,
             teamMode: teamMode,
+            gameMode: gameMode,
             mapId: Number(mapId),
         };
 
@@ -86,6 +89,7 @@ export class MainView {
                     type: type,
                     interval: interval,
                     teamMode: teamMode,
+                    gameMode: gameMode,
                     mapId: Number(mapId),
                     data: data,
                 };
@@ -105,11 +109,12 @@ export class MainView {
         const type = $("#leaderboard-type").val();
         const time = $("#leaderboard-time").val();
         const teamMode = $("#leaderboard-team-mode").val();
+        const gameMode = $("#leaderboard-game-mode").val();
         const mapId = $("#leaderboard-map-id").val();
         window.history.pushState(
             "",
             "",
-            `?type=${type}&team=${teamMode}&t=${time}&mapId=${mapId}`,
+            `?type=${type}&team=${teamMode}&gameMode=${gameMode}&t=${time}&mapId=${mapId}`,
         );
         this.load();
     }
@@ -146,6 +151,7 @@ export class MainView {
 
             // Set the select options
             $("#leaderboard-team-mode").val(this.data.teamMode!);
+            $("#leaderboard-game-mode").val(this.data.gameMode!);
             $("#leaderboard-map-id").val(this.data.mapId!);
             $("#leaderboard-type").val(this.data.type!);
             $("#leaderboard-time").val(this.data.interval!);
