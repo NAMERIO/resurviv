@@ -51,6 +51,7 @@ import { assert, util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import type { IpLogsTableInsert } from "../../api/db/schema";
 import { hashIp } from "../../api/routes/private/ModerationRouter";
+import { BattleRoyaleDefaultItems, isBattleRoyaleMapName } from "../../battleroyale/helpers";
 import { Config } from "../../config";
 import { isItemInLoadout, onPlayerJoin, onPlayerKill } from "../../plugins/deathmatch";
 import { IDAllocator } from "../../utils/IDAllocator";
@@ -1685,9 +1686,11 @@ export class Player extends BaseGameObject {
 
         this.bot = Config.debug.allowBots && joinMsg.bot;
 
-        let defaultItems = GameConfig.player.defaultItems;
+        let defaultItems = isBattleRoyaleMapName(this.game.mapName)
+            ? BattleRoyaleDefaultItems
+            : GameConfig.player.defaultItems;
 
-        if (!this.bot) {
+        if (!this.bot && !isBattleRoyaleMapName(this.game.mapName)) {
             defaultItems = this.game.playerBarn.defaultItems;
         }
 
@@ -3710,7 +3713,7 @@ export class Player extends BaseGameObject {
 
         for (const item of Object.keys(this.invManager.items) as InventoryItem[]) {
             // const def = GameObjectDefs[item] as AmmoDef | HealDef;
-            if (item == "1xscope") {
+            if (item == "1xscope" && !isBattleRoyaleMapName(this.game.mapName)) {
                 continue;
             }
 
@@ -5094,6 +5097,7 @@ export class Player extends BaseGameObject {
     }
 
     setLoadout(loadout: net.JoinMsg["loadout"], useDefaultUnlocks?: boolean) {
+        const battleRoyaleMode = isBattleRoyaleMapName(this.game.mapName);
         const defaltUnlocks = UnlockDefs.unlock_default.unlocks;
         /**
          * Checks if an item is present in the player's loadout
@@ -5114,7 +5118,7 @@ export class Player extends BaseGameObject {
             this.setOutfit(loadout.outfit);
         }
 
-        if (isItemInLoadout(loadout.melee, "melee")) {
+        if (!battleRoyaleMode && isItemInLoadout(loadout.melee, "melee")) {
             this.loadout.melee = loadout.melee;
             this.meleeSkin = loadout.melee;
             this.weapons[GameConfig.WeaponSlot.Melee].type = loadout.melee;
@@ -5144,6 +5148,7 @@ export class Player extends BaseGameObject {
 
         // Only allow perks if the current map supports perkMode
         if (
+            !battleRoyaleMode &&
             loadout.perk &&
             loadout.perk !== "" &&
             isItemInLoadout(loadout.perk, "perk") &&
@@ -5153,14 +5158,14 @@ export class Player extends BaseGameObject {
         }
 
         // Set chosen streak from loadout
-        if (loadout.streak && DamageStreakDefs[loadout.streak]) {
+        if (!battleRoyaleMode && loadout.streak && DamageStreakDefs[loadout.streak]) {
             this.chosenStreakType = loadout.streak;
         } else {
             this.chosenStreakType = DefaultStreakType;
         }
 
         // Normal mode: Initialize primary weapon
-        if (isItemInLoadout(loadout.primary, "gun")) {
+        if (!battleRoyaleMode && isItemInLoadout(loadout.primary, "gun")) {
             const slot = GameConfig.WeaponSlot.Primary;
             this.weapons[slot].type = this.game.map.aprilFoolsMode
                 ? this.game.getRandomAprilFoolsGunType(loadout.primary)
@@ -5174,7 +5179,7 @@ export class Player extends BaseGameObject {
         }
 
         // Normal mode: Initialize secondary weapon
-        if (isItemInLoadout(loadout.secondary, "gun")) {
+        if (!battleRoyaleMode && isItemInLoadout(loadout.secondary, "gun")) {
             const slot = GameConfig.WeaponSlot.Secondary;
             this.weapons[slot].type = this.game.map.aprilFoolsMode
                 ? this.game.getRandomAprilFoolsGunType(loadout.secondary)
@@ -5207,8 +5212,9 @@ export class Player extends BaseGameObject {
 
         // Add "inspiration" perk if using "bugle"
         if (
-            this.weapons[GameConfig.WeaponSlot.Primary].type == "bugle" ||
-            this.weapons[GameConfig.WeaponSlot.Secondary].type == "bugle"
+            !battleRoyaleMode &&
+            (this.weapons[GameConfig.WeaponSlot.Primary].type == "bugle" ||
+                this.weapons[GameConfig.WeaponSlot.Secondary].type == "bugle")
         ) {
             this.addPerk("inspiration", false);
         }

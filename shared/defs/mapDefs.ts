@@ -10,6 +10,24 @@ import { DeatchmatchPerks } from "../../server/src/deathmatch/maps/perks";
 import { DeatchmatchSnow } from "../../server/src/deathmatch/maps/snow";
 import { DeathmatchValentine } from "../../server/src/deathmatch/maps/valentine";
 import { DeatchmatchWoods as Woods } from "../../server/src/deathmatch/maps/woods";
+import { Beach as BattleRoyaleBeach } from "../../server/src/battleroyale/maps/maps/beachDefs";
+import { Birthday as BattleRoyaleBirthday } from "../../server/src/battleroyale/maps/maps/birthdayDefs";
+import { Main as BattleRoyaleMain } from "../../server/src/battleroyale/maps/maps/baseDefs";
+import { Cobalt as BattleRoyaleCobalt } from "../../server/src/battleroyale/maps/maps/cobaltDefs";
+import { Desert as BattleRoyaleDesert } from "../../server/src/battleroyale/maps/maps/desertDefs";
+import { Faction as BattleRoyaleFaction } from "../../server/src/battleroyale/maps/maps/factionDefs";
+import { Halloween as BattleRoyaleHalloween } from "../../server/src/battleroyale/maps/maps/halloweenDefs";
+import { MainSpring as BattleRoyaleMainSpring } from "../../server/src/battleroyale/maps/maps/mainSpringDefs";
+import { MainSummer as BattleRoyaleMainSummer } from "../../server/src/battleroyale/maps/maps/mainSummerDefs";
+import { Potato as BattleRoyalePotato } from "../../server/src/battleroyale/maps/maps/potatoDefs";
+import { PotatoSpring as BattleRoyalePotatoSpring } from "../../server/src/battleroyale/maps/maps/potatoSpringDefs";
+import { Savannah as BattleRoyaleSavannah } from "../../server/src/battleroyale/maps/maps/savannahDefs";
+import { Snow as BattleRoyaleSnow } from "../../server/src/battleroyale/maps/maps/snowDefs";
+import { Turkey as BattleRoyaleTurkey } from "../../server/src/battleroyale/maps/maps/turkeyDefs";
+import { Woods as BattleRoyaleWoods } from "../../server/src/battleroyale/maps/maps/woodsDefs";
+import { WoodsSnow as BattleRoyaleWoodsSnow } from "../../server/src/battleroyale/maps/maps/woodsSnowDefs";
+import { WoodsSpring as BattleRoyaleWoodsSpring } from "../../server/src/battleroyale/maps/maps/woodsSpringDefs";
+import { WoodsSummer as BattleRoyaleWoodsSummer } from "../../server/src/battleroyale/maps/maps/woodsSummerDefs";
 import type { Vec2 } from "../utils/v2";
 import { Main } from "./maps/baseDefs";
 import { Beach } from "./maps/beachDefs";
@@ -47,28 +65,46 @@ export type Atlas =
 
 export const MapDefs = {
     main: DeatchmatchMain,
+    br_main: BattleRoyaleMain,
     main_spring: MainSpring,
+    br_main_spring: BattleRoyaleMainSpring,
     main_summer: MainSummer,
+    br_main_summer: BattleRoyaleMainSummer,
     desert: DeatchmatchDesert,
+    br_desert: BattleRoyaleDesert,
     april_fools: DeathmatchAprilFools,
     faction: FactionPotato,
+    br_faction: BattleRoyaleFaction,
     halloween: DeatchmatchHalloween,
+    br_halloween: BattleRoyaleHalloween,
     gun_game: gun_game,
     potato: Potato,
+    br_potato: BattleRoyalePotato,
     potato_spring: PotatoSpring,
+    br_potato_spring: BattleRoyalePotatoSpring,
     snow: DeatchmatchSnow,
+    br_snow: BattleRoyaleSnow,
     woods: Woods,
+    br_woods: BattleRoyaleWoods,
     woods_snow: WoodsSnow,
+    br_woods_snow: BattleRoyaleWoodsSnow,
     woods_spring: WoodsSpring,
+    br_woods_spring: BattleRoyaleWoodsSpring,
     woods_summer: WoodsSummer,
+    br_woods_summer: BattleRoyaleWoodsSummer,
     savannah: Savannah,
+    br_savannah: BattleRoyaleSavannah,
     cobalt: DeatchmatchCobalt,
+    br_cobalt: BattleRoyaleCobalt,
     turkey: Turkey,
+    br_turkey: BattleRoyaleTurkey,
     birthday: Birthday,
+    br_birthday: BattleRoyaleBirthday,
     perks: DeatchmatchPerks,
     valentine: DeathmatchValentine,
     inferno: DeathmatchInferno,
     beach: Beach,
+    br_beach: BattleRoyaleBeach,
 
     /* STRIP_FROM_PROD_CLIENT:START */
     test_normal: testNormal,

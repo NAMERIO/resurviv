@@ -4,6 +4,7 @@ import { UnlockDefs } from "../../../shared/defs/gameObjects/unlockDefs";
 import { GameConfig, WeaponSlot } from "../../../shared/gameConfig";
 import { ObjectType } from "../../../shared/net/objectSerializeFns";
 import { Config } from "../config";
+import { isBattleRoyaleMapName } from "../battleroyale/helpers";
 import type { Player } from "../game/objects/player";
 import { GamePlugin, type PlayerDamageEvent } from "../game/pluginManager";
 
@@ -26,6 +27,8 @@ export const isItemInLoadout = (
 };
 
 export function onPlayerJoin(data: Player) {
+    if (isBattleRoyaleMapName(data.game.mapName)) return;
+
     data.scope = "4xscope";
     data.boost = 100;
     data.weaponManager.setCurWeapIndex(WeaponSlot.Primary);
@@ -53,6 +56,8 @@ const perks = [
 const droppablePerks = ["ap_rounds", "self_revive", "pyro", "phoenix"];
 
 export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
+    if (isBattleRoyaleMapName(data.player.game.mapName)) return;
+
     if (data.player.game.aliveCount < 5) {
         data.player.game.playerBarn.emotes.push({
             playerId: 0,

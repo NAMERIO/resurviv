@@ -46,14 +46,13 @@ export class SiteInfo {
         const modes = this.info.modes || [];
         for (let i = 0; i < modes.length; i++) {
             const mode = modes[i];
-            const mapDef = (MapDefs[mode.mapName as keyof typeof MapDefs] || MapDefs.main)
-                .desc;
-            const buttonText = mapDef.buttonText
-                ? mapDef.buttonText
+            const mapDesc = this.getMapButtonDesc(mode.mapName);
+            const buttonText = mapDesc.buttonText
+                ? mapDesc.buttonText
                 : TeamModeToString[mode.teamMode];
             availableModes.push({
-                icon: mapDef.icon,
-                buttonCss: mapDef.buttonCss,
+                icon: mapDesc.icon,
+                buttonCss: mapDesc.buttonCss,
                 buttonText,
                 enabled: mode.enabled,
             });
@@ -61,13 +60,79 @@ export class SiteInfo {
         return availableModes;
     }
 
+    getBaseMapName(mapName: string) {
+        return mapName.startsWith("br_") ? mapName.slice(3) : mapName;
+    }
+
+    getMapButtonDesc(mapName: string) {
+        const mapDef = MapDefs[mapName as keyof typeof MapDefs] || MapDefs.main;
+        const fallbackDef =
+            MapDefs[this.getBaseMapName(mapName) as keyof typeof MapDefs] ||
+            MapDefs.main;
+
+        return {
+            ...fallbackDef.desc,
+            ...mapDef.desc,
+            icon: mapDef.desc.icon || fallbackDef.desc.icon,
+            buttonCss: mapDef.desc.buttonCss || fallbackDef.desc.buttonCss,
+            buttonText: mapDef.desc.buttonText || fallbackDef.desc.buttonText,
+        };
+    }
+
+    getModeLabel(mapName: string, teamMode: number) {
+        const mapDef = MapDefs[mapName as keyof typeof MapDefs] || MapDefs.main;
+        const isBattleRoyale = mapName.startsWith("br_");
+        const baseMapName = isBattleRoyale ? mapName.slice(3) : mapName;
+        if (baseMapName === "main") {
+            return isBattleRoyale ? "Battle Royale" : "Deathmatch";
+        }
+        const mapLabel =
+            (MapDefs[baseMapName as keyof typeof MapDefs] || mapDef).desc.name ||
+            TeamModeToString[teamMode as keyof typeof TeamModeToString] ||
+            baseMapName;
+        if (isBattleRoyale) return `Battle Royale ${mapLabel}`;
+        return `Deathmatch ${mapLabel}`;
+    }
+
+    applyQuickPlayButtonStyle(modeIdx: number, gameModeStyles = this.getGameModeStyles()) {
+        const btn = $("#btn-start-mode-0");
+        const style = gameModeStyles[modeIdx];
+        btn.removeClass("btn-custom-mode-no-indent btn-custom-mode-main");
+        btn.removeClass((_idx, className) => {
+            return (className.match(/\bbtn-mode-[^\s]+/g) || []).join(" ");
+        });
+        btn.css("background-image", "");
+
+        if (style?.icon || style?.buttonCss) {
+            btn.addClass("btn-custom-mode-no-indent");
+            btn.addClass(style.buttonCss);
+            btn.css({
+                "background-image": style.icon ? `url(${style.icon})` : "",
+            });
+        }
+    }
+
     updatePageFromInfo() {
         if (this.loaded) {
             const getGameModeStyles = this.getGameModeStyles();
+            const modeSelector = $("#game-mode-select-main");
+            modeSelector.empty();
             for (let i = 0; i < getGameModeStyles.length; i++) {
                 const style = getGameModeStyles[i];
+                const mode = this.info.modes[i];
+                if (mode?.enabled) {
+                    modeSelector.append(
+                        $("<option>", {
+                            value: String(i),
+                            text: this.getModeLabel(mode.mapName, mode.teamMode),
+                        }),
+                    );
+                }
                 const selector = `index-play-${style.buttonText}`;
                 const btn = $(`#btn-start-mode-${i}`);
+                if (i === 0) {
+                    continue;
+                }
                 btn.data("l10n", selector);
                 btn.html(this.localization.translate(selector));
                 if (style.icon || style.buttonCss) {
@@ -96,6 +161,30 @@ export class SiteInfo {
 
                 btn.toggle(style.enabled);
             }
+            if (modeSelector.children().length) {
+                const configuredMode = String(this.config.get("gameModeIdx"));
+                const configuredOption = modeSelector.children(
+                    `option[value="${configuredMode}"]`,
+                );
+                const selectedMode = configuredOption.length
+                    ? configuredMode
+                    : String(modeSelector.children().first().val() ?? "0");
+                modeSelector.val(selectedMode);
+                this.applyQuickPlayButtonStyle(Number(selectedMode), getGameModeStyles);
+                $("#btn-start-mode-0")
+                    .data("l10n", "index-play")
+                    .html(this.localization.translate("index-play"))
+                    .toggle(true);
+            } else {
+                $("#btn-start-mode-0").toggle(false);
+            }
+            modeSelector.off("change.siteInfo").on("change.siteInfo", () => {
+                const selectedMode = Number(modeSelector.val());
+                if (Number.isFinite(selectedMode)) {
+                    this.config.set("gameModeIdx", selectedMode);
+                    this.applyQuickPlayButtonStyle(selectedMode, getGameModeStyles);
+                }
+            });
             const supportsTeam = this.info.modes.some((s) => s.enabled && s.teamMode > 1);
             $(
                 "#btn-join-team, #btn-create-team, #btn-prestige-arena, #open-arena-button",

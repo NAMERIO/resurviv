@@ -2,6 +2,7 @@ import { GameConfig, GasMode } from "../../../../shared/gameConfig";
 import { math } from "../../../../shared/utils/math";
 import { util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
+import { BattleRoyaleGasStages, isBattleRoyaleMapName } from "../../battleroyale/helpers";
 import type { Game } from "../game";
 
 interface StageData {
@@ -35,6 +36,7 @@ const GasStages: StageData[] = [
 ];
 
 export class Gas {
+    private battleRoyaleJoinClosed = false;
     /**
      * Current gas mode
      * Inactive: The gas is not active, used when only a single player is on the lobby
@@ -184,6 +186,14 @@ export class Gas {
         }
 
         this.mode = stage.mode;
+        if (
+            isBattleRoyaleMapName(this.game.mapName) &&
+            this.mode === GasMode.Moving &&
+            !this.battleRoyaleJoinClosed
+        ) {
+            this.battleRoyaleJoinClosed = true;
+            this.game.battleRoyaleJoinClosed = true;
+        }
         this.radOld = this.currentRad;
         this.radNew = stage.rad * this.mapSize;
         this.duration = stage.duration;
@@ -236,7 +246,13 @@ export class Gas {
     }
 
     private _getStageData() {
-        return GasStages[this.stage];
+        return this._getStages()[this.stage];
+    }
+
+    private _getStages() {
+        return isBattleRoyaleMapName(this.game.mapName)
+            ? BattleRoyaleGasStages
+            : GasStages;
     }
 
     isInGas(pos: Vec2) {

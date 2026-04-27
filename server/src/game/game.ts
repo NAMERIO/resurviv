@@ -9,6 +9,7 @@ import { math } from "../../../shared/utils/math";
 import { util } from "../../../shared/utils/util";
 import { v2 } from "../../../shared/utils/v2";
 import { Config } from "../config";
+import { isBattleRoyaleMapName } from "../battleroyale/helpers";
 import { ServerLogger } from "../utils/logger";
 import { apiPrivateRouter, HTTPRateLimit } from "../utils/serverHelpers";
 import {
@@ -58,6 +59,7 @@ export class Game {
     started = false;
     stopped = false;
     allowJoin = false;
+    battleRoyaleJoinClosed = false;
     over = false;
     startedTime = 0;
     stopTicker = 0;
@@ -411,6 +413,9 @@ export class Game {
     }
 
     get canJoin(): boolean {
+        if (isBattleRoyaleMapName(this.mapName) && this.battleRoyaleJoinClosed) {
+            return false;
+        }
         return !this.over;
         return (
             this.aliveCount < this.map.mapDef.gameMode.maxPlayers &&

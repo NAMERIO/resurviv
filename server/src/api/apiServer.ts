@@ -1,5 +1,6 @@
 import type { Hono } from "hono";
 import type { UpgradeWebSocket } from "hono/ws";
+import { MapDefs } from "../../../shared/defs/mapDefs";
 import { TeamMode } from "../../../shared/gameConfig";
 import type { SiteInfoRes } from "../../../shared/types/api";
 import { Config } from "../config";
@@ -70,7 +71,7 @@ export class ApiServer {
 
     regions: Record<string, Region> = {};
 
-    modes = [...Config.modes];
+    modes = expandConfiguredModes(Config.modes);
     privateLobbyMaps = new Set<(typeof Config.modes)[number]["mapName"]>();
     clientTheme = Config.clientTheme;
 
@@ -155,6 +156,20 @@ export class ApiServer {
         }
         return { error: "find_game_failed" };
     }
+}
+
+function expandConfiguredModes(modes: typeof Config.modes) {
+    return modes.flatMap((mode) => {
+        const expandedModes = [mode];
+        const battleRoyaleMapName = `br_${mode.mapName}` as keyof typeof MapDefs;
+        if (MapDefs[battleRoyaleMapName]) {
+            expandedModes.push({
+                ...mode,
+                mapName: battleRoyaleMapName,
+            });
+        }
+        return expandedModes;
+    });
 }
 
 export const server = new ApiServer();

@@ -41,6 +41,7 @@ import { loadStaticDomImages } from "./ui/ui2";
 export class Application {
     nameInput = $("#player-name-input-solo");
     serverSelect = $("#server-select-main");
+    gameModeSelect = $<HTMLSelectElement>("#game-mode-select-main");
     playMode0Btn = $("#btn-start-mode-0");
     playMode1Btn = $("#btn-start-mode-1");
     playMode2Btn = $("#btn-start-mode-2");
@@ -150,7 +151,8 @@ export class Application {
     prestigeArenaSelectedTeamMode = 2;
     prestigeArenaModalRequestedOpen = false;
     modeDisplayNameByMap: Record<string, string> = {
-        main: "Classic",
+        main: "Deathmatch",
+        br_main: "Battle Royale",
         woods: "Woods",
         potato: "Potato",
         desert: "Desert",
@@ -266,7 +268,7 @@ export class Application {
             this.nameInput.attr("maxLength", net.Constants.PlayerNameMaxLen);
 
             this.playMode0Btn.on("click", () => {
-                this.tryQuickStartGame(0);
+                this.tryQuickStartGame(this.getSelectedGameModeIdx());
             });
             this.playMode1Btn.on("click", () => {
                 this.tryQuickStartGame(1);
@@ -725,6 +727,10 @@ export class Application {
         this.config.set("playerName", playerName);
         const region = this.serverSelect.find(":selected").val();
         this.config.set("region", region as string);
+        const gameModeIdx = this.getSelectedGameModeIdx();
+        if (gameModeIdx >= 0) {
+            this.config.set("gameModeIdx", gameModeIdx);
+        }
     }
 
     setDOMFromConfig() {
@@ -744,8 +750,27 @@ export class Application {
                 ? ele.value === spellSyncLang
                 : ele.value === configRegion;
         });
+        this.gameModeSelect.val(String(this.getConfiguredGameModeIdx()));
         this.syncPrestigeArenaRegions();
         this.languageSelect.val(this.localization.getLocale());
+    }
+
+    getConfiguredGameModeIdx() {
+        const modes = this.siteInfo.info.modes || [];
+        const configuredMode = this.config.get("gameModeIdx")!;
+        if (modes[configuredMode]?.enabled) {
+            return configuredMode;
+        }
+        const firstEnabledMode = modes.findIndex((mode) => mode.enabled);
+        return firstEnabledMode >= 0 ? firstEnabledMode : 0;
+    }
+
+    getSelectedGameModeIdx() {
+        const selected = Number(this.gameModeSelect.val());
+        if (Number.isFinite(selected)) {
+            return selected;
+        }
+        return this.getConfiguredGameModeIdx();
     }
 
     syncPrestigeArenaRegions() {
@@ -861,9 +886,7 @@ export class Application {
             );
         };
 
-        updateButton(this.playMode0Btn, 0);
-        updateButton(this.playMode1Btn, 1);
-        updateButton(this.playMode2Btn, 2);
+        updateButton(this.playMode0Btn, this.getSelectedGameModeIdx());
 
         const canShowArenaButton =
             this.active &&
