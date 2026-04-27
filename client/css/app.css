@@ -11869,6 +11869,19 @@ input [type="image"]:focus {
 }
 
 /* Leaderboard */
+.clan-leaderboard-game-mode {
+  height: 44px;
+  margin-bottom: 12px;
+  padding: 0 12px;
+  background-color: #3f3f3f;
+  border: 2px solid #282828;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  text-shadow: 1px 1px 0px #000000;
+}
+
 .clan-leaderboard-tabs {
   display: flex;
   gap: 10px;

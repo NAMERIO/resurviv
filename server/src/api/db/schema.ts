@@ -385,13 +385,22 @@ export const clanMemberStatsTable = pgTable(
                 onDelete: "cascade",
                 onUpdate: "cascade",
             }),
+        gameMode: text("game_mode")
+            .$type<GameModeStatus>()
+            .notNull()
+            .default(GameModeStatus.Deathmatch),
         kills: integer("kills").notNull().default(0),
         wins: integer("wins").notNull().default(0),
     },
     (table) => [
         index("idx_clan_member_stats_clan").on(table.clanId),
         index("idx_clan_member_stats_user").on(table.userId),
-        uniqueIndex("idx_clan_member_stats_unique").on(table.clanId, table.userId),
+        index("idx_clan_member_stats_game_mode").on(table.gameMode),
+        uniqueIndex("idx_clan_member_stats_unique").on(
+            table.clanId,
+            table.userId,
+            table.gameMode,
+        ),
     ],
 );
 

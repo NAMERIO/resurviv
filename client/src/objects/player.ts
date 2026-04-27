@@ -3335,6 +3335,9 @@ export class PlayerBarn {
 
     updateGroupStatus(groupId: number, groupStatus: GroupStatus[]) {
         const info = this.getGroupInfo(groupId);
+        if (!info) {
+            return;
+        }
         if (info.playerIds.length != groupStatus.length) {
             errorLogManager.logError("PlayerIds and groupStatus out of sync");
             return;

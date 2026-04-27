@@ -14,6 +14,10 @@ import {
     zRemoveGpParams,
     zRemoveItemParams,
 } from "../../../../../shared/types/moderation";
+import {
+    GameModeStatus,
+    type GameModeStatus as GameModeStatusType,
+} from "../../../../../shared/types/stats";
 import { passUtil } from "../../../../../shared/utils/passUtil";
 import { serverConfigPath } from "../../../config";
 import { isBehindProxy } from "../../../utils/serverHelpers";
@@ -55,6 +59,7 @@ async function updateClanStats(matchData: MatchDataTable[]) {
             {
                 userId: string;
                 createdAt: Date | string | undefined;
+                gameMode: GameModeStatusType;
                 kills: number;
                 rank: number;
             }
@@ -63,7 +68,8 @@ async function updateClanStats(matchData: MatchDataTable[]) {
         for (const data of matchData) {
             if (!data.userId) continue;
 
-            const key = `${data.gameId}:${data.userId}`;
+            const gameMode = data.gameMode ?? GameModeStatus.Deathmatch;
+            const key = `${data.gameId}:${data.userId}:${gameMode}`;
             const existing = aggregatedMatchData.get(key);
 
             if (existing) {
@@ -83,6 +89,7 @@ async function updateClanStats(matchData: MatchDataTable[]) {
             aggregatedMatchData.set(key, {
                 userId: data.userId,
                 createdAt: data.createdAt,
+                gameMode,
                 kills: data.kills || 0,
                 rank: data.rank || Infinity,
             });
@@ -114,6 +121,7 @@ async function updateClanStats(matchData: MatchDataTable[]) {
                 where: and(
                     eq(clanMemberStatsTable.clanId, membership.clanId),
                     eq(clanMemberStatsTable.userId, data.userId),
+                    eq(clanMemberStatsTable.gameMode, data.gameMode),
                 ),
             });
 
@@ -128,6 +136,7 @@ async function updateClanStats(matchData: MatchDataTable[]) {
                         and(
                             eq(clanMemberStatsTable.clanId, membership.clanId),
                             eq(clanMemberStatsTable.userId, data.userId),
+                            eq(clanMemberStatsTable.gameMode, data.gameMode),
                         ),
                     );
             } else {
@@ -135,6 +144,7 @@ async function updateClanStats(matchData: MatchDataTable[]) {
                 await db.insert(clanMemberStatsTable).values({
                     clanId: membership.clanId,
                     userId: data.userId,
+                    gameMode: data.gameMode,
                     kills,
                     wins,
                 });

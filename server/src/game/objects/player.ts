@@ -255,6 +255,7 @@ export class PlayerBarn {
         this.activatePlayer(player, group, team);
         if (joinData.spectator) {
             // Arena lobby spectators should join the match as viewers only.
+            player.spectatorOnly = true;
             player.dead = true;
             player.health = 0;
             util.removeFrom(this.livingPlayers, player);
@@ -715,6 +716,7 @@ export class Player extends BaseGameObject {
 
     team: Team | undefined = undefined;
     group: Group | undefined = undefined;
+    spectatorOnly = false;
 
     /**
      * set true if any member on the team changes health or disconnects
@@ -2796,6 +2798,14 @@ export class Player extends BaseGameObject {
         }
 
         let player: Player;
+        if (
+            this.spectatorOnly &&
+            this.spectating == undefined &&
+            playerBarn.livingPlayers.length > 0
+        ) {
+            this.spectating = playerBarn.randomPlayer(this);
+        }
+
         if (this.spectating == undefined) {
             // not spectating anyone
             player = this;
@@ -2897,7 +2907,7 @@ export class Player extends BaseGameObject {
             updateMsg.activePlayerData = player;
         }
 
-        updateMsg.playerInfos = player._firstUpdate
+        updateMsg.playerInfos = this._firstUpdate
             ? playerBarn.players
             : playerBarn.newPlayers;
 

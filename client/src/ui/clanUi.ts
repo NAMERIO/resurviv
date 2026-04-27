@@ -14,6 +14,10 @@ import {
     type ListClansResponse,
     type UpdateClanResponse,
 } from "../../../shared/types/clan";
+import {
+    GameModeStatus,
+    type GameModeStatus as GameModeStatusType,
+} from "../../../shared/types/stats";
 import type { Account } from "../account";
 import { api } from "../api";
 import type { Localization } from "./localization";
@@ -227,6 +231,9 @@ export class ClanUi {
             $(e.currentTarget).addClass("active");
             this.loadLeaderboard(type);
         });
+        $("#clan-leaderboard-game-mode").on("change", () => {
+            this.loadLeaderboard(this.getSelectedLeaderboardType());
+        });
         $(".modal-clans-close.close").on("click", (e) => {
             const modal = $(e.currentTarget).closest(".modal");
             if (modal.attr("id") === "modal-clan-main") {
@@ -308,8 +315,23 @@ export class ClanUi {
 
     showLeaderboard() {
         $(".clan-leaderboard-tab").removeClass("active").first().addClass("active");
+        $("#clan-leaderboard-game-mode").val(GameModeStatus.Deathmatch);
         this.loadLeaderboard("kills");
         this.leaderboardModal.show(true);
+    }
+
+    getSelectedLeaderboardType(): "kills" | "wins" {
+        return (
+            ($(".clan-leaderboard-tab.active").data("type") as "kills" | "wins") ||
+            "kills"
+        );
+    }
+
+    getSelectedLeaderboardGameMode(): GameModeStatusType {
+        const value = $("#clan-leaderboard-game-mode").val();
+        return value === GameModeStatus.BattleRoyale
+            ? GameModeStatus.BattleRoyale
+            : GameModeStatus.Deathmatch;
     }
 
     showError(message: string) {
@@ -782,6 +804,7 @@ export class ClanUi {
             "/api/clan/leaderboard",
             {
                 type,
+                gameMode: this.getSelectedLeaderboardGameMode(),
                 page,
                 limit: 50,
             },

@@ -118,18 +118,19 @@ async function getClanDetail(clanId: string): Promise<ClanDetail | null> {
             slug: usersTable.slug,
             playerIcon: sql<string>`${usersTable.loadout}->>'player_icon'`,
             joinedAt: clanMembersTable.joinedAt,
-            kills: clanMemberStatsTable.kills,
-            wins: clanMemberStatsTable.wins,
+            kills: sql<number>`COALESCE((
+                SELECT SUM(kills) FROM clan_member_stats
+                WHERE clan_member_stats.clan_id = ${clanMembersTable.clanId}
+                AND clan_member_stats.user_id = ${clanMembersTable.userId}
+            ), 0)`,
+            wins: sql<number>`COALESCE((
+                SELECT SUM(wins) FROM clan_member_stats
+                WHERE clan_member_stats.clan_id = ${clanMembersTable.clanId}
+                AND clan_member_stats.user_id = ${clanMembersTable.userId}
+            ), 0)`,
         })
         .from(clanMembersTable)
         .innerJoin(usersTable, eq(usersTable.id, clanMembersTable.userId))
-        .leftJoin(
-            clanMemberStatsTable,
-            and(
-                eq(clanMemberStatsTable.clanId, clanMembersTable.clanId),
-                eq(clanMemberStatsTable.userId, clanMembersTable.userId),
-            ),
-        )
         .where(eq(clanMembersTable.clanId, clanId));
 
     const members: ClanMember[] = membersData.map((m) => ({
@@ -656,7 +657,7 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
 });
 
 ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (c) => {
-    const { type, page, limit } = c.req.valid("json");
+    const { type, gameMode, page, limit } = c.req.valid("json");
 
     const offset = (page - 1) * limit;
 
@@ -678,18 +679,28 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
             totalKills: sql<number>`COALESCE((
                 SELECT SUM(kills) FROM clan_member_stats 
                 WHERE clan_member_stats.clan_id = clans.id
+                AND clan_member_stats.game_mode = ${gameMode}
             ), 0)`,
             totalWins: sql<number>`COALESCE((
                 SELECT SUM(wins) FROM clan_member_stats 
                 WHERE clan_member_stats.clan_id = clans.id
+                AND clan_member_stats.game_mode = ${gameMode}
             ), 0)`,
         })
         .from(clansTable)
         .orderBy(
             desc(
-                sql.raw(
-                    `COALESCE((SELECT SUM(${type}) FROM clan_member_stats WHERE clan_member_stats.clan_id = clans.id), 0)`,
-                ),
+                type === "kills"
+                    ? sql<number>`COALESCE((
+                        SELECT SUM(kills) FROM clan_member_stats
+                        WHERE clan_member_stats.clan_id = clans.id
+                        AND clan_member_stats.game_mode = ${gameMode}
+                    ), 0)`
+                    : sql<number>`COALESCE((
+                        SELECT SUM(wins) FROM clan_member_stats
+                        WHERE clan_member_stats.clan_id = clans.id
+                        AND clan_member_stats.game_mode = ${gameMode}
+                    ), 0)`,
             ),
         )
         .limit(limit)
