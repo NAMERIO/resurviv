@@ -413,8 +413,8 @@ export class TeamMenu {
         });
     }
 
-    swapPlayerTeam(playerId: number, team: "A" | "B") {
-        if (!this.isLeader || !this.arena) return;
+    swapPlayerTeam(playerId: number, team: "A" | "B" | "spectator") {
+        if (!this.arena) return;
         this.sendMessage("swapTeam", {
             playerId,
             team,

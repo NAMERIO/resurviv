@@ -74,11 +74,6 @@ export class Application {
     prestigeArenaSpectatorCodeNote = $("#battle-spectator-code-note");
     prestigeArenaRoomCode = $("#battle-room-code");
     prestigeArenaCopyCodeBtn = $("#battle-copy-code");
-    prestigeArenaInviteCodes = $("#arena-invite-codes");
-    prestigeArenaTeamACode = $("#arena-team-a-code");
-    prestigeArenaTeamBCode = $("#arena-team-b-code");
-    prestigeArenaTeamACopyCodeBtn = $("#arena-team-a-code-copy");
-    prestigeArenaTeamBCopyCodeBtn = $("#arena-team-b-code-copy");
     prestigeArenaTeamsBoard = $("#arena-teams-board");
     prestigeArenaTeamAList = $("#arena-team-a-list");
     prestigeArenaTeamBList = $("#arena-team-b-list");
@@ -426,25 +421,6 @@ export class Application {
                     this.prestigeArenaCopyCodeBtn.offset()?.top ?? e.pageY,
                 );
             });
-            const bindCodeCopy = (
-                button: JQuery<HTMLElement>,
-                valueEl: JQuery<HTMLElement>,
-            ) => {
-                button.on("click", (e) => {
-                    const code = (valueEl.text() || "").trim();
-                    if (!code) return;
-                    const inviteUrl = new URL(window.location.href);
-                    inviteUrl.search = "?arena";
-                    inviteUrl.hash = `#${code}`;
-                    helpers.copyTextToClipboard(inviteUrl.toString());
-                    this.showCopyToast(
-                        button.offset()?.left ?? e.pageX,
-                        button.offset()?.top ?? e.pageY,
-                    );
-                });
-            };
-            bindCodeCopy(this.prestigeArenaTeamACopyCodeBtn, this.prestigeArenaTeamACode);
-            bindCodeCopy(this.prestigeArenaTeamBCopyCodeBtn, this.prestigeArenaTeamBCode);
             this.prestigeArenaModeDropdown.on("click", () => {
                 const visible = this.prestigeArenaModeSelection.css("display") !== "none";
                 this.prestigeArenaModeSelection.css(
@@ -1170,10 +1146,7 @@ export class Application {
         this.prestigeArenaPlayerCounter.css("display", "none");
         this.prestigeArenaCodeRow.css("display", "none");
         this.prestigeArenaSpectatorCodeNote.addClass("hide");
-        this.prestigeArenaInviteCodes.addClass("hide");
         this.prestigeArenaRoomCode.text("");
-        this.prestigeArenaTeamACode.text("");
-        this.prestigeArenaTeamBCode.text("");
         this.prestigeArenaTeamsBoard.addClass("hide");
         this.prestigeArenaSpectatorsBoard.addClass("hide");
         this.prestigeArenaTeamAList.empty();
@@ -1208,6 +1181,15 @@ export class Application {
             (p) => p.spectator || (!p.team && this.teamMenu.arena),
         );
         const canManage = this.teamMenu.isLeader;
+        const localArenaPlayer = this.teamMenu.players.find(
+            (p) => p.playerId === this.teamMenu.localPlayerId,
+        );
+        const localTarget = localArenaPlayer?.spectator
+            ? "spectator"
+            : localArenaPlayer?.team;
+        const teamLocked =
+            this.teamMenu.roomData.findingGame ||
+            this.teamMenu.players.some((p) => p.inGame);
         const formatArenaPlayerName = (
             playerName: string,
             clanName?: string,
@@ -1216,6 +1198,46 @@ export class Application {
             clanName
                 ? `${helpers.getClanTagHtml(clanName, clanTagColor || "")} ${helpers.htmlEscape(playerName)}`
                 : helpers.htmlEscape(playerName);
+
+        const buildJoinButton = (
+            target: "A" | "B" | "spectator",
+            label: string,
+        ) => {
+            const selected = localTarget === target;
+            const button = $("<button>", {
+                class: `arena-team-join btn-darken${selected ? " selected" : ""}`,
+                type: "button",
+                text: selected ? "Joined" : label,
+                disabled: teamLocked || selected,
+            });
+            button.on("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (teamLocked || selected) return;
+                this.teamMenu.swapPlayerTeam(this.teamMenu.localPlayerId, target);
+            });
+            return button;
+        };
+
+        const renderHeading = (
+            titleEl: JQuery<HTMLElement>,
+            title: string,
+            target: "A" | "B" | "spectator",
+            label = "Join",
+        ) => {
+            titleEl.empty();
+            titleEl.append($("<span>", { text: title }));
+            titleEl.append(buildJoinButton(target, label));
+        };
+
+        renderHeading($("#arena-team-a-title"), "Team A", "A");
+        renderHeading($("#arena-team-b-title"), "Team B", "B");
+        renderHeading(
+            $("#arena-spectators-title"),
+            "Spectators",
+            "spectator",
+            "Spectate",
+        );
 
         const buildSlot = (
             list: JQuery<HTMLElement>,
@@ -1428,9 +1450,6 @@ export class Application {
         this.prestigeArenaRoomCode.text(code);
         this.prestigeArenaCodeRow.css("display", code.length ? "flex" : "none");
         this.prestigeArenaSpectatorCodeNote.toggleClass("hide", !code.length);
-        this.prestigeArenaTeamACode.text(code.length ? `${code}?A` : "");
-        this.prestigeArenaTeamBCode.text(code.length ? `${code}?B` : "");
-        this.prestigeArenaInviteCodes.toggleClass("hide", !code.length);
         this.prestigeArenaWrapper.addClass("arena-joined-shell");
         this.prestigeArenaBattlePane.addClass("arena-joined-layout");
         this.prestigeArenaBattleInputGroup.css("display", "none");
@@ -1544,10 +1563,7 @@ export class Application {
                     .trim()
                     .toUpperCase();
                 code = code.slice(0, suffixIdx).trim();
-                if (suffix === "A" || suffix === "B") {
-                    preferredTeam = suffix;
-                    spectator = false;
-                } else if (suffix === "S" || suffix === "SPEC") {
+                if (suffix === "S" || suffix === "SPEC") {
                     spectator = true;
                 }
             }
@@ -1615,7 +1631,7 @@ export class Application {
                 if (createRegion) {
                     this.config.set("region", createRegion as string);
                 }
-                this.teamMenu.connect(true, "", true, { spectator: false });
+                this.teamMenu.connect(true, "", true, { spectator: true });
                 this.refreshUi();
                 return;
             }

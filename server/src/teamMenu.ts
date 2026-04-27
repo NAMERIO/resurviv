@@ -107,7 +107,7 @@ class Player {
 }
 
 class Room {
-    static readonly MaxArenaSpectators = 5;
+    static readonly MaxArenaSpectators = 80;
     players: Player[] = [];
     arenaTeams = new Map<Player, "A" | "B">();
     arenaSpectators = new Set<Player>();
@@ -158,11 +158,10 @@ class Room {
             const cap = this.getArenaTeamCapacity();
             const teamA = this.getArenaTeamCount("A");
             const teamB = this.getArenaTeamCount("B");
-            const teamSlotsFull = teamA >= cap && teamB >= cap;
             const spectatorsFull =
                 this.getArenaSpectatorCount() >= Room.MaxArenaSpectators;
 
-            if (opts?.spectator || (teamSlotsFull && !opts?.preferredTeam)) {
+            if (opts?.spectator || !opts?.preferredTeam) {
                 if (spectatorsFull) {
                     return { ok: false, error: "spectator_full" };
                 }
@@ -233,7 +232,38 @@ class Room {
                 break;
             }
             case "swapTeam": {
-                // Team swapping is disabled in arena lobby; leaders can only kick.
+                if (!this.data.arena) break;
+                if (this.data.findingGame || this.players.some((p) => p.inGame)) break;
+
+                const targetPlayer = this.players[msg.data.playerId];
+                if (!targetPlayer) break;
+                if (targetPlayer !== player && !player.isLeader) break;
+
+                if (msg.data.team === "spectator") {
+                    if (
+                        !this.isArenaSpectator(targetPlayer) &&
+                        this.getArenaSpectatorCount() >= Room.MaxArenaSpectators
+                    ) {
+                        player.send("error", { type: "spectator_full" });
+                        break;
+                    }
+                    this.arenaTeams.delete(targetPlayer);
+                    this.arenaSpectators.add(targetPlayer);
+                    this.sendState();
+                    break;
+                }
+
+                if (
+                    this.getPlayerTeam(targetPlayer) !== msg.data.team &&
+                    this.getArenaTeamCount(msg.data.team) >= this.getArenaTeamCapacity()
+                ) {
+                    player.send("error", { type: "team_full" });
+                    break;
+                }
+
+                this.arenaSpectators.delete(targetPlayer);
+                this.arenaTeams.set(targetPlayer, msg.data.team);
+                this.sendState();
                 break;
             }
             case "playGame": {
@@ -895,7 +925,7 @@ export class TeamMenu {
                     }
                     const createJoinRes = room.addPlayer(
                         player,
-                        arena ? { preferredTeam: "A", spectator: false } : undefined,
+                        arena ? { spectator: true } : undefined,
                     );
                     if (!createJoinRes.ok) {
                         player.send("error", { type: createJoinRes.error });

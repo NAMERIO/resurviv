@@ -175,7 +175,7 @@ export const zTeamSwapTeamMsg = z.object({
     type: z.literal("swapTeam"),
     data: z.object({
         playerId: z.number(),
-        team: z.enum(["A", "B"]),
+        team: z.enum(["A", "B", "spectator"]),
     }),
 });
 
