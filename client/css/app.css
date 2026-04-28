@@ -540,6 +540,12 @@ a:active {
   box-shadow: inset 0 -4px #8e0000;
 }
 
+.btn-github {
+  background-image: url(/img/icon_github.svg);
+  background-color: #24292f;
+  box-shadow: inset 0 -4px #111418;
+}
+
 .btn-instagram {
   background-image: url(/img/icon_instagram.png);
   background-color: #d93175;
@@ -9801,6 +9807,12 @@ input [type="image"]:focus {
     background-image: url(/img/icon_youtube.png);
     background-color: red;
     box-shadow: inset 0 -4px #8e0000;
+  }
+
+  .btn-github {
+    background-image: url(/img/icon_github.svg);
+    background-color: #24292f;
+    box-shadow: inset 0 -4px #111418;
   }
 
   .btn-darken:hover,
