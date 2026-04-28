@@ -80,6 +80,12 @@ canvas {
   width: 100%;
 }
 
+body.loadout-menu-open #cvs {
+  inset: 0;
+  position: fixed;
+  z-index: 1308;
+}
+
 input {
   user-select: initial;
 }
@@ -5952,12 +5958,12 @@ a:active {
   #modal-battle-window.arena-joined-layout {
   display: grid;
   grid-template-columns: 330px minmax(0, 1fr);
+  grid-template-rows: 50px 44px 50px 50px minmax(0, 1fr);
   grid-template-areas:
     "counter teams"
     "code teams"
-    "note teams"
-    "mode specs"
-    "type specs"
+    "mode teams"
+    "type teams"
     "actions specs";
   gap: 14px;
   padding: 18px 20px 16px;
@@ -6025,7 +6031,7 @@ a:active {
   max-width: none;
   margin: 0;
   align-self: stretch;
-  min-height: 250px;
+  min-height: 0;
 }
 #modal-prestige-arena
   #modal-prestige-wrapper
@@ -6053,9 +6059,25 @@ a:active {
   .modal-prestige-body-inner
   #modal-battle-window.arena-joined-layout
   .button-group
+  #battle-loadout-button {
+  display: flex;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window.arena-joined-layout
+  .button-group
   #game-status {
   width: 100%;
 }
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window.arena-joined-layout
+  .button-group
+  #battle-loadout-button,
 #modal-prestige-arena
   #modal-prestige-wrapper
   #modal-prestige-body
@@ -6272,6 +6294,13 @@ a:active {
   .modal-prestige-body-inner
   #modal-battle-window
   .button-group
+  #battle-loadout-button,
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .button-group
   #battle-button {
   width: 284px;
   min-height: 44px;
@@ -6300,6 +6329,27 @@ a:active {
   padding: 6px 10px;
   box-sizing: border-box;
   white-space: normal;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .button-group
+  #battle-loadout-button {
+  display: none;
+  color: #ffffff;
+  background-color: #1e90ff;
+  background-image: url(/img/emotes/surviv.svg);
+  background-position: 96%;
+  background-repeat: no-repeat;
+  background-size: 28px;
+  border: 0;
+  border-bottom: 2px solid #1871c8;
+  box-shadow: inset 0 -2px #1871c8;
+  pointer-events: all;
+  margin-bottom: 8px;
+  padding-right: 42px;
 }
 #modal-prestige-arena
   #modal-prestige-wrapper
@@ -8054,7 +8104,7 @@ input [type="image"]:focus {
   overflow-x: hidden;
   overflow-y: auto;
   box-sizing: border-box;
-  z-index: 4;
+  z-index: 1310;
 }
 
 .ad-block-loadouts-left {

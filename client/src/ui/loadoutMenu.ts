@@ -551,6 +551,7 @@ export class LoadoutMenu {
 
     onShow() {
         this.active = true;
+        $("body").addClass("loadout-menu-open");
 
         // Reset items to ack locally
         this.localAckItems = [];
@@ -569,6 +570,7 @@ export class LoadoutMenu {
 
     onHide() {
         this.active = false;
+        $("body").removeClass("loadout-menu-open");
         if (loadout.modified(this.loadout, this.account.loadout)) {
             this.account.setLoadout(this.loadout);
         }

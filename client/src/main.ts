@@ -66,6 +66,7 @@ export class Application {
     prestigeArenaCodeInput = $<HTMLInputElement>(".battle-link-entry");
     prestigeArenaBattleInputGroup = $("#modal-battle-window .input-group");
     prestigeArenaJoinBtn = $("#battle-button");
+    prestigeArenaLoadoutBtn = $("#battle-loadout-button");
     prestigeArenaCreateBtn = $("#create-button");
     prestigeArenaPlayerCounter = $("#battle-player-counter");
     prestigeArenaPlayerCount = $("#battle-total");
@@ -395,6 +396,10 @@ export class Application {
                     preferredTeam: parsedInvite.preferredTeam,
                     spectator: parsedInvite.spectator,
                 });
+            });
+            this.prestigeArenaLoadoutBtn.on("click", () => {
+                this.loadoutMenu.show();
+                return false;
             });
             $("#battle-search-button").on("click", () => {
                 this.prestigeArenaJoinBtn.trigger("click");
