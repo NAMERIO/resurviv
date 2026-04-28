@@ -569,7 +569,11 @@ export class Game {
                 break;
             }
             case net.MsgType.DropItem: {
-                player.customDropItem(msg as net.DropItemMsg);
+                if (isBattleRoyaleMapName(this.mapName)) {
+                    player.dropItem(msg as net.DropItemMsg);
+                } else {
+                    player.customDropItem(msg as net.DropItemMsg);
+                }
                 break;
             }
             case net.MsgType.Spectate: {

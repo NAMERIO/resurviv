@@ -148,6 +148,7 @@ export class LoadoutMenu {
     initialized = false;
     active = false;
     items: Item[] = [];
+    showCombatLoadoutCategories = () => true;
 
     loadoutDisplay: LoadoutDisplay | null = null;
     loadout = loadout.defaultLoadout();
@@ -208,6 +209,33 @@ export class LoadoutMenu {
             categoryImage: "img/gui/skull.svg",
         },
     ];
+
+    isCategoryVisible(category?: { loadoutType: string }) {
+        if (!category) return false;
+        if (category.loadoutType == "perk" || category.loadoutType == "streak") {
+            return this.showCombatLoadoutCategories();
+        }
+        return true;
+    }
+
+    getVisibleCategoryIdx(preferredIdx = this.selectedCatIdx) {
+        if (this.isCategoryVisible(this.categories[preferredIdx])) {
+            return preferredIdx;
+        }
+        const idx = this.categories.findIndex((category) =>
+            this.isCategoryVisible(category),
+        );
+        return idx >= 0 ? idx : 0;
+    }
+
+    refreshCategoryVisibility() {
+        if (!this.selectableCats) return;
+        this.selectableCats.each((_i, elem) => {
+            const selector = $(elem);
+            const idx = Number(selector.data("idx"));
+            selector.toggle(this.isCategoryVisible(this.categories[idx]));
+        });
+    }
 
     selectedItem: {
         selectedElem: HTMLElement | null;
@@ -408,7 +436,8 @@ export class LoadoutMenu {
             // Listen for cat selection
             this.selectableCats.on("mouseup", (e) => {
                 const selector = $(e.currentTarget);
-                const newCategoryIdx = selector.data("idx");
+                const newCategoryIdx = Number(selector.data("idx"));
+                if (!this.isCategoryVisible(this.categories[newCategoryIdx])) return;
                 if (this.selectedCatIdx != newCategoryIdx) {
                     this.selectCat(newCategoryIdx);
                 }
@@ -552,6 +581,7 @@ export class LoadoutMenu {
     onShow() {
         this.active = true;
         $("body").addClass("loadout-menu-open");
+        this.refreshCategoryVisibility();
 
         // Reset items to ack locally
         this.localAckItems = [];
@@ -561,7 +591,7 @@ export class LoadoutMenu {
                 this.localAckItems.push(item);
             }
         }
-        this.selectCat(0);
+        this.selectCat(this.getVisibleCategoryIdx(0));
         this.tryBeginConfirmingItems();
         $("#start-bottom-right, #start-main").fadeOut(200);
         $("#background").hide();
@@ -609,7 +639,8 @@ export class LoadoutMenu {
         this.loadout = loadout.validate(_loadout);
         crosshair.setGameCrosshair(_loadout.crosshair);
         if (this.active) {
-            this.selectCat(this.selectedCatIdx);
+            this.refreshCategoryVisibility();
+            this.selectCat(this.getVisibleCategoryIdx());
         }
     }
 
@@ -639,7 +670,8 @@ export class LoadoutMenu {
         }
         if (this.active) {
             this.tryBeginConfirmingItems();
-            this.selectCat(this.selectedCatIdx);
+            this.refreshCategoryVisibility();
+            this.selectCat(this.getVisibleCategoryIdx());
         }
     }
 
@@ -1402,6 +1434,7 @@ export class LoadoutMenu {
     }
 
     selectCat(catIdx: number) {
+        catIdx = this.getVisibleCategoryIdx(catIdx);
         const r = this.selectedCatIdx;
         this.selectedCatIdx = catIdx;
         this.setItemsAckd(this.selectedCatIdx);

@@ -239,6 +239,9 @@ export class UiManager2 {
     streakActivateRequested = false;
     streakClickedIdx = -1;
     chosenStreakType = DefaultStreakType;
+    streakEnabled = true;
+    ammoInventoryEnabled = false;
+    perkDropEnabled = false;
 
     // DOM
     dom = {
@@ -274,6 +277,7 @@ export class UiManager2 {
             loading: HTMLElement;
         }>,
         ammo: {
+            inventory: domElemById("ui-ammo-interactive"),
             current: domElemById("ui-current-clip"),
             currentSpan: domElemById("ui-current-clip-span"),
             clipBg: domElemById("ui-current-clip-bg"),
@@ -547,6 +551,7 @@ export class UiManager2 {
             this.updateStreakIcon();
 
             setEventListener("click", el, () => {
+                if (!this.streakEnabled) return;
                 this.streakActivateRequested = true;
                 this.streakClickedIdx = -1;
             });
@@ -627,6 +632,27 @@ export class UiManager2 {
     setChosenStreakType(type: string) {
         this.chosenStreakType = DamageStreakDefs[type] ? type : DefaultStreakType;
         this.updateStreakIcon();
+    }
+
+    setStreakEnabled(enabled: boolean) {
+        this.streakEnabled = enabled;
+        const wrapper = document.getElementById("ui-streak-wrapper");
+        if (wrapper) {
+            wrapper.style.display = enabled ? "" : "none";
+        }
+        if (!enabled) {
+            this.streakActivateRequested = false;
+            this.streakClickedIdx = -1;
+        }
+    }
+
+    setAmmoInventoryEnabled(enabled: boolean) {
+        this.ammoInventoryEnabled = enabled;
+        this.dom.ammo.inventory.style.display = enabled ? "" : "none";
+    }
+
+    setPerkDropEnabled(enabled: boolean) {
+        this.perkDropEnabled = enabled;
     }
 
     updateStreakIcon() {
@@ -1037,7 +1063,7 @@ export class UiManager2 {
             if (activePlayer.perks.length > De) {
                 const Be = activePlayer.perks[De];
                 Ee.type = Be.type;
-                Ee.droppable = Be.droppable;
+                Ee.droppable = Be.droppable || this.perkDropEnabled;
                 if (Be.isNew) {
                     Ee.ticker = 0;
                 }
@@ -1061,42 +1087,58 @@ export class UiManager2 {
             const ld = activePlayer.m_localData;
             const sd = this.dom.streakSingle;
             if (sd) {
-                const def = DamageStreakDefs[this.chosenStreakType];
-                const isActive = ld.m_streakActive;
-                const isReady = ld.m_streakReady;
-                const timeLeft = ld.m_streakTimeLeft;
-                const dmgDealt = ld.m_streakDamageDealt;
-                const nextThreshold = ld.m_streakNextThreshold;
-
-                sd.div.classList.remove("streak-ready", "streak-active", "streak-used");
-
-                if (isActive && def) {
-                    sd.div.classList.add("streak-active");
-                    const pct = Math.max(
-                        0,
-                        Math.min(100, (timeLeft / def.duration) * 100),
+                if (!this.streakEnabled) {
+                    sd.div.classList.remove(
+                        "streak-ready",
+                        "streak-active",
+                        "streak-used",
                     );
-                    sd.timerFill.style.height = `${pct}%`;
                     sd.progressFill.style.height = "0%";
-                    sd.dmgText.textContent = `${Math.ceil(timeLeft)}s`;
-                } else if (isReady) {
-                    sd.div.classList.add("streak-ready");
                     sd.timerFill.style.height = "0%";
-                    sd.progressFill.style.height = "100%";
-                    sd.dmgText.textContent = "READY";
+                    sd.dmgText.textContent = "";
                 } else {
-                    // Show progress toward next threshold
-                    // We need the previous threshold to compute progress range
-                    const prevThreshold =
-                        nextThreshold > 0
-                            ? nextThreshold - (dmgDealt < 300 ? 300 : 400)
-                            : 0;
-                    const range = nextThreshold - prevThreshold;
-                    const progress = Math.max(0, dmgDealt - prevThreshold);
-                    const pct = range > 0 ? Math.min(100, (progress / range) * 100) : 0;
-                    sd.progressFill.style.height = `${pct}%`;
-                    sd.timerFill.style.height = "0%";
-                    sd.dmgText.textContent = `${Math.floor(dmgDealt)}/${nextThreshold}`;
+                    const def = DamageStreakDefs[this.chosenStreakType];
+                    const isActive = ld.m_streakActive;
+                    const isReady = ld.m_streakReady;
+                    const timeLeft = ld.m_streakTimeLeft;
+                    const dmgDealt = ld.m_streakDamageDealt;
+                    const nextThreshold = ld.m_streakNextThreshold;
+
+                    sd.div.classList.remove(
+                        "streak-ready",
+                        "streak-active",
+                        "streak-used",
+                    );
+
+                    if (isActive && def) {
+                        sd.div.classList.add("streak-active");
+                        const pct = Math.max(
+                            0,
+                            Math.min(100, (timeLeft / def.duration) * 100),
+                        );
+                        sd.timerFill.style.height = `${pct}%`;
+                        sd.progressFill.style.height = "0%";
+                        sd.dmgText.textContent = `${Math.ceil(timeLeft)}s`;
+                    } else if (isReady) {
+                        sd.div.classList.add("streak-ready");
+                        sd.timerFill.style.height = "0%";
+                        sd.progressFill.style.height = "100%";
+                        sd.dmgText.textContent = "READY";
+                    } else {
+                        // Show progress toward next threshold
+                        // We need the previous threshold to compute progress range
+                        const prevThreshold =
+                            nextThreshold > 0
+                                ? nextThreshold - (dmgDealt < 300 ? 300 : 400)
+                                : 0;
+                        const range = nextThreshold - prevThreshold;
+                        const progress = Math.max(0, dmgDealt - prevThreshold);
+                        const pct =
+                            range > 0 ? Math.min(100, (progress / range) * 100) : 0;
+                        sd.progressFill.style.height = `${pct}%`;
+                        sd.timerFill.style.height = "0%";
+                        sd.dmgText.textContent = `${Math.floor(dmgDealt)}/${nextThreshold}`;
+                    }
                 }
             }
         }

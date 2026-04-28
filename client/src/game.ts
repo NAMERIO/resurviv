@@ -158,6 +158,7 @@ export class Game {
         matchPriv: string,
         questPriv: string,
         onConnectFail: () => void,
+        battleRoyaleMode = false,
     ) {
         if (!this.connecting && !this.connected && !this.initialized) {
             if (this.m_ws) {
@@ -195,8 +196,10 @@ export class Game {
                         death_effect: playerLoadout.death_effect || "death_basic",
                         heal: playerLoadout.heal || "heal_basic",
                         boost: playerLoadout.boost || "boost_basic",
-                        perk: playerLoadout.perk || "quick_reload",
-                        streak: playerLoadout.streak || "streak_rapid_fire",
+                        perk: battleRoyaleMode ? "" : playerLoadout.perk || "quick_reload",
+                        streak: battleRoyaleMode
+                            ? ""
+                            : playerLoadout.streak || "streak_rapid_fire",
                     };
 
                     this.m_sendMessage(net.MsgType.Join, joinMessage, 8192);
@@ -737,7 +740,7 @@ export class Game {
                         const eventData = uiEvent.data as number;
                         const J = this.m_activePlayer.m_netData.m_perks;
                         const Q = J.length > eventData ? J[eventData] : null;
-                        if (Q?.droppable) {
+                        if (Q && (Q.droppable || this.m_map.mapName.startsWith("br_"))) {
                             dropMsg.item = Q.type;
                         }
                     } else {
@@ -1377,6 +1380,10 @@ export class Game {
                     this.m_particleBarn,
                 );
                 this.m_config.set("serverPerkMode", !!this.m_map.perkMode);
+                const isBattleRoyaleMap = this.m_map.mapName.startsWith("br_");
+                this.m_ui2Manager.setStreakEnabled(!isBattleRoyaleMap);
+                this.m_ui2Manager.setAmmoInventoryEnabled(isBattleRoyaleMap);
+                this.m_ui2Manager.setPerkDropEnabled(isBattleRoyaleMap);
                 this.m_resourceManager.loadMapAssets(this.m_map.mapName);
                 this.m_map.renderMap(this.m_pixi.renderer, this.m_canvasMode);
                 this.m_bulletBarn.onMapLoad(this.m_map);

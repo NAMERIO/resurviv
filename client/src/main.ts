@@ -185,6 +185,8 @@ export class Application {
         this.loadoutMenu = new LoadoutMenu(this.account, this.localization, this.config);
         this.pass = new Pass(this.account, this.loadoutMenu, this.localization);
         this.siteInfo = new SiteInfo(this.config, this.localization);
+        this.loadoutMenu.showCombatLoadoutCategories =
+            this.canUseCombatLoadoutCategories.bind(this);
 
         this.teamMenu = new TeamMenu(
             this.config,
@@ -752,6 +754,23 @@ export class Application {
             return selected;
         }
         return this.getConfiguredGameModeIdx();
+    }
+
+    isBattleRoyaleModeIdx(gameModeIdx: number) {
+        const mapName = this.siteInfo.info.modes?.[gameModeIdx]?.mapName || "";
+        return mapName.startsWith("br_");
+    }
+
+    canUseCombatLoadoutCategories() {
+        const arenaModeIdx =
+            this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined
+                ? this.teamMenu.roomData.gameModeIdx
+                : -1;
+        const modeIdx =
+            Number.isFinite(arenaModeIdx) && arenaModeIdx >= 0
+                ? arenaModeIdx
+                : this.getSelectedGameModeIdx();
+        return !this.isBattleRoyaleModeIdx(modeIdx);
     }
 
     syncPrestigeArenaRegions() {
@@ -1870,6 +1889,7 @@ export class Application {
                 matchData.data,
                 this.account.questPriv,
                 onFailure,
+                !this.canUseCombatLoadoutCategories(),
             );
         };
         joinGameImpl(urls, matchData);

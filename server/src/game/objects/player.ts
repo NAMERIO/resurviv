@@ -1393,6 +1393,7 @@ export class Player extends BaseGameObject {
     }
 
     checkDamageStreaks(): void {
+        if (isBattleRoyaleMapName(this.game.mapName)) return;
         // If already ready or active, nothing to check
         if (this.streakReady || this.streakActive) return;
         const threshold = this.streakNextThreshold;
@@ -1403,6 +1404,7 @@ export class Player extends BaseGameObject {
     }
 
     activateStreak(requestedIdx: number = -1): void {
+        if (isBattleRoyaleMapName(this.game.mapName)) return;
         if (!this.streakReady) return;
         if (this.streakActive) return;
 
@@ -5014,7 +5016,8 @@ export class Player extends BaseGameObject {
     }
     dropItem(dropMsg: net.DropItemMsg): void {
         if (this.dead) return;
-        if (this.game.map.perkMode && !this.role) return;
+        const battleRoyaleMode = isBattleRoyaleMapName(this.game.mapName);
+        if (this.game.map.perkMode && !this.role && !battleRoyaleMode) return;
 
         const itemDef = GameObjectDefs[dropMsg.item] as LootDef;
         if (!itemDef) return;
@@ -5037,7 +5040,7 @@ export class Player extends BaseGameObject {
                 break;
             case "perk": {
                 const perkSlotType = this.perks.find(
-                    (p) => p.droppable && p.type === dropMsg.item,
+                    (p) => (p.droppable || battleRoyaleMode) && p.type === dropMsg.item,
                 )?.type;
                 if (perkSlotType && perkSlotType === dropMsg.item) {
                     this.dropLoot(dropMsg.item);
