@@ -27,7 +27,7 @@ function writeCookie(value: string, expiresIn: string) {
 export function setLocalBan(
     reason = "Banned",
     permanent = false,
-    expiresIn = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+    expiresIn = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
 ) {
     const ban: LocalBan = {
         reason,
