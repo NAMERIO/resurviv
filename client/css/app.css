@@ -10928,7 +10928,7 @@ input [type="image"]:focus {
 }
 
 #modal-clan-icons {
-  z-index: 102;
+  z-index: 130;
   background-color: rgba(0, 0, 0, 0.75);
 }
 
