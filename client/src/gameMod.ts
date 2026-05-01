@@ -12,6 +12,7 @@ export class GameMod {
     fpsCounter!: HTMLElement | null;
     killsCounter!: HTMLElement | null;
     pingCounter!: HTMLElement | null;
+    counterWrapper!: HTMLElement | null;
     localRotation!: HTMLElement | null;
     currentServer!: string | null;
     pingTest!: PingTest | null;
@@ -47,8 +48,12 @@ export class GameMod {
     }
 
     initFpsCounter() {
-        if (document.getElementById("fpsCounter")) return;
-        this.fpsCounter = document.createElement("div");
+        this.counterWrapper =
+            document.getElementById("fps-ping-counters") || document.createElement("div");
+        this.counterWrapper.id = "fps-ping-counters";
+
+        this.fpsCounter =
+            document.getElementById("fpsCounter") || document.createElement("div");
         this.fpsCounter.id = "fpsCounter";
         Object.assign(this.fpsCounter.style, {
             color: "white",
@@ -62,7 +67,8 @@ export class GameMod {
             pointerEvents: "none",
         });
 
-        this.pingCounter = document.createElement("div");
+        this.pingCounter =
+            document.getElementById("pingCounter") || document.createElement("div");
         this.pingCounter.id = "pingCounter";
         Object.assign(this.pingCounter.style, {
             color: "white",
@@ -76,10 +82,11 @@ export class GameMod {
             pointerEvents: "none",
         });
 
-        const uiTopLeft = document.getElementById("ui-top-left");
-        if (uiTopLeft) {
-            uiTopLeft.appendChild(this.fpsCounter);
-            uiTopLeft.appendChild(this.pingCounter);
+        const uiGame = document.getElementById("ui-game");
+        if (uiGame) {
+            this.counterWrapper.appendChild(this.fpsCounter);
+            this.counterWrapper.appendChild(this.pingCounter);
+            uiGame.appendChild(this.counterWrapper);
         }
 
         this.updateFpsVisibility();

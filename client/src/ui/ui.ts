@@ -121,6 +121,7 @@ export class UiManager {
     playersAliveBlue = $(".js-ui-players-alive-blue");
     playersAliveRedCounter = 0;
     playersAliveBlueCounter = 0;
+    killLeaderboardEnabled = true;
     playerKills = $(".js-ui-player-kills");
     announcement = $("#ui-announcement");
     killLeaderName = $("#ui-kill-leader-name");
@@ -640,6 +641,10 @@ export class UiManager {
 
     onMapLoad(map: Map, camera: Camera) {
         this.resize(map, camera);
+        this.killLeaderboardEnabled = !map.mapName.startsWith("br_");
+        $("#ui-kill-leaderboard")
+            .empty()
+            .css("display", this.killLeaderboardEnabled ? "" : "none");
         const displayLeader = map.getMapDef().gameMode.killLeaderEnabled;
 
         $("#ui-kill-leader-container").css("display", displayLeader ? "block" : "none");
@@ -1107,9 +1112,14 @@ export class UiManager {
     }
 
     updateLeaderboard(players: LeaderboardMsg["players"]) {
-        if (!players.length) return;
-
         const container = $("#ui-kill-leaderboard");
+        if (!this.killLeaderboardEnabled) {
+            container.empty().css("display", "none");
+            return;
+        }
+        container.css("display", "");
+
+        if (!players.length) return;
 
         container.empty();
 

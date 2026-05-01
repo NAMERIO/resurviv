@@ -5719,6 +5719,38 @@ span.ui-stats-header-value {
   z-index: 3;
 }
 
+#fps-ping-counters {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  left: 50%;
+  position: fixed;
+  top: 8px;
+  transform: translateX(-50%);
+  z-index: 10000;
+}
+
+@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+  #fps-ping-counters {
+    align-items: center;
+    display: flex;
+    gap: 6px;
+    left: 50%;
+    position: fixed;
+    top: 8px;
+    transform: translateX(-50%);
+    z-index: 10000;
+  }
+
+  #fpsCounter,
+  #pingCounter {
+    font-size: 11px !important;
+    margin-top: 0 !important;
+    padding: 3px 7px !important;
+    white-space: nowrap;
+  }
+}
+
 @keyframes streakReady {
   0%,
   100% {
@@ -5734,5 +5766,81 @@ span.ui-stats-header-value {
     transform: scale(0.8);
     transform-origin: right;
     margin-top: 2px;
+  }
+}
+
+
+@media (max-height: 768px), (max-width: 1300px) {
+  /* Compact in-game HUD for mobile*/
+  #ui-bottom-center-0,
+  #ui-equipped-ammo-wrapper,
+  #ui-bottom-center-1 {
+    transform: translateX(-50%) scale(0.5);
+    transform-origin: bottom center;
+  }
+
+  #ui-bottom-right {
+    transform: scale(0.5);
+    transform-origin: top right;
+  }
+
+  #ui-ammo-interactive {
+    transform: scale(0.5);
+    transform-origin: top right;
+  }
+
+  #ui-medical-interactive {
+    transform: translateX(-50%) scale(0.5);
+    transform-origin: top center;
+  }
+
+  .ui-emote {
+    width: 128px;
+    height: 128px;
+    background-size: 128px;
+  }
+
+  .ui-emote-middle .ui-emote-image {
+    width: 12px !important;
+    height: 12px !important;
+    background-size: 12px !important;
+  }
+
+  .ui-emote-top .ui-emote-image {
+    margin-top: -39px;
+  }
+
+  .ui-emote-right .ui-emote-image {
+    margin-left: 39px;
+  }
+
+  .ui-emote-bottom .ui-emote-image {
+    margin-top: 39px;
+  }
+
+  .ui-emote-left .ui-emote-image {
+    margin-left: -39px;
+  }
+
+  .ui-emote-top-left .ui-emote-image {
+    margin-left: -40px;
+    margin-top: -15px;
+  }
+
+  .ui-emote-bottom-left .ui-emote-image {
+    margin-left: -40px;
+    margin-top: 15px;
+  }
+
+  .ui-emote-image-large {
+    width: 40px;
+    height: 40px;
+    background-size: 32px;
+  }
+
+  .ui-emote-image-small {
+    width: 18px;
+    height: 18px;
+    background-size: 18px;
   }
 }
