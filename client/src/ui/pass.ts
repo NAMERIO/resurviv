@@ -211,7 +211,7 @@ export class Pass {
         const refreshOffset = 5 * 1000;
         const newQuests = [];
         $("#pass-items-wrapper").removeClass("logged-out").addClass("logged-in");
-        this.populatePassItems();
+        this.pass.data = pass;
         let questAnimCount = 0;
         for (let passIdx = 0; passIdx < quests.length; passIdx++) {
             const questData = quests[passIdx];
@@ -315,8 +315,6 @@ export class Pass {
             newQuests.push(quest);
         }
         this.quests = newQuests;
-        this.populatePassItems();
-        this.pass.data = pass;
         this.pass.animSteps = [];
         this.pass.currentXp = Math.round(this.pass.currentXp);
         this.pass.levelXp = passUtil.getPassLevelXp(pass.type, this.pass.currentLevel);
@@ -372,6 +370,7 @@ export class Pass {
         $("#pass-progress-bar-fill").css({
             width: `${pct}%`,
         });
+        this.populatePassItems();
         this.updatePassTrackProgress(this.pass.currentLevel, this.pass.currentXp);
         this.loaded = true;
     }
@@ -389,8 +388,14 @@ export class Pass {
 
         if (!passDef.items) return;
 
-        const passLevel = this.account.loggedIn ? this.pass.currentLevel : 0;
+        const passLevel = this.account.loggedIn
+            ? ((this.pass.data as { level?: number }).level ?? this.pass.currentLevel)
+            : 0;
+        const passXp = this.account.loggedIn
+            ? ((this.pass.data as { xp?: number }).xp ?? this.pass.currentXp)
+            : 0;
         const ownsPremiumPass = hasPremiumPassUnlock(this.pass.data);
+        this.updatePremiumPassButton(ownsPremiumPass);
         const highestRewardLevel = passDef.items.reduce(
             (highest, reward) => Math.max(highest, reward.level),
             1,
@@ -401,7 +406,7 @@ export class Pass {
         $("#pass-items-wrapper .pass-premium-items").css("width", `${trackWidth}px`);
         $("#pass-items-wrapper .pass-progress").css("width", `${trackWidth}px`);
         $("#pass-items-wrapper .pass-progress-levels").css("width", `${trackWidth}px`);
-        this.updatePassTrackProgress(passLevel, this.pass.currentXp, highestRewardLevel);
+        this.updatePassTrackProgress(passLevel, passXp, highestRewardLevel);
 
         for (let passItemIdx = 0; passItemIdx < passItemCount; passItemIdx++) {
             const passItem = passDef.items[passItemIdx];
@@ -451,10 +456,16 @@ export class Pass {
                       premiumItemUnlocked,
                       ownsPremiumPass,
                   )
-                : $("<div/>", {
+                : (() => {
+                      const emptySlot = $("<div/>", {
                       class: "pass-premium-item pass-track-item pass-empty-slot locked",
                       title: `Premium reward - Level ${premiumItemLevel}`,
-                  }).append(createPassLock());
+                      });
+                      if (!ownsPremiumPass) {
+                          emptySlot.append(createPassLock());
+                      }
+                      return emptySlot;
+                  })();
 
             basicPassItems.append(trackItem);
             premiumPassItems.append(premiumItem);
@@ -466,6 +477,34 @@ export class Pass {
             );
         }
         scrollPassTrackToLevel(passLevel, passDef.items);
+    }
+
+    updatePremiumPassButton(ownsPremiumPass: boolean) {
+        const buyButton = $("#pass-buy-btn");
+        if (!buyButton.length) return;
+
+        if (ownsPremiumPass) {
+            buyButton.addClass("premium");
+            buyButton.empty().append(
+                $("<div/>", { class: "pass-premium-icon" }),
+                $("<div/>", {
+                    class: "pass-btn-text",
+                    text: "GOLD PASS UNLOCKED",
+                }),
+                $("<div/>", { class: "pass-premium-icon" }),
+            );
+            return;
+        }
+
+        buyButton.removeClass("premium btn-disabled");
+        buyButton.empty().append(
+            $("<div/>", { class: "pass-premium-icon" }),
+            $("<div/>", {
+                class: "pass-btn-text",
+                text: "UNLOCK ALL GOLD ITEMS",
+            }),
+            $("<div/>", { class: "pass-premium-icon" }),
+        );
     }
 
     createPremiumTrackItem(
@@ -497,8 +536,8 @@ export class Pass {
         }
 
         if (!isUnlocked) {
-            trackItem.append(createPassLock());
             if (!ownsPremiumPass) {
+                trackItem.append(createPassLock());
                 trackItem.addClass("premium-pass-required");
             }
         }
@@ -508,15 +547,12 @@ export class Pass {
 
     showPremiumPassModal() {
         if (!this.account.loggedIn) {
-            $("#premium-pass-confirm-error")
-                .text("Log in to buy the premium pass.")
-                .show();
-            this.premiumPassModal.show(true);
+            $(document).trigger("pass-login-required");
             return;
         }
         if (hasPremiumPassUnlock(this.pass.data)) {
             $("#premium-pass-confirm-error")
-                .text("You already own the premium pass.")
+                .text("You already unlocked the premium pass for this pass.")
                 .show();
         } else {
             $("#premium-pass-confirm-error").text("").hide();
@@ -524,6 +560,7 @@ export class Pass {
         const passDef = PassDefs[this.pass.data.type as keyof typeof PassDefs];
         const price = passDef.premiumPrice ?? defaultPremiumPassPrice;
         $("#premium-pass-price").text(String(price));
+        $("#premium-pass-price-footer").text(String(price));
         this.premiumPassModal.show(true);
     }
 
@@ -540,7 +577,7 @@ export class Pass {
                     error === "not_enough_gp"
                         ? "Not enough GP."
                         : error === "already_purchased"
-                          ? "You already own the premium pass."
+                          ? "You already unlocked the premium pass for this pass."
                           : "Premium pass purchase failed.";
                 $("#premium-pass-confirm-error").text(message).show();
                 return;
@@ -555,15 +592,47 @@ export class Pass {
         highestRewardLevel?: number,
     ) {
         const passDef = PassDefs[this.pass.data.type as keyof typeof PassDefs];
-        const maxRewardLevel =
-            highestRewardLevel ??
-            passDef.items.reduce((highest, reward) => Math.max(highest, reward.level), 1);
         const currentLevel = Math.max(1, passLevel);
         const levelXp = passUtil.getPassLevelXp(this.pass.data.type, currentLevel);
         const levelProgress =
             passLevel > 0 && levelXp > 0 ? math.clamp(currentXp / levelXp, 0, 1) : 0;
+        const currentPassProgress = currentLevel + levelProgress;
+        const rewardItems = passDef.items;
+        const lastRewardIdx = rewardItems.findLastIndex(
+            (reward) => reward.level <= currentPassProgress,
+        );
+        const nextRewardIdx = rewardItems.findIndex(
+            (reward) => reward.level > currentPassProgress,
+        );
+        let rewardProgress = 0;
+
+        if (rewardItems.length > 0) {
+            if (lastRewardIdx < 0) {
+                const firstRewardLevel = rewardItems[0]!.level;
+                rewardProgress =
+                    firstRewardLevel > 1
+                        ? math.clamp((currentPassProgress - 1) / (firstRewardLevel - 1), 0, 1) *
+                          0.5
+                        : 0;
+            } else if (nextRewardIdx < 0) {
+                rewardProgress = rewardItems.length - 0.5;
+            } else {
+                const lastReward = rewardItems[lastRewardIdx]!;
+                const nextReward = rewardItems[nextRewardIdx]!;
+                const betweenRewards =
+                    nextReward.level > lastReward.level
+                        ? math.clamp(
+                              (currentPassProgress - lastReward.level) /
+                                  (nextReward.level - lastReward.level),
+                              0,
+                              1,
+                          )
+                        : 0;
+                rewardProgress = lastRewardIdx + 0.5 + betweenRewards;
+            }
+        }
         const passPercent = math.clamp(
-            ((passLevel + levelProgress) / maxRewardLevel) * 100,
+            rewardItems.length > 0 ? (rewardProgress / rewardItems.length) * 100 : 0,
             0,
             100,
         );

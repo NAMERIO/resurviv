@@ -79,19 +79,9 @@ export class SiteInfo {
         };
     }
 
-    getModeLabel(mapName: string, teamMode: number) {
-        const mapDef = MapDefs[mapName as keyof typeof MapDefs] || MapDefs.main;
+    getModeLabel(mapName: string, _teamMode: number) {
         const isBattleRoyale = mapName.startsWith("br_");
-        const baseMapName = isBattleRoyale ? mapName.slice(3) : mapName;
-        if (baseMapName === "main") {
-            return isBattleRoyale ? "Battle Royale" : "Deathmatch";
-        }
-        const mapLabel =
-            (MapDefs[baseMapName as keyof typeof MapDefs] || mapDef).desc.name ||
-            TeamModeToString[teamMode as keyof typeof TeamModeToString] ||
-            baseMapName;
-        if (isBattleRoyale) return `Battle Royale ${mapLabel}`;
-        return `Deathmatch ${mapLabel}`;
+        return isBattleRoyale ? "Battle Royale" : "Deathmatch";
     }
 
     applyQuickPlayButtonStyle(modeIdx: number, gameModeStyles = this.getGameModeStyles()) {

@@ -32,12 +32,9 @@ export const passType = "pass_survivr1";
 export const questSlotIndexes = [0, 1];
 export const premiumPassUnlockType = "premiumPass";
 
-function getPremiumRewardItemsAtLevel(passType: string, level: number) {
+function getPremiumRewardsAtLevel(passType: string, level: number) {
     const passDef = PassDefs[passType];
-    return (passDef.premiumItems ?? [])
-        .filter((reward) => reward.level <= level)
-        .flatMap((reward) => ("item" in reward ? [reward.item] : []))
-        .filter((item) => !!GameObjectDefs[item]);
+    return (passDef.premiumItems ?? []).filter((reward) => reward.level <= level);
 }
 
 /**
@@ -328,7 +325,14 @@ PassRouter.post(
                 }
 
                 const { level } = passUtil.getPassLevelAndXp(pass.passType, pass.totalXp);
-                const rewardItems = getPremiumRewardItemsAtLevel(pass.passType, level);
+                const rewards = getPremiumRewardsAtLevel(pass.passType, level);
+                const rewardItems = rewards
+                    .flatMap((reward) => ("item" in reward ? [reward.item] : []))
+                    .filter((item) => !!GameObjectDefs[item]);
+                const rewardGp = rewards.reduce(
+                    (total, reward) => total + ("gp" in reward ? reward.gp : 0),
+                    0,
+                );
                 const insertedRewards =
                     rewardItems.length > 0
                         ? await tx
@@ -369,13 +373,13 @@ PassRouter.post(
                 await tx
                     .update(usersTable)
                     .set({
-                        gpBalance: buyer.gpBalance - price,
+                        gpBalance: buyer.gpBalance - price + rewardGp,
                     })
                     .where(eq(usersTable.id, user.id));
 
                 return {
                     ok: true as const,
-                    gpBalance: buyer.gpBalance - price,
+                    gpBalance: buyer.gpBalance - price + rewardGp,
                 };
             });
 

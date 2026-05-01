@@ -1300,33 +1300,33 @@
             (adsbygoogle = window.adsbygoogle || []).push({});
           </script>
         </div>
-        <div id="start-bottom-left">
-          <div id="mobile-settings-front">
-            <div class="btn-settings menu-option btn-darken btn-start-option"></div>
-          </div>
-        </div>
-        <div id="start-bottom-middle">
-          <a href="changelogRec.html" target="_blank" class="footer-after">ver %VITE_GAME_VERSION%</a>
-          <a href="changelog.html" target="_blank" data-l10n="index-proxy-sites">Original changelog</a>
-          <!--
-          <a href="changelog.html" target="_blank" class="footer-after">ver 0.8.82</a>
-          -->
-          <a href="privacy.html" class="footer-after" target="_blank">Privacy Policy</a>
-          <a href="proxy.txt" target="_blank" data-l10n="index-proxy-sites">Proxy Sites</a>
-        </div>
-
-        <div id="start-bottom-right-wrapper">
-          <div id="start-bottom-right">
-            <div class="language-select-wrap">
-              <select class="language-select"></select>
-            </div>
-            <div class="btn-settings menu-option btn-darken btn-start-option"></div>
-            <div class="btn-keybind menu-option btn-darken btn-start-option"></div>
-            <div id="btn-start-fullscreen" class="btn-fullscreen-toggle menu-option btn-darken btn-start-option"></div>
-            <div class="btn-start-mute btn-sound-toggle menu-option btn-darken btn-start-option audio-on-icon"></div>
-          </div>
+      </div>
+      </div>
+      <div id="start-bottom-left">
+        <div id="mobile-settings-front">
+          <div class="btn-settings menu-option btn-darken btn-start-option"></div>
         </div>
       </div>
+      <div id="start-bottom-middle">
+        <a href="changelogRec.html" target="_blank" class="footer-after">ver %VITE_GAME_VERSION%</a>
+        <a href="changelog.html" target="_blank" data-l10n="index-proxy-sites">Original changelog</a>
+        <!--
+        <a href="changelog.html" target="_blank" class="footer-after">ver 0.8.82</a>
+        -->
+        <a href="privacy.html" class="footer-after" target="_blank">Privacy Policy</a>
+        <a href="proxy.txt" target="_blank" data-l10n="index-proxy-sites">Proxy Sites</a>
+      </div>
+
+      <div id="start-bottom-right-wrapper">
+        <div id="start-bottom-right">
+          <div class="language-select-wrap">
+            <select class="language-select"></select>
+          </div>
+          <div class="btn-settings menu-option btn-darken btn-start-option"></div>
+          <div class="btn-keybind menu-option btn-darken btn-start-option"></div>
+          <div id="btn-start-fullscreen" class="btn-fullscreen-toggle menu-option btn-darken btn-start-option"></div>
+          <div class="btn-start-mute btn-sound-toggle menu-option btn-darken btn-start-option audio-on-icon"></div>
+        </div>
       </div>
       <!-- Modals -->
       <div id="modal-prestige-arena" class="modal">
@@ -1735,23 +1735,41 @@
           </div>
         </div>
       </div>
-      <div id="modal-premium-pass-confirm" class="modal">
-        <div class="modal-content">
-          <span class="close">&times;</span>
+      <div id="modal-premium-pass-confirm" class="modal modal-account">
+        <div class="modal-content modal-close">
           <div class="modal-header">
-            <h2>Unlock Gold Items</h2>
+            <span class="close close-corner-black"></span>
+            <div class="modal-header-content">
+              <h2>Unlock Gold Items</h2>
+            </div>
           </div>
           <div class="modal-body">
-            <p class="modal-body-text">Spend <span id="premium-pass-price">1300</span> GP to unlock premium pass rewards?</p>
-            <p class="modal-body-text">Rewards from levels you already reached will be added right away.</p>
-            <p id="premium-pass-confirm-error" class="modal-body-text"></p>
-          </div>
-          <div class="modal-footer close-footer">
-            <div id="premium-pass-confirm-no" class="btn-modal-cancel btn-darken">
-              <span>No, cancel.</span>
+            <div class="modal-body-item">
+              <div class="modal-body-item-img premium"></div>
+              <div class="modal-body-item-text">Unlock Gold Pass rewards for this season.</div>
             </div>
-            <div id="premium-pass-confirm-yes" class="btn-modal-confirm btn-darken">
-              <span>Yes, buy.</span>
+            <div class="modal-body-item">
+              <div class="modal-body-item-img rewards"></div>
+              <div class="modal-body-item-text">Rewards from levels you already reached will be added right away.</div>
+            </div>
+            <div class="modal-body-item">
+              <div class="modal-body-item-img instant">
+                <div class="modal-body-item-img-gp"></div>
+              </div>
+              <div class="modal-body-item-text">Spend <span id="premium-pass-price"></span> GP to unlock premium pass rewards.</div>
+            </div>
+            <p id="premium-pass-confirm-error"></p>
+          </div>
+          <div class="modal-footer modal-footer-round">
+            <div id="premium-pass-confirm-no" class="btn-green btn-darken menu-option">
+              <span>No, cancel</span>
+            </div>
+            <div id="premium-pass-confirm-yes" class="btn-green btn-darken menu-option premium">
+              <span>Yes, buy</span>
+              <div class="modal-pass-price">
+                <div class="pass-gp-icon"></div>
+                <span id="premium-pass-price-footer"></span>
+              </div>
             </div>
           </div>
         </div>

@@ -380,10 +380,12 @@ export const PrivateRouter = new Hono<Context>()
                     .concat(premiumUnlockedRewards)
                     .flatMap((reward) => ("item" in reward ? [reward.item] : []))
                     .filter((item) => !!GameObjectDefs[item]);
-                const passGpGain = unlockedRewards.reduce(
-                    (total, reward) => total + ("gp" in reward ? reward.gp : 0),
-                    0,
-                );
+                const passGpGain = unlockedRewards
+                    .concat(premiumUnlockedRewards)
+                    .reduce(
+                        (total, reward) => total + ("gp" in reward ? reward.gp : 0),
+                        0,
+                    );
 
                 let unlockedNewItems = false;
 

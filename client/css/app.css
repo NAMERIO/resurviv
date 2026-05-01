@@ -7841,9 +7841,11 @@ a:active {
 }
 
 #start-bottom-middle {
-  bottom: 20px;
+  bottom: var(--side-pad);
   color: #fff;
-  position: absolute;
+  font-size: 13px;
+  line-height: 16px;
+  position: fixed;
   left: var(--side-pad);
   transform: none;
   z-index: 101;
@@ -7852,19 +7854,18 @@ a:active {
 #start-bottom-middle > a {
   display: block;
   color: #fff;
+  margin-bottom: 2px;
   text-decoration: none;
 }
 
 @media (max-height: 720px) {
   #start-bottom-middle {
-    bottom: 100px;
+    bottom: var(--side-pad);
   }
 }
 
 #start-bottom-middle .footer-after::after {
-  content: "\B7";
-  margin: 0 10px;
-  color: #83af50;
+  content: none;
 }
 
 .start-bottom-middle-tablet {
@@ -7888,12 +7889,25 @@ input [type="image"]:focus {
   border-style: none;
 }
 
-#start-bottom-right {
-  position: absolute;
-  color: #fff;
+#start-bottom-right-wrapper {
   bottom: var(--side-pad);
+  position: fixed;
   right: var(--side-pad);
   z-index: 101;
+}
+
+#start-bottom-right {
+  position: static;
+  color: #fff;
+  display: flex;
+  align-items: flex-end;
+}
+
+#start-bottom-right .language-select-wrap {
+  position: relative;
+  bottom: auto;
+  display: inline-flex;
+  align-items: flex-end;
 }
 
 @media (max-height: 720px) {
@@ -7905,14 +7919,14 @@ input [type="image"]:focus {
 
 .btn-start-option {
   vertical-align: bottom;
-  margin-right: 8px;
+  margin-right: 6px;
   margin-bottom: 0;
-  width: 48px;
-  height: 42px;
+  width: 40px;
+  height: 35px;
   display: inline-block;
   background-repeat: no-repeat;
   background-color: #7a7a7a;
-  box-shadow: inset 0 -4px #3e3e3e;
+  box-shadow: inset 0 -3px #3e3e3e;
 }
 
 @media (max-height: 768px) {
@@ -7923,25 +7937,25 @@ input [type="image"]:focus {
 
 .btn-keybind {
   background-image: url(/img/gui/keyboard.svg);
-  background-size: 44px;
-  background-position: 2px -3px;
+  background-size: 36px;
+  background-position: 2px -2px;
 }
 
 .btn-settings {
   background-image: url(/img/gui/cog.svg);
-  background-size: 44px;
-  background-position: 2px -3px;
+  background-size: 36px;
+  background-position: 2px -2px;
 }
 
 #btn-start-fullscreen {
   background-image: url(/img/gui/minimize.svg);
-  background-size: 34px;
-  background-position: 7px 2px;
+  background-size: 29px;
+  background-position: 6px 2px;
 }
 
 .btn-start-mute {
-  background-size: 44px;
-  background-position: 2px -3px;
+  background-size: 36px;
+  background-position: 2px -2px;
 }
 
 .audio-on-icon {
@@ -9858,18 +9872,18 @@ input [type="image"]:focus {
   }
 
   #start-top-left {
-    position: absolute;
+    position: fixed;
     color: #fff;
-    top: 9.6px;
-    left: 12px;
-    z-index: 1;
+    top: 10px;
+    left: 10px;
+    z-index: 102;
   }
 
   .icon-hamburger {
-    height: 36px;
-    width: 36px;
+    height: 28px;
+    width: 28px;
     background-image: url(/img/gui/hamburger.svg);
-    background-size: 36px;
+    background-size: 28px;
     background-repeat: no-repeat;
   }
 
@@ -9953,11 +9967,14 @@ input [type="image"]:focus {
     line-height: 40px;
   }
 
-  #start-bottom-right {
-    position: absolute;
-    color: #fff;
-    top: 12px;
+  #start-bottom-right-wrapper {
+    bottom: 12px;
     right: 12px;
+  }
+
+  #start-bottom-right {
+    position: static;
+    color: #fff;
   }
 
   .btn-start-option {
@@ -10226,8 +10243,8 @@ input [type="image"]:focus {
 
   .close-hamburger {
     position: absolute;
-    top: 9.6px;
-    left: 12px;
+    top: 10px;
+    left: 10px;
   }
 
   #close-emotes {
@@ -10504,8 +10521,8 @@ input [type="image"]:focus {
     width: 85%;
   }
 
-  #start-bottom-right {
-    top: 8px;
+  #start-bottom-right-wrapper {
+    bottom: 8px;
     right: 6px;
   }
 
@@ -14666,8 +14683,14 @@ div.roulette {
   width: 60px;
 }
 
-#start-menu #pass-items-wrapper {
-  margin: 0;
+#start-menu #pass-items-wrapper,
+#start-menu #pass-items-wrapper.logged-in,
+#start-menu #pass-items-wrapper.logged-out {
+  background: transparent;
+  border-radius: 0;
+  margin: 0 !important;
+  padding: 0;
+  width: 534px;
 }
 
 #start-menu .pass-items-container {
@@ -14756,6 +14779,214 @@ div.roulette {
   color: #ff6262;
   display: none;
   font-weight: 700;
+}
+
+#modal-premium-pass-confirm {
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1300;
+}
+
+#modal-premium-pass-confirm .modal-content {
+  animation-duration: 0.2s;
+  animation-name: fadeIn;
+  left: 50%;
+  text-decoration: none;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 820px;
+}
+
+#modal-premium-pass-confirm .modal-header {
+  background: linear-gradient(180deg, #c68609 0%, #e5e802 65%, #fdff83 100%);
+  box-sizing: border-box;
+  height: 96px;
+  position: relative;
+}
+
+#modal-premium-pass-confirm .modal-header-content {
+  display: flex;
+  justify-content: center;
+  padding-top: 13px;
+}
+
+#modal-premium-pass-confirm .modal-header h2 {
+  color: #000;
+  font-size: 53px;
+  font-weight: 700;
+  line-height: 70px;
+  margin: 0;
+  text-align: center;
+}
+
+#modal-premium-pass-confirm .modal-body {
+  background-color: #141414;
+  box-sizing: border-box;
+  display: flex;
+  height: 314px;
+  justify-content: space-around;
+  position: relative;
+}
+
+#modal-premium-pass-confirm .modal-body-item {
+  width: 220px;
+}
+
+#modal-premium-pass-confirm .modal-body-item-img {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 152px;
+  margin: 15px auto 0;
+  width: 152px;
+}
+
+#modal-premium-pass-confirm .modal-body-item-img.premium {
+  background-image: url(/img/pass/pass-premium-badge.svg);
+}
+
+#modal-premium-pass-confirm .modal-body-item-img.rewards {
+  background-image: url(/img/gui/loadout-outfit.svg);
+}
+
+#modal-premium-pass-confirm .modal-body-item-img.instant {
+  background-image: url(/img/pass/pass-star-3.svg);
+  position: relative;
+}
+
+#modal-premium-pass-confirm .modal-body-item-img-gp {
+  background-image: url(/img/gui/currency-golde-potato.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 64px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px;
+}
+
+#modal-premium-pass-confirm .modal-body-item-text {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 23px;
+  margin-top: 25px;
+  text-align: center;
+  text-shadow: 1px 1px 0 #000;
+}
+
+#modal-premium-pass-confirm #premium-pass-confirm-error {
+  bottom: 10px;
+  color: #ff6262;
+  display: none;
+  font-size: 18px;
+  font-weight: 700;
+  left: 0;
+  margin: 0;
+  position: absolute;
+  right: 0;
+  text-align: center;
+}
+
+#modal-premium-pass-confirm .modal-footer {
+  background-color: #91650d;
+  box-sizing: border-box;
+  display: flex;
+  height: 79px;
+  justify-content: space-around;
+  padding: 2px 110px;
+}
+
+#modal-premium-pass-confirm .modal-footer .btn-green {
+  align-items: center;
+  background: #282828;
+  border: none;
+  box-shadow: 0 4px 0 #000;
+  color: #fff;
+  display: flex;
+  font-size: 18px;
+  font-weight: 700;
+  height: 50px;
+  justify-content: center;
+  line-height: 21px;
+  margin: 10px 0 0;
+  position: relative;
+  text-shadow: 1px 1px 0 #000;
+  width: 247px;
+}
+
+#modal-premium-pass-confirm .modal-footer .btn-green.premium {
+  background:
+    linear-gradient(to right, #282828, #282828),
+    linear-gradient(
+      140deg,
+      rgba(241, 242, 158, 0.81) 6%,
+      rgba(228, 232, 75, 0.85) 14%,
+      rgba(244, 244, 209, 0.84) 18%,
+      rgba(198, 171, 78, 0.86) 31%,
+      rgba(206, 210, 0, 0.9) 49%,
+      rgba(203, 184, 20, 0.9) 99%
+    );
+  background-clip: padding-box, border-box;
+  background-origin: padding-box, border-box;
+  border: 2px solid transparent;
+  border-radius: 2px;
+  width: 339px;
+}
+
+#modal-premium-pass-confirm .modal-pass-price {
+  align-items: center;
+  background: #000;
+  border: 1px solid rgba(223, 213, 3, 0.25);
+  box-sizing: border-box;
+  display: flex;
+  height: 32px;
+  justify-content: center;
+  margin-left: 16px;
+  min-width: 66px;
+  padding: 2px 8px;
+}
+
+#modal-premium-pass-confirm .modal-pass-price .pass-gp-icon {
+  background-image: url(/img/gui/currency-golde-potato.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 72%;
+  flex: 0 0 22px;
+  height: 22px;
+  margin-right: 7px;
+  width: 22px;
+}
+
+#modal-premium-pass-confirm .modal-pass-price span {
+  background:
+    linear-gradient(
+      174deg,
+      rgba(241, 242, 158, 0.81) 17%,
+      rgba(228, 232, 75, 0.85) 23%,
+      rgba(244, 244, 209, 0.84) 26%,
+      rgba(206, 210, 0, 0.9) 49%,
+      rgba(203, 184, 20, 0.9) 86%
+    ),
+    radial-gradient(64% 64% at 28% 36%, #ecf013 0%, #aeb110 100%);
+  background-clip: text;
+  color: transparent;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 18px;
+  min-width: 10px;
+  text-align: right;
+  text-shadow: none;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@media (max-width: 850px), (max-width: 900px), (max-width: 930px) {
+  #modal-premium-pass-confirm .modal-content {
+    transform: translate(-50%, -50%) scale(0.5);
+  }
 }
 
 #start-menu .pass-track-item-image {
@@ -14974,6 +15205,15 @@ div.roulette {
   height: 45px;
   margin: 0;
   width: 45px;
+}
+
+#start-menu .pass-premium-buy-btn .btn-green.premium {
+  background: #c8b91e;
+  box-shadow: 0 6px 0 #c8b91e;
+  justify-content: space-around;
+  padding: 0 111px;
+  pointer-events: none;
+  text-shadow: none;
 }
 
 #start-menu .pass-premium-buy-btn .pass-premium-box-timer {
@@ -15507,7 +15747,7 @@ div.roulette {
   padding: 0;
   position: absolute;
   right: var(--side-pad);
-  top: 72px;
+  top: 64px;
   width: fit-content;
   z-index: 4;
 }
@@ -15517,12 +15757,12 @@ div.roulette {
   background-image: url(/img/gui/hamburger.svg);
   background-position: center;
   background-repeat: no-repeat;
-  background-size: 24px;
+  background-size: 20px;
   border-radius: 5px;
   box-sizing: border-box;
   cursor: pointer;
-  height: 42px;
-  width: 42px;
+  height: 34px;
+  width: 34px;
 }
 
 .account-actions-dropdown {
@@ -15531,7 +15771,7 @@ div.roulette {
   overflow: hidden;
   position: absolute;
   right: 0;
-  top: 48px;
+  top: 40px;
   transition:
     max-height 180ms ease,
     opacity 140ms ease;

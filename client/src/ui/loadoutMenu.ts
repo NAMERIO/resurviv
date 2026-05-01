@@ -572,6 +572,9 @@ export class LoadoutMenu {
     show() {
         this.init();
         this.modal.show();
+        if (this.account.loggedIn) {
+            this.account.loadProfile();
+        }
     }
 
     hide() {

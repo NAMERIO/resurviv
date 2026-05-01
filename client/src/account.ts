@@ -422,6 +422,10 @@ export class Account {
                     cb?.(res?.error || "server_error");
                     return;
                 }
+                if (typeof res.gpBalance === "number") {
+                    this.gpBalance = res.gpBalance;
+                    this.emit("gpBalance", this.gpBalance);
+                }
                 this.getPass(false);
                 this.loadProfile();
                 cb?.();

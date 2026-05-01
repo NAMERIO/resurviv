@@ -337,6 +337,11 @@ export class ProfileUi {
             });
             return false;
         });
+        $(document).on("pass-login-required", () => {
+            this.showLoginMenu({
+                modal: true,
+            });
+        });
 
         const loginSupported = !SDK.isAnySDK && proxy.anyLoginSupported();
 

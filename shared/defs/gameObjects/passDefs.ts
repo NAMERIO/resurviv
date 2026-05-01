@@ -121,7 +121,7 @@ export const PassDefs: Record<string, PassDef> = {
                 gp: 1500,
             },
         ],
-        premiumPrice: 1300,
+        premiumPrice: 1500,
         premiumItems: [
             {
                 level: 2,
