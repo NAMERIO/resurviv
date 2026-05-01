@@ -48,7 +48,7 @@ import {
     usersTable,
 } from "../../db/schema";
 import { MOCK_USER_ID } from "../user/auth/mock";
-import { passType } from "../user/PassRouter";
+import { passType, premiumPassUnlockType } from "../user/PassRouter";
 import { isBanned, logPlayerIPs, ModerationRouter } from "./ModerationRouter";
 
 // Helper function to update clan stats for players who are in clans
@@ -371,7 +371,13 @@ export const PrivateRouter = new Hono<Context>()
                 const unlockedRewards = passDef.items.filter(
                     (reward) => reward.level > oldLevel && reward.level <= newLevel,
                 );
+                const premiumUnlockedRewards = pass.unlocks?.[premiumPassUnlockType]
+                    ? (passDef.premiumItems ?? []).filter(
+                          (reward) => reward.level > oldLevel && reward.level <= newLevel,
+                      )
+                    : [];
                 const unlockedRewardItems = unlockedRewards
+                    .concat(premiumUnlockedRewards)
                     .flatMap((reward) => ("item" in reward ? [reward.item] : []))
                     .filter((item) => !!GameObjectDefs[item]);
                 const passGpGain = unlockedRewards.reduce(

@@ -2,6 +2,8 @@ export interface PassDef {
     readonly type: "pass";
     xp: number[];
     items: PassRewardDef[];
+    premiumItems?: PassRewardDef[];
+    premiumPrice?: number;
 }
 
 export type PassRewardDef =
@@ -117,6 +119,21 @@ export const PassDefs: Record<string, PassDef> = {
             {
                 level: 99,
                 gp: 1500,
+            },
+        ],
+        premiumPrice: 1300,
+        premiumItems: [
+            {
+                level: 2,
+                item: "fist_golden_lobster",
+            },
+            {
+                level: 10,
+                item: "emote_golden_bullet",
+            },
+            {
+                level: 20,
+                item: "fist_goldDrops",
             },
         ],
     },

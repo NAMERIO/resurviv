@@ -9,6 +9,10 @@ import type { Account } from "../account";
 import { helpers } from "../helpers";
 import type { LoadoutMenu } from "./loadoutMenu";
 import type { Localization } from "./localization";
+import { MenuModal } from "./menuModal";
+
+const premiumPassUnlockType = "premiumPass";
+const defaultPremiumPassPrice = 1300;
 
 function getNextPassUnlockItemId(passType: string, currentLevel: number) {
     const passDef = PassDefs[passType];
@@ -42,6 +46,53 @@ function getPassRewardTransform(reward: PassRewardDef) {
     }
     return helpers.getCssTransformFromGameType(reward.item);
 }
+
+function formatPassName(passName: string) {
+    const trimmed = passName.trim().toUpperCase();
+    return trimmed.replace(/\s+(\d+)$/, " #$1");
+}
+
+function scrollPassTrackToLevel(passLevel: number, passItems: PassRewardDef[]) {
+    const track = $("#start-menu #pass-items-wrapper");
+    if (track.length == 0 || passItems.length == 0) return;
+
+    let activeRewardIdx = passItems.findIndex((reward) => reward.level >= passLevel);
+    if (activeRewardIdx == -1) {
+        activeRewardIdx = passItems.length - 1;
+    }
+    const activeColumnIdx = activeRewardIdx;
+    const itemWidth = 126;
+    const visibleLeadColumns = 1;
+    track.scrollLeft(Math.max(0, (activeColumnIdx - visibleLeadColumns) * itemWidth));
+}
+
+function getPassTrackWidth(passItemCount: number) {
+    const itemWidth = 115;
+    const itemGap = 11;
+    return Math.max(534, passItemCount * (itemWidth + itemGap));
+}
+
+function createGoldPotatoReward(amount: number) {
+    return $("<div/>", { class: "item-golden_potato" }).append(
+        $("<div/>", { class: "gold-potato-container" }).append(
+            $("<div/>", { class: "gold-potato-amount" }).append(
+                $("<div/>", { text: String(amount) }),
+            ),
+        ),
+    );
+}
+
+function createPassLock() {
+    return $("<div/>", { class: "pass-lock-container" }).append(
+        $("<div/>", { class: "pass-lock" }),
+    );
+}
+
+function hasPremiumPassUnlock(passData: unknown) {
+    const unlocks = (passData as { unlocks?: Record<string, boolean> }).unlocks;
+    return !!unlocks?.[premiumPassUnlockType];
+}
+
 function humanizeTime(time: number, minutesFloor = false) {
     // const minutesFloor =
     //     arguments.length > 1 &&
@@ -123,6 +174,8 @@ export class Pass {
     lockDisplayed = false;
     updatePass = false;
     updatePassTicker = 0;
+    premiumPassPurchasePending = false;
+    premiumPassModal = new MenuModal($("#modal-premium-pass-confirm"));
 
     constructor(
         public account: Account,
@@ -143,6 +196,15 @@ export class Pass {
             .on("mouseleave", () => {
                 $("#pass-unlock-tooltip").fadeOut(50);
             });
+        $("#pass-buy-btn").on("click", () => {
+            this.showPremiumPassModal();
+        });
+        $("#premium-pass-confirm-no").on("click", () => {
+            this.premiumPassModal.hide();
+        });
+        $("#premium-pass-confirm-yes").on("click", () => {
+            this.buyPremiumPass();
+        });
     }
 
     onPass(pass: any, quests: any[], resetRefresh: boolean) {
@@ -301,7 +363,7 @@ export class Pass {
             this.pass.currentLevel,
         );
         this.setPassUnlockImage(unlockItemId);
-        const passNameText = this.localization.translate(pass.type).toUpperCase();
+        const passNameText = formatPassName(this.localization.translate(pass.type));
         $("#pass-name-text").html(passNameText);
         $("#pass-progress-level").html(this.pass.currentLevel);
         $("#pass-progress-xp-current").html(this.pass.currentXp);
@@ -310,6 +372,7 @@ export class Pass {
         $("#pass-progress-bar-fill").css({
             width: `${pct}%`,
         });
+        this.updatePassTrackProgress(this.pass.currentLevel, this.pass.currentXp);
         this.loaded = true;
     }
 
@@ -317,27 +380,196 @@ export class Pass {
         const passDef = PassDefs[this.pass.data.type as keyof typeof PassDefs];
         const passItemsList = $("#pass-items-list");
         passItemsList.empty();
+        const basicPassItems = $(".pass-basic-items");
+        const premiumPassItems = $(".pass-premium-items");
+        const passProgressLevels = $(".pass-progress-levels");
+        basicPassItems.empty();
+        premiumPassItems.empty();
+        passProgressLevels.empty();
 
         if (!passDef.items) return;
 
         const passLevel = this.account.loggedIn ? this.pass.currentLevel : 0;
+        const ownsPremiumPass = hasPremiumPassUnlock(this.pass.data);
+        const highestRewardLevel = passDef.items.reduce(
+            (highest, reward) => Math.max(highest, reward.level),
+            1,
+        );
+        const passItemCount = passDef.items.length;
+        const trackWidth = getPassTrackWidth(passItemCount);
+        $("#pass-items-wrapper .pass-basic-items").css("width", `${trackWidth}px`);
+        $("#pass-items-wrapper .pass-premium-items").css("width", `${trackWidth}px`);
+        $("#pass-items-wrapper .pass-progress").css("width", `${trackWidth}px`);
+        $("#pass-items-wrapper .pass-progress-levels").css("width", `${trackWidth}px`);
+        this.updatePassTrackProgress(passLevel, this.pass.currentXp, highestRewardLevel);
 
-        for (const passItem of passDef.items) {
+        for (let passItemIdx = 0; passItemIdx < passItemCount; passItemIdx++) {
+            const passItem = passDef.items[passItemIdx];
+            if (!passItem) continue;
             const itemLevel = passItem.level;
+            const premiumPassItem =
+                passDef.premiumItems?.find((reward) => reward.level === itemLevel) ??
+                null;
             const isUnlocked = itemLevel <= passLevel;
             const itemName = getPassRewardName(passItem);
             const svgUrl = getPassRewardImage(passItem);
             const transform = getPassRewardTransform(passItem);
-            const itemDiv = $(`
-                <div class="pass-item ${isUnlocked ? "unlocked" : ""} ${!isUnlocked ? "pass-item-locked" : ""}">
-                    <div class="pass-item-level">${itemLevel}</div>
-                    <div class="pass-item-image" style="background-image: url(${svgUrl}); ${transform}"></div>
-                    <div class="pass-item-name">${itemName}</div>
-                </div>
-            `);
+            const isGoldPotatoReward = "gp" in passItem;
+            if (passItemsList.length > 0) {
+                const itemDiv = $(`
+                    <div class="pass-item ${isUnlocked ? "unlocked" : ""} ${!isUnlocked ? "pass-item-locked" : ""}">
+                        <div class="pass-item-level">${itemLevel}</div>
+                        <div class="pass-item-image" style="background-image: url(${svgUrl}); ${transform}"></div>
+                        <div class="pass-item-name">${itemName}</div>
+                    </div>
+                `);
 
-            passItemsList.append(itemDiv);
+                passItemsList.append(itemDiv);
+            }
+
+            const trackItem = $("<div/>", {
+                class: `pass-track-item ${isUnlocked ? "unlocked" : "locked"} ${isGoldPotatoReward ? "golden" : ""}`,
+                title: `${itemName} - Level ${itemLevel}`,
+            });
+
+            if (isGoldPotatoReward) {
+                trackItem.append(createGoldPotatoReward(passItem.gp));
+            } else {
+                const image = $("<div/>", { class: "pass-track-item-image" });
+                image.css({
+                    "background-image": `url(${svgUrl})`,
+                    transform,
+                });
+                trackItem.append(image);
+            }
+
+            const premiumItemLevel = premiumPassItem?.level ?? itemLevel;
+            const premiumItemUnlocked = ownsPremiumPass && premiumItemLevel <= passLevel;
+            const premiumItem = premiumPassItem
+                ? this.createPremiumTrackItem(
+                      premiumPassItem,
+                      premiumItemUnlocked,
+                      ownsPremiumPass,
+                  )
+                : $("<div/>", {
+                      class: "pass-premium-item pass-track-item pass-empty-slot locked",
+                      title: `Premium reward - Level ${premiumItemLevel}`,
+                  }).append(createPassLock());
+
+            basicPassItems.append(trackItem);
+            premiumPassItems.append(premiumItem);
+            passProgressLevels.append(
+                $("<div/>", {
+                    class: `hexagon ${isUnlocked ? "passed" : ""}`,
+                    text: String(itemLevel),
+                }),
+            );
         }
+        scrollPassTrackToLevel(passLevel, passDef.items);
+    }
+
+    createPremiumTrackItem(
+        passItem: PassRewardDef,
+        isUnlocked: boolean,
+        ownsPremiumPass: boolean,
+    ) {
+        const itemName = getPassRewardName(passItem);
+        const svgUrl = getPassRewardImage(passItem);
+        const transform = getPassRewardTransform(passItem);
+        const isGoldPotatoReward = "gp" in passItem;
+        const trackItem = $("<div/>", {
+            class: `pass-premium-item pass-track-item premium ${isUnlocked ? "unlocked" : "locked"} ${isGoldPotatoReward ? "golden" : ""}`,
+            title: `${itemName} - Premium Level ${passItem.level}`,
+        });
+
+        if (isGoldPotatoReward) {
+            trackItem.append(createGoldPotatoReward(passItem.gp));
+        } else {
+            trackItem.append(
+                $("<div/>", {
+                    class: "pass-track-item-image",
+                    css: {
+                        "background-image": `url(${svgUrl})`,
+                        transform,
+                    },
+                }),
+            );
+        }
+
+        if (!isUnlocked) {
+            trackItem.append(createPassLock());
+            if (!ownsPremiumPass) {
+                trackItem.addClass("premium-pass-required");
+            }
+        }
+
+        return trackItem;
+    }
+
+    showPremiumPassModal() {
+        if (!this.account.loggedIn) {
+            $("#premium-pass-confirm-error")
+                .text("Log in to buy the premium pass.")
+                .show();
+            this.premiumPassModal.show(true);
+            return;
+        }
+        if (hasPremiumPassUnlock(this.pass.data)) {
+            $("#premium-pass-confirm-error")
+                .text("You already own the premium pass.")
+                .show();
+        } else {
+            $("#premium-pass-confirm-error").text("").hide();
+        }
+        const passDef = PassDefs[this.pass.data.type as keyof typeof PassDefs];
+        const price = passDef.premiumPrice ?? defaultPremiumPassPrice;
+        $("#premium-pass-price").text(String(price));
+        this.premiumPassModal.show(true);
+    }
+
+    buyPremiumPass() {
+        if (this.premiumPassPurchasePending) return;
+        this.premiumPassPurchasePending = true;
+        $("#premium-pass-confirm-error").text("").hide();
+        $("#premium-pass-confirm-yes").addClass("btn-disabled");
+        this.account.buyPremiumPass((error) => {
+            this.premiumPassPurchasePending = false;
+            $("#premium-pass-confirm-yes").removeClass("btn-disabled");
+            if (error) {
+                const message =
+                    error === "not_enough_gp"
+                        ? "Not enough GP."
+                        : error === "already_purchased"
+                          ? "You already own the premium pass."
+                          : "Premium pass purchase failed.";
+                $("#premium-pass-confirm-error").text(message).show();
+                return;
+            }
+            this.premiumPassModal.hide();
+        });
+    }
+
+    updatePassTrackProgress(
+        passLevel: number,
+        currentXp: number,
+        highestRewardLevel?: number,
+    ) {
+        const passDef = PassDefs[this.pass.data.type as keyof typeof PassDefs];
+        const maxRewardLevel =
+            highestRewardLevel ??
+            passDef.items.reduce((highest, reward) => Math.max(highest, reward.level), 1);
+        const currentLevel = Math.max(1, passLevel);
+        const levelXp = passUtil.getPassLevelXp(this.pass.data.type, currentLevel);
+        const levelProgress =
+            passLevel > 0 && levelXp > 0 ? math.clamp(currentXp / levelXp, 0, 1) : 0;
+        const passPercent = math.clamp(
+            ((passLevel + levelProgress) / maxRewardLevel) * 100,
+            0,
+            100,
+        );
+        $("#start-menu #pass-items-wrapper .pass-progress-bar-fill").css({
+            width: `${passPercent}%`,
+        });
     }
 
     onRequest(account: Account) {
@@ -626,6 +858,7 @@ export class Pass {
             $("#pass-progress-bar-fill").css({
                 width: `${passProgressPct}%`,
             });
+            this.updatePassTrackProgress(this.pass.currentLevel, this.pass.currentXp);
             if (passAnimT >= 1) {
                 if (activeAnimStep.targetLevel > this.pass.currentLevel) {
                     this.pass.currentLevel = activeAnimStep.targetLevel;
@@ -646,7 +879,7 @@ export class Pass {
     onResize() {}
     loadPlaceholders() {
         const def = PassDefs.pass_survivr1;
-        const passName = this.localization.translate("pass_survivr1").toUpperCase();
+        const passName = formatPassName(this.localization.translate("pass_survivr1"));
         $("#pass-name-text").html(passName);
         $("#pass-progress-level").html(1);
         $("#pass-progress-xp-current").html(0);

@@ -54,7 +54,9 @@ type BundleSeed = {
 
 const passRewardItems = new Set(
     Object.values(PassDefs).flatMap((pass) =>
-        pass.items.flatMap((reward) => ("item" in reward ? [reward.item] : [])),
+        pass.items
+            .concat(pass.premiumItems ?? [])
+            .flatMap((reward) => ("item" in reward ? [reward.item] : [])),
     ),
 );
 const defaultUnlockItems = new Set(UnlockDefs.unlock_default.unlocks);

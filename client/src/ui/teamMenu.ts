@@ -475,7 +475,7 @@ export class TeamMenu {
         };
         const showLegacyTeamMenu = this.active && !this.arena;
         $("#team-menu").css("display", showLegacyTeamMenu ? "block" : "none");
-        $("#start-menu").css("display", showLegacyTeamMenu ? "none" : "block");
+        $("#start-menu").css("display", showLegacyTeamMenu ? "none" : "flex");
         $("#right-column").css("display", showLegacyTeamMenu ? "none" : "block");
         $("#social-share-block").css("display", showLegacyTeamMenu ? "none" : "block");
 

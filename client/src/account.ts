@@ -7,6 +7,7 @@ import type {
     BuyFeaturedBundleResponse,
     BuyMarketListingRequest,
     BuyMarketListingResponse,
+    BuyPremiumPassResponse,
     CancelAuctionListingRequest,
     CancelAuctionListingResponse,
     CancelMarketListingRequest,
@@ -407,6 +408,23 @@ export class Account {
                 } else {
                     this.getPass(false);
                 }
+            },
+        );
+    }
+
+    buyPremiumPass(cb?: (error?: BuyPremiumPassResponse["error"]) => void) {
+        this.ajaxRequest(
+            "/api/user/buy_premium_pass",
+            {},
+            (err, res: BuyPremiumPassResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "buy_premium_pass_error");
+                    cb?.(res?.error || "server_error");
+                    return;
+                }
+                this.getPass(false);
+                this.loadProfile();
+                cb?.();
             },
         );
     }

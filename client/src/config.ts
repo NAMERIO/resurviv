@@ -109,7 +109,7 @@ const defaultConfig = {
     loadout: loadout.defaultLoadout(),
     sessionCookie: "" as string | null,
     binds: "",
-    cachedBgImg: "img/main_splash.png",
+    cachedBgImg: "img/main_splash_surviv.jpg",
     version: 1,
     debugTools: debugToolsConfig,
     debugRenderer: debugRenderConfig,

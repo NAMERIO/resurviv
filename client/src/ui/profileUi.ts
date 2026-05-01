@@ -390,6 +390,7 @@ export class ProfileUi {
 
     onLoadoutUpdated() {
         this.updateUserIcon();
+        this.updateLoadoutPreview();
     }
 
     onItemsUpdated(items: Array<{ status: number }>) {
@@ -411,7 +412,7 @@ export class ProfileUi {
             return e.status < loadout.ItemStatus.Ackd;
         });
         const displayAlert = unconfirmedItemCount > 0 || unackedItemCount > 0;
-        $("#loadout-alert-main").css({
+        $(".account-alert-main").css({
             display: displayAlert ? "block" : "none",
         });
     }
@@ -456,6 +457,20 @@ export class ProfileUi {
         );
     }
 
+    updateLoadoutPreview() {
+        const outfitImage =
+            helpers.getSvgFromGameType(this.account.loadout.outfit) ||
+            "img/loot/loot-shirt-01.svg";
+        const outfitTransform = helpers.getCssTransformFromGameType(
+            this.account.loadout.outfit,
+        );
+
+        $("#animated-loadout .character-skin-preview").css({
+            "background-image": `url(${outfitImage})`,
+            transform: outfitTransform,
+        });
+    }
+
     render() {
         // Loading icon
         const loading = this.account.requestsInFlight > 0;
@@ -474,6 +489,7 @@ export class ProfileUi {
         );
         $("#account-login").css("display", this.account.loggedIn ? "none" : "block");
         this.updateUserIcon();
+        this.updateLoadoutPreview();
         if (this.account.profile.usernameChangeTime <= 0) {
             $(".btn-account-change-name").removeClass("btn-account-disabled");
         } else {

@@ -142,7 +142,7 @@ export class Application {
     wasPlayingVideo = false;
     checkedPingTest = false;
     hasFocus = true;
-    newsDisplayed = true;
+    newsDisplayed = false;
     prestigeArenaSelectedModeIdx = 0;
     prestigeArenaSelectedMap = "main";
     prestigeArenaSelectedTeamMode = 2;
@@ -486,17 +486,15 @@ export class Application {
             });
             const r = $("#news-current").data("date");
             const a = new Date(r).getTime();
-            $(".right-column-toggle").on("click", () => {
-                if (this.newsDisplayed) {
-                    $("#news-wrapper").fadeOut(250);
-                    $("#pass-wrapper").fadeIn(250);
-                } else {
-                    this.config.set("lastNewsTimestamp", a);
-                    $(".news-toggle").find(".account-alert").css("display", "none");
-                    $("#news-wrapper").fadeIn(250);
-                    $("#pass-wrapper").fadeOut(250);
-                }
-                this.newsDisplayed = !this.newsDisplayed;
+            $(".news-toggle").on("click", () => {
+                this.config.set("lastNewsTimestamp", a);
+                $(".news-toggle").find(".account-alert").css("display", "none");
+                $("#news-wrapper").fadeIn(250);
+                this.newsDisplayed = true;
+            });
+            $(".pass-toggle").on("click", () => {
+                $("#news-wrapper").fadeOut(250);
+                this.newsDisplayed = false;
             });
             const i = this.config.get("lastNewsTimestamp")!;
             if (a > i) {

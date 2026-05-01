@@ -110,6 +110,14 @@ export const zSetPassUnlockRequest = z.object({
 export type SetPassUnlockRequest = z.infer<typeof zSetPassUnlockRequest>;
 export type SetPassUnlockResponse = { success: boolean };
 
+export const zBuyPremiumPassRequest = z.object({});
+export type BuyPremiumPassRequest = z.infer<typeof zBuyPremiumPassRequest>;
+export type BuyPremiumPassResponse = {
+    success: boolean;
+    error?: "already_purchased" | "not_enough_gp" | "server_error";
+    gpBalance?: number;
+};
+
 export const zGetPassRequest = z.object({
     tryRefreshQuests: z.boolean(),
 });

@@ -201,6 +201,10 @@ function setupModals(inputBinds: InputBinds, inputBindUi: InputBindUi) {
         modalHamburger.show();
         return false;
     });
+    $(".account-actions-toggle").on("click", () => {
+        $(".account-actions-menu").toggleClass("open");
+        return false;
+    });
     $(".modal-body-text").on("click", function () {
         const checkbox = $(this).siblings("input:checkbox");
         checkbox.prop("checked", !checkbox.is(":checked"));
