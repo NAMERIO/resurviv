@@ -1,7 +1,11 @@
 import $ from "jquery";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import type { EmoteDef } from "../../../shared/defs/gameObjects/emoteDefs";
-import { PassDefs, type PassRewardDef } from "../../../shared/defs/gameObjects/passDefs";
+import {
+    CurrentPassType,
+    PassDefs,
+    type PassRewardDef,
+} from "../../../shared/defs/gameObjects/passDefs";
 import { QuestDefs } from "../../../shared/defs/gameObjects/questDefs";
 import { math } from "../../../shared/utils/math";
 import { passUtil } from "../../../shared/utils/passUtil";
@@ -12,7 +16,7 @@ import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
 
 const premiumPassUnlockType = "premiumPass";
-const defaultPremiumPassPrice = 1300;
+const defaultPremiumPassPrice = 1500;
 
 function getNextPassUnlockItemId(passType: string, currentLevel: number) {
     const passDef = PassDefs[passType];
@@ -26,25 +30,50 @@ function getNextPassUnlockItemId(passType: string, currentLevel: number) {
 }
 
 function getPassRewardName(reward: PassRewardDef) {
-    if ("gp" in reward) {
-        return `${reward.gp} GP`;
+    if ("item" in reward) {
+        const itemDef = GameObjectDefs[reward.item];
+        return (itemDef as any)?.name || reward.item;
     }
-    const itemDef = GameObjectDefs[reward.item];
-    return (itemDef as any)?.name || reward.item;
+    return `${reward.gp} GP`;
 }
 
 function getPassRewardImage(reward: PassRewardDef) {
-    if ("gp" in reward) {
-        return "img/loot/loot-golde-potato.svg";
-    }
-    return helpers.getSvgFromGameType(reward.item);
+    return "item" in reward
+        ? helpers.getSvgFromGameType(reward.item)
+        : "img/loot/loot-golde-potato.svg";
 }
 
 function getPassRewardTransform(reward: PassRewardDef) {
-    if ("gp" in reward) {
-        return "";
-    }
-    return helpers.getCssTransformFromGameType(reward.item);
+    return "item" in reward ? helpers.getCssTransformFromGameType(reward.item) : "";
+}
+
+function getPassRewardItemId(reward: PassRewardDef) {
+    return "item" in reward ? reward.item : null;
+}
+
+function getPassRewardRarity(reward: PassRewardDef) {
+    const itemId = getPassRewardItemId(reward);
+    if (!itemId) return undefined;
+    return (GameObjectDefs[itemId] as { rarity?: number } | undefined)?.rarity;
+}
+
+function applyPassRewardRarityStyle(
+    tile: JQuery<HTMLElement>,
+    reward: PassRewardDef,
+) {
+    const itemId = getPassRewardItemId(reward);
+    if (!itemId) return;
+
+    const rarity = getPassRewardRarity(reward);
+    const visuals = helpers.getRarityVisuals(rarity);
+    tile
+        .addClass("pass-rarity-item")
+        .css({
+            "background-color": visuals.backgroundColor,
+            border: `3px solid ${visuals.border}`,
+            "--item-rarity-color": visuals.border,
+        });
+    tile.append(helpers.getItemRarityStyleMarkup(itemId, rarity));
 }
 
 function formatPassName(passName: string) {
@@ -111,7 +140,7 @@ function humanizeTime(time: number, minutesFloor = false) {
 export class Pass {
     pass = {
         data: {
-            type: "pass_survivr1",
+            type: CurrentPassType,
         },
         currentXp: 0,
         currentLevel: 1,
@@ -419,15 +448,27 @@ export class Pass {
             const itemName = getPassRewardName(passItem);
             const svgUrl = getPassRewardImage(passItem);
             const transform = getPassRewardTransform(passItem);
-            const isGoldPotatoReward = "gp" in passItem;
+            const isGoldPotatoReward = !("item" in passItem) && "gp" in passItem;
             if (passItemsList.length > 0) {
-                const itemDiv = $(`
-                    <div class="pass-item ${isUnlocked ? "unlocked" : ""} ${!isUnlocked ? "pass-item-locked" : ""}">
-                        <div class="pass-item-level">${itemLevel}</div>
-                        <div class="pass-item-image" style="background-image: url(${svgUrl}); ${transform}"></div>
-                        <div class="pass-item-name">${itemName}</div>
-                    </div>
-                `);
+                const itemDiv = $("<div/>", {
+                    class: `pass-item ${isUnlocked ? "unlocked" : ""} ${!isUnlocked ? "pass-item-locked" : ""}`,
+                });
+                if (isGoldPotatoReward) {
+                    itemDiv.addClass("golden");
+                } else {
+                    applyPassRewardRarityStyle(itemDiv, passItem);
+                }
+                itemDiv.append(
+                    $("<div/>", { class: "pass-item-level", text: itemLevel }),
+                    $("<div/>", {
+                        class: "pass-item-image",
+                        css: {
+                            "background-image": `url(${svgUrl})`,
+                            transform,
+                        },
+                    }),
+                    $("<div/>", { class: "pass-item-name", text: itemName }),
+                );
 
                 passItemsList.append(itemDiv);
             }
@@ -440,6 +481,7 @@ export class Pass {
             if (isGoldPotatoReward) {
                 trackItem.append(createGoldPotatoReward(passItem.gp));
             } else {
+                applyPassRewardRarityStyle(trackItem, passItem);
                 const image = $("<div/>", { class: "pass-track-item-image" });
                 image.css({
                     "background-image": `url(${svgUrl})`,
@@ -515,7 +557,7 @@ export class Pass {
         const itemName = getPassRewardName(passItem);
         const svgUrl = getPassRewardImage(passItem);
         const transform = getPassRewardTransform(passItem);
-        const isGoldPotatoReward = "gp" in passItem;
+        const isGoldPotatoReward = !("item" in passItem) && "gp" in passItem;
         const trackItem = $("<div/>", {
             class: `pass-premium-item pass-track-item premium ${isUnlocked ? "unlocked" : "locked"} ${isGoldPotatoReward ? "golden" : ""}`,
             title: `${itemName} - Premium Level ${passItem.level}`,
@@ -524,6 +566,7 @@ export class Pass {
         if (isGoldPotatoReward) {
             trackItem.append(createGoldPotatoReward(passItem.gp));
         } else {
+            applyPassRewardRarityStyle(trackItem, passItem);
             trackItem.append(
                 $("<div/>", {
                     class: "pass-track-item-image",
@@ -947,8 +990,8 @@ export class Pass {
 
     onResize() {}
     loadPlaceholders() {
-        const def = PassDefs.pass_survivr1;
-        const passName = formatPassName(this.localization.translate("pass_survivr1"));
+        const def = PassDefs[CurrentPassType];
+        const passName = formatPassName(this.localization.translate(CurrentPassType));
         $("#pass-name-text").html(passName);
         $("#pass-progress-level").html(1);
         $("#pass-progress-xp-current").html(0);

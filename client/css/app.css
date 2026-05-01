@@ -14743,6 +14743,16 @@ div.roulette {
   width: 115px;
 }
 
+#start-menu .pass-track-item.pass-rarity-item {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+#start-menu .pass-track-item.pass-rarity-item .item-rarity-style {
+  left: -3px;
+  top: -3px;
+  z-index: 5;
+}
+
 #start-menu .pass-track-item.golden {
   background:
     linear-gradient(
@@ -14765,14 +14775,6 @@ div.roulette {
 
 #start-menu .pass-track-item.premium.unlocked {
   box-shadow: inset 0 0 0 3px rgba(255, 229, 96, 0.45);
-}
-
-#start-menu .pass-track-item.premium.locked .pass-track-item-image {
-  opacity: 0.45;
-}
-
-#start-menu .pass-track-item.premium.premium-pass-required .pass-track-item-image {
-  filter: grayscale(0.35);
 }
 
 #premium-pass-confirm-error {
@@ -15063,6 +15065,16 @@ div.roulette {
   background-repeat: no-repeat;
   background-size: 56%;
   border-color: #484848;
+}
+
+.pass-item.pass-rarity-item {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.pass-item.pass-rarity-item .item-rarity-style {
+  left: -3px;
+  top: -3px;
+  z-index: 5;
 }
 
 #start-menu .pass-lock-container {

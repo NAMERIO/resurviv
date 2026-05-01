@@ -1,7 +1,7 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { GameObjectDefs } from "../../../../../shared/defs/gameObjectDefs";
-import { PassDefs } from "../../../../../shared/defs/gameObjects/passDefs";
+import { CurrentPassType, PassDefs } from "../../../../../shared/defs/gameObjects/passDefs";
 import { QuestDefs } from "../../../../../shared/defs/gameObjects/questDefs";
 import {
     type BuyPremiumPassResponse,
@@ -28,7 +28,7 @@ import {
 import type { Context } from "../../index";
 
 // hardcoded for now
-export const passType = "pass_survivr1";
+export const passType = CurrentPassType;
 export const questSlotIndexes = [0, 1];
 export const premiumPassUnlockType = "premiumPass";
 
@@ -330,7 +330,7 @@ PassRouter.post(
                     .flatMap((reward) => ("item" in reward ? [reward.item] : []))
                     .filter((item) => !!GameObjectDefs[item]);
                 const rewardGp = rewards.reduce(
-                    (total, reward) => total + ("gp" in reward ? reward.gp : 0),
+                    (total, reward) => total + ("gp" in reward ? (reward.gp ?? 0) : 0),
                     0,
                 );
                 const insertedRewards =
