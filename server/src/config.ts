@@ -11,8 +11,8 @@ export const Config = getConfig(isProd, serverConfigPath);
 const BACKPACK_LEVEL = 3;
 
 util.mergeDeep(Config, {
-    clientTheme: "perks",
-    modes: [{ mapName: "savannah", teamMode: TeamMode.Duo, enabled: true }],
+    clientTheme: "main",
+    modes: [{ mapName: "main", teamMode: TeamMode.Duo, enabled: true }],
     debug: {
         spawnMode: process.env.NODE_ENV === "production" ? "default" : "fixed",
     },
