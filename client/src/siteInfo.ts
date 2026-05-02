@@ -182,9 +182,10 @@ export class SiteInfo {
                 }
             });
             const supportsTeam = this.info.modes.some((s) => s.enabled && s.teamMode > 1);
-            $(
-                "#btn-join-team, #btn-create-team, #btn-prestige-arena, #open-arena-button",
-            ).toggle(supportsTeam);
+            $("#btn-join-team, #btn-create-team").toggle(supportsTeam);
+
+            const supportsPrivateLobby = this.info.modes.length > 0;
+            $("#btn-prestige-arena, #open-arena-button").toggle(supportsPrivateLobby);
 
             // Region pops
             const pops = this.info.pops;
