@@ -9,6 +9,7 @@ export type TeamMenuErrorType =
     | "spectator_full"
     | "join_not_found"
     | "game_in_progress"
+    | "waiting_for_players"
     | "join_failed"
     | "create_failed"
     | "lost_conn"

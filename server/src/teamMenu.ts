@@ -267,7 +267,9 @@ class Room {
                 break;
             }
             case "playGame": {
-                if (this.data.arena && !player.isLeader) break;
+                if ((this.data.arena || this.isBattleRoyaleMode()) && !player.isLeader) {
+                    break;
+                }
                 this.findGame(msg.data, player);
                 break;
             }
@@ -443,6 +445,11 @@ class Room {
         return undefined;
     }
 
+    isBattleRoyaleMode() {
+        const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
+        return !!mode?.mapName.startsWith("br_");
+    }
+
     rebalanceArenaTeams() {
         if (!this.data.arena) {
             this.arenaTeams.clear();
@@ -480,6 +487,17 @@ class Room {
 
     async findGame(data: TeamPlayGameMsg["data"], player: Player) {
         if (this.data.findingGame) return;
+        const isBattleRoyaleMode = this.isBattleRoyaleMode();
+        if (isBattleRoyaleMode && !player.isLeader) {
+            this.sendState();
+            return;
+        }
+        if (isBattleRoyaleMode && this.players.some((p) => p.inGame)) {
+            this.data.lastError = "waiting_for_players";
+            this.data.findingGame = false;
+            this.sendState();
+            return;
+        }
         if (this.data.arena && this.players.some((p) => p.inGame)) {
             this.data.lastError = "game_in_progress";
             this.data.findingGame = false;
@@ -498,8 +516,9 @@ class Room {
             }
         }
 
-        if (this.data.arena) {
+        if (this.data.arena || isBattleRoyaleMode) {
             this.data.findingGame = true;
+            this.data.lastError = "";
             this.sendState();
         }
 
@@ -509,7 +528,8 @@ class Room {
         }
         this.data.region = region;
 
-        const queuedPlayers = this.data.arena ? this.players : [player];
+        const queuedPlayers =
+            this.data.arena || isBattleRoyaleMode ? this.players : [player];
         const tokenMap = new Map<Player, string>();
         const playerData = await getFindGamePlayerData(
             queuedPlayers.map((player) => {
@@ -533,12 +553,18 @@ class Room {
 
         const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
         if (!mode) {
+            if (this.data.arena || isBattleRoyaleMode) {
+                this.data.findingGame = false;
+                this.data.lastError = "find_game_error";
+                this.sendState();
+            }
             return;
         }
 
         if (this.data.captchaEnabled) {
             if (!data.turnstileToken) {
-                if (this.data.arena) {
+                if (this.data.arena || isBattleRoyaleMode) {
+                    this.data.findingGame = false;
                     this.data.lastError = "find_game_invalid_captcha";
                     this.sendState();
                 }
@@ -547,7 +573,8 @@ class Room {
 
             try {
                 if (!(await verifyTurnsStile(data.turnstileToken, player.ip))) {
-                    if (this.data.arena) {
+                    if (this.data.arena || isBattleRoyaleMode) {
+                        this.data.findingGame = false;
                         this.data.lastError = "find_game_invalid_captcha";
                         this.sendState();
                     }
@@ -555,7 +582,8 @@ class Room {
                 }
             } catch (err) {
                 this.teamMenu.logger.error("Failed verifying turnstile:", err);
-                if (this.data.arena) {
+                if (this.data.arena || isBattleRoyaleMode) {
+                    this.data.findingGame = false;
                     this.data.lastError = "find_game_error";
                     this.sendState();
                 }
@@ -575,12 +603,13 @@ class Room {
         });
 
         if ("error" in res) {
-            if (this.data.arena) {
+            if (this.data.arena || isBattleRoyaleMode) {
                 const errMap: Partial<Record<FindGameError, TeamMenuErrorType>> = {
                     full: "find_game_full",
                     invalid_protocol: "find_game_invalid_protocol",
                 };
 
+                this.data.findingGame = false;
                 this.data.lastError = errMap[res.error] || "find_game_error";
                 this.sendState();
                 // 1 second cooldown on error
@@ -592,9 +621,16 @@ class Room {
         this.findGameCooldown = 0;
 
         const joinData = res;
-        if (!joinData) return;
+        if (!joinData) {
+            if (this.data.arena || isBattleRoyaleMode) {
+                this.data.findingGame = false;
+                this.data.lastError = "find_game_error";
+                this.sendState();
+            }
+            return;
+        }
 
-        if (this.data.arena) {
+        if (this.data.arena || isBattleRoyaleMode) {
             this.data.lastError = "";
         }
 

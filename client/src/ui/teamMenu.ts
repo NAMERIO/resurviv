@@ -26,6 +26,7 @@ function errorTypeToString(type: string, localization: Localization) {
         spectator_full: localization.translate("index-arena-spectator-full"),
         join_not_found: localization.translate("index-failed-joining-team"),
         game_in_progress: localization.translate("index-game-in-progress"),
+        waiting_for_players: localization.translate("game-waiting-for-players"),
         create_failed: localization.translate("index-failed-creating-team"),
         join_failed: localization.translate("index-failed-joining-team"),
         join_game_failed: localization.translate("index-failed-joining-game"),
@@ -421,8 +422,22 @@ export class TeamMenu {
         });
     }
 
+    isBattleRoyaleRoom() {
+        const mode = this.siteInfo.info.modes?.[this.roomData.gameModeIdx];
+        return !!mode?.mapName.startsWith("br_");
+    }
+
     tryStartGame() {
         if (!this.roomData.findingGame) {
+            const isBattleRoyaleRoom = this.isBattleRoyaleRoom();
+            if (isBattleRoyaleRoom) {
+                if (!this.isLeader) return;
+                if (this.players.some((player) => player.inGame)) {
+                    this.roomData.lastError = "waiting_for_players";
+                    this.refreshUi();
+                    return;
+                }
+            }
             const version = GameConfig.protocolVersion;
             let region = this.roomData.region;
             const paramRegion = helpers.getParameterByName("region");
@@ -449,6 +464,7 @@ export class TeamMenu {
                 this.sendMessage("playGame", matchArgs);
             });
             this.roomData.findingGame = true;
+            this.roomData.lastError = "";
             this.refreshUi();
         }
     }
@@ -607,8 +623,47 @@ export class TeamMenu {
             }
 
             const waitReason = $("#msg-wait-reason");
+            const isBattleRoyaleRoom = this.isBattleRoyaleRoom();
+            const battleRoyaleStartBlocked =
+                isBattleRoyaleRoom && (!this.isLeader || playersInGame);
+            this.playBtn
+                .toggleClass("btn-disabled btn-opaque", battleRoyaleStartBlocked)
+                .toggleClass("btn-darken", !battleRoyaleStartBlocked);
 
-            if (this.isLeader || !this.arena) {
+            if (isBattleRoyaleRoom && !this.isLeader) {
+                if (this.roomData.findingGame || this.joiningGame) {
+                    waitReason.html(
+                        `<div class="ui-spinner" style="margin-right:16px"></div>${this.localization.translate(
+                            "index-joining-game",
+                        )}<span> ...</span>`,
+                    );
+                } else if (playersInGame) {
+                    waitReason.html(
+                        `${this.localization.translate(
+                            "game-waiting-for-players",
+                        )}<span> ...</span>`,
+                    );
+                } else {
+                    waitReason.html(
+                        `${this.localization.translate(
+                            "index-waiting-for-leader",
+                        )}<span> ...</span>`,
+                    );
+                }
+                waitReason.css("display", "block");
+                this.playBtn.css("display", "block");
+            } else if (
+                isBattleRoyaleRoom &&
+                playersInGame &&
+                !this.roomData.findingGame &&
+                !this.joiningGame
+            ) {
+                waitReason.html(
+                    `${this.localization.translate("game-waiting-for-players")}<span> ...</span>`,
+                );
+                waitReason.css("display", "block");
+                this.playBtn.css("display", "block");
+            } else if (this.isLeader || !this.arena) {
                 if (this.joiningGame) {
                     waitReason.html(
                         `<div class="ui-spinner" style="margin-right:16px"></div>${this.localization.translate(
