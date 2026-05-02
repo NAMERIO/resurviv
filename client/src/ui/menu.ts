@@ -73,7 +73,7 @@ function setupModals(inputBinds: InputBinds, inputBindUi: InputBindUi) {
     $("#btn-team-mobile-link-leave").on("click", () => {
         teamMobileLink.css("display", "none");
         teamMobileLinkInput.val("");
-        startMenuWrapper.css("display", "block");
+        startMenuWrapper.css("display", "flex");
         newsBlock.css("display", "block");
         socialShareBlock.css("display", "block");
         $("#right-column").css("display", "block");
