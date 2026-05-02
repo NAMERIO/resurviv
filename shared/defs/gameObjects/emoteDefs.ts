@@ -2316,7 +2316,7 @@ export const EmotesDefs: Record<string, EmoteDef> = {
     emote_buuurn: {
         type: "emote",
         name: "Buuurn",
-        rarity: Rarity.Common,
+        rarity: Rarity.Mythic,
         texture: "emote-buuurn05.img",
         sound: "emote_01",
         channel: "ui",
@@ -2466,7 +2466,7 @@ export const EmotesDefs: Record<string, EmoteDef> = {
     emote_rainy_day: {
         type: "emote",
         name: "Rainy Day",
-        rarity: Rarity.Common,
+        rarity: Rarity.Rare,
         texture: "emote-rainy-day01.img",
         sound: "emote_01",
         channel: "ui",

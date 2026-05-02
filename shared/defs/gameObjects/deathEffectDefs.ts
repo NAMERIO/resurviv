@@ -91,7 +91,7 @@ export const DeathEffectDefs: Record<string, DeathEffectDef> = {
     death_toon_blast: {
         type: "death_effect",
         name: "Toon Blast",
-        rarity: Rarity.Common,
+        rarity: Rarity.Mythic,
         texture: "loot-explosive-death.img",
         particle: "explosiveDeath",
         isParticle: false,
