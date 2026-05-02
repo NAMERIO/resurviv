@@ -594,7 +594,7 @@ export class TeamMenu {
                 this.playBtn.addClass("btn-custom-mode-no-indent");
                 this.playBtn.addClass(style.buttonCss);
                 this.playBtn.css({
-                    "background-image": `url(${style.icon})`,
+                    "background-image": style.icon ? `url(${style.icon})` : "",
                 });
             } else {
                 this.playBtn.css({

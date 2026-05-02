@@ -990,7 +990,7 @@ export class Application {
 
             const selectedStyle = mapStyleByName.get(this.prestigeArenaSelectedMap);
             this.prestigeArenaModeDropdown.removeClass((_idx, className) => {
-                return (className.match(/\bbtn-mode-[^\s]+/g) || []).join(" ");
+                return this.siteInfo.getModeButtonClasses(className);
             });
             if (selectedStyle?.buttonCss) {
                 this.prestigeArenaModeDropdown.addClass(selectedStyle.buttonCss);
@@ -1005,7 +1005,7 @@ export class Application {
                 selectedStyle?.icon ? `url(${selectedStyle.icon})` : "none",
             );
             this.prestigeArenaBattleModeRow.removeClass((_idx, className) => {
-                return (className.match(/\bbtn-mode-[^\s]+/g) || []).join(" ");
+                return this.siteInfo.getModeButtonClasses(className);
             });
             if (selectedStyle?.buttonCss) {
                 this.prestigeArenaBattleModeRow.addClass(selectedStyle.buttonCss);
@@ -1079,7 +1079,7 @@ export class Application {
             modeStyle?.icon ? `url(${modeStyle.icon})` : "none",
         );
         this.prestigeArenaBattleModeRow.removeClass((_idx, className) => {
-            return (className.match(/\bbtn-mode-[^\s]+/g) || []).join(" ");
+            return this.siteInfo.getModeButtonClasses(className);
         });
         if (modeStyle?.buttonCss) {
             this.prestigeArenaBattleModeRow.addClass(modeStyle.buttonCss);

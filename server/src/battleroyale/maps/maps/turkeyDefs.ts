@@ -5,7 +5,7 @@ const mapDef: PartialMapDef = {
     desc: {
         name: "Turkey",
         icon: "",
-        buttonCss: "",
+        buttonCss: "btn-mode-turkey",
         backgroundImg: "img/main_splash_turkey_01.png",
     },
     assets: {

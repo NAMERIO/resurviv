@@ -73,9 +73,21 @@ export class SiteInfo {
             ...fallbackDef.desc,
             ...mapDef.desc,
             icon: mapDef.desc.icon || fallbackDef.desc.icon,
-            buttonCss: mapDef.desc.buttonCss || fallbackDef.desc.buttonCss,
+            buttonCss:
+                mapDef.desc.buttonCss || fallbackDef.desc.buttonCss || "btn-mode-battle",
             buttonText: mapDef.desc.buttonText || fallbackDef.desc.buttonText,
         };
+    }
+
+    getModeButtonClasses(className: string) {
+        return className
+            .split(/\s+/)
+            .filter(
+                (classPart) =>
+                    classPart.startsWith("btn-mode-") ||
+                    (classPart.startsWith("btn-") && classPart.endsWith("-mode")),
+            )
+            .join(" ");
     }
 
     getModeLabel(mapName: string, _teamMode: number) {
@@ -96,7 +108,7 @@ export class SiteInfo {
         const playL10n = teamModeText ? `index-play-${teamModeText}` : "index-play";
         btn.removeClass("btn-custom-mode-no-indent btn-custom-mode-main");
         btn.removeClass((_idx, className) => {
-            return (className.match(/\bbtn-mode-[^\s]+/g) || []).join(" ");
+            return this.getModeButtonClasses(className);
         });
         btn.css("background-image", "");
         btn.data("l10n", playL10n);
@@ -142,7 +154,7 @@ export class SiteInfo {
                     }
                     btn.addClass(style.buttonCss);
                     btn.css({
-                        "background-image": `url(${style.icon})`,
+                        "background-image": style.icon ? `url(${style.icon})` : "",
                     });
                 }
                 const l = $(`#btn-team-queue-mode-${i}`);
@@ -150,10 +162,11 @@ export class SiteInfo {
                     const c = `index-${style.buttonText}`;
                     l.data("l10n", c);
                     l.html(this.localization.translate(c));
-                    if (style.icon) {
+                    if (style.icon || style.buttonCss) {
                         l.addClass("btn-custom-mode-select");
+                        l.addClass(style.buttonCss);
                         l.css({
-                            "background-image": `url(${style.icon})`,
+                            "background-image": style.icon ? `url(${style.icon})` : "",
                         });
                     }
                 }

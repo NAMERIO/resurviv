@@ -3759,6 +3759,239 @@ a:active {
   }
 }
 
+.btn-mode-battle {
+  animation-name: battle-pulse;
+  border-bottom: 4px solid #664053 !important;
+  box-shadow: inset 0 -2px #664053 !important;
+}
+
+@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+  .btn-mode-battle {
+    border-bottom: 2px solid #664053 !important;
+  }
+}
+
+@keyframes turkeyPulse {
+  from {
+    background-color: #8f5827;
+    -webkit-box-shadow: 0 0 9px #8f5827;
+  }
+  50% {
+    background-color: #b56f31;
+    -webkit-box-shadow: 0 0 18px #b56f31;
+  }
+  to {
+    background-color: #8f5827;
+    -webkit-box-shadow: 0 0 9px #8f5827;
+  }
+}
+
+.btn-mode-turkey {
+  animation-name: turkeyPulse;
+  border-bottom: 4px solid #563619 !important;
+  box-shadow: inset 0 -2px #563619 !important;
+}
+
+@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+  .btn-mode-turkey {
+    border-bottom: 2px solid #563619 !important;
+  }
+}
+
+@keyframes aprilFoolsPulse {
+  from {
+    background-color: #6f36a5;
+    -webkit-box-shadow: 0 0 9px #6f36a5;
+  }
+  50% {
+    background-color: #d58b30;
+    -webkit-box-shadow: 0 0 18px #d58b30;
+  }
+  to {
+    background-color: #6f36a5;
+    -webkit-box-shadow: 0 0 9px #6f36a5;
+  }
+}
+
+.btn-mode-april-fools {
+  animation-name: aprilFoolsPulse;
+  border-bottom: 4px solid #4b2374 !important;
+  box-shadow: inset 0 -2px #4b2374 !important;
+}
+
+@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+  .btn-mode-april-fools {
+    border-bottom: 2px solid #4b2374 !important;
+  }
+}
+
+@keyframes mayPulse {
+  from {
+    background-color: #4f9f5a;
+    -webkit-box-shadow: 0 0 9px #4f9f5a;
+  }
+  50% {
+    background-color: #72c66f;
+    -webkit-box-shadow: 0 0 18px #72c66f;
+  }
+  to {
+    background-color: #4f9f5a;
+    -webkit-box-shadow: 0 0 9px #4f9f5a;
+  }
+}
+
+.btn-mode-may {
+  animation-name: mayPulse;
+  border-bottom: 4px solid #2e743a !important;
+  box-shadow: inset 0 -2px #2e743a !important;
+}
+
+@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+  .btn-mode-may {
+    border-bottom: 2px solid #2e743a !important;
+  }
+}
+
+.btn-mode-battle {
+  --play-mode-animation: battle-pulse;
+  --play-mode-background: #874c90;
+  --play-mode-border: #664053;
+  --play-mode-shadow: #664053;
+}
+
+.btn-mode-snow {
+  --play-mode-animation: snowPulse;
+  --play-mode-background: #a7e3ff;
+  --play-mode-border: #90cfec;
+  --play-mode-shadow: #90cfec;
+}
+
+.btn-mode-potato,
+.btn-potato-mode {
+  --play-mode-animation: potato-pulse;
+  --play-mode-background: #8f5827;
+  --play-mode-border: #563619;
+  --play-mode-shadow: #563619;
+}
+
+.btn-mode-twighlight {
+  --play-mode-animation: twighlight-pulse;
+  --play-mode-background: #2a1a3c;
+  --play-mode-border: #2a1a3c;
+  --play-mode-shadow: #2a1a3c;
+}
+
+.btn-mode-desert,
+.btn-flare-mode {
+  --play-mode-animation: desert-pulse;
+  --play-mode-background: #d45500;
+  --play-mode-border: #853500;
+  --play-mode-shadow: #853500;
+}
+
+.btn-mode-woods,
+.btn-woods-mode {
+  --play-mode-animation: woods-pulse;
+  --play-mode-background: #908d2d;
+  --play-mode-border: #696726;
+  --play-mode-shadow: #696726;
+}
+
+.btn-woods-spring-mode {
+  --play-mode-animation: woodsSpringPulse;
+  --play-mode-background: #17a500;
+  --play-mode-border: #138500;
+  --play-mode-shadow: #138500;
+}
+
+.btn-mode-faction,
+.btn-faction-mode {
+  --play-mode-animation: faction-pulse;
+  --play-mode-background: #007eff;
+  --play-mode-border: #00448a;
+  --play-mode-shadow: #00448a;
+}
+
+.btn-mode-savannah,
+.btn-savannah-mode {
+  --play-mode-animation: savannah-pulse;
+  --play-mode-background: #c7a726;
+  --play-mode-border: #947c1c;
+  --play-mode-shadow: #947c1c;
+}
+
+.btn-mode-valentine {
+  --play-mode-animation: valentinePulse;
+  --play-mode-background: #b262b4;
+  --play-mode-border: #ee5eca;
+  --play-mode-shadow: #ee5eca;
+}
+
+.btn-mode-halloween,
+.btn-halloween-mode {
+  --play-mode-animation: bloodPulse;
+  --play-mode-background: #500000;
+  --play-mode-border: #2d0000;
+  --play-mode-shadow: #2d0000;
+}
+
+.btn-mode-cobalt {
+  --play-mode-animation: cobaltPulse;
+  --play-mode-background: #2e3742;
+  --play-mode-border: #1d252e;
+  --play-mode-shadow: #1d252e;
+}
+
+.btn-mode-birthday {
+  --play-mode-animation: birthdayPulse;
+  --play-mode-background: #a1a1cd;
+  --play-mode-border: #8484ac;
+  --play-mode-shadow: #8484ac;
+}
+
+.btn-mode-perks {
+  --play-mode-animation: perksPulse;
+  --play-mode-background: #326881;
+  --play-mode-border: #247297;
+  --play-mode-shadow: #247297;
+}
+
+.btn-mode-inferno {
+  --play-mode-animation: none;
+  --play-mode-background: #fe8438;
+  --play-mode-border: #c95c18;
+  --play-mode-shadow: #c95c18;
+}
+
+.btn-mode-beach {
+  --play-mode-animation: beachPulse;
+  --play-mode-background: #ffe7ba;
+  --play-mode-border: #a08a62;
+  --play-mode-color: #343434;
+  --play-mode-shadow: #a08a62;
+}
+
+.btn-mode-turkey {
+  --play-mode-animation: turkeyPulse;
+  --play-mode-background: #8f5827;
+  --play-mode-border: #563619;
+  --play-mode-shadow: #563619;
+}
+
+.btn-mode-april-fools {
+  --play-mode-animation: aprilFoolsPulse;
+  --play-mode-background: #6f36a5;
+  --play-mode-border: #4b2374;
+  --play-mode-shadow: #4b2374;
+}
+
+.btn-mode-may {
+  --play-mode-animation: mayPulse;
+  --play-mode-background: #4f9f5a;
+  --play-mode-border: #2e743a;
+  --play-mode-shadow: #2e743a;
+}
+
 .btn-team-queue-mode-beach {
   background-repeat: no-repeat;
   background-size: 35px;
@@ -15587,14 +15820,17 @@ div.roulette {
 }
 
 #main-play-btns .btn-battle {
-  animation: battle-pulse 4s infinite;
-  background: #874c90;
+  animation-duration: var(--play-mode-animation-duration, 4s);
+  animation-iteration-count: infinite;
+  animation-name: var(--play-mode-animation, battle-pulse);
+  background-color: var(--play-mode-background, #874c90);
   background-position: 14px center;
   background-repeat: no-repeat;
   background-size: 42px;
-  border-bottom: 2px solid #664053;
-  box-shadow: inset 0 -2px #664053;
+  border-bottom: 2px solid var(--play-mode-border, #664053);
+  box-shadow: inset 0 -2px var(--play-mode-shadow, var(--play-mode-border, #664053));
   box-sizing: border-box;
+  color: var(--play-mode-color, #fff);
   font-size: 34px;
   font-weight: 700;
   height: 65px;
