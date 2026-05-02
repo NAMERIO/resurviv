@@ -57,22 +57,17 @@ function getPassRewardRarity(reward: PassRewardDef) {
     return (GameObjectDefs[itemId] as { rarity?: number } | undefined)?.rarity;
 }
 
-function applyPassRewardRarityStyle(
-    tile: JQuery<HTMLElement>,
-    reward: PassRewardDef,
-) {
+function applyPassRewardRarityStyle(tile: JQuery<HTMLElement>, reward: PassRewardDef) {
     const itemId = getPassRewardItemId(reward);
     if (!itemId) return;
 
     const rarity = getPassRewardRarity(reward);
     const visuals = helpers.getRarityVisuals(rarity);
-    tile
-        .addClass("pass-rarity-item")
-        .css({
-            "background-color": visuals.backgroundColor,
-            border: `3px solid ${visuals.border}`,
-            "--item-rarity-color": visuals.border,
-        });
+    tile.addClass("pass-rarity-item").css({
+        "background-color": visuals.backgroundColor,
+        border: `3px solid ${visuals.border}`,
+        "--item-rarity-color": visuals.border,
+    });
     tile.append(helpers.getItemRarityStyleMarkup(itemId, rarity));
 }
 
@@ -515,8 +510,8 @@ export class Pass {
                   )
                 : (() => {
                       const emptySlot = $("<div/>", {
-                      class: "pass-premium-item pass-track-item pass-empty-slot locked",
-                      title: `Premium reward - Level ${premiumItemLevel}`,
+                          class: "pass-premium-item pass-track-item pass-empty-slot locked",
+                          title: `Premium reward - Level ${premiumItemLevel}`,
                       });
                       if (!ownsPremiumPass) {
                           emptySlot.append(createPassLock());
@@ -669,8 +664,11 @@ export class Pass {
                 const firstRewardLevel = rewardItems[0]!.level;
                 rewardProgress =
                     firstRewardLevel > 1
-                        ? math.clamp((currentPassProgress - 1) / (firstRewardLevel - 1), 0, 1) *
-                          0.5
+                        ? math.clamp(
+                              (currentPassProgress - 1) / (firstRewardLevel - 1),
+                              0,
+                              1,
+                          ) * 0.5
                         : 0;
             } else if (nextRewardIdx < 0) {
                 rewardProgress = rewardItems.length - 0.5;

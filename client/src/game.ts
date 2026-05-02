@@ -196,7 +196,9 @@ export class Game {
                         death_effect: playerLoadout.death_effect || "death_basic",
                         heal: playerLoadout.heal || "heal_basic",
                         boost: playerLoadout.boost || "boost_basic",
-                        perk: battleRoyaleMode ? "" : playerLoadout.perk || "quick_reload",
+                        perk: battleRoyaleMode
+                            ? ""
+                            : playerLoadout.perk || "quick_reload",
                         streak: battleRoyaleMode
                             ? ""
                             : playerLoadout.streak || "streak_rapid_fire",

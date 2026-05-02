@@ -1,9 +1,9 @@
 import { MapId, TeamModeToString } from "../../../../shared/defs/types/misc";
-import { GameModeStatus } from "../../../../shared/types/stats";
 import type {
     LeaderboardParams,
     LeaderboardResponse,
 } from "../../../../shared/types/stats";
+import { GameModeStatus } from "../../../../shared/types/stats";
 import { Config } from "../../config";
 import { server } from "../apiServer";
 import type { MatchDataTable } from "../db/schema";

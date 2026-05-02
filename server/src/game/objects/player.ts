@@ -51,7 +51,10 @@ import { assert, util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import type { IpLogsTableInsert } from "../../api/db/schema";
 import { hashIp } from "../../api/routes/private/ModerationRouter";
-import { BattleRoyaleDefaultItems, isBattleRoyaleMapName } from "../../battleroyale/helpers";
+import {
+    BattleRoyaleDefaultItems,
+    isBattleRoyaleMapName,
+} from "../../battleroyale/helpers";
 import { Config } from "../../config";
 import { isItemInLoadout, onPlayerJoin, onPlayerKill } from "../../plugins/deathmatch";
 import { IDAllocator } from "../../utils/IDAllocator";

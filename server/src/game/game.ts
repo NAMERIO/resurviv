@@ -3,14 +3,14 @@ import path from "node:path";
 import { WeaponTypeToDefs } from "../../../shared/defs/gameObjectDefs";
 import type { MapDefs } from "../../../shared/defs/mapDefs";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
-import { GameModeStatus } from "../../../shared/types/stats";
 import * as net from "../../../shared/net/net";
+import { GameModeStatus } from "../../../shared/types/stats";
 import type { Loadout } from "../../../shared/utils/loadout";
 import { math } from "../../../shared/utils/math";
 import { util } from "../../../shared/utils/util";
 import { v2 } from "../../../shared/utils/v2";
-import { Config } from "../config";
 import { isBattleRoyaleMapName } from "../battleroyale/helpers";
+import { Config } from "../config";
 import { ServerLogger } from "../utils/logger";
 import { apiPrivateRouter, HTTPRateLimit } from "../utils/serverHelpers";
 import {

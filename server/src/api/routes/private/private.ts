@@ -383,7 +383,8 @@ export const PrivateRouter = new Hono<Context>()
                 const passGpGain = unlockedRewards
                     .concat(premiumUnlockedRewards)
                     .reduce(
-                        (total, reward) => total + ("gp" in reward ? (reward.gp ?? 0) : 0),
+                        (total, reward) =>
+                            total + ("gp" in reward ? (reward.gp ?? 0) : 0),
                         0,
                     );
 

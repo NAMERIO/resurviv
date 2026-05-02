@@ -49,7 +49,12 @@ UserStatsRouter.post(
 
         const { id: userId } = result;
 
-        const data = await userStatsSqlQuery(userId, mapIdFilter, gameModeFilter, interval);
+        const data = await userStatsSqlQuery(
+            userId,
+            mapIdFilter,
+            gameModeFilter,
+            interval,
+        );
 
         return c.json<UserStatsResponse>(data, 200);
     },
@@ -96,7 +101,11 @@ async function userStatsSqlQuery(
                     interval in intervalFilter ? intervalFilter[interval] : undefined,
                 ),
             )
-            .groupBy(matchDataTable.teamMode, matchDataTable.gameMode, matchDataTable.gameId),
+            .groupBy(
+                matchDataTable.teamMode,
+                matchDataTable.gameMode,
+                matchDataTable.gameId,
+            ),
     );
 
     const withSelect = db.$with("mode_stats").as(

@@ -132,7 +132,9 @@ function getPlayerCardData(
     for (const gameMode of gameModes) {
         for (let i = 0; i < keys.length; i++) {
             const teamMode = keys[i];
-            if (!teamModes.find((x) => x.teamMode == teamMode && x.gameMode == gameMode)) {
+            if (
+                !teamModes.find((x) => x.teamMode == teamMode && x.gameMode == gameMode)
+            ) {
                 teamModes.push({
                     teamMode,
                     gameMode,
@@ -242,9 +244,7 @@ export class PlayerView {
         const slug = params.get("slug") || "";
         const interval = params.get("time") || "alltime";
         const mapId = params.get("mapId") || ALL_MAPS;
-        const gameMode =
-            params.get("gameMode") ||
-            ALL_GAME_MODE_STATUS;
+        const gameMode = params.get("gameMode") || ALL_GAME_MODE_STATUS;
         const gameId = params.get("gameId") || "";
 
         return {

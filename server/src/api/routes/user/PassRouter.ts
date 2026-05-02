@@ -1,7 +1,10 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { GameObjectDefs } from "../../../../../shared/defs/gameObjectDefs";
-import { CurrentPassType, PassDefs } from "../../../../../shared/defs/gameObjects/passDefs";
+import {
+    CurrentPassType,
+    PassDefs,
+} from "../../../../../shared/defs/gameObjects/passDefs";
 import { QuestDefs } from "../../../../../shared/defs/gameObjects/questDefs";
 import {
     type BuyPremiumPassResponse,

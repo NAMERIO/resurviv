@@ -3,8 +3,8 @@ import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
 import { UnlockDefs } from "../../../shared/defs/gameObjects/unlockDefs";
 import { GameConfig, WeaponSlot } from "../../../shared/gameConfig";
 import { ObjectType } from "../../../shared/net/objectSerializeFns";
-import { Config } from "../config";
 import { isBattleRoyaleMapName } from "../battleroyale/helpers";
+import { Config } from "../config";
 import type { Player } from "../game/objects/player";
 import { GamePlugin, type PlayerDamageEvent } from "../game/pluginManager";
 

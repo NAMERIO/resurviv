@@ -557,7 +557,9 @@ export class Application {
             };
             const onQuit = (errMsg?: string) => {
                 if (errMsg == "ip_banned" || errMsg == "banned") {
-                    setLocalBan(this.localization.translate("index-ip-banned") || "Banned");
+                    setLocalBan(
+                        this.localization.translate("index-ip-banned") || "Banned",
+                    );
                 }
                 if (this.game!.m_updatePass) {
                     this.pass.scheduleUpdatePass(this.game!.m_updatePassDelay);
@@ -1225,10 +1227,7 @@ export class Application {
                 ? `${helpers.getClanTagHtml(clanName, clanTagColor || "")} ${helpers.htmlEscape(playerName)}`
                 : helpers.htmlEscape(playerName);
 
-        const buildJoinButton = (
-            target: "A" | "B" | "spectator",
-            label: string,
-        ) => {
+        const buildJoinButton = (target: "A" | "B" | "spectator", label: string) => {
             const selected = localTarget === target;
             const button = $("<button>", {
                 class: `arena-team-join btn-darken${selected ? " selected" : ""}`,

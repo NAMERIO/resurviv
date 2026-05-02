@@ -67,8 +67,7 @@ export class SiteInfo {
     getMapButtonDesc(mapName: string) {
         const mapDef = MapDefs[mapName as keyof typeof MapDefs] || MapDefs.main;
         const fallbackDef =
-            MapDefs[this.getBaseMapName(mapName) as keyof typeof MapDefs] ||
-            MapDefs.main;
+            MapDefs[this.getBaseMapName(mapName) as keyof typeof MapDefs] || MapDefs.main;
 
         return {
             ...fallbackDef.desc,
@@ -84,7 +83,10 @@ export class SiteInfo {
         return isBattleRoyale ? "Battle Royale" : "Deathmatch";
     }
 
-    applyQuickPlayButtonStyle(modeIdx: number, gameModeStyles = this.getGameModeStyles()) {
+    applyQuickPlayButtonStyle(
+        modeIdx: number,
+        gameModeStyles = this.getGameModeStyles(),
+    ) {
         const btn = $("#btn-start-mode-0");
         const mode = this.info.modes?.[modeIdx];
         const style = gameModeStyles[modeIdx];
