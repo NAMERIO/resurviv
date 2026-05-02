@@ -5589,6 +5589,11 @@ span.ui-stats-header-value {
   }
 }
 
+#ui-kill-leaderboard-title {
+  margin: 2px 0;
+  font-size: 14px;
+}
+
 #ui-kill-leaderboard {
   color: white;
   background-color: rgba(0, 0, 0, 0.2);
@@ -5768,7 +5773,6 @@ span.ui-stats-header-value {
     margin-top: 2px;
   }
 }
-
 
 @media (max-height: 768px), (max-width: 1300px) {
   /* Compact in-game HUD for mobile*/

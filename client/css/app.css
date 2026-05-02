@@ -15360,59 +15360,32 @@ div.roulette {
 }
 
 #free-gp-offer {
+  align-items: center;
   box-sizing: border-box;
-  display: block;
-  height: 122px;
+  display: flex;
+  height: 74px;
+  justify-content: center;
   margin-left: 0;
   margin-top: 10px;
-  padding: 12px 8px;
+  padding: 12px;
   width: 300px;
 }
 
-#free-gp-offer #pass-xp-buy-btn {
-  display: none;
-}
-
-#free-gp-offer .pass-xp-box-timer {
-  color: #fff;
-  display: block;
-  height: 52px;
+#free-gp-offer .mobile-social-links {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
   text-align: center;
 }
 
-#free-gp-offer .offer-msg-part-1 {
-  font-size: 18px;
-  line-height: 24px;
+#free-gp-offer .btn-social {
   margin: 0;
-  padding-top: 4px;
 }
 
-#free-gp-offer .offer-msg-part-1 b {
-  border-bottom: 2px solid #fff;
-  border-top: 2px solid #fff;
-  font-size: 18px;
-  padding: 2px 0;
-}
-
-#free-gp-offer .btn-offerwall-container {
-  margin-top: 8px;
-}
-
-#free-gp-offer .btn-offerwall {
-  background: #161616;
-  border: 2px solid #dfd503;
-  border-radius: 3px;
-  box-shadow: none;
-  box-sizing: border-box;
-  color: #dfd503;
-  display: block;
-  font-size: 17px;
-  font-weight: 700;
-  height: 34px;
-  line-height: 30px;
-  text-align: center;
-  text-shadow: none;
-  width: 100%;
+#free-gp-offer .btn-mobile-youtube {
+  background-image: url(/img/icon_youtube.png);
+  background-color: red;
+  box-shadow: inset 0 -4px #8e0000;
 }
 
 #animated-loadout {

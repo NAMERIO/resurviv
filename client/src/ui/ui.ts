@@ -642,9 +642,11 @@ export class UiManager {
     onMapLoad(map: Map, camera: Camera) {
         this.resize(map, camera);
         this.killLeaderboardEnabled = !map.mapName.startsWith("br_");
-        $("#ui-kill-leaderboard")
-            .empty()
-            .css("display", this.killLeaderboardEnabled ? "" : "none");
+        $("#ui-kill-leaderboard").empty();
+        $("#ui-kill-leaderboard-title, #ui-kill-leaderboard").css(
+            "display",
+            this.killLeaderboardEnabled ? "" : "none",
+        );
         const displayLeader = map.getMapDef().gameMode.killLeaderEnabled;
 
         $("#ui-kill-leader-container").css("display", displayLeader ? "block" : "none");
