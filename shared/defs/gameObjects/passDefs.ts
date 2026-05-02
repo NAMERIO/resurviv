@@ -206,7 +206,7 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 16,
-                item: "outfitEventHorizon",
+                item: "outfitBlueZone",
             },
             {
                 level: 17,
@@ -230,7 +230,7 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 30,
-                item: "outfitBlueZone",
+                item: "outfitEventHorizon",
             },
             {
                 level: 50,
@@ -238,17 +238,17 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 95,
-                item: "bayonet_woodland",
+                item: "fist_ghostPoke",
             },
             {
                 level: 99,
-                item: "outfitMecha",
+                item: "outfitHotMagma",
             },
         ],
         premiumItems: [
             {
                 level: 2,
-                item: "outfitGaudisque",
+                item: "emote_rainy_day",
             },
             {
                 level: 3,
@@ -256,7 +256,7 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 5,
-                item: "outfitAstronaut",
+                item: "outfitGaudisque",
             },
             {
                 level: 6,
@@ -264,7 +264,7 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 7,
-                item: "emote_rainy_day",
+                item: "outfitAstronaut",
             },
             {
                 level: 9,
@@ -276,11 +276,11 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 12,
-                item: "outfitHotMagma",
+                item: "emote_buuurn",
             },
             {
                 level: 14,
-                item: "emote_buuurn",
+                item: "huntsman_blackwater",
             },
             {
                 level: 15,

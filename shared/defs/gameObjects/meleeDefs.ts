@@ -2046,7 +2046,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     fist_ghostPoke: defineMeleeSkin("fists", {
         name: "Ghost Poke",
-        rarity: Rarity.Rare,
+        rarity: Rarity.Mythic,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
@@ -2739,6 +2739,17 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
         worldImg: {
             sprite: "loot-melee-huntsman-burnished.img",
+        },
+    }),
+    huntsman_blackwater: defineMeleeSkin("huntsman", {
+        name: "Huntsman Burnished",
+        rarity: Rarity.Mythic,
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-huntsman-blackwater.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-huntsman-blackwater.img",
         },
     }),
     bowie_vintage: defineMeleeSkin("bowie", {

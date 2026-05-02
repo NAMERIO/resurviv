@@ -218,6 +218,21 @@ export class Pass {
         this.account.addEventListener("request", this.onRequest.bind(this));
         this.account.addEventListener("pass", this.onPass.bind(this));
         this.loadPlaceholders();
+        $("#start-menu .pass-items-container").on("wheel", (event) => {
+            const nativeEvent = event.originalEvent as WheelEvent | undefined;
+            if (!nativeEvent) return;
+
+            const container = event.currentTarget;
+            const scrollDelta =
+                Math.abs(nativeEvent.deltaX) > Math.abs(nativeEvent.deltaY)
+                    ? nativeEvent.deltaX
+                    : nativeEvent.deltaY;
+            if (scrollDelta === 0) return;
+
+            container.scrollLeft += scrollDelta;
+            nativeEvent.preventDefault();
+            nativeEvent.stopPropagation();
+        });
         $("#pass-progress-unlock-wrapper")
             .on("mouseenter", () => {
                 $("#pass-unlock-tooltip").fadeIn(50);
