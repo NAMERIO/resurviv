@@ -159,17 +159,29 @@ export class ApiServer {
 }
 
 function expandConfiguredModes(modes: typeof Config.modes) {
-    return modes.flatMap((mode) => {
-        const expandedModes = [mode];
+    const expandedModes: typeof Config.modes = [];
+    const addedModes = new Set<string>();
+
+    const addMode = (mode: (typeof Config.modes)[number]) => {
+        const key = `${mode.mapName}:${mode.teamMode}`;
+        if (addedModes.has(key)) return;
+        addedModes.add(key);
+        expandedModes.push(mode);
+    };
+
+    for (const mode of modes) {
+        addMode(mode);
+
+        if (mode.mapName.startsWith("br_")) continue;
+
         const battleRoyaleMapName = `br_${mode.mapName}` as keyof typeof MapDefs;
-        if (MapDefs[battleRoyaleMapName]) {
-            expandedModes.push({
-                ...mode,
-                mapName: battleRoyaleMapName,
-            });
-        }
-        return expandedModes;
-    });
+        addMode({
+            ...mode,
+            mapName: MapDefs[battleRoyaleMapName] ? battleRoyaleMapName : "br_main",
+        });
+    }
+
+    return expandedModes;
 }
 
 export const server = new ApiServer();
