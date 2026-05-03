@@ -16701,11 +16701,6 @@ div.roulette {
   white-space: nowrap;
 }
 
-.team-mode-selection {
-  display: none;
-  gap: 4px;
-}
-
 .team-mode-choice {
   background: #3c3c3c;
   border-bottom: 2px solid #242424;
@@ -16726,6 +16721,7 @@ div.roulette {
   text-overflow: ellipsis;
   text-shadow: 0 1px 2px #000;
   white-space: nowrap;
+  transition: all 0.2s ease;
 }
 
 .team-mode-choice-selected {
