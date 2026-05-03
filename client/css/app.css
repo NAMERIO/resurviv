@@ -16283,3 +16283,713 @@ div.roulette {
     top: calc(50% - 210px);
   }
 }
+
+/* Screenshot-style team creation panel */
+#team-menu {
+  background: rgba(0, 0, 0, 0.88);
+  border-radius: 3px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+  color: #fff;
+  height: 500px;
+  left: 50%;
+  margin: 0;
+  max-height: none;
+  overflow: hidden;
+  padding: 0;
+  position: fixed;
+  top: 68%;
+  transform: translate(-50%, -50%);
+  width: min(1060px, calc(100vw - 48px));
+  z-index: 1250;
+}
+
+#team-menu .play-button-container {
+  height: 100%;
+  position: relative;
+}
+
+#team-menu-header {
+  background: linear-gradient(#26a8ff, #168fe6);
+  border-bottom: 2px solid #0969bb;
+  box-sizing: border-box;
+  height: 58px;
+  position: relative;
+  text-align: center;
+}
+
+#team-menu-title {
+  color: #fff;
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 56px;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.45),
+    0 0 5px rgba(0, 0, 0, 0.35);
+}
+
+#btn-team-close {
+  background-image: url(/img/gui/close.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 34px;
+  cursor: pointer;
+  display: none;
+  height: 46px;
+  position: absolute;
+  right: 6px;
+  top: 5px;
+  width: 46px;
+}
+
+#team-menu-connecting {
+  margin-top: 158px;
+}
+
+#team-menu-contents {
+  box-sizing: border-box;
+  height: calc(100% - 58px);
+  padding: 16px;
+}
+
+#team-menu-columns {
+  display: grid;
+  gap: 22px;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  height: 100%;
+}
+
+#team-menu-left {
+  min-width: 0;
+}
+
+#team-menu-help {
+  color: #fff;
+  font-size: 20px;
+  line-height: 30px;
+  margin-bottom: 10px;
+  text-shadow: 0 1px 2px #000;
+}
+
+#team-menu-members {
+  float: none;
+  padding: 0;
+  width: 100%;
+}
+
+#team-menu-member-list {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(var(--team-member-count, 4), minmax(0, 1fr));
+  min-height: 240px;
+}
+
+.team-menu-member {
+  align-items: center;
+  background: #202528;
+  border-radius: 2px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 240px;
+  justify-content: center;
+  min-width: 0;
+  padding: 18px 12px 14px;
+  position: relative;
+}
+
+.team-menu-member-empty {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.team-menu-invite-title {
+  font-size: 14px;
+  line-height: 17px;
+  text-align: center;
+}
+
+.team-menu-xp-bonus {
+  color: #2eff4d;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 32px;
+  margin-top: 16px;
+  text-align: center;
+  text-shadow: 0 2px 2px #000;
+}
+
+.team-menu-avatar {
+  background-image: url(/img/gui/player-gui.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  flex: 1 1 auto;
+  min-height: 138px;
+  width: 122px;
+}
+
+.team-menu-member > .icon {
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 0;
+  height: 34px;
+  margin: 0;
+  position: absolute;
+  top: 10px;
+  width: 34px;
+  z-index: 1;
+}
+
+.team-menu-member > .icon-leader {
+  background-size: 31px;
+  left: 10px;
+}
+
+.team-menu-member > .icon-kick,
+.team-menu-member > .icon-submit-name-change,
+.team-menu-member > .icon-in-game {
+  right: 10px;
+}
+
+.team-menu-member > .icon-kick {
+  background-color: rgba(0, 0, 0, 0.18);
+  background-size: 23px;
+}
+
+.team-menu-member > .icon-submit-name-change {
+  background-size: 25px;
+}
+
+.team-menu-member > .icon-in-game {
+  background-size: 27px;
+  bottom: 12px;
+  top: auto;
+}
+
+#team-menu .name {
+  background: transparent;
+  border-radius: 0;
+  flex: 0 0 auto;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  width: 100%;
+}
+
+#team-menu .name-text {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 30px;
+}
+
+#team-menu .name-self {
+  color: #2eff4d;
+}
+
+#team-menu .name-self:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+#team-menu .name-self-input {
+  background: #fff;
+  border-radius: 2px;
+  color: #000;
+  font-size: 17px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0 4px;
+}
+
+#team-desc {
+  align-items: center;
+  display: grid;
+  gap: 6px 14px;
+  grid-template-columns: 116px minmax(0, 1fr) 62px 62px;
+  margin: 16px 0 0;
+  text-align: left;
+  width: 100%;
+}
+
+.team-desc-label,
+#invite-link-text,
+#invite-code-text {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.team-desc-value,
+#team-code-text {
+  background: #1f1f1f;
+  border-radius: 1px;
+  box-sizing: border-box;
+  color: #fff;
+  height: 44px;
+  line-height: 44px;
+}
+
+#team-desc-text {
+  cursor: pointer;
+  display: block;
+  font-size: 13px;
+  overflow: hidden;
+  padding: 0 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#team-desc-text span {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+#team-code-text {
+  color: #fff;
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  grid-column: 2 / -1;
+  margin: 0;
+  overflow: hidden;
+  padding: 0 10px;
+  text-align: center;
+  width: auto;
+}
+
+#team-code-text span {
+  font-size: 16px;
+}
+
+#team-copy-url,
+#team-hide-url {
+  background-color: #257ee5;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 22px;
+  border-radius: 2px;
+  box-shadow: inset 0 -2px #1557a6;
+  height: 44px;
+  margin: 0;
+  top: auto;
+  width: 62px;
+}
+
+#team-hide-url {
+  background-color: #5e5e5e;
+  background-image: url(/img/gui/eye.svg);
+  box-shadow: inset 0 -2px #3b3b3b;
+}
+
+#team-menu-options {
+  display: flex;
+  flex-direction: column;
+  float: none;
+  gap: 8px;
+  padding: 0;
+  width: auto;
+}
+
+#team-server-select,
+#team-menu-legacy-controls {
+  display: none !important;
+}
+
+#team-boost-summary {
+  background: #505050;
+  border-radius: 2px;
+  box-shadow: inset 0 -2px #303030;
+  box-sizing: border-box;
+  color: #2eff4d;
+  font-size: 16px;
+  font-weight: 700;
+  height: 44px;
+  line-height: 43px;
+  text-align: center;
+  text-shadow: 0 1px 2px #000;
+}
+
+#team-boost-value {
+  color: #2eff4d;
+  font-size: 16px;
+}
+
+#team-menu-options-start {
+  margin: 0;
+}
+
+#btn-start-team {
+  animation: none !important;
+  background: #9652a4 !important;
+  background-image: none !important;
+  border-bottom: 2px solid #6b3476 !important;
+  border-radius: 3px;
+  box-shadow: inset 0 -2px #6b3476 !important;
+  box-sizing: border-box;
+  color: #fff;
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  height: 44px !important;
+  line-height: 42px;
+  margin: 0;
+  text-align: center;
+  text-indent: 0;
+  text-shadow: 0 1px 2px #000;
+}
+
+.team-summary-row {
+  align-items: center;
+  border-radius: 2px;
+  box-shadow: inset 0 -2px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+  display: flex;
+  height: 44px;
+  overflow: hidden;
+}
+
+#team-mode-summary {
+  background: #878b24;
+  cursor: pointer;
+}
+
+#team-type-summary {
+  background: #5bb7b6;
+  cursor: pointer;
+}
+
+#team-fill-summary {
+  background: #6a6a6a;
+  cursor: pointer;
+  justify-content: center;
+}
+
+.team-summary-label {
+  border-right: 1px solid rgba(255, 255, 255, 0.32);
+  box-sizing: border-box;
+  color: rgba(255, 255, 255, 0.82);
+  flex: 0 0 56px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 44px;
+  text-align: center;
+}
+
+.team-summary-icon {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  flex: 0 0 40px;
+  height: 34px;
+  margin-left: 8px;
+}
+
+.team-summary-value {
+  color: #fff;
+  flex: 1 1 auto;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 44px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 8px;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px #000;
+  white-space: nowrap;
+}
+
+.team-mode-selection {
+  display: none;
+  gap: 4px;
+}
+
+.team-mode-choice {
+  background: #3c3c3c;
+  border-bottom: 2px solid #242424;
+  border-radius: 2px;
+  box-shadow: inset 0 -2px #242424;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  flex: 1;
+  font-size: 12px;
+  font-weight: 700;
+  height: 36px;
+  line-height: 34px;
+  overflow: hidden;
+  padding: 0 5px;
+  text-align: center;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px #000;
+  white-space: nowrap;
+}
+
+.team-mode-choice-selected {
+  background: #2199f3;
+  border-bottom-color: #1167aa;
+  box-shadow: inset 0 -2px #1167aa;
+}
+
+#team-fill-summary .team-summary-value {
+  padding: 0;
+}
+
+#team-fill-note {
+  color: #f5dd79;
+  display: flex;
+  font-size: 13px;
+  line-height: 16px;
+  min-height: 50px;
+  text-align: center;
+}
+
+#btn-team-leave {
+  background: #df351c;
+  border-bottom: 2px solid #9e1d0e;
+  border-radius: 3px;
+  bottom: auto;
+  box-shadow: inset 0 -2px #9e1d0e;
+  color: #fff;
+  display: none;
+  font-size: 14px;
+  font-weight: 700;
+  height: 42px;
+  line-height: 40px;
+  margin: auto 0 0;
+  position: static;
+  right: auto;
+  text-align: center;
+  text-shadow: 0 1px 2px #000;
+  top: auto;
+  transform: none;
+  width: 100%;
+}
+
+#team-menu .btn-disabled {
+  cursor: default !important;
+  opacity: 0.55;
+}
+
+#team-menu .btn-opaque {
+  opacity: 0.55;
+}
+
+@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+  #team-menu {
+    height: min(500px, calc(100vh - 18px));
+    left: 50%;
+    top: 58%;
+    transform: translate(-50%, -50%);
+    width: min(840px, calc(100vw - 18px));
+  }
+
+  #team-menu-header {
+    height: 34px;
+  }
+
+  #team-menu-title {
+    font-size: 22px;
+    line-height: 32px;
+  }
+
+  #btn-team-close {
+    background-size: 21px;
+    height: 30px;
+    width: 30px;
+  }
+
+  #team-menu-contents {
+    height: calc(100% - 34px);
+    padding: 8px;
+  }
+
+  #team-menu-columns {
+    gap: 8px;
+    grid-template-columns: 1fr 142px;
+  }
+
+  #team-menu-help {
+    font-size: 12px;
+    line-height: 17px;
+    margin-bottom: 5px;
+  }
+
+  #team-menu-member-list {
+    gap: 5px;
+    min-height: 112px;
+  }
+
+  .team-menu-member {
+    height: 112px;
+    padding: 9px 4px 6px;
+  }
+
+  .team-menu-invite-title {
+    font-size: 9px;
+    line-height: 11px;
+  }
+
+  .team-menu-xp-bonus {
+    font-size: 14px;
+    line-height: 17px;
+    margin-top: 6px;
+  }
+
+  .team-menu-avatar {
+    min-height: 52px;
+    width: 54px;
+  }
+
+  .team-menu-member > .icon {
+    height: 18px;
+    top: 5px;
+    width: 18px;
+  }
+
+  .team-menu-member > .icon-leader {
+    background-size: 17px;
+    left: 4px;
+  }
+
+  .team-menu-member > .icon-kick,
+  .team-menu-member > .icon-submit-name-change,
+  .team-menu-member > .icon-in-game {
+    right: 4px;
+  }
+
+  #team-menu .name {
+    height: 18px;
+  }
+
+  #team-menu .name-text,
+  #team-menu .name-self-input {
+    font-size: 10px;
+    line-height: 18px;
+  }
+
+  #team-desc {
+    gap: 4px;
+    grid-template-columns: 62px minmax(0, 1fr) 32px 42px;
+    margin-top: 8px;
+  }
+
+  .team-desc-label,
+  #invite-link-text,
+  #invite-code-text {
+    font-size: 8px;
+  }
+
+  .team-desc-value,
+  #team-copy-url,
+  #team-hide-url {
+    height: 28px;
+    line-height: 28px;
+  }
+
+  #team-desc-text,
+  #team-desc-text span {
+    font-size: 9px;
+  }
+
+  #team-code-text,
+  #team-code-text span {
+    font-size: 10px;
+  }
+
+  #team-code-text {
+    grid-column: 2 / -1;
+  }
+
+  #team-copy-url,
+  #team-hide-url {
+    background-size: 14px;
+    width: 32px;
+  }
+
+  #team-menu-options {
+    gap: 5px;
+  }
+
+  #team-boost-summary,
+  #team-boost-value {
+    font-size: 11px;
+  }
+
+  #team-boost-summary,
+  #btn-start-team,
+  .team-summary-row {
+    height: 28px !important;
+    line-height: 26px;
+  }
+
+  #btn-start-team {
+    font-size: 12px;
+  }
+
+  .team-summary-label {
+    flex-basis: 34px;
+    font-size: 8px;
+    line-height: 28px;
+  }
+
+  .team-summary-icon {
+    flex-basis: 22px;
+    height: 20px;
+    margin-left: 4px;
+  }
+
+  .team-summary-value {
+    font-size: 10px;
+    line-height: 28px;
+    padding: 0 4px;
+  }
+
+  .team-mode-choice {
+    font-size: 8px;
+    height: 24px;
+    line-height: 22px;
+    padding: 0 3px;
+  }
+
+  #team-fill-note {
+    font-size: 9px;
+    line-height: 11px;
+    min-height: 33px;
+  }
+
+  #btn-team-leave {
+    font-size: 10px;
+    height: 27px;
+    line-height: 25px;
+  }
+}
+
+@media (max-width: 520px) {
+  #team-menu {
+    height: min(620px, calc(100vh - 18px));
+    overflow-y: auto;
+    width: calc(100vw - 18px);
+  }
+
+  #team-menu-columns {
+    grid-template-columns: 1fr;
+  }
+
+  #team-menu-member-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #team-menu-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #team-fill-note,
+  #btn-team-leave {
+    grid-column: 1 / -1;
+  }
+}

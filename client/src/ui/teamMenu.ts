@@ -1,5 +1,5 @@
 import $ from "jquery";
-import { GameConfig } from "../../../shared/gameConfig";
+import { GameConfig, TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import type { FindGameMatchData } from "../../../shared/types/api";
 import type {
@@ -58,6 +58,12 @@ export class TeamMenu {
     queueMode2 = $("#btn-team-queue-mode-2");
     fillAuto = $("#btn-team-fill-auto");
     fillNone = $("#btn-team-fill-none");
+    modeSummary = $("#team-mode-summary");
+    modeSelection = $("#team-mode-selection");
+    modeDeathmatch = $("#team-mode-deathmatch");
+    modeBattleRoyale = $("#team-mode-battle-royale");
+    typeSummary = $("#team-type-summary");
+    fillSummary = $("#team-fill-summary");
 
     active = false;
     joined = false;
@@ -73,6 +79,7 @@ export class TeamMenu {
         playerId: number;
         inGame: boolean;
         name: string;
+        outfit?: string;
         clanName?: string;
         clanTagColor?: string;
         isLeader: boolean;
@@ -110,16 +117,51 @@ export class TeamMenu {
             this.setRoomProperty("region", e);
         });
         this.queueMode1.on("click", () => {
-            this.setRoomProperty("gameModeIdx", 1);
+            this.setRoomProperty("gameModeIdx", this.findTeamModeIdx(TeamMode.Duo));
         });
         this.queueMode2.on("click", () => {
-            this.setRoomProperty("gameModeIdx", 2);
+            this.setRoomProperty("gameModeIdx", this.findTeamModeIdx(TeamMode.Squad));
         });
         this.fillAuto.click(() => {
             this.setRoomProperty("autoFill", true);
         });
         this.fillNone.on("click", () => {
             this.setRoomProperty("autoFill", false);
+        });
+        this.modeSummary.on("click", (e) => {
+            e.stopPropagation();
+            if (!this.isLeader) return;
+            const currentMode = this.getCurrentMode();
+            const oppositeModeIdx = currentMode?.mapName.startsWith("br_")
+                ? this.getBattleModeIdx(false)
+                : this.getBattleModeIdx(true);
+            if (oppositeModeIdx === undefined) return;
+
+            const visible = this.modeSelection.css("display") !== "none";
+            this.modeSelection.css("display", visible ? "none" : "flex");
+        });
+        this.modeDeathmatch.on("click", (e) => {
+            e.stopPropagation();
+            this.setRoomProperty("gameModeIdx", this.getBattleModeIdx(false));
+            this.modeSelection.hide();
+        });
+        this.modeBattleRoyale.on("click", (e) => {
+            e.stopPropagation();
+            this.setRoomProperty("gameModeIdx", this.getBattleModeIdx(true));
+            this.modeSelection.hide();
+        });
+        this.typeSummary.on("click", () => {
+            if (!this.isLeader) return;
+
+            const currentMode = this.getCurrentMode();
+            const nextTeamMode =
+                currentMode?.teamMode === TeamMode.Squad
+                    ? TeamMode.Duo
+                    : TeamMode.Squad;
+            this.setRoomProperty("gameModeIdx", this.findTeamModeIdx(nextTeamMode));
+        });
+        this.fillSummary.on("click", () => {
+            this.setRoomProperty("autoFill", !this.roomData.autoFill);
         });
         this.playBtn.on("click", () => {
             this.tryStartGame();
@@ -236,6 +278,7 @@ export class TeamMenu {
                 findingGame: false,
                 lastError: "",
             } as RoomData;
+            const loadout = this.config.get("loadout");
             this.displayedInvalidProtocolModal = false;
 
             this.refreshUi();
@@ -268,7 +311,10 @@ export class TeamMenu {
                         this.sendMessage("create", {
                             arena: this.arena,
                             roomData: this.roomData,
-                            playerData: this.playerData,
+                            playerData: {
+                                ...this.playerData,
+                                outfit: loadout?.outfit,
+                            },
                         });
                     } else {
                         this.sendMessage("join", {
@@ -276,7 +322,10 @@ export class TeamMenu {
                             arena: this.arena,
                             preferredTeam: this.joinPrefs.preferredTeam,
                             spectator: this.joinPrefs.spectator,
-                            playerData: this.playerData,
+                            playerData: {
+                                ...this.playerData,
+                                outfit: loadout?.outfit,
+                            },
                         });
                     }
                 };
@@ -397,7 +446,10 @@ export class TeamMenu {
         }
     }
 
-    setRoomProperty<T extends keyof RoomData>(prop: T, val: RoomData[T]) {
+    setRoomProperty<T extends keyof RoomData>(prop: T, val: RoomData[T] | undefined) {
+        if (val === undefined) {
+            return;
+        }
         if (this.arena && prop === "autoFill") {
             return;
         }
@@ -425,6 +477,64 @@ export class TeamMenu {
     isBattleRoyaleRoom() {
         const mode = this.siteInfo.info.modes?.[this.roomData.gameModeIdx];
         return !!mode?.mapName.startsWith("br_");
+    }
+
+    getCurrentMode() {
+        return this.siteInfo.info.modes?.[this.roomData.gameModeIdx];
+    }
+
+    getModeBaseName(mapName: string) {
+        return mapName.startsWith("br_") ? mapName.slice(3) : mapName;
+    }
+
+    findMatchingModeIdx(opts: { battleRoyale?: boolean; teamMode?: number }) {
+        const currentMode = this.getCurrentMode();
+        if (!currentMode) return undefined;
+
+        const currentBaseName = this.getModeBaseName(currentMode.mapName);
+        const currentBattleRoyale = currentMode.mapName.startsWith("br_");
+        const battleRoyale = opts.battleRoyale ?? currentBattleRoyale;
+        const teamMode = opts.teamMode ?? currentMode.teamMode;
+
+        return this.roomData.enabledGameModeIdxs.find((idx) => {
+            const mode = this.siteInfo.info.modes?.[idx];
+            if (!mode) return false;
+            return (
+                this.getModeBaseName(mode.mapName) === currentBaseName &&
+                mode.mapName.startsWith("br_") === battleRoyale &&
+                mode.teamMode === teamMode
+            );
+        });
+    }
+
+    findTeamModeIdx(teamMode: TeamMode) {
+        return this.findMatchingModeIdx({ teamMode });
+    }
+
+    getBattleModeIdx(battleRoyale: boolean) {
+        return this.findMatchingModeIdx({ battleRoyale });
+    }
+
+    getInviteXpBoost(slotIdx: number) {
+        const boosts = [0, 10, 20, 50];
+        return boosts[Math.min(slotIdx, boosts.length - 1)];
+    }
+
+    getSquadBoost() {
+        return this.getInviteXpBoost(Math.max(0, this.players.length - 1));
+    }
+
+    getTeamModeDisplayName(teamMode?: number) {
+        switch (teamMode) {
+            case TeamMode.Squad:
+                return "Squad";
+            case TeamMode.Duo:
+                return "Duo";
+            case TeamMode.Solo:
+                return "Solo";
+            default:
+                return "Squad";
+        }
     }
 
     tryStartGame() {
@@ -522,7 +632,10 @@ export class TeamMenu {
             $("#team-menu-creating-text").css("display", this.create ? "block" : "none");
             $("#team-menu-connecting").css("display", this.joined ? "none" : "block");
             $("#team-menu-contents").css("display", this.joined ? "block" : "none");
-            $("#btn-team-leave").css("display", this.joined ? "block" : "none");
+            $("#btn-team-leave, #btn-team-close").css(
+                "display",
+                this.joined ? "block" : "none",
+            );
         }
 
         if (this.joined) {
@@ -542,15 +655,17 @@ export class TeamMenu {
             });
 
             // Modes btns
+            const duoModeIdx = this.findTeamModeIdx(TeamMode.Duo);
+            const squadModeIdx = this.findTeamModeIdx(TeamMode.Squad);
             setButtonState(
                 this.queueMode1,
-                this.roomData.gameModeIdx == 1,
-                this.isLeader && this.roomData.enabledGameModeIdxs.includes(1),
+                this.roomData.gameModeIdx === duoModeIdx,
+                this.isLeader && duoModeIdx !== undefined,
             );
             setButtonState(
                 this.queueMode2,
-                this.roomData.gameModeIdx == 2,
-                this.isLeader && this.roomData.enabledGameModeIdxs.includes(2),
+                this.roomData.gameModeIdx === squadModeIdx,
+                this.isLeader && squadModeIdx !== undefined,
             );
 
             // Fill mode
@@ -562,7 +677,70 @@ export class TeamMenu {
             const fillVisible = !this.arena;
             this.fillAuto.css("display", fillVisible ? "block" : "none");
             this.fillNone.css("display", fillVisible ? "block" : "none");
+            $("#team-fill-summary, #team-fill-note").css(
+                "display",
+                fillVisible ? "flex" : "none",
+            );
             this.serverSelect.prop("disabled", !this.isLeader);
+            const mode = this.siteInfo.info.modes?.[this.roomData.gameModeIdx];
+            const currentBattleRoyale = !!mode?.mapName.startsWith("br_");
+            const deathmatchModeIdx = this.getBattleModeIdx(false);
+            const battleRoyaleModeIdx = this.getBattleModeIdx(true);
+            const canSwitchBattleMode =
+                this.isLeader &&
+                (currentBattleRoyale
+                    ? deathmatchModeIdx !== undefined
+                    : battleRoyaleModeIdx !== undefined);
+            this.modeSummary
+                .toggleClass("btn-disabled btn-opaque", !canSwitchBattleMode)
+                .toggleClass("btn-darken", canSwitchBattleMode);
+            this.modeDeathmatch
+                .toggleClass("btn-disabled btn-opaque", deathmatchModeIdx === undefined)
+                .toggleClass("team-mode-choice-selected", !currentBattleRoyale);
+            this.modeBattleRoyale
+                .toggleClass(
+                    "btn-disabled btn-opaque",
+                    battleRoyaleModeIdx === undefined,
+                )
+                .toggleClass("team-mode-choice-selected", currentBattleRoyale);
+            if (!canSwitchBattleMode) {
+                this.modeSelection.hide();
+            }
+
+            const nextTeamMode =
+                mode?.teamMode === TeamMode.Squad ? TeamMode.Duo : TeamMode.Squad;
+            const canSwitchTeamMode =
+                this.isLeader && this.findTeamModeIdx(nextTeamMode) !== undefined;
+            this.typeSummary
+                .toggleClass("btn-disabled btn-opaque", !canSwitchTeamMode)
+                .toggleClass("btn-darken", canSwitchTeamMode);
+            this.fillSummary
+                .toggleClass("btn-disabled btn-opaque", !this.isLeader)
+                .toggleClass("btn-darken", this.isLeader);
+
+            const modeDesc = mode
+                ? this.siteInfo.getMapButtonDesc(mode.mapName)
+                : undefined;
+            $("#team-boost-value").text(`${this.getSquadBoost()}%`);
+            $("#team-mode-name").text(
+                mode ? this.siteInfo.getModeLabel(mode.mapName, mode.teamMode) : "Battle",
+            );
+            $("#team-mode-icon").css({
+                "background-image": modeDesc?.icon ? `url(${modeDesc.icon})` : "",
+            });
+            const teamModeName = this.getTeamModeDisplayName(mode?.teamMode);
+            $("#team-type-name").text(teamModeName);
+            $("#team-type-icon").css({
+                "background-image":
+                    mode?.teamMode === TeamMode.Duo
+                        ? "url(/img/ui/duo-player.svg)"
+                        : mode?.teamMode === TeamMode.Solo
+                          ? "url(/img/ui/player.svg)"
+                          : "url(/img/ui/squad-player.svg)",
+            });
+            $("#team-fill-summary-label").text(
+                `Auto Fill ${this.roomData.autoFill ? "ON" : "OFF"}`,
+            );
 
             // Invite link
             if (this.roomData.roomUrl) {
@@ -703,15 +881,21 @@ export class TeamMenu {
             // Player properties
             const teamMembers = $("#team-menu-member-list");
             teamMembers.empty();
+            teamMembers.css(
+                "--team-member-count",
+                String(Math.max(1, Math.min(this.roomData.maxPlayers || 4, 4))),
+            );
             for (let t = 0; t < this.roomData.maxPlayers; t++) {
+                const hasPlayer = t < this.players.length;
                 let playerStatus = {
                     name: "",
                     playerId: 0,
                     isLeader: false,
                     inGame: false,
                     self: false,
+                    outfit: "outfitBase",
                 };
-                if (t < this.players.length) {
+                if (hasPlayer) {
                     const player = this.players[t];
                     playerStatus = {
                         name: player.name,
@@ -719,12 +903,33 @@ export class TeamMenu {
                         isLeader: player.isLeader,
                         inGame: player.inGame,
                         self: player.playerId == this.localPlayerId,
+                        outfit: player.outfit || "outfitBase",
                     };
                 }
 
                 const member = $("<div/>", {
                     class: "team-menu-member",
                 });
+
+                if (!hasPlayer) {
+                    member.addClass("team-menu-member-empty");
+                    member.append(
+                        $("<div/>", {
+                            class: "team-menu-invite-title",
+                            html: "INVITE<br>SQUADMATE",
+                        }),
+                    );
+                    member.append(
+                        $("<div/>", {
+                            class: "team-menu-xp-bonus",
+                            html: `+${this.getInviteXpBoost(t)}% XP`,
+                        }),
+                    );
+                    teamMembers.append(member);
+                    continue;
+                }
+
+                member.addClass("team-menu-member-filled");
 
                 // Left-side icon
                 let iconClass = "";
@@ -734,10 +939,27 @@ export class TeamMenu {
                     iconClass = " icon-kick";
                 }
 
+                if (iconClass) {
+                    member.append(
+                        $("<div/>", {
+                            class: `icon${iconClass}`,
+                            "data-playerid": playerStatus.playerId,
+                        }),
+                    );
+                }
+                const outfitImage =
+                    helpers.getSvgFromGameType(playerStatus.outfit) ||
+                    "img/loot/loot-shirt-01.svg";
+                const outfitTransform = helpers.getCssTransformFromGameType(
+                    playerStatus.outfit,
+                );
                 member.append(
                     $("<div/>", {
-                        class: `icon${iconClass}`,
-                        "data-playerid": playerStatus.playerId,
+                        class: "team-menu-avatar",
+                        css: {
+                            "background-image": `url(${outfitImage})`,
+                            transform: outfitTransform,
+                        },
                     }),
                 );
                 let n: JQuery<HTMLInputElement> | null = null;
@@ -804,10 +1026,10 @@ export class TeamMenu {
                 }
                 if (c) {
                     member.append(c);
-                } else {
+                } else if (playerStatus.inGame) {
                     member.append(
                         $("<div/>", {
-                            class: `icon ${playerStatus.inGame ? "icon-in-game" : ""}`,
+                            class: "icon icon-in-game",
                         }),
                     );
                 }

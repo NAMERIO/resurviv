@@ -989,41 +989,70 @@
                 </div>
               </div>
               <div class="play-button-container">
-                <a class="btn-darken menu-option" id="btn-team-leave" data-l10n="index-leave-team">Leave Team</a>
+                <div id="team-menu-header">
+                  <div id="team-menu-title">MAKE TEAM</div>
+                  <a id="btn-team-close" class="btn-darken" aria-label="Leave Team"></a>
+                </div>
                 <div id="team-menu-connecting">
                   <div class="ui-spinner"></div>
                   <div class="team-menu-connecting-text" id="team-menu-joining-text"><span data-l10n="index-joining-team">Joining team</span> ...</div>
                   <div class="team-menu-connecting-text" id="team-menu-creating-text"><span data-l10n="index-creating-team">Creating team</span> ...</div>
                 </div>
                 <div id="team-menu-contents">
-                  <div id="team-desc">
-                    <div id="team-desc-text"><span id="invite-link-text" data-l10n="index-invite-link">Invite link</span>: <span id="team-url"></span>
-                    </div>
-                    <a id="team-copy-url" class="copy-item btn-darken"></a>
-                    <a id="team-hide-url" class="hide-item btn-darken"></a>
-                    <div id="team-code-text"><span id="invite-code-text" data-l10n="index-invite-code">Invite code</span>: <span id="team-code"></span></div>
-                  </div>
                   <div id="team-menu-columns">
-                    <div id="team-menu-members" class="team-menu-block">
-                      <div id="team-menu-member-list"></div>
+                    <div id="team-menu-left">
+                      <div id="team-menu-help">Join or invite squadmates for XP Boost</div>
+                      <div id="team-menu-members" class="team-menu-block">
+                        <div id="team-menu-member-list"></div>
+                      </div>
+                      <div id="team-desc">
+                        <div class="team-desc-label"><span id="invite-link-text" data-l10n="index-invite-link">Invite link</span></div>
+                        <div id="team-desc-text" class="team-desc-value"><span id="team-url"></span></div>
+                        <a id="team-copy-url" class="copy-item btn-darken"></a>
+                        <a id="team-hide-url" class="hide-item btn-darken"></a>
+                        <div class="team-desc-label"><span id="invite-code-text" data-l10n="index-invite-code">Invite code</span></div>
+                        <div id="team-code-text" class="team-desc-value"><span id="team-code"></span></div>
+                      </div>
                     </div>
                     <div id="team-menu-options" class="team-menu-block">
                       <select id="team-server-select" class="btn-hollow btn-hollow-selected server-select menu-option">
                         <optgroup id="team-server-opts" label="Region">
                         </optgroup>
                       </select>
-                      <div class="team-menu-options-buttons">
-                        <a class="btn-hollow btn-hollow-selected btn-darken team-menu-option btn-team-queue" id="btn-team-queue-mode-1" data-l10n="index-duo">Duo</a>
-                        <a class="btn-hollow btn-hollow-selected btn-darken team-menu-option btn-team-queue" id="btn-team-queue-mode-2" data-l10n="index-squad">Squad</a>
-                      </div>
-                      <div class="team-menu-options-buttons">
-                        <a class="btn-hollow btn-hollow-selected btn-darken team-menu-option btn-team-fill" id="btn-team-fill-auto" data-l10n="index-auto-fill">Auto Fill</a>
-                        <a class="btn-hollow btn-darken team-menu-option btn-team-fill" id="btn-team-fill-none" data-l10n="index-no-fill">No Fill</a>
-                      </div>
+                      <div id="team-boost-summary">SQUAD BOOST: <span id="team-boost-value">0%</span></div>
                       <div id="team-menu-options-start">
-                        <a class="btn-green btn-darken menu-option" id="btn-start-team" data-label="Play" data-l10n="index-play">Play</a>
+                        <a class="btn-green btn-darken menu-option" id="btn-start-team" data-label="Battle">Battle</a>
                         <div id="msg-wait-reason"></div>
                       </div>
+                      <div id="team-mode-summary" class="team-summary-row">
+                        <span class="team-summary-label">MODE</span>
+                        <span id="team-mode-icon" class="team-summary-icon"></span>
+                        <span id="team-mode-name" class="team-summary-value">Battle</span>
+                      </div>
+                      <div id="team-mode-selection" class="team-mode-selection">
+                        <a id="team-mode-deathmatch" class="btn-darken team-mode-choice">Deathmatch</a>
+                        <a id="team-mode-battle-royale" class="btn-darken team-mode-choice">Battle Royale</a>
+                      </div>
+                      <div id="team-type-summary" class="team-summary-row btn-darken">
+                        <span class="team-summary-label">TYPE</span>
+                        <span id="team-type-icon" class="team-summary-icon"></span>
+                        <span id="team-type-name" class="team-summary-value">Squad</span>
+                      </div>
+                      <div id="team-fill-summary" class="team-summary-row btn-darken">
+                        <span id="team-fill-summary-label" class="team-summary-value">Auto Fill ON</span>
+                      </div>
+                      <div id="team-menu-legacy-controls">
+                        <div class="team-menu-options-buttons">
+                          <a class="btn-hollow btn-hollow-selected btn-darken team-menu-option btn-team-queue" id="btn-team-queue-mode-1" data-l10n="index-duo">Duo</a>
+                          <a class="btn-hollow btn-hollow-selected btn-darken team-menu-option btn-team-queue" id="btn-team-queue-mode-2" data-l10n="index-squad">Squad</a>
+                        </div>
+                        <div class="team-menu-options-buttons">
+                          <a class="btn-hollow btn-hollow-selected btn-darken team-menu-option btn-team-fill" id="btn-team-fill-auto" data-l10n="index-auto-fill">Auto Fill</a>
+                          <a class="btn-hollow btn-darken team-menu-option btn-team-fill" id="btn-team-fill-none" data-l10n="index-no-fill">No Fill</a>
+                        </div>
+                      </div>
+                      <div id="team-fill-note">Players added through Auto fill won't provide SQUAD BOOST</div>
+                      <a class="btn-darken menu-option" id="btn-team-leave" data-l10n="index-leave-team">Leave Team</a>
                     </div>
                   </div>
                 </div>

@@ -476,7 +476,7 @@ export class Application {
                     $("#team-mobile-link-warning").css("display", "none").fadeIn(100);
                 }
             });
-            $("#btn-team-leave").on("click", () => {
+            $("#btn-team-leave, #btn-team-close").on("click", () => {
                 if (window.history) {
                     window.history.replaceState("", "", "/");
                 }

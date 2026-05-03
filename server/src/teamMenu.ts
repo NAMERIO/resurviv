@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 import type { UpgradeWebSocket, WSContext } from "hono/ws";
+import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
 import { GameConfig } from "../../shared/gameConfig";
 import type { FindGameError } from "../../shared/types/api";
 import {
@@ -43,6 +44,7 @@ class Player {
     room?: Room;
 
     name = "Player";
+    outfit = "outfitBase";
     clanName = "";
     clanTagColor = "";
 
@@ -63,6 +65,7 @@ class Player {
             inGame: this.inGame,
             isLeader: this.isLeader,
             playerId: this.playerId,
+            outfit: this.outfit,
             clanName: this.clanName,
             clanTagColor: this.clanTagColor,
         };
@@ -91,6 +94,11 @@ class Player {
 
     setName(name: string) {
         this.name = validateUserName(name).validName;
+    }
+
+    setOutfit(outfit?: string) {
+        this.outfit =
+            outfit && GameObjectDefs[outfit]?.type === "outfit" ? outfit : "outfitBase";
     }
 
     send<T extends ServerToClientTeamMsg["type"]>(
@@ -951,6 +959,7 @@ export class TeamMenu {
                     }
 
                     player.setName(msg.data.playerData.name);
+                    player.setOutfit(msg.data.playerData.outfit);
 
                     const room = this.createRoom({
                         ...msg.data.roomData,
@@ -1013,6 +1022,7 @@ export class TeamMenu {
                     }
 
                     player.setName(msg.data.playerData.name);
+                    player.setOutfit(msg.data.playerData.outfit);
                     const joinRes = room.addPlayer(player, {
                         preferredTeam: msg.data.preferredTeam,
                         spectator:

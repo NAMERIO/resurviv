@@ -57,6 +57,7 @@ export interface TeamMenuPlayer {
     playerId: number;
     isLeader: boolean;
     inGame: boolean;
+    outfit?: string;
     clanName?: string;
     clanTagColor?: string;
     team?: "A" | "B";
@@ -129,6 +130,7 @@ export const zTeamJoinMsg = z.object({
         spectator: z.boolean().optional(),
         playerData: z.object({
             name: z.string(),
+            outfit: z.string().optional(),
         }),
     }),
 });
@@ -157,6 +159,7 @@ export const zTeamCreateMsg = z.object({
         roomData: zClientRoomData,
         playerData: z.object({
             name: z.string(),
+            outfit: z.string().optional(),
         }),
     }),
 });
