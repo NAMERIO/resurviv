@@ -489,9 +489,13 @@ table.player-stats-overview td {
 }
 
 .mode-name {
-  font-size: 32px;
+  font-size: 30px;
   font-weight: bold;
   line-height: 36px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 1px 1px 1px black;
+  white-space: nowrap;
 }
 
 .mode-name-solo {
@@ -507,14 +511,34 @@ table.player-stats-overview td {
 }
 
 .mode-games {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: bold;
-  margin-right: 12px;
+  line-height: 16px;
   text-align: right;
 }
 
 .card-mode-row-top {
+  align-items: center;
+  display: flex;
   height: 36px;
+  min-width: 0;
+}
+
+.mode-icon-cell {
+  flex: 0 0 56px;
+  height: 36px;
+  position: relative;
+}
+
+.mode-title-cell {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mode-games-cell {
+  flex: 0 0 82px;
+  min-width: 0;
+  padding-right: 8px;
 }
 
 .card-mode-no-games {
@@ -627,6 +651,18 @@ table.player-stats-overview td {
 }
 
 .card-mode-bg-2 {
+  background-color: #e67e22;
+}
+
+.card-mode-bg-3 {
+  background-color: #3498db;
+}
+
+.card-mode-bg-4 {
+  background-color: #9b59b6;
+}
+
+.card-mode-bg-5 {
   background-color: #e67e22;
 }
 
