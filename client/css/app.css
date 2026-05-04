@@ -15042,6 +15042,14 @@ div.roulette {
   position: relative;
 }
 
+#modal-premium-pass-confirm .close-corner {
+  margin: 0;
+  position: absolute;
+  right: 15px;
+  top: 14px;
+  z-index: 1;
+}
+
 #modal-premium-pass-confirm .modal-header-content {
   display: flex;
   justify-content: center;
@@ -15133,9 +15141,10 @@ div.roulette {
   background-color: #91650d;
   box-sizing: border-box;
   display: flex;
+  gap: 18px;
   height: 79px;
-  justify-content: space-around;
-  padding: 2px 110px;
+  justify-content: center;
+  padding: 2px 55px;
 }
 
 #modal-premium-pass-confirm .modal-footer .btn-green {
@@ -15172,7 +15181,7 @@ div.roulette {
   background-origin: padding-box, border-box;
   border: 2px solid transparent;
   border-radius: 2px;
-  width: 339px;
+  width: 330px;
 }
 
 #modal-premium-pass-confirm .modal-pass-price {

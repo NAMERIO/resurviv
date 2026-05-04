@@ -118,6 +118,10 @@ export type BuyPremiumPassResponse = {
     gpBalance?: number;
 };
 
+export const zBuyFullPassRequest = z.object({});
+export type BuyFullPassRequest = z.infer<typeof zBuyFullPassRequest>;
+export type BuyFullPassResponse = BuyPremiumPassResponse;
+
 export const zGetPassRequest = z.object({
     tryRefreshQuests: z.boolean(),
 });

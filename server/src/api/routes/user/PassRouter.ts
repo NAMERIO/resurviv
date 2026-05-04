@@ -7,10 +7,12 @@ import {
 } from "../../../../../shared/defs/gameObjects/passDefs";
 import { QuestDefs } from "../../../../../shared/defs/gameObjects/questDefs";
 import {
+    type BuyFullPassResponse,
     type BuyPremiumPassResponse,
     type GetPassResponse,
     type RefreshQuestResponse,
     type SetPassUnlockResponse,
+    zBuyFullPassRequest,
     zBuyPremiumPassRequest,
     zGetPassRequest,
     zRefreshQuestRequest,
@@ -35,9 +37,12 @@ export const passType = CurrentPassType;
 export const questSlotIndexes = [0, 1];
 export const premiumPassUnlockType = "premiumPass";
 
-function getPremiumRewardsAtLevel(passType: string, level: number) {
-    const passDef = PassDefs[passType];
-    return (passDef.premiumItems ?? []).filter((reward) => reward.level <= level);
+function getTotalXpForLevel(passType: string, level: number) {
+    let totalXp = 0;
+    for (let currentLevel = 1; currentLevel < level; currentLevel++) {
+        totalXp += passUtil.getPassLevelXp(passType, currentLevel);
+    }
+    return totalXp;
 }
 
 /**
@@ -319,12 +324,13 @@ PassRouter.post(
     async (c) => {
         const user = c.get("user")!;
         const passDef = PassDefs[passType];
-        const price = passDef.premiumPrice ?? 1300;
+        const price = passDef.premiumPrice ?? 1500;
         const now = Date.now();
 
         try {
             const { pass } = await getPassAndQuests(user.id, now);
             const result = await db.transaction(async (tx) => {
+                const { level } = passUtil.getPassLevelAndXp(pass.passType, pass.totalXp);
                 if (pass.unlocks?.[premiumPassUnlockType]) {
                     return {
                         ok: false as const,
@@ -348,8 +354,9 @@ PassRouter.post(
                     };
                 }
 
-                const { level } = passUtil.getPassLevelAndXp(pass.passType, pass.totalXp);
-                const rewards = getPremiumRewardsAtLevel(pass.passType, level);
+                const rewards = (passDef.premiumItems ?? []).filter(
+                    (reward) => reward.level <= level,
+                );
                 const rewardItems = rewards
                     .flatMap((reward) => ("item" in reward ? [reward.item] : []))
                     .filter((item) => !!GameObjectDefs[item]);
@@ -434,6 +441,136 @@ PassRouter.post(
         }
     },
 );
+
+PassRouter.post("/buy_full_pass", validateParams(zBuyFullPassRequest), async (c) => {
+    const user = c.get("user")!;
+    const passDef = PassDefs[passType];
+    const price = passDef.unlockAllPrice ?? 3000;
+    const now = Date.now();
+
+    try {
+        const { pass } = await getPassAndQuests(user.id, now);
+        const result = await db.transaction(async (tx) => {
+            const maxLevel = passUtil.getPassMaxLevel();
+            const { level } = passUtil.getPassLevelAndXp(pass.passType, pass.totalXp);
+            const ownsPremiumPass = !!pass.unlocks?.[premiumPassUnlockType];
+            if (ownsPremiumPass && level >= maxLevel) {
+                return {
+                    ok: false as const,
+                    error: "already_purchased" as const,
+                    gpBalance: user.gpBalance,
+                };
+            }
+
+            const buyer = await tx.query.usersTable.findFirst({
+                where: eq(usersTable.id, user.id),
+                columns: {
+                    gpBalance: true,
+                },
+            });
+
+            if (!buyer || buyer.gpBalance < price) {
+                return {
+                    ok: false as const,
+                    error: "not_enough_gp" as const,
+                    gpBalance: buyer?.gpBalance ?? user.gpBalance,
+                };
+            }
+
+            const maxTotalXp = getTotalXpForLevel(pass.passType, maxLevel);
+            const basicRewards = passDef.items.filter(
+                (reward) => reward.level > level && reward.level <= maxLevel,
+            );
+            const premiumRewards = (passDef.premiumItems ?? []).filter((reward) => {
+                return (
+                    reward.level <= maxLevel && (!ownsPremiumPass || reward.level > level)
+                );
+            });
+            const rewards = basicRewards.concat(premiumRewards);
+            const rewardItems = rewards
+                .flatMap((reward) => ("item" in reward ? [reward.item] : []))
+                .filter((item) => !!GameObjectDefs[item]);
+            const rewardGp = rewards.reduce(
+                (total, reward) => total + ("gp" in reward ? (reward.gp ?? 0) : 0),
+                0,
+            );
+            const insertedRewards =
+                rewardItems.length > 0
+                    ? await tx
+                          .insert(itemsTable)
+                          .values(
+                              rewardItems.map((item) => ({
+                                  userId: user.id,
+                                  type: item,
+                                  source: `${pass.passType}_unlock_all`,
+                                  timeAcquired: now,
+                              })),
+                          )
+                          .returning({
+                              type: itemsTable.type,
+                          })
+                    : [];
+
+            await tx
+                .update(userPassTable)
+                .set({
+                    totalXp: Math.max(pass.totalXp, maxTotalXp),
+                    unlocks: {
+                        ...(pass.unlocks ?? {}),
+                        [premiumPassUnlockType]: true,
+                    },
+                    newItems:
+                        insertedRewards.length > 0
+                            ? true
+                            : sql`${userPassTable.newItems}`,
+                    updatedAt: new Date(),
+                })
+                .where(
+                    and(
+                        eq(userPassTable.userId, user.id),
+                        eq(userPassTable.passType, pass.passType),
+                    ),
+                );
+
+            await tx
+                .update(usersTable)
+                .set({
+                    gpBalance: buyer.gpBalance - price + rewardGp,
+                })
+                .where(eq(usersTable.id, user.id));
+
+            return {
+                ok: true as const,
+                gpBalance: buyer.gpBalance - price + rewardGp,
+            };
+        });
+
+        if (!result.ok) {
+            return c.json<BuyFullPassResponse>(
+                {
+                    success: false,
+                    error: result.error,
+                    gpBalance: result.gpBalance,
+                },
+                200,
+            );
+        }
+
+        return c.json<BuyFullPassResponse>(
+            {
+                success: true,
+                gpBalance: result.gpBalance,
+            },
+            200,
+        );
+    } catch (error) {
+        console.error("buy_full_pass failed", error);
+        return c.json<BuyFullPassResponse>(
+            { success: false, error: "server_error" },
+            200,
+        );
+    }
+});
 
 function isRemovedQuestType(questType: string) {
     return QuestDefs[questType]?.event === "placement";

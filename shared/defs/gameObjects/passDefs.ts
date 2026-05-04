@@ -4,6 +4,7 @@ export interface PassDef {
     items: PassRewardDef[];
     premiumItems?: PassRewardDef[];
     premiumPrice?: number;
+    unlockAllPrice?: number;
 }
 
 export type PassRewardDef =
@@ -142,7 +143,8 @@ export const PassDefs: Record<string, PassDef> = {
     },
     pass_survivr2: {
         type: "pass",
-        premiumPrice: 1,
+        premiumPrice: 1500,
+        unlockAllPrice: 3000,
         xp: [
             50, 50, 50, 50, 50, 50, 50, 50, 75, 75, 75, 75, 75, 75, 100, 100, 100, 125,
             125, 150, 75, 75, 75,
