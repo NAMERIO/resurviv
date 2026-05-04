@@ -1,7 +1,11 @@
 import $ from "jquery";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { Rarity } from "../../../shared/gameConfig";
-import type { AuctionListing, ShopLootBox } from "../../../shared/types/user";
+import type {
+    AuctionListing,
+    ShopLootBox,
+    SocialGpRewardKey,
+} from "../../../shared/types/user";
 import {
     type FeaturedBundleOffer,
     getBundleMinPrice,
@@ -148,6 +152,9 @@ export class ShopMenu {
         this.account.addEventListener("gpBalance", () => {
             this.renderBalance();
         });
+        this.account.addEventListener("socialGpRewardClaims", () => {
+            this.renderSocialGpRewards();
+        });
         this.account.addEventListener("soldMarketListings", (soldListings) => {
             this.enqueueSoldListings(soldListings);
         });
@@ -163,6 +170,7 @@ export class ShopMenu {
         this.refreshData();
         this.render();
         this.updateMarketRefreshUi();
+        this.renderSocialGpRewards();
     }
 
     bindUi() {
@@ -222,6 +230,16 @@ export class ShopMenu {
             this.cratesModal.show();
             return false;
         });
+        this.bindSocialGpReward(
+            "#shop-earn-gp-github-claim",
+            "github_star",
+            "https://github.com/namerio/resurviv",
+        );
+        this.bindSocialGpReward(
+            "#shop-earn-gp-discord-claim",
+            "discord_join",
+            "https://discord.gg/Tm2Rmp9aFR",
+        );
         for (const [index, selectorSuffix] of ["1", "2", "3"].entries()) {
             $(`#btn-contains-crate-${selectorSuffix}`).on("click", (e) => {
                 e.preventDefault();
@@ -432,6 +450,44 @@ export class ShopMenu {
                 this.marketOrder = value as MarketOrder;
             },
         );
+    }
+
+    bindSocialGpReward(
+        selector: string,
+        rewardKey: SocialGpRewardKey,
+        rewardUrl: string,
+    ) {
+        $(selector).on("click", (e) => {
+            e.preventDefault();
+            if (this.account.socialGpRewardClaims[rewardKey]) {
+                return false;
+            }
+
+            window.open(rewardUrl, "_blank", "noopener");
+            this.account.claimSocialGpReward(rewardKey, (error) => {
+                if (error) {
+                    this.showMarketError(error);
+                    this.renderSocialGpRewards();
+                    return;
+                }
+                this.renderSocialGpRewards();
+            });
+            return false;
+        });
+    }
+
+    renderSocialGpRewards() {
+        this.renderSocialGpRewardButton("#shop-earn-gp-github-claim", "github_star");
+        this.renderSocialGpRewardButton("#shop-earn-gp-discord-claim", "discord_join");
+    }
+
+    renderSocialGpRewardButton(selector: string, rewardKey: SocialGpRewardKey) {
+        const claimed = !!this.account.socialGpRewardClaims[rewardKey];
+        const button = $(selector);
+        button
+            .closest(".free-gp-reward")
+            .toggleClass("is-visible", this.account.socialGpRewardClaimsLoaded && !claimed);
+        button.text(this.localization.translate("shop-earn-gp-claim") || "Claim");
     }
 
     bindDesktopFilter(

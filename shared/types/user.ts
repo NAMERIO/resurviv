@@ -183,6 +183,20 @@ export type GetMarketResponse = {
     expiredItemTypes: string[];
     featuredBundles: FeaturedBundleOffer[];
     lootBoxes: ShopLootBox[];
+    socialGpRewardClaims: Partial<Record<SocialGpRewardKey, boolean>>;
+};
+
+export const socialGpRewardKeys = ["github_star", "discord_join"] as const;
+export type SocialGpRewardKey = (typeof socialGpRewardKeys)[number];
+export const zClaimSocialGpRewardRequest = z.object({
+    rewardKey: z.enum(socialGpRewardKeys),
+});
+export type ClaimSocialGpRewardRequest = z.infer<typeof zClaimSocialGpRewardRequest>;
+export type ClaimSocialGpRewardResponse = {
+    success: boolean;
+    error?: "already_claimed" | "reward_not_found" | "server_error";
+    gpBalance?: number;
+    socialGpRewardClaims?: Partial<Record<SocialGpRewardKey, boolean>>;
 };
 
 export const zCreateMarketListingRequest = z.object({

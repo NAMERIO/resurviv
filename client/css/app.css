@@ -15596,7 +15596,9 @@ div.roulette {
   align-items: center;
   box-sizing: border-box;
   display: flex;
-  height: 74px;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 74px;
   justify-content: center;
   margin-left: 0;
   margin-top: 10px;
@@ -15613,6 +15615,47 @@ div.roulette {
 
 #free-gp-offer .btn-social {
   margin: 0;
+}
+
+#free-gp-offer .free-gp-rewards {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+#free-gp-offer .free-gp-reward {
+  align-items: center;
+  display: none;
+  gap: 8px;
+  justify-content: space-between;
+  min-height: 28px;
+}
+
+#free-gp-offer .free-gp-reward.is-visible {
+  display: flex;
+}
+
+#free-gp-offer .free-gp-reward-label {
+  color: #f4db7c;
+  flex: 1;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 16px;
+}
+
+#free-gp-offer .free-gp-claim {
+  background: #4a8f2d;
+  border-radius: 5px;
+  box-sizing: border-box;
+  color: #fff;
+  flex: 0 0 auto;
+  font-size: 12px;
+  line-height: 14px;
+  min-width: 64px;
+  padding: 6px 8px;
+  text-align: center;
+  text-decoration: none;
 }
 
 #free-gp-offer .btn-mobile-youtube {

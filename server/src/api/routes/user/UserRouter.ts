@@ -8,6 +8,7 @@ import {
     type BuyMarketListingResponse,
     type CancelAuctionListingResponse,
     type CancelMarketListingResponse,
+    type ClaimSocialGpRewardResponse,
     type CreateAuctionListingResponse,
     type CreateMarketListingResponse,
     type GetMarketResponse,
@@ -21,6 +22,7 @@ import {
     zBuyMarketListingRequest,
     zCancelAuctionListingRequest,
     zCancelMarketListingRequest,
+    zClaimSocialGpRewardRequest,
     zCreateAuctionListingRequest,
     zCreateMarketListingRequest,
     zLoadoutRequest,
@@ -82,6 +84,11 @@ const APRIL_THANKS_REWARD_GP = 500;
 const APRIL_THANKS_REWARD_IP_LIMIT = 2;
 const APRIL_THANKS_REWARD_MIN_PLAYTIME_SECONDS = 30;
 const APRIL_THANKS_REWARD_END_AT = new Date("2026-04-26T00:00:00.000Z").getTime();
+const SOCIAL_GP_REWARD_AMOUNT = 75;
+const SOCIAL_GP_REWARDS = {
+    github_star: { rewardKey: "social_github_star", gp: SOCIAL_GP_REWARD_AMOUNT },
+    discord_join: { rewardKey: "social_discord_join", gp: SOCIAL_GP_REWARD_AMOUNT },
+} as const;
 
 function getShopLootBoxes() {
     return Object.values(lootBoxes).map((box) => ({
@@ -179,6 +186,29 @@ function tryClaimAprilThanksReward(c: any, userId: string) {
               }
             : null;
     });
+}
+
+async function getSocialGpRewardClaims(userId: string) {
+    const claimedRows = await db
+        .select({
+            rewardKey: rewardClaimsTable.rewardKey,
+        })
+        .from(rewardClaimsTable)
+        .where(
+            and(
+                eq(rewardClaimsTable.userId, userId),
+                inArray(
+                    rewardClaimsTable.rewardKey,
+                    Object.values(SOCIAL_GP_REWARDS).map((reward) => reward.rewardKey),
+                ),
+            ),
+        );
+
+    const claimedRewardKeys = new Set(claimedRows.map((row) => row.rewardKey));
+    return {
+        github_star: claimedRewardKeys.has(SOCIAL_GP_REWARDS.github_star.rewardKey),
+        discord_join: claimedRewardKeys.has(SOCIAL_GP_REWARDS.discord_join.rewardKey),
+    };
 }
 
 function canUseDeveloper(slug: string) {
@@ -603,6 +633,7 @@ UserRouter.post("/set_item_status", validateParams(zSetItemStatusRequest), async
 UserRouter.post("/get_market", async (c) => {
     const user = c.get("user")!;
     const market = await buildMarketState(user.id);
+    const socialGpRewardClaims = await getSocialGpRewardClaims(user.id);
 
     return c.json<GetMarketResponse>(
         {
@@ -616,10 +647,100 @@ UserRouter.post("/get_market", async (c) => {
             expiredItemTypes: market.expiredItemTypes,
             featuredBundles: market.featuredBundles,
             lootBoxes: getShopLootBoxes(),
+            socialGpRewardClaims,
         },
         200,
     );
 });
+
+UserRouter.post(
+    "/claim_social_gp_reward",
+    validateParams(zClaimSocialGpRewardRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { rewardKey } = c.req.valid("json");
+        const reward = SOCIAL_GP_REWARDS[rewardKey];
+
+        if (!reward) {
+            return c.json<ClaimSocialGpRewardResponse>(
+                { success: false, error: "reward_not_found" },
+                200,
+            );
+        }
+
+        const ip = getHonoIp(c, Config.apiServer.proxyIPHeader);
+        const encodedIp = ip ? hashRewardIp(ip) : "";
+
+        try {
+            const result = await db.transaction(async (tx) => {
+                const existingClaim = await tx.query.rewardClaimsTable.findFirst({
+                    where: and(
+                        eq(rewardClaimsTable.userId, user.id),
+                        eq(rewardClaimsTable.rewardKey, reward.rewardKey),
+                    ),
+                    columns: {
+                        id: true,
+                    },
+                });
+
+                if (existingClaim) {
+                    return { ok: false as const, error: "already_claimed" as const };
+                }
+
+                await tx.insert(rewardClaimsTable).values({
+                    rewardKey: reward.rewardKey,
+                    userId: user.id,
+                    encodedIp,
+                    grantedGp: reward.gp,
+                });
+
+                const [updatedUser] = await tx
+                    .update(usersTable)
+                    .set({
+                        gpBalance: sql`${usersTable.gpBalance} + ${reward.gp}`,
+                    })
+                    .where(eq(usersTable.id, user.id))
+                    .returning({
+                        gpBalance: usersTable.gpBalance,
+                    });
+
+                return updatedUser
+                    ? {
+                          ok: true as const,
+                          gpBalance: updatedUser.gpBalance,
+                      }
+                    : { ok: false as const, error: "server_error" as const };
+            });
+
+            if (!result.ok) {
+                return c.json<ClaimSocialGpRewardResponse>(
+                    {
+                        success: false,
+                        error: result.error,
+                        gpBalance: user.gpBalance,
+                        socialGpRewardClaims: await getSocialGpRewardClaims(user.id),
+                    },
+                    200,
+                );
+            }
+
+            return c.json<ClaimSocialGpRewardResponse>(
+                {
+                    success: true,
+                    gpBalance: result.gpBalance,
+                    socialGpRewardClaims: await getSocialGpRewardClaims(user.id),
+                },
+                200,
+            );
+        } catch (err) {
+            server.logger.error("/api/user/claim_social_gp_reward error", err);
+            return c.json<ClaimSocialGpRewardResponse>(
+                { success: false, error: "server_error" },
+                500,
+            );
+        }
+    },
+);
 
 UserRouter.post(
     "/create_market_listing",

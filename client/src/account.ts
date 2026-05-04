@@ -12,6 +12,8 @@ import type {
     CancelAuctionListingResponse,
     CancelMarketListingRequest,
     CancelMarketListingResponse,
+    ClaimSocialGpRewardRequest,
+    ClaimSocialGpRewardResponse,
     CreateAuctionListingRequest,
     CreateAuctionListingResponse,
     CreateMarketListingRequest,
@@ -33,6 +35,7 @@ import type {
     SetPassUnlockResponse,
     SetQuestRequest,
     ShopLootBox,
+    SocialGpRewardKey,
     SoldMarketListing,
     UsernameRequest,
     UsernameResponse,
@@ -114,6 +117,8 @@ export class Account {
     loggingIn = false;
     loggedIn = false;
     gpBalance = 0;
+    socialGpRewardClaims: Partial<Record<SocialGpRewardKey, boolean>> = {};
+    socialGpRewardClaimsLoaded = false;
     pendingThankYouGift: { amount: number } | null = null;
     profile = {
         linked: false,
@@ -464,6 +469,8 @@ export class Account {
             }
 
             this.gpBalance = res.gpBalance;
+            this.socialGpRewardClaims = res.socialGpRewardClaims || {};
+            this.socialGpRewardClaimsLoaded = true;
             this.featuredBundles = res.featuredBundles || [];
             this.lootBoxes = res.lootBoxes || [];
             this.marketListings = res.listings || [];
@@ -472,6 +479,7 @@ export class Account {
             this.userAuctionListings = res.userAuctions || [];
             this.soldMarketListings = res.soldListings || [];
             this.emit("gpBalance", this.gpBalance);
+            this.emit("socialGpRewardClaims", this.socialGpRewardClaims);
             this.emit("market", this.marketListings, this.userMarketListings);
             if (this.soldMarketListings.length > 0) {
                 this.emit("soldMarketListings", this.soldMarketListings);
@@ -482,6 +490,44 @@ export class Account {
             }
             callback?.(true);
         });
+    }
+
+    claimSocialGpReward(
+        rewardKey: SocialGpRewardKey,
+        callback?: (error?: ClaimSocialGpRewardResponse["error"]) => void,
+    ) {
+        const args: ClaimSocialGpRewardRequest = { rewardKey };
+        this.ajaxRequest(
+            "/api/user/claim_social_gp_reward",
+            args,
+            (err, res: ClaimSocialGpRewardResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric(
+                        "account",
+                        "claim_social_gp_reward_error",
+                    );
+                    if (res?.socialGpRewardClaims) {
+                        this.socialGpRewardClaims = res.socialGpRewardClaims;
+                        this.socialGpRewardClaimsLoaded = true;
+                        this.emit("socialGpRewardClaims", this.socialGpRewardClaims);
+                    }
+                    callback?.(res?.error || "server_error");
+                    return;
+                }
+
+                if (typeof res.gpBalance === "number") {
+                    this.gpBalance = res.gpBalance;
+                    this.emit("gpBalance", this.gpBalance);
+                }
+                this.socialGpRewardClaims = res.socialGpRewardClaims || {
+                    ...this.socialGpRewardClaims,
+                    [rewardKey]: true,
+                };
+                this.socialGpRewardClaimsLoaded = true;
+                this.emit("socialGpRewardClaims", this.socialGpRewardClaims);
+                callback?.();
+            },
+        );
     }
 
     buyFeaturedBundle(bundleId: string, callback?: (error?: string) => void) {
