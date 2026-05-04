@@ -3,6 +3,7 @@ type QuestEvent =
     | "damage"
     | "survived"
     | "placement"
+    | "streak_activated"
     | "item_used"
     | "destruction";
 
@@ -76,6 +77,12 @@ export const QuestDefs: Record<string, QuestDef> = {
         event: "survived",
         target: 900,
         xp: 30,
+    },
+    quest_activate_streak: {
+        type: "quest",
+        event: "streak_activated",
+        target: 5,
+        xp: 40,
     },
     quest_damage_9mm: {
         type: "quest",

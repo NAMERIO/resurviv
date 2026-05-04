@@ -179,6 +179,27 @@ PassRouter.post("/get_pass", validateParams(zGetPassRequest), async (c) => {
 
     let activeQuests = quests;
 
+    const removedQuests = activeQuests.filter((quest) =>
+        isRemovedQuestType(quest.questType),
+    );
+    for (const quest of removedQuests) {
+        const newType = await rerollSlot(user.id, quest.idx, now, false, activeQuests);
+        activeQuests = activeQuests.map((current) =>
+            current.idx === quest.idx
+                ? {
+                      ...current,
+                      questType: newType,
+                      progress: 0,
+                      target: QuestDefs[newType]!.target,
+                      complete: false,
+                      rerolled: false,
+                      timeAcquired: now,
+                      nextRefreshAt: passUtil.getNextQuestRefreshAt(now),
+                  }
+                : current,
+        );
+    }
+
     if (tryRefreshQuests) {
         const expiredQuests = activeQuests.filter(
             (quest) => quest.nextRefreshAt - now < 0,
@@ -414,7 +435,13 @@ PassRouter.post(
     },
 );
 
-const questTypes = Object.keys(QuestDefs);
+function isRemovedQuestType(questType: string) {
+    return QuestDefs[questType]?.event === "placement";
+}
+
+const questTypes = Object.keys(QuestDefs).filter((questType) => {
+    return !isRemovedQuestType(questType);
+});
 const defaultQuestType = questTypes[0] || "quest_kills";
 
 function getRandomQuestType(excluded: Set<string>) {

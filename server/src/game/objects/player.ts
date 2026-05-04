@@ -1419,6 +1419,7 @@ export class Player extends BaseGameObject {
         this.streakActiveTimer = streakDef.duration;
         this.streakActivationCount++;
         this.streakDirty = true;
+        this.questManager.trackEvent("streak_activated", {});
 
         if (streakDef.rewardType === "perk") {
             this.addPerk(streakDef.rewardItem, false);

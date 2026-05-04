@@ -78,6 +78,7 @@ export interface QuestEventPayloads {
     damage: { amount: number; weaponType: string };
     survived: { seconds: number };
     placement: { rank: number; mode: "solo" | "duo" | "squad" };
+    streak_activated: {};
     item_used: { itemType: string };
     destruction: { objectType: string };
 }
@@ -138,6 +139,11 @@ export function questDelta<E extends keyof QuestEventPayloads>(
                 return 0;
             }
 
+            value = 1;
+            break;
+        }
+
+        case "streak_activated": {
             value = 1;
             break;
         }
