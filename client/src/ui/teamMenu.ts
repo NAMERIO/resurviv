@@ -137,9 +137,7 @@ export class TeamMenu {
 
             const currentMode = this.getCurrentMode();
             const nextTeamMode =
-                currentMode?.teamMode === TeamMode.Squad
-                    ? TeamMode.Duo
-                    : TeamMode.Squad;
+                currentMode?.teamMode === TeamMode.Squad ? TeamMode.Duo : TeamMode.Squad;
             this.setRoomProperty("gameModeIdx", this.findTeamModeIdx(nextTeamMode));
         });
         this.fillSummary.on("click", () => {
