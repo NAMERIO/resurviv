@@ -102,17 +102,17 @@ export class SiteInfo {
         const btn = $("#btn-start-mode-0");
         const mode = this.info.modes?.[modeIdx];
         const style = gameModeStyles[modeIdx];
-        const teamModeText = mode
-            ? TeamModeToString[mode.teamMode as keyof typeof TeamModeToString]
-            : undefined;
-        const playL10n = teamModeText ? `index-play-${teamModeText}` : "index-play";
         btn.removeClass("btn-custom-mode-no-indent btn-custom-mode-main");
         btn.removeClass((_idx, className) => {
             return this.getModeButtonClasses(className);
         });
         btn.css("background-image", "");
-        btn.data("l10n", playL10n);
-        btn.html(this.localization.translate(playL10n));
+        btn.removeAttr("data-l10n");
+        btn.html(
+            mode
+                ? this.getModeLabel(mode.mapName, mode.teamMode)
+                : this.localization.translate("index-play"),
+        );
 
         if (style?.icon || style?.buttonCss) {
             btn.addClass("btn-custom-mode-no-indent");

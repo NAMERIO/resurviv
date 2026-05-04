@@ -161,6 +161,7 @@ export class ApiServer {
 function expandConfiguredModes(modes: typeof Config.modes) {
     const expandedModes: typeof Config.modes = [];
     const addedModes = new Set<string>();
+    const battleRoyaleMode = Config.battleRoyaleMode;
 
     const addMode = (mode: (typeof Config.modes)[number]) => {
         const key = `${mode.mapName}:${mode.teamMode}`;
@@ -170,9 +171,11 @@ function expandConfiguredModes(modes: typeof Config.modes) {
     };
 
     for (const mode of modes) {
+        if (!battleRoyaleMode && mode.mapName.startsWith("br_")) continue;
+
         addMode(mode);
 
-        if (mode.mapName.startsWith("br_")) continue;
+        if (mode.mapName.startsWith("br_") || !battleRoyaleMode) continue;
 
         const battleRoyaleMapName = `br_${mode.mapName}` as keyof typeof MapDefs;
         addMode({

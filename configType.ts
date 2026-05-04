@@ -127,6 +127,13 @@ export interface ConfigType {
     }>;
 
     /**
+     * Enables Battle Royale modes.
+     *
+     * When disabled, Battle Royale modes are hidden from the client and rejected by the game server.
+     */
+    battleRoyaleMode: boolean;
+
+    /**
      * The client theme, changes the splash screen background and for some the menu music.
      *
      * NOTE: Required at build time, unlike modes it wont update by fetching from the server!

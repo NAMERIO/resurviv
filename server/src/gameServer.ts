@@ -8,6 +8,7 @@ import z from "zod";
 import { version } from "../../package.json";
 import { GameConfig } from "../../shared/gameConfig";
 import * as net from "../../shared/net/net";
+import { isBattleRoyaleMapName } from "./battleroyale/helpers";
 import { Config } from "./config";
 import { GameProcessManager } from "./game/gameProcessManager";
 import { GIT_VERSION } from "./utils/gitRevision";
@@ -66,6 +67,12 @@ class GameServer {
         if (data.region !== this.regionId) {
             return {
                 error: "invalid_region",
+            };
+        }
+
+        if (!Config.battleRoyaleMode && isBattleRoyaleMapName(data.mapName)) {
+            return {
+                error: "mode_disabled",
             };
         }
 
