@@ -296,7 +296,7 @@ export const PassDefs: Record<string, PassDef> = {
                 gp: 100,
             },
             {
-                level: 50,
+                level: 30,
                 item: "death_toon_blast",
                 gp: 100,
             },
