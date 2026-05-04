@@ -394,6 +394,7 @@ export class Account {
                 });
                 this.emit("pass", this.pass, this.quests, true);
                 if (this.pass.newItems) {
+                    this.emit("newItemsAwarded");
                     this.loadProfile();
                 }
             }
@@ -546,6 +547,7 @@ export class Account {
                     this.gpBalance = res.gpBalance;
                     this.emit("gpBalance", this.gpBalance);
                 }
+                this.emit("newItemsAwarded");
                 this.loadProfile();
                 this.loadMarket();
                 callback?.();
@@ -602,6 +604,7 @@ export class Account {
                     this.gpBalance = res.gpBalance;
                     this.emit("gpBalance", this.gpBalance);
                 }
+                this.emit("newItemsAwarded");
                 this.loadProfile();
                 this.loadMarket();
                 callback?.();

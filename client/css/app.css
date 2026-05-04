@@ -16341,7 +16341,7 @@ div.roulette {
   overflow: hidden;
   padding: 0;
   position: fixed;
-  top: 68%;
+  top: 58%;
   transform: translate(-50%, -50%);
   width: min(1060px, calc(100vw - 48px));
   z-index: 1250;

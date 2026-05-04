@@ -128,6 +128,7 @@ export class ShopMenu {
     auctionBidRefreshAt = 0;
     lootBoxRevealTimeoutId: number | null = null;
     openingLootBox = false;
+    pendingLootBoxRewardConfirmation = false;
 
     constructor(
         public account: Account,
@@ -259,11 +260,13 @@ export class ShopMenu {
         $("#reward-modal-close").on("click", (e) => {
             e.preventDefault();
             this.rewardModal.hide();
+            this.confirmPendingLootBoxReward();
             return false;
         });
         $("#reward-modal-equip").on("click", (e) => {
             e.preventDefault();
             this.rewardModal.hide();
+            this.pendingLootBoxRewardConfirmation = false;
             this.cratesModal.hide();
             this.crateContainModal.hide();
             this.modal.hide();
@@ -305,6 +308,7 @@ export class ShopMenu {
                         this.showMarketError("server_error");
                         return;
                     }
+                    this.pendingLootBoxRewardConfirmation = true;
                     this.startLootBoxSpin(lootBox, itemType);
                 });
                 return false;
@@ -486,7 +490,10 @@ export class ShopMenu {
         const button = $(selector);
         button
             .closest(".free-gp-reward")
-            .toggleClass("is-visible", this.account.socialGpRewardClaimsLoaded && !claimed);
+            .toggleClass(
+                "is-visible",
+                this.account.socialGpRewardClaimsLoaded && !claimed,
+            );
         button.text(this.localization.translate("shop-earn-gp-claim") || "Claim");
     }
 
@@ -1814,6 +1821,12 @@ export class ShopMenu {
         rewardImage.append(helpers.getItemRarityStyleMarkup(itemType, rarity));
         $("#reward-item-image").empty().append(rewardImage);
         this.rewardModal.show(true);
+    }
+
+    confirmPendingLootBoxReward() {
+        if (!this.pendingLootBoxRewardConfirmation) return;
+        this.pendingLootBoxRewardConfirmation = false;
+        this.account.emit("newItemsAwarded");
     }
 
     buildRouletteItem(itemType: string) {
