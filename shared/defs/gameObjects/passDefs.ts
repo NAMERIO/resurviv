@@ -237,11 +237,11 @@ export const PassDefs: Record<string, PassDef> = {
                 gp: 200,
             },
             {
-                level: 95,
+                level: 65,
                 item: "fist_ghostPoke",
             },
             {
-                level: 99,
+                level: 80,
                 item: "outfitHotMagma",
             },
         ],
@@ -296,16 +296,16 @@ export const PassDefs: Record<string, PassDef> = {
                 gp: 100,
             },
             {
-                level: 30,
+                level: 50,
                 item: "death_toon_blast",
                 gp: 100,
             },
             {
-                level: 50,
+                level: 65,
                 gp: 150,
             },
             {
-                level: 99,
+                level: 80,
                 item: "outfitBlueMecha",
                 gp: 300,
             },
