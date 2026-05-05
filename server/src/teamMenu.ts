@@ -210,6 +210,11 @@ class Room {
                 this.sendState();
                 break;
             }
+            case "changeOutfit": {
+                player.setOutfit(msg.data.outfit);
+                this.sendState();
+                break;
+            }
             case "keepAlive": {
                 player.send("keepAlive", {});
                 break;

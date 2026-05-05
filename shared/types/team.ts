@@ -145,6 +145,15 @@ export const zTeamChangeNameMsg = z.object({
 
 export type TeamChangeNameMsg = z.infer<typeof zTeamChangeNameMsg>;
 
+export const zTeamChangeOutfitMsg = z.object({
+    type: z.literal("changeOutfit"),
+    data: z.object({
+        outfit: z.string().optional(),
+    }),
+});
+
+export type TeamChangeOutfitMsg = z.infer<typeof zTeamChangeOutfitMsg>;
+
 export const zTeamSetRoomPropsMsg = z.object({
     type: z.literal("setRoomProps"),
     data: zClientRoomData,
@@ -212,6 +221,7 @@ export const zTeamClientMsg = z.discriminatedUnion("type", [
     zTeamKickMsg,
     zTeamSwapTeamMsg,
     zTeamChangeNameMsg,
+    zTeamChangeOutfitMsg,
     zGameCompleteMsg,
     zKeepAliveMsg,
 ]);
@@ -220,6 +230,7 @@ export type ClientToServerTeamMsg =
     | TeamKeepAliveMsg
     | TeamJoinMsg
     | TeamChangeNameMsg
+    | TeamChangeOutfitMsg
     | TeamSetRoomPropsMsg
     | TeamCreateMsg
     | TeamKickMsg
