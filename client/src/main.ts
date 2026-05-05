@@ -893,9 +893,7 @@ export class Application {
         updateButton(this.playMode0Btn, this.getSelectedGameModeIdx());
 
         const canShowArenaButton =
-            this.active &&
-            !device.mobile &&
-            !!this.siteInfo.info.modes?.length;
+            this.active && !device.mobile && !!this.siteInfo.info.modes?.length;
         $("#open-arena-button").css("display", canShowArenaButton ? "block" : "none");
 
         this.syncPrestigeArenaRoomUi();

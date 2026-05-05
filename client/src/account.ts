@@ -5,6 +5,7 @@ import type {
     AuctionListing,
     BuyFeaturedBundleRequest,
     BuyFeaturedBundleResponse,
+    BuyFullPassResponse,
     BuyMarketListingRequest,
     BuyMarketListingResponse,
     BuyPremiumPassResponse,
@@ -394,6 +395,7 @@ export class Account {
                 });
                 this.emit("pass", this.pass, this.quests, true);
                 if (this.pass.newItems) {
+                    this.emit("newItemsAwarded");
                     this.loadProfile();
                 }
             }
@@ -424,6 +426,27 @@ export class Account {
             (err, res: BuyPremiumPassResponse) => {
                 if (err || !res.success) {
                     errorLogManager.storeGeneric("account", "buy_premium_pass_error");
+                    cb?.(res?.error || "server_error");
+                    return;
+                }
+                if (typeof res.gpBalance === "number") {
+                    this.gpBalance = res.gpBalance;
+                    this.emit("gpBalance", this.gpBalance);
+                }
+                this.getPass(false);
+                this.loadProfile();
+                cb?.();
+            },
+        );
+    }
+
+    buyFullPass(cb?: (error?: BuyFullPassResponse["error"]) => void) {
+        this.ajaxRequest(
+            "/api/user/buy_full_pass",
+            {},
+            (err, res: BuyFullPassResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "buy_full_pass_error");
                     cb?.(res?.error || "server_error");
                     return;
                 }
@@ -546,6 +569,7 @@ export class Account {
                     this.gpBalance = res.gpBalance;
                     this.emit("gpBalance", this.gpBalance);
                 }
+                this.emit("newItemsAwarded");
                 this.loadProfile();
                 this.loadMarket();
                 callback?.();
@@ -602,6 +626,7 @@ export class Account {
                     this.gpBalance = res.gpBalance;
                     this.emit("gpBalance", this.gpBalance);
                 }
+                this.emit("newItemsAwarded");
                 this.loadProfile();
                 this.loadMarket();
                 callback?.();

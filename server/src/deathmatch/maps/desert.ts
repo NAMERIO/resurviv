@@ -61,27 +61,56 @@ export const DeatchmatchDesert: MapDef = util.mergeDeep(structuredClone(Desert),
                   [] as Record<string, number>[],
               )
             : {},
-        fixedSpawns: [
+         fixedSpawns: [
             {
                 cache_01: 1,
-                cache_02: 1,
-                bunker_structure_01: { odds: 0.05 },
-                bunker_structure_03: 1,
+                cache_02: 1, // mosin tree
+                cache_07: 1,
+                bunker_structure_02: 1,
+                bunker_structure_05: 1,
                 chest_01: 1,
-                chest_03d: { odds: 1 },
-                mil_crate_02: { odds: 0.25 },
-                crate_18: 12,
+                chest_03: { odds: 0.2 },
+                stone_04: 2,
+                stone_05: 2,
+                stone_03: 5,
                 tree_02: 3,
-                desert_town_01: 1,
-                desert_town_02: 1,
-                river_town_02: 1,
-                greenhouse_02: config["mapSize"] === "small" ? { odds: 0.25 } : 1,
-                stone_05: 6,
+                teahouse_complex_01su: 1,
+                shack_03b: 3,
+                shack_01: 2,
+                police_01: 1,
+                bank_01: 1,
+                greenhouse_01: 1,
+                house_red_02: 1,
             },
         ],
-        randomSpawns: [
+       randomSpawns: [
             {
-                spawns: ["warehouse_01", "house_red_01", "barn_02d"],
+                spawns: ["club_complex_01", "bank_01", "desert_town_02"],
+                choose: 2,
+            },
+            {
+                spawns: ["mansion_structure_01", ],
+                choose: 1,
+            },
+            {
+                spawns: [
+                    // vector bunker
+                    "bunker_structure_03",
+                    // ak bunker
+                    "bunker_structure_01",
+                ],
+                choose: 1,
+            },
+            {
+                spawns: ["warehouse_01", "house_red_01"],
+                choose: 1,
+            },
+            {
+                spawns: ["mil_crate_02", "mil_crate_03"],
+                choose: 1,
+            },
+            {
+                spawns: ["barn_02", "barn_01"],
                 choose: 1,
             },
         ],
@@ -94,7 +123,7 @@ export const DeatchmatchDesert: MapDef = util.mergeDeep(structuredClone(Desert),
                 stone_03: "stone_03b",
             },
         ],
-        importantSpawns: ["desert_town_01", "desert_town_02", "river_town_02"],
+    
     },
 });
 

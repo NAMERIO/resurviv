@@ -156,6 +156,7 @@ export class LoadoutMenu {
     localConfirmed: Item[] = [];
     confirmingItems = false;
     localAckItems: Item[] = [];
+    shouldConfirmNewItemsWhenAvailable = false;
 
     categories = [
         {
@@ -331,6 +332,10 @@ export class LoadoutMenu {
         account.addEventListener("request", this.onRequest.bind(this));
         account.addEventListener("loadout", this.onLoadout.bind(this));
         account.addEventListener("items", this.onItems.bind(this));
+        account.addEventListener(
+            "newItemsAwarded",
+            this.queueNewItemConfirmations.bind(this),
+        );
         account.addEventListener("pass", this.onPass.bind(this));
         this.config.addModifiedListener((key?: string) => {
             if (!key || key === "perkSelectionUnlocked") {
@@ -675,6 +680,8 @@ export class LoadoutMenu {
             this.tryBeginConfirmingItems();
             this.refreshCategoryVisibility();
             this.selectCat(this.getVisibleCategoryIdx());
+        } else if (this.shouldConfirmNewItemsWhenAvailable) {
+            this.tryBeginConfirmingItems(true);
         }
     }
 
@@ -830,6 +837,7 @@ export class LoadoutMenu {
         this.localPendingConfirm = [];
         this.localConfirmed = [];
         this.confirmingItems = false;
+        this.shouldConfirmNewItemsWhenAvailable = false;
         this.confirmItemModal.hide();
     }
 
@@ -867,8 +875,18 @@ export class LoadoutMenu {
         }
     }
 
-    tryBeginConfirmingItems() {
-        if (this.active && !this.confirmingItems) {
+    queueNewItemConfirmations() {
+        this.shouldConfirmNewItemsWhenAvailable = true;
+        this.tryBeginConfirmingItems(true);
+    }
+
+    tryBeginConfirmingItems(force = false) {
+        if (
+            (this.active || force) &&
+            !this.confirmingItems &&
+            this.localPendingConfirm.length > 0
+        ) {
+            this.shouldConfirmNewItemsWhenAvailable = false;
             this.confirmingItems = true;
             this.confirmNextItem();
         }
@@ -908,6 +926,7 @@ export class LoadoutMenu {
             }, 200);
         } else {
             this.confirmingItems = false;
+            this.shouldConfirmNewItemsWhenAvailable = false;
             $("#modal-screen-block").fadeOut(300);
         }
     }

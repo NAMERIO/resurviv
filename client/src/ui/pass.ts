@@ -17,6 +17,7 @@ import { MenuModal } from "./menuModal";
 
 const premiumPassUnlockType = "premiumPass";
 const defaultPremiumPassPrice = 1500;
+const defaultUnlockAllPassPrice = 3000;
 
 function getNextPassUnlockItemId(passType: string, currentLevel: number) {
     const passDef = PassDefs[passType];
@@ -199,6 +200,7 @@ export class Pass {
     updatePass = false;
     updatePassTicker = 0;
     premiumPassPurchasePending = false;
+    fullPassPurchasePending = false;
     premiumPassModal = new MenuModal($("#modal-premium-pass-confirm"));
 
     constructor(
@@ -238,11 +240,11 @@ export class Pass {
         $("#pass-buy-btn").on("click", () => {
             this.showPremiumPassModal();
         });
-        $("#premium-pass-confirm-no").on("click", () => {
-            this.premiumPassModal.hide();
-        });
         $("#premium-pass-confirm-yes").on("click", () => {
             this.buyPremiumPass();
+        });
+        $("#premium-pass-unlock-all-yes").on("click", () => {
+            this.buyFullPass();
         });
     }
 
@@ -366,9 +368,16 @@ export class Pass {
         }
         let level = this.pass.currentLevel;
         let xp = this.pass.currentXp;
+        const shouldFastForwardPassProgress =
+            this.loaded && pass.level - this.pass.currentLevel > 5;
         // Animate level-ups
 
-        if (this.loaded) {
+        if (shouldFastForwardPassProgress) {
+            this.pass.currentLevel = pass.level;
+            this.pass.currentXp = pass.xp;
+            this.pass.levelXp = passUtil.getPassLevelXp(pass.type, pass.level);
+            this.pass.ticker = 0;
+        } else if (this.loaded) {
             while (level < pass.level) {
                 const levelXp = passUtil.getPassLevelXp(pass.type, level);
                 this.pass.animSteps.push({
@@ -382,16 +391,24 @@ export class Pass {
             }
             const delay = questAnimCount > 0 ? 2 : 0;
             this.pass.ticker = -delay;
-        }
 
-        // Animate leftover xp
-        const levelXp = passUtil.getPassLevelXp(pass.type, level);
-        this.pass.animSteps.push({
-            startXp: xp,
-            targetXp: pass.xp,
-            levelXp,
-            targetLevel: level,
-        });
+            // Animate leftover xp
+            const levelXp = passUtil.getPassLevelXp(pass.type, level);
+            this.pass.animSteps.push({
+                startXp: xp,
+                targetXp: pass.xp,
+                levelXp,
+                targetLevel: level,
+            });
+        } else {
+            const levelXp = passUtil.getPassLevelXp(pass.type, level);
+            this.pass.animSteps.push({
+                startXp: xp,
+                targetXp: pass.xp,
+                levelXp,
+                targetLevel: level,
+            });
+        }
         $("#pass-block").css("z-index", "1");
         $("#pass-locked").css("display", "none");
         $("#pass-loading").css("display", "none");
@@ -405,7 +422,10 @@ export class Pass {
         $("#pass-progress-level").html(this.pass.currentLevel);
         $("#pass-progress-xp-current").html(this.pass.currentXp);
         $("#pass-progress-xp-target").html(this.pass.levelXp);
-        const pct = (this.pass.currentXp / this.pass.levelXp) * 100;
+        const pct =
+            this.pass.currentLevel >= passUtil.getPassMaxLevel()
+                ? 100
+                : (this.pass.currentXp / this.pass.levelXp) * 100;
         $("#pass-progress-bar-fill").css({
             width: `${pct}%`,
         });
@@ -434,7 +454,7 @@ export class Pass {
             ? ((this.pass.data as { xp?: number }).xp ?? this.pass.currentXp)
             : 0;
         const ownsPremiumPass = hasPremiumPassUnlock(this.pass.data);
-        this.updatePremiumPassButton(ownsPremiumPass);
+        this.updatePremiumPassButton(ownsPremiumPass, passLevel);
         const highestRewardLevel = passDef.items.reduce(
             (highest, reward) => Math.max(highest, reward.level),
             1,
@@ -531,17 +551,17 @@ export class Pass {
         scrollPassTrackToLevel(passLevel, passDef.items);
     }
 
-    updatePremiumPassButton(ownsPremiumPass: boolean) {
+    updatePremiumPassButton(ownsPremiumPass: boolean, passLevel: number) {
         const buyButton = $("#pass-buy-btn");
         if (!buyButton.length) return;
 
-        if (ownsPremiumPass) {
+        if (ownsPremiumPass && passLevel >= passUtil.getPassMaxLevel()) {
             buyButton.addClass("premium");
             buyButton.empty().append(
                 $("<div/>", { class: "pass-premium-icon" }),
                 $("<div/>", {
                     class: "pass-btn-text",
-                    text: "GOLD PASS UNLOCKED",
+                    text: "ALL ITEMS UNLOCKED",
                 }),
                 $("<div/>", { class: "pass-premium-icon" }),
             );
@@ -553,7 +573,7 @@ export class Pass {
             $("<div/>", { class: "pass-premium-icon" }),
             $("<div/>", {
                 class: "pass-btn-text",
-                text: "UNLOCK ALL GOLD ITEMS",
+                text: "UNLOCK PASS",
             }),
             $("<div/>", { class: "pass-premium-icon" }),
         );
@@ -603,22 +623,39 @@ export class Pass {
             $(document).trigger("pass-login-required");
             return;
         }
-        if (hasPremiumPassUnlock(this.pass.data)) {
-            $("#premium-pass-confirm-error")
-                .text("You already unlocked the premium pass for this pass.")
-                .show();
-        } else {
-            $("#premium-pass-confirm-error").text("").hide();
-        }
+        $("#premium-pass-confirm-error").text("").hide();
         const passDef = PassDefs[this.pass.data.type as keyof typeof PassDefs];
-        const price = passDef.premiumPrice ?? defaultPremiumPassPrice;
-        $("#premium-pass-price").text(String(price));
-        $("#premium-pass-price-footer").text(String(price));
+        const premiumPrice = passDef.premiumPrice ?? defaultPremiumPassPrice;
+        const unlockAllPrice = passDef.unlockAllPrice ?? defaultUnlockAllPassPrice;
+        const passLevel =
+            (this.pass.data as { level?: number }).level ?? this.pass.currentLevel;
+        const ownsPremiumPass = hasPremiumPassUnlock(this.pass.data);
+        const ownsAllItems = ownsPremiumPass && passLevel >= passUtil.getPassMaxLevel();
+        $("#premium-pass-confirm-yes")
+            .toggleClass("btn-disabled", ownsPremiumPass)
+            .find("> span")
+            .text(ownsPremiumPass ? "Premium Pass Unlocked" : "Buy Premium Pass");
+        $("#premium-pass-unlock-all-yes")
+            .toggleClass("btn-disabled", ownsAllItems)
+            .find("> span")
+            .text(ownsAllItems ? "All Items Unlocked" : "Unlock All Items");
+        $("#premium-pass-price").text(String(premiumPrice));
+        $("#premium-pass-price-footer").text(String(premiumPrice));
+        $("#unlock-all-pass-price-footer").text(String(unlockAllPrice));
         this.premiumPassModal.show(true);
     }
 
+    isModalButtonDisabled(selector: string) {
+        return $(selector).hasClass("btn-disabled");
+    }
+
     buyPremiumPass() {
-        if (this.premiumPassPurchasePending) return;
+        if (
+            this.premiumPassPurchasePending ||
+            this.isModalButtonDisabled("#premium-pass-confirm-yes")
+        ) {
+            return;
+        }
         this.premiumPassPurchasePending = true;
         $("#premium-pass-confirm-error").text("").hide();
         $("#premium-pass-confirm-yes").addClass("btn-disabled");
@@ -632,6 +669,33 @@ export class Pass {
                         : error === "already_purchased"
                           ? "You already unlocked the premium pass for this pass."
                           : "Premium pass purchase failed.";
+                $("#premium-pass-confirm-error").text(message).show();
+                return;
+            }
+            this.premiumPassModal.hide();
+        });
+    }
+
+    buyFullPass() {
+        if (
+            this.fullPassPurchasePending ||
+            this.isModalButtonDisabled("#premium-pass-unlock-all-yes")
+        ) {
+            return;
+        }
+        this.fullPassPurchasePending = true;
+        $("#premium-pass-confirm-error").text("").hide();
+        $("#premium-pass-unlock-all-yes").addClass("btn-disabled");
+        this.account.buyFullPass((error) => {
+            this.fullPassPurchasePending = false;
+            $("#premium-pass-unlock-all-yes").removeClass("btn-disabled");
+            if (error) {
+                const message =
+                    error === "not_enough_gp"
+                        ? "Not enough GP."
+                        : error === "already_purchased"
+                          ? "You already unlocked every reward for this pass."
+                          : "Unlock all purchase failed.";
                 $("#premium-pass-confirm-error").text(message).show();
                 return;
             }
@@ -977,7 +1041,10 @@ export class Pass {
                 activeAnimStep.targetXp,
             );
             this.pass.levelXp = activeAnimStep.levelXp;
-            const passProgressPct = (this.pass.currentXp / activeAnimStep.levelXp) * 100;
+            const passProgressPct =
+                this.pass.currentLevel >= passUtil.getPassMaxLevel()
+                    ? 100
+                    : (this.pass.currentXp / activeAnimStep.levelXp) * 100;
             $("#pass-progress-xp-current").html(Math.round(this.pass.currentXp));
             $("#pass-progress-xp-target").html(this.pass.levelXp);
             $("#pass-progress-bar-fill").css({

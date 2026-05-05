@@ -88,22 +88,24 @@
     <% for (var i = 0; i < env.teamModes.length; i++) { %>
 
     <!-- Mode Card -->
-    <!-- pad the last card -->
-    <% if (i == env.teamModes.length - 1) { %>
+    <!-- Keep the right gutter only at the end of each 3-card desktop row. -->
+    <% if ((i + 1) % 3 == 0) { %>
       <div class='col-lg-4 col-12'>
     <% } else { %>
       <div class='col-lg-4 col-12 pr-lg-0'>
     <% } %>
       <div class="card card-mode card-mode-bg-<%= i %>">
         <div class="card-body p-1">
-          <div class='row card-mode-row-top'>
-            <div class='col-2 p-0'>
+          <div class='card-mode-row-top'>
+            <div class='mode-icon-cell'>
               <div class='mode-image mode-image-<%= env.teamModes[i].teamName %>'></div>
             </div>
-            <div class='col-5 p-0'>
-              <div class="mode-name mode-name-<%= env.teamModes[i].teamName %>" data-caps='true'><%= env.teamModes[i].name.toUpperCase() %></div>
+            <div class='mode-title-cell'>
+              <div class="mode-name mode-name-<%= env.teamModes[i].teamName %>">
+                <span data-caps='true'><%= env.teamModes[i].shortName.toUpperCase() %></span>
+              </div>
             </div>
-            <div class='col-5 mt-2'>
+            <div class='mode-games-cell'>
               <% if (env.teamModes[i].games > 0) { %>
                 <div class="mode-games"><span><%= env.teamModes[i].games %></span> <span data-l10n='stats-games' data-caps='true''>Games</span></div>
               <% } %>

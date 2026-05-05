@@ -1542,7 +1542,11 @@ a:active {
 #team-mobile-link {
   display: none;
   height: 250px;
+  left: 50%;
   padding: 12px;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
   width: 625px;
 }
 
@@ -1617,7 +1621,7 @@ a:active {
 #btn-team-mobile-link-leave {
   background: #7a7a7a;
   border-bottom: 2px solid #3e3e3e;
-  bottom: 40px;
+  bottom: 4px;
   box-shadow: inset 0 -2px #3e3e3e;
   color: #fff;
   cursor: pointer;
@@ -15038,6 +15042,14 @@ div.roulette {
   position: relative;
 }
 
+#modal-premium-pass-confirm .close-corner {
+  margin: 0;
+  position: absolute;
+  right: 15px;
+  top: 14px;
+  z-index: 1;
+}
+
 #modal-premium-pass-confirm .modal-header-content {
   display: flex;
   justify-content: center;
@@ -15129,9 +15141,10 @@ div.roulette {
   background-color: #91650d;
   box-sizing: border-box;
   display: flex;
+  gap: 18px;
   height: 79px;
-  justify-content: space-around;
-  padding: 2px 110px;
+  justify-content: center;
+  padding: 2px 55px;
 }
 
 #modal-premium-pass-confirm .modal-footer .btn-green {
@@ -15168,7 +15181,7 @@ div.roulette {
   background-origin: padding-box, border-box;
   border: 2px solid transparent;
   border-radius: 2px;
-  width: 339px;
+  width: 330px;
 }
 
 #modal-premium-pass-confirm .modal-pass-price {
@@ -16341,7 +16354,7 @@ div.roulette {
   overflow: hidden;
   padding: 0;
   position: fixed;
-  top: 68%;
+  top: 58%;
   transform: translate(-50%, -50%);
   width: min(1060px, calc(100vw - 48px));
   z-index: 1250;

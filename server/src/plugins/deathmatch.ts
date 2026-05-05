@@ -4,7 +4,6 @@ import { UnlockDefs } from "../../../shared/defs/gameObjects/unlockDefs";
 import { GameConfig, WeaponSlot } from "../../../shared/gameConfig";
 import { ObjectType } from "../../../shared/net/objectSerializeFns";
 import { isBattleRoyaleMapName } from "../battleroyale/helpers";
-import { Config } from "../config";
 import type { Player } from "../game/objects/player";
 import { GamePlugin, type PlayerDamageEvent } from "../game/pluginManager";
 
@@ -137,7 +136,7 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
 
         if (Math.random() < 0.2) {
             const strobeChance =
-                Math.random() < (Config.modes[1].mapName === "desert" ? 0.6 : 0.2);
+                Math.random() < (data.player.game.mapName === "desert" ? 0.6 : 0.2);
             if (strobeChance) {
                 killer.invManager.set(
                     "strobe",

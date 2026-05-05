@@ -40,6 +40,8 @@ export interface TeamModes {
     gameMode: GameModeStatus;
     games: number;
     name: string;
+    gameName: string;
+    shortName: string;
     teamName: string;
     botStats: { name: string; val: string }[];
     midStats: { name: string; val: string }[];
@@ -152,11 +154,13 @@ function getPlayerCardData(
     for (let i = 0; i < teamModes.length; i++) {
         const teamMode = teamModes[i].teamMode!;
         const teamName = TeamModeToString[teamMode];
+        const gameName =
+            teamModes[i].gameMode === "battleroyale" ? "Battle Royale" : "Deathmatch";
+        const gameShortName = teamModes[i].gameMode === "battleroyale" ? "BR" : "DM";
         teamModes[i].teamName = teamName;
-        teamModes[i].name =
-            teamModes[i].gameMode === "battleroyale"
-                ? `Battle Royale ${teamName}`
-                : `Deathmatch ${teamName}`;
+        teamModes[i].gameName = gameName;
+        teamModes[i].shortName = `${gameShortName} ${teamName}`;
+        teamModes[i].name = `${gameName} ${teamName}`;
     }
 
     return {

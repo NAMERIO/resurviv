@@ -976,7 +976,7 @@
                   <div class="percent-box"></div>
                   <div class="btn-green btn-darken menu-option" id="pass-buy-btn">
                     <div class="pass-premium-icon"></div>
-                    <div class="pass-btn-text">UNLOCK ALL GOLD ITEMS</div>
+                    <div class="pass-btn-text">UNLOCK PASS</div>
                     <div class="pass-premium-icon"></div>
                   </div>
                 </div>
@@ -1763,37 +1763,41 @@
       <div id="modal-premium-pass-confirm" class="modal modal-account">
         <div class="modal-content modal-close">
           <div class="modal-header">
-            <span class="close close-corner-black"></span>
+            <span class="close close-corner"></span>
             <div class="modal-header-content">
-              <h2>Unlock Gold Items</h2>
+              <h2>Buy Premium Pass</h2>
             </div>
           </div>
           <div class="modal-body">
             <div class="modal-body-item">
               <div class="modal-body-item-img premium"></div>
-              <div class="modal-body-item-text">Unlock Gold Pass rewards for this season.</div>
+              <div class="modal-body-item-text">Buy premium access to earn gold rewards as you level.</div>
             </div>
             <div class="modal-body-item">
               <div class="modal-body-item-img rewards"></div>
-              <div class="modal-body-item-text">Rewards from levels you already reached will be added right away.</div>
+              <div class="modal-body-item-text">Or unlock the whole pass and receive every reward right away.</div>
             </div>
             <div class="modal-body-item">
               <div class="modal-body-item-img instant">
                 <div class="modal-body-item-img-gp"></div>
               </div>
-              <div class="modal-body-item-text">Spend <span id="premium-pass-price"></span> GP to unlock premium pass rewards.</div>
+              <div class="modal-body-item-text">Choose the option you want to buy.</div>
             </div>
             <p id="premium-pass-confirm-error"></p>
           </div>
           <div class="modal-footer modal-footer-round">
-            <div id="premium-pass-confirm-no" class="btn-green btn-darken menu-option">
-              <span>No, cancel</span>
-            </div>
             <div id="premium-pass-confirm-yes" class="btn-green btn-darken menu-option premium">
-              <span>Yes, buy</span>
+              <span>Buy Premium Pass</span>
               <div class="modal-pass-price">
                 <div class="pass-gp-icon"></div>
                 <span id="premium-pass-price-footer"></span>
+              </div>
+            </div>
+            <div id="premium-pass-unlock-all-yes" class="btn-green btn-darken menu-option premium">
+              <span>Unlock All Items</span>
+              <div class="modal-pass-price">
+                <div class="pass-gp-icon"></div>
+                <span id="unlock-all-pass-price-footer"></span>
               </div>
             </div>
           </div>

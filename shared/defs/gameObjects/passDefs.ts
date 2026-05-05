@@ -4,6 +4,7 @@ export interface PassDef {
     items: PassRewardDef[];
     premiumItems?: PassRewardDef[];
     premiumPrice?: number;
+    unlockAllPrice?: number;
 }
 
 export type PassRewardDef =
@@ -142,7 +143,8 @@ export const PassDefs: Record<string, PassDef> = {
     },
     pass_survivr2: {
         type: "pass",
-        premiumPrice: 1,
+        premiumPrice: 1500,
+        unlockAllPrice: 3000,
         xp: [
             50, 50, 50, 50, 50, 50, 50, 50, 75, 75, 75, 75, 75, 75, 100, 100, 100, 125,
             125, 150, 75, 75, 75,
@@ -237,11 +239,11 @@ export const PassDefs: Record<string, PassDef> = {
                 gp: 200,
             },
             {
-                level: 95,
+                level: 65,
                 item: "fist_ghostPoke",
             },
             {
-                level: 99,
+                level: 80,
                 item: "outfitHotMagma",
             },
         ],
@@ -268,7 +270,7 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 9,
-                item: "outfitILavaYou",
+                item: "outfitMwow",
             },
             {
                 level: 10,
@@ -301,11 +303,11 @@ export const PassDefs: Record<string, PassDef> = {
                 gp: 100,
             },
             {
-                level: 50,
+                level: 65,
                 gp: 150,
             },
             {
-                level: 99,
+                level: 80,
                 item: "outfitBlueMecha",
                 gp: 300,
             },
