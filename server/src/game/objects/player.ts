@@ -581,7 +581,7 @@ export class PlayerBarn {
         // second condition should never happen
         // but keeping it just in case
         // since more than 4 players in a group crashes the client
-        if (!group || group.players.length >= this.game.teamMode) {
+        if (!group || group.locked || group.players.length >= this.game.teamMode) {
             group = this.addGroup(groupData.autoFill, groupData.groupHashToJoin);
         }
 
@@ -1620,6 +1620,8 @@ export class Player extends BaseGameObject {
 
     kills = 0;
     timeAlive = 0;
+    pickedUpLoot = false;
+    lostHealth = false;
 
     msgsToSend: Array<{ type: number; msg: net.Msg }> = [];
 
@@ -3286,6 +3288,9 @@ export class Player extends BaseGameObject {
             this.lastDamagedBy = playerSource;
         }
 
+        if (finalDamage > 0) {
+            this.lostHealth = true;
+        }
         this.health -= finalDamage;
 
         if (this.hasPerk("low_hp_surge")) {
@@ -4792,6 +4797,10 @@ export class Player extends BaseGameObject {
                 undefined,
                 dir,
             );
+        }
+
+        if (pickupMsg.type === net.PickupMsgType.Success) {
+            this.pickedUpLoot = true;
         }
 
         obj.destroy();

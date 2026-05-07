@@ -601,7 +601,17 @@ export class Game {
         player.spectating = undefined;
         player.dirNew = v2.create(1, 0);
         player.setPartDirty();
-        if (player.canDespawn() || true) {
+        const battleRoyaleMode = isBattleRoyaleMapName(this.mapName);
+        const battleRoyaleBodyEligible =
+            player.timeAlive >= 5 || player.pickedUpLoot || player.lostHealth;
+        const removeBattleRoyalePlayer =
+            battleRoyaleMode && (!battleRoyaleBodyEligible || player.dead);
+        const keepBattleRoyaleBody =
+            battleRoyaleMode && battleRoyaleBodyEligible && !player.dead;
+
+        if (removeBattleRoyalePlayer) {
+            player.game.playerBarn.removePlayer(player);
+        } else if (!keepBattleRoyaleBody) {
             if (player.health < GameConfig.player.reviveHealth && player.lastDamagedBy) {
                 player.lastDamagedBy.health += GameConfig.player.reviveHealth;
             }
@@ -611,6 +621,9 @@ export class Game {
                 source: player.downedBy,
             });
             player.game.playerBarn.removePlayer(player);
+        } else if (player.group) {
+            player.group.locked = true;
+            player.group.autoFill = false;
         }
 
         if (this.arenaPrivate && this.playerBarn.players.length === 0) {

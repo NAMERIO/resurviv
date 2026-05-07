@@ -140,6 +140,7 @@ export class Group extends BasePlayerGroup {
 
     maxPlayers: number;
     reservedSlots = 0;
+    locked = false;
 
     /**
      * We update the group spawn position (where new teammates will spawn) to the leader position
@@ -156,7 +157,9 @@ export class Group extends BasePlayerGroup {
     }
 
     canJoin(players: number) {
-        return this.maxPlayers - players >= 0 && !this.allDeadOrDisconnected;
+        return (
+            !this.locked && this.maxPlayers - players >= 0 && !this.allDeadOrDisconnected
+        );
     }
 }
 
