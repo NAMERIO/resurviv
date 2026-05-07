@@ -3,7 +3,11 @@ import {
     type ChatInputCommandInteraction,
     type SlashCommandOptionsOnlyBuilder,
 } from "discord.js";
-import { zSetClientThemeBody, zSetGameModeBody } from "../../../server/src/utils/types";
+import {
+    zSetBattleRoyaleModeBody,
+    zSetClientThemeBody,
+    zSetGameModeBody,
+} from "../../../server/src/utils/types";
 import {
     zBanAccountParams,
     zBanIpParams,
@@ -310,6 +314,20 @@ const commands = {
                 name: "enabled",
                 description: "If the mode is enabled",
                 required: false,
+                type: ApplicationCommandOptionType.Boolean,
+            },
+        ],
+    }),
+    [Command.SetBattleRoyaleMode]: createCommand({
+        name: Command.SetBattleRoyaleMode,
+        description: "Enable or disable Battle Royale mode",
+        optionValidator: zSetBattleRoyaleModeBody,
+        isPrivateRoute: true,
+        options: [
+            {
+                name: "enabled",
+                description: "If Battle Royale mode is enabled",
+                required: true,
                 type: ApplicationCommandOptionType.Boolean,
             },
         ],

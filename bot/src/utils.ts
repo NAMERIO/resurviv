@@ -34,6 +34,7 @@ export const enum Command {
     RemoveGp = "remove_gp",
     GetGp = "get_gp",
     SetGameMode = "set_game_mode",
+    SetBattleRoyaleMode = "set_battle_royale_mode",
     SetClientTheme = "set_client_theme",
 }
 

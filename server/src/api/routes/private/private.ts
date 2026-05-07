@@ -19,10 +19,11 @@ import {
     type GameModeStatus as GameModeStatusType,
 } from "../../../../../shared/types/stats";
 import { passUtil } from "../../../../../shared/utils/passUtil";
-import { serverConfigPath } from "../../../config";
+import { Config, serverConfigPath } from "../../../config";
 import { isBehindProxy } from "../../../utils/serverHelpers";
 import {
     type SaveGameBody,
+    zSetBattleRoyaleModeBody,
     zSetClientThemeBody,
     zSetGameModeBody,
     zUpdateRegionBody,
@@ -172,7 +173,7 @@ export const PrivateRouter = new Hono<Context>()
             enabled,
         } = c.req.valid("json");
 
-        if (!MapDefs[mapName as keyof typeof MapDefs]) {
+        if (mapName && !MapDefs[mapName as keyof typeof MapDefs]) {
             return c.json({ error: "Invalid map name" }, 400);
         }
 
@@ -185,6 +186,7 @@ export const PrivateRouter = new Hono<Context>()
             teamMode: teamMode ?? server.modes[index].teamMode,
             enabled: enabled ?? server.modes[index].enabled,
         };
+        Config.modes = server.modes;
 
         saveConfig(serverConfigPath, {
             modes: server.modes,
@@ -192,6 +194,21 @@ export const PrivateRouter = new Hono<Context>()
 
         return c.json(
             { message: `Set mode ${index} to ${JSON.stringify(server.modes[index])}` },
+            200,
+        );
+    })
+    .post("/set_battle_royale_mode", validateParams(zSetBattleRoyaleModeBody), (c) => {
+        const { enabled } = c.req.valid("json");
+
+        server.setBattleRoyaleMode(enabled);
+
+        saveConfig(serverConfigPath, {
+            battleRoyaleMode: enabled,
+            modes: server.modes,
+        });
+
+        return c.json(
+            { message: `Battle Royale mode is now ${enabled ? "enabled" : "disabled"}` },
             200,
         );
     })

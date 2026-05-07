@@ -33,6 +33,10 @@ export const zSetClientThemeBody = z.object({
     theme: z.string(),
 });
 
+export const zSetBattleRoyaleModeBody = z.object({
+    enabled: z.boolean(),
+});
+
 export interface SaveGameBody {
     matchData: (MatchDataTable & { ip: string; findGameIp: string })[];
 }

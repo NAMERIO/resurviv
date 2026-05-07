@@ -71,11 +71,12 @@ export class ApiServer {
 
     regions: Record<string, Region> = {};
 
-    modes = expandConfiguredModes(Config.modes);
+    modes = expandConfiguredModes(Config.modes, Config.battleRoyaleMode);
     privateLobbyMaps = new Set<(typeof Config.modes)[number]["mapName"]>();
     clientTheme = Config.clientTheme;
 
     captchaEnabled = Config.captchaEnabled;
+    battleRoyaleMode = Config.battleRoyaleMode;
 
     constructor() {
         const forcedPrivateMaps: Array<(typeof Config.modes)[number]["mapName"]> = [
@@ -93,6 +94,14 @@ export class ApiServer {
             this.privateLobbyMaps.add(mapName);
         }
 
+        this.ensurePrivateLobbyModes();
+
+        for (const region in Config.regions) {
+            this.regions[region] = new Region(region);
+        }
+    }
+
+    private ensurePrivateLobbyModes() {
         const privateTeamModes = [TeamMode.Solo, TeamMode.Duo, TeamMode.Squad] as const;
         const hasMode = (
             mapName: (typeof Config.modes)[number]["mapName"],
@@ -108,10 +117,6 @@ export class ApiServer {
                     enabled: false,
                 });
             }
-        }
-
-        for (const region in Config.regions) {
-            this.regions[region] = new Region(region);
         }
     }
 
@@ -150,6 +155,13 @@ export class ApiServer {
         region.lastUpdateTime = Date.now();
     }
 
+    setBattleRoyaleMode(enabled: boolean) {
+        this.battleRoyaleMode = enabled;
+        Config.battleRoyaleMode = enabled;
+        this.modes = expandConfiguredModes(this.modes, enabled);
+        this.ensurePrivateLobbyModes();
+    }
+
     async findGame(body: FindGamePrivateBody): Promise<FindGamePrivateRes> {
         if (body.region in this.regions) {
             return await this.regions[body.region].findGame(body);
@@ -158,10 +170,9 @@ export class ApiServer {
     }
 }
 
-function expandConfiguredModes(modes: typeof Config.modes) {
+function expandConfiguredModes(modes: typeof Config.modes, battleRoyaleMode: boolean) {
     const expandedModes: typeof Config.modes = [];
     const addedModes = new Set<string>();
-    const battleRoyaleMode = Config.battleRoyaleMode;
 
     const addMode = (mode: (typeof Config.modes)[number]) => {
         const key = `${mode.mapName}:${mode.teamMode}`;
