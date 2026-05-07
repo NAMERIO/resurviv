@@ -199,6 +199,7 @@ export class Pass {
     lockDisplayed = false;
     updatePass = false;
     updatePassTicker = 0;
+    passItemsSignature = "";
     premiumPassPurchasePending = false;
     fullPassPurchasePending = false;
     premiumPassModal = new MenuModal($("#modal-premium-pass-confirm"));
@@ -226,7 +227,17 @@ export class Pass {
                     : nativeEvent.deltaY;
             if (scrollDelta === 0) return;
 
-            container.scrollLeft += scrollDelta;
+            const maxScrollLeft = container.scrollWidth - container.clientWidth;
+            if (maxScrollLeft <= 0) return;
+
+            const scrollLeft = math.clamp(
+                container.scrollLeft + scrollDelta,
+                0,
+                maxScrollLeft,
+            );
+            if (scrollLeft === container.scrollLeft) return;
+
+            container.scrollLeft = scrollLeft;
             nativeEvent.preventDefault();
             nativeEvent.stopPropagation();
         });
@@ -429,14 +440,33 @@ export class Pass {
         $("#pass-progress-bar-fill").css({
             width: `${pct}%`,
         });
-        this.populatePassItems();
+        this.populatePassItems({
+            autoScroll: !this.loaded,
+            preserveScroll: this.loaded,
+        });
         this.updatePassTrackProgress(this.pass.currentLevel, this.pass.currentXp);
         this.loaded = true;
     }
 
-    populatePassItems() {
+    getPassItemsSignature(passType: string) {
+        const passDef = PassDefs[passType as keyof typeof PassDefs];
+        if (!passDef) return "";
+        const serializeReward = (reward: PassRewardDef) =>
+            "item" in reward
+                ? `${reward.level}:${reward.item}:${reward.gp ?? ""}`
+                : `${reward.level}:gp:${reward.gp}`;
+        return JSON.stringify({
+            passType,
+            items: passDef.items.map(serializeReward),
+            premiumItems: passDef.premiumItems?.map(serializeReward) ?? [],
+        });
+    }
+
+    populatePassItems(options: { autoScroll?: boolean; preserveScroll?: boolean } = {}) {
         const passDef = PassDefs[this.pass.data.type as keyof typeof PassDefs];
         const passItemsList = $("#pass-items-list");
+        const passItemsWrapper = $("#start-menu #pass-items-wrapper");
+        const previousScrollLeft = passItemsWrapper.scrollLeft() || 0;
         passItemsList.empty();
         const basicPassItems = $(".pass-basic-items");
         const premiumPassItems = $(".pass-premium-items");
@@ -446,6 +476,7 @@ export class Pass {
         passProgressLevels.empty();
 
         if (!passDef.items) return;
+        this.passItemsSignature = this.getPassItemsSignature(this.pass.data.type);
 
         const passLevel = this.account.loggedIn
             ? ((this.pass.data as { level?: number }).level ?? this.pass.currentLevel)
@@ -548,7 +579,11 @@ export class Pass {
                 }),
             );
         }
-        scrollPassTrackToLevel(passLevel, passDef.items);
+        if (options.autoScroll ?? true) {
+            scrollPassTrackToLevel(passLevel, passDef.items);
+        } else if (options.preserveScroll) {
+            passItemsWrapper.scrollLeft(previousScrollLeft);
+        }
     }
 
     updatePremiumPassButton(ownsPremiumPass: boolean, passLevel: number) {
@@ -937,8 +972,12 @@ export class Pass {
 
     update(dt: number) {
         $("#pass-items-wrapper").css("display", "block");
-        if (!this.account.loggedIn) {
-            this.populatePassItems();
+        const currentPassItemsSignature = this.getPassItemsSignature(this.pass.data.type);
+        if (currentPassItemsSignature && currentPassItemsSignature !== this.passItemsSignature) {
+            this.populatePassItems({
+                autoScroll: false,
+                preserveScroll: true,
+            });
         }
         this.updatePassTicker -= dt;
 

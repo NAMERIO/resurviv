@@ -95,6 +95,7 @@ export class TeamMenu {
     displayedInvalidProtocolModal = false;
     arena = false;
     onStateUpdated?: () => void;
+    syncedOutfit?: string;
 
     hideUrl!: boolean;
 
@@ -205,6 +206,12 @@ export class TeamMenu {
                 this.sendMessage("keepAlive", {});
             }
         }, 10 * 1000);
+
+        this.config.addModifiedListener((key) => {
+            if (key === "loadout") {
+                this.syncOutfit();
+            }
+        });
     }
 
     getPlayerById(playerId: number) {
@@ -244,6 +251,7 @@ export class TeamMenu {
             this.joiningGame = false;
             this.editingName = false;
             this.joinPrefs = joinPrefs || {};
+            this.syncedOutfit = undefined;
 
             // Load properties from config
             this.playerData = {
@@ -287,6 +295,7 @@ export class TeamMenu {
                     this.leave(errMsg);
                 };
                 this.ws.onopen = () => {
+                    this.syncedOutfit = loadout?.outfit;
                     if (this.create) {
                         this.sendMessage("create", {
                             arena: this.arena,
@@ -424,6 +433,22 @@ export class TeamMenu {
                 this.ws.close();
             }
         }
+    }
+
+    syncOutfit() {
+        if (!this.active || !this.joined) {
+            return;
+        }
+
+        const outfit = this.config.get("loadout")?.outfit;
+        if (this.syncedOutfit === outfit) {
+            return;
+        }
+
+        this.syncedOutfit = outfit;
+        this.sendMessage("changeOutfit", {
+            outfit,
+        });
     }
 
     setRoomProperty<T extends keyof RoomData>(prop: T, val: RoomData[T] | undefined) {
