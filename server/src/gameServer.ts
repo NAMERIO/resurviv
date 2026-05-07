@@ -99,6 +99,11 @@ class GameServer {
         await this.manager.kickPlayerByIP(encodedIp);
     }
 
+    setBattleRoyaleMode(enabled: boolean) {
+        Config.battleRoyaleMode = enabled;
+        this.logger.info(`Battle Royale mode is now ${enabled ? "enabled" : "disabled"}`);
+    }
+
     async sendData() {
         try {
             await apiPrivateRouter.update_region.$post({
@@ -196,6 +201,47 @@ app.get("/health", (res) => {
 app.options("/api/disconnect_player", (res) => {
     cors(res);
     res.end();
+});
+
+app.options("/api/set_battle_royale_mode", (res) => {
+    cors(res);
+    res.end();
+});
+
+app.post("/api/set_battle_royale_mode", (res, req) => {
+    res.onAborted(() => {
+        res.aborted = true;
+    });
+
+    if (req.getHeader("survev-api-key") !== Config.secrets.SURVEV_API_KEY) {
+        forbidden(res);
+        return;
+    }
+
+    readPostedJSON(
+        res,
+        (body: unknown) => {
+            try {
+                if (res.aborted) return;
+                const parsed = z
+                    .object({
+                        enabled: z.boolean(),
+                    })
+                    .safeParse(body);
+                if (!parsed.success || !parsed.data) {
+                    returnJson(res, { error: "failed_to_parse_body" });
+                    return;
+                }
+                server.setBattleRoyaleMode(parsed.data.enabled);
+                returnJson(res, { success: true });
+            } catch (error) {
+                server.logger.warn("API set_battle_royale_mode error: ", error);
+            }
+        },
+        () => {
+            server.logger.warn("/api/set_battle_royale_mode: Error retrieving body");
+        },
+    );
 });
 
 app.post("/api/kick_player_by_ip", (res, req) => {

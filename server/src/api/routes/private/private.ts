@@ -197,21 +197,27 @@ export const PrivateRouter = new Hono<Context>()
             200,
         );
     })
-    .post("/set_battle_royale_mode", validateParams(zSetBattleRoyaleModeBody), (c) => {
-        const { enabled } = c.req.valid("json");
+    .post(
+        "/set_battle_royale_mode",
+        validateParams(zSetBattleRoyaleModeBody),
+        async (c) => {
+            const { enabled } = c.req.valid("json");
 
-        server.setBattleRoyaleMode(enabled);
+            await server.setBattleRoyaleMode(enabled);
 
-        saveConfig(serverConfigPath, {
-            battleRoyaleMode: enabled,
-            modes: server.modes,
-        });
+            saveConfig(serverConfigPath, {
+                battleRoyaleMode: enabled,
+                modes: server.modes,
+            });
 
-        return c.json(
-            { message: `Battle Royale mode is now ${enabled ? "enabled" : "disabled"}` },
-            200,
-        );
-    })
+            return c.json(
+                {
+                    message: `Battle Royale mode is now ${enabled ? "enabled" : "disabled"}`,
+                },
+                200,
+            );
+        },
+    )
     .post("/set_client_theme", validateParams(zSetClientThemeBody), (c) => {
         const { theme } = c.req.valid("json");
 

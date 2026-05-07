@@ -58,6 +58,12 @@ class Region {
 
         return { error: "find_game_failed" };
     }
+
+    async setBattleRoyaleMode(enabled: boolean) {
+        return await this.fetch<{ success: boolean }>("api/set_battle_royale_mode", {
+            enabled,
+        });
+    }
 }
 
 interface RegionData {
@@ -155,11 +161,28 @@ export class ApiServer {
         region.lastUpdateTime = Date.now();
     }
 
-    setBattleRoyaleMode(enabled: boolean) {
+    async setBattleRoyaleMode(enabled: boolean) {
         this.battleRoyaleMode = enabled;
         Config.battleRoyaleMode = enabled;
         this.modes = expandConfiguredModes(this.modes, enabled);
         this.ensurePrivateLobbyModes();
+
+        const results = await Promise.allSettled(
+            Object.values(this.regions).map((region) =>
+                region.setBattleRoyaleMode(enabled),
+            ),
+        );
+
+        for (let i = 0; i < results.length; i++) {
+            const result = results[i];
+            const region = Object.values(this.regions)[i];
+            if (result.status === "rejected" || !result.value?.success) {
+                this.logger.warn(
+                    `Failed to sync Battle Royale mode to region ${region.id}`,
+                    result.status === "rejected" ? result.reason : result.value,
+                );
+            }
+        }
     }
 
     async findGame(body: FindGamePrivateBody): Promise<FindGamePrivateRes> {
