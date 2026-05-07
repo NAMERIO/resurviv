@@ -1411,7 +1411,10 @@ export class Game {
             case net.MsgType.Leaderboard: {
                 const msg = new net.LeaderboardMsg();
                 msg.deserialize(stream);
-                console.log({ leaderboard: msg });
+                if (this.m_map.mapName.startsWith("br_")) {
+                    this.m_uiManager.clearLeaderboard();
+                    break;
+                }
                 this.m_uiManager.updateLeaderboard(msg.players);
                 break;
             }

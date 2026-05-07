@@ -2775,8 +2775,10 @@ export class Player extends BaseGameObject {
             joinedMsg.emotes = this.loadout.emotes;
             this.sendMsg(net.MsgType.Joined, joinedMsg);
 
-            const leaderboardMsg = this.getKillsLeaderboardMsg();
-            this.sendMsg(net.MsgType.Leaderboard, leaderboardMsg);
+            if (!isBattleRoyaleMapName(this.game.mapName)) {
+                const leaderboardMsg = this.getKillsLeaderboardMsg();
+                this.sendMsg(net.MsgType.Leaderboard, leaderboardMsg);
+            }
 
             const mapStream = game.map.mapStream.stream;
 
@@ -3498,8 +3500,10 @@ export class Player extends BaseGameObject {
                     kills: original.kills + 1,
                 });
 
-                const leaderboradMsg = this.getKillsLeaderboardMsg();
-                this.game.broadcastMsg(net.MsgType.Leaderboard, leaderboradMsg);
+                if (!isBattleRoyaleMapName(this.game.mapName)) {
+                    const leaderboradMsg = this.getKillsLeaderboardMsg();
+                    this.game.broadcastMsg(net.MsgType.Leaderboard, leaderboradMsg);
+                }
 
                 if (killCreditSource.hasPerk("takedown")) {
                     killCreditSource.health += 25;

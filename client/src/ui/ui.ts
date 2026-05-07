@@ -641,8 +641,14 @@ export class UiManager {
     onMapLoad(map: Map, camera: Camera) {
         this.resize(map, camera);
         const displayLeader = map.getMapDef().gameMode.killLeaderEnabled;
+        const displayLeaderboard = !map.mapName.startsWith("br_");
 
         $("#ui-kill-leader-container").css("display", displayLeader ? "block" : "none");
+        $("#ui-kill-leaderboard-title").css("display", displayLeaderboard ? "" : "none");
+        $("#ui-kill-leaderboard").css("display", displayLeaderboard ? "" : "none");
+        if (!displayLeaderboard) {
+            this.clearLeaderboard();
+        }
 
         if (!device.mobile) {
             $("#ui-killfeed-wrapper").css("top", displayLeader ? "60px" : "12px");
@@ -1121,6 +1127,10 @@ export class UiManager {
             $("<div>").text(p.kills).appendTo(item);
             container.append(item);
         });
+    }
+
+    clearLeaderboard() {
+        $("#ui-kill-leaderboard").empty();
     }
 
     createPing(
