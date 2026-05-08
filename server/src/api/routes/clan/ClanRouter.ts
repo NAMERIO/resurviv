@@ -1,4 +1,4 @@
-import { and, count, desc, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, lt, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import slugify from "slugify";
 import {
@@ -7,23 +7,28 @@ import {
     type ClanInfo,
     type ClanLeaderboardResponse,
     type ClanMember,
+    type ClanMessage,
     ClanTagColorRegex,
     type CreateClanResponse,
     type DeleteClanResponse,
+    type GetClanMessagesResponse,
     type GetClanResponse,
     type GetMyClanResponse,
     type JoinClanResponse,
     type KickMemberResponse,
     type LeaveClanResponse,
     type ListClansResponse,
+    type SendClanMessageResponse,
     type TransferOwnershipResponse,
     type UpdateClanResponse,
     zClanLeaderboardRequest,
     zCreateClanRequest,
+    zGetClanMessagesRequest,
     zGetClanRequest,
     zJoinClanRequest,
     zKickMemberRequest,
     zListClansRequest,
+    zSendClanMessageRequest,
     zTransferOwnershipRequest,
     zUpdateClanRequest,
 } from "../../../../../shared/types/clan";
@@ -39,6 +44,7 @@ import {
     clanLeaveHistoryTable,
     clanMemberStatsTable,
     clanMembersTable,
+    clanMessagesTable,
     clansTable,
     usersTable,
 } from "../../db/schema";
@@ -71,6 +77,57 @@ function sanitizeClanTagColor(color: string | null | undefined): string {
         return "";
     }
     return normalized;
+}
+
+async function pruneClanMessages(clanId: string) {
+    await db
+        .delete(clanMessagesTable)
+        .where(
+            and(
+                eq(clanMessagesTable.clanId, clanId),
+                lt(clanMessagesTable.createdAt, sql<Date>`NOW() - INTERVAL '1 month'`),
+            ),
+        );
+
+    await db.execute(sql`
+        DELETE FROM clan_messages
+        WHERE clan_id = ${clanId}
+        AND id NOT IN (
+            SELECT id
+            FROM clan_messages
+            WHERE clan_id = ${clanId}
+            ORDER BY created_at DESC, id DESC
+            LIMIT 100
+        )
+    `);
+}
+
+function getUserMembership(userId: string) {
+    return db.query.clanMembersTable.findFirst({
+        where: eq(clanMembersTable.userId, userId),
+    });
+}
+
+function toClanMessage(row: {
+    id: string;
+    clanId: string;
+    senderId: string;
+    username: string;
+    slug: string;
+    playerIcon: string | null;
+    message: string;
+    createdAt: Date;
+}): ClanMessage {
+    return {
+        id: row.id,
+        clanId: row.clanId,
+        senderId: row.senderId,
+        username: row.username,
+        slug: row.slug,
+        playerIcon: row.playerIcon || "emote_surviv",
+        message: row.message,
+        createdAt: row.createdAt.getTime(),
+    };
 }
 
 async function getClanInfo(clanId: string): Promise<ClanInfo | null> {
@@ -593,6 +650,120 @@ ClanRouter.post("/get", validateParams(zGetClanRequest), async (c) => {
     return c.json<GetClanResponse>({ success: true, clan });
 });
 
+ClanRouter.post("/messages", validateParams(zGetClanMessagesRequest), async (c) => {
+    const user = c.get("user")!;
+    const { clanId, after, before, limit } = c.req.valid("json");
+
+    const membership = await getUserMembership(user.id);
+    if (!membership || membership.clanId !== clanId) {
+        return c.json<GetClanMessagesResponse>(
+            { success: false, error: "not_in_clan" },
+            403,
+        );
+    }
+
+    await pruneClanMessages(clanId);
+
+    const afterDate = after ? new Date(after) : null;
+    const beforeDate = before ? new Date(before) : null;
+    const timeFilter = afterDate
+        ? gt(clanMessagesTable.createdAt, afterDate)
+        : beforeDate
+          ? lt(clanMessagesTable.createdAt, beforeDate)
+          : undefined;
+
+    const rows = await db
+        .select({
+            id: clanMessagesTable.id,
+            clanId: clanMessagesTable.clanId,
+            senderId: usersTable.id,
+            username: usersTable.username,
+            slug: usersTable.slug,
+            playerIcon: sql<string>`${usersTable.loadout}->>'player_icon'`,
+            message: clanMessagesTable.message,
+            createdAt: clanMessagesTable.createdAt,
+        })
+        .from(clanMessagesTable)
+        .innerJoin(usersTable, eq(usersTable.id, clanMessagesTable.userId))
+        .where(
+            timeFilter
+                ? and(eq(clanMessagesTable.clanId, clanId), timeFilter)
+                : eq(clanMessagesTable.clanId, clanId),
+        )
+        .orderBy(
+            afterDate
+                ? asc(clanMessagesTable.createdAt)
+                : desc(clanMessagesTable.createdAt),
+            afterDate ? asc(clanMessagesTable.id) : desc(clanMessagesTable.id),
+        )
+        .limit(limit + 1);
+
+    const hasMore = rows.length > limit;
+    const pageRows = rows.slice(0, limit);
+    const messages = (afterDate ? pageRows : pageRows.reverse()).map((row) =>
+        toClanMessage(row),
+    );
+
+    return c.json<GetClanMessagesResponse>({
+        success: true,
+        messages,
+        hasMore,
+    });
+});
+
+ClanRouter.post("/send_message", validateParams(zSendClanMessageRequest), async (c) => {
+    const user = c.get("user")!;
+    const { clanId, message } = c.req.valid("json");
+
+    const membership = await getUserMembership(user.id);
+    if (!membership || membership.clanId !== clanId) {
+        return c.json<SendClanMessageResponse>(
+            { success: false, error: "not_in_clan" },
+            403,
+        );
+    }
+
+    const cleanMessage = message.trim().replace(/\s+/g, " ");
+    if (!cleanMessage || checkForBadWords(cleanMessage)) {
+        return c.json<SendClanMessageResponse>(
+            { success: false, error: "invalid_message" },
+            400,
+        );
+    }
+
+    await pruneClanMessages(clanId);
+
+    const [inserted] = await db
+        .insert(clanMessagesTable)
+        .values({
+            clanId,
+            userId: user.id,
+            message: cleanMessage,
+        })
+        .returning({
+            id: clanMessagesTable.id,
+            clanId: clanMessagesTable.clanId,
+            message: clanMessagesTable.message,
+            createdAt: clanMessagesTable.createdAt,
+        });
+
+    await pruneClanMessages(clanId);
+
+    return c.json<SendClanMessageResponse>({
+        success: true,
+        message: {
+            id: inserted.id,
+            clanId: inserted.clanId,
+            senderId: user.id,
+            username: user.username,
+            slug: user.slug,
+            playerIcon: user.loadout.player_icon || "emote_surviv",
+            message: inserted.message,
+            createdAt: inserted.createdAt.getTime(),
+        },
+    });
+});
+
 ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
     const { page, limit, search } = c.req.valid("json");
 
@@ -601,7 +772,7 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
     const totalCountResult = await db
         .select({ count: count() })
         .from(clansTable)
-        .where(search ? sql`${clansTable.name} ILIKE ${"%" + search + "%"}` : undefined);
+        .where(search ? sql`${clansTable.name} ILIKE ${`%${search}%`}` : undefined);
 
     const totalCount = totalCountResult[0]?.count || 0;
 
@@ -627,7 +798,7 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
             ), 0)`,
         })
         .from(clansTable)
-        .where(search ? sql`${clansTable.name} ILIKE ${"%" + search + "%"}` : undefined)
+        .where(search ? sql`${clansTable.name} ILIKE ${`%${search}%`}` : undefined)
         .orderBy(sql`(
             SELECT COUNT(*) FROM clan_members 
             WHERE clan_members.clan_id = clans.id

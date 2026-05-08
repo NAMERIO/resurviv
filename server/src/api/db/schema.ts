@@ -422,6 +422,34 @@ export const clanLeaveHistoryTable = pgTable(
     (table) => [index("idx_clan_leave_history_user").on(table.userId)],
 );
 
+export const clanMessagesTable = pgTable(
+    "clan_messages",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        clanId: uuid("clan_id")
+            .notNull()
+            .references(() => clansTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        userId: text("user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        message: text("message").notNull(),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        index("idx_clan_messages_clan_created").on(table.clanId, table.createdAt),
+        index("idx_clan_messages_user").on(table.userId),
+    ],
+);
+
+export type ClanMessagesTableInsert = typeof clanMessagesTable.$inferInsert;
+export type ClanMessagesTableSelect = typeof clanMessagesTable.$inferSelect;
+
 export const clansRelations = relations(clansTable, ({ one, many }) => ({
     owner: one(usersTable, {
         fields: [clansTable.ownerId],
@@ -429,6 +457,7 @@ export const clansRelations = relations(clansTable, ({ one, many }) => ({
     }),
     members: many(clanMembersTable),
     memberStats: many(clanMemberStatsTable),
+    messages: many(clanMessagesTable),
 }));
 
 export const clanMembersRelations = relations(clanMembersTable, ({ one }) => ({
@@ -456,6 +485,17 @@ export const clanMemberStatsRelations = relations(clanMemberStatsTable, ({ one }
 export const clanLeaveHistoryRelations = relations(clanLeaveHistoryTable, ({ one }) => ({
     user: one(usersTable, {
         fields: [clanLeaveHistoryTable.userId],
+        references: [usersTable.id],
+    }),
+}));
+
+export const clanMessagesRelations = relations(clanMessagesTable, ({ one }) => ({
+    clan: one(clansTable, {
+        fields: [clanMessagesTable.clanId],
+        references: [clansTable.id],
+    }),
+    user: one(usersTable, {
+        fields: [clanMessagesTable.userId],
         references: [usersTable.id],
     }),
 }));

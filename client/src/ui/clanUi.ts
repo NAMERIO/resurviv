@@ -8,10 +8,13 @@ import {
     type ClanInfo,
     type ClanLeaderboardEntry,
     type ClanLeaderboardResponse,
+    type ClanMessage,
     type CreateClanResponse,
+    type GetClanMessagesResponse,
     type GetMyClanResponse,
     type JoinClanResponse,
     type ListClansResponse,
+    type SendClanMessageResponse,
     type UpdateClanResponse,
 } from "../../../shared/types/clan";
 import {
@@ -65,6 +68,15 @@ function formatTimeRemaining(ms: number): string {
     return `${minutes}m`;
 }
 
+function formatChatTime(timestamp: number): string {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const sameDay = date.toDateString() === now.toDateString();
+    return sameDay
+        ? date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+        : date.toLocaleDateString([], { month: "short", day: "numeric" });
+}
+
 function normalizeColorInputValue(color?: string | null) {
     const value = (color || "").trim();
     if (/^#[0-9a-fA-F]{6}$/.test(value)) {
@@ -88,6 +100,11 @@ export class ClanUi {
     availableIcons: string[] = [];
     selectedIcon: string = "emote_surviv";
     isEditingIcon: boolean = false;
+    clanMessages: ClanMessage[] = [];
+    clanMessagesHasMore = false;
+    clanMessagesLoading = false;
+    clanMessagesPolling = false;
+    clanMessagesPollTimer: ReturnType<typeof setInterval> | null = null;
 
     constructor(
         public account: Account,
@@ -97,6 +114,9 @@ export class ClanUi {
         this.iconModal = new MenuModal($("#modal-clan-icons"));
         this.clanPageModal = new MenuModal($("#modal-clan-page"));
         this.leaderboardModal = new MenuModal($("#modal-clan-leaderboard"));
+        this.clanPageModal.onHide(() => {
+            this.stopClanMessagePolling();
+        });
 
         this.initUi();
         this.loadAvailableIcons();
@@ -234,6 +254,28 @@ export class ClanUi {
         $("#clan-leaderboard-game-mode").on("change", () => {
             this.loadLeaderboard(this.getSelectedLeaderboardType());
         });
+        $("#btn-clan-chat-send").on("click", () => {
+            this.sendClanMessage();
+        });
+        $("#clan-chat-input").on("keydown", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                this.sendClanMessage();
+            }
+        });
+        $("#clan-chat-input").on("input", () => {
+            this.updateClanChatCounter();
+        });
+        $("#clan-chat-messages").on("scroll", () => {
+            const container = $("#clan-chat-messages");
+            if (container.scrollTop()! <= 16) {
+                if (this.clanMessagesHasMore && !this.clanMessagesLoading) {
+                    this.loadClanMessages(true);
+                } else if (this.clanMessages.length > 0 && !this.clanMessagesHasMore) {
+                    $("#clan-chat-status").text("No older messages.");
+                }
+            }
+        });
         $(".modal-clans-close.close").on("click", (e) => {
             const modal = $(e.currentTarget).closest(".modal");
             if (modal.attr("id") === "modal-clan-main") {
@@ -288,8 +330,7 @@ export class ClanUi {
         for (const icon of this.availableIcons) {
             const iconUrl = getClanIconUrl(icon);
             const div = $("<div/>", {
-                class:
-                    "clan-icon-option" + (icon === this.selectedIcon ? " selected" : ""),
+                class: `clan-icon-option${icon === this.selectedIcon ? " selected" : ""}`,
                 "data-icon": icon,
             }).css("background-image", `url(${iconUrl})`);
             iconContainer.append(div);
@@ -308,6 +349,8 @@ export class ClanUi {
     }
 
     showClanPage(clanId: string) {
+        this.resetClanMessages();
+        $("#clan-chat-section").hide();
         this.loadClanDetail(clanId);
         this.mainModal.hide();
         this.clanPageModal.show(true);
@@ -624,7 +667,23 @@ export class ClanUi {
 
                 this.viewingClan = res.clan;
                 this.renderClanDetail(res.clan);
+                this.resetClanMessages();
+                if (this.isCurrentUserClanMember(res.clan)) {
+                    $("#clan-chat-section").show();
+                    this.loadClanMessages(false);
+                    this.startClanMessagePolling();
+                } else {
+                    $("#clan-chat-section").hide();
+                    this.stopClanMessagePolling();
+                }
             },
+        );
+    }
+
+    isCurrentUserClanMember(clan: ClanDetail) {
+        return (
+            !!this.account.profile?.slug &&
+            clan.members.some((m) => m.slug === this.account.profile.slug)
         );
     }
 
@@ -686,7 +745,7 @@ export class ClanUi {
                     class: "clan-member-info",
                 }).append(
                     $("<div/>", {
-                        class: "clan-member-name" + (member.isOwner ? " owner" : ""),
+                        class: `clan-member-name${member.isOwner ? " owner" : ""}`,
                         text: member.username,
                     }),
                     $("<div/>", {
@@ -740,6 +799,228 @@ export class ClanUi {
         } else {
             $("#clan-member-actions").hide();
         }
+    }
+
+    resetClanMessages() {
+        this.clanMessages = [];
+        this.clanMessagesHasMore = false;
+        this.clanMessagesLoading = false;
+        this.clanMessagesPolling = false;
+        $("#clan-chat-messages").empty();
+        $("#clan-chat-input").val("");
+        $("#clan-chat-status").text("");
+        this.updateClanChatCounter();
+    }
+
+    loadClanMessages(loadOlder: boolean) {
+        if (!this.viewingClan || this.clanMessagesLoading) return;
+        if (loadOlder && this.clanMessages.length === 0) return;
+
+        const container = $("#clan-chat-messages");
+        const oldScrollHeight = container.prop("scrollHeight") || 0;
+        const before = loadOlder ? this.clanMessages[0]?.createdAt : undefined;
+        const clanId = this.viewingClan.id;
+
+        this.clanMessagesLoading = true;
+        $("#clan-chat-status").text(loadOlder ? "Loading older messages..." : "");
+        clanRequest<GetClanMessagesResponse>(
+            "/api/clan/messages",
+            {
+                clanId,
+                limit: 30,
+                before,
+            },
+            (err, res) => {
+                this.clanMessagesLoading = false;
+                if (!this.viewingClan || this.viewingClan.id !== clanId) {
+                    return;
+                }
+                if (err || !res?.success) {
+                    $("#clan-chat-status").text("Failed to load chat.");
+                    return;
+                }
+
+                this.clanMessagesHasMore = res.hasMore;
+                if (loadOlder) {
+                    this.clanMessages = [...res.messages, ...this.clanMessages];
+                } else {
+                    this.clanMessages = res.messages;
+                }
+                this.renderClanMessages();
+
+                if (loadOlder) {
+                    const newScrollHeight = container.prop("scrollHeight") || 0;
+                    container.scrollTop(newScrollHeight - oldScrollHeight);
+                    $("#clan-chat-status").text(
+                        this.clanMessagesHasMore ? "" : "No older messages.",
+                    );
+                } else {
+                    container.scrollTop(container.prop("scrollHeight") || 0);
+                    $("#clan-chat-status").text(
+                        this.clanMessages.length === 0 ? "No messages yet." : "",
+                    );
+                }
+            },
+        );
+    }
+
+    startClanMessagePolling() {
+        this.stopClanMessagePolling();
+        this.clanMessagesPollTimer = setInterval(() => {
+            this.loadNewClanMessages();
+        }, 2500);
+    }
+
+    stopClanMessagePolling() {
+        if (this.clanMessagesPollTimer) {
+            clearInterval(this.clanMessagesPollTimer);
+            this.clanMessagesPollTimer = null;
+        }
+        this.clanMessagesPolling = false;
+    }
+
+    loadNewClanMessages() {
+        if (
+            !this.viewingClan ||
+            !this.clanPageModal.isVisible() ||
+            this.clanMessagesPolling
+        ) {
+            return;
+        }
+
+        const latestMessage = this.clanMessages[this.clanMessages.length - 1];
+        const container = $("#clan-chat-messages");
+        const clanId = this.viewingClan.id;
+        const scrollBottom =
+            (container.prop("scrollHeight") || 0) -
+            (container.scrollTop() || 0) -
+            container.outerHeight()!;
+        const shouldStickToBottom = scrollBottom < 80;
+
+        this.clanMessagesPolling = true;
+        clanRequest<GetClanMessagesResponse>(
+            "/api/clan/messages",
+            {
+                clanId,
+                limit: 20,
+                after: latestMessage?.createdAt,
+            },
+            (err, res) => {
+                this.clanMessagesPolling = false;
+                if (!this.viewingClan || this.viewingClan.id !== clanId) {
+                    return;
+                }
+                if (err || !res?.success || res.messages.length === 0) {
+                    return;
+                }
+
+                this.mergeClanMessages(res.messages);
+                this.renderClanMessages();
+                if (shouldStickToBottom) {
+                    container.scrollTop(container.prop("scrollHeight") || 0);
+                }
+                $("#clan-chat-status").text("");
+            },
+        );
+    }
+
+    mergeClanMessages(messages: ClanMessage[]) {
+        const existingIds = new Set(this.clanMessages.map((message) => message.id));
+        for (const message of messages) {
+            if (!existingIds.has(message.id)) {
+                this.clanMessages.push(message);
+                existingIds.add(message.id);
+            }
+        }
+        this.clanMessages.sort((a, b) => a.createdAt - b.createdAt);
+        if (this.clanMessages.length > 100) {
+            this.clanMessages = this.clanMessages.slice(-100);
+        }
+    }
+
+    updateClanChatCounter() {
+        const message = ($("#clan-chat-input").val() as string) || "";
+        const remaining = Math.max(0, ClanConstants.MessageMaxLen - message.length);
+        $("#clan-chat-counter")
+            .text(`${remaining} left`)
+            .toggleClass("low", remaining <= 20)
+            .toggleClass("empty", remaining === 0);
+    }
+
+    renderClanMessages() {
+        const container = $("#clan-chat-messages");
+        container.empty();
+
+        for (const message of this.clanMessages) {
+            const isOwnMessage = message.slug === this.account.profile?.slug;
+            const item = $("<div/>", {
+                class: `clan-chat-message${isOwnMessage ? " own" : ""}`,
+            });
+
+            item.append(
+                $("<div/>", {
+                    class: "clan-chat-avatar",
+                }).css("background-image", `url(${getClanIconUrl(message.playerIcon)})`),
+            );
+
+            item.append(
+                $("<div/>", { class: "clan-chat-bubble" }).append(
+                    $("<div/>", { class: "clan-chat-meta" }).append(
+                        $("<span/>", {
+                            class: "clan-chat-author",
+                            text: message.username,
+                        }),
+                        $("<span/>", {
+                            class: "clan-chat-time",
+                            text: formatChatTime(message.createdAt),
+                        }),
+                    ),
+                    $("<div/>", {
+                        class: "clan-chat-text",
+                        text: message.message,
+                    }),
+                ),
+            );
+
+            container.append(item);
+        }
+    }
+
+    sendClanMessage() {
+        if (!this.viewingClan) return;
+        if ($("#btn-clan-chat-send").hasClass("disabled")) return;
+
+        const input = $("#clan-chat-input");
+        const message = ((input.val() as string) || "").trim();
+        if (!message) return;
+        const clanId = this.viewingClan.id;
+
+        $("#btn-clan-chat-send").addClass("disabled");
+        clanRequest<SendClanMessageResponse>(
+            "/api/clan/send_message",
+            {
+                clanId,
+                message,
+            },
+            (err, res) => {
+                $("#btn-clan-chat-send").removeClass("disabled");
+                if (!this.viewingClan || this.viewingClan.id !== clanId) {
+                    return;
+                }
+                if (err || !res?.success) {
+                    $("#clan-chat-status").text("Message could not be sent.");
+                    return;
+                }
+
+                input.val("");
+                this.updateClanChatCounter();
+                this.mergeClanMessages([res.message]);
+                this.renderClanMessages();
+                const container = $("#clan-chat-messages");
+                container.scrollTop(container.prop("scrollHeight") || 0);
+                $("#clan-chat-status").text("");
+            },
+        );
     }
 
     leaveClan() {

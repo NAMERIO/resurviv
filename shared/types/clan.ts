@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { Constants } from "../net/net";
 import { GameModeStatus } from "./stats";
 
 // Clan constants
@@ -7,6 +6,7 @@ export const ClanConstants = {
     MaxMembers: 20,
     NameMinLen: 2,
     NameMaxLen: 16,
+    MessageMaxLen: 100,
     RejoinCooldownMs: 0, // none cooldown for now
 } as const;
 
@@ -67,6 +67,20 @@ export const zClanLeaderboardRequest = z.object({
 });
 export type ClanLeaderboardRequest = z.infer<typeof zClanLeaderboardRequest>;
 
+export const zGetClanMessagesRequest = z.object({
+    clanId: z.string().uuid(),
+    before: z.number().int().positive().optional(),
+    after: z.number().int().positive().optional(),
+    limit: z.number().int().min(20).max(40).default(30),
+});
+export type GetClanMessagesRequest = z.infer<typeof zGetClanMessagesRequest>;
+
+export const zSendClanMessageRequest = z.object({
+    clanId: z.string().uuid(),
+    message: z.string().trim().min(1).max(ClanConstants.MessageMaxLen),
+});
+export type SendClanMessageRequest = z.infer<typeof zSendClanMessageRequest>;
+
 export const zListClansRequest = z.object({
     page: z.number().int().min(1).default(1),
     limit: z.number().int().min(1).max(50).default(20),
@@ -102,6 +116,17 @@ export type ClanInfo = {
 
 export type ClanDetail = ClanInfo & {
     members: ClanMember[];
+};
+
+export type ClanMessage = {
+    id: string;
+    clanId: string;
+    senderId: string;
+    username: string;
+    slug: string;
+    playerIcon: string;
+    message: string;
+    createdAt: number;
 };
 
 export type CreateClanResponse =
@@ -176,3 +201,14 @@ export type ClanLeaderboardResponse = {
     page: number;
     totalPages: number;
 };
+
+export type GetClanMessagesResponse =
+    | { success: true; messages: ClanMessage[]; hasMore: boolean }
+    | { success: false; error: "not_in_clan" | "server_error" };
+
+export type SendClanMessageResponse =
+    | { success: true; message: ClanMessage }
+    | {
+          success: false;
+          error: "not_in_clan" | "invalid_message" | "server_error";
+      };
