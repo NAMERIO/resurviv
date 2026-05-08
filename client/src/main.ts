@@ -1647,10 +1647,14 @@ export class Application {
                     this.teamMenu.leave();
                 }
                 this.prestigeArenaModalRequestedOpen = true;
+                const arenaModeIdx = this.prestigeArenaSelectedModeIdx;
                 const createRegion = this.prestigeArenaRegionSelect
                     .find(":selected")
                     .val();
                 this.setConfigFromDOM();
+                if (Number.isFinite(arenaModeIdx) && arenaModeIdx >= 0) {
+                    this.config.set("gameModeIdx", arenaModeIdx);
+                }
                 if (createRegion) {
                     this.config.set("region", createRegion as string);
                 }
