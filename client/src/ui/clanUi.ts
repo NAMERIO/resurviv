@@ -10,6 +10,8 @@ import {
     type ClanLeaderboardResponse,
     type ClanMessage,
     type CreateClanResponse,
+    type DeleteClanMessageResponse,
+    type EditClanMessageResponse,
     type GetClanMessagesResponse,
     type GetMyClanResponse,
     type JoinClanResponse,
@@ -105,6 +107,9 @@ export class ClanUi {
     clanMessagesLoading = false;
     clanMessagesPolling = false;
     clanMessagesPollTimer: ReturnType<typeof setInterval> | null = null;
+    replyingToMessage: ClanMessage | null = null;
+    editingMessage: ClanMessage | null = null;
+    messageActionsMenu: JQuery<HTMLElement> | null = null;
 
     constructor(
         public account: Account,
@@ -265,6 +270,12 @@ export class ClanUi {
         });
         $("#clan-chat-input").on("input", () => {
             this.updateClanChatCounter();
+        });
+        $("#btn-clan-chat-compose-clear").on("click", () => {
+            this.clearClanChatComposeContext();
+        });
+        $(document).on("click", () => {
+            this.hideMessageActionsMenu();
         });
         $("#clan-chat-messages").on("scroll", () => {
             const container = $("#clan-chat-messages");
@@ -806,9 +817,13 @@ export class ClanUi {
         this.clanMessagesHasMore = false;
         this.clanMessagesLoading = false;
         this.clanMessagesPolling = false;
+        this.replyingToMessage = null;
+        this.editingMessage = null;
         $("#clan-chat-messages").empty();
         $("#clan-chat-input").val("");
         $("#clan-chat-status").text("");
+        this.hideMessageActionsMenu();
+        this.renderClanChatComposeContext();
         this.updateClanChatCounter();
     }
 
@@ -888,7 +903,6 @@ export class ClanUi {
             return;
         }
 
-        const latestMessage = this.clanMessages[this.clanMessages.length - 1];
         const container = $("#clan-chat-messages");
         const clanId = this.viewingClan.id;
         const scrollBottom =
@@ -902,18 +916,18 @@ export class ClanUi {
             "/api/clan/messages",
             {
                 clanId,
-                limit: 20,
-                after: latestMessage?.createdAt,
+                limit: 40,
             },
             (err, res) => {
                 this.clanMessagesPolling = false;
                 if (!this.viewingClan || this.viewingClan.id !== clanId) {
                     return;
                 }
-                if (err || !res?.success || res.messages.length === 0) {
+                if (err || !res?.success) {
                     return;
                 }
 
+                this.syncRecentClanMessages(res.messages);
                 this.mergeClanMessages(res.messages);
                 this.renderClanMessages();
                 if (shouldStickToBottom) {
@@ -924,12 +938,26 @@ export class ClanUi {
         );
     }
 
+    syncRecentClanMessages(messages: ClanMessage[]) {
+        if (messages.length === 0) return;
+        const oldestRecentMessage = messages[0];
+        const recentMessageIds = new Set(messages.map((message) => message.id));
+        this.clanMessages = this.clanMessages.filter(
+            (message) =>
+                message.createdAt < oldestRecentMessage.createdAt ||
+                recentMessageIds.has(message.id),
+        );
+    }
+
     mergeClanMessages(messages: ClanMessage[]) {
-        const existingIds = new Set(this.clanMessages.map((message) => message.id));
+        const messagesById = new Map(
+            this.clanMessages.map((message) => [message.id, message]),
+        );
         for (const message of messages) {
-            if (!existingIds.has(message.id)) {
+            if (messagesById.has(message.id)) {
+                Object.assign(messagesById.get(message.id)!, message);
+            } else {
                 this.clanMessages.push(message);
-                existingIds.add(message.id);
             }
         }
         this.clanMessages.sort((a, b) => a.createdAt - b.createdAt);
@@ -947,14 +975,66 @@ export class ClanUi {
             .toggleClass("empty", remaining === 0);
     }
 
+    renderClanChatComposeContext() {
+        const context = $("#clan-chat-compose-context");
+        if (this.editingMessage) {
+            $("#clan-chat-compose-label").text("Editing message");
+            $("#clan-chat-compose-text").text(this.editingMessage.message);
+            $("#btn-clan-chat-send").text("Save");
+            context.show();
+            return;
+        }
+        if (this.replyingToMessage) {
+            $("#clan-chat-compose-label").text(
+                `Replying to ${this.replyingToMessage.username}`,
+            );
+            $("#clan-chat-compose-text").text(this.replyingToMessage.message);
+            $("#btn-clan-chat-send").text("Send");
+            context.show();
+            return;
+        }
+        $("#btn-clan-chat-send").text("Send");
+        context.hide();
+    }
+
+    clearClanChatComposeContext() {
+        this.replyingToMessage = null;
+        this.editingMessage = null;
+        $("#clan-chat-input").val("");
+        this.renderClanChatComposeContext();
+        this.updateClanChatCounter();
+    }
+
+    findClanMessage(messageId: string) {
+        return this.clanMessages.find((message) => message.id === messageId) || null;
+    }
+
+    getCurrentUserClanMemberId() {
+        if (!this.viewingClan || !this.account.profile?.slug) return null;
+        return (
+            this.viewingClan.members.find(
+                (member) => member.slug === this.account.profile!.slug,
+            )?.odUserId || null
+        );
+    }
+
+    isOwnClanMessage(message: ClanMessage) {
+        const currentUserId = this.getCurrentUserClanMemberId();
+        return !!currentUserId && message.senderId === currentUserId;
+    }
+
     renderClanMessages() {
         const container = $("#clan-chat-messages");
         container.empty();
 
         for (const message of this.clanMessages) {
-            const isOwnMessage = message.slug === this.account.profile?.slug;
+            const isOwnMessage = this.isOwnClanMessage(message);
             const item = $("<div/>", {
                 class: `clan-chat-message${isOwnMessage ? " own" : ""}`,
+                "data-message-id": message.id,
+            }).on("contextmenu", (e) => {
+                e.preventDefault();
+                this.showMessageActionsMenu(message, e.pageX, e.pageY);
             });
 
             item.append(
@@ -963,27 +1043,124 @@ export class ClanUi {
                 }).css("background-image", `url(${getClanIconUrl(message.playerIcon)})`),
             );
 
-            item.append(
-                $("<div/>", { class: "clan-chat-bubble" }).append(
-                    $("<div/>", { class: "clan-chat-meta" }).append(
-                        $("<span/>", {
-                            class: "clan-chat-author",
-                            text: message.username,
-                        }),
-                        $("<span/>", {
-                            class: "clan-chat-time",
-                            text: formatChatTime(message.createdAt),
-                        }),
-                    ),
-                    $("<div/>", {
-                        class: "clan-chat-text",
-                        text: message.message,
+            const bubble = $("<div/>", { class: "clan-chat-bubble" }).append(
+                $("<button/>", {
+                    class: "clan-chat-actions-btn",
+                    text: "...",
+                    title: "Message actions",
+                    type: "button",
+                }).on("click", (e) => {
+                    e.stopPropagation();
+                    this.showMessageActionsMenu(message, e.pageX, e.pageY);
+                }),
+                message.replyTo
+                    ? $("<div/>", { class: "clan-chat-reply-preview" }).append(
+                          $("<div/>", {
+                              class: "clan-chat-reply-author",
+                              text: message.replyTo.username,
+                          }),
+                          $("<div/>", {
+                              class: "clan-chat-reply-text",
+                              text: message.replyTo.message,
+                          }),
+                      )
+                    : $(),
+                $("<div/>", { class: "clan-chat-meta" }).append(
+                    $("<span/>", {
+                        class: "clan-chat-author",
+                        text: message.username,
                     }),
+                    $("<span/>", {
+                        class: "clan-chat-time",
+                        text: formatChatTime(message.createdAt),
+                    }),
+                    message.editedAt
+                        ? $("<span/>", {
+                              class: "clan-chat-edited",
+                              text: "(edited)",
+                          })
+                        : $(),
                 ),
+                $("<div/>", {
+                    class: "clan-chat-text",
+                    text: message.message,
+                }),
             );
+
+            item.append(bubble);
 
             container.append(item);
         }
+    }
+
+    showMessageActionsMenu(message: ClanMessage, x: number, y: number) {
+        this.hideMessageActionsMenu();
+        const isOwnMessage = this.isOwnClanMessage(message);
+        const menu = $("<div/>", { class: "clan-chat-actions-menu" });
+
+        menu.append(
+            $("<div/>", { class: "clan-chat-actions-item", text: "Reply" }).on(
+                "click",
+                (e) => {
+                    e.stopPropagation();
+                    this.startReplyToMessage(message.id);
+                    this.hideMessageActionsMenu();
+                },
+            ),
+        );
+
+        if (isOwnMessage) {
+            menu.append(
+                $("<div/>", { class: "clan-chat-actions-item", text: "Edit" }).on(
+                    "click",
+                    (e) => {
+                        e.stopPropagation();
+                        this.startEditMessage(message.id);
+                        this.hideMessageActionsMenu();
+                    },
+                ),
+                $("<div/>", {
+                    class: "clan-chat-actions-item danger",
+                    text: "Delete",
+                }).on("click", (e) => {
+                    e.stopPropagation();
+                    this.deleteClanMessage(message.id);
+                    this.hideMessageActionsMenu();
+                }),
+            );
+        }
+
+        $("body").append(menu);
+        const menuWidth = menu.outerWidth() || 0;
+        const menuHeight = menu.outerHeight() || 0;
+        const left = Math.min(x, $(window).width()! - menuWidth - 8);
+        const top = Math.min(y, $(window).height()! - menuHeight - 8);
+        menu.css({ left, top });
+        this.messageActionsMenu = menu;
+    }
+
+    hideMessageActionsMenu() {
+        this.messageActionsMenu?.remove();
+        this.messageActionsMenu = null;
+    }
+
+    startReplyToMessage(messageId: string) {
+        const message = this.findClanMessage(messageId);
+        if (!message) return;
+        this.editingMessage = null;
+        this.replyingToMessage = message;
+        this.renderClanChatComposeContext();
+        $("#clan-chat-input").focus();
+    }
+
+    startEditMessage(messageId: string) {
+        const message = this.findClanMessage(messageId);
+        if (!message || !this.isOwnClanMessage(message)) return;
+        this.replyingToMessage = null;
+        this.editingMessage = message;
+        $("#clan-chat-input").val(message.message).focus();
+        this.renderClanChatComposeContext();
+        this.updateClanChatCounter();
     }
 
     sendClanMessage() {
@@ -996,11 +1173,17 @@ export class ClanUi {
         const clanId = this.viewingClan.id;
 
         $("#btn-clan-chat-send").addClass("disabled");
+        if (this.editingMessage) {
+            this.saveEditedClanMessage(clanId, this.editingMessage.id, message);
+            return;
+        }
+
         clanRequest<SendClanMessageResponse>(
             "/api/clan/send_message",
             {
                 clanId,
                 message,
+                replyToId: this.replyingToMessage?.id,
             },
             (err, res) => {
                 $("#btn-clan-chat-send").removeClass("disabled");
@@ -1013,12 +1196,69 @@ export class ClanUi {
                 }
 
                 input.val("");
+                this.replyingToMessage = null;
+                this.renderClanChatComposeContext();
                 this.updateClanChatCounter();
                 this.mergeClanMessages([res.message]);
                 this.renderClanMessages();
                 const container = $("#clan-chat-messages");
                 container.scrollTop(container.prop("scrollHeight") || 0);
                 $("#clan-chat-status").text("");
+            },
+        );
+    }
+
+    saveEditedClanMessage(clanId: string, messageId: string, message: string) {
+        clanRequest<EditClanMessageResponse>(
+            "/api/clan/edit_message",
+            { clanId, messageId, message },
+            (err, res) => {
+                $("#btn-clan-chat-send").removeClass("disabled");
+                if (!this.viewingClan || this.viewingClan.id !== clanId) {
+                    return;
+                }
+                if (err || !res?.success) {
+                    $("#clan-chat-status").text("Message could not be edited.");
+                    return;
+                }
+                $("#clan-chat-input").val("");
+                this.editingMessage = null;
+                this.renderClanChatComposeContext();
+                this.updateClanChatCounter();
+                this.mergeClanMessages([res.message]);
+                this.renderClanMessages();
+                $("#clan-chat-status").text("");
+            },
+        );
+    }
+
+    deleteClanMessage(messageId: string) {
+        if (!this.viewingClan) return;
+        const message = this.findClanMessage(messageId);
+        if (!message || !this.isOwnClanMessage(message)) return;
+        const clanId = this.viewingClan.id;
+        clanRequest<DeleteClanMessageResponse>(
+            "/api/clan/delete_message",
+            { clanId, messageId },
+            (err, res) => {
+                if (!this.viewingClan || this.viewingClan.id !== clanId) {
+                    return;
+                }
+                if (err || !res?.success) {
+                    $("#clan-chat-status").text("Message could not be deleted.");
+                    return;
+                }
+                this.clanMessages = this.clanMessages.filter(
+                    (message) => message.id !== res.messageId,
+                );
+                if (this.replyingToMessage?.id === res.messageId) {
+                    this.replyingToMessage = null;
+                }
+                if (this.editingMessage?.id === res.messageId) {
+                    this.editingMessage = null;
+                }
+                this.renderClanChatComposeContext();
+                this.renderClanMessages();
             },
         );
     }

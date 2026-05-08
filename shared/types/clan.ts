@@ -78,8 +78,22 @@ export type GetClanMessagesRequest = z.infer<typeof zGetClanMessagesRequest>;
 export const zSendClanMessageRequest = z.object({
     clanId: z.string().uuid(),
     message: z.string().trim().min(1).max(ClanConstants.MessageMaxLen),
+    replyToId: z.string().uuid().optional(),
 });
 export type SendClanMessageRequest = z.infer<typeof zSendClanMessageRequest>;
+
+export const zEditClanMessageRequest = z.object({
+    clanId: z.string().uuid(),
+    messageId: z.string().uuid(),
+    message: z.string().trim().min(1).max(ClanConstants.MessageMaxLen),
+});
+export type EditClanMessageRequest = z.infer<typeof zEditClanMessageRequest>;
+
+export const zDeleteClanMessageRequest = z.object({
+    clanId: z.string().uuid(),
+    messageId: z.string().uuid(),
+});
+export type DeleteClanMessageRequest = z.infer<typeof zDeleteClanMessageRequest>;
 
 export const zListClansRequest = z.object({
     page: z.number().int().min(1).default(1),
@@ -127,6 +141,12 @@ export type ClanMessage = {
     playerIcon: string;
     message: string;
     createdAt: number;
+    editedAt: number | null;
+    replyTo: {
+        id: string;
+        username: string;
+        message: string;
+    } | null;
 };
 
 export type CreateClanResponse =
@@ -210,5 +230,16 @@ export type SendClanMessageResponse =
     | { success: true; message: ClanMessage }
     | {
           success: false;
-          error: "not_in_clan" | "invalid_message" | "server_error";
+          error: "not_in_clan" | "invalid_message" | "reply_not_found" | "server_error";
       };
+
+export type EditClanMessageResponse =
+    | { success: true; message: ClanMessage }
+    | {
+          success: false;
+          error: "not_in_clan" | "not_author" | "message_not_found" | "invalid_message";
+      };
+
+export type DeleteClanMessageResponse =
+    | { success: true; messageId: string }
+    | { success: false; error: "not_in_clan" | "not_author" | "message_not_found" };

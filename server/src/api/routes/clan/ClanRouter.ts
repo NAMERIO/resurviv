@@ -10,7 +10,9 @@ import {
     type ClanMessage,
     ClanTagColorRegex,
     type CreateClanResponse,
+    type DeleteClanMessageResponse,
     type DeleteClanResponse,
+    type EditClanMessageResponse,
     type GetClanMessagesResponse,
     type GetClanResponse,
     type GetMyClanResponse,
@@ -23,6 +25,8 @@ import {
     type UpdateClanResponse,
     zClanLeaderboardRequest,
     zCreateClanRequest,
+    zDeleteClanMessageRequest,
+    zEditClanMessageRequest,
     zGetClanMessagesRequest,
     zGetClanRequest,
     zJoinClanRequest,
@@ -117,6 +121,10 @@ function toClanMessage(row: {
     playerIcon: string | null;
     message: string;
     createdAt: Date;
+    editedAt: Date | null;
+    replyToId: string | null;
+    replyToUsername: string | null;
+    replyToMessage: string | null;
 }): ClanMessage {
     return {
         id: row.id,
@@ -127,7 +135,51 @@ function toClanMessage(row: {
         playerIcon: row.playerIcon || "emote_surviv",
         message: row.message,
         createdAt: row.createdAt.getTime(),
+        editedAt: row.editedAt?.getTime() ?? null,
+        replyTo:
+            row.replyToId && row.replyToUsername && row.replyToMessage
+                ? {
+                      id: row.replyToId,
+                      username: row.replyToUsername,
+                      message: row.replyToMessage,
+                  }
+                : null,
     };
+}
+
+async function getClanMessageById(messageId: string) {
+    const rows = await db
+        .select({
+            id: clanMessagesTable.id,
+            clanId: clanMessagesTable.clanId,
+            senderId: usersTable.id,
+            username: usersTable.username,
+            slug: usersTable.slug,
+            playerIcon: sql<string>`${usersTable.loadout}->>'player_icon'`,
+            message: clanMessagesTable.message,
+            createdAt: clanMessagesTable.createdAt,
+            editedAt: clanMessagesTable.editedAt,
+            replyToId: clanMessagesTable.replyToMessageId,
+            replyToUsername: sql<string | null>`(
+                SELECT users.username
+                FROM clan_messages reply_messages
+                INNER JOIN users ON users.id = reply_messages.user_id
+                WHERE reply_messages.id = ${clanMessagesTable.replyToMessageId}
+                LIMIT 1
+            )`,
+            replyToMessage: sql<string | null>`(
+                SELECT reply_messages.message
+                FROM clan_messages reply_messages
+                WHERE reply_messages.id = ${clanMessagesTable.replyToMessageId}
+                LIMIT 1
+            )`,
+        })
+        .from(clanMessagesTable)
+        .innerJoin(usersTable, eq(usersTable.id, clanMessagesTable.userId))
+        .where(eq(clanMessagesTable.id, messageId))
+        .limit(1);
+
+    return rows[0] ? toClanMessage(rows[0]) : null;
 }
 
 async function getClanInfo(clanId: string): Promise<ClanInfo | null> {
@@ -682,6 +734,21 @@ ClanRouter.post("/messages", validateParams(zGetClanMessagesRequest), async (c) 
             playerIcon: sql<string>`${usersTable.loadout}->>'player_icon'`,
             message: clanMessagesTable.message,
             createdAt: clanMessagesTable.createdAt,
+            editedAt: clanMessagesTable.editedAt,
+            replyToId: clanMessagesTable.replyToMessageId,
+            replyToUsername: sql<string | null>`(
+                SELECT users.username
+                FROM clan_messages reply_messages
+                INNER JOIN users ON users.id = reply_messages.user_id
+                WHERE reply_messages.id = ${clanMessagesTable.replyToMessageId}
+                LIMIT 1
+            )`,
+            replyToMessage: sql<string | null>`(
+                SELECT reply_messages.message
+                FROM clan_messages reply_messages
+                WHERE reply_messages.id = ${clanMessagesTable.replyToMessageId}
+                LIMIT 1
+            )`,
         })
         .from(clanMessagesTable)
         .innerJoin(usersTable, eq(usersTable.id, clanMessagesTable.userId))
@@ -713,7 +780,7 @@ ClanRouter.post("/messages", validateParams(zGetClanMessagesRequest), async (c) 
 
 ClanRouter.post("/send_message", validateParams(zSendClanMessageRequest), async (c) => {
     const user = c.get("user")!;
-    const { clanId, message } = c.req.valid("json");
+    const { clanId, message, replyToId } = c.req.valid("json");
 
     const membership = await getUserMembership(user.id);
     if (!membership || membership.clanId !== clanId) {
@@ -731,6 +798,21 @@ ClanRouter.post("/send_message", validateParams(zSendClanMessageRequest), async 
         );
     }
 
+    if (replyToId) {
+        const replyMessage = await db.query.clanMessagesTable.findFirst({
+            where: and(
+                eq(clanMessagesTable.id, replyToId),
+                eq(clanMessagesTable.clanId, clanId),
+            ),
+        });
+        if (!replyMessage) {
+            return c.json<SendClanMessageResponse>(
+                { success: false, error: "reply_not_found" },
+                400,
+            );
+        }
+    }
+
     await pruneClanMessages(clanId);
 
     const [inserted] = await db
@@ -739,6 +821,7 @@ ClanRouter.post("/send_message", validateParams(zSendClanMessageRequest), async 
             clanId,
             userId: user.id,
             message: cleanMessage,
+            replyToMessageId: replyToId,
         })
         .returning({
             id: clanMessagesTable.id,
@@ -748,21 +831,101 @@ ClanRouter.post("/send_message", validateParams(zSendClanMessageRequest), async 
         });
 
     await pruneClanMessages(clanId);
+    const insertedMessage = await getClanMessageById(inserted.id);
 
     return c.json<SendClanMessageResponse>({
         success: true,
-        message: {
-            id: inserted.id,
-            clanId: inserted.clanId,
-            senderId: user.id,
-            username: user.username,
-            slug: user.slug,
-            playerIcon: user.loadout.player_icon || "emote_surviv",
-            message: inserted.message,
-            createdAt: inserted.createdAt.getTime(),
-        },
+        message: insertedMessage!,
     });
 });
+
+ClanRouter.post("/edit_message", validateParams(zEditClanMessageRequest), async (c) => {
+    const user = c.get("user")!;
+    const { clanId, messageId, message } = c.req.valid("json");
+
+    const membership = await getUserMembership(user.id);
+    if (!membership || membership.clanId !== clanId) {
+        return c.json<EditClanMessageResponse>(
+            { success: false, error: "not_in_clan" },
+            403,
+        );
+    }
+
+    const existingMessage = await db.query.clanMessagesTable.findFirst({
+        where: and(
+            eq(clanMessagesTable.id, messageId),
+            eq(clanMessagesTable.clanId, clanId),
+        ),
+    });
+    if (!existingMessage) {
+        return c.json<EditClanMessageResponse>(
+            { success: false, error: "message_not_found" },
+            404,
+        );
+    }
+    if (existingMessage.userId !== user.id) {
+        return c.json<EditClanMessageResponse>(
+            { success: false, error: "not_author" },
+            403,
+        );
+    }
+
+    const cleanMessage = message.trim().replace(/\s+/g, " ");
+    if (!cleanMessage || checkForBadWords(cleanMessage)) {
+        return c.json<EditClanMessageResponse>(
+            { success: false, error: "invalid_message" },
+            400,
+        );
+    }
+
+    await db
+        .update(clanMessagesTable)
+        .set({ message: cleanMessage, editedAt: new Date() })
+        .where(eq(clanMessagesTable.id, messageId));
+
+    const updatedMessage = await getClanMessageById(messageId);
+    return c.json<EditClanMessageResponse>({ success: true, message: updatedMessage! });
+});
+
+ClanRouter.post(
+    "/delete_message",
+    validateParams(zDeleteClanMessageRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { clanId, messageId } = c.req.valid("json");
+
+        const membership = await getUserMembership(user.id);
+        if (!membership || membership.clanId !== clanId) {
+            return c.json<DeleteClanMessageResponse>(
+                { success: false, error: "not_in_clan" },
+                403,
+            );
+        }
+
+        const existingMessage = await db.query.clanMessagesTable.findFirst({
+            where: and(
+                eq(clanMessagesTable.id, messageId),
+                eq(clanMessagesTable.clanId, clanId),
+            ),
+        });
+        if (!existingMessage) {
+            return c.json<DeleteClanMessageResponse>(
+                { success: false, error: "message_not_found" },
+                404,
+            );
+        }
+        if (existingMessage.userId !== user.id) {
+            return c.json<DeleteClanMessageResponse>(
+                { success: false, error: "not_author" },
+                403,
+            );
+        }
+
+        await db.delete(clanMessagesTable).where(eq(clanMessagesTable.id, messageId));
+
+        return c.json<DeleteClanMessageResponse>({ success: true, messageId });
+    },
+);
 
 ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
     const { page, limit, search } = c.req.valid("json");

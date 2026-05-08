@@ -12181,6 +12181,7 @@ input [type="image"]:focus {
 }
 
 .clan-chat-message {
+  position: relative;
   display: flex;
   align-items: flex-end;
   gap: 8px;
@@ -12205,12 +12206,90 @@ input [type="image"]:focus {
 }
 
 .clan-chat-bubble {
+  position: relative;
   max-width: 270px;
-  padding: 8px 10px;
+  padding: 8px 30px 8px 10px;
   background-color: #3a3a3a;
   border-radius: 5px;
   color: #fff;
   overflow-wrap: anywhere;
+}
+
+.clan-chat-actions-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background-color: transparent;
+  color: #b9b9b9;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 14px;
+  opacity: 0;
+}
+
+.clan-chat-message:hover .clan-chat-actions-btn,
+.clan-chat-actions-btn:focus {
+  opacity: 1;
+}
+
+.clan-chat-actions-btn:hover {
+  background-color: #282828;
+  color: #fff;
+}
+
+.clan-chat-actions-menu {
+  position: fixed;
+  z-index: 2000;
+  min-width: 118px;
+  padding: 5px;
+  background-color: #1f1f1f;
+  border: 1px solid #444;
+  border-radius: 5px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.clan-chat-actions-item {
+  padding: 7px 10px;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.clan-chat-actions-item:hover {
+  background-color: #3a3a3a;
+}
+
+.clan-chat-actions-item.danger {
+  color: #ff5757;
+}
+
+.clan-chat-reply-preview {
+  margin-bottom: 6px;
+  padding-left: 7px;
+  border-left: 3px solid #707070;
+  color: #c4c4c4;
+}
+
+.clan-chat-reply-author {
+  font-size: 12px;
+  font-weight: bold;
+  color: #7cfc00;
+}
+
+.clan-chat-reply-text {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
 }
 
 .clan-chat-meta {
@@ -12237,6 +12316,12 @@ input [type="image"]:focus {
   color: #b9b9b9;
 }
 
+.clan-chat-edited {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: #b9b9b9;
+}
+
 .clan-chat-text {
   font-size: 15px;
   line-height: 1.25;
@@ -12250,6 +12335,50 @@ input [type="image"]:focus {
   font-size: 13px;
   text-align: center;
   color: #c4c4c4;
+}
+
+.clan-chat-compose-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 6px;
+  padding: 8px 10px;
+  background-color: #202020;
+  border-left: 3px solid #7cfc00;
+  border-radius: 5px;
+}
+
+.clan-chat-compose-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #7cfc00;
+}
+
+.clan-chat-compose-text {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: #c4c4c4;
+}
+
+.clan-chat-compose-clear {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  color: #c4c4c4;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.clan-chat-compose-clear:hover {
+  background-color: #333;
+  color: #fff;
 }
 
 .clan-chat-counter-row {

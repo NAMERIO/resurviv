@@ -439,7 +439,9 @@ export const clanMessagesTable = pgTable(
                 onUpdate: "cascade",
             }),
         message: text("message").notNull(),
+        replyToMessageId: uuid("reply_to_message_id"),
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        editedAt: timestamp("edited_at", { withTimezone: true }),
     },
     (table) => [
         index("idx_clan_messages_clan_created").on(table.clanId, table.createdAt),
