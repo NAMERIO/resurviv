@@ -107,6 +107,7 @@ export class ClanUi {
     clanMessagesLoading = false;
     clanMessagesPolling = false;
     clanMessagesPollTimer: ReturnType<typeof setInterval> | null = null;
+    clanMessageLongPressTimer: ReturnType<typeof setTimeout> | null = null;
     replyingToMessage: ClanMessage | null = null;
     editingMessage: ClanMessage | null = null;
     messageActionsMenu: JQuery<HTMLElement> | null = null;
@@ -894,6 +895,13 @@ export class ClanUi {
         this.clanMessagesPolling = false;
     }
 
+    clearClanMessageLongPress() {
+        if (this.clanMessageLongPressTimer) {
+            clearTimeout(this.clanMessageLongPressTimer);
+            this.clanMessageLongPressTimer = null;
+        }
+    }
+
     loadNewClanMessages() {
         if (
             !this.viewingClan ||
@@ -1032,10 +1040,22 @@ export class ClanUi {
             const item = $("<div/>", {
                 class: `clan-chat-message${isOwnMessage ? " own" : ""}`,
                 "data-message-id": message.id,
-            }).on("contextmenu", (e) => {
-                e.preventDefault();
-                this.showMessageActionsMenu(message, e.pageX, e.pageY);
-            });
+            })
+                .on("contextmenu", (e) => {
+                    e.preventDefault();
+                    this.showMessageActionsMenu(message, e.pageX, e.pageY);
+                })
+                .on("touchstart", (e) => {
+                    this.clearClanMessageLongPress();
+                    const touch = e.originalEvent?.touches[0];
+                    if (!touch) return;
+                    this.clanMessageLongPressTimer = setTimeout(() => {
+                        this.showMessageActionsMenu(message, touch.pageX, touch.pageY);
+                    }, 500);
+                })
+                .on("touchmove touchend touchcancel", () => {
+                    this.clearClanMessageLongPress();
+                });
 
             item.append(
                 $("<div/>", {
