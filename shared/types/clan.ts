@@ -6,7 +6,7 @@ export const ClanConstants = {
     MaxMembers: 20,
     NameMinLen: 2,
     NameMaxLen: 16,
-    MessageMaxLen: 100,
+    MessageMaxLen: 300,
     RejoinCooldownMs: 0, // none cooldown for now
 } as const;
 
@@ -94,6 +94,20 @@ export const zDeleteClanMessageRequest = z.object({
     messageId: z.string().uuid(),
 });
 export type DeleteClanMessageRequest = z.infer<typeof zDeleteClanMessageRequest>;
+
+export const zResolveKlipyGifRequest = z.object({
+    clanId: z.string().uuid(),
+    url: z.string().trim().url().max(300),
+});
+export type ResolveKlipyGifRequest = z.infer<typeof zResolveKlipyGifRequest>;
+
+export const zSearchKlipyGifsRequest = z.object({
+    clanId: z.string().uuid(),
+    query: z.string().trim().max(50).optional(),
+    section: z.string().trim().max(30).optional(),
+    limit: z.number().int().min(8).max(32).default(24),
+});
+export type SearchKlipyGifsRequest = z.infer<typeof zSearchKlipyGifsRequest>;
 
 export const zListClansRequest = z.object({
     page: z.number().int().min(1).default(1),
@@ -243,3 +257,29 @@ export type EditClanMessageResponse =
 export type DeleteClanMessageResponse =
     | { success: true; messageId: string }
     | { success: false; error: "not_in_clan" | "not_author" | "message_not_found" };
+
+export type ResolveKlipyGifResponse =
+    | {
+          success: true;
+          gif: {
+              url: string;
+              sourceUrl: string;
+              title: string;
+              width: number | null;
+              height: number | null;
+          };
+      }
+    | { success: false; error: "not_in_clan" | "invalid_url" | "not_found" };
+
+export type KlipyGifPickerItem = {
+    id: string;
+    url: string;
+    sourceUrl: string;
+    title: string;
+    width: number | null;
+    height: number | null;
+};
+
+export type SearchKlipyGifsResponse =
+    | { success: true; gifs: KlipyGifPickerItem[] }
+    | { success: false; error: "not_in_clan" | "not_configured" | "not_found" };

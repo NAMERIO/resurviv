@@ -2407,10 +2407,26 @@
                   <div id="btn-clan-chat-compose-clear" class="clan-chat-compose-clear">×</div>
                 </div>
                 <div class="clan-chat-counter-row">
-                  <div id="clan-chat-counter" class="clan-chat-counter">100 left</div>
+                  <div id="clan-chat-counter" class="clan-chat-counter">300 left</div>
+                </div>
+                <div id="clan-chat-gif-picker" class="clan-chat-gif-picker" style="display: none;">
+                  <div class="clan-chat-gif-search-row">
+                    <input type="text" id="clan-chat-gif-search" class="clan-chat-gif-search" placeholder="Search GIFs" maxlength="50" />
+                  </div>
+                  <div id="clan-chat-gif-sections" class="clan-chat-gif-sections">
+                    <button class="clan-chat-gif-section active" type="button" data-section="">Trending</button>
+                    <button class="clan-chat-gif-section" type="button" data-section="happy">Happy</button>
+                    <button class="clan-chat-gif-section" type="button" data-section="love">Love</button>
+                    <button class="clan-chat-gif-section" type="button" data-section="wow">Wow</button>
+                    <button class="clan-chat-gif-section" type="button" data-section="gg">GG</button>
+                    <button class="clan-chat-gif-section" type="button" data-section="fail">Fail</button>
+                  </div>
+                  <div id="clan-chat-gif-grid" class="clan-chat-gif-grid"></div>
+                  <div id="clan-chat-gif-status" class="clan-chat-gif-status"></div>
                 </div>
                 <div class="clan-chat-input-row">
-                  <input type="text" id="clan-chat-input" class="clan-chat-input" placeholder="Message your clan..." maxlength="100" />
+                  <button id="btn-clan-chat-gif" class="clan-chat-gif-btn" type="button" title="GIFs">GIF</button>
+                  <input type="text" id="clan-chat-input" class="clan-chat-input" placeholder="Message your clan..." maxlength="300" />
                   <div id="btn-clan-chat-send" class="clan-btn clan-btn-teal clan-chat-send">Send</div>
                 </div>
               </div>

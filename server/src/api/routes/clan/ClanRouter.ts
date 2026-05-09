@@ -20,6 +20,9 @@ import {
     type KickMemberResponse,
     type LeaveClanResponse,
     type ListClansResponse,
+    type KlipyGifPickerItem,
+    type ResolveKlipyGifResponse,
+    type SearchKlipyGifsResponse,
     type SendClanMessageResponse,
     type TransferOwnershipResponse,
     type UpdateClanResponse,
@@ -32,10 +35,13 @@ import {
     zJoinClanRequest,
     zKickMemberRequest,
     zListClansRequest,
+    zResolveKlipyGifRequest,
+    zSearchKlipyGifsRequest,
     zSendClanMessageRequest,
     zTransferOwnershipRequest,
     zUpdateClanRequest,
 } from "../../../../../shared/types/clan";
+import { Config } from "../../../config";
 import { checkForBadWords, validateUserName } from "../../../utils/serverHelpers";
 import {
     authMiddleware,
@@ -110,6 +116,213 @@ function getUserMembership(userId: string) {
     return db.query.clanMembersTable.findFirst({
         where: eq(clanMembersTable.userId, userId),
     });
+}
+
+type KlipyGifResult = {
+    id?: string;
+    url: string;
+    sourceUrl: string;
+    title: string;
+    width: number | null;
+    height: number | null;
+};
+
+type KlipyApiGifObject = {
+    id?: string;
+    title?: string;
+    itemurl?: string;
+    url?: string;
+    media_formats?: {
+        gif?: { url?: string; dims?: [number, number] };
+        mediumgif?: { url?: string; dims?: [number, number] };
+        tinygif?: { url?: string; dims?: [number, number] };
+    };
+};
+
+function parseKlipyUrl(rawUrl: string): URL | null {
+    let url: URL;
+    try {
+        url = new URL(rawUrl);
+    } catch {
+        return null;
+    }
+
+    if (url.protocol !== "https:" && url.protocol !== "http:") {
+        return null;
+    }
+
+    const hostname = url.hostname.toLowerCase();
+    if (hostname !== "klipy.com" && !hostname.endsWith(".klipy.com")) {
+        return null;
+    }
+
+    return url;
+}
+
+function getKlipyGifId(url: URL): string | null {
+    const segments = url.pathname.split("/").filter(Boolean);
+    for (let i = segments.length - 1; i >= 0; i--) {
+        const segment = decodeURIComponent(segments[i]);
+        const match = segment.match(/(?:^|[-_])([a-zA-Z0-9]{6,})(?:\.[a-z0-9]+)?$/);
+        if (match) return match[1];
+    }
+    return null;
+}
+
+function isKlipyMediaUrl(url: URL) {
+    const hostname = url.hostname.toLowerCase();
+    return (
+        (hostname === "klipy.com" || hostname.endsWith(".klipy.com")) &&
+        /\.(gif|webp|mp4)$/i.test(url.pathname)
+    );
+}
+
+function normalizeKlipyMediaUrl(rawUrl: string): string | null {
+    const url = parseKlipyUrl(rawUrl);
+    if (!url || !isKlipyMediaUrl(url)) return null;
+    url.protocol = "https:";
+    url.search = "";
+    return url.toString();
+}
+
+function getMetaContent(html: string, key: string) {
+    const metaRegex = /<meta\s+([^>]+)>/gi;
+    let match: RegExpExecArray | null;
+    while ((match = metaRegex.exec(html))) {
+        const tag = match[1];
+        if (!new RegExp(`(?:property|name)=["']${key}["']`, "i").test(tag)) {
+            continue;
+        }
+
+        const contentMatch = tag.match(/content=["']([^"']+)["']/i);
+        if (contentMatch) return contentMatch[1];
+    }
+    return null;
+}
+
+function toKlipyGifResult(result: KlipyApiGifObject): KlipyGifResult | null {
+    const gif =
+        result.media_formats?.gif ??
+        result.media_formats?.mediumgif ??
+        result.media_formats?.tinygif;
+    if (!gif?.url) return null;
+
+    return {
+        id: result.id,
+        url: gif.url,
+        sourceUrl: result.url || result.itemurl || gif.url,
+        title: result.title || "Klipy GIF",
+        width: gif.dims?.[0] ?? null,
+        height: gif.dims?.[1] ?? null,
+    };
+}
+
+async function fetchKlipyApiGif(id: string): Promise<KlipyGifResult | null> {
+    const apiKey = Config.secrets.KLIPY_API_KEY;
+    if (!apiKey) return null;
+
+    const params = new URLSearchParams({
+        key: apiKey,
+        ids: id,
+        media_filter: "gif,tinygif,mediumgif",
+    });
+    const res = await fetch(`https://api.klipy.com/v2/posts?${params}`, {
+        signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+
+    const data = (await res.json()) as { results?: KlipyApiGifObject[] };
+    const result = data.results?.[0];
+    return result ? toKlipyGifResult(result) : null;
+}
+
+async function fetchKlipyGifPickerItems(options: {
+    query?: string;
+    section?: string;
+    limit: number;
+}): Promise<KlipyGifPickerItem[]> {
+    const apiKey = Config.secrets.KLIPY_API_KEY;
+    if (!apiKey) return [];
+
+    const query = options.query || options.section || "";
+    const endpoint = query ? "search" : "featured";
+    const params = new URLSearchParams({
+        key: apiKey,
+        limit: String(options.limit),
+        media_filter: "gif,tinygif,mediumgif",
+    });
+    if (query) {
+        params.set("q", query);
+    }
+
+    const res = await fetch(`https://api.klipy.com/v2/${endpoint}?${params}`, {
+        signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return [];
+
+    const data = (await res.json()) as { results?: KlipyApiGifObject[] };
+    return (data.results || [])
+        .map((result) => {
+            const gif = toKlipyGifResult(result);
+            if (!gif) return null;
+            return {
+                id: gif.id || gif.sourceUrl,
+                url: gif.url,
+                sourceUrl: gif.sourceUrl,
+                title: gif.title,
+                width: gif.width,
+                height: gif.height,
+            };
+        })
+        .filter((gif): gif is KlipyGifPickerItem => !!gif);
+}
+
+async function fetchKlipyPageGif(url: URL): Promise<KlipyGifResult | null> {
+    const res = await fetch(url.toString(), {
+        headers: {
+            "User-Agent": "resurviv-clan-chat/1.0",
+        },
+        signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+
+    const html = await res.text();
+    const image = getMetaContent(html, "og:image");
+    const imageUrl = image ? normalizeKlipyMediaUrl(image) : null;
+    if (!imageUrl) return null;
+
+    const title = getMetaContent(html, "og:title");
+    return {
+        url: imageUrl,
+        sourceUrl: url.toString(),
+        title: title || "Klipy GIF",
+        width: null,
+        height: null,
+    };
+}
+
+async function resolveKlipyGif(rawUrl: string): Promise<KlipyGifResult | null> {
+    const url = parseKlipyUrl(rawUrl);
+    if (!url) return null;
+
+    const directMediaUrl = normalizeKlipyMediaUrl(url.toString());
+    if (directMediaUrl) {
+        return {
+            url: directMediaUrl,
+            sourceUrl: url.toString(),
+            title: "Klipy GIF",
+            width: null,
+            height: null,
+        };
+    }
+
+    const gifId = getKlipyGifId(url);
+    if (gifId) {
+        const apiGif = await fetchKlipyApiGif(gifId);
+        if (apiGif) return apiGif;
+    }
+
+    return fetchKlipyPageGif(url);
 }
 
 function toClanMessage(row: {
@@ -837,6 +1050,73 @@ ClanRouter.post("/send_message", validateParams(zSendClanMessageRequest), async 
         success: true,
         message: insertedMessage!,
     });
+});
+
+ClanRouter.post("/resolve_klipy_gif", validateParams(zResolveKlipyGifRequest), async (c) => {
+    const user = c.get("user")!;
+    const { clanId, url } = c.req.valid("json");
+
+    const membership = await getUserMembership(user.id);
+    if (!membership || membership.clanId !== clanId) {
+        return c.json<ResolveKlipyGifResponse>(
+            { success: false, error: "not_in_clan" },
+            403,
+        );
+    }
+
+    if (!parseKlipyUrl(url)) {
+        return c.json<ResolveKlipyGifResponse>(
+            { success: false, error: "invalid_url" },
+            400,
+        );
+    }
+
+    try {
+        const gif = await resolveKlipyGif(url);
+        if (!gif) {
+            return c.json<ResolveKlipyGifResponse>(
+                { success: false, error: "not_found" },
+                404,
+            );
+        }
+
+        return c.json<ResolveKlipyGifResponse>({ success: true, gif });
+    } catch {
+        return c.json<ResolveKlipyGifResponse>(
+            { success: false, error: "not_found" },
+            404,
+        );
+    }
+});
+
+ClanRouter.post("/search_klipy_gifs", validateParams(zSearchKlipyGifsRequest), async (c) => {
+    const user = c.get("user")!;
+    const { clanId, query, section, limit } = c.req.valid("json");
+
+    const membership = await getUserMembership(user.id);
+    if (!membership || membership.clanId !== clanId) {
+        return c.json<SearchKlipyGifsResponse>(
+            { success: false, error: "not_in_clan" },
+            403,
+        );
+    }
+
+    if (!Config.secrets.KLIPY_API_KEY) {
+        return c.json<SearchKlipyGifsResponse>(
+            { success: false, error: "not_configured" },
+            500,
+        );
+    }
+
+    try {
+        const gifs = await fetchKlipyGifPickerItems({ query, section, limit });
+        return c.json<SearchKlipyGifsResponse>({ success: true, gifs });
+    } catch {
+        return c.json<SearchKlipyGifsResponse>(
+            { success: false, error: "not_found" },
+            404,
+        );
+    }
 });
 
 ClanRouter.post("/edit_message", validateParams(zEditClanMessageRequest), async (c) => {

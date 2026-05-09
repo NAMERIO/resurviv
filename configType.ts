@@ -342,6 +342,11 @@ export interface ConfigType {
          */
         SPELLSYNC_PROJECT_ID?: string;
         SPELLSYNC_PUBLIC_TOKEN?: string;
+
+        /**
+         * Klipy API key used by clan chat to resolve shared Klipy links into GIF previews.
+         */
+        KLIPY_API_KEY?: string;
     };
 
     /**

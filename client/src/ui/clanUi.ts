@@ -16,6 +16,8 @@ import {
     type GetMyClanResponse,
     type JoinClanResponse,
     type ListClansResponse,
+    type ResolveKlipyGifResponse,
+    type SearchKlipyGifsResponse,
     type SendClanMessageResponse,
     type UpdateClanResponse,
 } from "../../../shared/types/clan";
@@ -79,6 +81,31 @@ function formatChatTime(timestamp: number): string {
         : date.toLocaleDateString([], { month: "short", day: "numeric" });
 }
 
+type ClanChatGifPreview = Extract<ResolveKlipyGifResponse, { success: true }>["gif"];
+type ClanChatGifPickerItem = Extract<SearchKlipyGifsResponse, { success: true }>["gifs"][number];
+const blankGifSrc =
+    "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+
+function findKlipyUrl(message: string): string | null {
+    const match = message.match(/https?:\/\/(?:[a-z0-9-]+\.)?klipy\.com\/\S+/i);
+    if (!match) return null;
+
+    try {
+        const url = new URL(match[0]);
+        const hostname = url.hostname.toLowerCase();
+        if (hostname !== "klipy.com" && !hostname.endsWith(".klipy.com")) {
+            return null;
+        }
+        return url.toString();
+    } catch {
+        return null;
+    }
+}
+
+function isOnlyKlipyUrl(message: string) {
+    return /^https?:\/\/(?:[a-z0-9-]+\.)?klipy\.com\/\S+$/i.test(message.trim());
+}
+
 function normalizeColorInputValue(color?: string | null) {
     const value = (color || "").trim();
     if (/^#[0-9a-fA-F]{6}$/.test(value)) {
@@ -111,6 +138,13 @@ export class ClanUi {
     replyingToMessage: ClanMessage | null = null;
     editingMessage: ClanMessage | null = null;
     messageActionsMenu: JQuery<HTMLElement> | null = null;
+    gifPreviewCache = new Map<string, ClanChatGifPreview | null>();
+    gifPreviewPending = new Set<string>();
+    gifPickerSearchTimer: ReturnType<typeof setTimeout> | null = null;
+    gifPickerSection = "";
+    gifPickerLoading = false;
+    gifImageObserver: IntersectionObserver | null = null;
+    observedGifImages = new Set<HTMLImageElement>();
 
     constructor(
         public account: Account,
@@ -263,6 +297,36 @@ export class ClanUi {
         $("#btn-clan-chat-send").on("click", () => {
             this.sendClanMessage();
         });
+        $("#btn-clan-chat-gif").on("click", (e) => {
+            e.stopPropagation();
+            this.toggleGifPicker();
+        });
+        $("#clan-chat-gif-picker").on("click", (e) => {
+            e.stopPropagation();
+        });
+        $("#clan-chat-gif-search").on("input", () => {
+            this.scheduleGifPickerSearch();
+        });
+        $("#clan-chat-gif-search").on("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                this.loadGifPickerResults();
+            }
+        });
+        $("#clan-chat-gif-sections").on("click", ".clan-chat-gif-section", (e) => {
+            const section = ($(e.currentTarget).data("section") as string) || "";
+            this.gifPickerSection = section;
+            $("#clan-chat-gif-search").val("");
+            $(".clan-chat-gif-section").removeClass("active");
+            $(e.currentTarget).addClass("active");
+            this.loadGifPickerResults();
+        });
+        $("#clan-chat-gif-grid").on("click", ".clan-chat-gif-item", (e) => {
+            const sourceUrl = $(e.currentTarget).data("source-url") as string;
+            if (sourceUrl) {
+                this.sendGifMessage(sourceUrl);
+            }
+        });
         $("#clan-chat-input").on("keydown", (e) => {
             if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -277,6 +341,7 @@ export class ClanUi {
         });
         $(document).on("click", () => {
             this.hideMessageActionsMenu();
+            this.hideGifPicker();
         });
         $("#clan-chat-messages").on("scroll", () => {
             const container = $("#clan-chat-messages");
@@ -935,8 +1000,14 @@ export class ClanUi {
                     return;
                 }
 
+                const messageRenderKey = this.getClanMessagesRenderKey();
                 this.syncRecentClanMessages(res.messages);
                 this.mergeClanMessages(res.messages);
+                if (messageRenderKey === this.getClanMessagesRenderKey()) {
+                    $("#clan-chat-status").text("");
+                    return;
+                }
+
                 this.renderClanMessages();
                 if (shouldStickToBottom) {
                     container.scrollTop(container.prop("scrollHeight") || 0);
@@ -944,6 +1015,19 @@ export class ClanUi {
                 $("#clan-chat-status").text("");
             },
         );
+    }
+
+    getClanMessagesRenderKey() {
+        return this.clanMessages
+            .map((message) =>
+                [
+                    message.id,
+                    message.message,
+                    message.editedAt ?? "",
+                    message.replyTo?.id ?? "",
+                ].join(":"),
+            )
+            .join("|");
     }
 
     syncRecentClanMessages(messages: ClanMessage[]) {
@@ -1013,6 +1097,174 @@ export class ClanUi {
         this.updateClanChatCounter();
     }
 
+    toggleGifPicker() {
+        if ($("#clan-chat-gif-picker").is(":visible")) {
+            this.hideGifPicker();
+            return;
+        }
+        this.showGifPicker();
+    }
+
+    showGifPicker() {
+        if (!this.viewingClan) return;
+        $("#clan-chat-gif-picker").show();
+        $("#btn-clan-chat-gif").addClass("active");
+        $("#clan-chat-gif-search").focus();
+        if ($("#clan-chat-gif-grid").children().length === 0) {
+            this.loadGifPickerResults();
+        }
+    }
+
+    hideGifPicker() {
+        $("#clan-chat-gif-picker").hide();
+        $("#btn-clan-chat-gif").removeClass("active");
+        this.unloadGifImages($("#clan-chat-gif-grid")[0]);
+    }
+
+    scheduleGifPickerSearch() {
+        if (this.gifPickerSearchTimer) {
+            clearTimeout(this.gifPickerSearchTimer);
+        }
+        this.gifPickerSearchTimer = setTimeout(() => {
+            this.loadGifPickerResults();
+        }, 250);
+    }
+
+    loadGifPickerResults() {
+        if (!this.viewingClan || this.gifPickerLoading) return;
+
+        const query = (($("#clan-chat-gif-search").val() as string) || "").trim();
+        this.gifPickerLoading = true;
+        $("#clan-chat-gif-status").text("Loading GIFs...");
+
+        clanRequest<SearchKlipyGifsResponse>(
+            "/api/clan/search_klipy_gifs",
+            {
+                clanId: this.viewingClan.id,
+                query: query || undefined,
+                section: query ? undefined : this.gifPickerSection || undefined,
+                limit: 24,
+            },
+            (err, res) => {
+                this.gifPickerLoading = false;
+                if (err || !res?.success) {
+                    $("#clan-chat-gif-grid").empty();
+                    $("#clan-chat-gif-status").text("GIFs could not be loaded.");
+                    return;
+                }
+
+                this.renderGifPickerResults(res.gifs);
+            },
+        );
+    }
+
+    renderGifPickerResults(gifs: ClanChatGifPickerItem[]) {
+        const grid = $("#clan-chat-gif-grid");
+        this.unobserveGifImages(grid[0]);
+        grid.empty();
+
+        for (const gif of gifs) {
+            grid.append(
+                $("<button/>", {
+                    class: "clan-chat-gif-item",
+                    type: "button",
+                    title: gif.title,
+                })
+                    .data("source-url", gif.sourceUrl)
+                    .append(
+                        this.createLazyGifImage({
+                            class: "clan-chat-gif-thumb",
+                            src: gif.url,
+                            alt: gif.title,
+                        }),
+                    ),
+            );
+        }
+
+        $("#clan-chat-gif-status").text(gifs.length === 0 ? "No GIFs found." : "");
+    }
+
+    createLazyGifImage(options: { class: string; src: string; alt: string }) {
+        const image = $("<img/>", {
+            class: `${options.class} clan-chat-lazy-gif`,
+            src: blankGifSrc,
+            alt: options.alt,
+            loading: "lazy",
+        });
+        image.data("gif-src", options.src);
+        this.observeGifImage(image[0] as HTMLImageElement);
+        return image;
+    }
+
+    getGifImageObserver() {
+        if (!("IntersectionObserver" in window)) return null;
+        if (!this.gifImageObserver) {
+            this.gifImageObserver = new IntersectionObserver(
+                (entries) => {
+                    for (const entry of entries) {
+                        const image = entry.target as HTMLImageElement;
+                        const gifSrc = $(image).data("gif-src") as string | undefined;
+                        if (!gifSrc) continue;
+
+                        if (entry.isIntersecting) {
+                            if (image.src !== gifSrc) {
+                                image.src = gifSrc;
+                            }
+                        } else if (image.src !== blankGifSrc) {
+                            image.src = blankGifSrc;
+                        }
+                    }
+                },
+                { root: null, rootMargin: "80px 0px", threshold: 0 },
+            );
+        }
+        return this.gifImageObserver;
+    }
+
+    observeGifImage(image: HTMLImageElement) {
+        const observer = this.getGifImageObserver();
+        if (!observer) {
+            const gifSrc = $(image).data("gif-src") as string | undefined;
+            if (gifSrc) image.src = gifSrc;
+            return;
+        }
+
+        this.observedGifImages.add(image);
+        observer.observe(image);
+    }
+
+    unobserveGifImages(root?: HTMLElement) {
+        if (!this.gifImageObserver) return;
+
+        for (const image of Array.from(this.observedGifImages)) {
+            if (root && !root.contains(image)) continue;
+            this.gifImageObserver.unobserve(image);
+            this.observedGifImages.delete(image);
+        }
+    }
+
+    unloadGifImages(root?: HTMLElement) {
+        for (const image of Array.from(this.observedGifImages)) {
+            if (root && !root.contains(image)) continue;
+            image.src = blankGifSrc;
+        }
+    }
+
+    sendGifMessage(sourceUrl: string) {
+        if (this.editingMessage) {
+            $("#clan-chat-status").text("Finish editing before sending a GIF.");
+            return;
+        }
+        if (sourceUrl.length > ClanConstants.MessageMaxLen) {
+            $("#clan-chat-status").text("That GIF link is too long to send.");
+            return;
+        }
+        $("#clan-chat-input").val(sourceUrl);
+        this.updateClanChatCounter();
+        this.hideGifPicker();
+        this.sendClanMessage();
+    }
+
     findClanMessage(messageId: string) {
         return this.clanMessages.find((message) => message.id === messageId) || null;
     }
@@ -1031,8 +1283,76 @@ export class ClanUi {
         return !!currentUserId && message.senderId === currentUserId;
     }
 
+    renderGifPreview(message: ClanMessage) {
+        if (!this.viewingClan) return $();
+
+        const gifUrl = findKlipyUrl(message.message);
+        if (!gifUrl) return $();
+
+        const preview = $("<a/>", {
+            class: "clan-chat-gif-preview loading",
+            href: gifUrl,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            title: "Open GIF",
+        }).append(
+            $("<div/>", {
+                class: "clan-chat-gif-placeholder",
+                text: "Loading GIF...",
+            }),
+        );
+
+        const cachedGif = this.gifPreviewCache.get(gifUrl);
+        if (cachedGif === null) return $();
+        if (cachedGif) {
+            return this.fillGifPreview(preview, cachedGif);
+        }
+        if (this.gifPreviewPending.has(gifUrl)) {
+            return preview;
+        }
+
+        this.gifPreviewPending.add(gifUrl);
+        clanRequest<ResolveKlipyGifResponse>(
+            "/api/clan/resolve_klipy_gif",
+            {
+                clanId: this.viewingClan.id,
+                url: gifUrl,
+            },
+            (err, res) => {
+                this.gifPreviewPending.delete(gifUrl);
+                if (err || !res?.success) {
+                    this.gifPreviewCache.set(gifUrl, null);
+                    preview.remove();
+                    return;
+                }
+
+                this.gifPreviewCache.set(gifUrl, res.gif);
+                this.fillGifPreview(preview, res.gif);
+            },
+        );
+
+        return preview;
+    }
+
+    fillGifPreview(preview: JQuery<HTMLElement>, gif: ClanChatGifPreview) {
+        preview.removeClass("loading");
+        preview.empty().append(
+            this.createLazyGifImage({
+                class: "clan-chat-gif-image",
+                src: gif.url,
+                alt: gif.title,
+            }),
+            $("<span/>", {
+                class: "clan-chat-gif-attribution",
+                text: "Powered by Klipy",
+            }),
+        );
+        return preview;
+    }
+
     renderClanMessages() {
         const container = $("#clan-chat-messages");
+        this.unobserveGifImages(container[0]);
         container.empty();
 
         for (const message of this.clanMessages) {
@@ -1063,6 +1383,7 @@ export class ClanUi {
                 }).css("background-image", `url(${getClanIconUrl(message.playerIcon)})`),
             );
 
+            const onlyKlipyUrl = isOnlyKlipyUrl(message.message);
             const bubble = $("<div/>", { class: "clan-chat-bubble" }).append(
                 $("<button/>", {
                     class: "clan-chat-actions-btn",
@@ -1101,10 +1422,13 @@ export class ClanUi {
                           })
                         : $(),
                 ),
-                $("<div/>", {
-                    class: "clan-chat-text",
-                    text: message.message,
-                }),
+                onlyKlipyUrl
+                    ? $()
+                    : $("<div/>", {
+                          class: "clan-chat-text",
+                          text: message.message,
+                      }),
+                this.renderGifPreview(message),
             );
 
             item.append(bubble);
