@@ -5,6 +5,7 @@ import type { PlayerStatus } from "../../../shared/net/updateMsg";
 import { collider } from "../../../shared/utils/collider";
 import { util } from "../../../shared/utils/util";
 import { v2 } from "../../../shared/utils/v2";
+import { isBattleRoyaleMapName } from "../battleroyale/helpers";
 import type { Game } from "./game";
 import type { DamageParams } from "./objects/gameObject";
 import type { Player } from "./objects/player";
@@ -22,6 +23,7 @@ export class GameModeManager {
     readonly game: Game;
     readonly mode: GameMode;
     readonly isSolo: boolean;
+    readonly revivesEnabled: boolean;
 
     constructor(game: Game) {
         this.game = game;
@@ -33,6 +35,8 @@ export class GameModeManager {
         ].findIndex((isMode) => isMode);
 
         this.isSolo = this.mode === GameMode.Solo;
+        this.revivesEnabled =
+            game.teamMode != TeamMode.Solo && isBattleRoyaleMapName(game.mapName);
     }
 
     aliveCount(): number {
@@ -372,9 +376,10 @@ export class GameModeManager {
                 if (allDowned) {
                     group.killAllTeammates();
                 }
+            } else if (this.revivesEnabled) {
+                player.down(params);
             } else {
                 player.kill(params);
-                // player.down(params);
             }
         }
     }
