@@ -49,7 +49,7 @@ import { api } from "./api";
 import type { ConfigManager } from "./config";
 import { errorLogManager } from "./errorLogs";
 import { helpers } from "./helpers";
-import { setLocalBan } from "./localBan";
+import { clearLocalBan, getLocalBan, setLocalBan } from "./localBan";
 import { proxy } from "./proxy";
 import type { Item } from "./ui/loadoutMenu";
 
@@ -248,9 +248,16 @@ export class Account {
             if (err) {
                 errorLogManager.storeGeneric("account", "load_profile_error");
             } else if (data.banned) {
-                setLocalBan(data.reason || "Account banned", true);
+                setLocalBan(data.reason || "Account banned", true, undefined, "account");
                 this.emit("error", "account_banned", data.reason);
             } else if (data.success) {
+                const localBan = getLocalBan();
+                if (
+                    localBan?.source === "account" ||
+                    (!localBan?.source && localBan?.permanent)
+                ) {
+                    clearLocalBan();
+                }
                 this.loggedIn = true;
                 this.profile = data.profile;
                 this.gpBalance = data.gpBalance;

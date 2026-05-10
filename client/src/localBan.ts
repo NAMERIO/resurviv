@@ -5,6 +5,7 @@ export interface LocalBan {
     reason: string;
     permanent: boolean;
     expiresIn: string;
+    source?: "account" | "ip";
 }
 
 function getCookieValue(name: string) {
@@ -28,11 +29,13 @@ export function setLocalBan(
     reason = "Banned",
     permanent = false,
     expiresIn = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    source: LocalBan["source"] = "ip",
 ) {
     const ban: LocalBan = {
         reason,
         permanent,
         expiresIn,
+        source,
     };
     const value = JSON.stringify(ban);
     localStorage.setItem(localBanKey, value);

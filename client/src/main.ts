@@ -559,6 +559,9 @@ export class Application {
                 if (errMsg == "ip_banned" || errMsg == "banned") {
                     setLocalBan(
                         this.localization.translate("index-ip-banned") || "Banned",
+                        false,
+                        undefined,
+                        errMsg == "banned" ? "account" : "ip",
                     );
                 }
                 if (this.game!.m_updatePass) {
@@ -1841,7 +1844,12 @@ export class Application {
                     }
 
                     if (data.banned) {
-                        setLocalBan(data.reason, data.permanent, String(data.expiresIn));
+                        setLocalBan(
+                            data.reason,
+                            data.permanent,
+                            String(data.expiresIn),
+                            "ip",
+                        );
                         cb(null, undefined, data as FindGameResponse & { banned: true });
                         return;
                     }
@@ -1952,7 +1960,7 @@ export class Application {
     }
 
     showIpBanModal(ban: FindGameResponse & { banned: true }) {
-        setLocalBan(ban.reason, ban.permanent, String(ban.expiresIn));
+        setLocalBan(ban.reason, ban.permanent, String(ban.expiresIn), "ip");
         $("#modal-ip-banned-reason").text(`Reason: ${ban.reason}`);
 
         let expiration = "Duration: indefinite";
