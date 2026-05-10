@@ -8,6 +8,7 @@ import {
     type ClanInfo,
     type ClanLeaderboardEntry,
     type ClanLeaderboardResponse,
+    type ClanMember,
     type ClanMessage,
     type CreateClanResponse,
     type DeleteClanMessageResponse,
@@ -117,6 +118,10 @@ function normalizeColorInputValue(color?: string | null) {
     return "#ffffff";
 }
 
+function normalizeMentionValue(value: string) {
+    return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
 export class ClanUi {
     mainModal: MenuModal;
     iconModal: MenuModal;
@@ -135,6 +140,9 @@ export class ClanUi {
     clanMessagesPolling = false;
     clanMessagesPollTimer: ReturnType<typeof setInterval> | null = null;
     clanMessageLongPressTimer: ReturnType<typeof setTimeout> | null = null;
+    clanMentionPollTimer: ReturnType<typeof setInterval> | null = null;
+    mentionSuggestionsMenu: JQuery<HTMLElement> | null = null;
+    unreadMentionCount = 0;
     replyingToMessage: ClanMessage | null = null;
     editingMessage: ClanMessage | null = null;
     messageActionsMenu: JQuery<HTMLElement> | null = null;
@@ -161,6 +169,12 @@ export class ClanUi {
 
         this.initUi();
         this.loadAvailableIcons();
+        this.account.addEventListener("login", () => {
+            this.loadMyClan();
+        });
+        if (this.account.loggedIn) {
+            this.loadMyClan();
+        }
     }
 
     initUi() {
@@ -329,6 +343,22 @@ export class ClanUi {
             }
         });
         $("#clan-chat-input").on("keydown", (e) => {
+            if (this.mentionSuggestionsMenu?.is(":visible")) {
+                if (e.key === "Enter" || e.key === "Tab") {
+                    e.preventDefault();
+                    this.applyMentionSuggestion(
+                        this.mentionSuggestionsMenu
+                            .find(".clan-mention-suggestion")
+                            .first()
+                            .data("mention") as string,
+                    );
+                    return;
+                }
+                if (e.key === "Escape") {
+                    this.hideMentionSuggestions();
+                    return;
+                }
+            }
             if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 this.sendClanMessage();
@@ -336,6 +366,7 @@ export class ClanUi {
         });
         $("#clan-chat-input").on("input", () => {
             this.updateClanChatCounter();
+            this.updateMentionSuggestions();
         });
         $("#btn-clan-chat-compose-clear").on("click", () => {
             this.clearClanChatComposeContext();
@@ -343,6 +374,7 @@ export class ClanUi {
         $(document).on("click", () => {
             this.hideMessageActionsMenu();
             this.hideGifPicker();
+            this.hideMentionSuggestions();
         });
         $("#clan-chat-messages").on("scroll", () => {
             const container = $("#clan-chat-messages");
@@ -463,13 +495,22 @@ export class ClanUi {
         clanRequest<GetMyClanResponse>("/api/clan/my_clan", {}, (err, res) => {
             if (err || !res?.success) {
                 console.error("Failed to load clan data");
+                this.stopMentionPolling();
                 return;
             }
 
             this.currentClan = res.clan;
             this.cooldownUntil = res.cooldownUntil;
+            if (this.currentClan) {
+                this.ensureMentionSeenState(this.currentClan.id);
+                this.startMentionPolling();
+            } else {
+                this.unreadMentionCount = 0;
+                this.stopMentionPolling();
+            }
 
             this.updateMainCard();
+            this.updateMentionBadges();
         });
     }
 
@@ -765,6 +806,126 @@ export class ClanUi {
         );
     }
 
+    getCurrentUserId() {
+        const clan = this.viewingClan || this.currentClan;
+        if (!clan || !this.account.profile?.slug) return null;
+        return (
+            clan.members.find((member) => member.slug === this.account.profile.slug)
+                ?.odUserId || null
+        );
+    }
+
+    getMentionSeenStorageKey(clanId: string) {
+        const userKey = this.account.profile?.slug || "guest";
+        return `clanMentionSeen:${userKey}:${clanId}`;
+    }
+
+    getMentionSeenAt(clanId: string) {
+        return Number(localStorage.getItem(this.getMentionSeenStorageKey(clanId)) || 0);
+    }
+
+    setMentionSeenAt(clanId: string, timestamp: number) {
+        localStorage.setItem(this.getMentionSeenStorageKey(clanId), String(timestamp));
+    }
+
+    ensureMentionSeenState(clanId: string) {
+        if (!this.getMentionSeenAt(clanId)) {
+            this.setMentionSeenAt(clanId, Date.now());
+        }
+    }
+
+    startMentionPolling() {
+        this.stopMentionPolling();
+        this.loadMentionNotifications();
+        this.clanMentionPollTimer = setInterval(() => {
+            this.loadMentionNotifications();
+        }, 2500);
+    }
+
+    stopMentionPolling() {
+        if (this.clanMentionPollTimer) {
+            clearInterval(this.clanMentionPollTimer);
+            this.clanMentionPollTimer = null;
+        }
+    }
+
+    loadMentionNotifications() {
+        if (!this.currentClan || this.clanPageModal.isVisible()) return;
+
+        const clanId = this.currentClan.id;
+        const after = this.getMentionSeenAt(clanId) || undefined;
+        clanRequest<GetClanMessagesResponse>(
+            "/api/clan/messages",
+            { clanId, limit: 40, after },
+            (err, res) => {
+                if (err || !res?.success || !this.currentClan || this.currentClan.id !== clanId) {
+                    return;
+                }
+                this.updateUnreadMentionsFromMessages(res.messages, false);
+            },
+        );
+    }
+
+    updateUnreadMentionsFromMessages(messages: ClanMessage[], markSeen: boolean) {
+        const clan = this.currentClan || this.viewingClan;
+        if (!clan) return;
+
+        const seenAt = this.getMentionSeenAt(clan.id);
+        const currentUserId = this.getCurrentUserId();
+        const mentionCount = messages.filter(
+            (message) =>
+                message.createdAt > seenAt &&
+                message.senderId !== currentUserId &&
+                this.isMessageMentioningCurrentUser(message),
+        ).length;
+
+        this.unreadMentionCount = markSeen ? 0 : this.unreadMentionCount + mentionCount;
+        if (markSeen && messages.length > 0) {
+            this.setMentionSeenAt(clan.id, Math.max(...messages.map((m) => m.createdAt)));
+        } else if (!markSeen && messages.length > 0) {
+            this.setMentionSeenAt(clan.id, Math.max(...messages.map((m) => m.createdAt)));
+        }
+        this.updateMentionBadges();
+    }
+
+    updateMentionBadges() {
+        const count = this.unreadMentionCount;
+        const label = count > 99 ? "99+" : String(count);
+        for (const target of [$("#btn-clans"), $("#btn-clan-my-clan")]) {
+            let badge = target.find(".clan-mention-badge");
+            if (!badge.length) {
+                badge = $("<span/>", { class: "clan-mention-badge" });
+                target.append(badge);
+            }
+            badge.text(label).toggle(count > 0);
+        }
+    }
+
+    isMessageMentioningCurrentUser(message: ClanMessage) {
+        if (message.type !== "user" || !this.account.profile?.slug) return false;
+        const clan = this.viewingClan || this.currentClan;
+        const currentMember = clan?.members.find(
+            (member) => member.slug === this.account.profile.slug,
+        );
+        if (!currentMember) return false;
+
+        const mentions = this.getMessageMentions(message.message);
+        return mentions.some((mention) => this.isMentionForMember(mention, currentMember));
+    }
+
+    isMentionForMember(mention: string, member: ClanMember) {
+        const normalizedMention = normalizeMentionValue(mention);
+        return (
+            normalizedMention === normalizeMentionValue(member.username) ||
+            normalizedMention === normalizeMentionValue(member.slug)
+        );
+    }
+
+    getMessageMentions(message: string) {
+        const matches = message.match(/@[\w.-]+/g) || [];
+        return matches.map((mention) => mention.slice(1));
+    }
+
     renderClanDetail(clan: ClanDetail) {
         $("#clan-detail-icon").css(
             "background-image",
@@ -890,6 +1051,7 @@ export class ClanUi {
         $("#clan-chat-input").val("");
         $("#clan-chat-status").text("");
         this.hideMessageActionsMenu();
+        this.hideMentionSuggestions();
         this.renderClanChatComposeContext();
         this.updateClanChatCounter();
     }
@@ -929,6 +1091,9 @@ export class ClanUi {
                     this.clanMessages = res.messages;
                 }
                 this.renderClanMessages();
+                if (!loadOlder) {
+                    this.updateUnreadMentionsFromMessages(this.clanMessages, true);
+                }
 
                 if (loadOlder) {
                     const newScrollHeight = container.prop("scrollHeight") || 0;
@@ -1005,11 +1170,13 @@ export class ClanUi {
                 this.syncRecentClanMessages(res.messages);
                 this.mergeClanMessages(res.messages);
                 if (messageRenderKey === this.getClanMessagesRenderKey()) {
+                    this.updateUnreadMentionsFromMessages(this.clanMessages, true);
                     $("#clan-chat-status").text("");
                     return;
                 }
 
                 this.renderClanMessages();
+                this.updateUnreadMentionsFromMessages(this.clanMessages, true);
                 if (shouldStickToBottom) {
                     container.scrollTop(container.prop("scrollHeight") || 0);
                 }
@@ -1412,6 +1579,159 @@ export class ClanUi {
         return preview;
     }
 
+    getActiveMentionQuery() {
+        const input = $("#clan-chat-input")[0] as HTMLInputElement | undefined;
+        if (!input) return null;
+
+        const cursor = input.selectionStart ?? input.value.length;
+        const beforeCursor = input.value.slice(0, cursor);
+        const match = beforeCursor.match(/(^|\s)@([\w.-]*)$/);
+        if (!match) return null;
+
+        const start = beforeCursor.length - match[2].length - 1;
+        return {
+            query: match[2],
+            start,
+            end: cursor,
+        };
+    }
+
+    updateMentionSuggestions() {
+        if (!this.viewingClan) {
+            this.hideMentionSuggestions();
+            return;
+        }
+
+        const activeMention = this.getActiveMentionQuery();
+        if (!activeMention) {
+            this.hideMentionSuggestions();
+            return;
+        }
+
+        const normalizedQuery = normalizeMentionValue(activeMention.query);
+        const suggestions = this.viewingClan.members
+            .filter((member) => {
+                if (!normalizedQuery) return true;
+                return (
+                    normalizeMentionValue(member.username).startsWith(normalizedQuery) ||
+                    normalizeMentionValue(member.slug).startsWith(normalizedQuery)
+                );
+            })
+            .slice(0, 6);
+
+        if (suggestions.length === 0) {
+            this.hideMentionSuggestions();
+            return;
+        }
+
+        const menu =
+            this.mentionSuggestionsMenu ||
+            $("<div/>", { class: "clan-mention-suggestions" }).on("click", (e) => {
+                e.stopPropagation();
+            });
+        menu.empty();
+
+        for (const member of suggestions) {
+            menu.append(
+                $("<button/>", {
+                    class: "clan-mention-suggestion",
+                    type: "button",
+                    title: `Mention ${member.username}`,
+                })
+                    .data("mention", member.slug)
+                    .append(
+                        $("<div/>", { class: "clan-mention-suggestion-icon" }).css(
+                            "background-image",
+                            `url(${getClanIconUrl(member.playerIcon)})`,
+                        ),
+                        $("<div/>", { class: "clan-mention-suggestion-name" }).text(
+                            member.username,
+                        ),
+                    )
+                    .on("click", () => {
+                        this.applyMentionSuggestion(member.slug);
+                    }),
+            );
+        }
+
+        if (!this.mentionSuggestionsMenu) {
+            this.mentionSuggestionsMenu = menu;
+            $("body").append(menu);
+        }
+
+        const input = $("#clan-chat-input");
+        const offset = input.offset();
+        if (!offset) return;
+
+        menu.show();
+        const menuHeight = menu.outerHeight() || 0;
+        menu.css({
+            left: offset.left,
+            top: offset.top - menuHeight - 6,
+            width: input.outerWidth() || 260,
+        });
+    }
+
+    applyMentionSuggestion(username: string | undefined) {
+        if (!username) return;
+
+        const activeMention = this.getActiveMentionQuery();
+        const input = $("#clan-chat-input")[0] as HTMLInputElement | undefined;
+        if (!activeMention || !input) return;
+
+        const replacement = `@${username} `;
+        const nextValue =
+            input.value.slice(0, activeMention.start) +
+            replacement +
+            input.value.slice(activeMention.end);
+        const nextCursor = activeMention.start + replacement.length;
+
+        input.value = nextValue;
+        input.focus();
+        input.setSelectionRange(nextCursor, nextCursor);
+        this.hideMentionSuggestions();
+        this.updateClanChatCounter();
+    }
+
+    hideMentionSuggestions() {
+        this.mentionSuggestionsMenu?.hide();
+    }
+
+    renderMessageText(message: ClanMessage) {
+        const text = $("<div/>", { class: "clan-chat-text" });
+        const mentionRegex = /@[\w.-]+/g;
+        let lastIndex = 0;
+        let match: RegExpExecArray | null;
+
+        while ((match = mentionRegex.exec(message.message))) {
+            if (match.index > lastIndex) {
+                text.append(document.createTextNode(message.message.slice(lastIndex, match.index)));
+            }
+
+            const mentionName = match[0].slice(1);
+            const mentionedMember = this.viewingClan?.members.find((member) =>
+                this.isMentionForMember(mentionName, member),
+            );
+            const isCurrentUserMention =
+                !!mentionedMember && mentionedMember.slug === this.account.profile?.slug;
+
+            text.append(
+                $("<span/>", {
+                    class: `clan-chat-mention${isCurrentUserMention ? " current-user" : ""}`,
+                    text: match[0],
+                    title: mentionedMember ? mentionedMember.username : undefined,
+                }),
+            );
+            lastIndex = match.index + match[0].length;
+        }
+
+        if (lastIndex < message.message.length) {
+            text.append(document.createTextNode(message.message.slice(lastIndex)));
+        }
+
+        return text;
+    }
+
     renderClanMessages() {
         const container = $("#clan-chat-messages");
         this.unobserveGifImages(container[0]);
@@ -1419,10 +1739,11 @@ export class ClanUi {
 
         for (const message of this.clanMessages) {
             const isOwnMessage = this.isOwnClanMessage(message);
+            const isMentioningCurrentUser = this.isMessageMentioningCurrentUser(message);
             const item = $("<div/>", {
                 class: `clan-chat-message${isOwnMessage ? " own" : ""}${
                     message.type !== "user" ? " server" : ""
-                }`,
+                }${isMentioningCurrentUser ? " mentioned-current-user" : ""}`,
                 "data-message-id": message.id,
             })
                 .on("contextmenu", (e) => {
@@ -1488,10 +1809,7 @@ export class ClanUi {
                 ),
                 onlyKlipyUrl
                     ? $()
-                    : $("<div/>", {
-                          class: "clan-chat-text",
-                          text: message.message,
-                      }),
+                    : this.renderMessageText(message),
                 this.renderGifPreview(message),
             );
 
@@ -1681,6 +1999,9 @@ export class ClanUi {
 
             this.clanPageModal.hide();
             this.currentClan = null;
+            this.unreadMentionCount = 0;
+            this.stopMentionPolling();
+            this.updateMentionBadges();
             this.loadMyClan();
             this.showMainModal();
         });
@@ -1724,6 +2045,9 @@ export class ClanUi {
 
             this.clanPageModal.hide();
             this.currentClan = null;
+            this.unreadMentionCount = 0;
+            this.stopMentionPolling();
+            this.updateMentionBadges();
             this.loadMyClan();
             this.showMainModal();
         });
