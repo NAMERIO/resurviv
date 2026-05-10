@@ -145,6 +145,7 @@ export class ClanUi {
     gifPickerLoading = false;
     gifImageObserver: IntersectionObserver | null = null;
     observedGifImages = new Set<HTMLImageElement>();
+    gifStillFrameCache = new Map<string, string | null>();
 
     constructor(
         public account: Account,
@@ -1190,10 +1191,70 @@ export class ClanUi {
             src: blankGifSrc,
             alt: options.alt,
             loading: "lazy",
+            crossOrigin: "anonymous",
+        }).on("load", (e) => {
+            this.cacheGifStillFrame(e.currentTarget as HTMLImageElement);
         });
-        image.data("gif-src", options.src);
+        image.data("gif-src", this.resolveImageSrc(options.src));
         this.observeGifImage(image[0] as HTMLImageElement);
         return image;
+    }
+
+    resolveImageSrc(src: string) {
+        try {
+            return new URL(src, window.location.href).toString();
+        } catch {
+            return src;
+        }
+    }
+
+    cacheGifStillFrame(image: HTMLImageElement) {
+        const gifSrc = $(image).data("gif-src") as string | undefined;
+        if (!gifSrc || image.src !== gifSrc || this.gifStillFrameCache.has(gifSrc)) {
+            return;
+        }
+
+        const stillFrame = this.captureGifStillFrame(image);
+        this.gifStillFrameCache.set(gifSrc, stillFrame);
+    }
+
+    captureGifStillFrame(image: HTMLImageElement) {
+        if (!image.complete || !image.naturalWidth || !image.naturalHeight) {
+            return null;
+        }
+
+        try {
+            const maxStillFrameWidth = 480;
+            const scale = Math.min(1, maxStillFrameWidth / image.naturalWidth);
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+            canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+
+            const context = canvas.getContext("2d");
+            if (!context) return null;
+
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL("image/png");
+        } catch {
+            return null;
+        }
+    }
+
+    pauseGifImage(image: HTMLImageElement) {
+        const gifSrc = $(image).data("gif-src") as string | undefined;
+        if (!gifSrc || image.src !== gifSrc) return;
+
+        const cachedStillFrame = this.gifStillFrameCache.get(gifSrc);
+        if (cachedStillFrame) {
+            image.src = cachedStillFrame;
+            return;
+        }
+
+        const stillFrame = this.captureGifStillFrame(image);
+        this.gifStillFrameCache.set(gifSrc, stillFrame);
+        if (stillFrame) {
+            image.src = stillFrame;
+        }
     }
 
     getGifImageObserver() {
@@ -1210,8 +1271,8 @@ export class ClanUi {
                             if (image.src !== gifSrc) {
                                 image.src = gifSrc;
                             }
-                        } else if (image.src !== blankGifSrc) {
-                            image.src = blankGifSrc;
+                        } else {
+                            this.pauseGifImage(image);
                         }
                     }
                 },
@@ -1246,7 +1307,7 @@ export class ClanUi {
     unloadGifImages(root?: HTMLElement) {
         for (const image of Array.from(this.observedGifImages)) {
             if (root && !root.contains(image)) continue;
-            image.src = blankGifSrc;
+            this.pauseGifImage(image);
         }
     }
 
@@ -1279,6 +1340,7 @@ export class ClanUi {
     }
 
     isOwnClanMessage(message: ClanMessage) {
+        if (message.type !== "user") return false;
         const currentUserId = this.getCurrentUserClanMemberId();
         return !!currentUserId && message.senderId === currentUserId;
     }
@@ -1358,7 +1420,9 @@ export class ClanUi {
         for (const message of this.clanMessages) {
             const isOwnMessage = this.isOwnClanMessage(message);
             const item = $("<div/>", {
-                class: `clan-chat-message${isOwnMessage ? " own" : ""}`,
+                class: `clan-chat-message${isOwnMessage ? " own" : ""}${
+                    message.type !== "user" ? " server" : ""
+                }`,
                 "data-message-id": message.id,
             })
                 .on("contextmenu", (e) => {
@@ -1438,6 +1502,7 @@ export class ClanUi {
     }
 
     showMessageActionsMenu(message: ClanMessage, x: number, y: number) {
+        if (message.type !== "user") return;
         this.hideMessageActionsMenu();
         const isOwnMessage = this.isOwnClanMessage(message);
         const menu = $("<div/>", { class: "clan-chat-actions-menu" });

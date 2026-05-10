@@ -18,9 +18,9 @@ import {
     type GetMyClanResponse,
     type JoinClanResponse,
     type KickMemberResponse,
+    type KlipyGifPickerItem,
     type LeaveClanResponse,
     type ListClansResponse,
-    type KlipyGifPickerItem,
     type ResolveKlipyGifResponse,
     type SearchKlipyGifsResponse,
     type SendClanMessageResponse,
@@ -66,6 +66,10 @@ ClanRouter.use(databaseEnabledMiddleware);
 ClanRouter.use(rateLimitMiddleware(60, 60 * 1000));
 ClanRouter.use(authMiddleware);
 
+const CLAN_SYSTEM_AUTHOR_NAME = "Big Brother";
+const CLAN_SYSTEM_AUTHOR_SLUG = "big-brother";
+const CLAN_SYSTEM_AUTHOR_ICON = "emote_police";
+
 function sanitizeClanSlug(name: string): string {
     let slug = slugify(
         name
@@ -110,6 +114,21 @@ async function pruneClanMessages(clanId: string) {
             LIMIT 100
         )
     `);
+}
+
+async function createClanSystemMessage(
+    clanId: string,
+    userId: string,
+    type: "member_join" | "member_leave",
+    message: string,
+) {
+    await db.insert(clanMessagesTable).values({
+        clanId,
+        userId,
+        type,
+        message,
+    });
+    await pruneClanMessages(clanId);
 }
 
 function getUserMembership(userId: string) {
@@ -329,6 +348,7 @@ function toClanMessage(row: {
     id: string;
     clanId: string;
     senderId: string;
+    type: "user" | "member_join" | "member_leave";
     username: string;
     slug: string;
     playerIcon: string | null;
@@ -339,13 +359,18 @@ function toClanMessage(row: {
     replyToUsername: string | null;
     replyToMessage: string | null;
 }): ClanMessage {
+    const isSystemMessage = row.type !== "user";
+
     return {
         id: row.id,
         clanId: row.clanId,
         senderId: row.senderId,
-        username: row.username,
-        slug: row.slug,
-        playerIcon: row.playerIcon || "emote_surviv",
+        type: row.type,
+        username: isSystemMessage ? CLAN_SYSTEM_AUTHOR_NAME : row.username,
+        slug: isSystemMessage ? CLAN_SYSTEM_AUTHOR_SLUG : row.slug,
+        playerIcon: isSystemMessage
+            ? CLAN_SYSTEM_AUTHOR_ICON
+            : row.playerIcon || "emote_surviv",
         message: row.message,
         createdAt: row.createdAt.getTime(),
         editedAt: row.editedAt?.getTime() ?? null,
@@ -366,6 +391,7 @@ async function getClanMessageById(messageId: string) {
             id: clanMessagesTable.id,
             clanId: clanMessagesTable.clanId,
             senderId: usersTable.id,
+            type: clanMessagesTable.type,
             username: usersTable.username,
             slug: usersTable.slug,
             playerIcon: sql<string>`${usersTable.loadout}->>'player_icon'`,
@@ -628,6 +654,13 @@ ClanRouter.post("/join", validateParams(zJoinClanRequest), async (c) => {
         wins: 0,
     });
 
+    await createClanSystemMessage(
+        clanId,
+        user.id,
+        "member_join",
+        `${user.username} joined the clan.`,
+    );
+
     const clanInfo = await getClanInfo(clanId);
 
     return c.json<JoinClanResponse>({ success: true, clan: clanInfo! });
@@ -677,6 +710,13 @@ ClanRouter.post("/leave", async (c) => {
         userId: user.id,
     });
 
+    await createClanSystemMessage(
+        membership.clanId,
+        user.id,
+        "member_leave",
+        `${user.username} left the clan.`,
+    );
+
     return c.json<LeaveClanResponse>({ success: true });
 });
 
@@ -721,6 +761,10 @@ ClanRouter.post("/kick", validateParams(zKickMemberRequest), async (c) => {
         );
     }
 
+    const kickedUser = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, memberId),
+    });
+
     await db
         .delete(clanMembersTable)
         .where(
@@ -743,6 +787,13 @@ ClanRouter.post("/kick", validateParams(zKickMemberRequest), async (c) => {
     await db.insert(clanLeaveHistoryTable).values({
         userId: memberId,
     });
+
+    await createClanSystemMessage(
+        clan.id,
+        memberId,
+        "member_leave",
+        `${kickedUser?.username || "A member"} left the clan.`,
+    );
 
     return c.json<KickMemberResponse>({ success: true });
 });
@@ -942,6 +993,7 @@ ClanRouter.post("/messages", validateParams(zGetClanMessagesRequest), async (c) 
             id: clanMessagesTable.id,
             clanId: clanMessagesTable.clanId,
             senderId: usersTable.id,
+            type: clanMessagesTable.type,
             username: usersTable.username,
             slug: usersTable.slug,
             playerIcon: sql<string>`${usersTable.loadout}->>'player_icon'`,
@@ -1018,7 +1070,7 @@ ClanRouter.post("/send_message", validateParams(zSendClanMessageRequest), async 
                 eq(clanMessagesTable.clanId, clanId),
             ),
         });
-        if (!replyMessage) {
+        if (!replyMessage || replyMessage.type !== "user") {
             return c.json<SendClanMessageResponse>(
                 { success: false, error: "reply_not_found" },
                 400,
@@ -1039,6 +1091,7 @@ ClanRouter.post("/send_message", validateParams(zSendClanMessageRequest), async 
         .returning({
             id: clanMessagesTable.id,
             clanId: clanMessagesTable.clanId,
+            type: clanMessagesTable.type,
             message: clanMessagesTable.message,
             createdAt: clanMessagesTable.createdAt,
         });
@@ -1143,6 +1196,12 @@ ClanRouter.post("/edit_message", validateParams(zEditClanMessageRequest), async 
             404,
         );
     }
+    if (existingMessage.type !== "user") {
+        return c.json<EditClanMessageResponse>(
+            { success: false, error: "not_author" },
+            403,
+        );
+    }
     if (existingMessage.userId !== user.id) {
         return c.json<EditClanMessageResponse>(
             { success: false, error: "not_author" },
@@ -1192,6 +1251,12 @@ ClanRouter.post(
             return c.json<DeleteClanMessageResponse>(
                 { success: false, error: "message_not_found" },
                 404,
+            );
+        }
+        if (existingMessage.type !== "user") {
+            return c.json<DeleteClanMessageResponse>(
+                { success: false, error: "not_author" },
+                403,
             );
         }
         if (existingMessage.userId !== user.id) {

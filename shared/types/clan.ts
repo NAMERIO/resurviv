@@ -150,6 +150,7 @@ export type ClanMessage = {
     id: string;
     clanId: string;
     senderId: string;
+    type: "user" | "member_join" | "member_leave";
     username: string;
     slug: string;
     playerIcon: string;

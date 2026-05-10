@@ -438,6 +438,10 @@ export const clanMessagesTable = pgTable(
                 onDelete: "cascade",
                 onUpdate: "cascade",
             }),
+        type: text("type")
+            .$type<"user" | "member_join" | "member_leave">()
+            .notNull()
+            .default("user"),
         message: text("message").notNull(),
         replyToMessageId: uuid("reply_to_message_id"),
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

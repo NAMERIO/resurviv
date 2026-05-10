@@ -12215,6 +12215,10 @@ input [type="image"]:focus {
   overflow-wrap: anywhere;
 }
 
+.clan-chat-message.server .clan-chat-bubble {
+  background-color: #203a56;
+}
+
 .clan-chat-actions-btn {
   position: absolute;
   top: 5px;
