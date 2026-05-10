@@ -33,7 +33,7 @@ export function getConfig(isProduction: boolean, dir: string) {
             { mapName: "main", teamMode: TeamMode.Duo, enabled: true },
             { mapName: "main", teamMode: TeamMode.Squad, enabled: true },
         ],
-        battleRoyaleMode: false,
+        battleRoyaleMode: true,
         clientTheme: "main",
         gameTps: 100,
         netSyncTps: 33,
