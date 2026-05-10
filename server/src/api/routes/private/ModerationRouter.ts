@@ -172,7 +172,34 @@ export const ModerationRouter = new Hono()
             .set({ userBanned: false })
             .where(eq(matchDataTable.userId, user.id));
 
-        return c.json({ message: "User has been unbanned." }, 200);
+        const ips = await db
+            .select({
+                encodedIp: ipLogsTable.encodedIp,
+                findGameEncodedIp: ipLogsTable.findGameEncodedIp,
+            })
+            .from(ipLogsTable)
+            .where(eq(ipLogsTable.userId, user.id))
+            .groupBy(ipLogsTable.encodedIp, ipLogsTable.findGameEncodedIp);
+
+        const encodedIps = [
+            ...new Set(
+                ips.map((data) => [data.encodedIp, data.findGameEncodedIp]).flat(),
+            ),
+        ];
+
+        if (encodedIps.length) {
+            await db
+                .delete(bannedIpsTable)
+                .where(inArray(bannedIpsTable.encodedIp, encodedIps))
+                .execute();
+        }
+
+        return c.json(
+            {
+                message: `User has been unbanned. Removed ${encodedIps.length} associated IP ban(s).`,
+            },
+            200,
+        );
     })
     .post("/ban_ip", validateParams(zBanIpParams), async (c) => {
         const {
