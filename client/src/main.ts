@@ -21,7 +21,6 @@ import { Game } from "./game";
 import { helpers } from "./helpers";
 import { InputHandler } from "./input";
 import { InputBinds, InputBindUi } from "./inputBinds";
-import { getLocalBan, setLocalBan } from "./localBan";
 import { PingTest } from "./pingTest";
 import { proxy } from "./proxy";
 import { ResourceManager } from "./resources";
@@ -556,14 +555,6 @@ export class Application {
                 }
             };
             const onQuit = (errMsg?: string) => {
-                if (errMsg == "ip_banned" || errMsg == "banned") {
-                    setLocalBan(
-                        this.localization.translate("index-ip-banned") || "Banned",
-                        false,
-                        undefined,
-                        errMsg == "banned" ? "account" : "ip",
-                    );
-                }
                 if (this.game!.m_updatePass) {
                     this.pass.scheduleUpdatePass(this.game!.m_updatePassDelay);
                 }
@@ -1792,17 +1783,6 @@ export class Application {
             ban?: FindGameResponse & { banned: true },
         ) => void,
     ) {
-        const localBan = getLocalBan();
-        if (localBan) {
-            cb(null, undefined, {
-                banned: true,
-                reason: localBan.reason,
-                permanent: localBan.permanent,
-                expiresIn: localBan.expiresIn,
-            });
-            return;
-        }
-
         const findGameImpl = (iter: number, maxAttempts: number, token: string) => {
             if (iter >= maxAttempts) {
                 cb("full");
@@ -1844,12 +1824,6 @@ export class Application {
                     }
 
                     if (data.banned) {
-                        setLocalBan(
-                            data.reason,
-                            data.permanent,
-                            String(data.expiresIn),
-                            "ip",
-                        );
                         cb(null, undefined, data as FindGameResponse & { banned: true });
                         return;
                     }
@@ -1875,17 +1849,6 @@ export class Application {
     }
 
     joinGame(matchData: FindGameMatchData) {
-        const localBan = getLocalBan();
-        if (localBan) {
-            this.showIpBanModal({
-                banned: true,
-                reason: localBan.reason,
-                permanent: localBan.permanent,
-                expiresIn: localBan.expiresIn,
-            });
-            return;
-        }
-
         if (!this.game) {
             setTimeout(() => {
                 this.joinGame(matchData);
@@ -1960,7 +1923,6 @@ export class Application {
     }
 
     showIpBanModal(ban: FindGameResponse & { banned: true }) {
-        setLocalBan(ban.reason, ban.permanent, String(ban.expiresIn), "ip");
         $("#modal-ip-banned-reason").text(`Reason: ${ban.reason}`);
 
         let expiration = "Duration: indefinite";
