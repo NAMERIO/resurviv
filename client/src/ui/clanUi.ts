@@ -1345,7 +1345,7 @@ export class ClanUi {
                     type: "button",
                     title: gif.title,
                 })
-                    .data("source-url", gif.sourceUrl)
+                    .data("source-url", gif.url)
                     .append(
                         this.createLazyGifImage({
                             class: "clan-chat-gif-thumb",
@@ -1629,7 +1629,12 @@ export class ClanUi {
                 this.gifPreviewPending.delete(gifUrl);
                 if (err || !res?.success) {
                     this.gifPreviewCache.set(gifUrl, null);
-                    preview.remove();
+                    preview.removeClass("loading").empty().append(
+                        $("<div/>", {
+                            class: "clan-chat-gif-placeholder",
+                            text: "Open GIF",
+                        }),
+                    );
                     return;
                 }
 
