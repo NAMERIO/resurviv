@@ -106,6 +106,8 @@ export const zSearchKlipyGifsRequest = z.object({
     query: z.string().trim().max(50).optional(),
     section: z.string().trim().max(30).optional(),
     limit: z.number().int().min(8).max(32).default(24),
+    adMaxWidth: z.number().int().min(50).max(1200).optional(),
+    adMaxHeight: z.number().int().min(50).max(400).optional(),
 });
 export type SearchKlipyGifsRequest = z.infer<typeof zSearchKlipyGifsRequest>;
 
@@ -272,14 +274,31 @@ export type ResolveKlipyGifResponse =
       }
     | { success: false; error: "not_in_clan" | "invalid_url" | "not_found" };
 
-export type KlipyGifPickerItem = {
-    id: string;
-    url: string;
-    sourceUrl: string;
-    title: string;
-    width: number | null;
-    height: number | null;
-};
+export type KlipyGifPickerItem =
+    | {
+          type: "gif";
+          id: string;
+          url: string;
+          sourceUrl: string;
+          title: string;
+          width: number | null;
+          height: number | null;
+      }
+    | {
+          type: "ad";
+          id: string;
+          title: string;
+          html: string | null;
+          iframeUrl: string | null;
+          imageUrl: string | null;
+          clickUrl: string | null;
+          width: number | null;
+          height: number | null;
+      };
+
+export type KlipyGifContentPickerItem = Extract<KlipyGifPickerItem, { type: "gif" }>;
+
+export type KlipyAdPickerItem = Extract<KlipyGifPickerItem, { type: "ad" }>;
 
 export type SearchKlipyGifsResponse =
     | { success: true; gifs: KlipyGifPickerItem[] }

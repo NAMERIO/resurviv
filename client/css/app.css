@@ -12666,6 +12666,54 @@ input [type="image"]:focus {
   outline: 2px solid #7cfc00;
 }
 
+.clan-chat-gif-ad {
+  grid-column: span 2;
+  cursor: default;
+}
+
+.clan-chat-gif-ad:hover {
+  outline: none;
+}
+
+.clan-chat-gif-ad-frame,
+.clan-chat-gif-ad-image,
+.clan-chat-gif-ad-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.clan-chat-gif-ad-image {
+  object-fit: cover;
+}
+
+.clan-chat-gif-ad-label {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background-color: rgba(0, 0, 0, 0.68);
+  color: #fff;
+  font-size: 9px;
+  font-weight: bold;
+  line-height: 1.2;
+  pointer-events: none;
+  text-transform: uppercase;
+}
+
+.clan-chat-gif-ad-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #b9b9b9;
+  font-size: 12px;
+  font-weight: bold;
+}
+
 .clan-chat-gif-thumb {
   width: 100%;
   height: 100%;

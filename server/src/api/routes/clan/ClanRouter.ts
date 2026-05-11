@@ -42,7 +42,11 @@ import {
     zUpdateClanRequest,
 } from "../../../../../shared/types/clan";
 import { Config } from "../../../config";
-import { checkForBadWords, validateUserName } from "../../../utils/serverHelpers";
+import {
+    checkForBadWords,
+    getHonoIp,
+    validateUserName,
+} from "../../../utils/serverHelpers";
 import {
     authMiddleware,
     databaseEnabledMiddleware,
@@ -148,6 +152,20 @@ type KlipyGifResult = {
 
 type KlipyApiGifObject = {
     id?: string;
+    type?: string;
+    content_type?: string;
+    is_ad?: boolean;
+    ad?: unknown;
+    html?: string;
+    html_content?: string;
+    iframe?: string;
+    iframe_url?: string;
+    image?: string;
+    image_url?: string;
+    click_url?: string;
+    target_url?: string;
+    width?: number;
+    height?: number;
     title?: string;
     itemurl?: string;
     url?: string;
@@ -157,6 +175,8 @@ type KlipyApiGifObject = {
         tinygif?: { url?: string; dims?: [number, number] };
     };
 };
+
+type KlipyAdResult = Extract<KlipyGifPickerItem, { type: "ad" }>;
 
 function parseKlipyUrl(rawUrl: string): URL | null {
     let url: URL;
@@ -236,6 +256,96 @@ function toKlipyGifResult(result: KlipyApiGifObject): KlipyGifResult | null {
     };
 }
 
+function getKlipyAdObject(result: KlipyApiGifObject): Record<string, unknown> | null {
+    const nestedAd = result.ad;
+    if (nestedAd && typeof nestedAd === "object") {
+        return nestedAd as Record<string, unknown>;
+    }
+
+    const type = String(result.type || result.content_type || "").toLowerCase();
+    if (
+        result.is_ad ||
+        type.includes("ad") ||
+        result.html ||
+        result.html_content ||
+        result.iframe ||
+        result.iframe_url
+    ) {
+        return result as Record<string, unknown>;
+    }
+
+    return null;
+}
+
+function getStringValue(source: Record<string, unknown>, keys: string[]) {
+    for (const key of keys) {
+        const value = source[key];
+        if (typeof value === "string" && value.trim()) {
+            return value.trim();
+        }
+    }
+    return null;
+}
+
+function getNumberValue(source: Record<string, unknown>, keys: string[]) {
+    for (const key of keys) {
+        const value = source[key];
+        if (typeof value === "number" && Number.isFinite(value)) {
+            return value;
+        }
+        if (typeof value === "string" && value.trim() && Number.isFinite(Number(value))) {
+            return Number(value);
+        }
+    }
+    return null;
+}
+
+function normalizeKlipyExternalUrl(rawUrl: string | null) {
+    if (!rawUrl) return null;
+    try {
+        const url = new URL(rawUrl);
+        if (url.protocol !== "https:" && url.protocol !== "http:") {
+            return null;
+        }
+        return url.toString();
+    } catch {
+        return null;
+    }
+}
+
+function toKlipyAdResult(result: KlipyApiGifObject): KlipyAdResult | null {
+    const ad = getKlipyAdObject(result);
+    if (!ad) return null;
+
+    const html = getStringValue(ad, ["html", "html_content", "markup", "ad_html"]);
+    const iframeUrl = normalizeKlipyExternalUrl(
+        getStringValue(ad, ["iframe_url", "iframeUrl", "iframe", "ad_url"]),
+    );
+    const imageUrl = normalizeKlipyExternalUrl(
+        getStringValue(ad, ["image_url", "imageUrl", "image", "thumbnail", "thumbnail_url"]),
+    );
+    const clickUrl = normalizeKlipyExternalUrl(
+        getStringValue(ad, ["click_url", "clickUrl", "target_url", "targetUrl", "url"]),
+    );
+
+    if (!html && !iframeUrl && !imageUrl) return null;
+
+    return {
+        type: "ad",
+        id:
+            result.id ||
+            getStringValue(ad, ["id", "ad_id", "creative_id"]) ||
+            `klipy-ad-${Math.random().toString(36).slice(2)}`,
+        title: getStringValue(ad, ["title", "name"]) || "Advertisement",
+        html,
+        iframeUrl,
+        imageUrl,
+        clickUrl,
+        width: getNumberValue(ad, ["width", "w"]) ?? null,
+        height: getNumberValue(ad, ["height", "h"]) ?? null,
+    };
+}
+
 async function fetchKlipyApiGif(id: string): Promise<KlipyGifResult | null> {
     const apiKey = Config.secrets.KLIPY_API_KEY;
     if (!apiKey) return null;
@@ -259,6 +369,11 @@ async function fetchKlipyGifPickerItems(options: {
     query?: string;
     section?: string;
     limit: number;
+    customerId: string;
+    adMaxWidth?: number;
+    adMaxHeight?: number;
+    userAgent?: string;
+    ip?: string;
 }): Promise<KlipyGifPickerItem[]> {
     const apiKey = Config.secrets.KLIPY_API_KEY;
     if (!apiKey) return [];
@@ -269,12 +384,26 @@ async function fetchKlipyGifPickerItems(options: {
         key: apiKey,
         limit: String(options.limit),
         media_filter: "gif,tinygif,mediumgif",
+        customer_id: options.customerId,
+        "ad-min-width": "50",
+        "ad-max-width": String(options.adMaxWidth || 401),
+        "ad-min-height": "50",
+        "ad-max-height": String(options.adMaxHeight || 250),
     });
     if (query) {
         params.set("q", query);
     }
 
+    const headers = new Headers();
+    if (options.userAgent) {
+        headers.set("User-Agent", options.userAgent);
+    }
+    if (options.ip) {
+        headers.set("X-Forwarded-For", options.ip);
+    }
+
     const res = await fetch(`https://api.klipy.com/v2/${endpoint}?${params}`, {
+        headers,
         signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) return [];
@@ -282,9 +411,13 @@ async function fetchKlipyGifPickerItems(options: {
     const data = (await res.json()) as { results?: KlipyApiGifObject[] };
     return (data.results || [])
         .map((result) => {
+            const ad = toKlipyAdResult(result);
+            if (ad) return ad;
+
             const gif = toKlipyGifResult(result);
             if (!gif) return null;
             return {
+                type: "gif" as const,
                 id: gif.id || gif.sourceUrl,
                 url: gif.url,
                 sourceUrl: gif.sourceUrl,
@@ -1144,7 +1277,8 @@ ClanRouter.post("/resolve_klipy_gif", validateParams(zResolveKlipyGifRequest), a
 
 ClanRouter.post("/search_klipy_gifs", validateParams(zSearchKlipyGifsRequest), async (c) => {
     const user = c.get("user")!;
-    const { clanId, query, section, limit } = c.req.valid("json");
+    const { clanId, query, section, limit, adMaxWidth, adMaxHeight } =
+        c.req.valid("json");
 
     const membership = await getUserMembership(user.id);
     if (!membership || membership.clanId !== clanId) {
@@ -1162,7 +1296,16 @@ ClanRouter.post("/search_klipy_gifs", validateParams(zSearchKlipyGifsRequest), a
     }
 
     try {
-        const gifs = await fetchKlipyGifPickerItems({ query, section, limit });
+        const gifs = await fetchKlipyGifPickerItems({
+            query,
+            section,
+            limit,
+            customerId: user.id,
+            adMaxWidth,
+            adMaxHeight,
+            userAgent: c.req.header("user-agent"),
+            ip: getHonoIp(c),
+        });
         return c.json<SearchKlipyGifsResponse>({ success: true, gifs });
     } catch {
         return c.json<SearchKlipyGifsResponse>(

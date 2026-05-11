@@ -1296,6 +1296,8 @@ export class ClanUi {
         if (!this.viewingClan || this.gifPickerLoading) return;
 
         const query = (($("#clan-chat-gif-search").val() as string) || "").trim();
+        const grid = $("#clan-chat-gif-grid");
+        const adMaxWidth = Math.max(50, Math.round(grid.outerWidth() || 401));
         this.gifPickerLoading = true;
         $("#clan-chat-gif-status").text("Loading GIFs...");
 
@@ -1306,6 +1308,8 @@ export class ClanUi {
                 query: query || undefined,
                 section: query ? undefined : this.gifPickerSection || undefined,
                 limit: 24,
+                adMaxWidth,
+                adMaxHeight: 250,
             },
             (err, res) => {
                 this.gifPickerLoading = false;
@@ -1326,6 +1330,11 @@ export class ClanUi {
         grid.empty();
 
         for (const gif of gifs) {
+            if (gif.type === "ad") {
+                grid.append(this.renderGifPickerAd(gif));
+                continue;
+            }
+
             grid.append(
                 $("<button/>", {
                     class: "clan-chat-gif-item",
@@ -1344,6 +1353,69 @@ export class ClanUi {
         }
 
         $("#clan-chat-gif-status").text(gifs.length === 0 ? "No GIFs found." : "");
+    }
+
+    renderGifPickerAd(ad: Extract<ClanChatGifPickerItem, { type: "ad" }>) {
+        const item = $("<div/>", {
+            class: "clan-chat-gif-item clan-chat-gif-ad",
+            title: ad.title,
+        });
+
+        const label = $("<span/>", {
+            class: "clan-chat-gif-ad-label",
+            text: "Ad",
+        });
+
+        if (ad.html || ad.iframeUrl) {
+            item.append(
+                $("<iframe/>", {
+                    class: "clan-chat-gif-ad-frame",
+                    title: ad.title,
+                    loading: "lazy",
+                    sandbox:
+                        "allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox",
+                    referrerpolicy: "no-referrer-when-downgrade",
+                    src: ad.iframeUrl || undefined,
+                    srcdoc: ad.html || undefined,
+                }),
+                label,
+            );
+            return item;
+        }
+
+        if (ad.imageUrl) {
+            const image = $("<img/>", {
+                class: "clan-chat-gif-ad-image",
+                src: ad.imageUrl,
+                alt: ad.title,
+                loading: "lazy",
+            });
+
+            if (ad.clickUrl) {
+                item.append(
+                    $("<a/>", {
+                        class: "clan-chat-gif-ad-link",
+                        href: ad.clickUrl,
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                        title: ad.title,
+                    }).append(image),
+                    label,
+                );
+                return item;
+            }
+
+            item.append(image, label);
+            return item;
+        }
+
+        return item.append(
+            $("<div/>", {
+                class: "clan-chat-gif-ad-empty",
+                text: "Advertisement",
+            }),
+            label,
+        );
     }
 
     createLazyGifImage(options: { class: string; src: string; alt: string }) {
