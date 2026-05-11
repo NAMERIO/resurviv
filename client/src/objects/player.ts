@@ -932,6 +932,13 @@ export class Player implements AbstractObject {
         return this.perkTypes.includes(type);
     }
 
+    stopCycleSound(audioManager: AudioManager) {
+        if (this.cycleSoundInstance) {
+            audioManager.stopSound(this.cycleSoundInstance);
+            this.cycleSoundInstance = null;
+        }
+    }
+
     m_update(
         dt: number,
         playerBarn: PlayerBarn,
@@ -968,18 +975,14 @@ export class Player implements AbstractObject {
 
                 if (!this.m_netData.m_gunLoaded) {
                     this.m_netData.m_gunLoaded = true;
-                    if (audioManager.isSoundPlaying(this.cycleSoundInstance!)) {
-                        audioManager.stopSound(this.cycleSoundInstance!);
-                    }
+                    this.stopCycleSound(audioManager);
                 }
             }
         } else if (isActivePlayer && isBlaster) {
             if (this.m_netData.m_loadingBlaster > 0 || this.m_netData.m_gunLoaded) {
                 this.m_netData.m_loadingBlaster = 0;
                 this.m_netData.m_gunLoaded = false;
-                if (audioManager.isSoundPlaying(this.cycleSoundInstance!)) {
-                    audioManager.stopSound(this.cycleSoundInstance!);
-                }
+                this.stopCycleSound(audioManager);
             }
         }
 
@@ -1602,11 +1605,17 @@ export class Player implements AbstractObject {
                         channel: isActivePlayer ? "activePlayer" : "otherPlayers",
                         soundPos: this.m_pos,
                         layer: this.layer,
-                        delay: 30,
                         volumeScale: 0.75,
                     },
                 );
             }
+        }
+        if (
+            curWeapDef &&
+            (curWeapDef as GunDef).fireMode === "blaster" &&
+            (this.m_netData.m_loadingBlaster <= 0 || this.m_netData.m_gunLoaded)
+        ) {
+            this.stopCycleSound(audioManager);
         }
         if (curWeapDef && (curWeapDef as GunDef).fireMode === "blaster") {
             const gunDef = curWeapDef as GunDef;
@@ -1621,12 +1630,6 @@ export class Player implements AbstractObject {
                     );
                 }
             }
-        }
-        if (
-            this.m_netData.m_gunLoaded &&
-            audioManager.isSoundPlaying(this.cycleSoundInstance!)
-        ) {
-            audioManager.stopSound(this.cycleSoundInstance!);
         }
         if (curWeapDef && (curWeapDef as GunDef).fireMode === "blaster") {
             const gunDef = curWeapDef as GunDef;

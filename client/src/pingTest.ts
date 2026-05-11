@@ -117,17 +117,17 @@ export class PingTest {
             const sorted = this.tests.sort((a, b) => {
                 return a.ping - b.ping;
             });
-            console.log("Ping test results");
-            console.log("----------------------------------------");
+            // console.log("Ping test results");
+            // console.log("----------------------------------------");
             for (let i = 0; i < sorted.length; i++) {
                 const test = sorted[i];
                 console.log(
-                    "region",
-                    test.region,
-                    "zone  ",
-                    test.zone,
-                    "ping  ",
-                    test.ping,
+                    // "region",
+                    // test.region,
+                    // "zone  ",
+                    // test.zone,
+                    // "ping  ",
+                    // test.ping,
                 );
             }
             this.printSummary = false;
