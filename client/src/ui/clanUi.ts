@@ -502,7 +502,6 @@ export class ClanUi {
             this.currentClan = res.clan;
             this.cooldownUntil = res.cooldownUntil;
             if (this.currentClan) {
-                this.ensureMentionSeenState(this.currentClan.id);
                 this.startMentionPolling();
             } else {
                 this.unreadMentionCount = 0;
@@ -817,7 +816,7 @@ export class ClanUi {
 
     getMentionSeenStorageKey(clanId: string) {
         const userKey = this.account.profile?.slug || "guest";
-        return `clanMentionSeen:${userKey}:${clanId}`;
+        return `clanMentionSeen:v2:${userKey}:${clanId}`;
     }
 
     getMentionSeenAt(clanId: string) {
@@ -826,12 +825,6 @@ export class ClanUi {
 
     setMentionSeenAt(clanId: string, timestamp: number) {
         localStorage.setItem(this.getMentionSeenStorageKey(clanId), String(timestamp));
-    }
-
-    ensureMentionSeenState(clanId: string) {
-        if (!this.getMentionSeenAt(clanId)) {
-            this.setMentionSeenAt(clanId, Date.now());
-        }
     }
 
     startMentionPolling() {
@@ -854,6 +847,7 @@ export class ClanUi {
 
         const clanId = this.currentClan.id;
         const after = this.getMentionSeenAt(clanId) || undefined;
+        const markExistingSeen = !after;
         clanRequest<GetClanMessagesResponse>(
             "/api/clan/messages",
             { clanId, limit: 40, after },
@@ -861,7 +855,7 @@ export class ClanUi {
                 if (err || !res?.success || !this.currentClan || this.currentClan.id !== clanId) {
                     return;
                 }
-                this.updateUnreadMentionsFromMessages(res.messages, false);
+                this.updateUnreadMentionsFromMessages(res.messages, markExistingSeen);
             },
         );
     }
@@ -880,9 +874,9 @@ export class ClanUi {
         ).length;
 
         this.unreadMentionCount = markSeen ? 0 : this.unreadMentionCount + mentionCount;
-        if (markSeen && messages.length > 0) {
-            this.setMentionSeenAt(clan.id, Math.max(...messages.map((m) => m.createdAt)));
-        } else if (!markSeen && messages.length > 0) {
+        if (markSeen && messages.length === 0 && !seenAt) {
+            this.setMentionSeenAt(clan.id, 1);
+        } else if (messages.length > 0) {
             this.setMentionSeenAt(clan.id, Math.max(...messages.map((m) => m.createdAt)));
         }
         this.updateMentionBadges();
