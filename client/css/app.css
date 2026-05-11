@@ -474,6 +474,13 @@ a:active {
   }
 }
 
+@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+  .ad-block-leaderboard-bottom,
+  #start-menu-wrapper #ad-block-leaderboard-bottom-728x90 {
+    bottom: 20px !important;
+  }
+}
+
 #social-share-block {
   margin-right: 30px;
   margin-top: 10px;
@@ -16128,15 +16135,15 @@ div.roulette {
 
 #pass-wrapper #pass-block {
   box-sizing: border-box;
-  height: 170px;
+  height: 190px;
   overflow: hidden;
-  padding: 10px;
+  padding: 12px;
   position: relative;
   z-index: auto;
 }
 
 #pass-wrapper #pass-name {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 #pass-wrapper #pass-progress {
@@ -16148,18 +16155,18 @@ div.roulette {
 }
 
 #pass-wrapper .pass-quest {
-  margin-bottom: 8px;
-  min-height: 42px;
-  padding: 8px;
-  padding-bottom: 4px;
+  margin-bottom: 10px;
+  min-height: 48px;
+  padding: 10px;
+  padding-bottom: 5px;
 }
 
 #pass-wrapper .pass-quest-desc {
   color: #fff;
-  font-size: 13px;
-  line-height: 18px;
-  margin-bottom: 4px;
-  min-height: 18px;
+  font-size: 14px;
+  line-height: 20px;
+  margin-bottom: 5px;
+  min-height: 20px;
 }
 
 #pass-wrapper .pass-quest-xp {
@@ -16719,10 +16726,53 @@ div.roulette {
 
 @media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
   #start-main-center {
+    margin-top: 0;
     transform: scale(0.45);
+    transform-origin: 50% 5%;
     width: 1414px;
   }
+}
 
+@media (max-width: 850px) and (orientation: landscape),
+  (max-width: 900px) and (min-resolution: 3dppx) and (orientation: landscape) {
+  #pass-wrapper {
+    width: 360px;
+  }
+
+  #pass-wrapper #pass-block {
+    height: 245px;
+    padding: 13px;
+    width: 470px;
+  }
+
+  #pass-name > span {
+    font-size: 18px;
+  }
+
+  #pass-wrapper .pass-quest {
+    margin-bottom: 10px;
+    min-height: 52px;
+    padding: 11px;
+    padding-bottom: 6px;
+  }
+
+  #pass-wrapper .pass-quest-desc {
+    font-size: 15px;
+    line-height: 21px;
+    min-height: 21px;
+  }
+
+  #pass-wrapper .pass-quest-xp {
+    font-size: 15px;
+  }
+
+  #pass-wrapper .pass-quest-counter {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 850px) and (orientation: portrait),
+  (max-width: 900px) and (min-resolution: 3dppx) and (orientation: portrait) {
   #start-row-header {
     background-size: 220px;
     height: 80px;
@@ -16731,7 +16781,11 @@ div.roulette {
 
   #start-menu {
     height: 216px;
+    left: auto;
     padding: 10px;
+    position: relative;
+    top: auto;
+    transform: none;
     width: 430px;
   }
 
@@ -16742,6 +16796,13 @@ div.roulette {
   }
 
   #start-menu .pass-title {
+    transform-origin: top;
+  }
+}
+
+@media (max-width: 851px) and (max-height: 376px) {
+  #start-main-center {
+    transform: scale(0.8);
     transform-origin: top;
   }
 }
