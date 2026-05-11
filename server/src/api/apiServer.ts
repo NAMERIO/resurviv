@@ -126,6 +126,13 @@ export class ApiServer {
         }
     }
 
+    setMode(index: number, mode: (typeof Config.modes)[number]) {
+        this.modes[index] = mode;
+        this.modes = expandConfiguredModes(this.modes, this.battleRoyaleMode);
+        this.ensurePrivateLobbyModes();
+        Config.modes = this.modes;
+    }
+
     init(app: Hono, upgradeWebSocket: UpgradeWebSocket) {
         this.teamMenu.init(app, upgradeWebSocket);
     }
@@ -166,6 +173,7 @@ export class ApiServer {
         Config.battleRoyaleMode = enabled;
         this.modes = expandConfiguredModes(this.modes, enabled);
         this.ensurePrivateLobbyModes();
+        Config.modes = this.modes;
 
         const results = await Promise.allSettled(
             Object.values(this.regions).map((region) =>
@@ -195,12 +203,18 @@ export class ApiServer {
 
 function expandConfiguredModes(modes: typeof Config.modes, battleRoyaleMode: boolean) {
     const expandedModes: typeof Config.modes = [];
-    const addedModes = new Set<string>();
+    const addedModes = new Map<string, number>();
 
     const addMode = (mode: (typeof Config.modes)[number]) => {
         const key = `${mode.mapName}:${mode.teamMode}`;
-        if (addedModes.has(key)) return;
-        addedModes.add(key);
+        const existingIndex = addedModes.get(key);
+        if (existingIndex !== undefined) {
+            if (mode.enabled && !expandedModes[existingIndex].enabled) {
+                expandedModes[existingIndex] = mode;
+            }
+            return;
+        }
+        addedModes.set(key, expandedModes.length);
         expandedModes.push(mode);
     };
 

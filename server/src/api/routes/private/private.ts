@@ -181,12 +181,11 @@ export const PrivateRouter = new Hono<Context>()
             return c.json({ error: "Invalid mode index" }, 400);
         }
 
-        server.modes[index] = {
+        server.setMode(index, {
             mapName: (mapName ?? server.modes[index].mapName) as keyof typeof MapDefs,
             teamMode: teamMode ?? server.modes[index].teamMode,
             enabled: enabled ?? server.modes[index].enabled,
-        };
-        Config.modes = server.modes;
+        });
 
         saveConfig(serverConfigPath, {
             modes: server.modes,
