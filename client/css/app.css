@@ -12930,7 +12930,7 @@ input [type="image"]:focus {
   #modal-clan-create .modal-content,
   #modal-clan-page .modal-content,
   #modal-clan-leaderboard .modal-content {
-    width: 70vw;
+    width: 88vw;
     transform: translate(-50%, -50%) scale(0.9);
   }
 }
@@ -12959,6 +12959,207 @@ input [type="image"]:focus {
   #modal-clan-page .modal-content,
   #modal-clan-leaderboard .modal-content {
     transform: translate(-50%, -50%) scale(0.5);
+  }
+}
+
+@media (max-width: 1200px) and (max-height: 600px) and (orientation: landscape) {
+  #modal-clan-main .modal-content,
+  #modal-clan-create .modal-content,
+  #modal-clan-leaderboard .modal-content {
+    max-width: none;
+    width: 1040px;
+    transform: translate(-50%, -50%) scale(0.68);
+    transform-origin: center;
+  }
+
+  #modal-clan-page .modal-content {
+    max-width: none;
+    width: 1240px;
+    transform: translate(-50%, -50%) scale(0.68);
+    transform-origin: center;
+  }
+
+  #modal-clan-icons .modal-content {
+    width: 480px;
+    transform: translate(-50%, -50%) scale(0.68);
+    transform-origin: center;
+  }
+
+  #modal-clan-page .modal-clans-body {
+    flex-direction: row;
+  }
+
+  #modal-clan-page .clan-detail-stats {
+    gap: 8px;
+  }
+
+  #modal-clan-page .clan-stat-box {
+    min-width: 0;
+    padding: 40px 8px 10px;
+    background-position: center 9px;
+    background-size: 24px;
+  }
+
+  #modal-clan-page .clan-stat-box.kill-placement,
+  #modal-clan-page .clan-stat-box.win-placement {
+    padding-top: 10px;
+  }
+
+  #modal-clan-page .clan-stat-label {
+    font-size: 14px;
+    line-height: 16px;
+    min-height: 32px;
+  }
+
+  #modal-clan-page .clan-stat-value {
+    font-size: 22px;
+    line-height: 24px;
+  }
+}
+
+@media (max-width: 851px) and (max-height: 525px) and (orientation: landscape) {
+  #modal-clan-main .modal-content,
+  #modal-clan-create .modal-content,
+  #modal-clan-leaderboard .modal-content {
+    transform: translate(-50%, -50%) scale(0.55);
+  }
+
+  #modal-clan-page .modal-content {
+    transform: translate(-50%, -50%) scale(0.55);
+  }
+
+  #modal-clan-icons .modal-content {
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+
+  #modal-clan-page .modal-clans-body {
+    flex-direction: row;
+  }
+}
+
+@media (max-width: 851px) and (max-height: 403px) and (orientation: landscape) {
+  #modal-clan-main .modal-content,
+  #modal-clan-create .modal-content,
+  #modal-clan-leaderboard .modal-content {
+    transform: translate(-50%, -50%) scale(0.52);
+  }
+
+  #modal-clan-page .modal-content {
+    transform: translate(-50%, -50%) scale(0.56);
+  }
+
+  #modal-clan-icons .modal-content {
+    transform: translate(-50%, -50%) scale(0.57);
+  }
+
+  #modal-clan-page .modal-clans-body {
+    flex-direction: row;
+    height: 560px;
+  }
+
+  #modal-clan-page #clan-page-detail {
+    flex: 1.12;
+  }
+
+  #modal-clan-page .clan-chat-section {
+    flex-basis: 390px;
+    min-width: 350px;
+  }
+
+  #modal-clan-page .clan-members-section,
+  #modal-clan-page .clan-chat-panel {
+    padding: 16px;
+  }
+}
+
+@media (min-width: 852px) and (max-width: 1200px) and (max-height: 403px) and (orientation: landscape) {
+  #modal-clan-main .modal-content,
+  #modal-clan-create .modal-content,
+  #modal-clan-leaderboard .modal-content {
+    transform: translate(-50%, -50%) scale(0.58);
+  }
+
+  #modal-clan-page .modal-content {
+    transform: translate(-50%, -50%) scale(0.54);
+  }
+
+  #modal-clan-icons .modal-content {
+    transform: translate(-50%, -50%) scale(0.62);
+  }
+
+  #modal-clan-page .modal-clans-body {
+    flex-direction: row;
+    height: 560px;
+  }
+
+  #modal-clan-page #clan-page-detail {
+    flex: 1.12;
+  }
+
+  #modal-clan-page .clan-chat-section {
+    flex-basis: 390px;
+    min-width: 350px;
+  }
+
+  #modal-clan-page .clan-members-section,
+  #modal-clan-page .clan-chat-panel {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 851px) and (max-height: 374px) and (orientation: landscape) {
+  #modal-clan-main .modal-content,
+  #modal-clan-create .modal-content,
+  #modal-clan-leaderboard .modal-content {
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+
+  #modal-clan-page .modal-content {
+    transform: translate(-50%, -50%) scale(0.56);
+  }
+
+  #modal-clan-icons .modal-content {
+    transform: translate(-50%, -50%) scale(0.54);
+  }
+
+  #modal-clan-page .modal-clans-body {
+    flex-direction: row;
+    height: 560px;
+  }
+
+  #modal-clan-page #clan-page-detail {
+    flex: 1.12;
+  }
+
+  #modal-clan-page .clan-chat-section {
+    flex-basis: 390px;
+    min-width: 350px;
+  }
+
+  #modal-clan-page .clan-members-section,
+  #modal-clan-page .clan-chat-panel {
+    padding: 16px;
+  }
+
+  #modal-clan-page .clan-stat-box {
+    padding: 38px 6px 8px;
+    background-position: center 8px;
+  }
+
+  #modal-clan-page .clan-stat-box.kill-placement,
+  #modal-clan-page .clan-stat-box.win-placement {
+    padding-top: 8px;
+  }
+
+  #modal-clan-page .clan-stat-label {
+    font-size: 14px;
+    line-height: 16px;
+    min-height: 32px;
+  }
+
+  #modal-clan-page .clan-stat-value {
+    font-size: 22px;
+    line-height: 24px;
   }
 }
 
