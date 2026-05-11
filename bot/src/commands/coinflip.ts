@@ -46,6 +46,13 @@ const TIMEOUT_IN_MS = 60 * 1000;
 const HEADS_BUTTON_ID = "coinflip_heads";
 const TAILS_BUTTON_ID = "coinflip_tails";
 const DECLINE_BUTTON_ID = "coinflip_decline";
+const CANCEL_BUTTON_ID = "coinflip_cancel";
+const activeCoinFlipUsers = new Set<string>();
+
+function releaseCoinFlipUsers(challengerId: string, opponentId: string) {
+    activeCoinFlipUsers.delete(challengerId);
+    activeCoinFlipUsers.delete(opponentId);
+}
 
 function formatGp(value: number) {
     return value.toLocaleString("en-US");
@@ -74,6 +81,10 @@ function buildInviteEmbed({
             {
                 name: "How it works",
                 value: `${opponent}, choose Heads or Tails to accept. Winner takes **${formatGp(bet)} GP** from the loser.`,
+            },
+            {
+                name: "Controls",
+                value: `${opponent} can accept or decline. ${challenger} can cancel before it is accepted.`,
             },
             {
                 name: "Expires",
@@ -142,6 +153,11 @@ function buildActionRow(disabled = false) {
             .setLabel("Decline")
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(disabled),
+        new ButtonBuilder()
+            .setCustomId(CANCEL_BUTTON_ID)
+            .setLabel("Cancel")
+            .setStyle(ButtonStyle.Danger)
+            .setDisabled(disabled),
     );
 }
 
@@ -206,6 +222,25 @@ export const coinFlipHandler = {
                 return;
             }
 
+            if (activeCoinFlipUsers.has(challenger.id)) {
+                await interaction.editReply({
+                    content:
+                        "You are still in a coinflip game. Wait a minute for it to finish.",
+                });
+                return;
+            }
+
+            if (activeCoinFlipUsers.has(opponent.id)) {
+                await interaction.editReply({
+                    content:
+                        "That user is still in a coinflip game. Wait a minute for it to finish.",
+                });
+                return;
+            }
+
+            activeCoinFlipUsers.add(challenger.id);
+            activeCoinFlipUsers.add(opponent.id);
+
             const response = await interaction.editReply({
                 content: `${opponent} ${challenger} sent you a coinflip challenge for **${formatGp(bet)} GP**.`,
                 embeds: [buildInviteEmbed({ challenger, opponent, bet })],
@@ -219,68 +254,133 @@ export const coinFlipHandler = {
             });
 
             collector.on("collect", async (buttonInteraction) => {
+                if (buttonInteraction.customId === CANCEL_BUTTON_ID) {
+                    if (buttonInteraction.user.id !== challenger.id) {
+                        await buttonInteraction.reply({
+                            content: "Only the challenger can cancel this coinflip.",
+                            flags: MessageFlags.Ephemeral,
+                        });
+                        return;
+                    }
+
+                    collector.stop("cancelled");
+                    releaseCoinFlipUsers(challenger.id, opponent.id);
+                    await buttonInteraction.update({
+                        content: `${challenger} cancelled the coinflip challenge with ${opponent}.`,
+                        embeds: [],
+                        components: [],
+                        allowedMentions: { users: [challenger.id, opponent.id] },
+                    });
+                    return;
+                }
+
                 if (buttonInteraction.user.id !== opponent.id) {
                     await buttonInteraction.reply({
-                        content: "Only the challenged user can accept this coinflip.",
+                        content:
+                            "Only the challenged user can accept or decline this coinflip.",
                         flags: MessageFlags.Ephemeral,
                     });
                     return;
                 }
 
-                if (buttonInteraction.customId === DECLINE_BUTTON_ID) {
-                    collector.stop("declined");
-                    await buttonInteraction.update({
-                        content: `${opponent} declined ${challenger}'s coinflip challenge.`,
-                        embeds: [],
-                        components: [],
-                        allowedMentions: { users: [opponent.id, challenger.id] },
-                    });
-                    return;
-                }
+                try {
+                    if (buttonInteraction.customId === DECLINE_BUTTON_ID) {
+                        collector.stop("declined");
+                        await buttonInteraction.update({
+                            content: `${opponent} declined ${challenger}'s coinflip challenge.`,
+                            embeds: [],
+                            components: [],
+                            allowedMentions: { users: [opponent.id, challenger.id] },
+                        });
+                        return;
+                    }
 
-                const opponentPick =
-                    buttonInteraction.customId === HEADS_BUTTON_ID ? "heads" : "tails";
+                    const opponentPick =
+                        buttonInteraction.customId === HEADS_BUTTON_ID
+                            ? "heads"
+                            : "tails";
 
-                collector.stop("completed");
-                await buttonInteraction.deferUpdate();
+                    collector.stop("completed");
+                    await buttonInteraction.deferUpdate();
 
-                const resolveRes = await honoClient.coinflip_resolve.$post({
-                    json: {
-                        challenger_discord_id: challenger.id,
-                        opponent_discord_id: opponent.id,
-                        bet,
-                        opponent_pick: opponentPick,
-                    },
-                });
-                const result = (await resolveRes.json()) as CoinFlipResolveResponse;
-
-                if (!result.ok) {
                     await interaction.editReply({
-                        content: result.message,
+                        content: `${opponent} picked **${opponentPick}**. Coin flipping...`,
+                        embeds: [
+                            new EmbedBuilder()
+                                .setTitle("Coin flipping...")
+                                .setColor(0xf2b84b)
+                                .setDescription(
+                                    `The coin is in the air for ${challenger} vs ${opponent}.`,
+                                )
+                                .addFields({
+                                    name: "Bet",
+                                    value: `**${formatGp(bet)} GP**`,
+                                    inline: true,
+                                }),
+                        ],
+                        components: [buildActionRow(true)],
+                        allowedMentions: { users: [challenger.id, opponent.id] },
+                    });
+
+                    const resolveRes = await honoClient.coinflip_resolve.$post({
+                        json: {
+                            challenger_discord_id: challenger.id,
+                            opponent_discord_id: opponent.id,
+                            bet,
+                            opponent_pick: opponentPick,
+                        },
+                    });
+                    const result = (await resolveRes.json()) as CoinFlipResolveResponse;
+
+                    if (!result.ok) {
+                        await interaction.editReply({
+                            content: result.message,
+                            embeds: [],
+                            components: [],
+                        });
+                        return;
+                    }
+
+                    const winnerMention =
+                        result.winner.slug === check.challenger.slug
+                            ? challenger
+                            : opponent;
+                    const loserMention =
+                        result.loser.slug === check.challenger.slug
+                            ? challenger
+                            : opponent;
+
+                    await interaction.editReply({
+                        content: `${winnerMention} won **${formatGp(result.bet)} GP** from ${loserMention}.`,
+                        embeds: [buildResultEmbed({ result, challenger, opponent })],
+                        components: [],
+                        allowedMentions: {
+                            users: [winnerMention.id, loserMention.id],
+                        },
+                    });
+
+                    await interaction.followUp({
+                        content: `${winnerMention} won the coinflip against ${loserMention} and earned **${formatGp(result.bet)} GP**.`,
+                        allowedMentions: {
+                            users: [winnerMention.id, loserMention.id],
+                        },
+                    });
+                } catch (error) {
+                    botLogger.error("Error while resolving coinflip:", error);
+                    await interaction.editReply({
+                        content: "An error occurred while running the coinflip.",
                         embeds: [],
                         components: [],
                     });
-                    return;
+                } finally {
+                    releaseCoinFlipUsers(challenger.id, opponent.id);
                 }
-
-                const winnerMention =
-                    result.winner.slug === check.challenger.slug ? challenger : opponent;
-                const loserMention =
-                    result.loser.slug === check.challenger.slug ? challenger : opponent;
-
-                await interaction.editReply({
-                    content: `${winnerMention} won **${formatGp(result.bet)} GP** from ${loserMention}.`,
-                    embeds: [buildResultEmbed({ result, challenger, opponent })],
-                    components: [],
-                    allowedMentions: {
-                        users: [winnerMention.id, loserMention.id],
-                    },
-                });
             });
 
             collector.on("end", async (_, reason) => {
                 if (reason !== "time") return;
 
+                releaseCoinFlipUsers(challenger.id, opponent.id);
                 await interaction.editReply({
                     content: `${opponent} did not answer ${challenger}'s coinflip challenge in time.`,
                     embeds: [],
@@ -289,6 +389,7 @@ export const coinFlipHandler = {
                 });
             });
         } catch (error) {
+            releaseCoinFlipUsers(challenger.id, opponent.id);
             botLogger.error("Error in coinflip command:", error);
             await interaction.editReply({
                 content: "An error occurred while running the coinflip.",
