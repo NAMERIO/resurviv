@@ -1315,7 +1315,11 @@ export class ClanUi {
                 this.gifPickerLoading = false;
                 if (err || !res?.success) {
                     $("#clan-chat-gif-grid").empty();
-                    $("#clan-chat-gif-status").text("GIFs could not be loaded.");
+                    $("#clan-chat-gif-status").text(
+                        res?.success === false && res.error === "not_configured"
+                            ? "Klipy API key is not configured."
+                            : "GIFs could not be loaded.",
+                    );
                     return;
                 }
 
@@ -1329,7 +1333,7 @@ export class ClanUi {
         this.unobserveGifImages(grid[0]);
         grid.empty();
 
-        for (const gif of gifs) {
+        for (const [index, gif] of gifs.entries()) {
             if (gif.type === "ad") {
                 grid.append(this.renderGifPickerAd(gif));
                 continue;
@@ -1347,6 +1351,7 @@ export class ClanUi {
                             class: "clan-chat-gif-thumb",
                             src: gif.url,
                             alt: gif.title,
+                            eager: index < 4,
                         }),
                     ),
             );
@@ -1418,18 +1423,25 @@ export class ClanUi {
         );
     }
 
-    createLazyGifImage(options: { class: string; src: string; alt: string }) {
+    createLazyGifImage(options: {
+        class: string;
+        src: string;
+        alt: string;
+        eager?: boolean;
+    }) {
         const image = $("<img/>", {
             class: `${options.class} clan-chat-lazy-gif`,
-            src: blankGifSrc,
+            src: options.eager ? this.resolveImageSrc(options.src) : blankGifSrc,
             alt: options.alt,
-            loading: "lazy",
+            loading: options.eager ? "eager" : "lazy",
             crossOrigin: "anonymous",
         }).on("load", (e) => {
             this.cacheGifStillFrame(e.currentTarget as HTMLImageElement);
         });
         image.data("gif-src", this.resolveImageSrc(options.src));
-        this.observeGifImage(image[0] as HTMLImageElement);
+        if (!options.eager) {
+            this.observeGifImage(image[0] as HTMLImageElement);
+        }
         return image;
     }
 

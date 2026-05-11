@@ -42,11 +42,7 @@ import {
     zUpdateClanRequest,
 } from "../../../../../shared/types/clan";
 import { Config } from "../../../config";
-import {
-    checkForBadWords,
-    getHonoIp,
-    validateUserName,
-} from "../../../utils/serverHelpers";
+import { checkForBadWords, validateUserName } from "../../../utils/serverHelpers";
 import {
     authMiddleware,
     databaseEnabledMiddleware,
@@ -152,6 +148,7 @@ type KlipyGifResult = {
 
 type KlipyApiGifObject = {
     id?: string;
+    slug?: string;
     type?: string;
     content_type?: string;
     is_ad?: boolean;
@@ -169,6 +166,8 @@ type KlipyApiGifObject = {
     title?: string;
     itemurl?: string;
     url?: string;
+    file?: Record<string, unknown>;
+    files?: Record<string, unknown>;
     media_formats?: {
         gif?: { url?: string; dims?: [number, number] };
         mediumgif?: { url?: string; dims?: [number, number] };
@@ -177,6 +176,10 @@ type KlipyApiGifObject = {
 };
 
 type KlipyAdResult = Extract<KlipyGifPickerItem, { type: "ad" }>;
+type KlipyGifPickerContentResult = Extract<KlipyGifPickerItem, { type: "gif" }>;
+
+const KlipyPickerTimeoutMs = 2500;
+const KlipyAdTimeoutMs = 900;
 
 function parseKlipyUrl(rawUrl: string): URL | null {
     let url: URL;
@@ -239,11 +242,18 @@ function getMetaContent(html: string, key: string) {
     return null;
 }
 
-function toKlipyGifResult(result: KlipyApiGifObject): KlipyGifResult | null {
+function toKlipyGifResult(
+    result: KlipyApiGifObject,
+    mode: "preview" | "full" = "full",
+): KlipyGifResult | null {
     const gif =
-        result.media_formats?.gif ??
-        result.media_formats?.mediumgif ??
-        result.media_formats?.tinygif;
+        mode === "preview"
+            ? (result.media_formats?.tinygif ??
+              result.media_formats?.mediumgif ??
+              result.media_formats?.gif)
+            : (result.media_formats?.gif ??
+              result.media_formats?.mediumgif ??
+              result.media_formats?.tinygif);
     if (!gif?.url) return null;
 
     return {
@@ -253,6 +263,93 @@ function toKlipyGifResult(result: KlipyApiGifObject): KlipyGifResult | null {
         title: result.title || "Klipy GIF",
         width: gif.dims?.[0] ?? null,
         height: gif.dims?.[1] ?? null,
+    };
+}
+
+function getNestedString(source: unknown, path: string[]) {
+    let value = source;
+    for (const key of path) {
+        if (!value || typeof value !== "object") return null;
+        value = (value as Record<string, unknown>)[key];
+    }
+    return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function getNestedNumber(source: unknown, path: string[]) {
+    let value = source;
+    for (const key of path) {
+        if (!value || typeof value !== "object") return null;
+        value = (value as Record<string, unknown>)[key];
+    }
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "string" && Number.isFinite(Number(value))) return Number(value);
+    return null;
+}
+
+function getKlipyNativeGifFile(result: KlipyApiGifObject) {
+    return result.file || result.files || {};
+}
+
+function getKlipyNativeFileUrl(file: Record<string, unknown>, paths: string[][]) {
+    for (const path of paths) {
+        const url = getNestedString(file, path);
+        if (url) return url;
+    }
+    return null;
+}
+
+function toKlipyNativeGifResult(
+    result: KlipyApiGifObject,
+    mode: "preview" | "full" = "full",
+): KlipyGifResult | null {
+    const file = getKlipyNativeGifFile(result);
+    const previewPaths = [
+        ["xs", "webp", "url"],
+        ["xs", "gif", "url"],
+        ["sm", "webp", "url"],
+        ["sm", "gif", "url"],
+        ["xs", "jpg", "url"],
+        ["sm", "jpg", "url"],
+        ["md", "webp", "url"],
+        ["md", "gif", "url"],
+    ];
+    const fullPaths = [
+        ["hd", "gif", "url"],
+        ["gif", "url"],
+        ["md", "gif", "url"],
+        ["sm", "gif", "url"],
+        ["xs", "gif", "url"],
+        ["hd", "webp", "url"],
+        ["gif", "webp", "url"],
+        ["md", "webp", "url"],
+        ["sm", "webp", "url"],
+        ["xs", "webp", "url"],
+    ];
+    const gifUrl = getKlipyNativeFileUrl(
+        file,
+        mode === "preview" ? previewPaths : fullPaths,
+    );
+    if (!gifUrl) return null;
+
+    const width =
+        getNestedNumber(file, [mode === "preview" ? "xs" : "hd", "gif", "width"]) ||
+        getNestedNumber(file, [mode === "preview" ? "xs" : "hd", "webp", "width"]) ||
+        getNestedNumber(file, ["gif", "width"]);
+    const height =
+        getNestedNumber(file, [mode === "preview" ? "xs" : "hd", "gif", "height"]) ||
+        getNestedNumber(file, [mode === "preview" ? "xs" : "hd", "webp", "height"]) ||
+        getNestedNumber(file, ["gif", "height"]);
+
+    return {
+        id: result.id,
+        url: gifUrl,
+        sourceUrl:
+            result.url ||
+            result.itemurl ||
+            (result.slug ? `https://klipy.com/gifs/${result.slug}` : gifUrl),
+        title: result.title || "Klipy GIF",
+        width,
+        height,
     };
 }
 
@@ -356,7 +453,7 @@ async function fetchKlipyApiGif(id: string): Promise<KlipyGifResult | null> {
         media_filter: "gif,tinygif,mediumgif",
     });
     const res = await fetch(`https://api.klipy.com/v2/posts?${params}`, {
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(KlipyPickerTimeoutMs),
     });
     if (!res.ok) return null;
 
@@ -372,61 +469,117 @@ async function fetchKlipyGifPickerItems(options: {
     customerId: string;
     adMaxWidth?: number;
     adMaxHeight?: number;
-    userAgent?: string;
-    ip?: string;
 }): Promise<KlipyGifPickerItem[]> {
     const apiKey = Config.secrets.KLIPY_API_KEY;
     if (!apiKey) return [];
 
     const query = options.query || options.section || "";
-    const endpoint = query ? "search" : "featured";
-    const params = new URLSearchParams({
-        key: apiKey,
-        limit: String(options.limit),
-        media_filter: "gif,tinygif,mediumgif",
-        customer_id: options.customerId,
-        "ad-min-width": "50",
-        "ad-max-width": String(options.adMaxWidth || 401),
-        "ad-min-height": "50",
-        "ad-max-height": String(options.adMaxHeight || 250),
-    });
-    if (query) {
-        params.set("q", query);
+    const nativeEndpoint = query ? "search" : "trending";
+    const tenorEndpoint = query ? "search" : "featured";
+
+    const fetchNativeResults = async (includeAds: boolean, timeoutMs: number) => {
+        const params = new URLSearchParams({
+            per_page: String(options.limit),
+            page: "1",
+        });
+        if (query) {
+            params.set("q", query);
+        }
+        if (includeAds) {
+            params.set("customer_id", options.customerId);
+            params.set("ad-min-width", "50");
+            params.set("ad-max-width", String(options.adMaxWidth || 401));
+            params.set("ad-min-height", "50");
+            params.set("ad-max-height", String(options.adMaxHeight || 250));
+        }
+
+        const res = await fetch(
+            `https://api.klipy.com/api/v1/${encodeURIComponent(apiKey)}/gifs/${nativeEndpoint}?${params}`,
+            {
+                signal: AbortSignal.timeout(timeoutMs),
+            },
+        );
+        if (!res.ok) return null;
+
+        const data = (await res.json()) as {
+            data?: KlipyApiGifObject[] | { data?: KlipyApiGifObject[] };
+        };
+        if (Array.isArray(data.data)) return data.data;
+        return data.data?.data || [];
+    };
+
+    const fetchTenorCompatibleResults = async () => {
+        const params = new URLSearchParams({
+            key: apiKey,
+            limit: String(options.limit),
+            media_filter: "gif,tinygif,mediumgif",
+        });
+        if (query) {
+            params.set("q", query);
+        }
+
+        const res = await fetch(`https://api.klipy.com/v2/${tenorEndpoint}?${params}`, {
+            signal: AbortSignal.timeout(KlipyPickerTimeoutMs),
+        });
+        if (!res.ok) return null;
+
+        const data = (await res.json()) as { results?: KlipyApiGifObject[] };
+        return data.results || [];
+    };
+
+    const toPickerItem = (result: KlipyApiGifObject): KlipyGifPickerItem | null => {
+        const ad = toKlipyAdResult(result);
+        if (ad) return ad;
+
+        const gif =
+            toKlipyNativeGifResult(result, "preview") ||
+            toKlipyGifResult(result, "preview");
+        if (!gif) return null;
+        return {
+            type: "gif" as const,
+            id: gif.id || gif.sourceUrl,
+            url: gif.url,
+            sourceUrl: gif.sourceUrl,
+            title: gif.title,
+            width: gif.width,
+            height: gif.height,
+        };
+    };
+
+    const fetchContentItems = async () => {
+        let results = await fetchNativeResults(false, KlipyPickerTimeoutMs);
+        if (!results || results.length === 0) {
+            results = await fetchTenorCompatibleResults();
+        }
+
+        return (results || [])
+            .map(toPickerItem)
+            .filter(
+                (item): item is KlipyGifPickerContentResult => item?.type === "gif",
+            );
+    };
+
+    const fetchAdItem = async () => {
+        try {
+            const results = await fetchNativeResults(true, KlipyAdTimeoutMs);
+            return (
+                (results || [])
+                    .map(toPickerItem)
+                    .find((item): item is KlipyAdResult => item?.type === "ad") || null
+            );
+        } catch {
+            return null;
+        }
+    };
+
+    const [contentItems, adItem] = await Promise.all([fetchContentItems(), fetchAdItem()]);
+    const pickerItems: KlipyGifPickerItem[] = [...contentItems];
+    if (adItem && pickerItems.length >= 3) {
+        pickerItems.splice(3, 0, adItem);
+    } else if (adItem) {
+        pickerItems.push(adItem);
     }
-
-    const headers = new Headers();
-    if (options.userAgent) {
-        headers.set("User-Agent", options.userAgent);
-    }
-    if (options.ip) {
-        headers.set("X-Forwarded-For", options.ip);
-    }
-
-    const res = await fetch(`https://api.klipy.com/v2/${endpoint}?${params}`, {
-        headers,
-        signal: AbortSignal.timeout(5000),
-    });
-    if (!res.ok) return [];
-
-    const data = (await res.json()) as { results?: KlipyApiGifObject[] };
-    return (data.results || [])
-        .map((result) => {
-            const ad = toKlipyAdResult(result);
-            if (ad) return ad;
-
-            const gif = toKlipyGifResult(result);
-            if (!gif) return null;
-            return {
-                type: "gif" as const,
-                id: gif.id || gif.sourceUrl,
-                url: gif.url,
-                sourceUrl: gif.sourceUrl,
-                title: gif.title,
-                width: gif.width,
-                height: gif.height,
-            };
-        })
-        .filter((gif): gif is KlipyGifPickerItem => !!gif);
+    return pickerItems;
 }
 
 async function fetchKlipyPageGif(url: URL): Promise<KlipyGifResult | null> {
@@ -1303,8 +1456,6 @@ ClanRouter.post("/search_klipy_gifs", validateParams(zSearchKlipyGifsRequest), a
             customerId: user.id,
             adMaxWidth,
             adMaxHeight,
-            userAgent: c.req.header("user-agent"),
-            ip: getHonoIp(c),
         });
         return c.json<SearchKlipyGifsResponse>({ success: true, gifs });
     } catch {
