@@ -7,8 +7,8 @@ import {
 } from "discord.js";
 import { commandHandlers } from "./commands";
 import { sendNoPermissionMessage } from "./commands/helpers";
-import { DISCORD_BOT_TOKEN } from "./config";
-import { botLogger, type Command, hasBotPermission } from "./utils";
+import { DISCORD_BOT_TOKEN, DISCORD_GUILD_ID } from "./config";
+import { botLogger, Command, hasBotPermission } from "./utils";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -16,12 +16,16 @@ function setupInteractionHandlers() {
     client.on(Events.InteractionCreate, async (interaction) => {
         if (!interaction.isChatInputCommand()) return;
 
-        if (!hasBotPermission(interaction)) {
+        const commandName = interaction.commandName as Command;
+
+        if (
+            interaction.guild?.id !== DISCORD_GUILD_ID ||
+            (commandName !== Command.CoinFlip && !hasBotPermission(interaction))
+        ) {
             await sendNoPermissionMessage(interaction);
             return;
         }
 
-        const commandName = interaction.commandName as Command;
         if (!commandHandlers[commandName]) {
             botLogger.warn(`Unknown command: ${commandName}`);
             return;

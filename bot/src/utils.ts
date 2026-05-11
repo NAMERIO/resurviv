@@ -33,6 +33,7 @@ export const enum Command {
     GiveGp = "give_gp",
     RemoveGp = "remove_gp",
     GetGp = "get_gp",
+    CoinFlip = "coinflip",
     SetGameMode = "set_game_mode",
     SetBattleRoyaleMode = "set_battle_royale_mode",
     SetClientTheme = "set_client_theme",

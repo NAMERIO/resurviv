@@ -86,3 +86,13 @@ export const zRemoveGpParams = z.object({
 export const zGetGpParams = z.object({
     slug: z.string(),
 });
+
+export const zCoinFlipCheckParams = z.object({
+    challenger_discord_id: z.string(),
+    opponent_discord_id: z.string(),
+    bet: z.number().int().positive(),
+});
+
+export const zCoinFlipResolveParams = zCoinFlipCheckParams.extend({
+    opponent_pick: z.enum(["heads", "tails"]),
+});

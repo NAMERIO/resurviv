@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -8,6 +9,8 @@ import { QuestDefs } from "../../../../../shared/defs/gameObjects/questDefs";
 import { MapDefs } from "../../../../../shared/defs/mapDefs";
 import { TeamMode } from "../../../../../shared/gameConfig";
 import {
+    zCoinFlipCheckParams,
+    zCoinFlipResolveParams,
     zGetGpParams,
     zGiveGpParams,
     zGiveItemParams,
@@ -19,7 +22,7 @@ import {
     type GameModeStatus as GameModeStatusType,
 } from "../../../../../shared/types/stats";
 import { passUtil } from "../../../../../shared/utils/passUtil";
-import { Config, serverConfigPath } from "../../../config";
+import { serverConfigPath } from "../../../config";
 import { isBehindProxy } from "../../../utils/serverHelpers";
 import {
     type SaveGameBody,
@@ -154,6 +157,33 @@ async function updateClanStats(matchData: MatchDataTable[]) {
     } catch (err) {
         server.logger.error("Error updating clan stats:", err);
     }
+}
+
+type CoinFlipUser = {
+    id: string;
+    slug: string;
+    username: string;
+    gpBalance: number;
+};
+
+function findDiscordLinkedUser(discordId: string): Promise<CoinFlipUser | undefined> {
+    return db.query.usersTable.findFirst({
+        where: and(eq(usersTable.authId, discordId), eq(usersTable.linkedDiscord, true)),
+        columns: {
+            id: true,
+            slug: true,
+            username: true,
+            gpBalance: true,
+        },
+    });
+}
+
+function toCoinFlipPlayer(user: CoinFlipUser) {
+    return {
+        slug: user.slug,
+        username: user.username,
+        gpBalance: user.gpBalance,
+    };
 }
 
 export const PrivateRouter = new Hono<Context>()
@@ -554,6 +584,233 @@ export const PrivateRouter = new Hono<Context>()
             }
 
             return c.json({ message: `${slug} has ${user.gpBalance} GP` }, 200);
+        },
+    )
+    .post(
+        "/coinflip_check",
+        databaseEnabledMiddleware,
+        validateParams(zCoinFlipCheckParams),
+        async (c) => {
+            const {
+                challenger_discord_id: challengerDiscordId,
+                opponent_discord_id: opponentDiscordId,
+                bet,
+            } = c.req.valid("json");
+
+            if (challengerDiscordId === opponentDiscordId) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "same_user",
+                        message: "You cannot coinflip against yourself.",
+                    },
+                    200,
+                );
+            }
+
+            const challenger = await findDiscordLinkedUser(challengerDiscordId);
+            if (!challenger) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "challenger_not_connected",
+                        message:
+                            "You do not have a game account connected to this Discord.",
+                    },
+                    200,
+                );
+            }
+
+            if (challenger.gpBalance < bet) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "challenger_not_enough_gp",
+                        message: "You do not have enough GP.",
+                    },
+                    200,
+                );
+            }
+
+            const opponent = await findDiscordLinkedUser(opponentDiscordId);
+            if (!opponent) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "opponent_not_connected",
+                        message:
+                            "User does not have a game account connected to this Discord.",
+                    },
+                    200,
+                );
+            }
+
+            if (opponent.gpBalance < bet) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "opponent_not_enough_gp",
+                        message: "User does not have enough GP.",
+                    },
+                    200,
+                );
+            }
+
+            return c.json(
+                {
+                    ok: true,
+                    challenger: toCoinFlipPlayer(challenger),
+                    opponent: toCoinFlipPlayer(opponent),
+                },
+                200,
+            );
+        },
+    )
+    .post(
+        "/coinflip_resolve",
+        databaseEnabledMiddleware,
+        validateParams(zCoinFlipResolveParams),
+        async (c) => {
+            const {
+                challenger_discord_id: challengerDiscordId,
+                opponent_discord_id: opponentDiscordId,
+                bet,
+                opponent_pick: opponentPick,
+            } = c.req.valid("json");
+
+            if (challengerDiscordId === opponentDiscordId) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "same_user",
+                        message: "You cannot coinflip against yourself.",
+                    },
+                    200,
+                );
+            }
+
+            const result = await db.transaction(async (tx) => {
+                const challenger = await tx.query.usersTable.findFirst({
+                    where: and(
+                        eq(usersTable.authId, challengerDiscordId),
+                        eq(usersTable.linkedDiscord, true),
+                    ),
+                    columns: {
+                        id: true,
+                        slug: true,
+                        username: true,
+                        gpBalance: true,
+                    },
+                });
+
+                if (!challenger) {
+                    return {
+                        ok: false,
+                        reason: "challenger_not_connected",
+                        message:
+                            "You do not have a game account connected to this Discord.",
+                    };
+                }
+
+                const opponent = await tx.query.usersTable.findFirst({
+                    where: and(
+                        eq(usersTable.authId, opponentDiscordId),
+                        eq(usersTable.linkedDiscord, true),
+                    ),
+                    columns: {
+                        id: true,
+                        slug: true,
+                        username: true,
+                        gpBalance: true,
+                    },
+                });
+
+                if (!opponent) {
+                    return {
+                        ok: false,
+                        reason: "opponent_not_connected",
+                        message:
+                            "User does not have a game account connected to this Discord.",
+                    };
+                }
+
+                if (challenger.gpBalance < bet) {
+                    return {
+                        ok: false,
+                        reason: "challenger_not_enough_gp",
+                        message: "You do not have enough GP.",
+                    };
+                }
+
+                if (opponent.gpBalance < bet) {
+                    return {
+                        ok: false,
+                        reason: "opponent_not_enough_gp",
+                        message: "User does not have enough GP.",
+                    };
+                }
+
+                const coinResult = randomInt(2) === 0 ? "heads" : "tails";
+                const opponentWins = opponentPick === coinResult;
+                const winner = opponentWins ? opponent : challenger;
+                const loser = opponentWins ? challenger : opponent;
+
+                const [updatedLoser] = await tx
+                    .update(usersTable)
+                    .set({
+                        gpBalance: sql`${usersTable.gpBalance} - ${bet}`,
+                    })
+                    .where(
+                        and(
+                            eq(usersTable.id, loser.id),
+                            sql`${usersTable.gpBalance} >= ${bet}`,
+                        ),
+                    )
+                    .returning({
+                        gpBalance: usersTable.gpBalance,
+                    });
+
+                if (!updatedLoser) {
+                    return {
+                        ok: false,
+                        reason:
+                            loser.id === challenger.id
+                                ? "challenger_not_enough_gp"
+                                : "opponent_not_enough_gp",
+                        message:
+                            loser.id === challenger.id
+                                ? "You do not have enough GP."
+                                : "User does not have enough GP.",
+                    };
+                }
+
+                const [updatedWinner] = await tx
+                    .update(usersTable)
+                    .set({
+                        gpBalance: sql`${usersTable.gpBalance} + ${bet}`,
+                    })
+                    .where(eq(usersTable.id, winner.id))
+                    .returning({
+                        gpBalance: usersTable.gpBalance,
+                    });
+
+                return {
+                    ok: true,
+                    bet,
+                    coinResult,
+                    opponentPick,
+                    winner: {
+                        ...toCoinFlipPlayer(winner),
+                        gpBalance: updatedWinner?.gpBalance ?? winner.gpBalance + bet,
+                    },
+                    loser: {
+                        ...toCoinFlipPlayer(loser),
+                        gpBalance: updatedLoser.gpBalance,
+                    },
+                };
+            });
+
+            return c.json(result, 200);
         },
     )
     .post(
