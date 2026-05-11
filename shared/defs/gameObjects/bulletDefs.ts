@@ -876,7 +876,7 @@ export const BaseDefs: Record<string, BulletDef> = {
         obstacleDamage: 0,
         falloff: 0.75,
         speed: 90,
-        distance: 1,
+        distance: 250,
         variance: 0,
         shrapnel: false,
         tracerColor: "rainbowTrail",

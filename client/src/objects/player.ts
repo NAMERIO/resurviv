@@ -655,6 +655,8 @@ export class Player implements AbstractObject {
             this.m_netData.m_actionItem = data.actionItem;
             this.m_netData.m_scale = data.scale;
             this.m_netData.m_role = data.role;
+            this.m_netData.m_loadingBlaster = data.loadingBlaster;
+            this.m_netData.m_gunLoaded = data.gunLoaded;
 
             if (!!isNew || !perksEqual(this.m_netData.m_perks, data.perks)) {
                 this.perksDirty = true;
@@ -947,7 +949,17 @@ export class Player implements AbstractObject {
     ) {
         const curWeapDef = GameObjectDefs[this.m_netData.m_activeWeapon];
         const isActivePlayer = this.__id == activeId;
-        if (inputBinds.isBindDown(Input.Fire)) {
+        const isBlaster =
+            curWeapDef?.type === "gun" && (curWeapDef as GunDef).fireMode === "blaster";
+        const isReloading =
+            this.m_netData.m_actionType === Action.Reload ||
+            this.m_netData.m_actionType === Action.ReloadAlt;
+        if (
+            isActivePlayer &&
+            isBlaster &&
+            !isReloading &&
+            inputBinds.isBindDown(Input.Fire)
+        ) {
             this.m_netData.m_loadingBlaster += dt;
             const loadTime = (curWeapDef as GunDef).loadTime ?? 1.5;
 
@@ -961,7 +973,7 @@ export class Player implements AbstractObject {
                     }
                 }
             }
-        } else {
+        } else if (isActivePlayer && isBlaster) {
             if (this.m_netData.m_loadingBlaster > 0 || this.m_netData.m_gunLoaded) {
                 this.m_netData.m_loadingBlaster = 0;
                 this.m_netData.m_gunLoaded = false;

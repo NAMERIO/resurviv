@@ -384,6 +384,8 @@ export class LoadoutDisplay {
             wearingLasrSwrd: false,
             pos: v2.create(50, 50),
             dir: v2.create(0, -1),
+            loadingBlaster: 0,
+            gunLoaded: false,
         };
 
         this.objectCreator.m_updateObjFull(ObjectType.Player, 98, obj, ctx);

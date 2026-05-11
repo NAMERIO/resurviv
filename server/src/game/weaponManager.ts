@@ -372,6 +372,10 @@ export class WeaponManager {
         const itemDef = GameObjectDefs[this.activeWeapon] as GunDef;
         const player = this.player;
         const weapon = this.weapons[this.curWeapIdx];
+        const oldLoadingBlasterCharge = this.loadingBlasterCharge;
+        const oldGunLoaded =
+            itemDef.fireMode === "blaster" &&
+            this.loadingBlasterCharge >= (itemDef.loadTime ?? 1.5);
 
         switch (itemDef.fireMode) {
             case "auto":
@@ -410,6 +414,14 @@ export class WeaponManager {
                 }
                 break;
             case "blaster":
+                if (
+                    player.actionType === GameConfig.Action.Reload ||
+                    player.actionType === GameConfig.Action.ReloadAlt
+                ) {
+                    this.loadingBlasterCharge = 0;
+                    this.wasHolding = false;
+                    break;
+                }
                 if (this.wasHolding && !player.shootHold && weapon.cooldown <= 0) {
                     if (!itemDef) return;
                     const loadTime = itemDef.loadTime ?? 1.5;
@@ -431,6 +443,16 @@ export class WeaponManager {
                 }
                 this.wasHolding = player.shootHold;
                 break;
+        }
+
+        if (itemDef.fireMode === "blaster") {
+            const gunLoaded = this.loadingBlasterCharge >= (itemDef.loadTime ?? 1.5);
+            if (
+                this.loadingBlasterCharge !== oldLoadingBlasterCharge ||
+                gunLoaded !== oldGunLoaded
+            ) {
+                player.setDirty();
+            }
         }
     }
 
@@ -563,6 +585,11 @@ export class WeaponManager {
         }
 
         this.player.doAction(this.activeWeapon, action, duration);
+        if (weaponDef.fireMode === "blaster") {
+            this.loadingBlasterCharge = 0;
+            this.wasHolding = false;
+            this.player.setDirty();
+        }
     }
 
     /**

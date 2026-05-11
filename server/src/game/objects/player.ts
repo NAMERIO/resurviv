@@ -833,6 +833,21 @@ export class Player extends BaseGameObject {
         return this.weaponManager.activeWeapon;
     }
 
+    get loadingBlaster() {
+        const itemDef = GameObjectDefs[this.activeWeapon] as GunDef | undefined;
+        if (itemDef?.type !== "gun" || itemDef.fireMode !== "blaster") return 0;
+        return this.weaponManager.loadingBlasterCharge;
+    }
+
+    get gunLoaded() {
+        const itemDef = GameObjectDefs[this.activeWeapon] as GunDef | undefined;
+        return (
+            itemDef?.type === "gun" &&
+            itemDef.fireMode === "blaster" &&
+            this.loadingBlaster >= (itemDef.loadTime ?? 1.5)
+        );
+    }
+
     private getDisplayWeaponType(slot: number): string {
         const realType = this.weapons[slot]?.type ?? "";
         if (!this.game.map.aprilFoolsMode) return realType;

@@ -124,12 +124,11 @@ export class BulletBarn {
         }
 
         const bulletDef = BulletDefs[bullet.bulletType];
-        const isRainbowBlaster = bulletDef.tracerColor === "rainbowTrail";
-        if (isRainbowBlaster) {
-            b.bulletTrail.texture = PIXI.Texture.from("player-rainbow-trail.img");
-        } else {
-            b.bulletTrail.texture = PIXI.Texture.from("player-bullet-trail-02.img");
-        }
+        b.bulletTrail.texture = PIXI.Texture.from(
+            bullet.bulletType === "bullet_rainbow"
+                ? "player-rainbow-trail.img"
+                : "player-bullet-trail-02.img",
+        );
 
         const variance = 1 + bullet.varianceT * bulletDef.variance;
         const distAdj = math.remap(bullet.distAdjIdx, 0, 16, -1, 1);

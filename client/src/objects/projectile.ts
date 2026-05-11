@@ -36,6 +36,7 @@ class Projectile implements AbstractObject {
 
     container = new PIXI.Container();
     trail = PIXI.Sprite.from("player-bullet-trail-02.img");
+    imageTrail = this.trail;
     sprite = new PIXI.Sprite();
     strobeSprite: PIXI.Sprite | null = null;
 
@@ -130,18 +131,27 @@ class Projectile implements AbstractObject {
 
         if (isNew) {
             const itemDef = GameObjectDefs[data.type] as ThrowableDef;
-            if (isNew) {
-                const _itemDef = GameObjectDefs[data.type] as ThrowableDef;
-
-                if (data.type === "rainbow_projectile") {
+            if (!itemDef || itemDef.type !== "throwable" || !itemDef.worldImg) {
+                console.warn("Invalid projectile type", data.type, itemDef);
+                this.container.visible = false;
+                return;
+            }
+            if (itemDef.trail) {
+                if (itemDef.trail.sprite) {
+                    const newTrail = PIXI.Sprite.from(itemDef.trail.sprite);
+                    newTrail.anchor.set(1, 0.5);
+                    newTrail.scale.set(1, 1);
+                    newTrail.visible = false;
                     this.container.removeChild(this.trail);
-                    this.trail = PIXI.Sprite.from("player-rainbow-trail.img");
-                    this.trail.anchor.set(0.9, 0.5);
-                    this.trail.scale.set(1, 1);
-                    this.trail.visible = false;
-                    this.container.addChildAt(this.trail, 0);
+                    this.trail = newTrail;
+                    this.container.addChild(this.trail);
+                } else if (this.trail !== this.imageTrail) {
+                    this.container.removeChild(this.trail);
+                    this.trail = this.imageTrail;
+                    this.container.addChild(this.trail);
                 }
             }
+
             const imgDef = itemDef.worldImg;
             this.imgScale = imgDef.scale;
             this.rot = 0;
@@ -178,7 +188,10 @@ class Projectile implements AbstractObject {
                 sprite = imgDef.sprites[frameIndex];
             }
 
-            this.sprite.texture = PIXI.Texture.from(sprite);
+            this.sprite.visible = sprite !== "";
+            if (sprite !== "") {
+                this.sprite.texture = PIXI.Texture.from(sprite);
+            }
             this.sprite.tint = imgDef.tint;
             this.sprite.alpha = 100;
 

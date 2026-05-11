@@ -102,6 +102,8 @@ export interface ObjectsFullData {
         role: string;
 
         wearingLasrSwrd: boolean;
+        gunLoaded: boolean;
+        loadingBlaster: number;
 
         perks: Array<{
             type: string;
@@ -263,6 +265,13 @@ export const ObjectSerializeFns: {
             }
 
             s.writeBoolean(!!data.wearingLasrSwrd);
+            s.writeBoolean(!!data.gunLoaded);
+
+            const hasLoadingBlaster = data.loadingBlaster > 0;
+            s.writeBoolean(hasLoadingBlaster);
+            if (hasLoadingBlaster) {
+                s.writeFloat(data.loadingBlaster, 0, 3, 8);
+            }
 
             const hasPerks = data.perks.length > 0;
             s.writeBoolean(hasPerks);
@@ -326,6 +335,8 @@ export const ObjectSerializeFns: {
 
             // read laser sword wearing flag
             data.wearingLasrSwrd = s.readBoolean();
+            data.gunLoaded = s.readBoolean();
+            data.loadingBlaster = s.readBoolean() ? s.readFloat(0, 3, 8) : 0;
 
             data.perks = [];
             const hasPerks = s.readBoolean();
