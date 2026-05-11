@@ -96,3 +96,7 @@ export const zCoinFlipCheckParams = z.object({
 export const zCoinFlipResolveParams = zCoinFlipCheckParams.extend({
     opponent_pick: z.enum(["heads", "tails"]),
 });
+
+export const zDiscordBalanceParams = z.object({
+    discord_id: z.string(),
+});

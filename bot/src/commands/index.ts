@@ -23,6 +23,7 @@ import {
     zUnbanIpParams,
 } from "../../../shared/types/moderation";
 import { Command } from "../utils";
+import { balanceHandler } from "./balance";
 import { coinFlipHandler } from "./coinflip";
 import { createCommand, createSlashCommand, genericExecute } from "./helpers";
 import { searchPlayersHandler } from "./search-player";
@@ -348,7 +349,7 @@ const commands = {
         ],
     }),
 } as unknown as Record<
-    Exclude<Command, "search_player" | "coinflip">,
+    Exclude<Command, "search_player" | "coinflip" | "balance">,
     ReturnType<typeof createCommand>
 >;
 
@@ -374,6 +375,7 @@ export const commandHandlers: CommandHandlers = (
         // add non generic commands here
         [Command.SearchPlayer]: searchPlayersHandler.execute,
         [Command.CoinFlip]: coinFlipHandler.execute,
+        [Command.Balance]: balanceHandler.execute,
     } as CommandHandlers,
 );
 
@@ -382,4 +384,5 @@ export const commandsToRegister: SlashCommandOptionsOnlyBuilder[] = [
     // add non generic commands here
     searchPlayersHandler.command,
     coinFlipHandler.command,
+    balanceHandler.command,
 ];

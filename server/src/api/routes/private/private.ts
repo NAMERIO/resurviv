@@ -11,6 +11,7 @@ import { TeamMode } from "../../../../../shared/gameConfig";
 import {
     zCoinFlipCheckParams,
     zCoinFlipResolveParams,
+    zDiscordBalanceParams,
     zGetGpParams,
     zGiveGpParams,
     zGiveItemParams,
@@ -661,6 +662,34 @@ export const PrivateRouter = new Hono<Context>()
                     ok: true,
                     challenger: toCoinFlipPlayer(challenger),
                     opponent: toCoinFlipPlayer(opponent),
+                },
+                200,
+            );
+        },
+    )
+    .post(
+        "/discord_balance",
+        databaseEnabledMiddleware,
+        validateParams(zDiscordBalanceParams),
+        async (c) => {
+            const { discord_id: discordId } = c.req.valid("json");
+            const user = await findDiscordLinkedUser(discordId);
+
+            if (!user) {
+                return c.json(
+                    {
+                        ok: false,
+                        message:
+                            "This Discord account is not connected to any game account.",
+                    },
+                    200,
+                );
+            }
+
+            return c.json(
+                {
+                    ok: true,
+                    player: toCoinFlipPlayer(user),
                 },
                 200,
             );

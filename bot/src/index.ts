@@ -20,7 +20,8 @@ function setupInteractionHandlers() {
 
         if (
             interaction.guild?.id !== DISCORD_GUILD_ID ||
-            (commandName !== Command.CoinFlip && !hasBotPermission(interaction))
+            (![Command.CoinFlip, Command.Balance].includes(commandName) &&
+                !hasBotPermission(interaction))
         ) {
             await sendNoPermissionMessage(interaction);
             return;
