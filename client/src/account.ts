@@ -2,6 +2,8 @@ import $ from "jquery";
 import type {
     AckSoldMarketListingsRequest,
     AckSoldMarketListingsResponse,
+    AddFriendRequest,
+    AddFriendResponse,
     AuctionListing,
     BuyFeaturedBundleRequest,
     BuyFeaturedBundleResponse,
@@ -19,6 +21,12 @@ import type {
     CreateAuctionListingResponse,
     CreateMarketListingRequest,
     CreateMarketListingResponse,
+    FriendRequestActionRequest,
+    FriendRequestActionResponse,
+    FriendSearchRequest,
+    FriendSearchResponse,
+    FriendsListResponse,
+    FriendUser,
     GetMarketResponse,
     GetPassRequest,
     LoadoutRequest,
@@ -141,6 +149,9 @@ export class Account {
     quests: Quest[] = [];
     questPriv = "";
     pass: Record<string, PassType> = {};
+    friends: FriendUser[] = [];
+    incomingFriendRequests: FriendUser[] = [];
+    outgoingFriendRequests: FriendUser[] = [];
 
     constructor(public config: ConfigManager) {}
 
@@ -317,6 +328,140 @@ export class Account {
             } else {
                 callback(res.result);
             }
+        });
+    }
+
+    private applyFriendsResponse(res: FriendsListResponse) {
+        this.friends = res.friends || [];
+        this.incomingFriendRequests = res.incomingRequests || [];
+        this.outgoingFriendRequests = res.outgoingRequests || [];
+        this.emit(
+            "friends",
+            this.friends,
+            this.incomingFriendRequests,
+            this.outgoingFriendRequests,
+        );
+    }
+
+    loadFriends(callback?: (success: boolean) => void, silent = false) {
+        const onResponse = (err: any, res: FriendsListResponse) => {
+            if (err || !res.success) {
+                errorLogManager.storeGeneric("account", "load_friends_error");
+                callback?.(false);
+                return;
+            }
+
+            this.applyFriendsResponse(res);
+            callback?.(true);
+        };
+
+        if (silent) {
+            ajaxRequest("/api/user/friends", null, onResponse);
+            return;
+        }
+
+        this.ajaxRequest("/api/user/friends", onResponse);
+    }
+
+    searchFriends(
+        query: string,
+        callback: (success: boolean, results: FriendUser[]) => void,
+    ) {
+        const args: FriendSearchRequest = { query };
+        this.ajaxRequest(
+            "/api/user/friends/search",
+            args,
+            (err, res: FriendSearchResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "search_friends_error");
+                    callback(false, []);
+                    return;
+                }
+
+                callback(true, res.results || []);
+            },
+        );
+    }
+
+    addFriend(
+        userId: string,
+        callback?: (error?: AddFriendResponse["error"], request?: FriendUser) => void,
+    ) {
+        const args: AddFriendRequest = { userId };
+        this.ajaxRequest("/api/user/friends/add", args, (err, res: AddFriendResponse) => {
+            if (err || !res.success) {
+                errorLogManager.storeGeneric("account", "add_friend_error");
+                callback?.(res?.error || "server_error");
+                return;
+            }
+
+            if (
+                res.request &&
+                !this.outgoingFriendRequests.some((request) => request.userId === userId)
+            ) {
+                this.outgoingFriendRequests = [
+                    ...this.outgoingFriendRequests,
+                    res.request,
+                ].sort((a, b) => a.slug.localeCompare(b.slug));
+                this.emit(
+                    "friends",
+                    this.friends,
+                    this.incomingFriendRequests,
+                    this.outgoingFriendRequests,
+                );
+            }
+            callback?.(undefined, res.request);
+        });
+    }
+
+    acceptFriendRequest(
+        userId: string,
+        callback?: (error?: FriendRequestActionResponse["error"]) => void,
+    ) {
+        const args: FriendRequestActionRequest = { userId };
+        this.ajaxRequest(
+            "/api/user/friends/accept",
+            args,
+            (err, res: FriendRequestActionResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "accept_friend_error");
+                    callback?.(res?.error || "server_error");
+                    return;
+                }
+                this.loadFriends();
+                callback?.();
+            },
+        );
+    }
+
+    declineFriendRequest(
+        userId: string,
+        callback?: (error?: FriendRequestActionResponse["error"]) => void,
+    ) {
+        this.resolveFriendRequest("/api/user/friends/decline", userId, callback);
+    }
+
+    cancelFriendRequest(
+        userId: string,
+        callback?: (error?: FriendRequestActionResponse["error"]) => void,
+    ) {
+        this.resolveFriendRequest("/api/user/friends/cancel", userId, callback);
+    }
+
+    private resolveFriendRequest(
+        url: string,
+        userId: string,
+        callback?: (error?: FriendRequestActionResponse["error"]) => void,
+    ) {
+        const args: FriendRequestActionRequest = { userId };
+        this.ajaxRequest(url, args, (err, res: FriendRequestActionResponse) => {
+            if (err || !res.success) {
+                errorLogManager.storeGeneric("account", "resolve_friend_request_error");
+                callback?.(res?.error || "server_error");
+                return;
+            }
+            this.loadFriends();
+            callback?.();
         });
     }
 

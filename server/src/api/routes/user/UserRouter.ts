@@ -1,8 +1,9 @@
 import { createHash } from "node:crypto";
-import { and, desc, eq, inArray, ne, sql } from "drizzle-orm";
+import { and, eq, ilike, inArray, ne, or, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import {
     type AckSoldMarketListingsResponse,
+    type AddFriendResponse,
     type AuctionBidActivity,
     type BuyFeaturedBundleResponse,
     type BuyMarketListingResponse,
@@ -11,6 +12,10 @@ import {
     type ClaimSocialGpRewardResponse,
     type CreateAuctionListingResponse,
     type CreateMarketListingResponse,
+    type FriendRequestActionResponse,
+    type FriendSearchResponse,
+    type FriendsListResponse,
+    type FriendUser,
     type GetMarketResponse,
     type LoadoutResponse,
     type OpenLootBoxResponse,
@@ -18,6 +23,7 @@ import {
     type ProfileResponse,
     type UsernameResponse,
     zAckSoldMarketListingsRequest,
+    zAddFriendRequest,
     zBuyFeaturedBundleRequest,
     zBuyMarketListingRequest,
     zCancelAuctionListingRequest,
@@ -25,6 +31,8 @@ import {
     zClaimSocialGpRewardRequest,
     zCreateAuctionListingRequest,
     zCreateMarketListingRequest,
+    zFriendRequestActionRequest,
+    zFriendSearchRequest,
     zLoadoutRequest,
     zOpenLootBoxRequest,
     zPlaceAuctionBidRequest,
@@ -65,6 +73,7 @@ import {
     marketListingTable,
     matchDataTable,
     rewardClaimsTable,
+    userFriendsTable,
     usersTable,
 } from "../../db/schema";
 import type { Context } from "../../index";
@@ -217,6 +226,80 @@ function canUseDeveloper(slug: string) {
 
 function isSupportedMarketItem(itemType: string) {
     return getMarketPriceBounds(itemType) !== null;
+}
+
+function toClientFriendUser(
+    user: Pick<typeof usersTable.$inferSelect, "id" | "slug" | "username" | "loadout">,
+    relationStatus: FriendUser["relationStatus"],
+): FriendUser {
+    return {
+        userId: user.id,
+        slug: user.slug,
+        username: user.username || user.slug,
+        playerIcon: user.loadout?.player_icon || "emote_surviv",
+        relationStatus,
+    };
+}
+
+async function getFriendRelations(userId: string) {
+    const rows = await db
+        .select({
+            requesterUserId: userFriendsTable.requesterUserId,
+            addresseeUserId: userFriendsTable.addresseeUserId,
+            status: userFriendsTable.status,
+        })
+        .from(userFriendsTable)
+        .where(
+            or(
+                eq(userFriendsTable.requesterUserId, userId),
+                eq(userFriendsTable.addresseeUserId, userId),
+            ),
+        );
+
+    const relationByUserId = new Map<string, FriendUser["relationStatus"]>();
+    const friendIds: string[] = [];
+    const incomingIds: string[] = [];
+    const outgoingIds: string[] = [];
+
+    for (const row of rows) {
+        const otherUserId =
+            row.requesterUserId === userId ? row.addresseeUserId : row.requesterUserId;
+
+        if (row.status === "accepted") {
+            relationByUserId.set(otherUserId, "friends");
+            friendIds.push(otherUserId);
+        } else if (row.requesterUserId === userId) {
+            relationByUserId.set(otherUserId, "outgoing");
+            outgoingIds.push(otherUserId);
+        } else {
+            relationByUserId.set(otherUserId, "incoming");
+            incomingIds.push(otherUserId);
+        }
+    }
+
+    return {
+        relationByUserId,
+        friendIds,
+        incomingIds,
+        outgoingIds,
+    };
+}
+
+async function getUsersByIds(userIds: string[]) {
+    if (userIds.length === 0) {
+        return [];
+    }
+
+    return await db
+        .select({
+            id: usersTable.id,
+            slug: usersTable.slug,
+            username: usersTable.username,
+            loadout: usersTable.loadout,
+        })
+        .from(usersTable)
+        .where(and(inArray(usersTable.id, userIds), eq(usersTable.banned, false)))
+        .orderBy(usersTable.slug);
 }
 
 async function expireMarketListings(tx: any, targetUserId?: string) {
@@ -506,6 +589,244 @@ UserRouter.post("/profile", async (c) => {
         200,
     );
 });
+
+UserRouter.post("/friends", async (c) => {
+    const user = c.get("user")!;
+    const relations = await getFriendRelations(user.id);
+    const [friends, incomingRequests, outgoingRequests] = await Promise.all([
+        getUsersByIds(relations.friendIds),
+        getUsersByIds(relations.incomingIds),
+        getUsersByIds(relations.outgoingIds),
+    ]);
+
+    return c.json<FriendsListResponse>(
+        {
+            success: true,
+            friends: friends.map((friend) => toClientFriendUser(friend, "friends")),
+            incomingRequests: incomingRequests.map((request) =>
+                toClientFriendUser(request, "incoming"),
+            ),
+            outgoingRequests: outgoingRequests.map((request) =>
+                toClientFriendUser(request, "outgoing"),
+            ),
+        },
+        200,
+    );
+});
+
+UserRouter.post("/friends/search", validateParams(zFriendSearchRequest), async (c) => {
+    const user = c.get("user")!;
+    const { query } = c.req.valid("json");
+    const search = `${query.replaceAll("%", "\\%").replaceAll("_", "\\_")}%`;
+    const relations = await getFriendRelations(user.id);
+
+    const users = await db
+        .select({
+            id: usersTable.id,
+            slug: usersTable.slug,
+            username: usersTable.username,
+            loadout: usersTable.loadout,
+        })
+        .from(usersTable)
+        .where(
+            and(
+                ne(usersTable.id, user.id),
+                eq(usersTable.banned, false),
+                eq(usersTable.usernameSet, true),
+                or(ilike(usersTable.slug, search), ilike(usersTable.username, search)),
+            ),
+        )
+        .orderBy(usersTable.slug)
+        .limit(12);
+
+    return c.json<FriendSearchResponse>(
+        {
+            success: true,
+            results: users.map((result) =>
+                toClientFriendUser(
+                    result,
+                    relations.relationByUserId.get(result.id) || "none",
+                ),
+            ),
+        },
+        200,
+    );
+});
+
+UserRouter.post("/friends/add", validateParams(zAddFriendRequest), async (c) => {
+    const user = c.get("user")!;
+    const { userId } = c.req.valid("json");
+
+    if (userId === user.id) {
+        return c.json<AddFriendResponse>({ success: false, error: "self" }, 200);
+    }
+
+    const friend = await db.query.usersTable.findFirst({
+        where: and(eq(usersTable.id, userId), eq(usersTable.banned, false)),
+        columns: {
+            id: true,
+            slug: true,
+            username: true,
+            loadout: true,
+        },
+    });
+
+    if (!friend) {
+        return c.json<AddFriendResponse>({ success: false, error: "not_found" }, 200);
+    }
+
+    const existing = await db
+        .select({
+            status: userFriendsTable.status,
+        })
+        .from(userFriendsTable)
+        .where(
+            or(
+                and(
+                    eq(userFriendsTable.requesterUserId, user.id),
+                    eq(userFriendsTable.addresseeUserId, userId),
+                ),
+                and(
+                    eq(userFriendsTable.requesterUserId, userId),
+                    eq(userFriendsTable.addresseeUserId, user.id),
+                ),
+            ),
+        )
+        .limit(1);
+
+    if (existing[0]?.status === "accepted") {
+        return c.json<AddFriendResponse>(
+            { success: false, error: "already_friends" },
+            200,
+        );
+    }
+
+    if (existing[0]) {
+        return c.json<AddFriendResponse>(
+            { success: false, error: "already_requested" },
+            200,
+        );
+    }
+
+    try {
+        await db.insert(userFriendsTable).values({
+            requesterUserId: user.id,
+            addresseeUserId: userId,
+            status: "pending",
+        });
+    } catch (err) {
+        server.logger.error("/api/user/friends/add error", err);
+        return c.json<AddFriendResponse>({ success: false, error: "server_error" }, 500);
+    }
+
+    return c.json<AddFriendResponse>(
+        {
+            success: true,
+            request: toClientFriendUser(friend, "outgoing"),
+        },
+        200,
+    );
+});
+
+UserRouter.post(
+    "/friends/accept",
+    validateParams(zFriendRequestActionRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { userId } = c.req.valid("json");
+
+        const [updated] = await db
+            .update(userFriendsTable)
+            .set({
+                status: "accepted",
+                updatedAt: new Date(),
+            })
+            .where(
+                and(
+                    eq(userFriendsTable.requesterUserId, userId),
+                    eq(userFriendsTable.addresseeUserId, user.id),
+                    eq(userFriendsTable.status, "pending"),
+                ),
+            )
+            .returning({
+                requesterUserId: userFriendsTable.requesterUserId,
+            });
+
+        if (!updated) {
+            return c.json<FriendRequestActionResponse>(
+                { success: false, error: "not_found" },
+                200,
+            );
+        }
+
+        const friend = await db.query.usersTable.findFirst({
+            where: and(eq(usersTable.id, userId), eq(usersTable.banned, false)),
+            columns: {
+                id: true,
+                slug: true,
+                username: true,
+                loadout: true,
+            },
+        });
+
+        if (!friend) {
+            return c.json<FriendRequestActionResponse>(
+                { success: false, error: "not_found" },
+                200,
+            );
+        }
+
+        return c.json<FriendRequestActionResponse>(
+            {
+                success: true,
+                friend: toClientFriendUser(friend, "friends"),
+            },
+            200,
+        );
+    },
+);
+
+UserRouter.post(
+    "/friends/decline",
+    validateParams(zFriendRequestActionRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { userId } = c.req.valid("json");
+
+        await db
+            .delete(userFriendsTable)
+            .where(
+                and(
+                    eq(userFriendsTable.requesterUserId, userId),
+                    eq(userFriendsTable.addresseeUserId, user.id),
+                    eq(userFriendsTable.status, "pending"),
+                ),
+            );
+
+        return c.json<FriendRequestActionResponse>({ success: true }, 200);
+    },
+);
+
+UserRouter.post(
+    "/friends/cancel",
+    validateParams(zFriendRequestActionRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { userId } = c.req.valid("json");
+
+        await db
+            .delete(userFriendsTable)
+            .where(
+                and(
+                    eq(userFriendsTable.requesterUserId, user.id),
+                    eq(userFriendsTable.addresseeUserId, userId),
+                    eq(userFriendsTable.status, "pending"),
+                ),
+            );
+
+        return c.json<FriendRequestActionResponse>({ success: true }, 200);
+    },
+);
 
 UserRouter.post(
     "/username",

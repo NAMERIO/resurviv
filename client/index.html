@@ -917,6 +917,52 @@
           </div>
         </div>
 
+        <div id="btn-friends" class="friends-btn-container">
+          <div class="right-column-toggle friends-toggle">
+            Friends
+            <div class="account-alert friends-home-alert"></div>
+          </div>
+        </div>
+
+        <div id="friends-wrapper">
+          <div id="friends-scrim"></div>
+          <div id="friends-panel">
+            <div id="friends-nav">
+              <div id="friends-profile-icon"></div>
+              <button class="friends-tab active friends-tab-friends" type="button" data-tab="friends" title="Friends"></button>
+              <button class="friends-tab friends-tab-add" type="button" data-tab="add" title="Add People"></button>
+              <button class="friends-tab friends-tab-requests" type="button" data-tab="requests" title="Requests">
+                <span class="account-alert friends-tab-alert"></span>
+              </button>
+            </div>
+            <div id="friends-content">
+              <div id="friends-panel-header">
+                <div id="friends-panel-title">SOCIAL</div>
+                <button id="friends-close" type="button" aria-label="Close friends"></button>
+              </div>
+              <div id="friends-tab-friends" class="friends-tab-panel active">
+                <div class="friends-list-header">FRIENDS</div>
+                <div id="friends-list"></div>
+              </div>
+              <div id="friends-tab-add" class="friends-tab-panel">
+                <div class="friends-list-header">ADD PEOPLE</div>
+                <input id="friends-search-input" class="menu-option" type="text" maxlength="32" placeholder="Search by username or slug" />
+                <div id="friends-search-results"></div>
+              </div>
+              <div id="friends-tab-requests" class="friends-tab-panel">
+                <div class="friends-request-group">
+                  <div class="friends-list-header">INCOMING</div>
+                  <div id="friends-incoming-requests"></div>
+                </div>
+                <div class="friends-request-group">
+                  <div class="friends-list-header">SENT</div>
+                  <div id="friends-outgoing-requests"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div id="start-main-center">
           <div id="start-row-header">
             <div id="server-warning"></div>

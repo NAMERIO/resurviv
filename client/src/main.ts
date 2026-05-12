@@ -27,6 +27,7 @@ import { ResourceManager } from "./resources";
 import { SDK } from "./sdk/sdk";
 import { SiteInfo } from "./siteInfo";
 import { ClanUi } from "./ui/clanUi";
+import { FriendsUi } from "./ui/friendsUi";
 import { LoadoutMenu } from "./ui/loadoutMenu";
 import { Localization } from "./ui/localization";
 import Menu from "./ui/menu";
@@ -108,6 +109,7 @@ export class Application {
     pass!: Pass;
     profileUi!: ProfileUi;
     clanUi!: ClanUi;
+    friendsUi!: FriendsUi;
     shopMenu!: ShopMenu;
 
     pingTest = new PingTest();
@@ -250,6 +252,7 @@ export class Application {
                 this.errorModal,
             );
             this.shopMenu = new ShopMenu(this.account, this.localization);
+            this.friendsUi = new FriendsUi(this.account, this.profileUi);
 
             // Initialize ClanUi
             this.clanUi = new ClanUi(this.account, this.localization);
@@ -488,8 +491,16 @@ export class Application {
             $(".news-toggle").on("click", () => {
                 this.config.set("lastNewsTimestamp", a);
                 $(".news-toggle").find(".account-alert").css("display", "none");
+                $("#friends-wrapper").removeClass("open");
                 $("#news-wrapper").fadeIn(250);
                 this.newsDisplayed = true;
+            });
+            $("#news-wrapper").on("click touchend", (e) => {
+                if ($(e.target).closest("#modal-news-card").length === 0) {
+                    $("#news-wrapper").fadeOut(250);
+                    this.newsDisplayed = false;
+                    return false;
+                }
             });
             $(".pass-toggle").on("click", () => {
                 $("#news-wrapper").fadeOut(250);

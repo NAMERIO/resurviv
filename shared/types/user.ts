@@ -78,6 +78,55 @@ export type UsernameResponse =
           result: "failed" | "invalid" | "taken" | "change_time_not_expired";
       };
 
+export type FriendUser = {
+    userId: string;
+    slug: string;
+    username: string;
+    playerIcon: string;
+    relationStatus: "none" | "friends" | "outgoing" | "incoming";
+};
+
+export type FriendsListResponse = {
+    success: boolean;
+    friends: FriendUser[];
+    incomingRequests: FriendUser[];
+    outgoingRequests: FriendUser[];
+};
+
+export const zFriendSearchRequest = z.object({
+    query: z.string().trim().min(2).max(32),
+});
+export type FriendSearchRequest = z.infer<typeof zFriendSearchRequest>;
+export type FriendSearchResponse = {
+    success: boolean;
+    results: FriendUser[];
+};
+
+export const zAddFriendRequest = z.object({
+    userId: z.string().trim().min(1),
+});
+export type AddFriendRequest = z.infer<typeof zAddFriendRequest>;
+export type AddFriendResponse = {
+    success: boolean;
+    error?:
+        | "not_found"
+        | "self"
+        | "already_friends"
+        | "already_requested"
+        | "server_error";
+    request?: FriendUser;
+};
+
+export const zFriendRequestActionRequest = z.object({
+    userId: z.string().trim().min(1),
+});
+export type FriendRequestActionRequest = z.infer<typeof zFriendRequestActionRequest>;
+export type FriendRequestActionResponse = {
+    success: boolean;
+    error?: "not_found" | "server_error";
+    friend?: FriendUser;
+};
+
 export const zLoadoutRequest = z.object({ loadout: loadoutSchema });
 
 export type LoadoutRequest = z.infer<typeof zLoadoutRequest>;

@@ -53,6 +53,39 @@ export const usersTable = pgTable("users", {
 export type UsersTableInsert = typeof usersTable.$inferInsert;
 export type UsersTableSelect = typeof usersTable.$inferSelect;
 
+export const userFriendsTable = pgTable(
+    "user_friends",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        requesterUserId: text("requester_user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        addresseeUserId: text("addressee_user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        status: text("status").notNull().default("pending"),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        index("idx_user_friends_requester").on(table.requesterUserId),
+        index("idx_user_friends_addressee").on(table.addresseeUserId),
+        uniqueIndex("idx_user_friends_pair").on(
+            table.requesterUserId,
+            table.addresseeUserId,
+        ),
+    ],
+);
+
+export type UserFriendsTableInsert = typeof userFriendsTable.$inferInsert;
+export type UserFriendsTableSelect = typeof userFriendsTable.$inferSelect;
+
 export const itemsTable = pgTable(
     "items",
     {

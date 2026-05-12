@@ -17074,7 +17074,22 @@ div.roulette {
   z-index: 1301;
 }
 
-.news-btn-container .right-column-toggle {
+.friends-btn-container {
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 5px;
+  box-sizing: border-box;
+  height: fit-content;
+  padding: 6px;
+  pointer-events: auto;
+  position: absolute;
+  right: 435px;
+  top: var(--side-pad);
+  width: fit-content;
+  z-index: 1301;
+}
+
+.news-btn-container .right-column-toggle,
+.friends-btn-container .right-column-toggle {
   background-position: center left;
   background-size: 35px;
   box-sizing: border-box;
@@ -17092,6 +17107,26 @@ div.roulette {
   width: 99px;
 }
 
+.friends-toggle {
+  background-image: url(/img/gui/player-gui.svg);
+}
+
+.friends-btn-container .right-column-toggle {
+  width: 118px;
+}
+
+.friends-btn-container .friends-home-alert {
+  height: 20px;
+  position: absolute;
+  right: -2px;
+  top: -4px;
+  width: 20px;
+}
+
+.friends-btn-container.has-friend-request-alert .friends-home-alert {
+  display: block;
+}
+
 .news-btn-container .news-toggle > .account-alert {
   height: 20px;
   right: -2px;
@@ -17106,7 +17141,7 @@ div.roulette {
   inset: 0;
   position: fixed !important;
   width: 100%;
-  z-index: 1200;
+  z-index: 1400;
 }
 
 #modal-news-card {
@@ -17118,7 +17153,7 @@ div.roulette {
   top: 50%;
   transform: translate(-50%, -50%);
   width: min(620px, calc(100vw - 36px));
-  z-index: 1201;
+  z-index: 1401;
 }
 
 #modal-news-card .modal-header {
@@ -17200,6 +17235,13 @@ div.roulette {
     transform: scale(0.85);
     transform-origin: top right;
   }
+
+  .friends-btn-container {
+    right: 406px;
+    top: 8px;
+    transform: scale(0.85);
+    transform-origin: top right;
+  }
 }
 
 @media (max-height: 720px), (max-width: 1150px) {
@@ -17210,9 +17252,820 @@ div.roulette {
     transform-origin: top right;
   }
 
+  .friends-btn-container {
+    right: 350px;
+    top: 5px;
+    transform: scale(0.8);
+    transform-origin: top right;
+  }
+
   #news-wrapper .pass-toggle {
     right: calc(50% - 210px);
     top: calc(50% - 210px);
+  }
+}
+
+#friends-wrapper {
+  display: block;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  position: fixed;
+  transition: opacity 180ms ease;
+  z-index: 1400;
+}
+
+#friends-wrapper.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#friends-scrim {
+  background: rgba(0, 0, 0, 0.45);
+  inset: 0;
+  position: absolute;
+}
+
+#friends-panel {
+  background: rgba(0, 0, 0, 0.92);
+  border-left: 2px solid #0969bb;
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.62);
+  box-sizing: border-box;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: calc(100vw - 42px);
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transform: translateX(100%);
+  transition: transform 220ms ease;
+  width: 370px;
+}
+
+#friends-wrapper.open #friends-panel {
+  transform: translateX(0);
+}
+
+#friends-panel-header {
+  align-items: center;
+  background: linear-gradient(#26a8ff, #168fe6);
+  border-bottom: 2px solid #0969bb;
+  box-sizing: border-box;
+  display: flex;
+  gap: 12px;
+  min-height: 76px;
+  padding: 10px 12px;
+}
+
+#friends-profile-icon,
+.friends-user-icon {
+  background-color: rgba(0, 0, 0, 0.35);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 72%;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  border-radius: 5px;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+}
+
+#friends-profile-icon {
+  height: 56px;
+  width: 56px;
+}
+
+#friends-profile-text {
+  flex: 1;
+  min-width: 0;
+}
+
+#friends-profile-name {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 26px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+}
+
+#friends-profile-slug {
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friends-user-slug {
+  color: #b8b8b8;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#friends-close {
+  background-color: transparent;
+  background-image: url(/img/gui/close.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 22px;
+  border: 0;
+  cursor: pointer;
+  height: 34px;
+  width: 34px;
+}
+
+#friends-tabs {
+  background: rgba(0, 0, 0, 0.72);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 8px;
+  gap: 6px;
+}
+
+.friends-tab {
+  background: #3e3e3e;
+  border: 0;
+  border-bottom: 3px solid #1f1f1f;
+  border-radius: 4px;
+  color: #dcdcdc;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  height: 36px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 0 #000;
+  white-space: nowrap;
+}
+
+.friends-tab.active {
+  background: #1f9aeb;
+  border-bottom-color: #0c5f9f;
+  color: #fff;
+}
+
+#friends-list,
+#friends-search-results,
+#friends-incoming-requests,
+#friends-outgoing-requests {
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.friends-tab-panel {
+  box-sizing: border-box;
+  display: none;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.friends-tab-panel.active {
+  display: flex;
+  flex-direction: column;
+}
+
+#friends-search-input {
+  box-sizing: border-box;
+  font-size: 15px;
+  height: 40px;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.friends-user-row {
+  align-items: center;
+  background: rgba(35, 35, 35, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-bottom: 3px solid rgba(0, 0, 0, 0.45);
+  border-radius: 5px;
+  box-sizing: border-box;
+  display: flex;
+  gap: 10px;
+  min-height: 58px;
+  margin-bottom: 8px;
+  padding: 7px;
+}
+
+.friends-user-icon {
+  height: 42px;
+  width: 42px;
+}
+
+.friends-user-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.friends-user-name {
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friends-action-button {
+  background-color: #4b9f31;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 25px;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+  flex: 0 0 auto;
+  height: 38px;
+  width: 42px;
+}
+
+.friends-action-add {
+  background-image: url(/img/gui/player-add.svg);
+}
+
+.friends-action-accept {
+  background-image: url(/img/gui/checked.svg);
+}
+
+.friends-action-decline {
+  background-color: #8e2d2d;
+  background-image: url(/img/gui/close.svg);
+}
+
+.friends-empty,
+.friends-status {
+  color: #cfcfcf;
+  font-size: 14px;
+  line-height: 20px;
+  padding: 8px 2px 12px;
+}
+
+.friends-status {
+  color: gold;
+}
+
+.friends-row-state {
+  color: gold;
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 4px;
+  text-transform: uppercase;
+}
+
+.friends-request-group {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.friends-request-group:first-child {
+  flex: 1;
+}
+
+.friends-request-group:last-child {
+  flex: 1;
+}
+
+.friends-request-title {
+  background-position: center left;
+  background-repeat: no-repeat;
+  background-size: 24px;
+  color: gold;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 28px;
+  margin: 4px 0 8px;
+  padding-left: 32px;
+  text-shadow: 0 1px 0 #000;
+}
+
+.friends-request-group:first-child .friends-request-title {
+  background-image: url(/img/gui/player-gui.svg);
+}
+
+.friends-request-group:last-child .friends-request-title {
+  background-image: url(/img/gui/player-add.svg);
+}
+
+#friends-panel {
+  background:
+    linear-gradient(90deg, rgba(8, 20, 55, 0.98) 0, rgba(8, 35, 95, 0.98) 100%);
+  border-left: 1px solid rgba(87, 159, 255, 0.7);
+  box-shadow: -12px 0 36px rgba(0, 0, 0, 0.7);
+  flex-direction: row;
+  padding: 0;
+  width: min(610px, calc(100vw - 20px));
+}
+
+#friends-nav {
+  background: #101a38;
+  display: flex;
+  flex: 0 0 96px;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 26px 0 14px;
+}
+
+#friends-content {
+  background:
+    linear-gradient(180deg, rgba(7, 20, 64, 0.85), rgba(7, 43, 108, 0.94)),
+    radial-gradient(circle at 50% 0, rgba(46, 111, 255, 0.35), transparent 42%);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+#friends-panel-header {
+  background:
+    linear-gradient(90deg, #07134a 0, #073da4 100%);
+  border-bottom: 2px solid #1754c8;
+  min-height: 104px;
+  padding: 18px 24px 14px;
+}
+
+#friends-panel-title {
+  color: #fff;
+  flex: 1;
+  font-size: 40px;
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 68px;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.4);
+}
+
+#friends-profile-icon {
+  background-color: #0a2a60;
+  border: 3px solid #1eb6ff;
+  border-radius: 50%;
+  height: 62px;
+  width: 62px;
+}
+
+#friends-profile-icon::after {
+  background: #71ff54;
+  border: 3px solid #101a38;
+  border-radius: 50%;
+  bottom: -3px;
+  content: "";
+  height: 18px;
+  position: absolute;
+  right: -3px;
+  width: 18px;
+}
+
+#friends-profile-icon {
+  position: relative;
+}
+
+#friends-profile-name {
+  font-size: 18px;
+  line-height: 22px;
+}
+
+#friends-profile-slug {
+  color: #39b7ff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+#friends-close {
+  background-size: 24px;
+  height: 42px;
+  opacity: 0.75;
+  width: 42px;
+}
+
+#friends-nav .friends-tab {
+  background-color: transparent;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 32px;
+  border: 0;
+  border-radius: 0;
+  height: 76px;
+  opacity: 0.85;
+  padding: 0;
+  position: relative;
+  width: 96px;
+}
+
+#friends-nav .friends-tab.active {
+  background-color: #0d51d0;
+  opacity: 1;
+}
+
+#friends-nav .friends-tab-friends {
+  background-image: url(/img/gui/player-gui.svg);
+}
+
+#friends-nav .friends-tab-add {
+  background-image: url(/img/gui/player-add.svg);
+}
+
+#friends-nav .friends-tab-requests {
+  background-image: url(/img/gui/news.svg);
+}
+
+.friends-tab-panel {
+  background: rgba(5, 27, 77, 0.6);
+  padding: 0;
+}
+
+.friends-tab-panel.active {
+  display: flex;
+}
+
+.friends-list-header {
+  align-items: center;
+  background: rgba(4, 5, 22, 0.9);
+  border-bottom: 2px solid rgba(24, 80, 189, 0.8);
+  color: #d9e5ff;
+  display: flex;
+  font-size: 19px;
+  font-style: italic;
+  font-weight: 900;
+  height: 42px;
+  letter-spacing: 0;
+  padding: 0 24px;
+  text-shadow: 0 2px 0 #000;
+}
+
+#friends-list,
+#friends-search-results,
+#friends-incoming-requests,
+#friends-outgoing-requests {
+  padding: 8px 0 16px;
+}
+
+#friends-search-input {
+  background: #fff;
+  border: 0;
+  border-radius: 0;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.3);
+  color: #151515;
+  font-size: 18px;
+  font-weight: 700;
+  height: 46px;
+  margin: 14px 24px 6px;
+  width: calc(100% - 48px);
+}
+
+.friends-user-row {
+  background: rgba(7, 50, 126, 0.72);
+  border: 0;
+  border-bottom: 2px solid rgba(42, 113, 220, 0.42);
+  border-radius: 0;
+  gap: 14px;
+  margin: 0;
+  min-height: 82px;
+  padding: 10px 24px;
+}
+
+.friends-user-row:hover {
+  background: rgba(10, 72, 165, 0.86);
+}
+
+.friends-user-icon {
+  background-color: #063070;
+  border: 2px solid rgba(68, 190, 255, 0.7);
+  border-radius: 50%;
+  height: 58px;
+  width: 58px;
+}
+
+.friends-user-name {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 22px;
+}
+
+.friends-user-slug {
+  color: #27b8ff;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 20px;
+}
+
+.friends-action-button {
+  background-color: #22a8ff;
+  border-radius: 4px;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.28);
+  height: 42px;
+  width: 46px;
+}
+
+.friends-action-decline {
+  background-color: #ff5a5a;
+}
+
+.friends-row-state {
+  color: #38bfff;
+  font-size: 14px;
+  font-style: italic;
+  font-weight: 900;
+}
+
+.friends-empty,
+.friends-status {
+  color: #38bfff;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 16px 24px;
+}
+
+.friends-request-group {
+  flex: none;
+  min-height: 0;
+}
+
+#friends-tab-requests.active {
+  display: block;
+  overflow-y: auto;
+}
+
+#friends-tab-requests .friends-request-group {
+  margin-bottom: 18px;
+}
+
+#friends-tab-requests .friends-request-group:last-child {
+  margin-bottom: 0;
+}
+
+#friends-panel {
+  background: #3a3a3a;
+  border-left: 0;
+  border-radius: 5px 0 0 5px;
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.55);
+  flex-direction: column;
+  width: min(480px, calc(100vw - 24px));
+}
+
+#friends-nav {
+  align-items: stretch;
+  background: #252525;
+  border-radius: 5px 0 0 0;
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: row;
+  gap: 0;
+  padding: 0 46px 0 10px;
+  position: relative;
+}
+
+#friends-nav #friends-profile-icon {
+  align-self: center;
+  background-color: #1f1f1f;
+  border: 2px solid #4a4a4a;
+  border-radius: 5px;
+  height: 40px;
+  margin-right: 8px;
+  width: 40px;
+}
+
+#friends-nav #friends-profile-icon::after {
+  display: none;
+}
+
+#friends-content {
+  background: #3a3a3a;
+  min-height: 0;
+}
+
+#friends-panel-header {
+  background: #3a3a3a;
+  border-bottom: 0;
+  min-height: 0;
+  padding: 18px 20px 4px;
+}
+
+#friends-panel-title {
+  color: #fff;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: bold;
+  line-height: 30px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+#friends-close {
+  height: 32px;
+  opacity: 0.7;
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 32px;
+}
+
+#friends-close:hover {
+  filter: brightness(80%);
+  opacity: 1;
+}
+
+#friends-profile-name {
+  color: #fff;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: bold;
+  line-height: 22px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+#friends-profile-slug {
+  color: #b9b9b9;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+#friends-nav .friends-tab {
+  align-items: center;
+  background-color: #252525;
+  background-position: 16px center;
+  background-size: 24px;
+  border-radius: 5px 5px 0 0;
+  color: #969b91;
+  display: flex;
+  flex: 1;
+  font-size: 0;
+  font-weight: bold;
+  height: 58px;
+  justify-content: flex-start;
+  min-width: 0;
+  opacity: 1;
+  padding: 0 10px 0 48px;
+  text-shadow: 1px 1px 0 #000;
+  width: auto;
+}
+
+#friends-nav .friends-tab .friends-tab-alert {
+  height: 16px;
+  position: absolute;
+  right: 9px;
+  top: 8px;
+  width: 16px;
+}
+
+#friends-nav .friends-tab.has-friend-request-alert .friends-tab-alert {
+  display: block;
+}
+
+#friends-nav .friends-tab::after {
+  font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#friends-nav .friends-tab-friends::after {
+  content: "Friends";
+}
+
+#friends-nav .friends-tab-add::after {
+  content: "Add";
+}
+
+#friends-nav .friends-tab-requests::after {
+  content: "Requests";
+}
+
+#friends-nav .friends-tab.active {
+  background-color: #1e90ff;
+  color: #fff;
+}
+
+.friends-tab-panel {
+  background: #3a3a3a;
+  padding: 0 20px 20px;
+}
+
+.friends-list-header {
+  background: transparent;
+  border-bottom: 0;
+  color: #fff;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: bold;
+  height: auto;
+  line-height: 26px;
+  margin-bottom: 10px;
+  padding: 0;
+  text-shadow: 1px 1px 0 #000;
+}
+
+#friends-list,
+#friends-search-results,
+#friends-incoming-requests,
+#friends-outgoing-requests {
+  padding: 0;
+}
+
+#friends-search-input {
+  background: #282828;
+  border: 1px solid #555;
+  border-radius: 5px;
+  box-shadow: none;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  height: 42px;
+  margin: 0 0 12px;
+  padding-left: 12px;
+  width: 100%;
+}
+
+.friends-user-row {
+  background: #282828;
+  border: 0;
+  border-radius: 5px;
+  gap: 10px;
+  margin-bottom: 8px;
+  min-height: 58px;
+  padding: 8px;
+}
+
+.friends-user-row:hover {
+  background: #303030;
+}
+
+.friends-user-icon {
+  background-color: #1f1f1f;
+  border: 0;
+  border-radius: 5px;
+  height: 42px;
+  width: 42px;
+}
+
+.friends-user-name {
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 20px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.friends-user-slug {
+  color: #b9b9b9;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 16px;
+}
+
+.friends-action-button {
+  background-color: #1e90ff;
+  border-radius: 5px;
+  box-shadow: inset 0 -2px #0b5fac;
+  height: 34px;
+  width: 38px;
+}
+
+.friends-action-button:hover {
+  filter: brightness(85%);
+}
+
+.friends-action-decline {
+  background-color: #7c2f2f;
+  box-shadow: inset 0 -2px #4a1919;
+}
+
+.friends-row-state {
+  color: #b9b9b9;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: bold;
+  text-transform: none;
+}
+
+.friends-empty,
+.friends-status {
+  color: #b9b9b9;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 8px 0 12px;
+}
+
+.friends-status {
+  color: #7cfc00;
+}
+
+@media (max-width: 520px) {
+  #friends-panel {
+    max-width: none;
+    width: 86vw;
   }
 }
 
