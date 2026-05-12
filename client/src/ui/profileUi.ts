@@ -1,4 +1,5 @@
 import $ from "jquery";
+import type { GpGift } from "../../../shared/types/user";
 import loadout from "../../../shared/utils/loadout";
 import type { Account } from "../account";
 import { api } from "../api";
@@ -87,6 +88,7 @@ export class ProfileUi {
     loginOptionsModal: MenuModal | null = null;
     createAccountModal: MenuModal | null = null;
     thankYouGiftModal: MenuModal | null = null;
+    private gpGiftQueue: GpGift[] = [];
 
     loginOptionsModalMobile!: MenuModal;
     modalMobileAccount!: MenuModal;
@@ -108,6 +110,7 @@ export class ProfileUi {
         account.addEventListener("items", this.onItemsUpdated.bind(this));
         account.addEventListener("request", this.render.bind(this));
         account.addEventListener("thankYouGift", this.showThankYouGiftModal.bind(this));
+        account.addEventListener("gpGift", this.showGpGiftModal.bind(this));
         this.initUi();
         this.render();
     }
@@ -228,6 +231,9 @@ export class ProfileUi {
         });
 
         this.thankYouGiftModal = new MenuModal($("#modal-account-incentive"));
+        this.thankYouGiftModal.onHide(() => {
+            this.showQueuedGpGift();
+        });
         $("#modal-account-incentive-btn").on("click", () => {
             this.thankYouGiftModal?.hide();
         });
@@ -391,6 +397,32 @@ export class ProfileUi {
         );
         $("#modal-account-incentive-amount").text(`${reward.amount} GP`);
         this.thankYouGiftModal?.show(true);
+    }
+
+    showGpGiftModal(gift: GpGift) {
+        if (this.thankYouGiftModal?.isVisible() || this.gpGiftQueue.length > 0) {
+            this.gpGiftQueue.push(gift);
+            return;
+        }
+
+        const sender = gift.senderUsername || gift.senderSlug;
+        $("#modal-account-incentive-title").text("GP RECEIVED");
+        $("#modal-account-incentive-text").text(
+            `You got ${gift.amount} GP from ${sender}.`,
+        );
+        $("#modal-account-incentive-amount").text(`${gift.amount} GP`);
+        this.thankYouGiftModal?.show(true);
+    }
+
+    private showQueuedGpGift() {
+        const gift = this.gpGiftQueue.shift();
+        if (!gift) {
+            return;
+        }
+
+        window.setTimeout(() => {
+            this.showGpGiftModal(gift);
+        }, 220);
     }
 
     onLoadoutUpdated() {

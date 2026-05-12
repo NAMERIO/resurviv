@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, eq, ilike, inArray, ne, or, sql } from "drizzle-orm";
+import { and, eq, gte, ilike, inArray, ne, or, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import {
     type AckSoldMarketListingsResponse,
@@ -17,10 +17,13 @@ import {
     type FriendsListResponse,
     type FriendUser,
     type GetMarketResponse,
+    type GpGift,
     type LoadoutResponse,
     type OpenLootBoxResponse,
     type PlaceAuctionBidResponse,
     type ProfileResponse,
+    type RemoveFriendResponse,
+    type SendFriendGpResponse,
     type UsernameResponse,
     zAckSoldMarketListingsRequest,
     zAddFriendRequest,
@@ -33,9 +36,11 @@ import {
     zCreateMarketListingRequest,
     zFriendRequestActionRequest,
     zFriendSearchRequest,
+    zFriendUserRequest,
     zLoadoutRequest,
     zOpenLootBoxRequest,
     zPlaceAuctionBidRequest,
+    zSendFriendGpRequest,
     zSetItemStatusRequest,
     zUsernameRequest,
 } from "../../../../../shared/types/user";
@@ -68,6 +73,7 @@ import { db } from "../../db";
 import {
     auctionBidTable,
     auctionListingTable,
+    gpGiftTable,
     ipLogsTable,
     itemsTable,
     marketListingTable,
@@ -300,6 +306,66 @@ async function getUsersByIds(userIds: string[]) {
         .from(usersTable)
         .where(and(inArray(usersTable.id, userIds), eq(usersTable.banned, false)))
         .orderBy(usersTable.slug);
+}
+
+async function areFriends(userId: string, friendUserId: string) {
+    const existing = await db
+        .select({
+            id: userFriendsTable.id,
+        })
+        .from(userFriendsTable)
+        .where(
+            and(
+                eq(userFriendsTable.status, "accepted"),
+                or(
+                    and(
+                        eq(userFriendsTable.requesterUserId, userId),
+                        eq(userFriendsTable.addresseeUserId, friendUserId),
+                    ),
+                    and(
+                        eq(userFriendsTable.requesterUserId, friendUserId),
+                        eq(userFriendsTable.addresseeUserId, userId),
+                    ),
+                ),
+            ),
+        )
+        .limit(1);
+
+    return !!existing[0];
+}
+
+async function claimGpGifts(userId: string) {
+    const gifts = await db
+        .select({
+            id: gpGiftTable.id,
+            amount: gpGiftTable.amount,
+            senderSlug: usersTable.slug,
+            senderUsername: usersTable.username,
+        })
+        .from(gpGiftTable)
+        .innerJoin(usersTable, eq(usersTable.id, gpGiftTable.senderUserId))
+        .where(
+            and(
+                eq(gpGiftTable.recipientUserId, userId),
+                sql`${gpGiftTable.seenAt} IS NULL`,
+            ),
+        )
+        .orderBy(gpGiftTable.createdAt)
+        .limit(10);
+
+    if (gifts.length > 0) {
+        await db
+            .update(gpGiftTable)
+            .set({ seenAt: new Date() })
+            .where(
+                inArray(
+                    gpGiftTable.id,
+                    gifts.map((gift) => gift.id),
+                ),
+            );
+    }
+
+    return gifts satisfies GpGift[];
 }
 
 async function expireMarketListings(tx: any, targetUserId?: string) {
@@ -554,6 +620,7 @@ UserRouter.post("/profile", async (c) => {
 
     const timeUntilNextChange = getTimeUntilNextUsernameChange(lastUsernameChangeTime);
     const claimedThanksReward = await tryClaimAprilThanksReward(c, user.id);
+    const gpGifts = await claimGpGifts(user.id);
 
     const items = await db
         .select({
@@ -583,6 +650,7 @@ UserRouter.post("/profile", async (c) => {
                       amount: claimedThanksReward.amount,
                   }
                 : undefined,
+            gpGifts,
             loadout,
             items: items,
         },
@@ -827,6 +895,119 @@ UserRouter.post(
         return c.json<FriendRequestActionResponse>({ success: true }, 200);
     },
 );
+
+UserRouter.post("/friends/remove", validateParams(zFriendUserRequest), async (c) => {
+    const user = c.get("user")!;
+    const { userId } = c.req.valid("json");
+
+    const deleted = await db
+        .delete(userFriendsTable)
+        .where(
+            and(
+                eq(userFriendsTable.status, "accepted"),
+                or(
+                    and(
+                        eq(userFriendsTable.requesterUserId, user.id),
+                        eq(userFriendsTable.addresseeUserId, userId),
+                    ),
+                    and(
+                        eq(userFriendsTable.requesterUserId, userId),
+                        eq(userFriendsTable.addresseeUserId, user.id),
+                    ),
+                ),
+            ),
+        )
+        .returning({
+            id: userFriendsTable.id,
+        });
+
+    if (deleted.length === 0) {
+        return c.json<RemoveFriendResponse>({ success: false, error: "not_found" }, 200);
+    }
+
+    return c.json<RemoveFriendResponse>({ success: true }, 200);
+});
+
+UserRouter.post("/friends/send_gp", validateParams(zSendFriendGpRequest), async (c) => {
+    const user = c.get("user")!;
+    const { userId, amount } = c.req.valid("json");
+
+    if (!(await areFriends(user.id, userId))) {
+        return c.json<SendFriendGpResponse>(
+            { success: false, error: "not_friend", gpBalance: user.gpBalance },
+            200,
+        );
+    }
+
+    const recipient = await db.query.usersTable.findFirst({
+        where: and(eq(usersTable.id, userId), eq(usersTable.banned, false)),
+        columns: {
+            id: true,
+        },
+    });
+
+    if (!recipient) {
+        return c.json<SendFriendGpResponse>(
+            { success: false, error: "not_found", gpBalance: user.gpBalance },
+            200,
+        );
+    }
+
+    try {
+        const result = await db.transaction(async (tx) => {
+            const [updatedSender] = await tx
+                .update(usersTable)
+                .set({
+                    gpBalance: sql`${usersTable.gpBalance} - ${amount}`,
+                })
+                .where(and(eq(usersTable.id, user.id), gte(usersTable.gpBalance, amount)))
+                .returning({
+                    gpBalance: usersTable.gpBalance,
+                });
+
+            if (!updatedSender) {
+                return { ok: false as const, error: "not_enough_gp" as const };
+            }
+
+            await tx
+                .update(usersTable)
+                .set({
+                    gpBalance: sql`${usersTable.gpBalance} + ${amount}`,
+                })
+                .where(eq(usersTable.id, userId));
+
+            await tx.insert(gpGiftTable).values({
+                senderUserId: user.id,
+                recipientUserId: userId,
+                amount,
+            });
+
+            return { ok: true as const, gpBalance: updatedSender.gpBalance };
+        });
+
+        if (!result.ok) {
+            return c.json<SendFriendGpResponse>(
+                {
+                    success: false,
+                    error: result.error,
+                    gpBalance: user.gpBalance,
+                },
+                200,
+            );
+        }
+
+        return c.json<SendFriendGpResponse>(
+            { success: true, gpBalance: result.gpBalance },
+            200,
+        );
+    } catch (err) {
+        server.logger.error("/api/user/friends/send_gp error", err);
+        return c.json<SendFriendGpResponse>(
+            { success: false, error: "server_error", gpBalance: user.gpBalance },
+            500,
+        );
+    }
+});
 
 UserRouter.post(
     "/username",

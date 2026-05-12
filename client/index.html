@@ -941,24 +941,45 @@
                 <button id="friends-close" type="button" aria-label="Close friends"></button>
               </div>
               <div id="friends-tab-friends" class="friends-tab-panel active">
-                <div class="friends-list-header">FRIENDS</div>
-                <div id="friends-list"></div>
+                <div class="friends-panel-box">
+                  <div class="friends-list-header">FRIENDS</div>
+                  <div id="friends-list"></div>
+                </div>
               </div>
               <div id="friends-tab-add" class="friends-tab-panel">
-                <div class="friends-list-header">ADD PEOPLE</div>
-                <input id="friends-search-input" class="menu-option" type="text" maxlength="32" placeholder="Search by username or slug" />
-                <div id="friends-search-results"></div>
+                <div class="friends-panel-box">
+                  <div class="friends-list-header">ADD PEOPLE</div>
+                  <input id="friends-search-input" class="menu-option" type="text" maxlength="32" placeholder="Search by username or slug" />
+                  <div id="friends-search-results"></div>
+                </div>
               </div>
               <div id="friends-tab-requests" class="friends-tab-panel">
-                <div class="friends-request-group">
+                <div class="friends-request-group friends-panel-box">
                   <div class="friends-list-header">INCOMING</div>
                   <div id="friends-incoming-requests"></div>
                 </div>
-                <div class="friends-request-group">
+                <div class="friends-request-group friends-panel-box">
                   <div class="friends-list-header">SENT</div>
                   <div id="friends-outgoing-requests"></div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="friend-action-modal" class="modal">
+          <div class="modal-content modal-close friend-action-content">
+            <div class="modal-header">
+              <span class="close close-corner friend-action-cancel"></span>
+              <h2 id="friend-action-title">Friend Action</h2>
+            </div>
+            <div class="modal-body">
+              <div id="friend-action-text" class="modal-body-text"></div>
+              <input id="friend-gp-input" class="menu-option" type="number" min="1" step="1" placeholder="GP amount" />
+            </div>
+            <div class="modal-footer modal-footer-round">
+              <div id="friend-action-confirm" class="btn-green btn-darken menu-option">Yes</div>
+              <div class="friend-action-cancel btn-darken menu-option">Cancel</div>
             </div>
           </div>
         </div>

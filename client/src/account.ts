@@ -27,8 +27,10 @@ import type {
     FriendSearchResponse,
     FriendsListResponse,
     FriendUser,
+    FriendUserRequest,
     GetMarketResponse,
     GetPassRequest,
+    GpGift,
     LoadoutRequest,
     LoadoutResponse,
     MarketListing,
@@ -39,6 +41,9 @@ import type {
     ProfileResponse,
     RefreshQuestRequest,
     RefreshQuestResponse,
+    RemoveFriendResponse,
+    SendFriendGpRequest,
+    SendFriendGpResponse,
     SetItemStatusRequest,
     SetPassUnlockRequest,
     SetPassUnlockResponse,
@@ -128,6 +133,7 @@ export class Account {
     socialGpRewardClaims: Partial<Record<SocialGpRewardKey, boolean>> = {};
     socialGpRewardClaimsLoaded = false;
     pendingThankYouGift: { amount: number } | null = null;
+    pendingGpGifts: GpGift[] = [];
     profile = {
         linked: false,
         usernameSet: false,
@@ -254,6 +260,7 @@ export class Account {
             this.profile = {} as this["profile"];
             this.gpBalance = 0;
             this.pendingThankYouGift = null;
+            this.pendingGpGifts = [];
             this.items = [];
             if (err) {
                 errorLogManager.storeGeneric("account", "load_profile_error");
@@ -264,6 +271,7 @@ export class Account {
                 this.profile = data.profile;
                 this.gpBalance = data.gpBalance;
                 this.pendingThankYouGift = data.thankYouGift || null;
+                this.pendingGpGifts = data.gpGifts || [];
                 this.items = data.items;
                 this.loadout = data.loadout;
                 const profile = this.config.get("profile") || {
@@ -287,6 +295,10 @@ export class Account {
                 this.emit("thankYouGift", this.pendingThankYouGift);
                 this.pendingThankYouGift = null;
             }
+            for (const gift of this.pendingGpGifts) {
+                this.emit("gpGift", gift);
+            }
+            this.pendingGpGifts = [];
         });
     }
 
@@ -446,6 +458,55 @@ export class Account {
         callback?: (error?: FriendRequestActionResponse["error"]) => void,
     ) {
         this.resolveFriendRequest("/api/user/friends/cancel", userId, callback);
+    }
+
+    removeFriend(
+        userId: string,
+        callback?: (error?: RemoveFriendResponse["error"]) => void,
+    ) {
+        const args: FriendUserRequest = { userId };
+        this.ajaxRequest(
+            "/api/user/friends/remove",
+            args,
+            (err, res: RemoveFriendResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "remove_friend_error");
+                    callback?.(res?.error || "server_error");
+                    return;
+                }
+                this.loadFriends();
+                callback?.();
+            },
+        );
+    }
+
+    sendFriendGp(
+        userId: string,
+        amount: number,
+        callback?: (error?: SendFriendGpResponse["error"]) => void,
+    ) {
+        const args: SendFriendGpRequest = { userId, amount };
+        this.ajaxRequest(
+            "/api/user/friends/send_gp",
+            args,
+            (err, res: SendFriendGpResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "send_friend_gp_error");
+                    if (typeof res?.gpBalance === "number") {
+                        this.gpBalance = res.gpBalance;
+                        this.emit("gpBalance", this.gpBalance);
+                    }
+                    callback?.(res?.error || "server_error");
+                    return;
+                }
+
+                if (typeof res.gpBalance === "number") {
+                    this.gpBalance = res.gpBalance;
+                    this.emit("gpBalance", this.gpBalance);
+                }
+                callback?.();
+            },
+        );
     }
 
     private resolveFriendRequest(

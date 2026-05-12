@@ -6,6 +6,7 @@ import type { ProfileUi } from "./profileUi";
 
 type FriendsTab = "friends" | "add" | "requests";
 type FriendRowMode = "friend" | "search" | "incoming" | "outgoing";
+type FriendAction = "remove" | "send_gp" | "confirm_send_gp" | "close";
 
 export class FriendsUi {
     private readonly pollIntervalMs = 4000;
@@ -18,6 +19,11 @@ export class FriendsUi {
     private activeTab: FriendsTab = "friends";
     private statusText = "";
     private seenIncomingRequestIds = new Set<string>();
+    private pendingAction: {
+        action: FriendAction;
+        user: FriendUser;
+        amount?: number;
+    } | null = null;
 
     constructor(
         public account: Account,
@@ -72,6 +78,30 @@ export class FriendsUi {
                 this.search();
             }
         });
+
+        $(".friend-action-cancel").on("click", () => {
+            this.hideActionModal();
+            return false;
+        });
+
+        $("#friend-action-modal").on("click touchend", (e) => {
+            if ($(e.target).closest(".friend-action-content").length === 0) {
+                this.hideActionModal();
+                return false;
+            }
+        });
+
+        $("#friend-action-confirm").on("click", () => {
+            this.confirmPendingAction();
+            return false;
+        });
+
+        $("#friend-gp-input").on("keypress", (e) => {
+            if (e.key === "Enter") {
+                this.confirmPendingAction();
+                return false;
+            }
+        });
     }
 
     show() {
@@ -87,6 +117,7 @@ export class FriendsUi {
 
     hide() {
         $("#friends-wrapper").removeClass("open");
+        this.resetSearch();
     }
 
     private setTab(tab: FriendsTab) {
@@ -309,6 +340,16 @@ export class FriendsUi {
         }
     }
 
+    private resetSearch() {
+        window.clearTimeout(this.searchTimer);
+        this.searchRequestId++;
+        this.searchResults = [];
+        this.searchState = "idle";
+        this.statusText = "";
+        $("#friends-search-input").val("");
+        this.renderSearchResults();
+    }
+
     private createUserRow(user: FriendUser, mode: FriendRowMode) {
         const icon =
             helpers.getSvgFromGameType(user.playerIcon) ||
@@ -364,6 +405,24 @@ export class FriendsUi {
                     this.account.cancelFriendRequest(user.userId);
                 }),
             );
+            return;
+        }
+
+        if (mode === "friend") {
+            row.append(
+                this.createIconButton("profile", "View stats", () => {
+                    window.open(
+                        `/stats/?slug=${encodeURIComponent(user.slug)}`,
+                        "_blank",
+                    );
+                }),
+                this.createIconButton("gp", "Send GP", () => {
+                    this.showSendGpModal(user);
+                }),
+                this.createIconButton("remove", "Remove friend", () => {
+                    this.showRemoveFriendModal(user);
+                }),
+            );
         }
     }
 
@@ -402,7 +461,7 @@ export class FriendsUi {
     }
 
     private createIconButton(
-        kind: "add" | "accept" | "decline",
+        kind: "add" | "accept" | "decline" | "profile" | "gp" | "remove",
         title: string,
         onClick: () => void,
     ) {
@@ -414,5 +473,93 @@ export class FriendsUi {
             onClick();
             return false;
         });
+    }
+
+    private showRemoveFriendModal(user: FriendUser) {
+        this.pendingAction = { action: "remove", user };
+        $("#friend-action-title").text("Remove Friend");
+        $("#friend-action-text").text(
+            `Are you sure you want to remove ${user.username || user.slug}?`,
+        );
+        $("#friend-gp-input").hide().val("");
+        $("#friend-action-confirm").text("Yes");
+        $("#friend-action-modal").fadeIn(120);
+    }
+
+    private showSendGpModal(user: FriendUser) {
+        this.pendingAction = { action: "send_gp", user };
+        $("#friend-action-title").text("Send GP");
+        $("#friend-action-text").text(
+            `How much GP do you want to send to @${user.slug}?`,
+        );
+        $("#friend-gp-input").show().val("").trigger("focus");
+        $("#friend-action-confirm").text("Enter");
+        $("#friend-action-modal").fadeIn(120);
+    }
+
+    private showConfirmSendGpModal(user: FriendUser, amount: number) {
+        this.pendingAction = { action: "confirm_send_gp", user, amount };
+        $("#friend-action-title").text("Confirm GP");
+        $("#friend-action-text").text(
+            `Are you sure you want to send ${amount} GP to @${user.slug}?`,
+        );
+        $("#friend-gp-input").hide();
+        $("#friend-action-confirm").text("Yes");
+    }
+
+    private hideActionModal() {
+        this.pendingAction = null;
+        $("#friend-action-modal").fadeOut(120);
+    }
+
+    private confirmPendingAction() {
+        const pending = this.pendingAction;
+        if (!pending) {
+            return;
+        }
+
+        if (pending.action === "remove") {
+            this.account.removeFriend(pending.user.userId, () => {
+                this.hideActionModal();
+            });
+            return;
+        }
+
+        if (pending.action === "close") {
+            this.hideActionModal();
+            return;
+        }
+
+        if (pending.action === "send_gp") {
+            const amount = Math.floor(Number($("#friend-gp-input").val()));
+            if (!Number.isFinite(amount) || amount <= 0) {
+                $("#friend-action-text").text("Enter a valid GP amount.");
+                return;
+            }
+            this.showConfirmSendGpModal(pending.user, amount);
+            return;
+        }
+
+        if (pending.action === "confirm_send_gp") {
+            this.account.sendFriendGp(
+                pending.user.userId,
+                pending.amount || 0,
+                (error) => {
+                    if (error) {
+                        const message =
+                            error === "not_enough_gp"
+                                ? "You do not have enough GP."
+                                : "Could not send GP.";
+                        $("#friend-action-title").text("Send GP Failed");
+                        $("#friend-action-text").text(message);
+                        $("#friend-action-confirm").text("Close");
+                        this.pendingAction = { ...pending, action: "close" };
+                        return;
+                    }
+
+                    this.hideActionModal();
+                },
+            );
+        }
     }
 }

@@ -86,6 +86,35 @@ export const userFriendsTable = pgTable(
 export type UserFriendsTableInsert = typeof userFriendsTable.$inferInsert;
 export type UserFriendsTableSelect = typeof userFriendsTable.$inferSelect;
 
+export const gpGiftTable = pgTable(
+    "gp_gift",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        senderUserId: text("sender_user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        recipientUserId: text("recipient_user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        amount: integer("amount").notNull(),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        seenAt: timestamp("seen_at", { withTimezone: true }),
+    },
+    (table) => [
+        index("idx_gp_gift_recipient_seen").on(table.recipientUserId, table.seenAt),
+        index("idx_gp_gift_sender").on(table.senderUserId),
+    ],
+);
+
+export type GpGiftTableInsert = typeof gpGiftTable.$inferInsert;
+export type GpGiftTableSelect = typeof gpGiftTable.$inferSelect;
+
 export const itemsTable = pgTable(
     "items",
     {

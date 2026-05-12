@@ -26,6 +26,7 @@ export type ProfileResponse =
           thankYouGift?: {
               amount: number;
           };
+          gpGifts?: GpGift[];
           loadout: Loadout;
           items: Item[];
       };
@@ -115,6 +116,33 @@ export type AddFriendResponse = {
         | "already_requested"
         | "server_error";
     request?: FriendUser;
+};
+
+export type GpGift = {
+    id: string;
+    amount: number;
+    senderSlug: string;
+    senderUsername: string;
+};
+
+export const zFriendUserRequest = z.object({
+    userId: z.string().trim().min(1),
+});
+export type FriendUserRequest = z.infer<typeof zFriendUserRequest>;
+export type RemoveFriendResponse = {
+    success: boolean;
+    error?: "not_found" | "server_error";
+};
+
+export const zSendFriendGpRequest = z.object({
+    userId: z.string().trim().min(1),
+    amount: z.number().int().min(1).max(999_999_999),
+});
+export type SendFriendGpRequest = z.infer<typeof zSendFriendGpRequest>;
+export type SendFriendGpResponse = {
+    success: boolean;
+    error?: "not_friend" | "not_found" | "not_enough_gp" | "server_error";
+    gpBalance?: number;
 };
 
 export const zFriendRequestActionRequest = z.object({

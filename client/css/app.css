@@ -17951,31 +17951,47 @@ div.roulette {
 .friends-tab-panel {
   background: #3a3a3a;
   padding: 0 20px 20px;
+  gap: 14px;
 }
 
 .friends-list-header {
-  background: transparent;
-  border-bottom: 0;
+  background: #1f1f1f;
+  border-radius: 5px 5px 0 0;
   color: #fff;
   font-size: 20px;
   font-style: normal;
   font-weight: bold;
   height: auto;
   line-height: 26px;
-  margin-bottom: 10px;
-  padding: 0;
+  margin: 0;
+  padding: 10px 12px;
   text-shadow: 1px 1px 0 #000;
+}
+
+.friends-panel-box {
+  background-color: #282828;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  min-height: 110px;
+  overflow: hidden;
+}
+
+#friends-tab-friends .friends-panel-box,
+#friends-tab-add .friends-panel-box {
+  flex: 1;
+  min-height: 0;
 }
 
 #friends-list,
 #friends-search-results,
 #friends-incoming-requests,
 #friends-outgoing-requests {
-  padding: 0;
+  padding: 10px;
 }
 
 #friends-search-input {
-  background: #282828;
+  background: #1f1f1f;
   border: 1px solid #555;
   border-radius: 5px;
   box-shadow: none;
@@ -17983,13 +17999,13 @@ div.roulette {
   font-size: 16px;
   font-weight: bold;
   height: 42px;
-  margin: 0 0 12px;
+  margin: 10px 10px 2px;
   padding-left: 12px;
-  width: 100%;
+  width: calc(100% - 20px);
 }
 
 .friends-user-row {
-  background: #282828;
+  background: #333;
   border: 0;
   border-radius: 5px;
   gap: 10px;
@@ -17999,7 +18015,7 @@ div.roulette {
 }
 
 .friends-user-row:hover {
-  background: #303030;
+  background: #3a3a3a;
 }
 
 .friends-user-icon {
@@ -18027,6 +18043,9 @@ div.roulette {
 
 .friends-action-button {
   background-color: #1e90ff;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 22px;
   border-radius: 5px;
   box-shadow: inset 0 -2px #0b5fac;
   height: 34px;
@@ -18039,6 +18058,24 @@ div.roulette {
 
 .friends-action-decline {
   background-color: #7c2f2f;
+  box-shadow: inset 0 -2px #4a1919;
+}
+
+.friends-action-profile {
+  background-color: #4a4a4a;
+  background-image: url(/img/gui/eye.svg);
+  box-shadow: inset 0 -2px #242424;
+}
+
+.friends-action-gp {
+  background-color: #d07017;
+  background-image: url(/img/gui/currency-golde-potato.svg);
+  box-shadow: inset 0 -2px #9d5411;
+}
+
+.friends-action-remove {
+  background-color: #7c2f2f;
+  background-image: url(/img/gui/trash.svg);
   box-shadow: inset 0 -2px #4a1919;
 }
 
@@ -18055,7 +18092,7 @@ div.roulette {
   color: #b9b9b9;
   font-size: 14px;
   font-weight: bold;
-  padding: 8px 0 12px;
+  padding: 2px 0 6px;
 }
 
 .friends-status {
@@ -18067,6 +18104,106 @@ div.roulette {
     max-width: none;
     width: 86vw;
   }
+
+  .friends-user-row {
+    gap: 7px;
+  }
+
+  .friends-action-button {
+    background-size: 19px;
+    height: 32px;
+    width: 34px;
+  }
+}
+
+#friend-action-modal {
+  background-color: rgba(0, 0, 0, 0.72);
+  z-index: 1450;
+}
+
+#friend-action-modal .friend-action-content {
+  animation-duration: 0.2s;
+  animation-name: fadeIn;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(430px, calc(100vw - 28px));
+}
+
+#friend-action-modal .modal-header {
+  background-color: #252525;
+  border-radius: 5px 5px 0 0;
+  height: 58px;
+}
+
+#friend-action-modal .modal-header h2 {
+  color: #fff;
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 58px;
+  margin: 0;
+  padding: 0 58px 0 18px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+#friend-action-modal .modal-body {
+  background-color: #3a3a3a;
+  box-sizing: border-box;
+  min-height: 124px;
+  padding: 20px;
+}
+
+#friend-action-modal .modal-body-text {
+  color: #fff;
+  font-size: 17px;
+  font-weight: bold;
+  line-height: 24px;
+  margin-bottom: 14px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+#friend-gp-input {
+  background: #1f1f1f;
+  border: 1px solid #555;
+  border-radius: 5px;
+  box-sizing: border-box;
+  color: #fff;
+  display: none;
+  font-size: 18px;
+  font-weight: bold;
+  height: 42px;
+  padding: 0 12px;
+  width: 100%;
+}
+
+#friend-action-modal .modal-footer {
+  background-color: #282828;
+  border-radius: 0 0 5px 5px;
+  box-sizing: border-box;
+  display: flex;
+  gap: 10px;
+  height: 62px;
+  justify-content: center;
+  padding: 10px;
+}
+
+#friend-action-modal .modal-footer .menu-option {
+  border-radius: 5px;
+  box-sizing: border-box;
+  font-size: 16px;
+  font-weight: bold;
+  height: 34px;
+  line-height: 34px;
+  margin: 0;
+  text-align: center;
+  width: 128px;
+}
+
+#friend-action-modal .friend-action-cancel.menu-option {
+  background-color: #4a4a4a;
+  box-shadow: inset 0 -2px #242424;
+  color: #fff;
+  text-shadow: 1px 1px 0 #000;
 }
 
 /* Screenshot-style team creation panel */
