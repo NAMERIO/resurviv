@@ -1,5 +1,6 @@
 import $ from "jquery";
-import type { GpGift } from "../../../shared/types/user";
+import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
+import type { GpGift, SkinGift } from "../../../shared/types/user";
 import loadout from "../../../shared/utils/loadout";
 import type { Account } from "../account";
 import { api } from "../api";
@@ -89,6 +90,7 @@ export class ProfileUi {
     createAccountModal: MenuModal | null = null;
     thankYouGiftModal: MenuModal | null = null;
     private gpGiftQueue: GpGift[] = [];
+    private skinGiftQueue: SkinGift[] = [];
 
     loginOptionsModalMobile!: MenuModal;
     modalMobileAccount!: MenuModal;
@@ -111,6 +113,7 @@ export class ProfileUi {
         account.addEventListener("request", this.render.bind(this));
         account.addEventListener("thankYouGift", this.showThankYouGiftModal.bind(this));
         account.addEventListener("gpGift", this.showGpGiftModal.bind(this));
+        account.addEventListener("skinGift", this.showSkinGiftModal.bind(this));
         this.initUi();
         this.render();
     }
@@ -232,7 +235,7 @@ export class ProfileUi {
 
         this.thankYouGiftModal = new MenuModal($("#modal-account-incentive"));
         this.thankYouGiftModal.onHide(() => {
-            this.showQueuedGpGift();
+            this.showQueuedGift();
         });
         $("#modal-account-incentive-btn").on("click", () => {
             this.thankYouGiftModal?.hide();
@@ -395,12 +398,16 @@ export class ProfileUi {
             this.localization.translate("shop-thanks-gift-body") ||
                 "Here is a thank-you for playing the game. Go get yourself a little something.",
         );
-        $("#modal-account-incentive-amount").text(`${reward.amount} GP`);
+        this.renderCurrencyGiftItem(`${reward.amount} GP`);
         this.thankYouGiftModal?.show(true);
     }
 
     showGpGiftModal(gift: GpGift) {
-        if (this.thankYouGiftModal?.isVisible() || this.gpGiftQueue.length > 0) {
+        if (
+            this.thankYouGiftModal?.isVisible() ||
+            this.gpGiftQueue.length > 0 ||
+            this.skinGiftQueue.length > 0
+        ) {
             this.gpGiftQueue.push(gift);
             return;
         }
@@ -410,18 +417,80 @@ export class ProfileUi {
         $("#modal-account-incentive-text").text(
             `You got ${gift.amount} GP from ${sender}.`,
         );
-        $("#modal-account-incentive-amount").text(`${gift.amount} GP`);
+        this.renderCurrencyGiftItem(`${gift.amount} GP`);
         this.thankYouGiftModal?.show(true);
     }
 
-    private showQueuedGpGift() {
-        const gift = this.gpGiftQueue.shift();
-        if (!gift) {
+    showSkinGiftModal(gift: SkinGift) {
+        if (
+            this.thankYouGiftModal?.isVisible() ||
+            this.gpGiftQueue.length > 0 ||
+            this.skinGiftQueue.length > 0
+        ) {
+            this.skinGiftQueue.push(gift);
+            return;
+        }
+
+        const sender = gift.senderUsername || gift.senderSlug;
+        $("#modal-account-incentive-title").text("ITEM GIFT");
+        $("#modal-account-incentive-text").text(`You got an item gift from ${sender}.`);
+        this.renderSkinGiftItems(gift.itemTypes);
+        this.thankYouGiftModal?.show(true);
+    }
+
+    private renderCurrencyGiftItem(text: string) {
+        $("#modal-account-incentive .modal-body-item.reward")
+            .removeClass("skin-gift")
+            .empty()
+            .append(
+                $("<div/>", { class: "modal-body-item-img gp" }),
+                $("<div/>", {
+                    id: "modal-account-incentive-amount",
+                    class: "modal-body-item-text",
+                    text,
+                }),
+            );
+    }
+
+    private renderSkinGiftItems(itemTypes: string[]) {
+        const item = $("#modal-account-incentive .modal-body-item.reward");
+        item.addClass("skin-gift").empty();
+
+        for (const itemType of itemTypes) {
+            const def = GameObjectDefs[itemType] as { name?: string } | undefined;
+            const skinName = def?.name || itemType;
+            item.append(
+                $("<div/>", { class: "modal-skin-gift-tile", title: skinName }).append(
+                    $("<div/>", {
+                        class: "modal-skin-gift-img",
+                        css: {
+                            "background-image": `url(${helpers.getSvgFromGameType(
+                                itemType,
+                            )})`,
+                        },
+                    }),
+                    $("<div/>", { class: "modal-skin-gift-name", text: skinName }),
+                ),
+            );
+        }
+    }
+
+    private showQueuedGift() {
+        const gpGift = this.gpGiftQueue.shift();
+        if (gpGift) {
+            window.setTimeout(() => {
+                this.showGpGiftModal(gpGift);
+            }, 220);
+            return;
+        }
+
+        const skinGift = this.skinGiftQueue.shift();
+        if (!skinGift) {
             return;
         }
 
         window.setTimeout(() => {
-            this.showGpGiftModal(gift);
+            this.showSkinGiftModal(skinGift);
         }, 220);
     }
 

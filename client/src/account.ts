@@ -44,11 +44,14 @@ import type {
     RemoveFriendResponse,
     SendFriendGpRequest,
     SendFriendGpResponse,
+    SendFriendSkinGiftRequest,
+    SendFriendSkinGiftResponse,
     SetItemStatusRequest,
     SetPassUnlockRequest,
     SetPassUnlockResponse,
     SetQuestRequest,
     ShopLootBox,
+    SkinGift,
     SocialGpRewardKey,
     SoldMarketListing,
     UsernameRequest,
@@ -134,6 +137,7 @@ export class Account {
     socialGpRewardClaimsLoaded = false;
     pendingThankYouGift: { amount: number } | null = null;
     pendingGpGifts: GpGift[] = [];
+    pendingSkinGifts: SkinGift[] = [];
     profile = {
         linked: false,
         usernameSet: false,
@@ -261,6 +265,7 @@ export class Account {
             this.gpBalance = 0;
             this.pendingThankYouGift = null;
             this.pendingGpGifts = [];
+            this.pendingSkinGifts = [];
             this.items = [];
             if (err) {
                 errorLogManager.storeGeneric("account", "load_profile_error");
@@ -272,6 +277,7 @@ export class Account {
                 this.gpBalance = data.gpBalance;
                 this.pendingThankYouGift = data.thankYouGift || null;
                 this.pendingGpGifts = data.gpGifts || [];
+                this.pendingSkinGifts = data.skinGifts || [];
                 this.items = data.items;
                 this.loadout = data.loadout;
                 const profile = this.config.get("profile") || {
@@ -299,6 +305,10 @@ export class Account {
                 this.emit("gpGift", gift);
             }
             this.pendingGpGifts = [];
+            for (const gift of this.pendingSkinGifts) {
+                this.emit("skinGift", gift);
+            }
+            this.pendingSkinGifts = [];
         });
     }
 
@@ -503,6 +513,36 @@ export class Account {
                 if (typeof res.gpBalance === "number") {
                     this.gpBalance = res.gpBalance;
                     this.emit("gpBalance", this.gpBalance);
+                }
+                callback?.();
+            },
+        );
+    }
+
+    sendFriendSkins(
+        userId: string,
+        itemIds: string[],
+        callback?: (error?: SendFriendSkinGiftResponse["error"]) => void,
+    ) {
+        const args: SendFriendSkinGiftRequest = { userId, itemIds };
+        this.ajaxRequest(
+            "/api/user/friends/send_skins",
+            args,
+            (err, res: SendFriendSkinGiftResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "send_friend_skins_error");
+                    callback?.(res?.error || "server_error");
+                    return;
+                }
+
+                if (res.items) {
+                    this.items = res.items;
+                    this.emit("items", this.items);
+                }
+                if (res.loadout) {
+                    this.loadout = res.loadout;
+                    this.config.set("loadout", this.loadout);
+                    this.emit("loadout", this.loadout);
                 }
                 callback?.();
             },

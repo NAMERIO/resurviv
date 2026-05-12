@@ -24,6 +24,8 @@ import {
     type ProfileResponse,
     type RemoveFriendResponse,
     type SendFriendGpResponse,
+    type SendFriendSkinGiftResponse,
+    type SkinGift,
     type UsernameResponse,
     zAckSoldMarketListingsRequest,
     zAddFriendRequest,
@@ -41,6 +43,7 @@ import {
     zOpenLootBoxRequest,
     zPlaceAuctionBidRequest,
     zSendFriendGpRequest,
+    zSendFriendSkinGiftRequest,
     zSetItemStatusRequest,
     zUsernameRequest,
 } from "../../../../../shared/types/user";
@@ -48,7 +51,7 @@ import {
     getFeaturedBundleOffers,
     getFeaturedBundleSource,
 } from "../../../../../shared/utils/featuredBundles";
-import loadout from "../../../../../shared/utils/loadout";
+import loadout, { ItemStatus } from "../../../../../shared/utils/loadout";
 import {
     getLootBox,
     getLootBoxItems,
@@ -79,6 +82,7 @@ import {
     marketListingTable,
     matchDataTable,
     rewardClaimsTable,
+    skinGiftTable,
     userFriendsTable,
     usersTable,
 } from "../../db/schema";
@@ -368,6 +372,53 @@ async function claimGpGifts(userId: string) {
     return gifts satisfies GpGift[];
 }
 
+async function claimSkinGifts(userId: string) {
+    const gifts = await db
+        .select({
+            id: skinGiftTable.id,
+            itemTypes: skinGiftTable.itemTypes,
+            senderSlug: usersTable.slug,
+            senderUsername: usersTable.username,
+        })
+        .from(skinGiftTable)
+        .innerJoin(usersTable, eq(usersTable.id, skinGiftTable.senderUserId))
+        .where(
+            and(
+                eq(skinGiftTable.recipientUserId, userId),
+                sql`${skinGiftTable.seenAt} IS NULL`,
+            ),
+        )
+        .orderBy(skinGiftTable.createdAt)
+        .limit(10);
+
+    if (gifts.length > 0) {
+        await db
+            .update(skinGiftTable)
+            .set({ seenAt: new Date() })
+            .where(
+                inArray(
+                    skinGiftTable.id,
+                    gifts.map((gift) => gift.id),
+                ),
+            );
+    }
+
+    return gifts satisfies SkinGift[];
+}
+
+function getUserItems(userId: string) {
+    return db
+        .select({
+            id: itemsTable.id,
+            type: itemsTable.type,
+            timeAcquired: itemsTable.timeAcquired,
+            source: itemsTable.source,
+            status: itemsTable.status,
+        })
+        .from(itemsTable)
+        .where(eq(itemsTable.userId, userId));
+}
+
 async function expireMarketListings(tx: any, targetUserId?: string) {
     const cutoff = new Date(Date.now() - MARKET_LISTING_EXPIRY_MS);
     const expiredNow = await tx
@@ -621,17 +672,9 @@ UserRouter.post("/profile", async (c) => {
     const timeUntilNextChange = getTimeUntilNextUsernameChange(lastUsernameChangeTime);
     const claimedThanksReward = await tryClaimAprilThanksReward(c, user.id);
     const gpGifts = await claimGpGifts(user.id);
+    const skinGifts = await claimSkinGifts(user.id);
 
-    const items = await db
-        .select({
-            id: itemsTable.id,
-            type: itemsTable.type,
-            timeAcquired: itemsTable.timeAcquired,
-            source: itemsTable.source,
-            status: itemsTable.status,
-        })
-        .from(itemsTable)
-        .where(eq(itemsTable.userId, user.id));
+    const items = await getUserItems(user.id);
 
     return c.json<ProfileResponse>(
         {
@@ -651,6 +694,7 @@ UserRouter.post("/profile", async (c) => {
                   }
                 : undefined,
             gpGifts,
+            skinGifts,
             loadout,
             items: items,
         },
@@ -1008,6 +1052,129 @@ UserRouter.post("/friends/send_gp", validateParams(zSendFriendGpRequest), async 
         );
     }
 });
+
+UserRouter.post(
+    "/friends/send_skins",
+    validateParams(zSendFriendSkinGiftRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { userId, itemIds } = c.req.valid("json");
+        const uniqueItemIds = [...new Set(itemIds)];
+
+        if (!(await areFriends(user.id, userId))) {
+            return c.json<SendFriendSkinGiftResponse>(
+                { success: false, error: "not_friend" },
+                200,
+            );
+        }
+
+        const recipient = await db.query.usersTable.findFirst({
+            where: and(eq(usersTable.id, userId), eq(usersTable.banned, false)),
+            columns: {
+                id: true,
+            },
+        });
+
+        if (!recipient) {
+            return c.json<SendFriendSkinGiftResponse>(
+                { success: false, error: "not_found" },
+                200,
+            );
+        }
+
+        try {
+            const result = await db.transaction(async (tx) => {
+                const ownedItems = await tx
+                    .select({
+                        id: itemsTable.id,
+                        type: itemsTable.type,
+                    })
+                    .from(itemsTable)
+                    .where(
+                        and(
+                            eq(itemsTable.userId, user.id),
+                            inArray(itemsTable.id, uniqueItemIds),
+                        ),
+                    );
+
+                if (ownedItems.length !== uniqueItemIds.length) {
+                    return { ok: false as const, error: "item_not_owned" as const };
+                }
+
+                if (ownedItems.some((item) => !isSupportedMarketItem(item.type))) {
+                    return { ok: false as const, error: "invalid_item" as const };
+                }
+
+                const itemTypes = ownedItems.map((item) => item.type);
+
+                await tx
+                    .update(itemsTable)
+                    .set({
+                        userId,
+                        source: `gift_from:${user.slug}`,
+                        status: ItemStatus.New,
+                        timeAcquired: Date.now(),
+                    })
+                    .where(
+                        and(
+                            eq(itemsTable.userId, user.id),
+                            inArray(itemsTable.id, uniqueItemIds),
+                        ),
+                    );
+
+                await tx.insert(skinGiftTable).values({
+                    senderUserId: user.id,
+                    recipientUserId: userId,
+                    itemTypes,
+                });
+
+                const items = await tx
+                    .select({
+                        id: itemsTable.id,
+                        type: itemsTable.type,
+                        timeAcquired: itemsTable.timeAcquired,
+                        source: itemsTable.source,
+                        status: itemsTable.status,
+                    })
+                    .from(itemsTable)
+                    .where(eq(itemsTable.userId, user.id));
+                const nextLoadout = loadout.validateWithAvailableItems(
+                    user.loadout,
+                    items,
+                );
+
+                await tx
+                    .update(usersTable)
+                    .set({ loadout: nextLoadout })
+                    .where(eq(usersTable.id, user.id));
+
+                return { ok: true as const, items, loadout: nextLoadout };
+            });
+
+            if (!result.ok) {
+                return c.json<SendFriendSkinGiftResponse>(
+                    { success: false, error: result.error },
+                    200,
+                );
+            }
+
+            return c.json<SendFriendSkinGiftResponse>(
+                {
+                    success: true,
+                    items: result.items,
+                    loadout: result.loadout,
+                },
+                200,
+            );
+        } catch (err) {
+            server.logger.error("/api/user/friends/send_skins error", err);
+            return c.json<SendFriendSkinGiftResponse>(
+                { success: false, error: "server_error" },
+                500,
+            );
+        }
+    },
+);
 
 UserRouter.post(
     "/username",

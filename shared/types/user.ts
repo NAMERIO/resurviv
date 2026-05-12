@@ -27,6 +27,7 @@ export type ProfileResponse =
               amount: number;
           };
           gpGifts?: GpGift[];
+          skinGifts?: SkinGift[];
           loadout: Loadout;
           items: Item[];
       };
@@ -143,6 +144,30 @@ export type SendFriendGpResponse = {
     success: boolean;
     error?: "not_friend" | "not_found" | "not_enough_gp" | "server_error";
     gpBalance?: number;
+};
+
+export type SkinGift = {
+    id: string;
+    itemTypes: string[];
+    senderSlug: string;
+    senderUsername: string;
+};
+
+export const zSendFriendSkinGiftRequest = z.object({
+    userId: z.string().trim().min(1),
+    itemIds: z.array(z.string().uuid()).min(1).max(20),
+});
+export type SendFriendSkinGiftRequest = z.infer<typeof zSendFriendSkinGiftRequest>;
+export type SendFriendSkinGiftResponse = {
+    success: boolean;
+    error?:
+        | "not_friend"
+        | "not_found"
+        | "item_not_owned"
+        | "invalid_item"
+        | "server_error";
+    items?: Item[];
+    loadout?: Loadout;
 };
 
 export const zFriendRequestActionRequest = z.object({

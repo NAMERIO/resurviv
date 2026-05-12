@@ -1,12 +1,21 @@
 import $ from "jquery";
+import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import type { FriendUser } from "../../../shared/types/user";
+import { getMarketPriceBounds } from "../../../shared/utils/marketPricing";
 import type { Account } from "../account";
 import { helpers } from "../helpers";
 import type { ProfileUi } from "./profileUi";
 
 type FriendsTab = "friends" | "add" | "requests";
 type FriendRowMode = "friend" | "search" | "incoming" | "outgoing";
-type FriendAction = "remove" | "send_gp" | "confirm_send_gp" | "close";
+type GiftCategory = "outfit" | "melee" | "emote" | "death_effect";
+type FriendAction =
+    | "remove"
+    | "send_gp"
+    | "confirm_send_gp"
+    | "send_skins"
+    | "confirm_send_skins"
+    | "close";
 
 export class FriendsUi {
     private readonly pollIntervalMs = 4000;
@@ -23,7 +32,24 @@ export class FriendsUi {
         action: FriendAction;
         user: FriendUser;
         amount?: number;
+        itemIds?: string[];
     } | null = null;
+    private selectedSkinGiftItemIds = new Set<string>();
+    private activeGiftCategory: GiftCategory = "outfit";
+    private readonly giftCategories: Array<{
+        type: GiftCategory;
+        label: string;
+        icon: string;
+    }> = [
+        { type: "outfit", label: "Skins", icon: "img/gui/loadout-outfit.svg" },
+        { type: "melee", label: "Melee", icon: "img/gui/loadout-melee.svg" },
+        { type: "emote", label: "Emotes", icon: "img/gui/loadout-emote.svg" },
+        {
+            type: "death_effect",
+            label: "Death",
+            icon: "img/gui/item-deathEffect-style.svg",
+        },
+    ];
 
     constructor(
         public account: Account,
@@ -419,6 +445,9 @@ export class FriendsUi {
                 this.createIconButton("gp", "Send GP", () => {
                     this.showSendGpModal(user);
                 }),
+                this.createIconButton("skin", "Gift cosmetics", () => {
+                    this.showSendSkinsModal(user);
+                }),
                 this.createIconButton("remove", "Remove friend", () => {
                     this.showRemoveFriendModal(user);
                 }),
@@ -461,7 +490,7 @@ export class FriendsUi {
     }
 
     private createIconButton(
-        kind: "add" | "accept" | "decline" | "profile" | "gp" | "remove",
+        kind: "add" | "accept" | "decline" | "profile" | "gp" | "skin" | "remove",
         title: string,
         onClick: () => void,
     ) {
@@ -482,6 +511,7 @@ export class FriendsUi {
             `Are you sure you want to remove ${user.username || user.slug}?`,
         );
         $("#friend-gp-input").hide().val("");
+        $("#friend-skin-list").hide().empty();
         $("#friend-action-confirm").text("Yes");
         $("#friend-action-modal").fadeIn(120);
     }
@@ -493,6 +523,7 @@ export class FriendsUi {
             `How much GP do you want to send to @${user.slug}?`,
         );
         $("#friend-gp-input").show().val("").trigger("focus");
+        $("#friend-skin-list").hide().empty();
         $("#friend-action-confirm").text("Enter");
         $("#friend-action-modal").fadeIn(120);
     }
@@ -504,11 +535,143 @@ export class FriendsUi {
             `Are you sure you want to send ${amount} GP to @${user.slug}?`,
         );
         $("#friend-gp-input").hide();
+        $("#friend-skin-list").hide().empty();
         $("#friend-action-confirm").text("Yes");
+    }
+
+    private showSendSkinsModal(user: FriendUser) {
+        this.pendingAction = { action: "send_skins", user };
+        this.selectedSkinGiftItemIds.clear();
+        this.activeGiftCategory = "outfit";
+        $("#friend-action-title").text("Gift Items");
+        $("#friend-action-text").text(
+            `Select market-sellable cosmetics to send to @${user.slug}.`,
+        );
+        $("#friend-gp-input").hide().val("");
+        $("#friend-action-confirm").text("Send");
+        this.renderSkinGiftList();
+        $("#friend-skin-list").show();
+        $("#friend-action-modal").fadeIn(120);
+    }
+
+    private showConfirmSendSkinsModal(user: FriendUser, itemIds: string[]) {
+        this.pendingAction = { action: "confirm_send_skins", user, itemIds };
+        $("#friend-action-title").text("Confirm Gift");
+        $("#friend-action-text").text(
+            `Send ${itemIds.length} item${itemIds.length === 1 ? "" : "s"} to @${
+                user.slug
+            }?`,
+        );
+        $("#friend-gp-input").hide();
+        $("#friend-skin-list").hide();
+        $("#friend-action-confirm").text("Yes");
+    }
+
+    private renderSkinGiftList() {
+        const list = $("#friend-skin-list");
+        list.empty();
+        list.append(this.createGiftCategoryTabs());
+
+        const giftableItems = this.account.items
+            .filter((item) => {
+                const def = GameObjectDefs[item.type];
+                return (
+                    item.id &&
+                    def?.type === this.activeGiftCategory &&
+                    getMarketPriceBounds(item.type) !== null
+                );
+            })
+            .sort((a, b) => {
+                const defA = GameObjectDefs[a.type] as { name?: string } | undefined;
+                const defB = GameObjectDefs[b.type] as { name?: string } | undefined;
+                return (defA?.name || a.type).localeCompare(defB?.name || b.type);
+            });
+
+        if (giftableItems.length === 0) {
+            list.append(
+                $("<div/>", {
+                    class: "friend-skin-empty",
+                    text: `No giftable ${this.getGiftCategoryLabel().toLowerCase()}.`,
+                }),
+            );
+            return;
+        }
+
+        for (const item of giftableItems) {
+            const def = GameObjectDefs[item.type] as
+                | { name?: string; rarity?: number }
+                | undefined;
+            const icon = helpers.getSvgFromGameType(item.type);
+            const selected = this.selectedSkinGiftItemIds.has(item.id!);
+            const row = $("<button/>", {
+                class: `friend-skin-row${selected ? " selected" : ""}`,
+                type: "button",
+                title: def?.name || item.type,
+            });
+
+            row.append(
+                $("<div/>", {
+                    class: "friend-skin-icon",
+                    css: { "background-image": `url(${icon})` },
+                }),
+                $("<div/>", {
+                    class: "friend-skin-name",
+                    text: def?.name || item.type,
+                }),
+            );
+            row.on("click", () => {
+                if (this.selectedSkinGiftItemIds.has(item.id!)) {
+                    this.selectedSkinGiftItemIds.delete(item.id!);
+                } else {
+                    this.selectedSkinGiftItemIds.add(item.id!);
+                }
+                this.renderSkinGiftList();
+                return false;
+            });
+            list.append(row);
+        }
+    }
+
+    private createGiftCategoryTabs() {
+        const tabs = $("<div/>", { class: "friend-gift-tabs" });
+        for (const category of this.giftCategories) {
+            const button = $("<button/>", {
+                class: `friend-gift-tab${
+                    this.activeGiftCategory === category.type ? " active" : ""
+                }`,
+                type: "button",
+                title: category.label,
+            });
+            button.append(
+                $("<div/>", {
+                    class: "friend-gift-tab-icon",
+                    css: { "background-image": `url(${category.icon})` },
+                }),
+                $("<div/>", { class: "friend-gift-tab-label", text: category.label }),
+            );
+            button.on("click", () => {
+                this.activeGiftCategory = category.type;
+                this.renderSkinGiftList();
+                return false;
+            });
+            tabs.append(button);
+        }
+
+        return tabs;
+    }
+
+    private getGiftCategoryLabel() {
+        return (
+            this.giftCategories.find(
+                (category) => category.type === this.activeGiftCategory,
+            )?.label || "items"
+        );
     }
 
     private hideActionModal() {
         this.pendingAction = null;
+        this.selectedSkinGiftItemIds.clear();
+        $("#friend-skin-list").hide().empty();
         $("#friend-action-modal").fadeOut(120);
     }
 
@@ -540,6 +703,16 @@ export class FriendsUi {
             return;
         }
 
+        if (pending.action === "send_skins") {
+            const itemIds = [...this.selectedSkinGiftItemIds];
+            if (itemIds.length === 0) {
+                $("#friend-action-text").text("Select at least one item.");
+                return;
+            }
+            this.showConfirmSendSkinsModal(pending.user, itemIds);
+            return;
+        }
+
         if (pending.action === "confirm_send_gp") {
             this.account.sendFriendGp(
                 pending.user.userId,
@@ -552,6 +725,32 @@ export class FriendsUi {
                                 : "Could not send GP.";
                         $("#friend-action-title").text("Send GP Failed");
                         $("#friend-action-text").text(message);
+                        $("#friend-action-confirm").text("Close");
+                        this.pendingAction = { ...pending, action: "close" };
+                        return;
+                    }
+
+                    this.hideActionModal();
+                },
+            );
+            return;
+        }
+
+        if (pending.action === "confirm_send_skins") {
+            this.account.sendFriendSkins(
+                pending.user.userId,
+                pending.itemIds || [],
+                (error) => {
+                    if (error) {
+                        const message =
+                            error === "item_not_owned"
+                                ? "You do not own one of those items anymore."
+                                : error === "invalid_item"
+                                  ? "Only market-sellable cosmetics can be gifted."
+                                  : "Could not send items.";
+                        $("#friend-action-title").text("Gift Failed");
+                        $("#friend-action-text").text(message);
+                        $("#friend-skin-list").hide();
                         $("#friend-action-confirm").text("Close");
                         this.pendingAction = { ...pending, action: "close" };
                         return;

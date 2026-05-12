@@ -115,6 +115,35 @@ export const gpGiftTable = pgTable(
 export type GpGiftTableInsert = typeof gpGiftTable.$inferInsert;
 export type GpGiftTableSelect = typeof gpGiftTable.$inferSelect;
 
+export const skinGiftTable = pgTable(
+    "skin_gift",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        senderUserId: text("sender_user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        recipientUserId: text("recipient_user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        itemTypes: json("item_types").notNull().$type<string[]>(),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        seenAt: timestamp("seen_at", { withTimezone: true }),
+    },
+    (table) => [
+        index("idx_skin_gift_recipient_seen").on(table.recipientUserId, table.seenAt),
+        index("idx_skin_gift_sender").on(table.senderUserId),
+    ],
+);
+
+export type SkinGiftTableInsert = typeof skinGiftTable.$inferInsert;
+export type SkinGiftTableSelect = typeof skinGiftTable.$inferSelect;
+
 export const itemsTable = pgTable(
     "items",
     {

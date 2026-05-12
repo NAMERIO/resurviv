@@ -15548,6 +15548,18 @@ div.roulette {
   border: 1px solid #3a3a3a;
 }
 
+#modal-account-incentive .modal-body .modal-body-item.reward.skin-gift {
+  align-items: flex-start;
+  background: transparent;
+  border: 0;
+  flex-wrap: wrap;
+  gap: 10px;
+  height: auto;
+  max-height: 220px;
+  overflow-y: auto;
+  width: min(430px, calc(100% - 20px));
+}
+
 #modal-account-incentive .modal-body .modal-body-item .modal-body-item-img {
   width: 34px;
   height: 34px;
@@ -15563,6 +15575,37 @@ div.roulette {
   font-weight: bold;
   color: #f4db7c;
   text-shadow: 1px 1px 0 #000;
+}
+
+.modal-skin-gift-tile {
+  background: #4a4a4a;
+  border: 1px solid #3a3a3a;
+  box-sizing: border-box;
+  flex: 0 0 calc(50% - 5px);
+  min-height: 94px;
+  padding: 10px 8px 8px;
+}
+
+.modal-skin-gift-img {
+  background-color: #1f1f1f;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 48px;
+  border-radius: 4px;
+  height: 54px;
+  margin: 0 auto 6px;
+  width: 54px;
+}
+
+.modal-skin-gift-name {
+  color: #fff;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 1px 1px 0 #000;
+  white-space: nowrap;
 }
 
 #modal-account-incentive .modal-footer {
@@ -18073,6 +18116,12 @@ div.roulette {
   box-shadow: inset 0 -2px #9d5411;
 }
 
+.friends-action-skin {
+  background-color: #83af50;
+  background-image: url(/img/gui/item-outfit-style.svg);
+  box-shadow: inset 0 -2px #5b7a38;
+}
+
 .friends-action-remove {
   background-color: #7c2f2f;
   background-image: url(/img/gui/trash.svg);
@@ -18149,7 +18198,9 @@ div.roulette {
 #friend-action-modal .modal-body {
   background-color: #3a3a3a;
   box-sizing: border-box;
+  max-height: min(520px, calc(100vh - 160px));
   min-height: 124px;
+  overflow-y: auto;
   padding: 20px;
 }
 
@@ -18174,6 +18225,117 @@ div.roulette {
   height: 42px;
   padding: 0 12px;
   width: 100%;
+}
+
+#friend-skin-list {
+  display: none;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.friend-gift-tabs {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 10px;
+}
+
+.friend-gift-tab {
+  align-items: center;
+  background: #252525;
+  border: 0;
+  border-radius: 5px;
+  box-shadow: inset 0 -2px #141414;
+  box-sizing: border-box;
+  color: #b9b9b9;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font-size: 11px;
+  font-weight: bold;
+  gap: 4px;
+  height: 58px;
+  justify-content: center;
+  min-width: 0;
+  padding: 6px 4px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.friend-gift-tab:hover {
+  filter: brightness(115%);
+}
+
+.friend-gift-tab.active {
+  background: #1e90ff;
+  box-shadow: inset 0 -2px #0b5fac;
+  color: #fff;
+}
+
+.friend-gift-tab-icon {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 24px;
+  width: 24px;
+}
+
+.friend-gift-tab-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.friend-skin-row {
+  align-items: center;
+  background: #333;
+  border: 0;
+  border-radius: 5px;
+  box-shadow: inset 0 -2px #1f1f1f;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+  min-height: 52px;
+  padding: 7px 9px;
+  text-align: left;
+  width: 100%;
+}
+
+.friend-skin-row:hover {
+  filter: brightness(115%);
+}
+
+.friend-skin-row.selected {
+  background: #1e90ff;
+  box-shadow: inset 0 -2px #0b5fac;
+}
+
+.friend-skin-icon {
+  background-color: #1f1f1f;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 34px;
+  border-radius: 5px;
+  flex: 0 0 auto;
+  height: 40px;
+  width: 40px;
+}
+
+.friend-skin-name,
+.friend-skin-empty {
+  color: #fff;
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 20px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.friend-skin-empty {
+  color: #b9b9b9;
+  padding: 6px 0;
 }
 
 #friend-action-modal .modal-footer {
