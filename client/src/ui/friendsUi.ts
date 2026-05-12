@@ -184,7 +184,7 @@ export class FriendsUi {
 
     private renderFriendCount() {
         const count = this.account.loggedIn ? this.account.friends.length : 0;
-        const header = $(".friends-list-header");
+        const header = $(".friends-list-header-friends");
 
         header.empty().append(document.createTextNode("FRIENDS"));
         if (this.account.loggedIn) {
@@ -277,6 +277,16 @@ export class FriendsUi {
     }
 
     private renderRequests() {
+        this.renderRequestHeader(
+            $(".friends-list-header-incoming"),
+            "INCOMING REQUEST",
+            this.account.incomingFriendRequests.length,
+        );
+        this.renderRequestHeader(
+            $(".friends-list-header-pending"),
+            "PENDING REQUEST",
+            this.account.outgoingFriendRequests.length,
+        );
         this.renderRequestList(
             $("#friends-incoming-requests"),
             this.account.incomingFriendRequests,
@@ -289,6 +299,13 @@ export class FriendsUi {
             "outgoing",
             "No sent requests.",
         );
+    }
+
+    private renderRequestHeader(header: JQuery<HTMLElement>, label: string, count: number) {
+        header.empty().append(document.createTextNode(label));
+        if (this.account.loggedIn) {
+            header.append($("<span/>", { class: "friends-list-count", text: count }));
+        }
     }
 
     private renderRequestList(
