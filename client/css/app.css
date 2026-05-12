@@ -17111,7 +17111,7 @@ div.roulette {
   padding: 6px;
   pointer-events: auto;
   position: absolute;
-  right: 314px;
+  right: 248px;
   top: var(--side-pad);
   width: fit-content;
   z-index: 1301;
@@ -17125,7 +17125,7 @@ div.roulette {
   padding: 6px;
   pointer-events: auto;
   position: absolute;
-  right: 435px;
+  right: 365px;
   top: var(--side-pad);
   width: fit-content;
   z-index: 1301;
@@ -17273,14 +17273,14 @@ div.roulette {
 
 @media (max-width: 1300px) {
   .news-btn-container {
-    right: 299px;
+    right: 231px;
     top: 8px;
     transform: scale(0.85);
     transform-origin: top right;
   }
 
   .friends-btn-container {
-    right: 406px;
+    right: 335px;
     top: 8px;
     transform: scale(0.85);
     transform-origin: top right;
@@ -17289,14 +17289,14 @@ div.roulette {
 
 @media (max-height: 720px), (max-width: 1150px) {
   .news-btn-container {
-    right: 250px;
+    right: 223px;
     top: 5px;
     transform: scale(0.8);
     transform-origin: top right;
   }
 
   .friends-btn-container {
-    right: 350px;
+    right: 321px;
     top: 5px;
     transform: scale(0.8);
     transform-origin: top right;
