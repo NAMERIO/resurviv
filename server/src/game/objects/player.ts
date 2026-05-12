@@ -5163,7 +5163,7 @@ export class Player extends BaseGameObject {
             this.setOutfit(loadout.outfit);
         }
 
-        if (!battleRoyaleMode && isItemInLoadout(loadout.melee, "melee")) {
+        if (isItemInLoadout(loadout.melee, "melee")) {
             this.loadout.melee = loadout.melee;
             this.meleeSkin = loadout.melee;
             this.weapons[GameConfig.WeaponSlot.Melee].type = loadout.melee;
