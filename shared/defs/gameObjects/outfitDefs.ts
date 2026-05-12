@@ -4345,6 +4345,52 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+
+
+// unfinished skins
+    outfitBee: defineOutfitSkin("outfitBase", {
+        name: "Bzzzz",
+        noDropOnDeath: true,
+        rarity: 4,
+        lore: "",
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitbee.img",
+            handTint: 0xFEC237,
+            handSprite: "player-hands-01.img",
+            footTint: 0xFEC237,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xFEC237,
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-bee.img",
+        },
+        lootImg: {
+            sprite: "loot-snowman-outfit.img",
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitVitaminD: defineOutfitSkin("outfitBase", {
+        name: "Vitamin D",
+        noDropOnDeath: true,
+        rarity: 4,
+        lore: "",
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitvitamnD.img",
+            handTint: 0xFFE600,
+            handSprite: "player-fists-flaming-nucleus-l.img",
+            footTint: 0xFFE600,
+            footSprite: "player-fists-flaming-nucleus-l.img",
+            backpackTint: 0xFFE600,
+            frontSpritePos: { x: 0, y: -1 },
+            frontSprite: "player-accessory-Vitamin-D.img",
+        },
+        lootImg: {
+            sprite: "loot-snowman-outfit.img",
+            tint: 0xffffff,
+        },
+    }),
 };
 
 export const OutfitDefs = { ...BaseDefs, ...SkinDefs };
