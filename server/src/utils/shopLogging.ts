@@ -28,29 +28,26 @@ type ShopPurchaseLog = {
     sellerSlug: string;
     itemType: string;
     price: number;
-    encodedIp?: string;
     purchasedAt?: Date;
 };
 
-export function logMarketPurchaseToDiscord({
-    buyerSlug,
-    sellerSlug,
-    itemType,
-    price,
-    encodedIp,
-    purchasedAt = new Date(),
-}: ShopPurchaseLog) {
+type GpGiftLog = {
+    senderSlug: string;
+    recipientSlug: string;
+    amount: number;
+    giftedAt?: Date;
+};
+
+type ItemGiftLog = {
+    senderSlug: string;
+    recipientSlug: string;
+    itemTypes: string[];
+    giftedAt?: Date;
+};
+
+function sendShopLog(message: string, errorMessage: string) {
     if (process.env.NODE_ENV !== "production") return;
     if (!SHOP_LOGS_WEBHOOK) return;
-
-    const buyer = sanitizeDiscordText(buyerSlug);
-    const seller = sanitizeDiscordText(sellerSlug);
-    const itemName = sanitizeDiscordText(getItemDisplayName(itemType));
-    const formattedIp = encodedIp ? sanitizeDiscordText(encodedIp) : "unknown_ip";
-    const formattedTime = formatEasternTime(purchasedAt);
-    const message =
-        `${buyer} bought ${itemName} (${itemType}) from ${seller} ` +
-        `for ${price} GP | ${formattedIp} | ${formattedTime}`;
 
     return fetch(SHOP_LOGS_WEBHOOK, {
         method: "POST",
@@ -61,6 +58,58 @@ export function logMarketPurchaseToDiscord({
             content: message,
         }),
     }).catch((err) => {
-        defaultLogger.error("Failed to log market purchase to discord:", err);
+        defaultLogger.error(errorMessage, err);
     });
+}
+
+export function logMarketPurchaseToDiscord({
+    buyerSlug,
+    sellerSlug,
+    itemType,
+    price,
+    purchasedAt = new Date(),
+}: ShopPurchaseLog) {
+    const buyer = sanitizeDiscordText(buyerSlug);
+    const seller = sanitizeDiscordText(sellerSlug);
+    const itemName = sanitizeDiscordText(getItemDisplayName(itemType));
+    const formattedTime = formatEasternTime(purchasedAt);
+    const message =
+        `${buyer} bought ${itemName} (${itemType}) from ${seller} ` +
+        `for ${price} GP | ${formattedTime}`;
+
+    return sendShopLog(message, "Failed to log market purchase to discord:");
+}
+
+export function logGpGiftToDiscord({
+    senderSlug,
+    recipientSlug,
+    amount,
+    giftedAt = new Date(),
+}: GpGiftLog) {
+    const sender = sanitizeDiscordText(senderSlug);
+    const recipient = sanitizeDiscordText(recipientSlug);
+    const formattedTime = formatEasternTime(giftedAt);
+    const message = `${sender} gifted ${amount} GP to ${recipient} | ${formattedTime}`;
+
+    return sendShopLog(message, "Failed to log GP gift to discord:");
+}
+
+export function logItemGiftToDiscord({
+    senderSlug,
+    recipientSlug,
+    itemTypes,
+    giftedAt = new Date(),
+}: ItemGiftLog) {
+    const sender = sanitizeDiscordText(senderSlug);
+    const recipient = sanitizeDiscordText(recipientSlug);
+    const items = itemTypes
+        .map((itemType) => {
+            const itemName = sanitizeDiscordText(getItemDisplayName(itemType));
+            return `${itemName} (${itemType})`;
+        })
+        .join(", ");
+    const formattedTime = formatEasternTime(giftedAt);
+    const message = `${sender} gifted ${items} to ${recipient} | ${formattedTime}`;
+
+    return sendShopLog(message, "Failed to log item gift to discord:");
 }

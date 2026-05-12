@@ -64,7 +64,11 @@ import {
 } from "../../../../../shared/utils/marketPricing";
 import { Config } from "../../../config";
 import { getHonoIp, validateUserName } from "../../../utils/serverHelpers";
-import { logMarketPurchaseToDiscord } from "../../../utils/shopLogging";
+import {
+    logGpGiftToDiscord,
+    logItemGiftToDiscord,
+    logMarketPurchaseToDiscord,
+} from "../../../utils/shopLogging";
 import { server } from "../../apiServer";
 import {
     authMiddleware,
@@ -77,7 +81,6 @@ import {
     auctionBidTable,
     auctionListingTable,
     gpGiftTable,
-    ipLogsTable,
     itemsTable,
     marketListingTable,
     matchDataTable,
@@ -987,6 +990,7 @@ UserRouter.post("/friends/send_gp", validateParams(zSendFriendGpRequest), async 
         where: and(eq(usersTable.id, userId), eq(usersTable.banned, false)),
         columns: {
             id: true,
+            slug: true,
         },
     });
 
@@ -1040,6 +1044,12 @@ UserRouter.post("/friends/send_gp", validateParams(zSendFriendGpRequest), async 
             );
         }
 
+        void logGpGiftToDiscord({
+            senderSlug: user.slug,
+            recipientSlug: recipient.slug,
+            amount,
+        });
+
         return c.json<SendFriendGpResponse>(
             { success: true, gpBalance: result.gpBalance },
             200,
@@ -1072,6 +1082,7 @@ UserRouter.post(
             where: and(eq(usersTable.id, userId), eq(usersTable.banned, false)),
             columns: {
                 id: true,
+                slug: true,
             },
         });
 
@@ -1148,7 +1159,7 @@ UserRouter.post(
                     .set({ loadout: nextLoadout })
                     .where(eq(usersTable.id, user.id));
 
-                return { ok: true as const, items, loadout: nextLoadout };
+                return { ok: true as const, itemTypes, items, loadout: nextLoadout };
             });
 
             if (!result.ok) {
@@ -1157,6 +1168,12 @@ UserRouter.post(
                     200,
                 );
             }
+
+            void logItemGiftToDiscord({
+                senderSlug: user.slug,
+                recipientSlug: recipient.slug,
+                itemTypes: result.itemTypes,
+            });
 
             return c.json<SendFriendSkinGiftResponse>(
                 {
@@ -1609,7 +1626,7 @@ UserRouter.post(
                 );
             }
 
-            const [buyerInfo, sellerInfo, latestIpLog] = await Promise.all([
+            const [buyerInfo, sellerInfo] = await Promise.all([
                 db.query.usersTable.findFirst({
                     where: eq(usersTable.id, user.id),
                     columns: {
@@ -1622,13 +1639,6 @@ UserRouter.post(
                         slug: true,
                     },
                 }),
-                db.query.ipLogsTable.findFirst({
-                    where: eq(ipLogsTable.userId, user.id),
-                    orderBy: (table, { desc }) => [desc(table.createdAt)],
-                    columns: {
-                        encodedIp: true,
-                    },
-                }),
             ]);
 
             void logMarketPurchaseToDiscord({
@@ -1636,7 +1646,6 @@ UserRouter.post(
                 sellerSlug: sellerInfo?.slug || "unknown",
                 itemType: result.itemType,
                 price: result.price,
-                encodedIp: latestIpLog?.encodedIp,
             });
 
             return c.json<BuyMarketListingResponse>(
