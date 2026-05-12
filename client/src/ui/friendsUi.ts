@@ -164,6 +164,7 @@ export class FriendsUi {
 
     private render() {
         this.renderHeader();
+        this.renderFriendCount();
         this.renderTabs();
         this.renderFriends();
         this.renderSearchResults();
@@ -179,6 +180,16 @@ export class FriendsUi {
             "has-friend-request-alert",
             this.hasUnreadIncomingRequests(),
         );
+    }
+
+    private renderFriendCount() {
+        const count = this.account.loggedIn ? this.account.friends.length : 0;
+        const header = $(".friends-list-header");
+
+        header.empty().append(document.createTextNode("FRIENDS"));
+        if (this.account.loggedIn) {
+            header.append($("<span/>", { class: "friends-list-count", text: count }));
+        }
     }
 
     private renderHeader() {

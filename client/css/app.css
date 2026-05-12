@@ -18011,6 +18011,17 @@ div.roulette {
   text-shadow: 1px 1px 0 #000;
 }
 
+.friends-list-count {
+  color: #b9b9b9;
+  display: inline-block;
+  font-size: 14px;
+  line-height: 18px;
+  margin-left: 6px;
+  position: relative;
+  top: 3px;
+  vertical-align: baseline;
+}
+
 .friends-panel-box {
   background-color: #282828;
   border-radius: 5px;
