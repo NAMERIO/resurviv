@@ -120,8 +120,11 @@ function createTypeSerialization(
     return typeMap;
 }
 
-const gameTypeSerialization = createTypeSerialization("Game", GameObjectDefs, 11);
-const mapTypeSerialization = createTypeSerialization("Map", MapObjectDefs, 12);
+const GameTypeBits = 11;
+const MapTypeBits = 12;
+
+const gameTypeSerialization = createTypeSerialization("Game", GameObjectDefs, GameTypeBits);
+const mapTypeSerialization = createTypeSerialization("Map", MapObjectDefs, MapTypeBits);
 
 export class BitStream extends bb.BitStream {
     writeString(str: string, len?: number) {
@@ -219,19 +222,19 @@ export class BitStream extends bb.BitStream {
     }
 
     writeGameType(type: string) {
-        this.writeBits(gameTypeSerialization.typeToId(type), 10);
+        this.writeBits(gameTypeSerialization.typeToId(type), GameTypeBits);
     }
 
     readGameType() {
-        return gameTypeSerialization.idToType(this.readBits(10));
+        return gameTypeSerialization.idToType(this.readBits(GameTypeBits));
     }
 
     writeMapType(type: string) {
-        this.writeBits(mapTypeSerialization.typeToId(type), 12);
+        this.writeBits(mapTypeSerialization.typeToId(type), MapTypeBits);
     }
 
     readMapType() {
-        return mapTypeSerialization.idToType(this.readBits(12));
+        return mapTypeSerialization.idToType(this.readBits(MapTypeBits));
     }
 
     writeArray<T>(array: T[], bits: number, writeFn: (item: T, index: number) => void) {
