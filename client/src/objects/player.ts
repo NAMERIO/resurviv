@@ -946,6 +946,7 @@ export class Player implements AbstractObject {
         audioManager: AudioManager,
         particleBarn: ParticleBarn,
         inputBinds: InputBinds,
+        touchShootHold: boolean,
         camera: Camera,
         renderer: Renderer,
         ui2Manager: UiManager2,
@@ -961,11 +962,12 @@ export class Player implements AbstractObject {
         const isReloading =
             this.m_netData.m_actionType === Action.Reload ||
             this.m_netData.m_actionType === Action.ReloadAlt;
+        const fireHeld = inputBinds.isBindDown(Input.Fire) || touchShootHold;
         if (
             isActivePlayer &&
             isBlaster &&
             !isReloading &&
-            inputBinds.isBindDown(Input.Fire)
+            fireHeld
         ) {
             this.m_netData.m_loadingBlaster += dt;
             const loadTime = (curWeapDef as GunDef).loadTime ?? 1.5;
@@ -1641,18 +1643,18 @@ export class Player implements AbstractObject {
                     0.5;
                 const bodyScale = this.m_bodyRad / GameConfig.player.radius;
                 const loadTime = gunDef.loadTime ?? 1.5;
-                const charge = this.m_netData.m_loadingBlaster;
+                const charge = this.m_netData.m_gunLoaded
+                    ? loadTime
+                    : this.m_netData.m_loadingBlaster;
 
                 const minScale = 0.1;
                 const scale = ((charge / loadTime) * maxScale) / bodyScale;
 
-                if (!this.m_netData.m_gunLoaded) {
-                    this.gunRSprites.gunBall.scale.set(
-                        Math.max(minScale, scale),
-                        Math.max(minScale, scale),
-                    );
-                    this.gunRSprites.gunBall.visible = true;
-                }
+                this.gunRSprites.gunBall.scale.set(
+                    Math.max(minScale, scale),
+                    Math.max(minScale, scale),
+                );
+                this.gunRSprites.gunBall.visible = charge > 0;
 
                 const fastFlicker = Math.random() < 0.5 ? 1.0 : 0.2;
                 this.gunRSprites.gunBall.alpha = fastFlicker;
@@ -3052,6 +3054,7 @@ export class PlayerBarn {
         map: Map,
         arenaPrivate: boolean,
         inputBinds: InputBinds,
+        touchShootHold: boolean,
         audioManager: AudioManager,
         ui2Manager: UiManager2,
         preventInput: boolean,
@@ -3073,6 +3076,7 @@ export class PlayerBarn {
                     audioManager,
                     particleBarn,
                     inputBinds,
+                    touchShootHold,
                     camera,
                     renderer,
                     ui2Manager,

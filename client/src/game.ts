@@ -462,6 +462,7 @@ export class Game {
             this.m_map,
             this.m_arenaPrivate,
             this.m_inputBinds,
+            this.m_touch.shotDetected,
             this.m_audioManager,
             this.m_ui2Manager,
             this.m_emoteBarn.wheelKeyTriggered,

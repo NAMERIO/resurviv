@@ -581,6 +581,7 @@ export class EditorDisplay {
             this.map,
             false,
             this.inputBinds,
+            false,
             this.audioManager,
             // ui2 manager is only used for updating perks, as long as we dont add any perks
             // it should be fine :)
