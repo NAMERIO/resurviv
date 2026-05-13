@@ -18,7 +18,8 @@ type FriendAction =
     | "close";
 
 export class FriendsUi {
-    private readonly pollIntervalMs = 4000;
+    private readonly openPollIntervalMs = 4000;
+    private readonly backgroundPollIntervalMs = 60000;
     private pollTimer = 0;
     private pollInFlight = false;
     private searchTimer = 0;
@@ -54,6 +55,7 @@ export class FriendsUi {
     constructor(
         public account: Account,
         public profileUi: ProfileUi,
+        private readonly isHomeScreenActive: () => boolean = () => true,
     ) {
         account.addEventListener("friends", () => this.onFriendsUpdated());
         account.addEventListener("login", () => this.startPolling());
@@ -212,20 +214,36 @@ export class FriendsUi {
         }
 
         this.pollFriends();
-        this.pollTimer = window.setInterval(
-            () => this.pollFriends(),
-            this.pollIntervalMs,
-        );
+        this.scheduleNextPoll();
+    }
+
+    private scheduleNextPoll() {
+        window.clearTimeout(this.pollTimer);
+        if (!this.account.loggedIn) {
+            this.pollTimer = 0;
+            return;
+        }
+
+        const delay = this.isOpen()
+            ? this.openPollIntervalMs
+            : this.backgroundPollIntervalMs;
+        this.pollTimer = window.setTimeout(() => this.pollFriends(), delay);
     }
 
     private pollFriends() {
-        if (!this.account.loggedIn || this.pollInFlight) {
+        if (
+            !this.account.loggedIn ||
+            this.pollInFlight ||
+            (!this.isOpen() && !this.isHomeScreenActive())
+        ) {
+            this.scheduleNextPoll();
             return;
         }
 
         this.pollInFlight = true;
         this.account.loadFriends(() => {
             this.pollInFlight = false;
+            this.scheduleNextPoll();
         }, true);
     }
 

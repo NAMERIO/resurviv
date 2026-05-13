@@ -126,6 +126,7 @@ export class Application {
     inputBindUi: InputBindUi | null = null;
     game: Game | null = null;
     loadoutDisplay: LoadoutDisplay | null = null;
+    socialEvents: EventSource | null = null;
     domContentLoaded = false;
     configLoaded = false;
     initialized = false;
@@ -252,10 +253,18 @@ export class Application {
                 this.errorModal,
             );
             this.shopMenu = new ShopMenu(this.account, this.localization);
-            this.friendsUi = new FriendsUi(this.account, this.profileUi);
+            this.friendsUi = new FriendsUi(
+                this.account,
+                this.profileUi,
+                () => this.active,
+            );
 
             // Initialize ClanUi
-            this.clanUi = new ClanUi(this.account, this.localization);
+            this.clanUi = new ClanUi(this.account, this.localization, () => this.active);
+            this.account.addEventListener("login", () => {
+                this.startSocialEvents();
+            });
+            this.startSocialEvents();
             $("#btn-clans").on("click", () => {
                 if (!this.account.loggedIn) {
                     this.profileUi.showLoginMenu({
@@ -642,6 +651,51 @@ export class Application {
             ? [this.config.get("region")!]
             : this.pingTest.getRegionList();
         this.pingTest.start(regions);
+    }
+
+    startSocialEvents() {
+        if (this.socialEvents || !this.account.loggedIn || !("EventSource" in window)) {
+            return;
+        }
+
+        const events = new EventSource(api.resolveUrl("/api/events"), {
+            withCredentials: true,
+        });
+        events.addEventListener("friends_changed", () => {
+            this.account.loadFriends(undefined, true);
+        });
+        events.addEventListener("clan_messages_changed", (event) => {
+            const data = this.parseSocialEvent(event);
+            if (
+                data?.clanId &&
+                this.clanUi.viewingClan?.id === data.clanId &&
+                this.clanUi.clanPageModal.isVisible()
+            ) {
+                this.clanUi.loadNewClanMessages();
+            }
+        });
+        events.addEventListener("clan_mentions_changed", (event) => {
+            const data = this.parseSocialEvent(event);
+            if (data?.clanId && this.clanUi.currentClan?.id === data.clanId) {
+                this.clanUi.loadMentionNotifications(true);
+            }
+        });
+        events.onerror = () => {
+            // EventSource reconnects automatically. The existing slow polling remains
+            // as a fallback if the stream cannot be maintained.
+        };
+        this.socialEvents = events;
+    }
+
+    parseSocialEvent(event: Event) {
+        try {
+            return JSON.parse((event as MessageEvent).data || "{}") as {
+                type?: string;
+                clanId?: string;
+            };
+        } catch {
+            return undefined;
+        }
     }
 
     setAppActive(active: boolean) {

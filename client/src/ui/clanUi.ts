@@ -138,9 +138,10 @@ export class ClanUi {
     clanMessagesHasMore = false;
     clanMessagesLoading = false;
     clanMessagesPolling = false;
-    clanMessagesPollTimer: ReturnType<typeof setInterval> | null = null;
+    clanMessagesPollTimer: ReturnType<typeof setTimeout> | null = null;
     clanMessageLongPressTimer: ReturnType<typeof setTimeout> | null = null;
-    clanMentionPollTimer: ReturnType<typeof setInterval> | null = null;
+    clanMentionPollTimer: ReturnType<typeof setTimeout> | null = null;
+    clanMentionPolling = false;
     mentionSuggestionsMenu: JQuery<HTMLElement> | null = null;
     unreadMentionCount = 0;
     replyingToMessage: ClanMessage | null = null;
@@ -158,6 +159,7 @@ export class ClanUi {
     constructor(
         public account: Account,
         public localization: Localization,
+        private readonly isHomeScreenActive: () => boolean = () => true,
     ) {
         this.mainModal = new MenuModal($("#modal-clan-main"));
         this.iconModal = new MenuModal($("#modal-clan-icons"));
@@ -830,28 +832,51 @@ export class ClanUi {
     startMentionPolling() {
         this.stopMentionPolling();
         this.loadMentionNotifications();
-        this.clanMentionPollTimer = setInterval(() => {
+        this.scheduleMentionPoll();
+    }
+
+    scheduleMentionPoll() {
+        if (this.clanMentionPollTimer) {
+            clearTimeout(this.clanMentionPollTimer);
+        }
+        this.clanMentionPollTimer = setTimeout(() => {
             this.loadMentionNotifications();
-        }, 2500);
+        }, 60000);
     }
 
     stopMentionPolling() {
         if (this.clanMentionPollTimer) {
-            clearInterval(this.clanMentionPollTimer);
+            clearTimeout(this.clanMentionPollTimer);
             this.clanMentionPollTimer = null;
         }
+        this.clanMentionPolling = false;
     }
 
-    loadMentionNotifications() {
-        if (!this.currentClan || this.clanPageModal.isVisible()) return;
+    loadMentionNotifications(force = false) {
+        if (
+            !this.currentClan ||
+            this.clanPageModal.isVisible() ||
+            this.clanMentionPolling ||
+            (!force && !this.isHomeScreenActive())
+        ) {
+            if (this.clanMentionPollTimer) {
+                this.scheduleMentionPoll();
+            }
+            return;
+        }
 
         const clanId = this.currentClan.id;
         const after = this.getMentionSeenAt(clanId) || undefined;
         const markExistingSeen = !after;
+        this.clanMentionPolling = true;
         clanRequest<GetClanMessagesResponse>(
             "/api/clan/messages",
             { clanId, limit: 40, after },
             (err, res) => {
+                this.clanMentionPolling = false;
+                if (this.clanMentionPollTimer) {
+                    this.scheduleMentionPoll();
+                }
                 if (err || !res?.success || !this.currentClan || this.currentClan.id !== clanId) {
                     return;
                 }
@@ -1107,14 +1132,21 @@ export class ClanUi {
 
     startClanMessagePolling() {
         this.stopClanMessagePolling();
-        this.clanMessagesPollTimer = setInterval(() => {
+        this.scheduleClanMessagePoll();
+    }
+
+    scheduleClanMessagePoll() {
+        if (this.clanMessagesPollTimer) {
+            clearTimeout(this.clanMessagesPollTimer);
+        }
+        this.clanMessagesPollTimer = setTimeout(() => {
             this.loadNewClanMessages();
-        }, 2500);
+        }, 4000);
     }
 
     stopClanMessagePolling() {
         if (this.clanMessagesPollTimer) {
-            clearInterval(this.clanMessagesPollTimer);
+            clearTimeout(this.clanMessagesPollTimer);
             this.clanMessagesPollTimer = null;
         }
         this.clanMessagesPolling = false;
@@ -1133,6 +1165,9 @@ export class ClanUi {
             !this.clanPageModal.isVisible() ||
             this.clanMessagesPolling
         ) {
+            if (this.clanMessagesPollTimer) {
+                this.scheduleClanMessagePoll();
+            }
             return;
         }
 
@@ -1153,6 +1188,9 @@ export class ClanUi {
             },
             (err, res) => {
                 this.clanMessagesPolling = false;
+                if (this.clanMessagesPollTimer) {
+                    this.scheduleClanMessagePoll();
+                }
                 if (!this.viewingClan || this.viewingClan.id !== clanId) {
                     return;
                 }

@@ -834,6 +834,8 @@ UserRouter.post("/friends/add", validateParams(zAddFriendRequest), async (c) => 
         return c.json<AddFriendResponse>({ success: false, error: "server_error" }, 500);
     }
 
+    server.notifyUsersSocialEvent([user.id, userId], { type: "friends_changed" });
+
     return c.json<AddFriendResponse>(
         {
             success: true,
@@ -891,6 +893,10 @@ UserRouter.post(
             );
         }
 
+        server.notifyUsersSocialEvent([user.id, updated.requesterUserId], {
+            type: "friends_changed",
+        });
+
         return c.json<FriendRequestActionResponse>(
             {
                 success: true,
@@ -918,6 +924,8 @@ UserRouter.post(
                 ),
             );
 
+        server.notifyUsersSocialEvent([user.id, userId], { type: "friends_changed" });
+
         return c.json<FriendRequestActionResponse>({ success: true }, 200);
     },
 );
@@ -938,6 +946,8 @@ UserRouter.post(
                     eq(userFriendsTable.status, "pending"),
                 ),
             );
+
+        server.notifyUsersSocialEvent([user.id, userId], { type: "friends_changed" });
 
         return c.json<FriendRequestActionResponse>({ success: true }, 200);
     },
@@ -971,6 +981,8 @@ UserRouter.post("/friends/remove", validateParams(zFriendUserRequest), async (c)
     if (deleted.length === 0) {
         return c.json<RemoveFriendResponse>({ success: false, error: "not_found" }, 200);
     }
+
+    server.notifyUsersSocialEvent([user.id, userId], { type: "friends_changed" });
 
     return c.json<RemoveFriendResponse>({ success: true }, 200);
 });

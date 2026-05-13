@@ -9,6 +9,16 @@ import { GIT_VERSION } from "../utils/gitRevision";
 import { defaultLogger, ServerLogger } from "../utils/logger";
 import type { FindGamePrivateBody, FindGamePrivateRes } from "../utils/types";
 
+export type SocialEventType =
+    | "friends_changed"
+    | "clan_messages_changed"
+    | "clan_mentions_changed";
+
+export interface SocialEvent {
+    type: SocialEventType;
+    clanId?: string;
+}
+
 class Region {
     data: (typeof Config)["regions"][string];
     playerCount = 0;
@@ -84,6 +94,11 @@ export class ApiServer {
     captchaEnabled = Config.captchaEnabled;
     battleRoyaleMode = Config.battleRoyaleMode;
 
+    private readonly socialEventClients = new Map<
+        string,
+        Set<(event: SocialEvent) => void>
+    >();
+
     constructor() {
         const forcedPrivateMaps: Array<(typeof Config.modes)[number]["mapName"]> = [
             "main",
@@ -133,8 +148,39 @@ export class ApiServer {
         Config.modes = this.modes;
     }
 
-    init(app: Hono, upgradeWebSocket: UpgradeWebSocket) {
+    init(app: Hono<any>, upgradeWebSocket: UpgradeWebSocket) {
         this.teamMenu.init(app, upgradeWebSocket);
+    }
+
+    subscribeSocialEvents(userId: string, send: (event: SocialEvent) => void) {
+        let clients = this.socialEventClients.get(userId);
+        if (!clients) {
+            clients = new Set();
+            this.socialEventClients.set(userId, clients);
+        }
+        clients.add(send);
+
+        return () => {
+            clients.delete(send);
+            if (clients.size === 0) {
+                this.socialEventClients.delete(userId);
+            }
+        };
+    }
+
+    notifyUserSocialEvent(userId: string, event: SocialEvent) {
+        const clients = this.socialEventClients.get(userId);
+        if (!clients) return;
+
+        for (const send of [...clients]) {
+            send(event);
+        }
+    }
+
+    notifyUsersSocialEvent(userIds: Iterable<string>, event: SocialEvent) {
+        for (const userId of new Set(userIds)) {
+            this.notifyUserSocialEvent(userId, event);
+        }
     }
 
     getSiteInfo(): SiteInfoRes {
