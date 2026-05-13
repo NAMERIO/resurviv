@@ -4788,8 +4788,8 @@ a:active {
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
-  height: 38px;
-  width: 38px;
+  height: 34px;
+  width: 34px;
 }
 
 .pass-item-name {
@@ -16105,7 +16105,7 @@ div.roulette {
 #start-menu .pass-track-item-image {
   background-position: center;
   background-repeat: no-repeat;
-  background-size: contain;
+  background-size: 82%;
   height: 100%;
   width: 100%;
 }
