@@ -1861,9 +1861,6 @@ export const LoadoutAtlas: AtlasDef = {
         "proj/proj-40mm-01.svg",
         "proj/proj-water-balloon.svg",
         "proj/proj-antiFire.svg",
-        "proj/proj-frag-pin-01.svg",
-        "proj/proj-frag-pin-02.svg",
-        "proj/proj-frag-pin-part.svg",
         "proj/proj-heart-01.svg",
     ],
 };

@@ -19,6 +19,7 @@ import type { River } from "../../../shared/utils/river";
 import { generateTerrain, type MapRiverData } from "../../../shared/utils/terrainGen";
 import { assert, util } from "../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../shared/utils/v2";
+import { isBattleRoyaleMapName } from "../battleroyale/helpers";
 import { Config } from "../config";
 import type { Game } from "./game";
 import { renderMap } from "./generate-map-image";
@@ -28,6 +29,10 @@ import { Obstacle } from "./objects/obstacle";
 import type { Player } from "./objects/player";
 import { Structure } from "./objects/structure";
 import { RiverCreator } from "./riverCreator";
+
+const BattleRoyaleBridgeSpawns = {
+    bunker_structure_05: { nearbyWidthMult: 1.2 },
+} satisfies Record<string, { nearbyWidthMult: number }>;
 
 // most of this logic is based on the `renderMapBuildingBounds` from client debugHelpers
 // which was found on BHA leak
@@ -311,6 +316,11 @@ export class GameMap {
             v2.create(this.shoreInset, this.shoreInset),
             v2.create(this.width - this.shoreInset, this.height - this.shoreInset),
         );
+    }
+
+    getBattleRoyaleBridgeSpawn(type: string) {
+        if (!isBattleRoyaleMapName(this.game.mapName)) return undefined;
+        return BattleRoyaleBridgeSpawns[type as keyof typeof BattleRoyaleBridgeSpawns];
     }
 
     init(seed?: number) {
@@ -915,7 +925,11 @@ export class GameMap {
             }
             const def = MapObjectDefs[type];
 
-            if (def.terrain?.bridge || mapGen.importantSpawns.includes(type)) {
+            if (
+                def.terrain?.bridge ||
+                this.getBattleRoyaleBridgeSpawn(type) ||
+                mapGen.importantSpawns.includes(type)
+            ) {
                 objsToSpawn.stage1.push({
                     type,
                     count,
@@ -1103,7 +1117,10 @@ export class GameMap {
                 this.genOnWaterEdge(type);
             } else if (def.terrain?.river) {
                 // this.genOnRiver(type);
-            } else if (def.terrain?.bridge) {
+            } else if (
+                def.terrain?.bridge ||
+                this.getBattleRoyaleBridgeSpawn(type)
+            ) {
                 this.genBridge(type);
             } else if (def.terrain?.grass) {
                 try {
@@ -1271,15 +1288,49 @@ export class GameMap {
         }
 
         // checks for bridges and other river structures like crossing bunker
-        if ((def.type === "structure" || def.type === "building") && def.terrain.bridge) {
+        const bridgeSpawn = this.getBattleRoyaleBridgeSpawn(type);
+        const isBridgeSpawn = def.terrain?.bridge || bridgeSpawn;
+
+        if ((def.type === "structure" || def.type === "building") && isBridgeSpawn) {
+            const getBridgeOverlapCollider = (
+                bridgeType: string,
+                bridgePos: Vec2,
+                bridgeRot: number,
+            ) => {
+                const bridgeDef = MapObjectDefs[bridgeType] as BuildingDef | StructureDef;
+                const nearbyWidthMult =
+                    bridgeDef.terrain?.bridge?.nearbyWidthMult ??
+                    this.getBattleRoyaleBridgeSpawn(bridgeType)?.nearbyWidthMult;
+
+                if (nearbyWidthMult === undefined) {
+                    return mapHelpers.getBridgeOverlapCollider(
+                        bridgeType,
+                        bridgePos,
+                        bridgeRot,
+                        1,
+                    );
+                }
+
+                const dims = mapHelpers.getBridgeDims(bridgeType);
+                const dir = v2.create(1, 0);
+                const ext = v2.add(
+                    v2.mul(dir, dims.length * 1.5),
+                    v2.mul(v2.perp(dir), dims.width * nearbyWidthMult),
+                );
+                const col = collider.createAabbExtents(
+                    v2.create(0, 0),
+                    v2.mul(ext, 0.5),
+                );
+                return collider.transform(col, bridgePos, bridgeRot, 1) as AABB;
+            };
+
             for (let i = 0; i < this.bridges.length; i++) {
                 const otherBridge = this.bridges[i];
-                const thisBounds = mapHelpers.getBridgeOverlapCollider(type, pos, rot, 1);
-                const thatBounds = mapHelpers.getBridgeOverlapCollider(
+                const thisBounds = getBridgeOverlapCollider(type, pos, rot);
+                const thatBounds = getBridgeOverlapCollider(
                     otherBridge.type,
                     otherBridge.pos,
                     otherBridge.rot,
-                    1,
                 );
                 if (
                     coldet.testAabbAabb(
@@ -1335,7 +1386,7 @@ export class GameMap {
             }
         }
 
-        if (!def.terrain?.river && !def.terrain?.bridge) {
+        if (!def.terrain?.river && !isBridgeSpawn) {
             let bounds = buildingBounds;
             if (!bounds) {
                 bounds = [
