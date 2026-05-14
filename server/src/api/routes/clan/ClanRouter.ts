@@ -43,6 +43,7 @@ import {
 } from "../../../../../shared/types/clan";
 import { Config } from "../../../config";
 import { checkForBadWords, validateUserName } from "../../../utils/serverHelpers";
+import { server } from "../../apiServer";
 import {
     authMiddleware,
     databaseEnabledMiddleware,
@@ -135,6 +136,15 @@ function getUserMembership(userId: string) {
     return db.query.clanMembersTable.findFirst({
         where: eq(clanMembersTable.userId, userId),
     });
+}
+
+async function getClanMemberUserIds(clanId: string) {
+    const rows = await db
+        .select({ userId: clanMembersTable.userId })
+        .from(clanMembersTable)
+        .where(eq(clanMembersTable.clanId, clanId));
+
+    return rows.map((row) => row.userId);
 }
 
 type KlipyGifResult = {
@@ -1384,6 +1394,18 @@ ClanRouter.post("/send_message", validateParams(zSendClanMessageRequest), async 
 
     await pruneClanMessages(clanId);
     const insertedMessage = await getClanMessageById(inserted.id);
+    const memberUserIds = await getClanMemberUserIds(clanId);
+    server.notifyUsersSocialEvent(memberUserIds, {
+        type: "clan_messages_changed",
+        clanId,
+    });
+    server.notifyUsersSocialEvent(
+        memberUserIds.filter((memberUserId) => memberUserId !== user.id),
+        {
+            type: "clan_mentions_changed",
+            clanId,
+        },
+    );
 
     return c.json<SendClanMessageResponse>({
         success: true,
@@ -1517,6 +1539,19 @@ ClanRouter.post("/edit_message", validateParams(zEditClanMessageRequest), async 
         .where(eq(clanMessagesTable.id, messageId));
 
     const updatedMessage = await getClanMessageById(messageId);
+    const memberUserIds = await getClanMemberUserIds(clanId);
+    server.notifyUsersSocialEvent(memberUserIds, {
+        type: "clan_messages_changed",
+        clanId,
+    });
+    server.notifyUsersSocialEvent(
+        memberUserIds.filter((memberUserId) => memberUserId !== user.id),
+        {
+            type: "clan_mentions_changed",
+            clanId,
+        },
+    );
+
     return c.json<EditClanMessageResponse>({ success: true, message: updatedMessage! });
 });
 
@@ -1561,6 +1596,10 @@ ClanRouter.post(
         }
 
         await db.delete(clanMessagesTable).where(eq(clanMessagesTable.id, messageId));
+        server.notifyUsersSocialEvent(await getClanMemberUserIds(clanId), {
+            type: "clan_messages_changed",
+            clanId,
+        });
 
         return c.json<DeleteClanMessageResponse>({ success: true, messageId });
     },

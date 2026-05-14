@@ -25,7 +25,7 @@ import {
 } from "../utils/serverHelpers";
 import { server } from "./apiServer";
 import { deleteExpiredSessions, validateSessionToken } from "./auth";
-import { rateLimitMiddleware, validateParams } from "./auth/middleware";
+import { authMiddleware, rateLimitMiddleware, validateParams } from "./auth/middleware";
 import type { SessionTableSelect, UsersTableSelect } from "./db/schema";
 import { ClanRouter } from "./routes/clan/ClanRouter";
 import { cleanupOldLogs, isBanned } from "./routes/private/ModerationRouter";
@@ -49,7 +49,7 @@ process.on("uncaughtException", async (err) => {
     process.exit(1);
 });
 
-const app = new Hono();
+const app = new Hono<Context>();
 const { injectWebSocket, upgradeWebSocket } = createNodeWebSocket({ app });
 
 app.onError((err: unknown, c) => {
@@ -77,6 +77,48 @@ app.use(
 app.route("/api/user/", UserRouter);
 app.route("/api/auth/", AuthRouter);
 app.route("/api/clan/", ClanRouter);
+app.get("/api/events", authMiddleware, (c) => {
+    const user = c.get("user");
+    if (!user) {
+        return c.text("Authentication failed", 401);
+    }
+
+    const encoder = new TextEncoder();
+    let unsubscribe = () => {};
+    let heartbeat: ReturnType<typeof setInterval> | undefined;
+
+    const stream = new ReadableStream({
+        start(controller) {
+            const send = (event: string, data = "") => {
+                controller.enqueue(
+                    encoder.encode(`event: ${event}\ndata: ${data}\n\n`),
+                );
+            };
+
+            send("connected");
+            unsubscribe = server.subscribeSocialEvents(user.id, (event) => {
+                send(event.type, JSON.stringify(event));
+            });
+            heartbeat = setInterval(() => {
+                controller.enqueue(encoder.encode(": keepalive\n\n"));
+            }, 25000);
+        },
+        cancel() {
+            unsubscribe();
+            if (heartbeat) {
+                clearInterval(heartbeat);
+            }
+        },
+    });
+
+    return new Response(stream, {
+        headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache, no-transform",
+            Connection: "keep-alive",
+        },
+    });
+});
 app.route("/api/", StatsRouter);
 app.route("/private/", PrivateRouter);
 
