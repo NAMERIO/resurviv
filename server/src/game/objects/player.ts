@@ -1570,6 +1570,7 @@ export class Player extends BaseGameObject {
         invisible: false,
         godMode: false,
         infiniteThrowables: false,
+        throwFast: false,
 
         /** drag and drop loot, obstacles, and buildings */
         moveObjMode: <MoveObjsMode>{
@@ -5342,6 +5343,7 @@ export class Player extends BaseGameObject {
         this.debug.invisible = msg.invisible;
         this.debug.godMode = msg.godMode;
         this.debug.infiniteThrowables = msg.infiniteThrowables;
+        this.debug.throwFast = msg.throwFast;
 
         if (invisibleChanged) {
             this.playerStatusDirty = true;

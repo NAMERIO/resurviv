@@ -66,6 +66,7 @@ export class WeaponManager {
     meleeAttacks: number[] = [];
 
     cookingThrowable = false;
+    autoThrowFast = false;
     cookTicker = 0;
 
     get activeWeapon(): string {
@@ -328,6 +329,9 @@ export class WeaponManager {
         }
 
         const itemDef = GameObjectDefs[this.activeWeapon];
+        if (!player.debug.throwFast || itemDef.type !== "throwable") {
+            this.autoThrowFast = false;
+        }
 
         switch (itemDef.type) {
             case "gun": {
@@ -339,7 +343,11 @@ export class WeaponManager {
                 break;
             }
             case "throwable": {
-                if (player.shootStart && !this.cookingThrowable) {
+                if (player.debug.throwFast && player.shootStart) {
+                    this.autoThrowFast = true;
+                }
+
+                if ((player.shootStart || this.autoThrowFast) && !this.cookingThrowable) {
                     this.cookThrowable();
                 }
                 break;
@@ -357,6 +365,7 @@ export class WeaponManager {
                 (itemDef.type === "throwable" &&
                     itemDef.cookable &&
                     this.cookTicker > itemDef.fuseTime) || // safety check
+                (this.autoThrowFast && this.cookTicker > 0) ||
                 (!player.shootHold && this.cookTicker > GameConfig.player.cookTime)
             ) {
                 this.throwThrowable();
@@ -1274,14 +1283,18 @@ export class WeaponManager {
         if (!this.cookingThrowable) return;
         this.cookingThrowable = false;
 
-        if (this.cookTicker < GameConfig.player.cookTime) {
+        const cookTime = this.player.debug.throwFast ? 0 : GameConfig.player.cookTime;
+        if (this.cookTicker < cookTime) {
             this.player.cancelAnim();
             return;
         }
 
         const oldThrowableType = this.weapons[GameConfig.WeaponSlot.Throwable].type;
         const amount = this.player.invManager.get(oldThrowableType as InventoryItem);
-        if (amount <= 0) return;
+        if (amount <= 0) {
+            this.autoThrowFast = false;
+            return;
+        }
 
         // need to store this incase throwableType gets replaced with its "heavy" variant like snowball => snowball_heavy
         // used to manage inventory since snowball_heavy isnt stored in inventory, when it's thrown you decrement "snowball" from inv
@@ -1419,7 +1432,9 @@ export class WeaponManager {
             };
         }
 
-        const animationDuration = GameConfig.player.throwTime;
+        const animationDuration = this.player.debug.throwFast
+            ? 0.05
+            : GameConfig.player.throwTime;
         this.player.playAnim(GameConfig.Anim.Throw, animationDuration);
 
         /**

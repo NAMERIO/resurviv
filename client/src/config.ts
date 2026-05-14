@@ -24,6 +24,7 @@ export const debugToolsConfig = {
     teleportToPings: false,
     invisible: false,
     infiniteThrowables: false,
+    throwFast: false,
     moveObjs: false,
 };
 
