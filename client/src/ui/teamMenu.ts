@@ -263,6 +263,7 @@ export class TeamMenu {
                 gameModeIdx: this.config.get("gameModeIdx")!,
                 autoFill: arena ? false : this.config.get("teamAutoFill")!,
                 arena,
+                teamsLocked: false,
                 findingGame: false,
                 lastError: "",
             } as RoomData;
@@ -397,6 +398,7 @@ export class TeamMenu {
                 if (this.isLeader) {
                     this.roomData.region = ourRoomData.region;
                     this.roomData.autoFill = ourRoomData.autoFill;
+                    this.roomData.teamsLocked = ourRoomData.teamsLocked;
                 }
                 this.refreshUi();
                 this.onStateUpdated?.();

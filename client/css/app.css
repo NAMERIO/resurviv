@@ -6060,6 +6060,41 @@ a:active {
   #modal-prestige-body
   .modal-prestige-body-inner
   #modal-battle-window
+  .arena-team-lock {
+  border: 0;
+  width: 24px;
+  height: 22px;
+  margin-left: auto;
+  background-color: rgba(0, 0, 0, 0.45);
+  background-image: url(/img/gui/unlock.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 15px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .arena-team-lock.locked {
+  background-image: url(/img/gui/lock.svg);
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .arena-team-lock:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
   .arena-team-join.selected,
 #modal-prestige-arena
   #modal-prestige-wrapper
@@ -6098,6 +6133,47 @@ a:active {
   font-family: Roboto Condensed;
   font-size: 14px;
   overflow: hidden;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  #arena-teams-board
+  .arena-team-slot[draggable="true"],
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  #arena-spectators-board
+  .arena-spectator-item[draggable="true"] {
+  cursor: grab;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  #arena-teams-board
+  .arena-team-slot.dragging,
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  #arena-spectators-board
+  .arena-spectator-item.dragging {
+  opacity: 0.45;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .arena-drop-enabled.drag-over {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
 }
 #modal-prestige-arena
   #modal-prestige-wrapper
@@ -6203,6 +6279,25 @@ a:active {
   background-image: url(/img/gui/player-gui.svg);
   background-size: 85%;
   animation: msgStartWaitingPulse 3s ease-out infinite;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  #arena-teams-board
+  .arena-team-slot
+  > .icon-leader,
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  #arena-spectators-board
+  .arena-spectator-item
+  > .icon-leader {
+  background-image: url(/img/gui/crown.svg);
+  background-size: 95%;
 }
 
 /* Joined battle layout: split info/actions and team board into two columns */
@@ -18587,13 +18682,15 @@ div.roulette {
 }
 
 #team-menu .name-self-input {
-  background: #fff;
+  background: rgba(0, 0, 0, 0.22);
+  border: 0;
   border-radius: 2px;
-  color: #000;
+  color: #2eff4d;
   font-size: 17px;
   height: 32px;
   line-height: 32px;
   padding: 0 4px;
+  outline: 0;
 }
 
 #team-desc {

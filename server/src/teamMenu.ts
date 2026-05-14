@@ -131,6 +131,7 @@ class Room {
         maxPlayers: 4,
         captchaEnabled: false,
         arena: false,
+        teamsLocked: false,
     };
 
     arenaOwnerKey?: string;
@@ -169,7 +170,7 @@ class Room {
             const spectatorsFull =
                 this.getArenaSpectatorCount() >= Room.MaxArenaSpectators;
 
-            if (opts?.spectator || !opts?.preferredTeam) {
+            if (opts?.spectator || this.data.teamsLocked || !opts?.preferredTeam) {
                 if (spectatorsFull) {
                     return { ok: false, error: "spectator_full" };
                 }
@@ -251,6 +252,9 @@ class Room {
                 const targetPlayer = this.players[msg.data.playerId];
                 if (!targetPlayer) break;
                 if (targetPlayer !== player && !player.isLeader) break;
+                if (targetPlayer === player && this.data.teamsLocked && !player.isLeader) {
+                    break;
+                }
 
                 if (msg.data.team === "spectator") {
                     if (
@@ -312,6 +316,7 @@ class Room {
             ? this.getArenaTeamCapacity() * 2
             : modes[gameModeIdx].teamMode;
         this.data.autoFill = this.data.arena ? false : props.autoFill;
+        this.data.teamsLocked = this.data.arena ? !!props.teamsLocked : false;
 
         // kick players that don't fit on the new max players
         if (!this.data.arena) {

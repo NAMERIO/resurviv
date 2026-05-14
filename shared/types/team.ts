@@ -38,6 +38,7 @@ export interface RoomData {
     maxPlayers: number;
     captchaEnabled: boolean;
     arena: boolean;
+    teamsLocked: boolean;
 }
 
 //
@@ -111,6 +112,7 @@ export const zClientRoomData = z.object({
     autoFill: z.boolean(),
     gameModeIdx: z.number(),
     arena: z.boolean().optional(),
+    teamsLocked: z.boolean().optional(),
 });
 
 export type ClientRoomData = z.infer<typeof zClientRoomData>;

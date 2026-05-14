@@ -9,6 +9,8 @@ export interface RoomData {
     enabledGameModeIdxs: number[];
     gameModeIdx: number;
     maxPlayers: number;
+    arena?: boolean;
+    teamsLocked?: boolean;
 }
 
 //

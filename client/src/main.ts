@@ -1266,15 +1266,17 @@ export class Application {
             (p) => p.spectator || (!p.team && this.teamMenu.arena),
         );
         const canManage = this.teamMenu.isLeader;
+        const teamsLocked = !!this.teamMenu.roomData.teamsLocked;
         const localArenaPlayer = this.teamMenu.players.find(
             (p) => p.playerId === this.teamMenu.localPlayerId,
         );
         const localTarget = localArenaPlayer?.spectator
             ? "spectator"
             : localArenaPlayer?.team;
-        const teamLocked =
+        const teamChangingBlocked =
             this.teamMenu.roomData.findingGame ||
             this.teamMenu.players.some((p) => p.inGame);
+        const hostCanAssign = canManage && teamsLocked && !teamChangingBlocked;
         const formatArenaPlayerName = (
             playerName: string,
             clanName?: string,
@@ -1286,17 +1288,38 @@ export class Application {
 
         const buildJoinButton = (target: "A" | "B" | "spectator", label: string) => {
             const selected = localTarget === target;
+            const lockedForPlayer = teamsLocked && !canManage;
             const button = $("<button>", {
                 class: `arena-team-join btn-darken${selected ? " selected" : ""}`,
                 type: "button",
-                text: selected ? "Joined" : label,
-                disabled: teamLocked || selected,
+                text: lockedForPlayer ? "Locked" : selected ? "Joined" : label,
+                disabled: teamChangingBlocked || selected || lockedForPlayer,
             });
             button.on("click", (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if (teamLocked || selected) return;
+                if (teamChangingBlocked || selected || lockedForPlayer) return;
                 this.teamMenu.swapPlayerTeam(this.teamMenu.localPlayerId, target);
+            });
+            return button;
+        };
+
+        const buildLockButton = () => {
+            const lockHelp =
+                "Lock teams: owner can drag people and put them in a team";
+            const button = $("<button>", {
+                id: "arena-team-lock",
+                class: `arena-team-lock btn-darken${teamsLocked ? " locked" : ""}`,
+                type: "button",
+                title: teamsLocked ? `Unlock teams. ${lockHelp}` : lockHelp,
+                "aria-label": teamsLocked ? "Unlock teams" : lockHelp,
+                disabled: !canManage || teamChangingBlocked,
+            });
+            button.on("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!canManage || teamChangingBlocked) return;
+                this.teamMenu.setRoomProperty("teamsLocked", !teamsLocked);
             });
             return button;
         };
@@ -1309,6 +1332,9 @@ export class Application {
         ) => {
             titleEl.empty();
             titleEl.append($("<span>", { text: title }));
+            if (target === "A") {
+                titleEl.append(buildLockButton());
+            }
             titleEl.append(buildJoinButton(target, label));
         };
 
@@ -1324,14 +1350,20 @@ export class Application {
         const buildSlot = (
             list: JQuery<HTMLElement>,
             player: (typeof teamA)[number] | undefined,
+            target: "A" | "B",
         ) => {
             const slot = $("<div>", {
                 class: `arena-team-slot${player ? "" : " empty"}`,
+                "data-team-target": target,
             });
             if (!player) {
                 slot.append($("<div>", { class: "arena-player-name", text: "Empty" }));
                 list.append(slot);
                 return;
+            }
+            if (hostCanAssign) {
+                slot.attr("draggable", "true");
+                slot.attr("data-playerid", String(player.playerId));
             }
             slot.append(
                 $("<div>", {
@@ -1343,6 +1375,15 @@ export class Application {
                     ),
                 }),
             );
+            if (player.isLeader) {
+                slot.append(
+                    $("<div>", {
+                        class: "icon icon-leader",
+                        title: "Host",
+                        "aria-label": "Host",
+                    }),
+                );
+            }
 
             if (player.inGame) {
                 slot.append(
@@ -1377,8 +1418,8 @@ export class Application {
         };
 
         for (let i = 0; i < teamSize; i++) {
-            buildSlot(this.prestigeArenaTeamAList, teamA[i]);
-            buildSlot(this.prestigeArenaTeamBList, teamB[i]);
+            buildSlot(this.prestigeArenaTeamAList, teamA[i], "A");
+            buildSlot(this.prestigeArenaTeamBList, teamB[i], "B");
         }
         this.prestigeArenaTeamsBoard.removeClass("hide");
         this.prestigeArenaSpectatorList.empty();
@@ -1398,7 +1439,12 @@ export class Application {
                 const spec = spectators[i];
                 const row = $("<div>", {
                     class: "arena-spectator-item",
+                    "data-team-target": "spectator",
                 });
+                if (hostCanAssign) {
+                    row.attr("draggable", "true");
+                    row.attr("data-playerid", String(spec.playerId));
+                }
                 row.append(
                     $("<div>", {
                         class: "arena-player-name",
@@ -1409,6 +1455,15 @@ export class Application {
                         ),
                     }),
                 );
+                if (spec.isLeader) {
+                    row.append(
+                        $("<div>", {
+                            class: "icon icon-leader",
+                            title: "Host",
+                            "aria-label": "Host",
+                        }),
+                    );
+                }
                 if (spec.inGame) {
                     row.append(
                         $("<div>", {
@@ -1441,6 +1496,52 @@ export class Application {
             }
         }
         this.prestigeArenaSpectatorsBoard.removeClass("hide");
+
+        const dropTargets = $(".arena-team-a, .arena-team-b, #arena-spectators-board");
+        dropTargets.toggleClass("arena-drop-enabled", hostCanAssign);
+        if (hostCanAssign) {
+            $(
+                ".arena-team-slot[draggable=true], .arena-spectator-item[draggable=true]",
+            ).on("dragstart", (e) => {
+                const playerId = $(e.currentTarget).attr("data-playerid") || "";
+                e.originalEvent?.dataTransfer?.setData("text/plain", playerId);
+                e.originalEvent?.dataTransfer?.setData("application/x-player-id", playerId);
+                e.originalEvent?.dataTransfer?.setDragImage(e.currentTarget, 12, 12);
+                $(e.currentTarget).addClass("dragging");
+            });
+            $(
+                ".arena-team-slot[draggable=true], .arena-spectator-item[draggable=true]",
+            ).on("dragend", (e) => {
+                $(e.currentTarget).removeClass("dragging");
+                dropTargets.removeClass("drag-over");
+            });
+            dropTargets.on("dragover", (e) => {
+                e.preventDefault();
+                $(e.currentTarget).addClass("drag-over");
+            });
+            dropTargets.on("dragleave", (e) => {
+                $(e.currentTarget).removeClass("drag-over");
+            });
+            dropTargets.on("drop", (e) => {
+                e.preventDefault();
+                dropTargets.removeClass("drag-over");
+                const playerId = Number(
+                    e.originalEvent?.dataTransfer?.getData("application/x-player-id") ||
+                        e.originalEvent?.dataTransfer?.getData("text/plain"),
+                );
+                if (!Number.isFinite(playerId)) return;
+
+                const targetEl = $(e.currentTarget);
+                const id = e.currentTarget.id;
+                const target =
+                    id === "arena-team-a-list" || targetEl.hasClass("arena-team-a")
+                        ? "A"
+                        : id === "arena-team-b-list" || targetEl.hasClass("arena-team-b")
+                          ? "B"
+                          : "spectator";
+                this.teamMenu.swapPlayerTeam(playerId, target);
+            });
+        }
     }
 
     showPrestigeArenaModal() {
