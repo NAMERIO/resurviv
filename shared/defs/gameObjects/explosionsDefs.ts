@@ -131,7 +131,7 @@ export const ExplosionDefs: Record<string, ExplosionDef> = {
     },
     explosion_snowball: {
         type: "explosion",
-        damage: 6,
+        damage: 0,
         obstacleDamage: 1,
         rad: { min: 1.24, max: 1.25 },
         shrapnelCount: 0,
@@ -144,7 +144,7 @@ export const ExplosionDefs: Record<string, ExplosionDef> = {
     },
     explosion_snowball_heavy: {
         type: "explosion",
-        damage: 28,
+        damage: 0,
         obstacleDamage: 1,
         rad: { min: 1.24, max: 1.25 },
         shrapnelCount: 0,
