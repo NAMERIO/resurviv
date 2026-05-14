@@ -4346,9 +4346,10 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
-    outfitSgc: defineOutfitSkin("outfitBase", {
-        name: "Moosli",
+    outfitSzn1Winners: defineOutfitSkin("outfitBase", {
+        name: "Top 1%",
         noDropOnDeath: true,
+        lore: "Season 1 clan winner",
         rarity: 5,
         skinImg: {
             baseTint: 0xffffff,
