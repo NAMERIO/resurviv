@@ -282,6 +282,7 @@ const _allowedOutfits = [
     // "outfitDragonTails",
     // "outfitGreenTeaRex",
     "outfitBase",
+    "outfitSgc",
     // "outfitTurkey",
     // "outfitGrich",
     // "outfitSnowman",

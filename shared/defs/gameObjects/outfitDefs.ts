@@ -4346,6 +4346,28 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
+    outfitSgc: defineOutfitSkin("outfitBase", {
+        name: "Moosli",
+        noDropOnDeath: true,
+        rarity: 5,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitSzn1stPlace.img",
+            handTint: 0x1c1c1c,
+            handSprite: "player-hands-01.img",
+            footTint: 0x1c1c1c,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x1c1c1c,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -7, y: 0 },
+            frontSprite: "player-accessory-outfitSzn1stPlace.img",
+        },
+        lootImg: {
+            sprite: "loot-Szn1stPlayers.img",
+            tint: 0xffffff,
+        },
+    }),
+
 
 // unfinished skins
     outfitBee: defineOutfitSkin("outfitBase", {
