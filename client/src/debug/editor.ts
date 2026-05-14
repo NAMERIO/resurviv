@@ -247,6 +247,9 @@ export class Editor {
             folder.addBinding(this.toolParams, "godMode", {
                 label: "God Mode",
             });
+            folder.addBinding(this.toolParams, "infiniteThrowables", {
+                label: "Infinite Throwables",
+            });
             folder.addBinding(this.toolParams, "moveObjs", {
                 label: "Move Objects",
             });
@@ -418,6 +421,7 @@ export class Editor {
         msg.teleportToPings = this.toolParams.teleportToPings;
         msg.invisible = this.toolParams.invisible;
         msg.godMode = this.toolParams.godMode;
+        msg.infiniteThrowables = this.toolParams.infiniteThrowables;
         msg.moveObjs = this.toolParams.moveObjs;
 
         return msg;

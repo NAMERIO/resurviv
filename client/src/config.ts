@@ -23,6 +23,7 @@ export const debugToolsConfig = {
     godMode: false,
     teleportToPings: false,
     invisible: false,
+    infiniteThrowables: false,
     moveObjs: false,
 };
 

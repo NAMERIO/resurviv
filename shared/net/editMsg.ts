@@ -20,6 +20,7 @@ export class EditMsg implements AbstractMsg {
     teleportToPings = false;
     invisible = false;
     godMode = false;
+    infiniteThrowables = false;
     moveObjs = false;
 
     serialize(s: BitStream) {
@@ -49,6 +50,7 @@ export class EditMsg implements AbstractMsg {
         s.writeBoolean(this.teleportToPings);
         s.writeBoolean(this.invisible);
         s.writeBoolean(this.godMode);
+        s.writeBoolean(this.infiniteThrowables);
         s.writeBoolean(this.moveObjs);
     }
 
@@ -79,6 +81,7 @@ export class EditMsg implements AbstractMsg {
         this.teleportToPings = s.readBoolean();
         this.invisible = s.readBoolean();
         this.godMode = s.readBoolean();
+        this.infiniteThrowables = s.readBoolean();
         this.moveObjs = s.readBoolean();
     }
 }
