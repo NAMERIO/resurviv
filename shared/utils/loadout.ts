@@ -34,6 +34,7 @@ export const loadoutSchema = z.object({
         color: z.number(),
         size: z.string(),
         stroke: z.string(),
+        thickness: z.string().default("0.00"),
     }),
     emotes: z.array(z.string()).length(6),
 });
@@ -71,6 +72,7 @@ export const loadout = {
                     color: 0xffffff,
                     size: 1,
                     stroke: 0,
+                    thickness: 0,
                 },
                 emotes: [],
                 streak: DefaultStreakType,
@@ -108,6 +110,7 @@ export const loadout = {
                     0xffffff,
                 size: getFloat(mergedLoadout.crosshair.size, 1).toFixed(2),
                 stroke: getFloat(mergedLoadout.crosshair.stroke, 0).toFixed(2),
+                thickness: getFloat(mergedLoadout.crosshair.thickness, 0).toFixed(2),
             },
             emotes: [] as string[],
         };

@@ -469,6 +469,9 @@ export class LoadoutMenu {
             $("#crosshair-stroke").on("input", () => {
                 this.updateLoadoutFromDOM();
             });
+            $("#crosshair-thickness").on("input", () => {
+                this.updateLoadoutFromDOM();
+            });
             const container = document.getElementById("color-picker");
 
             this.picker = new window.CP(container, false, container);
@@ -1036,6 +1039,7 @@ export class LoadoutMenu {
             $("#color-picker-hex").val(color);
             $("#crosshair-size").val(this.loadout.crosshair.size);
             $("#crosshair-stroke").val(this.loadout.crosshair.stroke);
+            $("#crosshair-thickness").val(this.loadout.crosshair.thickness);
         }
     }
 
@@ -1056,11 +1060,13 @@ export class LoadoutMenu {
             const size = parseFloat($("#crosshair-size").val() as string);
             const color = $("#color-picker-hex").val() as string;
             const stroke = parseFloat($("#crosshair-stroke").val() as string);
+            const thickness = parseFloat($("#crosshair-thickness").val() as string);
             this.loadout.crosshair = {
                 type: this.selectedItem.type,
                 color: util.hexToInt(color),
                 size: size.toFixed(2),
                 stroke: stroke.toFixed(2),
+                thickness: thickness.toFixed(2),
             };
         } else {
             const privateSkin = helpers.getParameterByName("customSkin");
@@ -1210,6 +1216,9 @@ export class LoadoutMenu {
                 $("#crosshair-stroke")
                     .closest(".crosshair-slider-container")
                     .css("display", "none");
+                $("#crosshair-thickness")
+                    .closest(".crosshair-slider-container")
+                    .css("display", "none");
                 $("#crosshair-size")
                     .closest(".crosshair-slider-container")
                     .css("display", "block");
@@ -1224,6 +1233,9 @@ export class LoadoutMenu {
                 $("#custom-crosshair-upload-container").css("display", "none");
                 $(".crosshair-hex-outer, #color-picker").css("display", "block");
                 $("#crosshair-stroke")
+                    .closest(".crosshair-slider-container")
+                    .css("display", "block");
+                $("#crosshair-thickness")
                     .closest(".crosshair-slider-container")
                     .css("display", "block");
                 $("#crosshair-size")
@@ -1632,6 +1644,7 @@ export class LoadoutMenu {
                     color: 0xffffff,
                     size: 1,
                     stroke: 0,
+                    thickness: 0,
                 } as unknown as Crosshair;
                 crosshair.setElemCrosshair(outerDiv, crosshairDef);
             }

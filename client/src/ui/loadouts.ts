@@ -57,6 +57,7 @@ const loadout = {
                     color: 0xffffff,
                     size: 1,
                     stroke: 0,
+                    thickness: 0,
                 },
                 emotes: [],
                 streak: DefaultStreakType,
@@ -98,6 +99,10 @@ const loadout = {
                 ).toFixed(2),
                 stroke: getFloat(
                     mergedLoadout.crosshair.stroke as unknown as string,
+                    0,
+                ).toFixed(2),
+                thickness: getFloat(
+                    mergedLoadout.crosshair.thickness as unknown as string,
                     0,
                 ).toFixed(2),
             },

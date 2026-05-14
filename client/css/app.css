@@ -9631,7 +9631,8 @@ input [type="image"]:focus {
 }
 
 #modal-content-right-crosshair {
-  height: 546px;
+  bottom: -80px;
+  height: min(750px, calc(100vh - 24px));
 }
 
 #modal-content-right-emote {
