@@ -4349,6 +4349,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     outfitTopOnePercent: defineOutfitSkin("outfitBase", {
         name: "Top 1%",
         noDropOnDeath: true,
+        moveEmitter: "paladinParticle",
         lore: "Season 1 clan winner",
         rarity: 5,
         skinImg: {
@@ -4372,6 +4373,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     outfitTopTwoPercent: defineOutfitSkin("outfitBase", {
         name: "Top 2%",
         noDropOnDeath: true,
+        moveEmitter: "silverParticle",
         lore: "Season 1 clan winner",
         rarity: 5,
         skinImg: {
@@ -4396,6 +4398,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         name: "Top 3%",
         noDropOnDeath: true,
         lore: "Season 1 clan winner",
+        moveEmitter: "bronzeParticle",
         rarity: 5,
         skinImg: {
             baseTint: 0xffffff,
