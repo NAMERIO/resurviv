@@ -719,6 +719,8 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/loot-shirt-outfitThePro.svg",
         "loot/loot-shirt-outfitCheckmate.svg",
         "loot/loot-Szn1stPlayers.svg",
+        "loot/loot-Szn1-2ndPlayers.svg",
+        "loot/loot-Szn1-3rdPlayers.svg",
 
         "loot/loot-throwable-coconut.svg",
         "loot/loot-throwable-frag-egg.svg",
@@ -1712,6 +1714,10 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-accessory-meow.svg",
         "player/player-accessory-outfitSzn1stPlace.svg",
         "player/player-base-outfitSzn1stPlace.svg",
+        "player/player-accessory-outfitSzn1-2ndPlace.svg",
+        "player/player-base-outfitSzn1-2ndPlace.svg",
+        "player/player-accessory-outfitSzn1-3rdPlace.svg",
+        "player/player-base-outfitSzn1-3rdPlace.svg",
 
         "player/player-back-village-ninja.svg",
         "player/player-back-white-day.svg",

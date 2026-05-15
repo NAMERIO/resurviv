@@ -4346,7 +4346,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
-    outfitSzn1Winners: defineOutfitSkin("outfitBase", {
+    outfitTopOnePercent: defineOutfitSkin("outfitBase", {
         name: "Top 1%",
         noDropOnDeath: true,
         lore: "Season 1 clan winner",
@@ -4365,6 +4365,52 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
         lootImg: {
             sprite: "loot-Szn1stPlayers.img",
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitTopTwoPercent: defineOutfitSkin("outfitBase", {
+        name: "Top 2%",
+        noDropOnDeath: true,
+        lore: "Season 1 clan winner",
+        rarity: 5,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitSzn1-2ndPlace.img",
+            handTint: 0x1c1c1c,
+            handSprite: "player-hands-01.img",
+            footTint: 0x1c1c1c,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x1c1c1c,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -7, y: 0 },
+            frontSprite: "player-accessory-outfitSzn1-2ndPlace.img",
+        },
+        lootImg: {
+            sprite: "loot-Szn1-2ndPlayers.img",
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitTopThreePercent: defineOutfitSkin("outfitBase", {
+        name: "Top 3%",
+        noDropOnDeath: true,
+        lore: "Season 1 clan winner",
+        rarity: 5,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitSzn1-3rdPlace.img",
+            handTint: 0x1c1c1c,
+            handSprite: "player-hands-01.img",
+            footTint: 0x1c1c1c,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x1c1c1c,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -7, y: 0 },
+            frontSprite: "player-accessory-outfitSzn1-3rdPlace.img",
+        },
+        lootImg: {
+            sprite: "loot-Szn1-3rdPlayers.img",
             tint: 0xffffff,
         },
     }),
