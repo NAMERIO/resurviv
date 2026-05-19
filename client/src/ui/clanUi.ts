@@ -492,6 +492,25 @@ export class ClanUi {
         $("#clan-leaderboard-season").val(String(ClanConstants.CurrentSeason));
         this.loadLeaderboard("kills");
         this.leaderboardModal.show(true);
+        this.requestLeaderboardAd();
+    }
+
+    requestLeaderboardAd() {
+        const ad = $("#clan-leaderboard-ad .adsbygoogle");
+        if (!ad.length || ad.data("ad-loaded")) return;
+
+        window.setTimeout(() => {
+            try {
+                const adsWindow = window as unknown as {
+                    adsbygoogle?: Array<Record<string, never>>;
+                };
+                adsWindow.adsbygoogle = adsWindow.adsbygoogle || [];
+                adsWindow.adsbygoogle.push({});
+                ad.data("ad-loaded", true);
+            } catch (err) {
+                console.warn("Failed to request clan leaderboard ad", err);
+            }
+        }, 0);
     }
 
     renderSeasonSelects() {

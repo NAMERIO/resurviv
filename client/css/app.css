@@ -13108,6 +13108,23 @@ input [type="image"]:focus {
   overflow-y: auto;
 }
 
+.clan-leaderboard-ad {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  margin-top: auto;
+  overflow: hidden;
+  background-color: #282828;
+  border-radius: 5px;
+}
+
+.clan-leaderboard-ad .adsbygoogle {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+}
+
 .clan-leaderboard-header-row {
   display: grid;
   grid-template-columns: 48px 48px minmax(0, 1fr) 120px;
