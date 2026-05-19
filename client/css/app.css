@@ -13112,7 +13112,6 @@ input [type="image"]:focus {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  margin-top: auto;
   overflow: hidden;
   background-color: #282828;
   border-radius: 5px;
