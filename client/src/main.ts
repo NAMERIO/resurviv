@@ -173,6 +173,7 @@ export class Application {
             1: "Solo",
             2: "Duo",
             4: "Squad",
+            10: "10v10",
         };
         return teamModeMap[teamMode] || "Duo";
     }
@@ -991,7 +992,7 @@ export class Application {
         }
 
         const maps = Array.from(new Set(arenaModes.map((m) => m.mapName)));
-        const teamModes = [1, 2, 4];
+        const teamModes = [1, 2, 4, 10];
         const mapStyleByName = new Map<
             string,
             {
@@ -1233,6 +1234,9 @@ export class Application {
         this.prestigeArenaSpectatorCodeNote.addClass("hide");
         this.prestigeArenaRoomCode.text("");
         this.prestigeArenaTeamsBoard.addClass("hide");
+        this.prestigeArenaWrapper.removeClass("arena-large-teams");
+        this.prestigeArenaBattlePane.removeClass("arena-large-teams");
+        this.prestigeArenaTeamsBoard.removeClass("arena-large-teams");
         this.prestigeArenaSpectatorsBoard.addClass("hide");
         this.prestigeArenaTeamAList.empty();
         this.prestigeArenaTeamBList.empty();
@@ -1253,12 +1257,19 @@ export class Application {
         this.prestigeArenaSpectatorList.empty();
         if (!(this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined)) {
             this.prestigeArenaTeamsBoard.addClass("hide");
+            this.prestigeArenaWrapper.removeClass("arena-large-teams");
+            this.prestigeArenaBattlePane.removeClass("arena-large-teams");
+            this.prestigeArenaTeamsBoard.removeClass("arena-large-teams");
             this.prestigeArenaSpectatorsBoard.addClass("hide");
             return;
         }
 
         const mode = this.siteInfo.info.modes?.[this.teamMenu.roomData.gameModeIdx];
         const teamSize = Math.max(1, mode?.teamMode ?? 2);
+        const largeTeams = teamSize >= 10;
+        this.prestigeArenaWrapper.toggleClass("arena-large-teams", largeTeams);
+        this.prestigeArenaBattlePane.toggleClass("arena-large-teams", largeTeams);
+        this.prestigeArenaTeamsBoard.toggleClass("arena-large-teams", largeTeams);
         this.applyBattleModeStyleByIdx(this.teamMenu.roomData.gameModeIdx);
         const teamA = this.teamMenu.players.filter((p) => p.team === "A" && !p.spectator);
         const teamB = this.teamMenu.players.filter((p) => p.team === "B" && !p.spectator);
@@ -1305,8 +1316,7 @@ export class Application {
         };
 
         const buildLockButton = () => {
-            const lockHelp =
-                "Lock teams: owner can drag people and put them in a team";
+            const lockHelp = "Lock teams: owner can drag people and put them in a team";
             const button = $("<button>", {
                 id: "arena-team-lock",
                 class: `arena-team-lock btn-darken${teamsLocked ? " locked" : ""}`,
@@ -1424,16 +1434,19 @@ export class Application {
         this.prestigeArenaTeamsBoard.removeClass("hide");
         this.prestigeArenaSpectatorList.empty();
         if (!spectators.length) {
-            this.prestigeArenaSpectatorList.append(
-                $("<div>", {
-                    class: "arena-spectator-item",
-                }).append(
+            const emptySpectatorSlots = largeTeams ? 5 : 1;
+            for (let i = 0; i < emptySpectatorSlots; i++) {
+                this.prestigeArenaSpectatorList.append(
                     $("<div>", {
-                        class: "arena-player-name",
-                        text: "Empty",
-                    }),
-                ),
-            );
+                        class: "arena-spectator-item",
+                    }).append(
+                        $("<div>", {
+                            class: "arena-player-name",
+                            text: "Empty",
+                        }),
+                    ),
+                );
+            }
         } else {
             for (let i = 0; i < spectators.length; i++) {
                 const spec = spectators[i];
@@ -1505,7 +1518,10 @@ export class Application {
             ).on("dragstart", (e) => {
                 const playerId = $(e.currentTarget).attr("data-playerid") || "";
                 e.originalEvent?.dataTransfer?.setData("text/plain", playerId);
-                e.originalEvent?.dataTransfer?.setData("application/x-player-id", playerId);
+                e.originalEvent?.dataTransfer?.setData(
+                    "application/x-player-id",
+                    playerId,
+                );
                 e.originalEvent?.dataTransfer?.setDragImage(e.currentTarget, 12, 12);
                 $(e.currentTarget).addClass("dragging");
             });
@@ -1590,6 +1606,9 @@ export class Application {
         if (!(this.teamMenu.active && this.teamMenu.arena)) {
             this.prestigeArenaBattlePane.removeClass("arena-joined-layout");
             this.prestigeArenaWrapper.removeClass("arena-joined-shell");
+            this.prestigeArenaWrapper.removeClass("arena-large-teams");
+            this.prestigeArenaBattlePane.removeClass("arena-large-teams");
+            this.prestigeArenaTeamsBoard.removeClass("arena-large-teams");
             this.lastArenaPreloadedMapName = "";
             this.prestigeArenaModalRequestedOpen = false;
             this.setPrestigeArenaModalVisible(false);
@@ -1608,6 +1627,9 @@ export class Application {
         if (!this.teamMenu.joined) {
             this.prestigeArenaBattlePane.removeClass("arena-joined-layout");
             this.prestigeArenaWrapper.removeClass("arena-joined-shell");
+            this.prestigeArenaWrapper.removeClass("arena-large-teams");
+            this.prestigeArenaBattlePane.removeClass("arena-large-teams");
+            this.prestigeArenaTeamsBoard.removeClass("arena-large-teams");
             this.prestigeArenaBattleTab.removeClass("hide");
             this.prestigeArenaCreateTab.removeClass("hide");
             if (this.teamMenu.create) {

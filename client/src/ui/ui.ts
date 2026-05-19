@@ -1367,6 +1367,7 @@ export class UiManager {
             [TeamMode.Solo]: "game-solo-rank",
             [TeamMode.Duo]: "game-duo-rank",
             [TeamMode.Squad]: "game-squad-rank",
+            [TeamMode.Ten]: "game-squad-rank",
         };
         const val = l10nMap[teamMode] || l10nMap.unknown;
         return this.localization.translate(val);
