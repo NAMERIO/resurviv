@@ -11361,6 +11361,10 @@ input [type="image"]:focus {
 
 #modal-clan-leaderboard .modal-content {
   width: 940px;
+  max-height: 95vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 #modal-clan-leaderboard .modal-clans-header {
@@ -13048,9 +13052,10 @@ input [type="image"]:focus {
 .clan-leaderboard-body {
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: 14px;
   padding: 20px 24px 24px;
-  min-height: 500px;
+  min-height: 0;
 }
 
 .clan-leaderboard-toolbar {
@@ -13253,6 +13258,12 @@ input [type="image"]:focus {
 
 #modal-clan-main .modal-clans-body {
   height: min(620px, calc(95vh - 90px));
+  min-height: 0;
+  overflow: hidden;
+}
+
+#modal-clan-leaderboard .modal-clans-body {
+  height: min(650px, calc(95vh - 90px));
   min-height: 0;
   overflow: hidden;
 }
