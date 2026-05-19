@@ -813,7 +813,7 @@ export class UiManager {
 
         const layoutSm = device.uiLayout == device.UiLayout.Sm;
         const groupPlayerIds = groupInfo ? groupInfo.playerIds : [];
-        const groupPlayerCount = groupPlayerIds.length;
+        const groupPlayerCount = math.min(groupPlayerIds.length, this.teamSelectors.length);
 
         for (let i = 0; i < groupPlayerCount; i++) {
             const teamElems = this.teamSelectors[i];
