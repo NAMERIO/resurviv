@@ -496,8 +496,10 @@ export class ClanUi {
     }
 
     requestLeaderboardAd() {
-        const ad = $("#clan-leaderboard-ad .adsbygoogle");
-        if (!ad.length || ad.data("ad-loaded")) return;
+        const ads = $(
+            "#clan-leaderboard-ad .adsbygoogle, #clan-leaderboard-ad-secondary .adsbygoogle",
+        ).filter((_, element) => !$(element).data("ad-loaded"));
+        if (!ads.length) return;
 
         window.setTimeout(() => {
             try {
@@ -505,8 +507,10 @@ export class ClanUi {
                     adsbygoogle?: Array<Record<string, never>>;
                 };
                 adsWindow.adsbygoogle = adsWindow.adsbygoogle || [];
-                adsWindow.adsbygoogle.push({});
-                ad.data("ad-loaded", true);
+                ads.each((_, element) => {
+                    adsWindow.adsbygoogle!.push({});
+                    $(element).data("ad-loaded", true);
+                });
             } catch (err) {
                 console.warn("Failed to request clan leaderboard ad", err);
             }

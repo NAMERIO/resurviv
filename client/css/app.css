@@ -13117,7 +13117,8 @@ input [type="image"]:focus {
 .clan-leaderboard-ad {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 3;
+  min-height: 180px;
   overflow: hidden;
   background-color: #282828;
   border-radius: 5px;
