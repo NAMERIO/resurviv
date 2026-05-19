@@ -13054,15 +13054,21 @@ input [type="image"]:focus {
   grid-template-columns: 260px minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
   gap: 14px;
+  box-sizing: border-box;
   padding: 20px 24px 24px;
+  height: min(650px, calc(95vh - 90px));
+  max-height: min(650px, calc(95vh - 90px));
   min-height: 0;
+  overflow: hidden;
 }
 
 .clan-leaderboard-toolbar {
   display: flex;
   grid-column: 1;
+  grid-row: 1;
   flex-direction: column;
   gap: 14px;
+  min-height: 0;
   padding: 14px 16px;
   background-color: #282828;
   border-radius: 5px;
@@ -13095,15 +13101,15 @@ input [type="image"]:focus {
 
 .clan-leaderboard-list {
   grid-column: 2;
+  grid-row: 1;
   background-color: #282828;
   border-radius: 5px;
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
   padding: 10px;
-  flex: 1 1 auto;
   min-height: 0;
-  height: 100%;
+  max-height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -13280,6 +13286,7 @@ input [type="image"]:focus {
 
 #modal-clan-leaderboard .modal-clans-body {
   height: min(650px, calc(95vh - 90px));
+  max-height: min(650px, calc(95vh - 90px));
   min-height: 0;
   overflow: hidden;
 }
