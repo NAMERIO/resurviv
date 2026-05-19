@@ -8,6 +8,7 @@ export const ClanConstants = {
     NameMaxLen: 16,
     MessageMaxLen: 300,
     RejoinCooldownMs: 0, // none cooldown for now
+    CurrentSeason: 1,
 } as const;
 
 export const ClanTagColorRegex = /^(|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|[a-zA-Z]+)$/;
@@ -54,6 +55,7 @@ export type DeleteClanRequest = z.infer<typeof zDeleteClanRequest>;
 
 export const zGetClanRequest = z.object({
     clanId: z.string().uuid(),
+    season: z.number().int().min(1).max(ClanConstants.CurrentSeason).optional(),
 });
 export type GetClanRequest = z.infer<typeof zGetClanRequest>;
 
@@ -64,6 +66,12 @@ export const zClanLeaderboardRequest = z.object({
         .default(GameModeStatus.Deathmatch),
     page: z.number().int().min(1).default(1),
     limit: z.number().int().min(1).max(100).default(50),
+    season: z
+        .number()
+        .int()
+        .min(1)
+        .max(ClanConstants.CurrentSeason)
+        .default(ClanConstants.CurrentSeason),
 });
 export type ClanLeaderboardRequest = z.infer<typeof zClanLeaderboardRequest>;
 
@@ -142,6 +150,8 @@ export type ClanInfo = {
     createdAt: number;
     totalKills: number;
     totalWins: number;
+    season: number;
+    isCurrentSeason: boolean;
 };
 
 export type ClanDetail = ClanInfo & {

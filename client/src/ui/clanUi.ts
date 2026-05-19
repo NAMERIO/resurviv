@@ -155,6 +155,7 @@ export class ClanUi {
     gifImageObserver: IntersectionObserver | null = null;
     observedGifImages = new Set<HTMLImageElement>();
     gifStillFrameCache = new Map<string, string | null>();
+    viewingClanId: string | null = null;
 
     constructor(
         public account: Account,
@@ -171,6 +172,7 @@ export class ClanUi {
 
         this.initUi();
         this.loadAvailableIcons();
+        this.renderSeasonSelects();
         this.account.addEventListener("login", () => {
             this.loadMyClan();
         });
@@ -234,6 +236,10 @@ export class ClanUi {
         });
         $("#clan-tag-color-input").on("change", () => {
             const tagColor = ($("#clan-tag-color-input").val() as string) || "";
+            this.updateClan({ tagColor });
+        });
+        $("#clan-main-tag-color-input").on("change", () => {
+            const tagColor = ($("#clan-main-tag-color-input").val() as string) || "";
             this.updateClan({ tagColor });
         });
         $("#btn-clan-cancel-name").on("click", () => {
@@ -302,14 +308,22 @@ export class ClanUi {
                 this.loadClanList(1);
             }
         });
-        $(".clan-leaderboard-tab").on("click", (e) => {
-            const type = $(e.currentTarget).data("type") as "kills" | "wins";
-            $(".clan-leaderboard-tab").removeClass("active");
-            $(e.currentTarget).addClass("active");
-            this.loadLeaderboard(type);
+        $("#clan-leaderboard-type").on("change", () => {
+            this.loadLeaderboard(this.getSelectedLeaderboardType());
         });
         $("#clan-leaderboard-game-mode").on("change", () => {
             this.loadLeaderboard(this.getSelectedLeaderboardType());
+        });
+        $("#clan-leaderboard-season").on("change", () => {
+            this.loadLeaderboard(this.getSelectedLeaderboardType());
+        });
+        $("#clan-detail-season").on("change", () => {
+            if (this.viewingClanId) {
+                this.loadClanDetail(
+                    this.viewingClanId,
+                    this.getSelectedClanDetailSeason(),
+                );
+            }
         });
         $("#btn-clan-chat-send").on("click", () => {
             this.sendClanMessage();
@@ -453,6 +467,7 @@ export class ClanUi {
     resetDefaults() {
         this.selectedIcon = "emote_surviv";
         $("#clan-create-name-input").val("");
+        $("#clan-create-tag-color-input").val("#ffffff");
         $("#clan-create-icon-preview").css(
             "background-image",
             `url(${getClanIconUrl(this.selectedIcon)})`,
@@ -460,26 +475,46 @@ export class ClanUi {
         $("#clan-create-warning").hide();
     }
 
-    showClanPage(clanId: string) {
+    showClanPage(clanId: string, season: number = ClanConstants.CurrentSeason) {
+        this.viewingClanId = clanId;
         this.resetClanMessages();
         $("#clan-chat-section").hide();
-        this.loadClanDetail(clanId);
+        $("#clan-detail-season").val(String(season));
+        this.loadClanDetail(clanId, season);
         this.mainModal.hide();
         this.clanPageModal.show(true);
     }
 
     showLeaderboard() {
-        $(".clan-leaderboard-tab").removeClass("active").first().addClass("active");
+        this.renderSeasonSelects();
+        $("#clan-leaderboard-type").val("kills");
         $("#clan-leaderboard-game-mode").val(GameModeStatus.Deathmatch);
+        $("#clan-leaderboard-season").val(String(ClanConstants.CurrentSeason));
         this.loadLeaderboard("kills");
         this.leaderboardModal.show(true);
     }
 
+    renderSeasonSelects() {
+        const fillSelect = (select: JQuery<HTMLElement>) => {
+            select.empty();
+            for (let season = ClanConstants.CurrentSeason; season >= 1; season--) {
+                select.append(
+                    $("<option/>", {
+                        value: String(season),
+                        text:
+                            season === ClanConstants.CurrentSeason
+                                ? `Season ${season} (Current)`
+                                : `Season ${season}`,
+                    }),
+                );
+            }
+        };
+        fillSelect($("#clan-leaderboard-season"));
+        fillSelect($("#clan-detail-season"));
+    }
+
     getSelectedLeaderboardType(): "kills" | "wins" {
-        return (
-            ($(".clan-leaderboard-tab.active").data("type") as "kills" | "wins") ||
-            "kills"
-        );
+        return $("#clan-leaderboard-type").val() === "wins" ? "wins" : "kills";
     }
 
     getSelectedLeaderboardGameMode(): GameModeStatusType {
@@ -487,6 +522,20 @@ export class ClanUi {
         return value === GameModeStatus.BattleRoyale
             ? GameModeStatus.BattleRoyale
             : GameModeStatus.Deathmatch;
+    }
+
+    getSelectedLeaderboardSeason() {
+        const season = Number($("#clan-leaderboard-season").val());
+        return Number.isInteger(season) && season >= 1
+            ? season
+            : ClanConstants.CurrentSeason;
+    }
+
+    getSelectedClanDetailSeason() {
+        const season = Number($("#clan-detail-season").val());
+        return Number.isInteger(season) && season >= 1
+            ? season
+            : ClanConstants.CurrentSeason;
     }
 
     showError(message: string) {
@@ -526,6 +575,7 @@ export class ClanUi {
                 `url(${getClanIconUrl(this.currentClan.icon)})`,
             );
             $("#clan-my-name").text(this.currentClan.name);
+            $("#clan-my-name").css("color", this.currentClan.tagColor || "");
             $("#clan-my-members").text(
                 `${this.currentClan.memberCount} / ${this.currentClan.maxMembers} Members`,
             );
@@ -536,9 +586,13 @@ export class ClanUi {
             );
 
             if (isOwner) {
+                $("#clan-main-tag-color-input")
+                    .val(normalizeColorInputValue(this.currentClan.tagColor))
+                    .show();
                 $("#btn-clan-leave-main").hide();
                 $("#btn-clan-delete-main").show();
             } else {
+                $("#clan-main-tag-color-input").hide();
                 $("#btn-clan-leave-main").show();
                 $("#btn-clan-delete-main").hide();
             }
@@ -546,6 +600,7 @@ export class ClanUi {
             $("#clan-create-card").show();
             $("#clan-my-card").hide();
             $("#btn-clan-create-submit").show();
+            $("#clan-main-tag-color-input").hide();
             $("#btn-clan-my-clan").addClass("disabled").css("opacity", "0.5");
         }
         if (this.cooldownUntil && this.cooldownUntil > Date.now()) {
@@ -556,6 +611,7 @@ export class ClanUi {
 
     createClan() {
         const name = ($("#clan-create-name-input").val() as string).trim();
+        const tagColor = ($("#clan-create-tag-color-input").val() as string) || "";
 
         if (this.currentClan) {
             $("#clan-create-warning")
@@ -594,6 +650,7 @@ export class ClanUi {
             {
                 name,
                 icon: this.selectedIcon,
+                tagColor,
             },
             (err, res) => {
                 if (err) {
@@ -660,6 +717,15 @@ export class ClanUi {
             return;
         }
 
+        container.append(
+            $("<div/>", { class: "clan-list-header-row" }).append(
+                $("<div/>"),
+                $("<div/>", { text: "Clan" }),
+                $("<div/>", { text: "Stats" }),
+                $("<div/>"),
+            ),
+        );
+
         for (const clan of clans) {
             const isFull = clan.memberCount >= clan.maxMembers;
             const item = $("<div/>", {
@@ -681,6 +747,19 @@ export class ClanUi {
                         class: "clan-list-members",
                         text: `${clan.memberCount}/${clan.maxMembers} members`,
                     }),
+                ),
+            );
+
+            item.append(
+                $("<div/>", { class: "clan-list-stats" }).append(
+                    $("<div/>", { class: "clan-list-stat" }).append(
+                        $("<span/>", { text: "K" }),
+                        $("<strong/>", { text: clan.totalKills.toLocaleString() }),
+                    ),
+                    $("<div/>", { class: "clan-list-stat" }).append(
+                        $("<span/>", { text: "W" }),
+                        $("<strong/>", { text: clan.totalWins.toLocaleString() }),
+                    ),
                 ),
             );
 
@@ -775,10 +854,10 @@ export class ClanUi {
         });
     }
 
-    loadClanDetail(clanId: string) {
+    loadClanDetail(clanId: string, season: number = ClanConstants.CurrentSeason) {
         clanRequest<{ success: boolean; clan?: ClanDetail }>(
             "/api/clan/get",
-            { clanId },
+            { clanId, season },
             (err, res) => {
                 if (err || !res?.success || !res.clan) {
                     this.showError("Failed to load clan details.");
@@ -786,9 +865,10 @@ export class ClanUi {
                 }
 
                 this.viewingClan = res.clan;
+                $("#clan-detail-season").val(String(res.clan.season));
                 this.renderClanDetail(res.clan);
                 this.resetClanMessages();
-                if (this.isCurrentUserClanMember(res.clan)) {
+                if (this.canUseClanChat(res.clan)) {
                     $("#clan-chat-section").show();
                     this.loadClanMessages(false);
                     this.startClanMessagePolling();
@@ -807,9 +887,22 @@ export class ClanUi {
         );
     }
 
+    canUseClanChat(clan: ClanDetail) {
+        return (
+            this.isCurrentUserClanMember(clan) ||
+            (!!this.currentClan && this.currentClan.id === clan.id)
+        );
+    }
+
     getCurrentUserId() {
-        const clan = this.viewingClan || this.currentClan;
-        if (!clan || !this.account.profile?.slug) return null;
+        if (!this.account.profile?.slug) return null;
+        const clan =
+            this.viewingClan &&
+            this.currentClan &&
+            this.viewingClan.id === this.currentClan.id
+                ? this.currentClan
+                : this.viewingClan || this.currentClan;
+        if (!clan) return null;
         return (
             clan.members.find((member) => member.slug === this.account.profile.slug)
                 ?.odUserId || null
@@ -922,7 +1015,12 @@ export class ClanUi {
 
     isMessageMentioningCurrentUser(message: ClanMessage) {
         if (message.type !== "user" || !this.account.profile?.slug) return false;
-        const clan = this.viewingClan || this.currentClan;
+        const clan =
+            this.viewingClan &&
+            this.currentClan &&
+            this.viewingClan.id === this.currentClan.id
+                ? this.currentClan
+                : this.viewingClan || this.currentClan;
         const currentMember = clan?.members.find(
             (member) => member.slug === this.account.profile.slug,
         );
@@ -950,6 +1048,9 @@ export class ClanUi {
             "background-image",
             `url(${getClanIconUrl(clan.icon)})`,
         );
+        $("#clan-detail-season-label").text(
+            clan.isCurrentSeason ? "Current Season" : `Season ${clan.season} History`,
+        );
         $("#clan-detail-name").text(clan.name);
         $("#clan-detail-name").css("color", clan.tagColor || "");
         $("#clan-detail-members-count, #clan-members-count").text(
@@ -973,7 +1074,7 @@ export class ClanUi {
         const isMember =
             this.account.profile?.slug &&
             clan.members.some((m) => m.slug === this.account.profile.slug);
-        if (isOwner) {
+        if (isOwner && clan.isCurrentSeason) {
             $("#btn-clan-edit-icon").show();
             $("#btn-clan-edit-name").show();
             $("#clan-tag-color-input").show();
@@ -984,6 +1085,15 @@ export class ClanUi {
             $("#clan-tag-color-input").hide();
         }
         this.cancelNameEdit();
+
+        if (!clan.isCurrentSeason && clan.members.length === 0) {
+            membersContainer.append(
+                $("<div/>", {
+                    class: "clan-members-empty",
+                    text: `This clan has no history for Season ${clan.season}.`,
+                }),
+            );
+        }
 
         for (const member of clan.members) {
             const item = $("<div/>", { class: "clan-member-item" });
@@ -1012,7 +1122,7 @@ export class ClanUi {
                     }),
                 ),
             );
-            if (isOwner && !member.isOwner) {
+            if (clan.isCurrentSeason && isOwner && !member.isOwner) {
                 const controls = $("<div/>", { class: "clan-member-controls" });
 
                 controls.append(
@@ -1045,7 +1155,7 @@ export class ClanUi {
 
             membersContainer.append(item);
         }
-        if (isMember) {
+        if (clan.isCurrentSeason && isMember) {
             $("#clan-member-actions").show();
             if (isOwner) {
                 $("#btn-clan-leave").hide();
@@ -2175,11 +2285,15 @@ export class ClanUi {
     }
 
     loadLeaderboard(type: "kills" | "wins", page: number = 1) {
+        const gameMode = this.getSelectedLeaderboardGameMode();
+        const season = this.getSelectedLeaderboardSeason();
+
         clanRequest<ClanLeaderboardResponse>(
             "/api/clan/leaderboard",
             {
                 type,
-                gameMode: this.getSelectedLeaderboardGameMode(),
+                gameMode,
+                season,
                 page,
                 limit: 50,
             },
@@ -2189,7 +2303,13 @@ export class ClanUi {
                     return;
                 }
 
-                this.renderLeaderboard(res.entries, type, res.page, res.totalPages);
+                this.renderLeaderboard(
+                    res.entries,
+                    type,
+                    res.page,
+                    res.totalPages,
+                    season,
+                );
             },
         );
     }
@@ -2199,6 +2319,7 @@ export class ClanUi {
         type: "kills" | "wins",
         page: number,
         totalPages: number,
+        season: number,
     ) {
         const container = $("#clan-leaderboard-list");
         container.empty();
@@ -2212,6 +2333,15 @@ export class ClanUi {
             );
             return;
         }
+
+        container.append(
+            $("<div/>", { class: "clan-leaderboard-header-row" }).append(
+                $("<div/>", { text: "Rank" }),
+                $("<div/>"),
+                $("<div/>", { text: "Clan" }),
+                $("<div/>", { text: type === "kills" ? "Kills" : "Wins" }),
+            ),
+        );
 
         for (const entry of entries) {
             const rankClass = entry.rank <= 3 ? ` rank-${entry.rank}` : "";
@@ -2238,10 +2368,6 @@ export class ClanUi {
                         class: "clan-leaderboard-name",
                         text: entry.clan.name,
                     }),
-                    $("<div/>", {
-                        class: "clan-leaderboard-members",
-                        text: `${entry.clan.memberCount} members`,
-                    }),
                 ),
             );
 
@@ -2257,7 +2383,7 @@ export class ClanUi {
 
             item.on("click", () => {
                 this.leaderboardModal.hide();
-                this.showClanPage(entry.clan.id);
+                this.showClanPage(entry.clan.id, season);
             });
 
             container.append(item);
@@ -2294,6 +2420,7 @@ export class ClanUi {
     cancelNameEdit() {
         const canEditViewedClan =
             !!this.viewingClan &&
+            this.viewingClan.isCurrentSeason &&
             !!this.account.profile?.slug &&
             this.viewingClan.members.some(
                 (m) => m.slug === this.account.profile!.slug && m.isOwner,

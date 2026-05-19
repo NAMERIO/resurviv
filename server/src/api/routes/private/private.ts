@@ -8,6 +8,7 @@ import { PassDefs } from "../../../../../shared/defs/gameObjects/passDefs";
 import { QuestDefs } from "../../../../../shared/defs/gameObjects/questDefs";
 import { MapDefs } from "../../../../../shared/defs/mapDefs";
 import { TeamMode } from "../../../../../shared/gameConfig";
+import { ClanConstants } from "../../../../../shared/types/clan";
 import {
     zCoinFlipCheckParams,
     zCoinFlipResolveParams,
@@ -45,6 +46,7 @@ import { db } from "../../db";
 import {
     clanMemberStatsTable,
     clanMembersTable,
+    clanSeasonMembersTable,
     itemsTable,
     type MatchDataTable,
     matchDataTable,
@@ -117,43 +119,50 @@ async function updateClanStats(matchData: MatchDataTable[]) {
                     : new Date(data.createdAt!);
             if (matchTime < membership.joinedAt) continue;
 
+            await db
+                .insert(clanSeasonMembersTable)
+                .values({
+                    clanId: membership.clanId,
+                    userId: data.userId,
+                    season: ClanConstants.CurrentSeason,
+                })
+                .onConflictDoUpdate({
+                    target: [
+                        clanSeasonMembersTable.clanId,
+                        clanSeasonMembersTable.userId,
+                        clanSeasonMembersTable.season,
+                    ],
+                    set: {
+                        leftAt: null,
+                    },
+                });
+
             // Update the clan member's stats
             const kills = data.kills || 0;
             const wins = data.rank === 1 ? 1 : 0;
 
-            // Check if stats record exists
-            const existingStats = await db.query.clanMemberStatsTable.findFirst({
-                where: and(
-                    eq(clanMemberStatsTable.clanId, membership.clanId),
-                    eq(clanMemberStatsTable.userId, data.userId),
-                    eq(clanMemberStatsTable.gameMode, data.gameMode),
-                ),
-            });
-
-            if (existingStats) {
-                await db
-                    .update(clanMemberStatsTable)
-                    .set({
-                        kills: sql`${clanMemberStatsTable.kills} + ${kills}`,
-                        wins: sql`${clanMemberStatsTable.wins} + ${wins}`,
-                    })
-                    .where(
-                        and(
-                            eq(clanMemberStatsTable.clanId, membership.clanId),
-                            eq(clanMemberStatsTable.userId, data.userId),
-                            eq(clanMemberStatsTable.gameMode, data.gameMode),
-                        ),
-                    );
-            } else {
-                // Create new stats record
-                await db.insert(clanMemberStatsTable).values({
+            await db
+                .insert(clanMemberStatsTable)
+                .values({
                     clanId: membership.clanId,
                     userId: data.userId,
                     gameMode: data.gameMode,
+                    season: ClanConstants.CurrentSeason,
                     kills,
                     wins,
+                })
+                .onConflictDoUpdate({
+                    target: [
+                        clanMemberStatsTable.clanId,
+                        clanMemberStatsTable.userId,
+                        clanMemberStatsTable.gameMode,
+                        clanMemberStatsTable.season,
+                    ],
+                    set: {
+                        kills: sql`${clanMemberStatsTable.kills} + ${kills}`,
+                        wins: sql`${clanMemberStatsTable.wins} + ${wins}`,
+                    },
                 });
-            }
         }
     } catch (err) {
         server.logger.error("Error updating clan stats:", err);

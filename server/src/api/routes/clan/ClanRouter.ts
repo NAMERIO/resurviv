@@ -56,6 +56,7 @@ import {
     clanMemberStatsTable,
     clanMembersTable,
     clanMessagesTable,
+    clanSeasonMembersTable,
     clansTable,
     usersTable,
 } from "../../db/schema";
@@ -70,6 +71,9 @@ ClanRouter.use(authMiddleware);
 const CLAN_SYSTEM_AUTHOR_NAME = "Big Brother";
 const CLAN_SYSTEM_AUTHOR_SLUG = "big-brother";
 const CLAN_SYSTEM_AUTHOR_ICON = "emote_police";
+
+const getRequestedSeason = (season?: number): number =>
+    season ?? ClanConstants.CurrentSeason;
 
 function sanitizeClanSlug(name: string): string {
     let slug = slugify(
@@ -717,17 +721,64 @@ async function getClanMessageById(messageId: string) {
     return rows[0] ? toClanMessage(rows[0]) : null;
 }
 
-async function getClanInfo(clanId: string): Promise<ClanInfo | null> {
+async function trackClanSeasonMember(clanId: string, userId: string) {
+    await db
+        .insert(clanSeasonMembersTable)
+        .values({
+            clanId,
+            userId,
+            season: ClanConstants.CurrentSeason,
+        })
+        .onConflictDoUpdate({
+            target: [
+                clanSeasonMembersTable.clanId,
+                clanSeasonMembersTable.userId,
+                clanSeasonMembersTable.season,
+            ],
+            set: {
+                leftAt: null,
+            },
+        });
+}
+
+async function closeClanSeasonMember(clanId: string, userId: string) {
+    await db
+        .update(clanSeasonMembersTable)
+        .set({ leftAt: new Date() })
+        .where(
+            and(
+                eq(clanSeasonMembersTable.clanId, clanId),
+                eq(clanSeasonMembersTable.userId, userId),
+                eq(clanSeasonMembersTable.season, ClanConstants.CurrentSeason),
+            ),
+        );
+}
+
+async function getClanInfo(
+    clanId: string,
+    season: number = ClanConstants.CurrentSeason,
+): Promise<ClanInfo | null> {
     const clan = await db.query.clansTable.findFirst({
         where: eq(clansTable.id, clanId),
     });
 
     if (!clan) return null;
 
-    const memberCountResult = await db
-        .select({ count: count() })
-        .from(clanMembersTable)
-        .where(eq(clanMembersTable.clanId, clanId));
+    const isCurrentSeason = season === ClanConstants.CurrentSeason;
+    const memberCountResult = isCurrentSeason
+        ? await db
+              .select({ count: count() })
+              .from(clanMembersTable)
+              .where(eq(clanMembersTable.clanId, clanId))
+        : await db
+              .select({ count: count() })
+              .from(clanSeasonMembersTable)
+              .where(
+                  and(
+                      eq(clanSeasonMembersTable.clanId, clanId),
+                      eq(clanSeasonMembersTable.season, season),
+                  ),
+              );
 
     const statsResult = await db
         .select({
@@ -735,7 +786,12 @@ async function getClanInfo(clanId: string): Promise<ClanInfo | null> {
             totalWins: sql<number>`COALESCE(SUM(${clanMemberStatsTable.wins}), 0)`,
         })
         .from(clanMemberStatsTable)
-        .where(eq(clanMemberStatsTable.clanId, clanId));
+        .where(
+            and(
+                eq(clanMemberStatsTable.clanId, clanId),
+                eq(clanMemberStatsTable.season, season),
+            ),
+        );
 
     return {
         id: clan.id,
@@ -748,34 +804,70 @@ async function getClanInfo(clanId: string): Promise<ClanInfo | null> {
         createdAt: clan.createdAt.getTime(),
         totalKills: statsResult[0]?.totalKills || 0,
         totalWins: statsResult[0]?.totalWins || 0,
+        season,
+        isCurrentSeason,
     };
 }
 
-async function getClanDetail(clanId: string): Promise<ClanDetail | null> {
-    const clanInfo = await getClanInfo(clanId);
+async function getClanDetail(
+    clanId: string,
+    season: number = ClanConstants.CurrentSeason,
+): Promise<ClanDetail | null> {
+    const clanInfo = await getClanInfo(clanId, season);
     if (!clanInfo) return null;
 
-    const membersData = await db
-        .select({
-            odUserId: usersTable.id,
-            username: usersTable.username,
-            slug: usersTable.slug,
-            playerIcon: sql<string>`${usersTable.loadout}->>'player_icon'`,
-            joinedAt: clanMembersTable.joinedAt,
-            kills: sql<number>`COALESCE((
+    const membersData = clanInfo.isCurrentSeason
+        ? await db
+              .select({
+                  odUserId: usersTable.id,
+                  username: usersTable.username,
+                  slug: usersTable.slug,
+                  playerIcon: sql<string>`${usersTable.loadout}->>'player_icon'`,
+                  joinedAt: clanMembersTable.joinedAt,
+                  kills: sql<number>`COALESCE((
                 SELECT SUM(kills) FROM clan_member_stats
                 WHERE clan_member_stats.clan_id = ${clanMembersTable.clanId}
                 AND clan_member_stats.user_id = ${clanMembersTable.userId}
+                AND clan_member_stats.season = ${season}
             ), 0)`,
-            wins: sql<number>`COALESCE((
+                  wins: sql<number>`COALESCE((
                 SELECT SUM(wins) FROM clan_member_stats
                 WHERE clan_member_stats.clan_id = ${clanMembersTable.clanId}
                 AND clan_member_stats.user_id = ${clanMembersTable.userId}
+                AND clan_member_stats.season = ${season}
             ), 0)`,
-        })
-        .from(clanMembersTable)
-        .innerJoin(usersTable, eq(usersTable.id, clanMembersTable.userId))
-        .where(eq(clanMembersTable.clanId, clanId));
+              })
+              .from(clanMembersTable)
+              .innerJoin(usersTable, eq(usersTable.id, clanMembersTable.userId))
+              .where(eq(clanMembersTable.clanId, clanId))
+        : await db
+              .select({
+                  odUserId: usersTable.id,
+                  username: usersTable.username,
+                  slug: usersTable.slug,
+                  playerIcon: sql<string>`${usersTable.loadout}->>'player_icon'`,
+                  joinedAt: clanSeasonMembersTable.joinedAt,
+                  kills: sql<number>`COALESCE((
+                SELECT SUM(kills) FROM clan_member_stats
+                WHERE clan_member_stats.clan_id = ${clanSeasonMembersTable.clanId}
+                AND clan_member_stats.user_id = ${clanSeasonMembersTable.userId}
+                AND clan_member_stats.season = ${season}
+            ), 0)`,
+                  wins: sql<number>`COALESCE((
+                SELECT SUM(wins) FROM clan_member_stats
+                WHERE clan_member_stats.clan_id = ${clanSeasonMembersTable.clanId}
+                AND clan_member_stats.user_id = ${clanSeasonMembersTable.userId}
+                AND clan_member_stats.season = ${season}
+            ), 0)`,
+              })
+              .from(clanSeasonMembersTable)
+              .innerJoin(usersTable, eq(usersTable.id, clanSeasonMembersTable.userId))
+              .where(
+                  and(
+                      eq(clanSeasonMembersTable.clanId, clanId),
+                      eq(clanSeasonMembersTable.season, season),
+                  ),
+              );
 
     const members: ClanMember[] = membersData.map((m) => ({
         odUserId: m.odUserId,
@@ -789,6 +881,12 @@ async function getClanDetail(clanId: string): Promise<ClanDetail | null> {
             wins: m.wins || 0,
         },
     }));
+
+    if (clanInfo.isCurrentSeason) {
+        for (const member of members) {
+            await trackClanSeasonMember(clanId, member.odUserId);
+        }
+    }
 
     return {
         ...clanInfo,
@@ -875,9 +973,12 @@ ClanRouter.post("/create", validateParams(zCreateClanRequest), async (c) => {
         userId: user.id,
     });
 
+    await trackClanSeasonMember(newClan.id, user.id);
+
     await db.insert(clanMemberStatsTable).values({
         clanId: newClan.id,
         userId: user.id,
+        season: ClanConstants.CurrentSeason,
         kills: 0,
         wins: 0,
     });
@@ -943,12 +1044,18 @@ ClanRouter.post("/join", validateParams(zJoinClanRequest), async (c) => {
         userId: user.id,
     });
 
-    await db.insert(clanMemberStatsTable).values({
-        clanId,
-        userId: user.id,
-        kills: 0,
-        wins: 0,
-    });
+    await trackClanSeasonMember(clanId, user.id);
+
+    await db
+        .insert(clanMemberStatsTable)
+        .values({
+            clanId,
+            userId: user.id,
+            season: ClanConstants.CurrentSeason,
+            kills: 0,
+            wins: 0,
+        })
+        .onConflictDoNothing();
 
     await createClanSystemMessage(
         clanId,
@@ -993,14 +1100,7 @@ ClanRouter.post("/leave", async (c) => {
             ),
         );
 
-    await db
-        .delete(clanMemberStatsTable)
-        .where(
-            and(
-                eq(clanMemberStatsTable.clanId, membership.clanId),
-                eq(clanMemberStatsTable.userId, user.id),
-            ),
-        );
+    await closeClanSeasonMember(membership.clanId, user.id);
 
     await db.insert(clanLeaveHistoryTable).values({
         userId: user.id,
@@ -1070,15 +1170,7 @@ ClanRouter.post("/kick", validateParams(zKickMemberRequest), async (c) => {
             ),
         );
 
-    // Remove the kicked player's stats for this clan so they don't get duplicated on rejoin
-    await db
-        .delete(clanMemberStatsTable)
-        .where(
-            and(
-                eq(clanMemberStatsTable.clanId, clan.id),
-                eq(clanMemberStatsTable.userId, memberId),
-            ),
-        );
+    await closeClanSeasonMember(clan.id, memberId);
 
     await db.insert(clanLeaveHistoryTable).values({
         userId: memberId,
@@ -1251,9 +1343,9 @@ ClanRouter.post("/delete", async (c) => {
 });
 
 ClanRouter.post("/get", validateParams(zGetClanRequest), async (c) => {
-    const { clanId } = c.req.valid("json");
+    const { clanId, season } = c.req.valid("json");
 
-    const clan = await getClanDetail(clanId);
+    const clan = await getClanDetail(clanId, getRequestedSeason(season));
 
     if (!clan) {
         return c.json<GetClanResponse>({ success: false, error: "clan_not_found" }, 404);
@@ -1632,10 +1724,12 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
             totalKills: sql<number>`COALESCE((
                 SELECT SUM(kills) FROM clan_member_stats 
                 WHERE clan_member_stats.clan_id = clans.id
+                AND clan_member_stats.season = ${ClanConstants.CurrentSeason}
             ), 0)`,
             totalWins: sql<number>`COALESCE((
                 SELECT SUM(wins) FROM clan_member_stats 
                 WHERE clan_member_stats.clan_id = clans.id
+                AND clan_member_stats.season = ${ClanConstants.CurrentSeason}
             ), 0)`,
         })
         .from(clansTable)
@@ -1658,6 +1752,8 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
         createdAt: c.createdAt.getTime(),
         totalKills: c.totalKills,
         totalWins: c.totalWins,
+        season: ClanConstants.CurrentSeason,
+        isCurrentSeason: true,
     }));
 
     return c.json<ListClansResponse>({
@@ -1669,9 +1765,20 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
 });
 
 ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (c) => {
-    const { type, gameMode, page, limit } = c.req.valid("json");
+    const { type, gameMode, page, limit, season } = c.req.valid("json");
 
     const offset = (page - 1) * limit;
+    const memberCountSql =
+        season === ClanConstants.CurrentSeason
+            ? sql<number>`(
+                SELECT COUNT(*) FROM clan_members
+                WHERE clan_members.clan_id = clans.id
+            )`
+            : sql<number>`(
+                SELECT COUNT(*) FROM clan_season_members
+                WHERE clan_season_members.clan_id = clans.id
+                AND clan_season_members.season = ${season}
+            )`;
 
     const totalCountResult = await db.select({ count: count() }).from(clansTable);
     const totalCount = totalCountResult[0]?.count || 0;
@@ -1684,19 +1791,18 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
             tagColor: clansTable.tagColor,
             ownerId: clansTable.ownerId,
             createdAt: clansTable.createdAt,
-            memberCount: sql<number>`(
-                SELECT COUNT(*) FROM clan_members 
-                WHERE clan_members.clan_id = clans.id
-            )`,
+            memberCount: memberCountSql,
             totalKills: sql<number>`COALESCE((
                 SELECT SUM(kills) FROM clan_member_stats 
                 WHERE clan_member_stats.clan_id = clans.id
                 AND clan_member_stats.game_mode = ${gameMode}
+                AND clan_member_stats.season = ${season}
             ), 0)`,
             totalWins: sql<number>`COALESCE((
                 SELECT SUM(wins) FROM clan_member_stats 
                 WHERE clan_member_stats.clan_id = clans.id
                 AND clan_member_stats.game_mode = ${gameMode}
+                AND clan_member_stats.season = ${season}
             ), 0)`,
         })
         .from(clansTable)
@@ -1707,11 +1813,13 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
                         SELECT SUM(kills) FROM clan_member_stats
                         WHERE clan_member_stats.clan_id = clans.id
                         AND clan_member_stats.game_mode = ${gameMode}
+                        AND clan_member_stats.season = ${season}
                     ), 0)`
                     : sql<number>`COALESCE((
                         SELECT SUM(wins) FROM clan_member_stats
                         WHERE clan_member_stats.clan_id = clans.id
                         AND clan_member_stats.game_mode = ${gameMode}
+                        AND clan_member_stats.season = ${season}
                     ), 0)`,
             ),
         )
@@ -1731,6 +1839,8 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
             createdAt: c.createdAt.getTime(),
             totalKills: c.totalKills,
             totalWins: c.totalWins,
+            season,
+            isCurrentSeason: season === ClanConstants.CurrentSeason,
         },
     }));
 

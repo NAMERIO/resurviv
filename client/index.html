@@ -2305,7 +2305,7 @@
           <div class="modal-clans-header">
             <div class="modal-clans-tab active" data-tab="hub">
               <div class="tab-icon" style="background-image: url(img/gui/player-gui.svg);"></div>
-              Clans Hub
+              Clan HQ
             </div>
             <div class="modal-clans-tab" id="btn-clan-my-clan">
               <div class="tab-icon" style="background-image: url(img/gui/crown.svg);"></div>
@@ -2317,21 +2317,24 @@
             </div>
             <div class="modal-clans-close close"></div>
           </div>
-          <div class="modal-clans-body">
+          <div class="modal-clans-body clan-hub-body">
             <div class="clan-column">
               <div id="clan-create-card">
-                <div class="clan-column-header">Create New Clan</div>
+                <div class="clan-column-header">Create Clan</div>
                 <div class="clan-create-section">
                   <div class="clan-logo-section">
-                    <div>
-                      <div id="clan-create-icon-preview" class="clan-logo-preview" style="background-image: url(img/gui/player-gui.svg);"></div>
+                    <div id="clan-create-icon-preview" class="clan-logo-preview" style="background-image: url(img/gui/player-gui.svg);"></div>
+                    <div class="clan-properties-section">
+                      <input type="text" id="clan-create-name-input" class="clan-name-input" placeholder="Clan Name" maxlength="16" />
+                      <div class="clan-create-color-row">
+                        <span>Tag Color</span>
+                        <input type="color" id="clan-create-tag-color-input" class="clan-tag-color-inline" value="#ffffff" title="Tag Color" />
+                      </div>
+                      <div id="btn-clan-create-submit" class="clan-btn clan-btn-green">Create Clan</div>
                       <div class="clan-logo-buttons">
                         <div id="btn-clan-icon-reset" class="clan-btn-reset"></div>
                         <div id="btn-clan-icon-edit" class="clan-btn-edit"></div>
                       </div>
-                    </div>
-                    <div class="clan-properties-section">
-                      <input type="text" id="clan-create-name-input" class="clan-name-input" placeholder="Clan Name" maxlength="16" />
                       <div id="clan-create-warning" class="clan-warning" style="display: none;"></div>
                     </div>
                   </div>
@@ -2343,7 +2346,10 @@
                   <div class="clan-my-header">
                     <div id="clan-my-icon" class="clan-logo-preview" style="background-image: url(img/gui/player-gui.svg);"></div>
                     <div class="clan-my-details">
-                      <div id="clan-my-name" class="clan-my-name">Clan Name</div>
+                      <div class="clan-my-name-row">
+                        <div id="clan-my-name" class="clan-my-name">Clan Name</div>
+                        <input type="color" id="clan-main-tag-color-input" class="clan-tag-color-inline clan-main-tag-color" value="#ffffff" style="display: none;" title="Tag Color" />
+                      </div>
                       <div id="clan-my-members" class="clan-my-meta">0 / 20 Members</div>
                     </div>
                   </div>
@@ -2376,9 +2382,6 @@
               </div>
             </div>
           </div>
-          <div class="modal-clans-footer">
-            <div id="btn-clan-create-submit" class="clan-btn clan-btn-green">Create Clan</div>
-          </div>
         </div>
       </div>
       <div id="modal-clan-icons" class="modal">
@@ -2410,6 +2413,10 @@
           </div>
           <div class="modal-clans-body">
             <div id="clan-page-detail" class="clan-column" style="flex: 1;">
+              <div class="clan-season-bar">
+                <div id="clan-detail-season-label" class="clan-season-label">Current Season</div>
+                <select id="clan-detail-season" class="clan-season-select"></select>
+              </div>
               <div class="clan-detail-header">
                 <div class="clan-detail-icon-wrapper">
                   <div id="clan-detail-icon" class="clan-detail-icon" style="background-image: url(img/gui/player-gui.svg);"></div>
@@ -2518,14 +2525,23 @@
             </div>
             <div class="modal-clans-close close"></div>
           </div>
-          <div class="modal-clans-body" style="flex-direction: column;">
-            <select id="clan-leaderboard-game-mode" class="clan-leaderboard-game-mode">
-              <option value="deathmatch">Deathmatch</option>
-              <option value="battleroyale">Battle Royale</option>
-            </select>
-            <div class="clan-leaderboard-tabs">
-              <div class="clan-leaderboard-tab active" data-type="kills">Most Kills</div>
-              <div class="clan-leaderboard-tab" data-type="wins">Most Wins</div>
+          <div class="modal-clans-body clan-leaderboard-body">
+            <div class="clan-leaderboard-toolbar">
+              <div class="clan-leaderboard-title-block">
+                <div class="clan-leaderboard-title">Clan Leaderboard</div>
+                <div class="clan-leaderboard-subtitle">Current and past season standings</div>
+              </div>
+              <div class="clan-leaderboard-controls">
+                <select id="clan-leaderboard-type" class="clan-leaderboard-select">
+                  <option value="kills">Most Kills</option>
+                  <option value="wins">Most Wins</option>
+                </select>
+                <select id="clan-leaderboard-season" class="clan-leaderboard-select"></select>
+                <select id="clan-leaderboard-game-mode" class="clan-leaderboard-select">
+                  <option value="deathmatch">Deathmatch</option>
+                  <option value="battleroyale">Battle Royale</option>
+                </select>
+              </div>
             </div>
             <div id="clan-leaderboard-list" class="clan-leaderboard-list"></div>
           </div>
