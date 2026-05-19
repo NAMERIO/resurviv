@@ -1,9 +1,11 @@
 import "@taufik-nurrohman/color-picker";
 import $ from "jquery";
+import { loadoutGunSections } from "../../../shared/deathmatch/loadoutItems";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { type BulletDef, BulletDefs } from "../../../shared/defs/gameObjects/bulletDefs";
 import { EmoteCategory, type EmoteDef } from "../../../shared/defs/gameObjects/emoteDefs";
 import { ExplosionDefs } from "../../../shared/defs/gameObjects/explosionsDefs";
+import type { AmmoDef } from "../../../shared/defs/gameObjects/gearDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
 import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
 import { OutfitDefs } from "../../../shared/defs/gameObjects/outfitDefs";
@@ -105,6 +107,37 @@ const sortTypes: Record<string, any> = {
     rarity: itemSort(sortRarity),
     subcat: itemSort(sortSubcat),
 };
+
+const loadoutGunSectionByType = new Map<string, string>(
+    loadoutGunSections.flatMap((section) =>
+        section.guns.map((gunType) => [gunType, section.name] as const),
+    ),
+);
+
+function darkenColor(color: number, amount: number) {
+    const scale = Math.max(0, Math.min(1, 1 - amount));
+    const r = Math.round(((color >> 16) & 255) * scale);
+    const g = Math.round(((color >> 8) & 255) * scale);
+    const b = Math.round((color & 255) * scale);
+    return (r << 16) | (g << 8) | b;
+}
+
+function getLoadoutTileVisuals(itemType: string, rarity: number) {
+    const def = GameObjectDefs[itemType];
+    const rarityVisuals = helpers.getRarityVisuals(rarity);
+    if (def?.type == "gun") {
+        const gunDef = def as GunDef;
+        const ammoDef = GameObjectDefs[gunDef.ammo] as AmmoDef | undefined;
+        if (ammoDef?.type == "ammo") {
+            const ammoColor = ammoDef.lootImg.tintDark ?? ammoDef.lootImg.tint;
+            return {
+                backgroundColor: helpers.colorToHexString(darkenColor(ammoColor, 0.45)),
+                border: rarityVisuals.border,
+            };
+        }
+    }
+    return rarityVisuals;
+}
 
 export interface Item {
     id?: string;
@@ -935,8 +968,13 @@ export class LoadoutMenu {
     }
 
     sortItems(sort: string) {
-        this.selectedCatItems.sort(sortTypes[sort]);
         const category = this.categories[this.selectedCatIdx];
+        if (["primary", "secondary"].includes(category.loadoutType)) {
+            this.selectCat(this.selectedCatIdx);
+            return;
+        }
+
+        this.selectedCatItems.sort(sortTypes[sort]);
 
         const listChildren = $("<div/>");
         for (let i = 0; i < this.selectedCatItems.length; i++) {
@@ -1565,13 +1603,37 @@ export class LoadoutMenu {
         this.selectedCatItems = [];
         let loadoutItemDiv: JQuery<HTMLElement> | "" = "";
         const listItems = $("<div/>");
-        for (let i = 0; i < loadoutItems.length; i++) {
-            const item = loadoutItems[i];
+        let currentWeaponSection = "";
+        const displayLoadoutItems = isWeaponCat
+            ? loadoutGunSections.flatMap((section) =>
+                  loadoutItems.filter(
+                      (item) =>
+                          (loadoutGunSectionByType.get(item.type) || "Other") ==
+                          section.name,
+                  ),
+              )
+            : loadoutItems;
+        for (let i = 0; i < displayLoadoutItems.length; i++) {
+            const item = displayLoadoutItems[i];
+            const weaponSection = isWeaponCat
+                ? loadoutGunSectionByType.get(item.type) || "Other"
+                : "";
+            if (weaponSection && weaponSection != currentWeaponSection) {
+                currentWeaponSection = weaponSection;
+                listItems.append(
+                    $("<div/>", {
+                        class: "customize-list-section-header",
+                        text: weaponSection,
+                    }),
+                );
+            }
 
             const objDef = GameObjectDefs[item.type] as MeleeDef;
             const itemRarity = objDef.rarity || Rarity.Stock;
+            const tileVisuals = getLoadoutTileVisuals(item.type, itemRarity);
             const svg = helpers.getSvgFromGameType(item.type);
             const transform = helpers.getCssTransformFromGameType(item.type);
+            const itemIdx = this.selectedCatItems.length;
 
             const itemInfo: ItemInfo = {
                 itemKey: getItemIdentity(item),
@@ -1594,15 +1656,14 @@ export class LoadoutMenu {
             // Create div for emote customization list
             const outerDiv = $("<div/>", {
                 class: "customize-list-item customize-list-item-unlocked",
-                "data-idx": i,
+                "data-idx": itemIdx,
             });
 
             const innerDiv = $("<div/>", {
                 class: "customize-item-image",
                 css: {
-                    "background-color":
-                        helpers.getRarityVisuals(itemRarity).backgroundColor,
-                    border: `2px solid ${helpers.getRarityVisuals(itemRarity).border}`,
+                    "background-color": tileVisuals.backgroundColor,
+                    border: `2px solid ${tileVisuals.border}`,
                     "border-radius": "0",
                     "box-shadow": "inset 0 0 0 1px rgba(0,0,0,0.35)",
                 },
