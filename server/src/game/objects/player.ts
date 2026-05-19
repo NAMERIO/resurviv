@@ -958,6 +958,18 @@ export class Player extends BaseGameObject {
         this.setDirty();
     }
 
+    setPropDisguise(type?: string, ori = 0, scale?: number) {
+        this.obstacleOutfit?.destroy();
+        this.obstacleOutfit = undefined;
+
+        if (!type) return;
+
+        const def = MapObjectDefs[type];
+        if (def?.type !== "obstacle") return;
+
+        this.obstacleOutfit = this.game.map.genOutfitObstacle(type, this, ori, scale);
+    }
+
     /** "backpack00" is no backpack, "backpack03" is the max level backpack */
     backpack: string;
     /** "" is no helmet, "helmet03" is the max level helmet */

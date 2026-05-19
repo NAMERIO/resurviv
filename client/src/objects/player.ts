@@ -346,6 +346,7 @@ export class Player implements AbstractObject {
     renderZOrd = 18;
     renderZIdx = 0;
     localInvisiblePreview = false;
+    obstacleSkinActive = false;
 
     m_action!: {
         type: Action;
@@ -1679,6 +1680,7 @@ export class Player implements AbstractObject {
         this.container.position.set(screenPos.x, screenPos.y);
         this.container.scale.set(screenScale, screenScale);
         this.container.visible = !this.m_netData.m_dead;
+        this.bodyContainer.visible = !this.obstacleSkinActive;
         this.container.alpha = this.localInvisiblePreview ? 0.45 : 1;
         this.auraContainer.position.set(screenPos.x, screenPos.y);
         this.auraContainer.scale.set(screenScale, screenScale);
@@ -3064,11 +3066,21 @@ export class PlayerBarn {
     ) {
         // Update players
         const players = this.playerPool.m_getPool();
+        const obstacleSkinPlayerIds = new Set<number>();
+        const obstacles = map.m_obstaclePool.m_getPool();
+        for (let i = 0; i < obstacles.length; i++) {
+            const obstacle = obstacles[i];
+            if (obstacle.active && !obstacle.dead && obstacle.isSkin) {
+                obstacleSkinPlayerIds.add(obstacle.skinPlayerId);
+            }
+        }
+
         for (let i = 0; i < players.length; i++) {
             const p = players[i];
             if (p.active) {
                 p.localInvisiblePreview =
                     Boolean(localInvisible) && !isSpectating && p.__id === activeId;
+                p.obstacleSkinActive = obstacleSkinPlayerIds.has(p.__id);
                 p.m_update(
                     dt,
                     this,
