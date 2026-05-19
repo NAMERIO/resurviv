@@ -67,6 +67,7 @@ export class WeaponManager {
 
     cookingThrowable = false;
     autoThrowFast = false;
+    autoShootFast = false;
     cookTicker = 0;
 
     get activeWeapon(): string {
@@ -323,12 +324,17 @@ export class WeaponManager {
         }
 
         // if (this.weapons[this.curWeapIdx].cooldown <= 0 && this.scheduledReload) {
-        if (this.scheduledReload) {
+        if (this.scheduledReload && !player.debug.shootFast) {
             this.scheduledReload = false;
             this.tryReload();
+        } else if (player.debug.shootFast) {
+            this.scheduledReload = false;
         }
 
         const itemDef = GameObjectDefs[this.activeWeapon];
+        if (!player.debug.shootFast || itemDef.type !== "gun") {
+            this.autoShootFast = false;
+        }
         if (!player.debug.throwFast || itemDef.type !== "throwable") {
             this.autoThrowFast = false;
         }
@@ -385,6 +391,26 @@ export class WeaponManager {
         const oldGunLoaded =
             itemDef.fireMode === "blaster" &&
             this.loadingBlasterCharge >= (itemDef.loadTime ?? 1.5);
+
+        if (player.debug.shootFast) {
+            this.loadingBlasterCharge = 0;
+            this.wasHolding = false;
+            this.bursts.length = 0;
+
+            if (player.shootStart) {
+                this.autoShootFast = true;
+            }
+
+            if (!player.shootHold) {
+                this.autoShootFast = false;
+            }
+
+            if ((player.shootStart || this.autoShootFast) && weapon.cooldown <= 0) {
+                this.fireWeapon(this.offHand);
+                this.offHand = !this.offHand;
+            }
+            return;
+        }
 
         switch (itemDef.fireMode) {
             case "auto":
@@ -790,16 +816,22 @@ export class WeaponManager {
         const itemDef = GameObjectDefs[this.activeWeapon] as GunDef;
 
         const weapon = this.weapons[this.curWeapIdx];
-        this.scheduledReload = weapon.ammo <= 1;
+        const shootFast = this.player.debug.shootFast;
+        this.scheduledReload = !shootFast && weapon.ammo <= 1;
 
-        if (weapon.ammo <= 0) return;
+        if (weapon.ammo <= 0) {
+            if (!shootFast) return;
+
+            weapon.ammo = this.getAmmoStats(itemDef).maxClip;
+            this.player.weapsDirty = true;
+        }
 
         const firstShotAccuracy = weapon.recoilTime <= 0;
 
-        weapon.cooldown = itemDef.fireDelay;
+        weapon.cooldown = shootFast ? 0 : itemDef.fireDelay;
         weapon.recoilTime = itemDef.recoilTime;
 
-        if (this.player.hasPerk("streak_rapid_fire_effect")) {
+        if (!shootFast && this.player.hasPerk("streak_rapid_fire_effect")) {
             weapon.cooldown *=
                 DamageStreakProperties.streak_rapid_fire_effect.fireDelayMult;
         }
@@ -819,8 +851,10 @@ export class WeaponManager {
 
         this.player.cancelAction();
 
-        weapon.ammo--;
-        this.player.weapsDirty = true;
+        if (!shootFast) {
+            weapon.ammo--;
+            this.player.weapsDirty = true;
+        }
 
         const collisionLayer = util.toGroundLayer(this.player.layer);
         const bulletLayer = this.player.aimLayer;
