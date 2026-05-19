@@ -11353,6 +11353,10 @@ input [type="image"]:focus {
 
 #modal-clan-main .modal-content {
   width: 980px;
+  max-height: 95vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 #modal-clan-leaderboard .modal-content {
@@ -13247,6 +13251,12 @@ input [type="image"]:focus {
   border-top: 0;
 }
 
+#modal-clan-main .modal-clans-body {
+  height: min(620px, calc(95vh - 90px));
+  min-height: 0;
+  overflow: hidden;
+}
+
 #modal-clan-main .modal-clans-close,
 #modal-clan-leaderboard .modal-clans-close {
   opacity: 0.9;
@@ -13255,6 +13265,7 @@ input [type="image"]:focus {
 
 .clan-hub-body {
   grid-template-columns: 350px minmax(0, 1fr);
+  min-height: 0;
 }
 
 .clan-column-header,
