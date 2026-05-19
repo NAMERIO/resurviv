@@ -26,6 +26,7 @@ export const debugToolsConfig = {
     infiniteThrowables: false,
     throwFast: false,
     shootFast: false,
+    punchFast: false,
     moveObjs: false,
 };
 

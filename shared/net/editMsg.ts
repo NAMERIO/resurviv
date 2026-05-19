@@ -23,6 +23,7 @@ export class EditMsg implements AbstractMsg {
     infiniteThrowables = false;
     throwFast = false;
     shootFast = false;
+    punchFast = false;
     moveObjs = false;
 
     serialize(s: BitStream) {
@@ -55,6 +56,7 @@ export class EditMsg implements AbstractMsg {
         s.writeBoolean(this.infiniteThrowables);
         s.writeBoolean(this.throwFast);
         s.writeBoolean(this.shootFast);
+        s.writeBoolean(this.punchFast);
         s.writeBoolean(this.moveObjs);
     }
 
@@ -88,6 +90,7 @@ export class EditMsg implements AbstractMsg {
         this.infiniteThrowables = s.readBoolean();
         this.throwFast = s.readBoolean();
         this.shootFast = s.readBoolean();
+        this.punchFast = s.readBoolean();
         this.moveObjs = s.readBoolean();
     }
 }

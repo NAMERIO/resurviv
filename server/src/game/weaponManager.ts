@@ -68,6 +68,7 @@ export class WeaponManager {
     cookingThrowable = false;
     autoThrowFast = false;
     autoShootFast = false;
+    autoPunchFast = false;
     cookTicker = 0;
 
     get activeWeapon(): string {
@@ -335,6 +336,9 @@ export class WeaponManager {
         if (!player.debug.shootFast || itemDef.type !== "gun") {
             this.autoShootFast = false;
         }
+        if (!player.debug.punchFast || itemDef.type !== "melee") {
+            this.autoPunchFast = false;
+        }
         if (!player.debug.throwFast || itemDef.type !== "throwable") {
             this.autoThrowFast = false;
         }
@@ -497,7 +501,22 @@ export class WeaponManager {
         const attack = itemDef.attack;
         const weapon = this.weapons[this.curWeapIdx];
 
-        if (
+        if (player.debug.punchFast) {
+            if (player.shootStart) {
+                this.autoPunchFast = true;
+            }
+
+            if (!player.shootHold) {
+                this.autoPunchFast = false;
+            }
+
+            if ((player.shootStart || this.autoPunchFast) && weapon.cooldown <= 0) {
+                this.player.cancelAction();
+                this.player.playAnim(GameConfig.Anim.Melee, 0.05);
+                weapon.cooldown = 0.02;
+                this.meleeAttacks = [0];
+            }
+        } else if (
             player.animType !== GameConfig.Anim.Melee &&
             (player.shootStart || (player.shootHold && itemDef.autoAttack)) &&
             weapon.cooldown < 0

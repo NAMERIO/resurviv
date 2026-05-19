@@ -256,6 +256,9 @@ export class Editor {
             folder.addBinding(this.toolParams, "shootFast", {
                 label: "Shoot Fast",
             });
+            folder.addBinding(this.toolParams, "punchFast", {
+                label: "Punch Fast",
+            });
             folder.addBinding(this.toolParams, "moveObjs", {
                 label: "Move Objects",
             });
@@ -430,6 +433,7 @@ export class Editor {
         msg.infiniteThrowables = this.toolParams.infiniteThrowables;
         msg.throwFast = this.toolParams.throwFast;
         msg.shootFast = this.toolParams.shootFast;
+        msg.punchFast = this.toolParams.punchFast;
         msg.moveObjs = this.toolParams.moveObjs;
 
         return msg;
