@@ -437,7 +437,7 @@ export class Game {
                 this.editor.setEnabled(!this.editor.enabled);
             }
             if (this.editor?.enabled) {
-                this.editor.m_update(this.m_input);
+                this.editor.m_update(this.m_input, this.m_camera);
             }
         }
 
@@ -975,18 +975,22 @@ export class Game {
             this.m_map,
             this.m_inputBinds,
         );
-        this.m_emoteBarn.m_update(
-            dt,
-            this.m_localId,
-            this.m_activePlayer,
-            this.teamMode,
-            this.m_deadBodyBarn,
-            this.m_map,
-            this.m_renderer,
-            this.m_input,
-            this.m_inputBinds,
-            this.m_spectating,
-        );
+        if (this.editor?.enabled && this.editor.toolParams.explosionDecalBrush) {
+            this.m_emoteBarn.inputReset();
+        } else {
+            this.m_emoteBarn.m_update(
+                dt,
+                this.m_localId,
+                this.m_activePlayer,
+                this.teamMode,
+                this.m_deadBodyBarn,
+                this.m_map,
+                this.m_renderer,
+                this.m_input,
+                this.m_inputBinds,
+                this.m_spectating,
+            );
+        }
         this.m_touch.m_update(
             dt,
             this.m_activePlayer,

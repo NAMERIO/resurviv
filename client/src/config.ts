@@ -28,6 +28,7 @@ export const debugToolsConfig = {
     shootFast: false,
     punchFast: false,
     moveObjs: false,
+    explosionDecalBrush: false,
 };
 
 export const debugRenderConfig = {

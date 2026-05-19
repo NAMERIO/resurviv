@@ -5355,6 +5355,15 @@ export class Player extends BaseGameObject {
 
         this.debug.moveObjMode.enabled = msg.moveObjs;
 
+        if (msg.drawExplosionDecal) {
+            this.game.decalBarn.addDecal(
+                "decal_frag_explosion",
+                msg.explosionDecalPos,
+                this.layer,
+                util.randomInt(0, 255),
+            );
+        }
+
         if (msg.spawnLootType) {
             const def = GameObjectDefs[msg.spawnLootType];
             if (def && "lootImg" in def) {
