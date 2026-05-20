@@ -981,7 +981,11 @@ export class Player extends BaseGameObject {
 
         const aabb = collider.toAabb(this.obstacleOutfit.collider);
         const center = v2.add(aabb.min, v2.mul(v2.sub(aabb.max, aabb.min), 0.5));
-        const radius = math.max(v2.length(v2.sub(aabb.max, center)), this.rad);
+        const halfSize = v2.sub(aabb.max, center);
+        const radius =
+            this.obstacleOutfit.collider.type === collider.Type.Circle
+                ? this.obstacleOutfit.collider.rad
+                : Math.sqrt(halfSize.x * halfSize.y);
         return { pos: center, rad: radius };
     }
 
@@ -2366,13 +2370,15 @@ export class Player extends BaseGameObject {
         const circle = collider.createCircle(this.pos, broadphaseRadius + this.speed * dt);
 
         const objs = this.game.grid.intersectCollider(circle);
+        const syncObstacleOutfit = () => {
+            if (!this.obstacleOutfit) return;
+            this.obstacleOutfit.pos = v2.copy(this.pos);
+            this.obstacleOutfit.updateCollider();
+        };
 
         for (let i = 0; i < steps; i++) {
             v2.set(this.pos, v2.add(this.pos, v2.mul(movement, speedToAdd)));
-            if (this.obstacleOutfit) {
-                this.obstacleOutfit.pos = v2.copy(this.pos);
-                this.obstacleOutfit.updateCollider();
-            }
+            syncObstacleOutfit();
 
             for (let j = 0; j < objs.length && !this.debug.noClip; j++) {
                 const obj = objs[j];
@@ -2392,20 +2398,6 @@ export class Player extends BaseGameObject {
                         this.pos,
                         this.rad,
                     );
-                } else if (obj.__type === ObjectType.Player) {
-                    if (obj === this) continue;
-                    if (obj.dead || obj.downed) continue;
-                    if (!util.sameLayer(obj.layer, this.layer)) continue;
-                    if (!obj.obstacleOutfit && !this.obstacleOutfit) continue;
-
-                    const thisBlock = this.getMovementBlockCircle();
-                    const otherBlock = obj.getMovementBlockCircle();
-                    collision = coldet.intersectCircleCircle(
-                        otherBlock.pos,
-                        otherBlock.rad,
-                        thisBlock.pos,
-                        thisBlock.rad,
-                    );
                 } else {
                     continue;
                 }
@@ -2415,10 +2407,49 @@ export class Player extends BaseGameObject {
                         this.pos,
                         v2.add(this.pos, v2.mul(collision.dir, collision.pen + 0.001)),
                     );
-                    if (this.obstacleOutfit) {
-                        this.obstacleOutfit.pos = v2.copy(this.pos);
-                        this.obstacleOutfit.updateCollider();
-                    }
+                    syncObstacleOutfit();
+                }
+            }
+
+            for (
+                let j = 0;
+                j < this.game.playerBarn.livingPlayers.length && !this.debug.noClip;
+                j++
+            ) {
+                const obj = this.game.playerBarn.livingPlayers[j];
+                if (obj === this) continue;
+                if (obj.dead || obj.downed) continue;
+                if (!util.sameLayer(obj.layer, this.layer)) continue;
+
+                let collision:
+                    | ReturnType<typeof coldet.intersectCircleCircle>
+                    | ReturnType<typeof collider.intersectCircle> = null;
+
+                if (this.obstacleOutfit && obj.obstacleOutfit) {
+                    continue;
+                } else if (this.obstacleOutfit) {
+                    collision = coldet.intersectCircleCircle(
+                        obj.pos,
+                        obj.rad,
+                        this.pos,
+                        this.rad,
+                    );
+                } else if (obj.obstacleOutfit) {
+                    if (movement.x === 0 && movement.y === 0) continue;
+
+                    collision = collider.intersectCircle(
+                        obj.obstacleOutfit.collider,
+                        this.pos,
+                        this.rad,
+                    );
+                }
+
+                if (collision) {
+                    v2.set(
+                        this.pos,
+                        v2.add(this.pos, v2.mul(collision.dir, collision.pen + 0.001)),
+                    );
+                    syncObstacleOutfit();
                 }
             }
         }
