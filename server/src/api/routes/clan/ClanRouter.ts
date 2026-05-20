@@ -433,7 +433,13 @@ function toKlipyAdResult(result: KlipyApiGifObject): KlipyAdResult | null {
         getStringValue(ad, ["iframe_url", "iframeUrl", "iframe", "ad_url"]),
     );
     const imageUrl = normalizeKlipyExternalUrl(
-        getStringValue(ad, ["image_url", "imageUrl", "image", "thumbnail", "thumbnail_url"]),
+        getStringValue(ad, [
+            "image_url",
+            "imageUrl",
+            "image",
+            "thumbnail",
+            "thumbnail_url",
+        ]),
     );
     const clickUrl = normalizeKlipyExternalUrl(
         getStringValue(ad, ["click_url", "clickUrl", "target_url", "targetUrl", "url"]),
@@ -568,9 +574,7 @@ async function fetchKlipyGifPickerItems(options: {
 
         return (results || [])
             .map(toPickerItem)
-            .filter(
-                (item): item is KlipyGifPickerContentResult => item?.type === "gif",
-            );
+            .filter((item): item is KlipyGifPickerContentResult => item?.type === "gif");
     };
 
     const fetchAdItem = async () => {
@@ -586,7 +590,10 @@ async function fetchKlipyGifPickerItems(options: {
         }
     };
 
-    const [contentItems, adItem] = await Promise.all([fetchContentItems(), fetchAdItem()]);
+    const [contentItems, adItem] = await Promise.all([
+        fetchContentItems(),
+        fetchAdItem(),
+    ]);
     const pickerItems: KlipyGifPickerItem[] = [...contentItems];
     if (adItem && pickerItems.length >= 3) {
         pickerItems.splice(3, 0, adItem);
@@ -1505,80 +1512,88 @@ ClanRouter.post("/send_message", validateParams(zSendClanMessageRequest), async 
     });
 });
 
-ClanRouter.post("/resolve_klipy_gif", validateParams(zResolveKlipyGifRequest), async (c) => {
-    const user = c.get("user")!;
-    const { clanId, url } = c.req.valid("json");
+ClanRouter.post(
+    "/resolve_klipy_gif",
+    validateParams(zResolveKlipyGifRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { clanId, url } = c.req.valid("json");
 
-    const membership = await getUserMembership(user.id);
-    if (!membership || membership.clanId !== clanId) {
-        return c.json<ResolveKlipyGifResponse>(
-            { success: false, error: "not_in_clan" },
-            403,
-        );
-    }
+        const membership = await getUserMembership(user.id);
+        if (!membership || membership.clanId !== clanId) {
+            return c.json<ResolveKlipyGifResponse>(
+                { success: false, error: "not_in_clan" },
+                403,
+            );
+        }
 
-    if (!parseKlipyUrl(url)) {
-        return c.json<ResolveKlipyGifResponse>(
-            { success: false, error: "invalid_url" },
-            400,
-        );
-    }
+        if (!parseKlipyUrl(url)) {
+            return c.json<ResolveKlipyGifResponse>(
+                { success: false, error: "invalid_url" },
+                400,
+            );
+        }
 
-    try {
-        const gif = await resolveKlipyGif(url);
-        if (!gif) {
+        try {
+            const gif = await resolveKlipyGif(url);
+            if (!gif) {
+                return c.json<ResolveKlipyGifResponse>(
+                    { success: false, error: "not_found" },
+                    404,
+                );
+            }
+
+            return c.json<ResolveKlipyGifResponse>({ success: true, gif });
+        } catch {
             return c.json<ResolveKlipyGifResponse>(
                 { success: false, error: "not_found" },
                 404,
             );
         }
+    },
+);
 
-        return c.json<ResolveKlipyGifResponse>({ success: true, gif });
-    } catch {
-        return c.json<ResolveKlipyGifResponse>(
-            { success: false, error: "not_found" },
-            404,
-        );
-    }
-});
+ClanRouter.post(
+    "/search_klipy_gifs",
+    validateParams(zSearchKlipyGifsRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { clanId, query, section, limit, adMaxWidth, adMaxHeight } =
+            c.req.valid("json");
 
-ClanRouter.post("/search_klipy_gifs", validateParams(zSearchKlipyGifsRequest), async (c) => {
-    const user = c.get("user")!;
-    const { clanId, query, section, limit, adMaxWidth, adMaxHeight } =
-        c.req.valid("json");
+        const membership = await getUserMembership(user.id);
+        if (!membership || membership.clanId !== clanId) {
+            return c.json<SearchKlipyGifsResponse>(
+                { success: false, error: "not_in_clan" },
+                403,
+            );
+        }
 
-    const membership = await getUserMembership(user.id);
-    if (!membership || membership.clanId !== clanId) {
-        return c.json<SearchKlipyGifsResponse>(
-            { success: false, error: "not_in_clan" },
-            403,
-        );
-    }
+        if (!Config.secrets.KLIPY_API_KEY) {
+            return c.json<SearchKlipyGifsResponse>(
+                { success: false, error: "not_configured" },
+                500,
+            );
+        }
 
-    if (!Config.secrets.KLIPY_API_KEY) {
-        return c.json<SearchKlipyGifsResponse>(
-            { success: false, error: "not_configured" },
-            500,
-        );
-    }
-
-    try {
-        const gifs = await fetchKlipyGifPickerItems({
-            query,
-            section,
-            limit,
-            customerId: user.id,
-            adMaxWidth,
-            adMaxHeight,
-        });
-        return c.json<SearchKlipyGifsResponse>({ success: true, gifs });
-    } catch {
-        return c.json<SearchKlipyGifsResponse>(
-            { success: false, error: "not_found" },
-            404,
-        );
-    }
-});
+        try {
+            const gifs = await fetchKlipyGifPickerItems({
+                query,
+                section,
+                limit,
+                customerId: user.id,
+                adMaxWidth,
+                adMaxHeight,
+            });
+            return c.json<SearchKlipyGifsResponse>({ success: true, gifs });
+        } catch {
+            return c.json<SearchKlipyGifsResponse>(
+                { success: false, error: "not_found" },
+                404,
+            );
+        }
+    },
+);
 
 ClanRouter.post("/edit_message", validateParams(zEditClanMessageRequest), async (c) => {
     const user = c.get("user")!;

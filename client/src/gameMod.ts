@@ -141,8 +141,7 @@ export class GameMod {
                   : null;
 
         const shouldRestartPing =
-            !!region &&
-            (region !== this.currentServer || !this.pingTest);
+            !!region && (region !== this.currentServer || !this.pingTest);
 
         if (shouldRestartPing && region) {
             this.currentServer = region;

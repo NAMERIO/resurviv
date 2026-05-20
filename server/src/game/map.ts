@@ -1117,10 +1117,7 @@ export class GameMap {
                 this.genOnWaterEdge(type);
             } else if (def.terrain?.river) {
                 // this.genOnRiver(type);
-            } else if (
-                def.terrain?.bridge ||
-                this.getBattleRoyaleBridgeSpawn(type)
-            ) {
+            } else if (def.terrain?.bridge || this.getBattleRoyaleBridgeSpawn(type)) {
                 this.genBridge(type);
             } else if (def.terrain?.grass) {
                 try {
@@ -1317,10 +1314,7 @@ export class GameMap {
                     v2.mul(dir, dims.length * 1.5),
                     v2.mul(v2.perp(dir), dims.width * nearbyWidthMult),
                 );
-                const col = collider.createAabbExtents(
-                    v2.create(0, 0),
-                    v2.mul(ext, 0.5),
-                );
+                const col = collider.createAabbExtents(v2.create(0, 0), v2.mul(ext, 0.5));
                 return collider.transform(col, bridgePos, bridgeRot, 1) as AABB;
             };
 

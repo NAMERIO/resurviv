@@ -963,12 +963,7 @@ export class Player implements AbstractObject {
             this.m_netData.m_actionType === Action.Reload ||
             this.m_netData.m_actionType === Action.ReloadAlt;
         const fireHeld = inputBinds.isBindDown(Input.Fire) || touchShootHold;
-        if (
-            isActivePlayer &&
-            isBlaster &&
-            !isReloading &&
-            fireHeld
-        ) {
+        if (isActivePlayer && isBlaster && !isReloading && fireHeld) {
             this.m_netData.m_loadingBlaster += dt;
             const loadTime = (curWeapDef as GunDef).loadTime ?? 1.5;
 

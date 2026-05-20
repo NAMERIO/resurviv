@@ -252,7 +252,11 @@ class Room {
                 const targetPlayer = this.players[msg.data.playerId];
                 if (!targetPlayer) break;
                 if (targetPlayer !== player && !player.isLeader) break;
-                if (targetPlayer === player && this.data.teamsLocked && !player.isLeader) {
+                if (
+                    targetPlayer === player &&
+                    this.data.teamsLocked &&
+                    !player.isLeader
+                ) {
                     break;
                 }
 

@@ -319,7 +319,11 @@ export class FriendsUi {
         );
     }
 
-    private renderRequestHeader(header: JQuery<HTMLElement>, label: string, count: number) {
+    private renderRequestHeader(
+        header: JQuery<HTMLElement>,
+        label: string,
+        count: number,
+    ) {
         header.empty().append(document.createTextNode(label));
         if (this.account.loggedIn) {
             header.append($("<span/>", { class: "friends-list-count", text: count }));

@@ -973,7 +973,10 @@ export class Pass {
     update(dt: number) {
         $("#pass-items-wrapper").css("display", "block");
         const currentPassItemsSignature = this.getPassItemsSignature(this.pass.data.type);
-        if (currentPassItemsSignature && currentPassItemsSignature !== this.passItemsSignature) {
+        if (
+            currentPassItemsSignature &&
+            currentPassItemsSignature !== this.passItemsSignature
+        ) {
             this.populatePassItems({
                 autoScroll: false,
                 preserveScroll: true,

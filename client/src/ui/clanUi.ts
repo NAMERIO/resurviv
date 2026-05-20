@@ -83,7 +83,10 @@ function formatChatTime(timestamp: number): string {
 }
 
 type ClanChatGifPreview = Extract<ResolveKlipyGifResponse, { success: true }>["gif"];
-type ClanChatGifPickerItem = Extract<SearchKlipyGifsResponse, { success: true }>["gifs"][number];
+type ClanChatGifPickerItem = Extract<
+    SearchKlipyGifsResponse,
+    { success: true }
+>["gifs"][number];
 const blankGifSrc =
     "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 
@@ -993,7 +996,12 @@ export class ClanUi {
                 if (this.clanMentionPollTimer) {
                     this.scheduleMentionPoll();
                 }
-                if (err || !res?.success || !this.currentClan || this.currentClan.id !== clanId) {
+                if (
+                    err ||
+                    !res?.success ||
+                    !this.currentClan ||
+                    this.currentClan.id !== clanId
+                ) {
                     return;
                 }
                 this.updateUnreadMentionsFromMessages(res.messages, markExistingSeen);
@@ -1050,7 +1058,9 @@ export class ClanUi {
         if (!currentMember) return false;
 
         const mentions = this.getMessageMentions(message.message);
-        return mentions.some((mention) => this.isMentionForMember(mention, currentMember));
+        return mentions.some((mention) =>
+            this.isMentionForMember(mention, currentMember),
+        );
     }
 
     isMentionForMember(mention: string, member: ClanMember) {
@@ -1800,12 +1810,15 @@ export class ClanUi {
                 this.gifPreviewPending.delete(gifUrl);
                 if (err || !res?.success) {
                     this.gifPreviewCache.set(gifUrl, null);
-                    preview.removeClass("loading").empty().append(
-                        $("<div/>", {
-                            class: "clan-chat-gif-placeholder",
-                            text: "Open GIF",
-                        }),
-                    );
+                    preview
+                        .removeClass("loading")
+                        .empty()
+                        .append(
+                            $("<div/>", {
+                                class: "clan-chat-gif-placeholder",
+                                text: "Open GIF",
+                            }),
+                        );
                     return;
                 }
 
@@ -1959,7 +1972,11 @@ export class ClanUi {
 
         while ((match = mentionRegex.exec(message.message))) {
             if (match.index > lastIndex) {
-                text.append(document.createTextNode(message.message.slice(lastIndex, match.index)));
+                text.append(
+                    document.createTextNode(
+                        message.message.slice(lastIndex, match.index),
+                    ),
+                );
             }
 
             const mentionName = match[0].slice(1);
@@ -2061,9 +2078,7 @@ export class ClanUi {
                           })
                         : $(),
                 ),
-                onlyKlipyUrl
-                    ? $()
-                    : this.renderMessageText(message),
+                onlyKlipyUrl ? $() : this.renderMessageText(message),
                 this.renderGifPreview(message),
             );
 

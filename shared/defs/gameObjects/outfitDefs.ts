@@ -4418,8 +4418,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
-
-// unfinished skins
+    // unfinished skins
     outfitBee: defineOutfitSkin("outfitBase", {
         name: "Bzzzz",
         noDropOnDeath: true,
@@ -4428,11 +4427,11 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-outfitbee.img",
-            handTint: 0xFEC237,
+            handTint: 0xfec237,
             handSprite: "player-hands-01.img",
-            footTint: 0xFEC237,
+            footTint: 0xfec237,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xFEC237,
+            backpackTint: 0xfec237,
             frontSpritePos: { x: 0, y: 0 },
             frontSprite: "player-accessory-bee.img",
         },
@@ -4450,11 +4449,11 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-outfitvitamnD.img",
-            handTint: 0xFFE600,
+            handTint: 0xffe600,
             handSprite: "player-fists-flaming-nucleus-l.img",
-            footTint: 0xFFE600,
+            footTint: 0xffe600,
             footSprite: "player-fists-flaming-nucleus-l.img",
-            backpackTint: 0xFFE600,
+            backpackTint: 0xffe600,
             frontSpritePos: { x: 0, y: -1 },
             frontSprite: "player-accessory-Vitamin-D.img",
         },

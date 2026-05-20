@@ -1305,8 +1305,7 @@ export class Application {
         };
 
         const buildLockButton = () => {
-            const lockHelp =
-                "Lock teams: owner can drag people and put them in a team";
+            const lockHelp = "Lock teams: owner can drag people and put them in a team";
             const button = $("<button>", {
                 id: "arena-team-lock",
                 class: `arena-team-lock btn-darken${teamsLocked ? " locked" : ""}`,
@@ -1505,7 +1504,10 @@ export class Application {
             ).on("dragstart", (e) => {
                 const playerId = $(e.currentTarget).attr("data-playerid") || "";
                 e.originalEvent?.dataTransfer?.setData("text/plain", playerId);
-                e.originalEvent?.dataTransfer?.setData("application/x-player-id", playerId);
+                e.originalEvent?.dataTransfer?.setData(
+                    "application/x-player-id",
+                    playerId,
+                );
                 e.originalEvent?.dataTransfer?.setDragImage(e.currentTarget, 12, 12);
                 $(e.currentTarget).addClass("dragging");
             });

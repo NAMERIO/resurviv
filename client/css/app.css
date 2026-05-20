@@ -13656,7 +13656,9 @@ input [type="image"]:focus {
   }
 }
 
-@media (min-width: 852px) and (max-width: 1200px) and (max-height: 403px) and (orientation: landscape) {
+@media (min-width: 852px) and (max-width: 1200px) and (max-height: 403px) and (
+    orientation: landscape
+  ) {
   #modal-clan-main .modal-content,
   #modal-clan-create .modal-content,
   #modal-clan-leaderboard .modal-content {
@@ -18139,8 +18141,7 @@ div.roulette {
 }
 
 #friends-panel {
-  background:
-    linear-gradient(90deg, rgba(8, 20, 55, 0.98) 0, rgba(8, 35, 95, 0.98) 100%);
+  background: linear-gradient(90deg, rgba(8, 20, 55, 0.98) 0, rgba(8, 35, 95, 0.98) 100%);
   border-left: 1px solid rgba(87, 159, 255, 0.7);
   box-shadow: -12px 0 36px rgba(0, 0, 0, 0.7);
   flex-direction: row;
@@ -18169,8 +18170,7 @@ div.roulette {
 }
 
 #friends-panel-header {
-  background:
-    linear-gradient(90deg, #07134a 0, #073da4 100%);
+  background: linear-gradient(90deg, #07134a 0, #073da4 100%);
   border-bottom: 2px solid #1754c8;
   min-height: 104px;
   padding: 18px 24px 14px;

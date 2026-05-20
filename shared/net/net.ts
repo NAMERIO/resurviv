@@ -123,7 +123,11 @@ function createTypeSerialization(
 const GameTypeBits = 11;
 const MapTypeBits = 12;
 
-const gameTypeSerialization = createTypeSerialization("Game", GameObjectDefs, GameTypeBits);
+const gameTypeSerialization = createTypeSerialization(
+    "Game",
+    GameObjectDefs,
+    GameTypeBits,
+);
 const mapTypeSerialization = createTypeSerialization("Map", MapObjectDefs, MapTypeBits);
 
 export class BitStream extends bb.BitStream {
