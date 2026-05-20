@@ -1074,7 +1074,7 @@ export class WeaponManager {
                 apRounds: hasApRounds,
                 highVelocity: hasHighVelocity,
                 lastShot: weapon.ammo <= 0,
-                reflectObjId: this.player.obstacleOutfit?.__id,
+                reflectObjId: this.player.propDisguise?.__id,
                 onHitFx: hasExplosive ? "explosion_rounds" : undefined,
             };
 
@@ -1293,20 +1293,20 @@ export class WeaponManager {
                     !player.dead &&
                     util.sameLayer(player.layer, this.player.layer)
                 ) {
-                    const obstacleOutfit = player.obstacleOutfit;
+                    const propDisguise = player.propDisguise;
                     const normalized = v2.normalizeSafe(
-                        v2.sub((obstacleOutfit ?? player).pos, this.player.pos),
+                        v2.sub((propDisguise ?? player).pos, this.player.pos),
                         v2.create(1, 0),
                     );
                     const collision =
-                        obstacleOutfit &&
-                        obstacleOutfit.height >= GameConfig.player.meleeHeight
+                        propDisguise &&
+                        propDisguise.height >= GameConfig.player.meleeHeight
                             ? collider.intersectCircle(
-                                  obstacleOutfit.collider,
+                                  propDisguise.collider,
                                   coll.pos,
                                   coll.rad,
                               )
-                            : !obstacleOutfit
+                            : !propDisguise
                               ? coldet.intersectCircleCircle(
                                     coll.pos,
                                     coll.rad,
@@ -1333,7 +1333,7 @@ export class WeaponManager {
                             obj: player,
                             pen: collision.pen,
                             prio: player.teamId === this.player.teamId ? 2 : 0,
-                            pos: obstacleOutfit
+                            pos: propDisguise
                                 ? v2.add(
                                       coll.pos,
                                       v2.mul(

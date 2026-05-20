@@ -132,6 +132,7 @@ export interface ObjectsFullData {
         parentBuildingId?: number;
         isSkin: boolean;
         skinPlayerId?: number;
+        isPropDisguise: boolean;
     };
     [ObjectType.Loot]: {
         type: string;
@@ -387,7 +388,10 @@ export const ObjectSerializeFns: {
             if (data.isPuzzlePiece) s.writeUint16(data.parentBuildingId!);
 
             s.writeBoolean(data.isSkin);
-            if (data.isSkin) s.writeUint16(data.skinPlayerId!);
+            if (data.isSkin) {
+                s.writeUint16(data.skinPlayerId!);
+                s.writeBoolean(data.isPropDisguise);
+            }
         },
         /* STRIP_FROM_PROD_CLIENT:END */
 
@@ -427,6 +431,9 @@ export const ObjectSerializeFns: {
             data.isSkin = s.readBoolean();
             if (data.isSkin) {
                 data.skinPlayerId = s.readUint16();
+                data.isPropDisguise = s.readBoolean();
+            } else {
+                data.isPropDisguise = false;
             }
         },
     },

@@ -451,6 +451,7 @@ export class PlayerBarn {
         }
 
         player.obstacleOutfit?.destroy();
+        player.propDisguise?.destroy();
 
         this.game.checkGameOver();
         this.game.updateData();
@@ -761,6 +762,14 @@ export class Player extends BaseGameObject {
                 this.obstacleOutfit.setDirty();
             }
         }
+        if (this.propDisguise) {
+            const healthT = math.clamp(this._health / 100, 0, 1);
+
+            if (!math.eqAbs(this.propDisguise.healthT, healthT, 0.01)) {
+                this.propDisguise.healthT = healthT;
+                this.propDisguise.setDirty();
+            }
+        }
     }
 
     minBoost = 0;
@@ -948,43 +957,61 @@ export class Player extends BaseGameObject {
     setOutfit(outfit: string) {
         if (this.outfit === outfit) return;
         this.outfit = outfit;
-        const def = GameObjectDefs[outfit] as OutfitDef;
         this.obstacleOutfit?.destroy();
         this.obstacleOutfit = undefined;
 
-        if (def.obstacleType) {
-            this.obstacleOutfit = this.game.map.genOutfitObstacle(def.obstacleType, this);
+        if (!this.propDisguise) {
+            this.createObstacleOutfit();
         }
         this.setDirty();
     }
 
-    setPropDisguise(type?: string, ori = 0, scale?: number) {
-        this.obstacleOutfit?.destroy();
-        this.obstacleOutfit = undefined;
+    private createObstacleOutfit() {
+        const def = GameObjectDefs[this.outfit] as OutfitDef;
+        if (def.obstacleType) {
+            this.obstacleOutfit = this.game.map.genOutfitObstacle(def.obstacleType, this);
+        }
+    }
 
-        if (!type) return;
+    setPropDisguise(type?: string, ori = 0, scale?: number) {
+        this.propDisguise?.destroy();
+        this.propDisguise = undefined;
+
+        if (!type) {
+            if (!this.obstacleOutfit) {
+                this.createObstacleOutfit();
+            }
+            return;
+        }
 
         const def = MapObjectDefs[type];
-        if (def?.type !== "obstacle") return;
+        if (def?.type !== "obstacle") {
+            if (!this.obstacleOutfit) {
+                this.createObstacleOutfit();
+            }
+            return;
+        }
 
-        this.obstacleOutfit = this.game.map.genOutfitObstacle(type, this, ori, scale);
+        this.obstacleOutfit?.destroy();
+        this.obstacleOutfit = undefined;
+        this.propDisguise = this.game.map.genOutfitObstacle(type, this, ori, scale, true);
     }
 
     getBodyCollider() {
-        return this.obstacleOutfit?.collider ?? this.collider;
+        return this.propDisguise?.collider ?? this.collider;
     }
 
     getMovementBlockCircle() {
-        if (!this.obstacleOutfit) {
+        if (!this.propDisguise) {
             return { pos: this.pos, rad: this.rad };
         }
 
-        const aabb = collider.toAabb(this.obstacleOutfit.collider);
+        const aabb = collider.toAabb(this.propDisguise.collider);
         const center = v2.add(aabb.min, v2.mul(v2.sub(aabb.max, aabb.min), 0.5));
         const halfSize = v2.sub(aabb.max, center);
         const radius =
-            this.obstacleOutfit.collider.type === collider.Type.Circle
-                ? this.obstacleOutfit.collider.rad
+            this.propDisguise.collider.type === collider.Type.Circle
+                ? this.propDisguise.collider.rad
                 : Math.sqrt(halfSize.x * halfSize.y);
         return { pos: center, rad: radius };
     }
@@ -1682,6 +1709,7 @@ export class Player extends BaseGameObject {
     mobileDropTicker = 0;
 
     obstacleOutfit?: Obstacle;
+    propDisguise?: Obstacle;
 
     /**
      * Only used for match data saving!
@@ -2370,15 +2398,20 @@ export class Player extends BaseGameObject {
         const circle = collider.createCircle(this.pos, broadphaseRadius + this.speed * dt);
 
         const objs = this.game.grid.intersectCollider(circle);
-        const syncObstacleOutfit = () => {
-            if (!this.obstacleOutfit) return;
-            this.obstacleOutfit.pos = v2.copy(this.pos);
-            this.obstacleOutfit.updateCollider();
+        const syncSkinObstacles = () => {
+            if (this.obstacleOutfit) {
+                this.obstacleOutfit.pos = v2.copy(this.pos);
+                this.obstacleOutfit.updateCollider();
+            }
+            if (this.propDisguise) {
+                this.propDisguise.pos = v2.copy(this.pos);
+                this.propDisguise.updateCollider();
+            }
         };
 
         for (let i = 0; i < steps; i++) {
             v2.set(this.pos, v2.add(this.pos, v2.mul(movement, speedToAdd)));
-            syncObstacleOutfit();
+            syncSkinObstacles();
 
             for (let j = 0; j < objs.length && !this.debug.noClip; j++) {
                 const obj = objs[j];
@@ -2407,7 +2440,7 @@ export class Player extends BaseGameObject {
                         this.pos,
                         v2.add(this.pos, v2.mul(collision.dir, collision.pen + 0.001)),
                     );
-                    syncObstacleOutfit();
+                    syncSkinObstacles();
                 }
             }
 
@@ -2425,20 +2458,20 @@ export class Player extends BaseGameObject {
                     | ReturnType<typeof coldet.intersectCircleCircle>
                     | ReturnType<typeof collider.intersectCircle> = null;
 
-                if (this.obstacleOutfit && obj.obstacleOutfit) {
+                if (this.propDisguise && obj.propDisguise) {
                     continue;
-                } else if (this.obstacleOutfit) {
+                } else if (this.propDisguise) {
                     collision = coldet.intersectCircleCircle(
                         obj.pos,
                         obj.rad,
                         this.pos,
                         this.rad,
                     );
-                } else if (obj.obstacleOutfit) {
+                } else if (obj.propDisguise) {
                     if (movement.x === 0 && movement.y === 0) continue;
 
                     collision = collider.intersectCircle(
-                        obj.obstacleOutfit.collider,
+                        obj.propDisguise.collider,
                         this.pos,
                         this.rad,
                     );
@@ -2449,7 +2482,7 @@ export class Player extends BaseGameObject {
                         this.pos,
                         v2.add(this.pos, v2.mul(collision.dir, collision.pen + 0.001)),
                     );
-                    syncObstacleOutfit();
+                    syncSkinObstacles();
                 }
             }
         }
@@ -2746,6 +2779,10 @@ export class Player extends BaseGameObject {
                 this.obstacleOutfit.layer = this.layer;
                 this.obstacleOutfit.setDirty();
             }
+            if (this.propDisguise) {
+                this.propDisguise.layer = this.layer;
+                this.propDisguise.setDirty();
+            }
         }
 
         //
@@ -2764,6 +2801,11 @@ export class Player extends BaseGameObject {
                 this.obstacleOutfit.pos = v2.copy(this.pos);
                 this.obstacleOutfit.updateCollider();
                 this.obstacleOutfit.setPartDirty();
+            }
+            if (this.propDisguise) {
+                this.propDisguise.pos = v2.copy(this.pos);
+                this.propDisguise.updateCollider();
+                this.propDisguise.setPartDirty();
             }
         }
 
@@ -3802,6 +3844,9 @@ export class Player extends BaseGameObject {
         //
         if (this.obstacleOutfit) {
             this.obstacleOutfit.kill(params);
+        }
+        if (this.propDisguise) {
+            this.propDisguise.kill(params);
         }
 
         //
