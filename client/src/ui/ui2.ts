@@ -974,7 +974,7 @@ export class UiManager2 {
         state.ammo.current = we;
         state.ammo.remaining = fe;
         state.ammo.displayCurrent = weaponDef.type != "melee";
-        state.ammo.displayRemaining = fe > 0;
+        state.ammo.displayRemaining = fe > 0 || ge.type === "prop_o_matic";
         state.ammo.nitroLaceActive = activePlayer.m_localData.m_nitroLaceActive;
         state.ammo.nitroLacePercentage = activePlayer.m_localData.m_nitroLacePercentage;
         const curWeapIdx = activePlayer.m_localData.m_curWeapIdx;

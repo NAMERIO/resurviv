@@ -22,6 +22,7 @@ import type { GameObject } from "../game/objects/gameObject";
 import type { Player } from "../game/objects/player";
 import type { Obstacle } from "./objects/obstacle";
 import type { Projectile } from "./objects/projectile";
+import { isHideAndSeekHider } from "./privateLobbyMiniGames";
 
 /**
  * List of throwables to cycle based on the definition `inventoryOrder`
@@ -838,11 +839,45 @@ export class WeaponManager {
 
         const weapon = this.weapons[this.curWeapIdx];
         const shootFast = this.player.debug.shootFast;
-        this.scheduledReload = !shootFast && weapon.ammo <= 1;
+        const hideAndSeekPropOMatic =
+            this.activeWeapon === "prop_o_matic" &&
+            isHideAndSeekHider(this.player.game.miniGame, this.player.arenaTeam);
+        this.scheduledReload = !hideAndSeekPropOMatic && !shootFast && weapon.ammo <= 1;
 
-        if (this.activeWeapon === "prop_o_matic" && weapon.ammo <= 0) {
+        if (
+            this.activeWeapon === "prop_o_matic" &&
+            !hideAndSeekPropOMatic &&
+            weapon.ammo <= 0
+        ) {
             weapon.ammo = 1;
             this.player.weapsDirty = true;
+        }
+
+        if (this.activeWeapon === "prop_o_matic") {
+            if (itemDef.outsideOnly && this.player.indoors && !forceFire) {
+                const msg = new net.PickupMsg();
+                msg.type = net.PickupMsgType.GunCannotFire;
+                this.player.msgsToSend.push({ type: net.MsgType.Pickup, msg });
+                return;
+            }
+
+            if (!this.firePropOMatic(this.player.aimLayer)) {
+                return;
+            }
+
+            weapon.cooldown = shootFast ? 0 : itemDef.fireDelay;
+            weapon.recoilTime = itemDef.recoilTime;
+
+            if (!shootFast && this.player.hasPerk("streak_rapid_fire_effect")) {
+                weapon.cooldown *=
+                    DamageStreakProperties.streak_rapid_fire_effect.fireDelayMult;
+            }
+
+            this.player.shotSlowdownTimer = itemDef.fireDelay;
+            if (!hideAndSeekPropOMatic) {
+                this.scheduledReload = false;
+            }
+            return;
         }
 
         if (weapon.ammo <= 0) {
@@ -879,11 +914,6 @@ export class WeaponManager {
 
         const collisionLayer = util.toGroundLayer(this.player.layer);
         const bulletLayer = this.player.aimLayer;
-
-        if (this.activeWeapon === "prop_o_matic") {
-            this.firePropOMatic(bulletLayer);
-            return;
-        }
 
         if (!shootFast) {
             weapon.ammo--;
@@ -1161,11 +1191,7 @@ export class WeaponManager {
         }
     }
 
-    private firePropOMatic(layer: number): void {
-        if (!this.player.canUseHideAndSeekPropSwitch()) {
-            return;
-        }
-
+    private firePropOMatic(layer: number): boolean {
         const targetPos = v2.add(
             this.player.pos,
             v2.mul(this.player.dir, this.player.toMouseLen),
@@ -1201,17 +1227,40 @@ export class WeaponManager {
             }
         }
 
-        if (bestObstacle) {
-            this.player.setPropDisguise(
-                bestObstacle.type,
-                bestObstacle.ori,
-                bestObstacle.scale,
-            );
-        } else {
+        if (!bestObstacle) {
             this.player.setPropDisguise();
+            return true;
         }
 
+        const propDisguise = this.player.propDisguise;
+        const changesProp =
+            !propDisguise ||
+            propDisguise.type !== bestObstacle.type ||
+            propDisguise.ori !== bestObstacle.ori ||
+            !math.eqAbs(propDisguise.scale, bestObstacle.scale, 0.001);
+
+        if (!changesProp) {
+            return false;
+        }
+
+        if (
+            isHideAndSeekHider(this.player.game.miniGame, this.player.arenaTeam) &&
+            this.weapons[this.curWeapIdx].ammo <= 0
+        ) {
+            return false;
+        }
+
+        if (!this.player.canUseHideAndSeekPropSwitch()) {
+            return false;
+        }
+
+        this.player.setPropDisguise(
+            bestObstacle.type,
+            bestObstacle.ori,
+            bestObstacle.scale,
+        );
         this.player.consumeHideAndSeekPropSwitch();
+        return true;
     }
 
     getMeleeCollider() {

@@ -1624,13 +1624,13 @@ export class Player extends BaseGameObject {
         const settings = getHideAndSeekSettings(this.game.miniGame);
         if (!settings || this.arenaTeam !== settings.hiderTeam) return;
 
-        if (this.propDisguise) {
-            this.hideAndSeekNoiseTicker -= dt;
-            if (this.hideAndSeekNoiseTicker <= 0) {
-                this.emitHideAndSeekNoise(settings);
-                this.hideAndSeekNoiseTicker = settings.hiderNoiseInterval;
-            }
-        } else {
+        if (this.hideAndSeekNoiseTicker <= 0) {
+            this.hideAndSeekNoiseTicker = settings.hiderNoiseInterval;
+        }
+
+        this.hideAndSeekNoiseTicker -= dt;
+        if (this.hideAndSeekNoiseTicker <= 0) {
+            this.emitHideAndSeekNoise(settings);
             this.hideAndSeekNoiseTicker = settings.hiderNoiseInterval;
         }
     }
@@ -1678,12 +1678,36 @@ export class Player extends BaseGameObject {
         return this.hideAndSeekPropSwitchesLeft > 0;
     }
 
+    syncHideAndSeekPropSwitchAmmo(): void {
+        if (!isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
+
+        const primary = this.weapons[GameConfig.WeaponSlot.Primary];
+        if (primary.type === "prop_o_matic") {
+            primary.ammo = this.hideAndSeekPropSwitchesLeft > 0 ? 1 : 0;
+            this.weapsDirty = true;
+        }
+
+        this.invManager.set(
+            "9mm_cursed",
+            Math.max(0, this.hideAndSeekPropSwitchesLeft - 1),
+        );
+    }
+
     consumeHideAndSeekPropSwitch(): void {
         if (!isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
         this.hideAndSeekPropSwitchesLeft = Math.max(
             0,
             this.hideAndSeekPropSwitchesLeft - 1,
         );
+
+        const primary = this.weapons[GameConfig.WeaponSlot.Primary];
+        if (primary.type === "prop_o_matic") {
+            primary.ammo = 0;
+            this.weapsDirty = true;
+            this.weaponManager.scheduledReload = this.hideAndSeekPropSwitchesLeft > 0;
+        }
+
+        this.invManager.set("9mm_cursed", this.hideAndSeekPropSwitchesLeft);
     }
 
     punishHideAndSeekWrongPropHit(): void {
@@ -4755,9 +4779,14 @@ export class Player extends BaseGameObject {
         const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
         return players.map((p) => {
             const hiddenByDebug = p.isInvisibleTo(this);
+            const hideAndSeekVisible =
+                hideAndSeekSettings && this.arenaTeam
+                    ? this.arenaTeam === hideAndSeekSettings.hiderTeam ||
+                      p.arenaTeam === this.arenaTeam
+                    : false;
             const visible =
                 this.game.arenaPrivate && hideAndSeekSettings && this.arenaTeam
-                    ? p.arenaTeam === this.arenaTeam
+                    ? hideAndSeekVisible
                     : this.game.arenaPrivate ||
                       (!hiddenByDebug &&
                           (p.teamId === this.teamId || p.timeUntilHidden > 0));
@@ -5605,6 +5634,7 @@ export class Player extends BaseGameObject {
         const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
         if (hideAndSeekSettings && this.arenaTeam === hideAndSeekSettings.hiderTeam) {
             this.hideAndSeekPropSwitchesLeft = hideAndSeekSettings.propSwitchLimit;
+            this.syncHideAndSeekPropSwitchAmmo();
             this.hideAndSeekNoiseTicker = hideAndSeekSettings.hiderNoiseInterval;
             this.streakReady = true;
             this.streakDirty = true;
