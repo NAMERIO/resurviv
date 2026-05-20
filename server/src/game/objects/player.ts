@@ -974,6 +974,17 @@ export class Player extends BaseGameObject {
         return this.obstacleOutfit?.collider ?? this.collider;
     }
 
+    getMovementBlockCircle() {
+        if (!this.obstacleOutfit) {
+            return { pos: this.pos, rad: this.rad };
+        }
+
+        const aabb = collider.toAabb(this.obstacleOutfit.collider);
+        const center = v2.add(aabb.min, v2.mul(v2.sub(aabb.max, aabb.min), 0.5));
+        const radius = math.max(v2.length(v2.sub(aabb.max, center)), this.rad);
+        return { pos: center, rad: radius };
+    }
+
     /** "backpack00" is no backpack, "backpack03" is the max level backpack */
     backpack: string;
     /** "" is no helmet, "helmet03" is the max level helmet */
@@ -2348,10 +2359,11 @@ export class Player extends BaseGameObject {
 
         const speedToAdd = (this.speed / steps) * dt;
 
-        const circle = collider.createCircle(
-            this.pos,
-            GameConfig.player.maxVisualRadius * this.scale + this.speed * dt,
+        const broadphaseRadius = math.max(
+            GameConfig.player.maxVisualRadius * this.scale,
+            this.getMovementBlockCircle().rad,
         );
+        const circle = collider.createCircle(this.pos, broadphaseRadius + this.speed * dt);
 
         const objs = this.game.grid.intersectCollider(circle);
 
@@ -2364,7 +2376,9 @@ export class Player extends BaseGameObject {
 
             for (let j = 0; j < objs.length && !this.debug.noClip; j++) {
                 const obj = objs[j];
-                let collision: ReturnType<typeof collider.intersect> | null = null;
+                let collision:
+                    | ReturnType<typeof coldet.intersectCircleCircle>
+                    | ReturnType<typeof collider.intersectCircle> = null;
 
                 if (obj.__type === ObjectType.Obstacle) {
                     if (!obj.collidable) continue;
@@ -2373,16 +2387,24 @@ export class Player extends BaseGameObject {
                     if (obj.isTree && hasTreeClimbing) continue;
                     if (obj.isSkin) continue;
 
-                    collision = collider.intersect(obj.collider, this.getBodyCollider());
+                    collision = collider.intersectCircle(
+                        obj.collider,
+                        this.pos,
+                        this.rad,
+                    );
                 } else if (obj.__type === ObjectType.Player) {
                     if (obj === this) continue;
                     if (obj.dead || obj.downed) continue;
                     if (!util.sameLayer(obj.layer, this.layer)) continue;
                     if (!obj.obstacleOutfit && !this.obstacleOutfit) continue;
 
-                    collision = collider.intersect(
-                        obj.getBodyCollider(),
-                        this.getBodyCollider(),
+                    const thisBlock = this.getMovementBlockCircle();
+                    const otherBlock = obj.getMovementBlockCircle();
+                    collision = coldet.intersectCircleCircle(
+                        otherBlock.pos,
+                        otherBlock.rad,
+                        thisBlock.pos,
+                        thisBlock.rad,
                     );
                 } else {
                     continue;
