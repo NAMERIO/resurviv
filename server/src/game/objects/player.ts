@@ -2395,7 +2395,10 @@ export class Player extends BaseGameObject {
             GameConfig.player.maxVisualRadius * this.scale,
             this.getMovementBlockCircle().rad,
         );
-        const circle = collider.createCircle(this.pos, broadphaseRadius + this.speed * dt);
+        const circle = collider.createCircle(
+            this.pos,
+            broadphaseRadius + this.speed * dt,
+        );
 
         const objs = this.game.grid.intersectCollider(circle);
         const syncSkinObstacles = () => {
@@ -2460,7 +2463,8 @@ export class Player extends BaseGameObject {
 
                 if (this.propDisguise && obj.propDisguise) {
                     continue;
-                } else if (this.propDisguise) {
+                }
+                if (this.propDisguise) {
                     collision = coldet.intersectCircleCircle(
                         obj.pos,
                         obj.rad,
