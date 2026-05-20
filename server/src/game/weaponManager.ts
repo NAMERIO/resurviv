@@ -1293,16 +1293,27 @@ export class WeaponManager {
                     !player.dead &&
                     util.sameLayer(player.layer, this.player.layer)
                 ) {
+                    const obstacleOutfit = player.obstacleOutfit;
                     const normalized = v2.normalizeSafe(
-                        v2.sub(player.pos, this.player.pos),
+                        v2.sub((obstacleOutfit ?? player).pos, this.player.pos),
                         v2.create(1, 0),
                     );
-                    const collision = coldet.intersectCircleCircle(
-                        coll.pos,
-                        coll.rad,
-                        player.pos,
-                        player.rad,
-                    );
+                    const collision =
+                        obstacleOutfit &&
+                        obstacleOutfit.height >= GameConfig.player.meleeHeight
+                            ? collider.intersectCircle(
+                                  obstacleOutfit.collider,
+                                  coll.pos,
+                                  coll.rad,
+                              )
+                            : !obstacleOutfit
+                              ? coldet.intersectCircleCircle(
+                                    coll.pos,
+                                    coll.rad,
+                                    player.pos,
+                                    player.rad,
+                                )
+                              : null;
                     if (
                         collision &&
                         math.eqAbs(
@@ -1322,7 +1333,15 @@ export class WeaponManager {
                             obj: player,
                             pen: collision.pen,
                             prio: player.teamId === this.player.teamId ? 2 : 0,
-                            pos: v2.copy(player.pos),
+                            pos: obstacleOutfit
+                                ? v2.add(
+                                      coll.pos,
+                                      v2.mul(
+                                          v2.neg(collision.dir),
+                                          coll.rad - collision.pen,
+                                      ),
+                                  )
+                                : v2.copy(player.pos),
                             dir: collision.dir,
                         });
                     }

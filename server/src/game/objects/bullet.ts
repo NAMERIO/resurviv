@@ -467,9 +467,10 @@ export class Bullet {
                     obj.giveHaste(GameConfig.HasteType.Windwalk, 3);
                 }
 
+                const obstacleOutfit = obj.obstacleOutfit;
                 let panCollision = null;
                 let lasrCollision: { point: Vec2; normal: Vec2 } | null = null;
-                if (obj.hasActivePan()) {
+                if (!obstacleOutfit && obj.hasActivePan()) {
                     const p = obj;
                     const panSeg = p.getPanSegment()!;
                     const oldSegment = math.transformSegment(
@@ -512,6 +513,7 @@ export class Bullet {
                     }
                 }
                 if (
+                    !obstacleOutfit &&
                     obj.activeWeapon?.startsWith("lasr_swrd") &&
                     obj.animType !== GameConfig.Anim.Melee
                 ) {
@@ -529,12 +531,21 @@ export class Bullet {
                         };
                     }
                 }
-                const collision = coldet.intersectSegmentCircle(
-                    posOld,
-                    this.pos,
-                    obj.pos,
-                    obj.rad,
-                );
+                const collision =
+                    obstacleOutfit && obstacleOutfit.height >= GameConfig.bullet.height
+                        ? collider.intersectSegment(
+                              obstacleOutfit.collider,
+                              posOld,
+                              this.pos,
+                          )
+                        : !obstacleOutfit
+                          ? coldet.intersectSegmentCircle(
+                                posOld,
+                                this.pos,
+                                obj.pos,
+                                obj.rad,
+                            )
+                          : null;
                 if (
                     collision &&
                     (!panCollision ||

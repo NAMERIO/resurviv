@@ -970,6 +970,10 @@ export class Player extends BaseGameObject {
         this.obstacleOutfit = this.game.map.genOutfitObstacle(type, this, ori, scale);
     }
 
+    getBodyCollider() {
+        return this.obstacleOutfit?.collider ?? this.collider;
+    }
+
     /** "backpack00" is no backpack, "backpack03" is the max level backpack */
     backpack: string;
     /** "" is no helmet, "helmet03" is the max level helmet */
@@ -2353,25 +2357,46 @@ export class Player extends BaseGameObject {
 
         for (let i = 0; i < steps; i++) {
             v2.set(this.pos, v2.add(this.pos, v2.mul(movement, speedToAdd)));
+            if (this.obstacleOutfit) {
+                this.obstacleOutfit.pos = v2.copy(this.pos);
+                this.obstacleOutfit.updateCollider();
+            }
 
             for (let j = 0; j < objs.length && !this.debug.noClip; j++) {
                 const obj = objs[j];
-                if (obj.__type !== ObjectType.Obstacle) continue;
-                if (!obj.collidable) continue;
-                if (obj.dead) continue;
-                if (!util.sameLayer(obj.layer, this.layer)) continue;
-                if (obj.isTree && hasTreeClimbing) continue;
+                let collision: ReturnType<typeof collider.intersect> | null = null;
 
-                const collision = collider.intersectCircle(
-                    obj.collider,
-                    this.pos,
-                    this.rad,
-                );
+                if (obj.__type === ObjectType.Obstacle) {
+                    if (!obj.collidable) continue;
+                    if (obj.dead) continue;
+                    if (!util.sameLayer(obj.layer, this.layer)) continue;
+                    if (obj.isTree && hasTreeClimbing) continue;
+                    if (obj.isSkin) continue;
+
+                    collision = collider.intersect(obj.collider, this.getBodyCollider());
+                } else if (obj.__type === ObjectType.Player) {
+                    if (obj === this) continue;
+                    if (obj.dead || obj.downed) continue;
+                    if (!util.sameLayer(obj.layer, this.layer)) continue;
+                    if (!obj.obstacleOutfit && !this.obstacleOutfit) continue;
+
+                    collision = collider.intersect(
+                        obj.getBodyCollider(),
+                        this.getBodyCollider(),
+                    );
+                } else {
+                    continue;
+                }
+
                 if (collision) {
                     v2.set(
                         this.pos,
                         v2.add(this.pos, v2.mul(collision.dir, collision.pen + 0.001)),
                     );
+                    if (this.obstacleOutfit) {
+                        this.obstacleOutfit.pos = v2.copy(this.pos);
+                        this.obstacleOutfit.updateCollider();
+                    }
                 }
             }
         }

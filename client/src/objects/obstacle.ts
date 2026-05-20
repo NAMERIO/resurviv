@@ -448,18 +448,6 @@ export class Obstacle implements AbstractObject {
                 layer |= 2;
             }
 
-            if (!this.dead && this.isSkin) {
-                const skinPlayer = playerBarn.getPlayerById(this.skinPlayerId);
-                if (skinPlayer) {
-                    zOrd = math.max(math.max(zOrd, skinPlayer.renderZOrd), 21);
-                    if (skinPlayer.renderLayer != 0) {
-                        layer = skinPlayer.renderLayer;
-                        zOrd = skinPlayer.renderZOrd;
-                    }
-                    zIdx = skinPlayer.renderZIdx + 262144;
-                }
-            }
-
             renderer.addPIXIObj(this.sprite, layer, zOrd, zIdx);
 
             if (this.isDoor && this.door.casingSprite) {
