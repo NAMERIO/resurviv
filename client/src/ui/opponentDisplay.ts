@@ -193,6 +193,8 @@ export class LoadoutDisplay {
             nitroLacePercentage: 0,
             hideAndSeekBlindDirty: false,
             hideAndSeekBlindTime: 0,
+            hideAndSeekHunterReleaseTime: 0,
+            hideAndSeekHunterReleaseSeeker: false,
         });
 
         this.activePlayer.layer = this.activePlayer.m_netData.m_layer;
@@ -438,6 +440,8 @@ export class LoadoutDisplay {
                 nitroLacePercentage: 0,
                 hideAndSeekBlindDirty: false,
                 hideAndSeekBlindTime: 0,
+                hideAndSeekHunterReleaseTime: 0,
+                hideAndSeekHunterReleaseSeeker: false,
             });
         }
     }

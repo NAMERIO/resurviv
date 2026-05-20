@@ -70,6 +70,7 @@ import {
     getHideAndSeekSettings,
     getPrivateLobbyMiniGameWeaponOverride,
     isHideAndSeekHider,
+    isHideAndSeekSeeker,
 } from "../privateLobbyMiniGames";
 import { QuestManager } from "../questManager";
 import { WeaponManager } from "../weaponManager";
@@ -1818,6 +1819,19 @@ export class Player extends BaseGameObject {
     get hideAndSeekBlindTime(): number {
         return this.hideAndSeekBlindTicker;
     }
+    get hideAndSeekHunterReleaseTime(): number {
+        const settings = getHideAndSeekSettings(this.game.miniGame);
+        if (!settings || !this.game.started) return 0;
+        return Math.max(0, settings.hunterReleaseDelay - this.game.startedTime);
+    }
+    get hideAndSeekHunterReleaseSeeker(): boolean {
+        return isHideAndSeekSeeker(this.game.miniGame, this.arenaTeam);
+    }
+    get hideAndSeekHunterReleaseLocked(): boolean {
+        return (
+            this.hideAndSeekHunterReleaseSeeker && this.hideAndSeekHunterReleaseTime > 0
+        );
+    }
     get streakNextThreshold(): number {
         return StreakThresholds.get(this.streakActivationCount);
     }
@@ -3209,6 +3223,8 @@ export class Player extends BaseGameObject {
                 nitroLacePercentage: player.nitroLacePercentage,
                 hideAndSeekBlindDirty: true,
                 hideAndSeekBlindTime: player.hideAndSeekBlindTicker,
+                hideAndSeekHunterReleaseTime: player.hideAndSeekHunterReleaseTime,
+                hideAndSeekHunterReleaseSeeker: player.hideAndSeekHunterReleaseSeeker,
             };
             this.startedSpectating = false;
         } else {
@@ -4462,6 +4478,12 @@ export class Player extends BaseGameObject {
         this.moveRight = msg.moveRight;
         this.moveUp = msg.moveUp;
         this.moveDown = msg.moveDown;
+        if (this.hideAndSeekHunterReleaseLocked) {
+            this.moveLeft = false;
+            this.moveRight = false;
+            this.moveUp = false;
+            this.moveDown = false;
+        }
 
         // same logic for `_cullingZoom`, see comment on `set zoom`
         if (this.portrait != msg.portrait) {
@@ -4471,6 +4493,11 @@ export class Player extends BaseGameObject {
         this.touchMoveActive = msg.touchMoveActive;
         this.touchMoveDir = v2.normalizeSafe(msg.touchMoveDir);
         this.touchMoveLen = msg.touchMoveLen;
+        if (this.hideAndSeekHunterReleaseLocked) {
+            this.touchMoveActive = false;
+            this.touchMoveDir = v2.create(0, 0);
+            this.touchMoveLen = 0;
+        }
         this.toMouseLen = msg.toMouseLen;
 
         this.shootHold = msg.shootHold;

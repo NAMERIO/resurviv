@@ -89,6 +89,8 @@ export class Game {
 
     m_debugDisplay!: PIXI.Graphics;
     m_hideAndSeekBlindOverlay!: PIXI.Graphics;
+    m_hideAndSeekHunterReleaseLastSecond = -1;
+    m_hideAndSeekHunterReleaseWasActive = false;
     m_canvasMode!: boolean;
 
     m_updatePass!: boolean;
@@ -1087,6 +1089,7 @@ export class Game {
         this.m_map.m_render(this.m_camera);
         this.m_gas.m_render(dt, this.m_camera);
         this.renderHideAndSeekBlindOverlay(dt);
+        this.renderHideAndSeekHunterReleaseAnnouncement();
         this.m_uiManager.m_render(
             this.m_activePlayer.m_pos,
             this.m_gas,
@@ -1126,6 +1129,34 @@ export class Game {
             this.m_camera.m_screenHeight,
         );
         this.m_hideAndSeekBlindOverlay.endFill();
+    }
+
+    renderHideAndSeekHunterReleaseAnnouncement() {
+        const localData = this.m_activePlayer.m_localData;
+        const timeLeft = localData.m_hideAndSeekHunterReleaseTime;
+        if (timeLeft > 0) {
+            const seconds = Math.ceil(timeLeft);
+            if (seconds !== this.m_hideAndSeekHunterReleaseLastSecond) {
+                const messageKey = localData.m_hideAndSeekHunterReleaseSeeker
+                    ? "game-hide-seek-hunter-wait"
+                    : "game-hide-seek-hunter-release-in";
+                this.m_uiManager.displayAnnouncement(
+                    `${this.m_localization.translate(messageKey)} ${seconds} ${this.m_localization.translate("game-seconds")}`,
+                    1500,
+                );
+                this.m_hideAndSeekHunterReleaseLastSecond = seconds;
+            }
+            this.m_hideAndSeekHunterReleaseWasActive = true;
+            return;
+        }
+
+        if (this.m_hideAndSeekHunterReleaseWasActive) {
+            this.m_uiManager.displayAnnouncement(
+                this.m_localization.translate("game-hide-seek-hunters-released"),
+            );
+        }
+        this.m_hideAndSeekHunterReleaseLastSecond = -1;
+        this.m_hideAndSeekHunterReleaseWasActive = false;
     }
 
     updateAmbience() {

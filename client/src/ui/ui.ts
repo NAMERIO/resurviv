@@ -123,6 +123,7 @@ export class UiManager {
     playersAliveBlueCounter = 0;
     playerKills = $(".js-ui-player-kills");
     announcement = $("#ui-announcement");
+    announcementFadeTimeout = 0;
     killLeaderName = $("#ui-kill-leader-name");
     killLeaderCount = $("#ui-kill-leader-count");
     mapContainer = $("#ui-map-container");
@@ -2014,15 +2015,17 @@ export class UiManager {
         }
     }
 
-    displayAnnouncement(message: string) {
-        if (message) {
-            this.announcement.html(message);
-            this.announcement.fadeIn(400, () => {
-                setTimeout(() => {
-                    this.announcement.fadeOut(800);
-                }, 3000);
-            });
-        }
+    displayAnnouncement(message: string, holdTime = 3000) {
+        if (!message) return;
+
+        window.clearTimeout(this.announcementFadeTimeout);
+        this.announcement.stop(true, true);
+        this.announcement.html(message);
+        this.announcement.fadeIn(400, () => {
+            this.announcementFadeTimeout = window.setTimeout(() => {
+                this.announcement.fadeOut(800);
+            }, holdTime);
+        });
     }
 
     displayGasAnnouncement(type: GasMode, timeLeft: number) {

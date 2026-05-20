@@ -417,6 +417,8 @@ export class Player implements AbstractObject {
         m_nitroLaceActive: boolean;
         m_nitroLacePercentage: number;
         m_hideAndSeekBlindTime: number;
+        m_hideAndSeekHunterReleaseTime: number;
+        m_hideAndSeekHunterReleaseSeeker: boolean;
     };
 
     throwableStatePrev!: string;
@@ -584,6 +586,8 @@ export class Player implements AbstractObject {
             m_nitroLaceActive: false,
             m_nitroLacePercentage: 0,
             m_hideAndSeekBlindTime: 0,
+            m_hideAndSeekHunterReleaseTime: 0,
+            m_hideAndSeekHunterReleaseSeeker: false,
         };
 
         this.playAnim(Anim.None, -1);
@@ -748,6 +752,10 @@ export class Player implements AbstractObject {
             this.m_localData.m_hideAndSeekBlindTime =
                 (data.hideAndSeekBlindTime ?? 0) + 1;
         }
+        this.m_localData.m_hideAndSeekHunterReleaseTime =
+            data.hideAndSeekHunterReleaseTime ?? 0;
+        this.m_localData.m_hideAndSeekHunterReleaseSeeker =
+            data.hideAndSeekHunterReleaseSeeker ?? false;
 
         // Zoom more quickly when changing scopes
         if (this.m_localData.m_scope != scopeOld) {

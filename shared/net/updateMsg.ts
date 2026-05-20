@@ -77,6 +77,9 @@ function serializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
         s.writeFloat(data.hideAndSeekBlindTime, 0, 10, 8);
     }
 
+    s.writeFloat(data.hideAndSeekHunterReleaseTime, 0, 60, 8);
+    s.writeBoolean(data.hideAndSeekHunterReleaseSeeker);
+
     s.writeAlignToNextByte();
 }
 
@@ -149,6 +152,8 @@ function deserializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     if (data.hideAndSeekBlindDirty) {
         data.hideAndSeekBlindTime = s.readFloat(0, 10, 8);
     }
+    data.hideAndSeekHunterReleaseTime = s.readFloat(0, 60, 8);
+    data.hideAndSeekHunterReleaseSeeker = s.readBoolean();
     s.readAlignToNextByte();
 }
 
@@ -905,6 +910,8 @@ export interface LocalDataWithDirty extends LocalData {
     nitroLacePercentage: number;
     hideAndSeekBlindDirty: boolean;
     hideAndSeekBlindTime: number;
+    hideAndSeekHunterReleaseTime: number;
+    hideAndSeekHunterReleaseSeeker: boolean;
 }
 
 // the non-optional properties are used by both server and client

@@ -12,6 +12,7 @@ export interface HideAndSeekSettings {
     hiderSecondaryWeapon: string;
     hiderBlindThrowable: string;
     hiderBlindThrowableCount: number;
+    hunterReleaseDelay: number;
     propSwitchLimit: number;
     seekerWrongPropDamage: number;
     seekerWrongPropDamageCooldown: number;
@@ -36,6 +37,7 @@ export const HideAndSeekSettings: HideAndSeekSettings = {
     hiderSecondaryWeapon: "",
     hiderBlindThrowable: "flashbang",
     hiderBlindThrowableCount: 1,
+    hunterReleaseDelay: 60,
     propSwitchLimit: 5,
     seekerWrongPropDamage: 10,
     seekerWrongPropDamageCooldown: 0.5,
