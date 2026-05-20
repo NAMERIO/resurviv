@@ -7,6 +7,7 @@ import {
     type ThrowableDef,
     ThrowableDefs,
 } from "../../../shared/defs/gameObjects/throwableDefs";
+import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import { GameConfig, type InventoryItem, WeaponSlot } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import { ObjectType } from "../../../shared/net/objectSerializeFns";
@@ -19,6 +20,7 @@ import { type Vec2, v2 } from "../../../shared/utils/v2";
 import type { BulletParams } from "../game/objects/bullet";
 import type { GameObject } from "../game/objects/gameObject";
 import type { Player } from "../game/objects/player";
+import type { Obstacle } from "./objects/obstacle";
 import type { Projectile } from "./objects/projectile";
 
 /**
@@ -838,6 +840,11 @@ export class WeaponManager {
         const shootFast = this.player.debug.shootFast;
         this.scheduledReload = !shootFast && weapon.ammo <= 1;
 
+        if (this.activeWeapon === "prop_o_matic" && weapon.ammo <= 0) {
+            weapon.ammo = 1;
+            this.player.weapsDirty = true;
+        }
+
         if (weapon.ammo <= 0) {
             if (!shootFast) return;
 
@@ -870,13 +877,18 @@ export class WeaponManager {
 
         this.player.cancelAction();
 
+        const collisionLayer = util.toGroundLayer(this.player.layer);
+        const bulletLayer = this.player.aimLayer;
+
+        if (this.activeWeapon === "prop_o_matic") {
+            this.firePropOMatic(bulletLayer);
+            return;
+        }
+
         if (!shootFast) {
             weapon.ammo--;
             this.player.weapsDirty = true;
         }
-
-        const collisionLayer = util.toGroundLayer(this.player.layer);
-        const bulletLayer = this.player.aimLayer;
 
         const gunOff = itemDef.isDual
             ? itemDef.dualOffset! * (offHand ? 1.0 : -1.0)
@@ -1062,7 +1074,7 @@ export class WeaponManager {
                 apRounds: hasApRounds,
                 highVelocity: hasHighVelocity,
                 lastShot: weapon.ammo <= 0,
-                reflectObjId: this.player.obstacleOutfit?.__id,
+                reflectObjId: this.player.propDisguise?.__id,
                 onHitFx: hasExplosive ? "explosion_rounds" : undefined,
             };
 
@@ -1146,6 +1158,53 @@ export class WeaponManager {
             )
         ) {
             this.player.timeUntilHidden = 1;
+        }
+    }
+
+    private firePropOMatic(layer: number): void {
+        const targetPos = v2.add(
+            this.player.pos,
+            v2.mul(this.player.dir, this.player.toMouseLen),
+        );
+        const targetCollider = collider.createCircle(targetPos, 0.35);
+        const objs = this.player.game.grid.intersectCollider(targetCollider);
+
+        let bestObstacle: Obstacle | undefined;
+        let bestDistance = Number.MAX_VALUE;
+
+        for (const obj of objs) {
+            if (obj.__type !== ObjectType.Obstacle) continue;
+            if (
+                obj.dead ||
+                obj.isSkin ||
+                obj.isWall ||
+                obj.isWindow ||
+                obj.isDoor ||
+                obj.isButton ||
+                !util.sameLayer(obj.layer, layer)
+            ) {
+                continue;
+            }
+
+            const def = MapObjectDefs[obj.type];
+            if (def?.type !== "obstacle") continue;
+            if (!collider.intersectCircle(obj.collider, targetPos, 0.35)) continue;
+
+            const distance = v2.distance(obj.pos, targetPos);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                bestObstacle = obj;
+            }
+        }
+
+        if (bestObstacle) {
+            this.player.setPropDisguise(
+                bestObstacle.type,
+                bestObstacle.ori,
+                bestObstacle.scale,
+            );
+        } else {
+            this.player.setPropDisguise();
         }
     }
 
@@ -1234,16 +1293,27 @@ export class WeaponManager {
                     !player.dead &&
                     util.sameLayer(player.layer, this.player.layer)
                 ) {
+                    const propDisguise = player.propDisguise;
                     const normalized = v2.normalizeSafe(
-                        v2.sub(player.pos, this.player.pos),
+                        v2.sub((propDisguise ?? player).pos, this.player.pos),
                         v2.create(1, 0),
                     );
-                    const collision = coldet.intersectCircleCircle(
-                        coll.pos,
-                        coll.rad,
-                        player.pos,
-                        player.rad,
-                    );
+                    const collision =
+                        propDisguise &&
+                        propDisguise.height >= GameConfig.player.meleeHeight
+                            ? collider.intersectCircle(
+                                  propDisguise.collider,
+                                  coll.pos,
+                                  coll.rad,
+                              )
+                            : !propDisguise
+                              ? coldet.intersectCircleCircle(
+                                    coll.pos,
+                                    coll.rad,
+                                    player.pos,
+                                    player.rad,
+                                )
+                              : null;
                     if (
                         collision &&
                         math.eqAbs(
@@ -1263,7 +1333,15 @@ export class WeaponManager {
                             obj: player,
                             pen: collision.pen,
                             prio: player.teamId === this.player.teamId ? 2 : 0,
-                            pos: v2.copy(player.pos),
+                            pos: propDisguise
+                                ? v2.add(
+                                      coll.pos,
+                                      v2.mul(
+                                          v2.neg(collision.dir),
+                                          coll.rad - collision.pen,
+                                      ),
+                                  )
+                                : v2.copy(player.pos),
                             dir: collision.dir,
                         });
                     }

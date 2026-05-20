@@ -267,6 +267,7 @@ export const Main: MapDef = {
             { name: "saiga", count: 1, weight: 0.1 },
             { name: "ot38", count: 1, weight: 8 },
             { name: "m9", count: 1, weight: 19 },
+            { name: "prop_o_matic", count: 1, weight: 0.05 },
             { name: "m93r", count: 1, weight: 5 },
             { name: "glock", count: 1, weight: 7 },
             { name: "deagle", count: 1, weight: 0.05 },
@@ -581,6 +582,7 @@ export const Main: MapDef = {
             { name: "scarssr", count: 1, weight: 1 }, // ?
             { name: "usas", count: 1, weight: 0.5 }, // ?
             { name: "p30l_dual", count: 1, weight: 1 }, // ?
+            { name: "prop_o_matic", count: 1, weight: 0.5 },
             { name: "awc", count: 1, weight: 0.1 }, // ?
             { name: "pkp", count: 1, weight: 0.3 }, // ?
             { name: "m249", count: 1, weight: 0.3 }, // ?

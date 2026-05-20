@@ -5,6 +5,8 @@ import { RoleDefs } from "../../../shared/defs/gameObjects/roleDefs";
 import { EditMsg } from "../../../shared/net/editMsg";
 import { math } from "../../../shared/utils/math";
 import { util } from "../../../shared/utils/util";
+import { type Vec2, v2 } from "../../../shared/utils/v2";
+import type { Camera } from "../camera";
 import {
     type ConfigKey,
     type ConfigManager,
@@ -13,7 +15,7 @@ import {
     debugRenderConfig,
     type debugToolsConfig,
 } from "../config";
-import { type InputHandler, Key } from "../input";
+import { type InputHandler, Key, MouseButton } from "../input";
 
 const availableLoot = Object.entries(GameObjectDefs)
     .filter(([_, def]) => "lootImg" in def)
@@ -59,6 +61,9 @@ export class Editor {
     spawnLoot = false;
     promoteToRole = false;
     toggleLayer = false;
+    drawExplosionDecal = false;
+    explosionDecalPos = v2.create(0, 0);
+    lastExplosionDecalPos: Vec2 | null = null;
 
     printLootStats = false;
 
@@ -262,6 +267,9 @@ export class Editor {
             folder.addBinding(this.toolParams, "moveObjs", {
                 label: "Move Objects",
             });
+            folder.addBinding(this.toolParams, "explosionDecalBrush", {
+                label: "Explosion Marks",
+            });
             folder.on("change", () => {
                 this.sendMsg = true;
                 this.config.set("debugTools", this.toolParams);
@@ -383,7 +391,7 @@ export class Editor {
         );
     }
 
-    m_update(input: InputHandler) {
+    m_update(input: InputHandler, camera: Camera) {
         let zoom = this.toolParams.zoom;
         if (input.keyPressed(Key.Plus)) {
             zoom -= 8;
@@ -400,6 +408,25 @@ export class Editor {
         }
 
         this.config.config.debugRenderer = this.renderParams;
+
+        if (this.toolParams.explosionDecalBrush) {
+            const mouseWorldPos = camera.m_screenToPoint(input.mousePos);
+            const shouldDraw =
+                input.mousePressed(MouseButton.Left) ||
+                (input.mouseDown(MouseButton.Left) &&
+                    (!this.lastExplosionDecalPos ||
+                        v2.distance(mouseWorldPos, this.lastExplosionDecalPos) >= 0.75));
+
+            if (shouldDraw) {
+                this.drawExplosionDecal = true;
+                this.explosionDecalPos = mouseWorldPos;
+                this.lastExplosionDecalPos = v2.copy(mouseWorldPos);
+                this.sendMsg = true;
+            }
+        }
+        if (input.mouseReleased(MouseButton.Left)) {
+            this.lastExplosionDecalPos = null;
+        }
 
         $("#ui-leaderboard-wrapper,#ui-right-center,#ui-kill-leader-container").css(
             "display",
@@ -435,6 +462,8 @@ export class Editor {
         msg.shootFast = this.toolParams.shootFast;
         msg.punchFast = this.toolParams.punchFast;
         msg.moveObjs = this.toolParams.moveObjs;
+        msg.drawExplosionDecal = this.drawExplosionDecal;
+        msg.explosionDecalPos = this.explosionDecalPos;
 
         return msg;
     }
@@ -447,6 +476,7 @@ export class Editor {
         this.printLootStats = false;
 
         this.toggleLayer = false;
+        this.drawExplosionDecal = false;
         this.sendMsg = false;
     }
 }

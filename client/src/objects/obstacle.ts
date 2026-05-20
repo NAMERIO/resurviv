@@ -42,6 +42,7 @@ export class Obstacle implements AbstractObject {
     healthT!: number;
     dead!: boolean;
     isSkin!: boolean;
+    isPropDisguise!: boolean;
 
     rot!: number;
     scale!: number;
@@ -138,6 +139,7 @@ export class Obstacle implements AbstractObject {
             this.healthT = data.healthT;
             this.dead = data.dead;
             this.isSkin = data.isSkin;
+            this.isPropDisguise = data.isPropDisguise;
             if (this.isSkin) {
                 this.skinPlayerId = data.skinPlayerId!;
             }
@@ -448,15 +450,13 @@ export class Obstacle implements AbstractObject {
                 layer |= 2;
             }
 
-            if (!this.dead && this.isSkin) {
+            if (!this.dead && this.isSkin && !this.isPropDisguise) {
                 const skinPlayer = playerBarn.getPlayerById(this.skinPlayerId);
                 if (skinPlayer) {
                     zOrd = math.max(math.max(zOrd, skinPlayer.renderZOrd), 21);
-                    if (skinPlayer.renderLayer != 0) {
-                        layer = skinPlayer.renderLayer;
-                        zOrd = skinPlayer.renderZOrd;
+                    if (zOrd === skinPlayer.renderZOrd) {
+                        zIdx = skinPlayer.renderZIdx + 262144;
                     }
-                    zIdx = skinPlayer.renderZIdx + 262144;
                 }
             }
 

@@ -388,6 +388,7 @@ export class EditorDisplay {
             parentBuildingId: parentId,
             isSkin: false,
             skinPlayerId: 0,
+            isPropDisguise: false,
         };
         const obj = this.objectCreator.m_updateObjFull(
             ObjectType.Obstacle,

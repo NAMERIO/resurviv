@@ -2,6 +2,7 @@ export enum TeamMode {
     Solo = 1,
     Duo = 2,
     Squad = 4,
+    Ten = 10,
 }
 
 export enum EmoteSlot {
@@ -130,7 +131,7 @@ export const GameConfig = {
     // the protocol we originated from was 78
     // remember to bump this every time a serialization function is changed
     // or a definition item added, removed or moved
-    protocolVersion: 1016,
+    protocolVersion: 1018,
     Input,
     EmoteSlot,
     WeaponSlot,

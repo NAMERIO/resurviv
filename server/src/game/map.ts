@@ -1966,7 +1966,13 @@ export class GameMap {
         return obstacle;
     }
 
-    genOutfitObstacle(type: string, player: Player) {
+    genOutfitObstacle(
+        type: string,
+        player: Player,
+        ori = 0,
+        scale?: number,
+        isPropDisguise = false,
+    ) {
         const def = MapObjectDefs[type] as ObstacleDef;
 
         const obstacle = new Obstacle(
@@ -1974,11 +1980,12 @@ export class GameMap {
             player.pos,
             type,
             player.layer,
-            0,
-            def.scale.createMax,
+            ori,
+            scale ?? def.scale.createMax,
             undefined,
             undefined,
             true,
+            isPropDisguise,
         );
         obstacle.skinPlayerId = player.__id;
         this.game.objectRegister.register(obstacle);

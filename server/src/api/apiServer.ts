@@ -123,7 +123,12 @@ export class ApiServer {
     }
 
     private ensurePrivateLobbyModes() {
-        const privateTeamModes = [TeamMode.Solo, TeamMode.Duo, TeamMode.Squad] as const;
+        const privateTeamModes = [
+            TeamMode.Solo,
+            TeamMode.Duo,
+            TeamMode.Squad,
+            TeamMode.Ten,
+        ] as const;
         const hasMode = (
             mapName: (typeof Config.modes)[number]["mapName"],
             teamMode: (typeof Config.modes)[number]["teamMode"],

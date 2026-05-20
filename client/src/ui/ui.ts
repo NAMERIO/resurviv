@@ -813,7 +813,7 @@ export class UiManager {
 
         const layoutSm = device.uiLayout == device.UiLayout.Sm;
         const groupPlayerIds = groupInfo ? groupInfo.playerIds : [];
-        const groupPlayerCount = groupPlayerIds.length;
+        const groupPlayerCount = math.min(groupPlayerIds.length, this.teamSelectors.length);
 
         for (let i = 0; i < groupPlayerCount; i++) {
             const teamElems = this.teamSelectors[i];
@@ -1367,6 +1367,7 @@ export class UiManager {
             [TeamMode.Solo]: "game-solo-rank",
             [TeamMode.Duo]: "game-duo-rank",
             [TeamMode.Squad]: "game-squad-rank",
+            [TeamMode.Ten]: "game-squad-rank",
         };
         const val = l10nMap[teamMode] || l10nMap.unknown;
         return this.localization.translate(val);

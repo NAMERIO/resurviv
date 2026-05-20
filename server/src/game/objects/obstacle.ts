@@ -89,6 +89,7 @@ export class Obstacle extends BaseGameObject {
 
     isSkin: boolean;
     skinPlayerId?: number;
+    isPropDisguise: boolean;
 
     isWindow: boolean;
     isWall: boolean;
@@ -117,6 +118,7 @@ export class Obstacle extends BaseGameObject {
         parentBuildingId?: number,
         puzzlePiece?: string,
         isSkin?: boolean,
+        isPropDisguise?: boolean,
     ) {
         super(game, pos);
         this.type = type;
@@ -147,6 +149,7 @@ export class Obstacle extends BaseGameObject {
         this.height = def.height;
 
         this.isSkin = isSkin ?? false;
+        this.isPropDisguise = isPropDisguise ?? false;
         this.collidable = (def.collidable && !this.isSkin) ?? true;
         this.isWindow = def.isWindow ?? false;
         this.isWall = def.isWall ?? false;
