@@ -64,6 +64,7 @@ export interface BulletParams {
     hasModifier?: boolean;
     speedMult?: number;
     distanceMult?: number;
+    soundTargetArenaTeam?: "A" | "B";
 }
 
 export class BulletBarn {
@@ -169,6 +170,7 @@ export class Bullet {
     damageSelf!: boolean;
     damage!: number;
     damageMult!: number;
+    soundTargetArenaTeam?: "A" | "B";
     hasModifier!: boolean;
     speedMult!: number;
     distanceMult!: number;
@@ -269,6 +271,7 @@ export class Bullet {
         this.endPos = v2.add(params.pos, v2.mul(this.dir, this.distance));
         this.clientEndPos = v2.copy(this.endPos);
         this.damage = bulletDef.damage * this.damageMult;
+        this.soundTargetArenaTeam = params.soundTargetArenaTeam;
         this.skipCollision = !!bulletDef.skipCollision;
         this.isShrapnel = bulletDef.shrapnel;
 
@@ -630,6 +633,7 @@ export class Bullet {
 
             if (col.type == "obstacle") {
                 const mapDef = MapObjectDefs[col.obstacleType!] as ObstacleDef;
+                this.player?.punishHideAndSeekWrongPropHit();
 
                 const def = GameObjectDefs[this.bulletType] as BulletDef;
                 const reflectOnHit =

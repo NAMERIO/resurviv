@@ -63,7 +63,11 @@ import { validateUserName } from "../../utils/serverHelpers";
 import type { Game, JoinTokenData } from "../game";
 import { Group, Team } from "../group";
 import { InventoryManager } from "../inventoryManager";
-import { getPrivateLobbyMiniGameWeaponOverride } from "../privateLobbyMiniGames";
+import {
+    getHideAndSeekSettings,
+    getPrivateLobbyMiniGameWeaponOverride,
+    isHideAndSeekHider,
+} from "../privateLobbyMiniGames";
 import { QuestManager } from "../questManager";
 import { WeaponManager } from "../weaponManager";
 import type { Building } from "./building";
@@ -88,6 +92,7 @@ interface Emote {
     pos: Vec2;
     type: string;
     isPing: boolean;
+    targetArenaTeam?: "A" | "B";
     /**
      * if type is "emote_loot", typestring of item goes here
      * "m870", "mosin", "1xscope", "762mm", etc
@@ -659,13 +664,14 @@ export class PlayerBarn {
         });
     }
 
-    addMapPing(type: string, pos: Vec2, playerId = 0) {
+    addMapPing(type: string, pos: Vec2, playerId = 0, targetArenaTeam?: "A" | "B") {
         this.emotes.push({
             isPing: true,
             type,
             pos,
             playerId,
             itemType: "",
+            targetArenaTeam,
         });
     }
 }
@@ -1472,6 +1478,7 @@ export class Player extends BaseGameObject {
 
     checkDamageStreaks(): void {
         if (isBattleRoyaleMapName(this.game.mapName)) return;
+        if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
         // If already ready or active, nothing to check
         if (this.streakReady || this.streakActive) return;
         const threshold = this.streakNextThreshold;
@@ -1485,6 +1492,10 @@ export class Player extends BaseGameObject {
         if (isBattleRoyaleMapName(this.game.mapName)) return;
         if (!this.streakReady) return;
         if (this.streakActive) return;
+
+        if (this.activateHideAndSeekBlindStreak()) {
+            return;
+        }
 
         const streakDef = DamageStreakDefs[this.chosenStreakType];
         if (!streakDef) return;
@@ -1513,8 +1524,45 @@ export class Player extends BaseGameObject {
         }
     }
 
+    activateHideAndSeekBlindStreak(): boolean {
+        const settings = getHideAndSeekSettings(this.game.miniGame);
+        if (!settings || this.arenaTeam !== settings.hiderTeam) return false;
+        if (this.hideAndSeekBlindStreakUsed) return true;
+
+        this.hideAndSeekBlindStreakUsed = true;
+        this.streakReady = false;
+        this.streakActive = true;
+        this.streakActiveTimer = settings.seekerBlindDuration;
+        this.streakActivationCount++;
+        this.streakDirty = true;
+        this.questManager.trackEvent("streak_activated", {});
+        this.emitHideAndSeekNoise(settings);
+
+        for (const player of this.game.playerBarn.livingPlayers) {
+            if (
+                player.arenaTeam === settings.seekerTeam &&
+                util.sameLayer(player.layer, this.layer) &&
+                v2.distance(player.pos, this.pos) <= settings.seekerBlindRadius
+            ) {
+                player.hideAndSeekBlindTicker = Math.max(
+                    player.hideAndSeekBlindTicker,
+                    settings.seekerBlindDuration,
+                );
+            }
+        }
+
+        return true;
+    }
+
     deactivateStreak(): void {
         if (!this.streakActive) return;
+
+        if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) {
+            this.streakActive = false;
+            this.streakActiveTimer = 0;
+            this.streakDirty = true;
+            return;
+        }
 
         const streakDef = DamageStreakDefs[this.chosenStreakType];
         if (streakDef) {
@@ -1560,6 +1608,97 @@ export class Player extends BaseGameObject {
                 this.checkDamageStreaks();
             }
         }
+    }
+
+    updateHideAndSeek(dt: number): void {
+        if (this.hideAndSeekBlindTicker > 0) {
+            this.hideAndSeekBlindTicker = Math.max(0, this.hideAndSeekBlindTicker - dt);
+        }
+        if (this.hideAndSeekWrongPropDamageCooldown > 0) {
+            this.hideAndSeekWrongPropDamageCooldown = Math.max(
+                0,
+                this.hideAndSeekWrongPropDamageCooldown - dt,
+            );
+        }
+
+        const settings = getHideAndSeekSettings(this.game.miniGame);
+        if (!settings || this.arenaTeam !== settings.hiderTeam) return;
+
+        if (this.propDisguise) {
+            this.hideAndSeekNoiseTicker -= dt;
+            if (this.hideAndSeekNoiseTicker <= 0) {
+                this.emitHideAndSeekNoise(settings);
+                this.hideAndSeekNoiseTicker = settings.hiderNoiseInterval;
+            }
+        } else {
+            this.hideAndSeekNoiseTicker = settings.hiderNoiseInterval;
+        }
+    }
+
+    emitHideAndSeekNoise(settings: ReturnType<typeof getHideAndSeekSettings>): void {
+        if (!settings) return;
+
+        const weaponDef = GameObjectDefs[settings.hiderNoiseWeapon] as GunDef;
+        const pingOffsetAngle = util.random(0, Math.PI * 2);
+        const pingOffsetDistance = util.random(
+            settings.hiderNoisePingOffsetRadius * 0.5,
+            settings.hiderNoisePingOffsetRadius,
+        );
+        const pingPos = v2.add(
+            this.pos,
+            v2.mul(
+                v2.create(Math.cos(pingOffsetAngle), Math.sin(pingOffsetAngle)),
+                pingOffsetDistance,
+            ),
+        );
+        this.game.map.clampToMapBounds(pingPos);
+        this.game.playerBarn.addMapPing(
+            settings.hiderNoisePing,
+            pingPos,
+            this.__id,
+            settings.seekerTeam,
+        );
+        this.game.bulletBarn.fireBullet({
+            dir: this.dir,
+            pos: this.pos,
+            bulletType: weaponDef.bulletType,
+            gameSourceType: settings.hiderNoiseWeapon,
+            layer: this.layer,
+            damageMult: 0,
+            damageType: GameConfig.DamageType.Player,
+            playerId: this.__id,
+            shotAlt: settings.hiderNoiseShotAlt,
+            shotFx: true,
+            soundTargetArenaTeam: settings.seekerTeam,
+        });
+    }
+
+    canUseHideAndSeekPropSwitch(): boolean {
+        if (!isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return true;
+        return this.hideAndSeekPropSwitchesLeft > 0;
+    }
+
+    consumeHideAndSeekPropSwitch(): void {
+        if (!isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
+        this.hideAndSeekPropSwitchesLeft = Math.max(
+            0,
+            this.hideAndSeekPropSwitchesLeft - 1,
+        );
+    }
+
+    punishHideAndSeekWrongPropHit(): void {
+        const settings = getHideAndSeekSettings(this.game.miniGame);
+        if (!settings || this.arenaTeam !== settings.seekerTeam) return;
+        if (this.hideAndSeekWrongPropDamageCooldown > 0) return;
+
+        this.hideAndSeekWrongPropDamageCooldown = settings.seekerWrongPropDamageCooldown;
+        this.damage({
+            amount: settings.seekerWrongPropDamage,
+            damageType: GameConfig.DamageType.Player,
+            gameSourceType: "prop_o_matic",
+            weaponSourceType: "prop_o_matic",
+            dir: v2.create(0, 0),
+        });
     }
 
     hasActivePan() {
@@ -1679,6 +1818,11 @@ export class Player extends BaseGameObject {
     streakSavedWeapon: { slot: number; type: string; ammo: number } | null = null;
     streakGunSlot: number = -1;
     streakDirty = true;
+    hideAndSeekBlindStreakUsed = false;
+    hideAndSeekBlindTicker = 0;
+    hideAndSeekWrongPropDamageCooldown = 0;
+    hideAndSeekPropSwitchesLeft = 0;
+    hideAndSeekNoiseTicker = 0;
     get streakNextThreshold(): number {
         return StreakThresholds.get(this.streakActivationCount);
     }
@@ -1876,6 +2020,7 @@ export class Player extends BaseGameObject {
         this.timeAlive += dt;
 
         this.updateStreaks(dt);
+        this.updateHideAndSeek(dt);
 
         if (this.game.map.factionMode && this.timeUntilHidden > 0) {
             this.timeUntilHidden -= dt;
@@ -2737,6 +2882,12 @@ export class Player extends BaseGameObject {
         if (insideSmoke || this.downed) {
             finalZoom = lowestZoom;
         }
+        if (this.hideAndSeekBlindTicker > 0) {
+            finalZoom = Math.min(
+                finalZoom,
+                getHideAndSeekSettings(this.game.miniGame)?.seekerBlindZoom ?? lowestZoom,
+            );
+        }
 
         if (this.debug.zoomEnabled) {
             this.zoom = this.debug.zoom;
@@ -3108,6 +3259,10 @@ export class Player extends BaseGameObject {
 
             const emoteDef = GameObjectDefs[emote.type];
 
+            if (emote.targetArenaTeam && player.arenaTeam !== emote.targetArenaTeam) {
+                return false;
+            }
+
             if (emotePlayer) {
                 if (!emote.isPing && !player.visibleObjects.has(emotePlayer)) {
                     return false;
@@ -3159,6 +3314,8 @@ export class Player extends BaseGameObject {
         for (let i = 0; i < bullets.length; i++) {
             const bullet = bullets[i];
             if (
+                (bullet.soundTargetArenaTeam !== undefined &&
+                    bullet.soundTargetArenaTeam === player.arenaTeam) ||
                 v2.lengthSqr(v2.sub(bullet.pos, player.pos)) < radiusSquared ||
                 v2.lengthSqr(v2.sub(bullet.clientEndPos, player.pos)) < radiusSquared ||
                 coldet.intersectSegmentCircle(
@@ -4595,11 +4752,15 @@ export class Player extends BaseGameObject {
 
     getPlayerStatus() {
         const players: Player[] = this.game.modeManager.getPlayerStatusPlayers(this)!;
+        const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
         return players.map((p) => {
             const hiddenByDebug = p.isInvisibleTo(this);
-            const visible = this.game.arenaPrivate
-                ? true
-                : !hiddenByDebug && (p.teamId === this.teamId || p.timeUntilHidden > 0);
+            const visible =
+                this.game.arenaPrivate && hideAndSeekSettings && this.arenaTeam
+                    ? p.arenaTeam === this.arenaTeam
+                    : this.game.arenaPrivate ||
+                      (!hiddenByDebug &&
+                          (p.teamId === this.teamId || p.timeUntilHidden > 0));
             return {
                 hasData:
                     (this.game.arenaPrivate && visible) ||
@@ -5439,6 +5600,15 @@ export class Player extends BaseGameObject {
                 );
                 this.loadout.secondary = weaponOverride.secondary;
             }
+        }
+
+        const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
+        if (hideAndSeekSettings && this.arenaTeam === hideAndSeekSettings.hiderTeam) {
+            this.hideAndSeekPropSwitchesLeft = hideAndSeekSettings.propSwitchLimit;
+            this.hideAndSeekNoiseTicker = hideAndSeekSettings.hiderNoiseInterval;
+            this.streakReady = true;
+            this.streakDirty = true;
+            this.damageDealt = this.streakNextThreshold;
         }
     }
 

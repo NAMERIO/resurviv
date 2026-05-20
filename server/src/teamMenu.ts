@@ -796,6 +796,7 @@ export class TeamMenu {
             gameModeIdx: room.data.gameModeIdx,
             mapName: mode.mapName,
             teamMode: mode.teamMode,
+            miniGame: room.data.miniGame,
             findingGame: room.data.findingGame,
             teamACount: room.getArenaTeamCount("A"),
             teamBCount: room.getArenaTeamCount("B"),

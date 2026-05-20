@@ -7,6 +7,7 @@ export interface PingDef {
     pingMap?: boolean;
     pingLife?: number;
     mapLife?: number;
+    mapScale?: number;
     mapEvent?: boolean;
     worldDisplay?: boolean;
     tint?: number;
@@ -84,6 +85,19 @@ export const PingDefs: Record<string, PingDef> = {
         mapEvent: true,
         worldDisplay: true,
         tint: 0xeaff00,
+    },
+    ping_hide_and_seek_noise: {
+        type: "ping",
+        texture: "ping-team-danger.img",
+        mapTexture: "ping-map-pulse.img",
+        sound: "",
+        pingMap: true,
+        pingLife: 0,
+        mapLife: 3,
+        mapScale: 0.34,
+        mapEvent: true,
+        worldDisplay: false,
+        tint: 0xffea00,
     },
     ping_woodsking: {
         type: "ping",

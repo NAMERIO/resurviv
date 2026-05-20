@@ -23,7 +23,7 @@ export const PrivateLobbyMiniGameDefs = {
     },
     hide_and_seek: {
         id: "hide_and_seek",
-        name: "Hide and Seek",
+        name: "PROP HUNT",
         teamNames: {
             A: "Hiders",
             B: "Seekers",

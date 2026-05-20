@@ -104,6 +104,7 @@ export class Application {
     prestigeArenaMiniGameLabel = $("#create-link-minigame");
     prestigeArenaBattleModeLabel = $("#battle-link-mode");
     prestigeArenaBattleTypeLabel = $("#battle-link-type");
+    prestigeArenaBattleMiniGameLabel = $("#battle-link-minigame");
     prestigeArenaPreviewReqId = 0;
     lastArenaPreloadedMapName = "";
     prestigeArenaSummaryTab = $("#prestige-game-summary-button");
@@ -1115,6 +1116,7 @@ export class Application {
                 "background-image",
                 "url(/img/gui/emote.svg)",
             );
+            this.applyBattleMiniGameStyle(miniGame);
             if (this.teamMenu.active && this.teamMenu.arena && this.teamMenu.isLeader) {
                 this.teamMenu.setRoomProperty("miniGame", miniGame);
             } else {
@@ -1220,6 +1222,15 @@ export class Application {
         }
     }
 
+    applyBattleMiniGameStyle(miniGame?: PrivateLobbyMiniGame) {
+        const miniGameDef = getPrivateLobbyMiniGameDef(miniGame);
+        this.prestigeArenaBattleMiniGameLabel.text(miniGameDef.name);
+        this.prestigeArenaBattleMiniGameLabel.css(
+            "background-image",
+            "url(/img/gui/emote.svg)",
+        );
+    }
+
     updatePrestigeArenaJoinPreview() {
         if (this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined) {
             return;
@@ -1231,6 +1242,7 @@ export class Application {
                 this.localization.translate("index-join-team"),
             );
             this.applyBattleModeStyleByIdx(this.prestigeArenaSelectedModeIdx);
+            this.applyBattleMiniGameStyle(this.prestigeArenaSelectedMiniGame);
             this.prestigeArenaPreviewReqId++;
             return;
         }
@@ -1246,6 +1258,7 @@ export class Application {
                 gameModeIdx?: number;
                 mapName?: string;
                 teamMode?: number;
+                miniGame?: PrivateLobbyMiniGame;
             }) => {
                 if (reqId !== this.prestigeArenaPreviewReqId) return;
                 if (!data?.exists || !Number.isFinite(data.gameModeIdx)) {
@@ -1253,17 +1266,20 @@ export class Application {
                         this.localization.translate("index-join-team"),
                     );
                     this.applyBattleModeStyleByIdx(this.prestigeArenaSelectedModeIdx);
+                    this.applyBattleMiniGameStyle(this.prestigeArenaSelectedMiniGame);
                     return;
                 }
                 const modeIdx = data.gameModeIdx as number;
                 const mode = this.siteInfo.info.modes?.[modeIdx];
                 if (!mode) return;
                 this.applyBattleModeStyleByIdx(modeIdx);
+                const miniGameDef = getPrivateLobbyMiniGameDef(data.miniGame);
+                this.applyBattleMiniGameStyle(data.miniGame);
                 const joinTarget = parsedInvite.preferredTeam
-                    ? `Team ${parsedInvite.preferredTeam}`
+                    ? miniGameDef.teamNames[parsedInvite.preferredTeam]
                     : "Spectate";
                 this.prestigeArenaJoinBtn.text(
-                    `${joinTarget} ${this.getModeDisplayName(mode.mapName)} ${this.getTeamModeDisplayName(mode.teamMode)}`,
+                    `${joinTarget} ${this.getModeDisplayName(mode.mapName)} ${this.getTeamModeDisplayName(mode.teamMode)} ${miniGameDef.name}`,
                 );
             },
             error: () => {
@@ -1272,6 +1288,7 @@ export class Application {
                     this.localization.translate("index-join-team"),
                 );
                 this.applyBattleModeStyleByIdx(this.prestigeArenaSelectedModeIdx);
+                this.applyBattleMiniGameStyle(this.prestigeArenaSelectedMiniGame);
             },
         });
     }
@@ -1324,6 +1341,7 @@ export class Application {
         this.prestigeArenaJoinBtn.text(this.localization.translate("index-join-team"));
         this.prestigeArenaPreviewReqId++;
         this.applyBattleModeStyleByIdx(this.prestigeArenaSelectedModeIdx);
+        this.applyBattleMiniGameStyle(this.prestigeArenaSelectedMiniGame);
         this.updatePrestigeJoinButtonState();
     }
 
@@ -1347,6 +1365,7 @@ export class Application {
         this.prestigeArenaBattlePane.toggleClass("arena-large-teams", largeTeams);
         this.prestigeArenaTeamsBoard.toggleClass("arena-large-teams", largeTeams);
         this.applyBattleModeStyleByIdx(this.teamMenu.roomData.gameModeIdx);
+        this.applyBattleMiniGameStyle(this.teamMenu.roomData.miniGame);
         const teamA = this.teamMenu.players.filter((p) => p.team === "A" && !p.spectator);
         const teamB = this.teamMenu.players.filter((p) => p.team === "B" && !p.spectator);
         const spectators = this.teamMenu.players.filter(
@@ -1739,6 +1758,7 @@ export class Application {
             "background-image",
             "url(/img/gui/emote.svg)",
         );
+        this.applyBattleMiniGameStyle(this.prestigeArenaSelectedMiniGame);
         this.prestigeArenaCodeRow.css("display", code.length ? "flex" : "none");
         this.prestigeArenaSpectatorCodeNote.toggleClass("hide", !code.length);
         this.prestigeArenaWrapper.addClass("arena-joined-shell");

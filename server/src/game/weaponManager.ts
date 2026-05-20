@@ -1162,6 +1162,10 @@ export class WeaponManager {
     }
 
     private firePropOMatic(layer: number): void {
+        if (!this.player.canUseHideAndSeekPropSwitch()) {
+            return;
+        }
+
         const targetPos = v2.add(
             this.player.pos,
             v2.mul(this.player.dir, this.player.toMouseLen),
@@ -1206,6 +1210,8 @@ export class WeaponManager {
         } else {
             this.player.setPropDisguise();
         }
+
+        this.player.consumeHideAndSeekPropSwitch();
     }
 
     getMeleeCollider() {
@@ -1361,6 +1367,7 @@ export class WeaponManager {
             const obj = hit.obj;
 
             if (obj.__type === ObjectType.Obstacle) {
+                this.player.punishHideAndSeekWrongPropHit();
                 obj.damage({
                     amount: meleeDef.damage * meleeDef.obstacleDamage,
                     gameSourceType: this.activeWeapon,

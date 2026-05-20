@@ -5820,7 +5820,13 @@ a:active {
   #modal-prestige-body
   .modal-prestige-body-inner
   #modal-battle-window
-  .battle-type {
+  .battle-type,
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .battle-minigame {
   width: 335px;
   height: 50px;
   margin: 0 auto;
@@ -5848,7 +5854,14 @@ a:active {
   .modal-prestige-body-inner
   #modal-battle-window
   .battle-type
-  .battle-game-type {
+  .battle-game-type,
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .battle-minigame
+  .battle-game-minigame {
   text-transform: uppercase;
   font-size: 20px;
   line-height: 23px;
@@ -5879,7 +5892,14 @@ a:active {
   .modal-prestige-body-inner
   #modal-battle-window
   .battle-type
-  #battle-link-type {
+  #battle-link-type,
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .battle-minigame
+  #battle-link-minigame {
   text-transform: capitalize;
   font-size: 23.5px;
   line-height: 28px;
@@ -5904,9 +5924,23 @@ a:active {
   #modal-prestige-body
   .modal-prestige-body-inner
   #modal-battle-window
-  .battle-type.active {
+  .battle-type.active,
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .battle-minigame.active {
   background: #347370;
   color: #ffffff;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .battle-minigame.active {
+  background: #5b3561;
 }
 #modal-prestige-arena
   #modal-prestige-wrapper
@@ -6319,12 +6353,13 @@ a:active {
   #modal-battle-window.arena-joined-layout {
   display: grid;
   grid-template-columns: 330px minmax(0, 1fr);
-  grid-template-rows: 50px 44px 50px 50px minmax(0, 1fr);
+  grid-template-rows: 50px 44px 50px 50px 50px minmax(0, 1fr);
   grid-template-areas:
     "counter teams"
     "code teams"
     "mode teams"
     "type teams"
+    "game teams"
     "actions specs";
   gap: 14px;
   padding: 18px 20px 16px;
@@ -6337,12 +6372,13 @@ a:active {
   .modal-prestige-body-inner
   #modal-battle-window.arena-joined-layout.arena-large-teams {
   grid-template-columns: 330px minmax(0, 1fr);
-  grid-template-rows: 50px 44px 50px 50px 52px 250px;
+  grid-template-rows: 50px 44px 50px 50px 50px 52px 250px;
   grid-template-areas:
     "counter teams"
     "code teams"
     "mode teams"
     "type teams"
+    "game teams"
     "actions teams"
     ". specs";
   gap: 16px;
@@ -6395,6 +6431,16 @@ a:active {
   #modal-battle-window.arena-joined-layout
   .battle-type {
   grid-area: type;
+  width: 100%;
+  margin: 0;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window.arena-joined-layout
+  .battle-minigame {
+  grid-area: game;
   width: 100%;
   margin: 0;
 }
@@ -6571,6 +6617,12 @@ a:active {
     .modal-prestige-body-inner
     #modal-battle-window.arena-joined-layout
     .battle-type,
+  #modal-prestige-arena
+    #modal-prestige-wrapper
+    #modal-prestige-body
+    .modal-prestige-body-inner
+    #modal-battle-window.arena-joined-layout
+    .battle-minigame,
   #modal-prestige-arena
     #modal-prestige-wrapper
     #modal-prestige-body
