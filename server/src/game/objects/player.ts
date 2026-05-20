@@ -63,6 +63,7 @@ import { validateUserName } from "../../utils/serverHelpers";
 import type { Game, JoinTokenData } from "../game";
 import { Group, Team } from "../group";
 import { InventoryManager } from "../inventoryManager";
+import { getPrivateLobbyMiniGameWeaponOverride } from "../privateLobbyMiniGames";
 import { QuestManager } from "../questManager";
 import { WeaponManager } from "../weaponManager";
 import type { Building } from "./building";
@@ -250,6 +251,7 @@ export class PlayerBarn {
             joinData.clanTagColor,
             joinData.canUseDeveloper,
             joinData.loadout,
+            joinData.arenaTeam,
             joinData.quests,
         );
 
@@ -1747,6 +1749,7 @@ export class Player extends BaseGameObject {
         clanTagColor: string | null | undefined,
         canUseDeveloper = false,
         loadout?: Loadout,
+        readonly arenaTeam?: "A" | "B",
         questIds?: string[],
     ) {
         super(game, pos);
@@ -5405,6 +5408,37 @@ export class Player extends BaseGameObject {
                 this.weapons[GameConfig.WeaponSlot.Secondary].type == "bugle")
         ) {
             this.addPerk("inspiration", false);
+        }
+
+        const weaponOverride = getPrivateLobbyMiniGameWeaponOverride(
+            this.game.miniGame,
+            this.arenaTeam,
+        );
+        if (weaponOverride) {
+            const slot = GameConfig.WeaponSlot.Primary;
+            if (weaponOverride.primary !== undefined) {
+                this.weapons[slot].type = weaponOverride.primary;
+                this.weapons[slot].ammo = weaponOverride.primary
+                    ? (GameObjectDefs[weaponOverride.primary] as GunDef).maxClip
+                    : 0;
+                this.weapons[slot].cooldown = 0;
+                this.setDisplayWeaponType(slot, weaponOverride.primary);
+                this.loadout.primary = weaponOverride.primary;
+            }
+
+            if (weaponOverride.secondary !== undefined) {
+                const secondary = this.weapons[GameConfig.WeaponSlot.Secondary];
+                secondary.type = weaponOverride.secondary;
+                secondary.ammo = weaponOverride.secondary
+                    ? (GameObjectDefs[weaponOverride.secondary] as GunDef).maxClip
+                    : 0;
+                secondary.cooldown = 0;
+                this.setDisplayWeaponType(
+                    GameConfig.WeaponSlot.Secondary,
+                    weaponOverride.secondary,
+                );
+                this.loadout.secondary = weaponOverride.secondary;
+            }
         }
     }
 

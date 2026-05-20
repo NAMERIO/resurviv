@@ -83,6 +83,7 @@ class GameServer {
             mapName: data.mapName,
             teamMode: data.teamMode,
             arenaPrivate: !!data.arenaPrivate,
+            miniGame: data.miniGame,
             playerData: data.playerData,
             groupHash: data.groupHash,
         });

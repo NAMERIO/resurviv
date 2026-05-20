@@ -1,6 +1,7 @@
 // /api/team_v2 websocket msgs typing
 
 import { z } from "zod";
+import { type PrivateLobbyMiniGame, PrivateLobbyMiniGameIds } from "../defs/miniGame";
 import type { FindGameMatchData } from "./api";
 
 export type TeamMenuErrorType =
@@ -39,6 +40,7 @@ export interface RoomData {
     captchaEnabled: boolean;
     arena: boolean;
     teamsLocked: boolean;
+    miniGame: PrivateLobbyMiniGame;
 }
 
 //
@@ -113,6 +115,7 @@ export const zClientRoomData = z.object({
     gameModeIdx: z.number(),
     arena: z.boolean().optional(),
     teamsLocked: z.boolean().optional(),
+    miniGame: z.enum(PrivateLobbyMiniGameIds).optional(),
 });
 
 export type ClientRoomData = z.infer<typeof zClientRoomData>;

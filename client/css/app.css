@@ -7884,6 +7884,150 @@ a:active {
   #modal-prestige-body
   .modal-prestige-body-inner
   #modal-create-window
+  .create-minigame-group {
+  margin: -31px auto 14px;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  .create-minigame-group
+  #create-minigame {
+  width: 335px;
+  height: 50px;
+  position: relative;
+  margin: 0 auto 14px;
+  display: -webkit-inline-box;
+  display: inline-flex;
+  background: #5b3561;
+  border-radius: 3.72381px;
+  color: #ffffff;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  cursor: pointer;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  .create-minigame-group
+  #create-minigame
+  .create-game-minigame {
+  text-transform: uppercase;
+  font-size: 20px;
+  line-height: 23px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+  align-items: center;
+  text-align: right;
+  background-image: url(../img/prestige-division-line.svg);
+  background-size: 3px 27px;
+  background-position: right;
+  background-repeat: no-repeat;
+  padding-left: 27px;
+  padding-right: 4px;
+  width: 64px;
+  margin-right: 22px;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  .create-minigame-group
+  #create-minigame
+  #create-link-minigame {
+  text-transform: capitalize;
+  font-size: 23.5px;
+  line-height: 28px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+  align-items: center;
+  background-size: 31px;
+  background-repeat: no-repeat;
+  background-position: left;
+  padding-left: 40px;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  .create-minigame-group
+  #create-minigame
+  .create-link-arrow {
+  position: absolute;
+  right: 19px;
+  height: 50px;
+  width: 30px;
+  background: url(../img/gui/index-dropdown-arrow.svg);
+  background-repeat: no-repeat;
+  background-position: 12px 50%;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  .create-minigame-group
+  #create-minigame-selection {
+  overflow-y: auto;
+  height: fit-content;
+  max-height: 140px;
+  width: 335px;
+  margin-top: -10px;
+  display: none;
+  padding-bottom: 4px;
+  position: absolute;
+  z-index: 10;
+  background: #5b3561;
+  border-radius: 3.72381px;
+  color: #ffffff;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  .create-minigame-group
+  #create-minigame-selection
+  .selection-button-minigame {
+  width: auto;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  color: #ffffff;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: capitalize;
+  font-size: 23.5px;
+  line-height: 28px;
+  height: 50px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+  align-items: center;
+  background-size: 31px;
+  background-repeat: no-repeat;
+  background-position: 78px center;
+  position: relative;
+  z-index: 10;
+  padding-left: 118px;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
   .create-region-group {
   margin: -54px auto 18px;
   width: 335px;

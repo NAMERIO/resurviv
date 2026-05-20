@@ -1,9 +1,12 @@
 import { randomUUID } from "crypto";
-import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 import type { UpgradeWebSocket, WSContext } from "hono/ws";
 import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
+import {
+    DefaultPrivateLobbyMiniGame,
+    isPrivateLobbyMiniGame,
+} from "../../shared/defs/miniGame";
 import { GameConfig } from "../../shared/gameConfig";
 import type { FindGameError } from "../../shared/types/api";
 import {
@@ -132,6 +135,7 @@ class Room {
         captchaEnabled: false,
         arena: false,
         teamsLocked: false,
+        miniGame: DefaultPrivateLobbyMiniGame,
     };
 
     arenaOwnerKey?: string;
@@ -165,8 +169,6 @@ class Room {
 
         if (this.data.arena) {
             const cap = this.getArenaTeamCapacity();
-            const teamA = this.getArenaTeamCount("A");
-            const teamB = this.getArenaTeamCount("B");
             const spectatorsFull =
                 this.getArenaSpectatorCount() >= Room.MaxArenaSpectators;
 
@@ -321,6 +323,10 @@ class Room {
             : modes[gameModeIdx].teamMode;
         this.data.autoFill = this.data.arena ? false : props.autoFill;
         this.data.teamsLocked = this.data.arena ? !!props.teamsLocked : false;
+        this.data.miniGame =
+            this.data.arena && isPrivateLobbyMiniGame(props.miniGame)
+                ? props.miniGame
+                : DefaultPrivateLobbyMiniGame;
 
         // kick players that don't fit on the new max players
         if (!this.data.arena) {
@@ -350,7 +356,7 @@ class Room {
         if (!this.data.arena) return;
         const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
         if (!mode) return;
-        const warmupKey = `${this.data.region}:${mode.mapName}:${mode.teamMode}`;
+        const warmupKey = `${this.data.region}:${mode.mapName}:${mode.teamMode}:${this.data.miniGame}`;
         if (this.arenaWarmupKey === warmupKey) return;
         this.arenaWarmupKey = warmupKey;
         void this.teamMenu.server
@@ -361,6 +367,7 @@ class Room {
                 mapName: mode.mapName,
                 teamMode: mode.teamMode,
                 arenaPrivate: true,
+                miniGame: this.data.miniGame,
                 groupHash: this.id,
                 playerData: [],
             } satisfies FindGamePrivateBody)
@@ -566,6 +573,7 @@ class Room {
                               ? `${this.id}-${this.getPlayerTeam(player)}`
                               : this.id,
                     spectator: arenaSpectator,
+                    arenaTeam: this.data.arena ? this.getPlayerTeam(player) : undefined,
                     token,
                     userId: player.userId,
                     ip: player.ip,
@@ -620,6 +628,7 @@ class Room {
             region: region,
             version: data.version,
             arenaPrivate: this.data.arena,
+            miniGame: this.data.arena ? this.data.miniGame : DefaultPrivateLobbyMiniGame,
             groupHash: this.data.arena ? this.id : undefined,
             playerData,
         });

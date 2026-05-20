@@ -12,7 +12,7 @@ import type { FindGamePrivateBody } from "./types";
 export async function getFindGamePlayerData(
     players: Pick<
         FindGamePrivateBody["playerData"][number],
-        "token" | "userId" | "ip" | "roomId" | "spectator"
+        "token" | "userId" | "ip" | "roomId" | "spectator" | "arenaTeam"
     >[],
 ): Promise<FindGamePrivateBody["playerData"]> {
     const userIds = [
@@ -53,9 +53,10 @@ export async function getFindGamePlayerData(
               )
             : {};
 
-    return players.map(({ token, userId, ip, roomId, spectator }) => ({
+    return players.map(({ token, userId, ip, roomId, spectator, arenaTeam }) => ({
         roomId,
         spectator,
+        arenaTeam,
         token,
         userId,
         ip,

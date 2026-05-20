@@ -1,5 +1,9 @@
 import { z } from "zod";
 import type { MapDefs } from "../../../shared/defs/mapDefs";
+import {
+    type PrivateLobbyMiniGame,
+    PrivateLobbyMiniGameIds,
+} from "../../../shared/defs/miniGame";
 import { TeamMode } from "../../../shared/gameConfig";
 import type { FindGameError } from "../../../shared/types/api";
 import { loadoutSchema } from "../../../shared/utils/loadout";
@@ -45,6 +49,7 @@ export interface ServerGameConfig {
     readonly mapName: keyof typeof MapDefs;
     readonly teamMode: TeamMode;
     readonly arenaPrivate?: boolean;
+    readonly miniGame?: PrivateLobbyMiniGame;
 }
 
 export interface GameData {
@@ -52,6 +57,7 @@ export interface GameData {
     teamMode: TeamMode;
     mapName: string;
     arenaPrivate?: boolean;
+    miniGame?: PrivateLobbyMiniGame;
     canJoin: boolean;
     aliveCount: number;
     startedTime: number;
@@ -65,6 +71,7 @@ export const zFindGamePrivateBody = z.object({
     mapName: z.string(),
     teamMode: z.number(),
     arenaPrivate: z.boolean().optional(),
+    miniGame: z.enum(PrivateLobbyMiniGameIds).optional(),
     groupHash: z.string().optional(),
     playerData: z.array(
         z.object({
@@ -77,6 +84,7 @@ export const zFindGamePrivateBody = z.object({
             clanTagColor: z.string().nullable().optional(),
             canUseDeveloper: z.boolean().optional(),
             loadout: loadoutSchema.optional(),
+            arenaTeam: z.enum(["A", "B"]).optional(),
             quests: z.array(z.string()).optional(),
         }),
     ),

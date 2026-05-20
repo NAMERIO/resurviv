@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { WeaponTypeToDefs } from "../../../shared/defs/gameObjectDefs";
 import type { MapDefs } from "../../../shared/defs/mapDefs";
+import { DefaultPrivateLobbyMiniGame } from "../../../shared/defs/miniGame";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import { GameModeStatus } from "../../../shared/types/stats";
@@ -48,6 +49,7 @@ export interface JoinTokenData {
     findGameIp: string;
     spectator?: boolean;
     loadout?: Loadout;
+    arenaTeam?: "A" | "B";
     quests?: string[];
     groupData: {
         autoFill: boolean;
@@ -70,6 +72,7 @@ export class Game {
     isTeamMode: boolean;
     config: ServerGameConfig;
     arenaPrivate: boolean;
+    miniGame: ServerGameConfig["miniGame"];
     arenaStartLockTimer = 0;
     arenaLastCountdownSecond = -1;
     arenaGoBroadcasted = false;
@@ -154,6 +157,7 @@ export class Game {
 
         this.config = config;
         this.arenaPrivate = !!config.arenaPrivate;
+        this.miniGame = config.miniGame ?? DefaultPrivateLobbyMiniGame;
 
         this.teamMode = config.teamMode;
         this.mapName = config.mapName;
@@ -691,6 +695,7 @@ export class Game {
                 findGameIp: token.ip,
                 spectator: token.spectator,
                 loadout: token.loadout,
+                arenaTeam: token.arenaTeam,
                 quests: token.quests,
             });
         }
@@ -749,6 +754,7 @@ export class Game {
             teamMode: this.teamMode,
             mapName: this.mapName,
             arenaPrivate: this.arenaPrivate,
+            miniGame: this.miniGame,
             canJoin: this.canJoin,
             aliveCount: this.aliveCount,
             startedTime: this.startedTime,

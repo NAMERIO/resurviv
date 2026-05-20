@@ -2,6 +2,7 @@ import type { WebSocket } from "uWebSockets.js";
 import { type ChildProcess, fork } from "child_process";
 import { randomUUID } from "crypto";
 import { type MapDef, MapDefs } from "../../../shared/defs/mapDefs";
+import { DefaultPrivateLobbyMiniGame } from "../../../shared/defs/miniGame";
 import type { TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import { util } from "../../../shared/utils/util";
@@ -31,6 +32,7 @@ class GameProcess implements GameData {
     teamMode: TeamMode = 1;
     mapName = "";
     arenaPrivate = false;
+    miniGame: ServerGameConfig["miniGame"] = DefaultPrivateLobbyMiniGame;
     id = "";
     aliveCount = 0;
     startedTime = 0;
@@ -74,6 +76,7 @@ class GameProcess implements GameData {
                     this.teamMode = msg.teamMode;
                     this.mapName = msg.mapName;
                     this.arenaPrivate = !!msg.arenaPrivate;
+                    this.miniGame = msg.miniGame ?? DefaultPrivateLobbyMiniGame;
                     if (this.id !== msg.id) {
                         this.manager.processById.delete(this.id);
                         this.id = msg.id;
@@ -132,6 +135,7 @@ class GameProcess implements GameData {
         this.teamMode = config.teamMode;
         this.mapName = config.mapName;
         this.arenaPrivate = !!config.arenaPrivate;
+        this.miniGame = config.miniGame ?? DefaultPrivateLobbyMiniGame;
         this.stopped = false;
         this.creating = true;
         this.groupHash = undefined;
@@ -312,6 +316,8 @@ export class GameProcessManager implements GameManager {
                     proc.teamMode === body.teamMode &&
                     proc.mapName === body.mapName &&
                     !!proc.arenaPrivate === !!body.arenaPrivate &&
+                    (proc.miniGame ?? DefaultPrivateLobbyMiniGame) ===
+                        (body.miniGame ?? DefaultPrivateLobbyMiniGame) &&
                     (requestedGroupHash
                         ? proc.groupHash === requestedGroupHash
                         : !proc.groupHash)
@@ -326,6 +332,7 @@ export class GameProcessManager implements GameManager {
                 teamMode: body.teamMode,
                 mapName: body.mapName as keyof typeof MapDefs,
                 arenaPrivate: !!body.arenaPrivate,
+                miniGame: body.miniGame ?? DefaultPrivateLobbyMiniGame,
             });
         }
 

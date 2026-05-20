@@ -1,4 +1,5 @@
 import $ from "jquery";
+import { DefaultPrivateLobbyMiniGame } from "../../../shared/defs/miniGame";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import type { FindGameMatchData } from "../../../shared/types/api";
@@ -264,6 +265,7 @@ export class TeamMenu {
                 autoFill: arena ? false : this.config.get("teamAutoFill")!,
                 arena,
                 teamsLocked: false,
+                miniGame: this.roomData.miniGame || DefaultPrivateLobbyMiniGame,
                 findingGame: false,
                 lastError: "",
             } as RoomData;
@@ -399,6 +401,7 @@ export class TeamMenu {
                     this.roomData.region = ourRoomData.region;
                     this.roomData.autoFill = ourRoomData.autoFill;
                     this.roomData.teamsLocked = ourRoomData.teamsLocked;
+                    this.roomData.miniGame = ourRoomData.miniGame;
                 }
                 this.refreshUi();
                 this.onStateUpdated?.();
@@ -720,9 +723,6 @@ export class TeamMenu {
                 .toggleClass("btn-disabled btn-opaque", !this.isLeader)
                 .toggleClass("btn-darken", this.isLeader);
 
-            const modeDesc = mode
-                ? this.siteInfo.getMapButtonDesc(mode.mapName)
-                : undefined;
             $("#team-boost-value").text(`${this.getSquadBoost()}%`);
             const teamModeName = this.getTeamModeDisplayName(mode?.teamMode);
             $("#team-type-name").text(teamModeName);
