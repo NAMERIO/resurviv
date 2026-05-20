@@ -26,7 +26,10 @@ import type { MeleeDef } from "../../../../shared/defs/gameObjects/meleeDefs";
 import type { OutfitDef } from "../../../../shared/defs/gameObjects/outfitDefs";
 import { PerkProperties } from "../../../../shared/defs/gameObjects/perkDefs";
 import type { RoleDef } from "../../../../shared/defs/gameObjects/roleDefs";
-import type { ThrowableDef } from "../../../../shared/defs/gameObjects/throwableDefs";
+import {
+    type ThrowableDef,
+    ThrowableDefs,
+} from "../../../../shared/defs/gameObjects/throwableDefs";
 import { UnlockDefs } from "../../../../shared/defs/gameObjects/unlockDefs";
 import { MapObjectDefs } from "../../../../shared/defs/mapObjectDefs";
 import type { StructureDef } from "../../../../shared/defs/mapObjectsTyping";
@@ -495,6 +498,7 @@ export class PlayerBarn {
             player.spectatorCountDirty = false;
             player.streakDirty = false;
             player.nitroLaceDirty = false;
+            player.hideAndSeekBlindDirty = false;
             player.activeIdDirty = false;
             player.groupStatusDirty = false;
             if (flushPlayerStatus) {
@@ -1493,10 +1497,6 @@ export class Player extends BaseGameObject {
         if (!this.streakReady) return;
         if (this.streakActive) return;
 
-        if (this.activateHideAndSeekBlindStreak()) {
-            return;
-        }
-
         const streakDef = DamageStreakDefs[this.chosenStreakType];
         if (!streakDef) return;
 
@@ -1524,45 +1524,8 @@ export class Player extends BaseGameObject {
         }
     }
 
-    activateHideAndSeekBlindStreak(): boolean {
-        const settings = getHideAndSeekSettings(this.game.miniGame);
-        if (!settings || this.arenaTeam !== settings.hiderTeam) return false;
-        if (this.hideAndSeekBlindStreakUsed) return true;
-
-        this.hideAndSeekBlindStreakUsed = true;
-        this.streakReady = false;
-        this.streakActive = true;
-        this.streakActiveTimer = settings.seekerBlindDuration;
-        this.streakActivationCount++;
-        this.streakDirty = true;
-        this.questManager.trackEvent("streak_activated", {});
-        this.emitHideAndSeekNoise(settings);
-
-        for (const player of this.game.playerBarn.livingPlayers) {
-            if (
-                player.arenaTeam === settings.seekerTeam &&
-                util.sameLayer(player.layer, this.layer) &&
-                v2.distance(player.pos, this.pos) <= settings.seekerBlindRadius
-            ) {
-                player.hideAndSeekBlindTicker = Math.max(
-                    player.hideAndSeekBlindTicker,
-                    settings.seekerBlindDuration,
-                );
-            }
-        }
-
-        return true;
-    }
-
     deactivateStreak(): void {
         if (!this.streakActive) return;
-
-        if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) {
-            this.streakActive = false;
-            this.streakActiveTimer = 0;
-            this.streakDirty = true;
-            return;
-        }
 
         const streakDef = DamageStreakDefs[this.chosenStreakType];
         if (streakDef) {
@@ -1633,6 +1596,11 @@ export class Player extends BaseGameObject {
             this.emitHideAndSeekNoise(settings);
             this.hideAndSeekNoiseTicker = settings.hiderNoiseInterval;
         }
+    }
+
+    applyHideAndSeekBlind(duration: number): void {
+        this.hideAndSeekBlindTicker = Math.max(this.hideAndSeekBlindTicker, duration);
+        this.hideAndSeekBlindDirty = true;
     }
 
     emitHideAndSeekNoise(settings: ReturnType<typeof getHideAndSeekSettings>): void {
@@ -1842,11 +1810,14 @@ export class Player extends BaseGameObject {
     streakSavedWeapon: { slot: number; type: string; ammo: number } | null = null;
     streakGunSlot: number = -1;
     streakDirty = true;
-    hideAndSeekBlindStreakUsed = false;
     hideAndSeekBlindTicker = 0;
+    hideAndSeekBlindDirty = false;
     hideAndSeekWrongPropDamageCooldown = 0;
     hideAndSeekPropSwitchesLeft = 0;
     hideAndSeekNoiseTicker = 0;
+    get hideAndSeekBlindTime(): number {
+        return this.hideAndSeekBlindTicker;
+    }
     get streakNextThreshold(): number {
         return StreakThresholds.get(this.streakActivationCount);
     }
@@ -2906,13 +2877,6 @@ export class Player extends BaseGameObject {
         if (insideSmoke || this.downed) {
             finalZoom = lowestZoom;
         }
-        if (this.hideAndSeekBlindTicker > 0) {
-            finalZoom = Math.min(
-                finalZoom,
-                getHideAndSeekSettings(this.game.miniGame)?.seekerBlindZoom ?? lowestZoom,
-            );
-        }
-
         if (this.debug.zoomEnabled) {
             this.zoom = this.debug.zoom;
         } else {
@@ -3243,6 +3207,8 @@ export class Player extends BaseGameObject {
                 activeStreakTimeLeft: player.streakActiveTimer,
                 nitroLaceDirty: true,
                 nitroLacePercentage: player.nitroLacePercentage,
+                hideAndSeekBlindDirty: true,
+                hideAndSeekBlindTime: player.hideAndSeekBlindTicker,
             };
             this.startedSpectating = false;
         } else {
@@ -5635,10 +5601,17 @@ export class Player extends BaseGameObject {
         if (hideAndSeekSettings && this.arenaTeam === hideAndSeekSettings.hiderTeam) {
             this.hideAndSeekPropSwitchesLeft = hideAndSeekSettings.propSwitchLimit;
             this.syncHideAndSeekPropSwitchAmmo();
+            for (const throwableType of Object.keys(ThrowableDefs)) {
+                this.invManager.set(throwableType as InventoryItem, 0);
+            }
+            this.invManager.set(
+                hideAndSeekSettings.hiderBlindThrowable as InventoryItem,
+                hideAndSeekSettings.hiderBlindThrowableCount,
+            );
+            this.weaponManager.showNextThrowable();
             this.hideAndSeekNoiseTicker = hideAndSeekSettings.hiderNoiseInterval;
-            this.streakReady = true;
+            this.streakReady = false;
             this.streakDirty = true;
-            this.damageDealt = this.streakNextThreshold;
         }
     }
 

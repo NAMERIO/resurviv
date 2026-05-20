@@ -16,6 +16,7 @@ export interface ExplosionDef {
     dropRandomLoot?: number;
     healTeam?: boolean;
     healAmount?: number;
+    blindDuration?: number;
 }
 
 export const ExplosionDefs: Record<string, ExplosionDef> = {
@@ -38,6 +39,17 @@ export const ExplosionDefs: Record<string, ExplosionDef> = {
         shrapnelType: "shrapnel_frag",
         explosionEffectType: "smoke",
         decalType: "decal_smoke_explosion",
+    },
+    explosion_flashbang: {
+        type: "explosion",
+        damage: 0,
+        obstacleDamage: 0,
+        rad: { min: 5, max: 12 },
+        shrapnelCount: 0,
+        shrapnelType: "shrapnel_frag",
+        explosionEffectType: "flashbang",
+        decalType: "",
+        blindDuration: 2,
     },
     explosion_strobe: {
         type: "explosion",

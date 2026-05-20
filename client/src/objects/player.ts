@@ -416,6 +416,7 @@ export class Player implements AbstractObject {
         m_streakNextThreshold: number;
         m_nitroLaceActive: boolean;
         m_nitroLacePercentage: number;
+        m_hideAndSeekBlindTime: number;
     };
 
     throwableStatePrev!: string;
@@ -582,6 +583,7 @@ export class Player implements AbstractObject {
             m_streakNextThreshold: 300,
             m_nitroLaceActive: false,
             m_nitroLacePercentage: 0,
+            m_hideAndSeekBlindTime: 0,
         };
 
         this.playAnim(Anim.None, -1);
@@ -740,6 +742,11 @@ export class Player implements AbstractObject {
         if (data.nitroLaceDirty) {
             this.m_localData.m_nitroLaceActive = (data.nitroLacePercentage ?? 0) > 0;
             this.m_localData.m_nitroLacePercentage = data.nitroLacePercentage ?? 0;
+        }
+
+        if (data.hideAndSeekBlindDirty) {
+            this.m_localData.m_hideAndSeekBlindTime =
+                (data.hideAndSeekBlindTime ?? 0) + 1;
         }
 
         // Zoom more quickly when changing scopes

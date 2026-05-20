@@ -156,6 +156,13 @@ export class ExplosionBarn {
         const obj = collision.obj;
         const def = GameObjectDefs[explosion.type] as ExplosionDef;
 
+        if (
+            explosion.type === "explosion_flashbang" &&
+            obj.__type !== ObjectType.Player
+        ) {
+            return;
+        }
+
         if (obj.__type === ObjectType.Loot) {
             obj.push(
                 v2.normalize(v2.sub(obj.pos, explosion.pos)),
@@ -175,6 +182,25 @@ export class ExplosionBarn {
         }
 
         if (obj.__type == ObjectType.Player) {
+            if (explosion.type === "explosion_flashbang") {
+                const src = explosion.damageParams.source;
+                const sourcePlayer =
+                    src?.__type === ObjectType.Player ? (src as Player) : undefined;
+                const isSourceTeammate =
+                    explosion.damageParams.sourceTeamId !== undefined
+                        ? explosion.damageParams.sourceTeamId === obj.teamId
+                        : sourcePlayer?.teamId === obj.teamId;
+                const isSourceArenaTeammate =
+                    this.game.arenaPrivate &&
+                    sourcePlayer?.arenaTeam !== undefined &&
+                    sourcePlayer.arenaTeam === obj.arenaTeam;
+
+                if (!isSourceTeammate && !isSourceArenaTeammate) {
+                    obj.applyHideAndSeekBlind(def.blindDuration ?? 4);
+                }
+                return;
+            }
+
             const isSourceTeammate =
                 explosion.damageParams.sourceTeamId !== undefined
                     ? explosion.damageParams.sourceTeamId == obj.teamId

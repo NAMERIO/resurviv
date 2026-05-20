@@ -88,6 +88,7 @@ export class Game {
     m_objectCreator!: Creator;
 
     m_debugDisplay!: PIXI.Graphics;
+    m_hideAndSeekBlindOverlay!: PIXI.Graphics;
     m_canvasMode!: boolean;
 
     m_updatePass!: boolean;
@@ -318,6 +319,7 @@ export class Game {
         }
         // Render ordering
         this.m_debugDisplay = new PIXI.Graphics();
+        this.m_hideAndSeekBlindOverlay = new PIXI.Graphics();
         const pixiContainers = [
             this.m_map.display.ground,
             this.m_renderer.layers[0],
@@ -327,6 +329,7 @@ export class Game {
             this.m_renderer.layers[3],
             this.m_debugDisplay,
             this.m_gas.gasRenderer.display,
+            this.m_hideAndSeekBlindOverlay,
             this.m_touch.container,
             this.m_emoteBarn.container,
             this.m_uiManager.container,
@@ -1083,6 +1086,7 @@ export class Game {
         this.m_decalBarn.m_render(this.m_camera, debug, this.m_activePlayer.layer);
         this.m_map.m_render(this.m_camera);
         this.m_gas.m_render(dt, this.m_camera);
+        this.renderHideAndSeekBlindOverlay(dt);
         this.m_uiManager.m_render(
             this.m_activePlayer.m_pos,
             this.m_gas,
@@ -1097,6 +1101,31 @@ export class Game {
             }
             debugLines.flush();
         }
+    }
+
+    renderHideAndSeekBlindOverlay(dt: number) {
+        const fadeTime = 1;
+        const localData = this.m_activePlayer.m_localData;
+        localData.m_hideAndSeekBlindTime = math.max(
+            0,
+            localData.m_hideAndSeekBlindTime - dt,
+        );
+
+        this.m_hideAndSeekBlindOverlay.clear();
+        if (localData.m_hideAndSeekBlindTime <= 0) return;
+
+        const alpha =
+            localData.m_hideAndSeekBlindTime > fadeTime
+                ? 1
+                : localData.m_hideAndSeekBlindTime / fadeTime;
+        this.m_hideAndSeekBlindOverlay.beginFill(0xffffff, alpha);
+        this.m_hideAndSeekBlindOverlay.drawRect(
+            0,
+            0,
+            this.m_camera.m_screenWidth,
+            this.m_camera.m_screenHeight,
+        );
+        this.m_hideAndSeekBlindOverlay.endFill();
     }
 
     updateAmbience() {

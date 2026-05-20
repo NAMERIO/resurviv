@@ -360,6 +360,73 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
             deploy: "frag_deploy_01",
         },
     },
+    flashbang: {
+        name: "Flashbang",
+        type: "throwable",
+        quality: 1,
+        explosionType: "explosion_flashbang",
+        inventoryOrder: 99,
+        cookable: false,
+        noPotatoSwap: true,
+        explodeOnImpact: false,
+        playerCollision: false,
+        fuseTime: 2.5,
+        aimDistance: 0,
+        rad: 1,
+        throwPhysics: {
+            playerVelMult: 0.6,
+            velZ: 5,
+            speed: 15,
+            spinVel: 10 * Math.PI,
+            spinDrag: 1,
+        },
+        speed: { equip: 0, attack: 0 },
+        lootImg: {
+            sprite: "loot-throwable-flashbang.img",
+            tint: 0xff00,
+            border: "loot-circle-outer-01.img",
+            borderTint: 0,
+            scale: 0.2,
+        },
+        worldImg: {
+            sprite: "flashbang-proj-pin.img",
+            scale: 0.12,
+            tint: 0xffffff,
+        },
+        handImg: {
+            equip: {
+                right: {
+                    sprite: "flashbang-proj-pin.img",
+                    pos: { x: 3, y: 4.2 },
+                    scale: 0.14,
+                },
+                left: { sprite: "none" },
+            },
+            cook: {
+                right: {
+                    sprite: "flashbang-proj-pin.img",
+                    pos: { x: 3, y: 4.2 },
+                    scale: 0.14,
+                },
+                left: {
+                    sprite: "proj-frag-pin-part.img",
+                    pos: { x: 3, y: 4.2 },
+                    scale: 0.14,
+                },
+            },
+            throwing: {
+                right: { sprite: "none" },
+                left: { sprite: "none" },
+            },
+        },
+        useThrowParticles: true,
+        sound: {
+            pullPin: "frag_pin_01",
+            throwing: "frag_throw_01",
+            pickup: "frag_pickup_01",
+            deploy: "frag_deploy_01",
+        },
+    },
     strobe: {
         name: "IR Strobe",
         type: "throwable",

@@ -10,10 +10,9 @@ export interface HideAndSeekSettings {
     seekerTeam: "B";
     hiderPrimaryWeapon: string;
     hiderSecondaryWeapon: string;
+    hiderBlindThrowable: string;
+    hiderBlindThrowableCount: number;
     propSwitchLimit: number;
-    seekerBlindDuration: number;
-    seekerBlindRadius: number;
-    seekerBlindZoom: number;
     seekerWrongPropDamage: number;
     seekerWrongPropDamageCooldown: number;
     hiderNoiseInterval: number;
@@ -35,10 +34,9 @@ export const HideAndSeekSettings: HideAndSeekSettings = {
     seekerTeam: "B",
     hiderPrimaryWeapon: "prop_o_matic",
     hiderSecondaryWeapon: "",
+    hiderBlindThrowable: "flashbang",
+    hiderBlindThrowableCount: 1,
     propSwitchLimit: 5,
-    seekerBlindDuration: 5,
-    seekerBlindRadius: 20,
-    seekerBlindZoom: 2,
     seekerWrongPropDamage: 10,
     seekerWrongPropDamageCooldown: 0.5,
     hiderNoiseInterval: 5,

@@ -191,6 +191,8 @@ export class LoadoutDisplay {
             activeStreakTimeLeft: 0,
             nitroLaceDirty: false,
             nitroLacePercentage: 0,
+            hideAndSeekBlindDirty: false,
+            hideAndSeekBlindTime: 0,
         });
 
         this.activePlayer.layer = this.activePlayer.m_netData.m_layer;
@@ -434,6 +436,8 @@ export class LoadoutDisplay {
                 activeStreakTimeLeft: 0,
                 nitroLaceDirty: false,
                 nitroLacePercentage: 0,
+                hideAndSeekBlindDirty: false,
+                hideAndSeekBlindTime: 0,
             });
         }
     }
