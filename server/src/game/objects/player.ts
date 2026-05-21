@@ -2657,17 +2657,20 @@ export class Player extends BaseGameObject {
                 let collision:
                     | ReturnType<typeof coldet.intersectCircleCircle>
                     | ReturnType<typeof collider.intersectCircle> = null;
+                let collisionDirMult = 1;
 
                 if (this.propDisguise && obj.propDisguise) {
                     continue;
                 }
                 if (this.propDisguise) {
-                    collision = coldet.intersectCircleCircle(
+                    if (movement.x === 0 && movement.y === 0) continue;
+
+                    collision = collider.intersectCircle(
+                        this.propDisguise.collider,
                         obj.pos,
                         obj.rad,
-                        this.pos,
-                        this.rad,
                     );
+                    collisionDirMult = -1;
                 } else if (obj.propDisguise) {
                     if (movement.x === 0 && movement.y === 0) continue;
 
@@ -2677,18 +2680,19 @@ export class Player extends BaseGameObject {
                         this.rad,
                     );
                 } else {
-                    collision = coldet.intersectCircleCircle(
-                        obj.pos,
-                        obj.rad,
-                        this.pos,
-                        this.rad,
-                    );
+                    continue;
                 }
 
                 if (collision) {
                     v2.set(
                         this.pos,
-                        v2.add(this.pos, v2.mul(collision.dir, collision.pen + 0.001)),
+                        v2.add(
+                            this.pos,
+                            v2.mul(
+                                collision.dir,
+                                collisionDirMult * (collision.pen + 0.001),
+                            ),
+                        ),
                     );
                     syncSkinObstacles();
                 }
