@@ -41,6 +41,10 @@ export const zSetBattleRoyaleModeBody = z.object({
     enabled: z.boolean(),
 });
 
+export const zSetPauseClanStatsBody = z.object({
+    enabled: z.boolean(),
+});
+
 export interface SaveGameBody {
     matchData: (MatchDataTable & { ip: string; findGameIp: string })[];
 }

@@ -134,6 +134,14 @@ export interface ConfigType {
     battleRoyaleMode: boolean;
 
     /**
+     * Pauses clan stat tracking.
+     *
+     * When enabled, saved games still count for normal player match history and leaderboards,
+     * but kills and wins are not added to clan member stats or clan leaderboards.
+     */
+    pauseClanStats: boolean;
+
+    /**
      * The client theme, changes the splash screen background and for some the menu music.
      *
      * NOTE: Required at build time, unlike modes it wont update by fetching from the server!

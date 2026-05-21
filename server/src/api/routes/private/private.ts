@@ -24,13 +24,14 @@ import {
     type GameModeStatus as GameModeStatusType,
 } from "../../../../../shared/types/stats";
 import { passUtil } from "../../../../../shared/utils/passUtil";
-import { serverConfigPath } from "../../../config";
+import { Config, serverConfigPath } from "../../../config";
 import { isBehindProxy } from "../../../utils/serverHelpers";
 import {
     type SaveGameBody,
     zSetBattleRoyaleModeBody,
     zSetClientThemeBody,
     zSetGameModeBody,
+    zSetPauseClanStatsBody,
     zUpdateRegionBody,
 } from "../../../utils/types";
 import type { Context } from "../..";
@@ -60,6 +61,11 @@ import { isBanned, logPlayerIPs, ModerationRouter } from "./ModerationRouter";
 
 // Helper function to update clan stats for players who are in clans
 async function updateClanStats(matchData: MatchDataTable[]) {
+    if (Config.pauseClanStats) {
+        server.logger.info("Clan stats are paused; skipping clan kill/win updates");
+        return;
+    }
+
     try {
         const aggregatedMatchData = new Map<
             string,
@@ -271,6 +277,22 @@ export const PrivateRouter = new Hono<Context>()
         });
 
         return c.json({ message: `Set client theme to ${theme}` }, 200);
+    })
+    .post("/set_pause_clan_stats", validateParams(zSetPauseClanStatsBody), (c) => {
+        const { enabled } = c.req.valid("json");
+
+        Config.pauseClanStats = enabled;
+
+        saveConfig(serverConfigPath, {
+            pauseClanStats: enabled,
+        });
+
+        return c.json(
+            {
+                message: `Clan stat tracking is now ${enabled ? "paused" : "enabled"}`,
+            },
+            200,
+        );
     })
     .post(
         "/toggle_captcha",

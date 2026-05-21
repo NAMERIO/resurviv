@@ -37,6 +37,7 @@ export const enum Command {
     Balance = "balance",
     SetGameMode = "set_game_mode",
     SetBattleRoyaleMode = "set_battle_royale_mode",
+    SetPauseClanStats = "set_pause_clan_stats",
     SetClientTheme = "set_client_theme",
 }
 

@@ -7,6 +7,7 @@ import {
     zSetBattleRoyaleModeBody,
     zSetClientThemeBody,
     zSetGameModeBody,
+    zSetPauseClanStatsBody,
 } from "../../../server/src/utils/types";
 import {
     zBanAccountParams,
@@ -329,6 +330,20 @@ const commands = {
             {
                 name: "enabled",
                 description: "If Battle Royale mode is enabled",
+                required: true,
+                type: ApplicationCommandOptionType.Boolean,
+            },
+        ],
+    }),
+    [Command.SetPauseClanStats]: createCommand({
+        name: Command.SetPauseClanStats,
+        description: "Pause or resume clan kill and win tracking",
+        optionValidator: zSetPauseClanStatsBody,
+        isPrivateRoute: true,
+        options: [
+            {
+                name: "enabled",
+                description: "If clan stat tracking is paused",
                 required: true,
                 type: ApplicationCommandOptionType.Boolean,
             },
