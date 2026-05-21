@@ -8,7 +8,7 @@ export const ClanConstants = {
     NameMaxLen: 16,
     MessageMaxLen: 300,
     RejoinCooldownMs: 0, // none cooldown for now
-    CurrentSeason: 1,
+    CurrentSeason: 2,
 } as const;
 
 export const ClanTagColorRegex = /^(|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|[a-zA-Z]+)$/;
