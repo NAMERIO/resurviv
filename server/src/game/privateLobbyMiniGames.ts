@@ -1,4 +1,5 @@
 import type { PrivateLobbyMiniGame } from "../../../shared/defs/miniGame";
+import type { InventoryItem } from "../../../shared/gameConfig";
 
 export interface PrivateLobbyMiniGameWeaponOverride {
     primary?: string;
@@ -21,6 +22,8 @@ export interface HideAndSeekSettings {
     hiderNoisePingOffsetRadius: number;
     hiderNoiseWeapon: string;
     hiderNoiseShotAlt: boolean;
+    seekerRemovedSpawnItems: InventoryItem[];
+    seekerAdrenalineHeals: boolean;
 }
 
 interface PrivateLobbyMiniGameServerSettings {
@@ -39,13 +42,15 @@ export const HideAndSeekSettings: HideAndSeekSettings = {
     hiderBlindThrowableCount: 1,
     hunterReleaseDelay: 60,
     propSwitchLimit: 5,
-    seekerWrongPropDamage: 10,
+    seekerWrongPropDamage: 20,
     seekerWrongPropDamageCooldown: 0.5,
-    hiderNoiseInterval: 5,
+    hiderNoiseInterval: 60,
     hiderNoisePing: "ping_hide_and_seek_noise",
     hiderNoisePingOffsetRadius: 16,
     hiderNoiseWeapon: "bugle",
     hiderNoiseShotAlt: false,
+    seekerRemovedSpawnItems: ["bandage", "healthkit", "soda", "painkiller"],
+    seekerAdrenalineHeals: false,
 };
 
 export const PrivateLobbyMiniGameServerSettings: Record<

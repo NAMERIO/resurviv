@@ -2093,7 +2093,14 @@ export class Player extends BaseGameObject {
                     return this.boost >= prev && this.boost <= b.maxBoost;
                 });
 
-                this.health += healAmount!.heal * dt;
+                const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
+                const canHealFromAdrenaline =
+                    !hideAndSeekSettings ||
+                    this.arenaTeam !== hideAndSeekSettings.seekerTeam ||
+                    hideAndSeekSettings.seekerAdrenalineHeals;
+                if (canHealFromAdrenaline) {
+                    this.health += healAmount!.heal * dt;
+                }
 
                 if (this.boost > this.minBoost) {
                     this.boost -= GameConfig.player.boostDecay * dt;
@@ -4039,13 +4046,22 @@ export class Player extends BaseGameObject {
             this.deactivateStreak();
         }
 
+        const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
+        const isHideAndSeekHiderDeath =
+            !!hideAndSeekSettings && this.arenaTeam === hideAndSeekSettings.hiderTeam;
+
         for (let i = 0; i < GameConfig.WeaponSlot.Count; i++) {
             const weap = this.weapons[i];
             if (!weap.type) continue;
             const def = GameObjectDefs[weap.type];
             switch (def.type) {
                 case "gun":
-                    this.weaponManager.dropGun(i);
+                    if (
+                        !isHideAndSeekHiderDeath ||
+                        weap.type !== hideAndSeekSettings.hiderPrimaryWeapon
+                    ) {
+                        this.weaponManager.dropGun(i);
+                    }
                     weap.type = "";
                     break;
                 case "melee":
@@ -5639,6 +5655,13 @@ export class Player extends BaseGameObject {
             this.hideAndSeekNoiseTicker = hideAndSeekSettings.hiderNoiseInterval;
             this.streakReady = false;
             this.streakDirty = true;
+        } else if (
+            hideAndSeekSettings &&
+            this.arenaTeam === hideAndSeekSettings.seekerTeam
+        ) {
+            for (const item of hideAndSeekSettings.seekerRemovedSpawnItems) {
+                this.invManager.set(item, 0);
+            }
         }
     }
 
