@@ -32,6 +32,7 @@ interface BulletCollision {
     dist: number;
     player?: Player;
     layer?: number;
+    propSkin?: boolean;
 }
 
 export interface BulletParams {
@@ -439,6 +440,30 @@ export class Bullet {
 
                 const res = collider.intersectSegment(obj.collider, posOld, this.pos);
                 if (res) {
+                    if (obj.isPropDisguise && obj.skinPlayerId) {
+                        const skinPlayer =
+                            this.bulletManager.game.objectRegister.getById(
+                                obj.skinPlayerId,
+                            );
+                        if (
+                            skinPlayer?.__type === ObjectType.Player &&
+                            !skinPlayer.dead &&
+                            (skinPlayer.__id !== this.playerId || this.damageSelf)
+                        ) {
+                            collisions.push({
+                                type: "player",
+                                player: skinPlayer,
+                                point: res.point,
+                                normal: res.normal,
+                                layer: skinPlayer.layer,
+                                collidable: true,
+                                dist: v2.lengthSqr(v2.sub(res.point, this.startPos)),
+                                propSkin: true,
+                            });
+                            continue;
+                        }
+                    }
+
                     collisions.push({
                         type: "obstacle",
                         obj: obj,
@@ -563,6 +588,7 @@ export class Bullet {
                         layer: obj.layer,
                         collidable: true,
                         dist: v2.lengthSqr(v2.sub(collision.point, this.startPos)),
+                        propSkin: !!propDisguise,
                     });
                     if (obj.hasPerk("steelskin")) {
                         const point = v2.add(
@@ -708,6 +734,12 @@ export class Bullet {
                     }
                 }
                 hit = col.collidable;
+                if (hit && col.propSkin) {
+                    this.clipDistance = true;
+                    this.distance = v2.length(v2.sub(col.point, this.startPos));
+                    this.maxDistance = this.distance;
+                    this.clientEndPos = col.point;
+                }
             } else if (col.type == "pan") {
                 hit = col.collidable;
                 this.reflect(col.point, col.normal, col.obj?.__id ?? 0);
