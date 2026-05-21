@@ -8,6 +8,7 @@ import {
     ThrowableDefs,
 } from "../../../shared/defs/gameObjects/throwableDefs";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
+import type { ObstacleDef } from "../../../shared/defs/mapObjectsTyping";
 import { GameConfig, type InventoryItem, WeaponSlot } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import { ObjectType } from "../../../shared/net/objectSerializeFns";
@@ -35,6 +36,24 @@ export const throwableList = Object.keys(ThrowableDefs).filter((a) => {
     // so filter them out
     return "handImg" in def && "equip" in def.handImg!;
 });
+
+function isRenderablePropObstacle(def: ObstacleDef): boolean {
+    return !!def.img.sprite && def.img.sprite !== "none";
+}
+
+function isRenderablePropLoot(def: unknown): def is { lootImg: { sprite: string } } {
+    return (
+        typeof def === "object" &&
+        def !== null &&
+        "lootImg" in def &&
+        typeof def.lootImg === "object" &&
+        def.lootImg !== null &&
+        "sprite" in def.lootImg &&
+        typeof def.lootImg.sprite === "string" &&
+        def.lootImg.sprite !== "" &&
+        def.lootImg.sprite !== "none"
+    );
+}
 
 throwableList.sort((a, b) => {
     const aDef = ThrowableDefs[a];
@@ -1217,6 +1236,7 @@ export class WeaponManager {
 
                 const def = MapObjectDefs[obj.type];
                 if (def?.type !== "obstacle") continue;
+                if (!isRenderablePropObstacle(def)) continue;
                 if (!collider.intersectCircle(obj.collider, targetPos, 0.35)) continue;
 
                 const distance = v2.distance(obj.pos, targetPos);
@@ -1245,9 +1265,7 @@ export class WeaponManager {
                     obj.destroyed ||
                     obj.isSkin ||
                     !util.sameLayer(obj.layer, layer) ||
-                    !def ||
-                    !("lootImg" in def) ||
-                    (def.type !== "gun" && def.type !== "ammo") ||
+                    !isRenderablePropLoot(def) ||
                     !coldet.testCircleCircle(obj.pos, obj.rad, targetPos, 0.35)
                 ) {
                     continue;
@@ -1289,11 +1307,7 @@ export class WeaponManager {
             return false;
         }
 
-        this.player.setPropDisguise(
-            bestProp.type,
-            bestProp.ori,
-            bestProp.scale,
-        );
+        this.player.setPropDisguise(bestProp.type, bestProp.ori, bestProp.scale);
         this.player.consumeHideAndSeekPropSwitch();
         return true;
     }

@@ -32,7 +32,7 @@ import {
 } from "../../../../shared/defs/gameObjects/throwableDefs";
 import { UnlockDefs } from "../../../../shared/defs/gameObjects/unlockDefs";
 import { MapObjectDefs } from "../../../../shared/defs/mapObjectDefs";
-import type { StructureDef } from "../../../../shared/defs/mapObjectsTyping";
+import type { ObstacleDef, StructureDef } from "../../../../shared/defs/mapObjectsTyping";
 import { MapId } from "../../../../shared/defs/types/misc";
 import {
     type Action,
@@ -1000,6 +1000,16 @@ export class Player extends BaseGameObject {
         }
     }
 
+    private canUseLootAsProp(type: string): boolean {
+        const def = GameObjectDefs[type];
+        return (
+            !!def &&
+            "lootImg" in def &&
+            !!def.lootImg.sprite &&
+            def.lootImg.sprite !== "none"
+        );
+    }
+
     setPropDisguise(type?: string, ori = 0, scale?: number) {
         this.propDisguise?.destroy();
         this.propDisguise = undefined;
@@ -1012,15 +1022,13 @@ export class Player extends BaseGameObject {
         }
 
         const def = MapObjectDefs[type];
-        const lootDef = GameObjectDefs[type];
         if (
-            def?.type !== "obstacle" &&
-            def?.type !== "decal" &&
-            !(
-                lootDef &&
-                "lootImg" in lootDef &&
-                (lootDef.type === "gun" || lootDef.type === "ammo")
-            )
+            (def?.type === "obstacle" &&
+                (!(def as ObstacleDef).img.sprite ||
+                    (def as ObstacleDef).img.sprite === "none")) ||
+            (def?.type !== "obstacle" &&
+                def?.type !== "decal" &&
+                !this.canUseLootAsProp(type))
         ) {
             if (!this.obstacleOutfit) {
                 this.createObstacleOutfit();
