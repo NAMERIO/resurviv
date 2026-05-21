@@ -1996,6 +1996,24 @@ export class GameMap {
         return obstacle;
     }
 
+    genOutfitDecal(type: string, player: Player, ori = 0, scale?: number) {
+        const decal = this.game.decalBarn.addDecal(
+            type,
+            player.pos,
+            player.layer,
+            ori,
+            scale,
+            true,
+            true,
+        );
+        decal.skinPlayerId = player.__id;
+        return decal;
+    }
+
+    genOutfitLoot(type: string, player: Player, count = 1) {
+        return this.game.lootBarn.addSkinLoot(type, player, count);
+    }
+
     perkModeTwinsBunker?: Building;
 
     genBuilding(

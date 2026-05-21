@@ -171,7 +171,7 @@ export class Obstacle extends BaseGameObject {
         if (def.door) {
             this.door = {
                 open: false,
-                canUse: def.door.canUse,
+                canUse: this.isSkin ? false : def.door.canUse,
                 hinge: def.hinge!,
                 closedPos: v2.copy(this.pos),
                 closedOri: this.ori,
@@ -195,7 +195,7 @@ export class Obstacle extends BaseGameObject {
         if (def.button) {
             this.button = {
                 onOff: false,
-                canUse: true,
+                canUse: !this.isSkin,
                 seq: 1,
                 useOnce: def.button.useOnce,
                 useType: def.button.useType!,

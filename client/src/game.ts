@@ -465,6 +465,7 @@ export class Game {
             this.m_particleBarn,
             this.m_camera,
             this.m_map,
+            this.m_lootBarn,
             this.m_arenaPrivate,
             this.m_inputBinds,
             this.m_touch.shotDetected,

@@ -76,6 +76,7 @@ import { QuestManager } from "../questManager";
 import { WeaponManager } from "../weaponManager";
 import type { Building } from "./building";
 import { BaseGameObject, type DamageParams, type GameObject } from "./gameObject";
+import type { Decal } from "./decal";
 import type { Loot } from "./loot";
 import type { MapIndicator } from "./mapIndicator";
 import type { Obstacle } from "./obstacle";
@@ -1011,7 +1012,16 @@ export class Player extends BaseGameObject {
         }
 
         const def = MapObjectDefs[type];
-        if (def?.type !== "obstacle") {
+        const lootDef = GameObjectDefs[type];
+        if (
+            def?.type !== "obstacle" &&
+            def?.type !== "decal" &&
+            !(
+                lootDef &&
+                "lootImg" in lootDef &&
+                (lootDef.type === "gun" || lootDef.type === "ammo")
+            )
+        ) {
             if (!this.obstacleOutfit) {
                 this.createObstacleOutfit();
             }
@@ -1020,7 +1030,12 @@ export class Player extends BaseGameObject {
 
         this.obstacleOutfit?.destroy();
         this.obstacleOutfit = undefined;
-        this.propDisguise = this.game.map.genOutfitObstacle(type, this, ori, scale, true);
+        this.propDisguise =
+            def?.type === "obstacle"
+                ? this.game.map.genOutfitObstacle(type, this, ori, scale, true)
+                : def?.type === "decal"
+                  ? this.game.map.genOutfitDecal(type, this, ori, scale)
+                  : this.game.map.genOutfitLoot(type, this);
     }
 
     getBodyCollider() {
@@ -1874,7 +1889,7 @@ export class Player extends BaseGameObject {
     mobileDropTicker = 0;
 
     obstacleOutfit?: Obstacle;
-    propDisguise?: Obstacle;
+    propDisguise?: Obstacle | Decal | Loot;
 
     /**
      * Only used for match data saving!
@@ -2650,6 +2665,13 @@ export class Player extends BaseGameObject {
 
                     collision = collider.intersectCircle(
                         obj.propDisguise.collider,
+                        this.pos,
+                        this.rad,
+                    );
+                } else {
+                    collision = coldet.intersectCircleCircle(
+                        obj.pos,
+                        obj.rad,
                         this.pos,
                         this.rad,
                     );
@@ -4748,6 +4770,7 @@ export class Player extends BaseGameObject {
             const loot = objs[i];
             if (loot.__type !== ObjectType.Loot) continue;
             if (loot.destroyed) continue;
+            if (loot.isSkin) continue;
             if (
                 util.sameLayer(loot.layer, this.layer) &&
                 (loot.ownerId == 0 || loot.ownerId == this.__id)

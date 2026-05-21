@@ -17,6 +17,7 @@ import type { Game } from "../../src/game";
 import type { InputBinds } from "../../src/inputBinds";
 import { Map } from "../../src/map";
 import { DecalBarn } from "../../src/objects/decal";
+import { LootBarn } from "../../src/objects/loot";
 import { Creator } from "../../src/objects/objectPool";
 import { ParticleBarn } from "../../src/objects/particles";
 import { type Player, PlayerBarn } from "../../src/objects/player";
@@ -34,6 +35,7 @@ export class EditorDisplay {
     renderer!: Renderer;
     particleBarn!: ParticleBarn;
     decalBarn!: DecalBarn;
+    lootBarn!: LootBarn;
     map!: Map;
     playerBarn!: PlayerBarn;
     smokeBarn!: SmokeBarn;
@@ -66,6 +68,7 @@ export class EditorDisplay {
         this.renderer = new Renderer(this as unknown as Game, this.canvasMode);
         this.particleBarn = new ParticleBarn(this.renderer);
         this.decalBarn = new DecalBarn();
+        this.lootBarn = new LootBarn();
         this.map = new Map(this.decalBarn);
         this.playerBarn = new PlayerBarn();
         this.smokeBarn = new SmokeBarn();
@@ -77,6 +80,7 @@ export class EditorDisplay {
             [ObjectType.Building]: this.map.m_buildingPool,
             [ObjectType.Structure]: this.map.m_structurePool,
             [ObjectType.Decal]: this.decalBarn.decalPool,
+            [ObjectType.Loot]: this.lootBarn.lootPool,
             [ObjectType.Smoke]: this.smokeBarn.m_smokePool,
         };
 
@@ -580,6 +584,7 @@ export class EditorDisplay {
             this.particleBarn,
             this.camera,
             this.map,
+            this.lootBarn,
             false,
             this.inputBinds,
             false,

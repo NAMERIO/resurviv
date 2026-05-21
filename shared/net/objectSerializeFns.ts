@@ -49,7 +49,11 @@ export interface ObjectsPartialData {
         puzzleErrSeq: number;
     };
     [ObjectType.Structure]: unknown;
-    [ObjectType.Decal]: unknown;
+    [ObjectType.Decal]: {
+        pos: Vec2;
+        scale: number;
+        ori: number;
+    };
     [ObjectType.Projectile]: {
         pos: Vec2;
         posZ: number;
@@ -142,6 +146,9 @@ export interface ObjectsFullData {
         count: number;
         hasOwner: boolean;
         ownerId: number;
+        isSkin?: boolean;
+        skinPlayerId?: number;
+        isPropDisguise?: boolean;
     };
     [ObjectType.LootSpawner]: unknown;
     [ObjectType.DeadBody]: {
@@ -169,6 +176,9 @@ export interface ObjectsFullData {
         ori: number;
         layer: number;
         goreKills: number;
+        isSkin?: boolean;
+        skinPlayerId?: number;
+        isPropDisguise?: boolean;
     };
     [ObjectType.Projectile]: {
         type: string;
@@ -539,6 +549,11 @@ export const ObjectSerializeFns: {
             if (data.ownerId != 0) {
                 s.writeUint16(data.ownerId);
             }
+            s.writeBoolean(!!data.isSkin);
+            if (data.isSkin) {
+                s.writeUint16(data.skinPlayerId!);
+                s.writeBoolean(!!data.isPropDisguise);
+            }
         },
         /* STRIP_FROM_PROD_CLIENT:END */
 
@@ -554,6 +569,13 @@ export const ObjectSerializeFns: {
             data.hasOwner = s.readBoolean();
             if (data.hasOwner) {
                 data.ownerId = s.readUint16();
+            }
+            data.isSkin = s.readBoolean();
+            if (data.isSkin) {
+                data.skinPlayerId = s.readUint16();
+                data.isPropDisguise = s.readBoolean();
+            } else {
+                data.isPropDisguise = false;
             }
         },
     },
@@ -580,8 +602,7 @@ export const ObjectSerializeFns: {
     [ObjectType.Decal]: {
         serializedFullSize: 0,
         /* STRIP_FROM_PROD_CLIENT:START */
-        serializePart: () => {},
-        serializeFull: (s, data) => {
+        serializePart: (s, data) => {
             s.writeMapPos(data.pos);
             s.writeFloat(
                 data.scale,
@@ -589,25 +610,40 @@ export const ObjectSerializeFns: {
                 Constants.MapObjectMaxScale,
                 8,
             );
-            s.writeMapType(data.type);
             s.writeBits(data.ori, 2);
+        },
+        serializeFull: (s, data) => {
+            s.writeMapType(data.type);
             s.writeBits(data.layer, 2);
             s.writeUint8(data.goreKills);
+            s.writeBoolean(!!data.isSkin);
+            if (data.isSkin) {
+                s.writeUint16(data.skinPlayerId!);
+                s.writeBoolean(!!data.isPropDisguise);
+            }
         },
         /* STRIP_FROM_PROD_CLIENT:END */
 
-        deserializePart: () => {},
-        deserializeFull: (s, data) => {
+        deserializePart: (s, data) => {
             data.pos = s.readMapPos();
             data.scale = s.readFloat(
                 Constants.MapObjectMinScale,
                 Constants.MapObjectMaxScale,
                 8,
             );
-            data.type = s.readMapType();
             data.ori = s.readBits(2);
+        },
+        deserializeFull: (s, data) => {
+            data.type = s.readMapType();
             data.layer = s.readBits(2);
             data.goreKills = s.readUint8();
+            data.isSkin = s.readBoolean();
+            if (data.isSkin) {
+                data.skinPlayerId = s.readUint16();
+                data.isPropDisguise = s.readBoolean();
+            } else {
+                data.isPropDisguise = false;
+            }
         },
     },
     [ObjectType.Projectile]: {

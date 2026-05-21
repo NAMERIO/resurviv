@@ -18,8 +18,10 @@ import { math } from "../../../shared/utils/math";
 import { assert, util } from "../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../shared/utils/v2";
 import type { BulletParams } from "../game/objects/bullet";
+import type { Decal } from "./objects/decal";
 import type { GameObject } from "../game/objects/gameObject";
 import type { Player } from "../game/objects/player";
+import type { Loot } from "./objects/loot";
 import type { Obstacle } from "./objects/obstacle";
 import type { Projectile } from "./objects/projectile";
 import { isHideAndSeekHider } from "./privateLobbyMiniGames";
@@ -1199,35 +1201,67 @@ export class WeaponManager {
         const targetCollider = collider.createCircle(targetPos, 0.35);
         const objs = this.player.game.grid.intersectCollider(targetCollider);
 
-        let bestObstacle: Obstacle | undefined;
+        let bestProp: Obstacle | Decal | Loot | undefined;
         let bestDistance = Number.MAX_VALUE;
 
         for (const obj of objs) {
-            if (obj.__type !== ObjectType.Obstacle) continue;
-            if (
-                obj.dead ||
-                obj.isSkin ||
-                obj.isWall ||
-                obj.isWindow ||
-                obj.isDoor ||
-                obj.isButton ||
-                !util.sameLayer(obj.layer, layer)
-            ) {
-                continue;
-            }
+            if (obj.__type === ObjectType.Obstacle) {
+                if (
+                    obj.dead ||
+                    obj.isSkin ||
+                    obj.isButton ||
+                    !util.sameLayer(obj.layer, layer)
+                ) {
+                    continue;
+                }
 
-            const def = MapObjectDefs[obj.type];
-            if (def?.type !== "obstacle") continue;
-            if (!collider.intersectCircle(obj.collider, targetPos, 0.35)) continue;
+                const def = MapObjectDefs[obj.type];
+                if (def?.type !== "obstacle") continue;
+                if (!collider.intersectCircle(obj.collider, targetPos, 0.35)) continue;
 
-            const distance = v2.distance(obj.pos, targetPos);
-            if (distance < bestDistance) {
-                bestDistance = distance;
-                bestObstacle = obj;
+                const distance = v2.distance(obj.pos, targetPos);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    bestProp = obj;
+                }
+            } else if (obj.__type === ObjectType.Decal) {
+                if (
+                    obj.dead ||
+                    obj.isSkin ||
+                    !util.sameLayer(obj.layer, layer) ||
+                    !collider.intersectCircle(obj.collider, targetPos, 0.35)
+                ) {
+                    continue;
+                }
+
+                const distance = v2.distance(obj.pos, targetPos);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    bestProp = obj;
+                }
+            } else if (obj.__type === ObjectType.Loot) {
+                const def = GameObjectDefs[obj.type];
+                if (
+                    obj.destroyed ||
+                    obj.isSkin ||
+                    !util.sameLayer(obj.layer, layer) ||
+                    !def ||
+                    !("lootImg" in def) ||
+                    (def.type !== "gun" && def.type !== "ammo") ||
+                    !coldet.testCircleCircle(obj.pos, obj.rad, targetPos, 0.35)
+                ) {
+                    continue;
+                }
+
+                const distance = v2.distance(obj.pos, targetPos);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    bestProp = obj;
+                }
             }
         }
 
-        if (!bestObstacle) {
+        if (!bestProp) {
             this.player.setPropDisguise();
             return true;
         }
@@ -1235,9 +1269,10 @@ export class WeaponManager {
         const propDisguise = this.player.propDisguise;
         const changesProp =
             !propDisguise ||
-            propDisguise.type !== bestObstacle.type ||
-            propDisguise.ori !== bestObstacle.ori ||
-            !math.eqAbs(propDisguise.scale, bestObstacle.scale, 0.001);
+            propDisguise.__type !== bestProp.__type ||
+            propDisguise.type !== bestProp.type ||
+            propDisguise.ori !== bestProp.ori ||
+            !math.eqAbs(propDisguise.scale, bestProp.scale, 0.001);
 
         if (!changesProp) {
             return false;
@@ -1255,9 +1290,9 @@ export class WeaponManager {
         }
 
         this.player.setPropDisguise(
-            bestObstacle.type,
-            bestObstacle.ori,
-            bestObstacle.scale,
+            bestProp.type,
+            bestProp.ori,
+            bestProp.scale,
         );
         this.player.consumeHideAndSeekPropSwitch();
         return true;

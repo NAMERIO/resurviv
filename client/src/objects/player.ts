@@ -54,6 +54,7 @@ import type { SoundHandle } from "../lib/createJS";
 import type { Map } from "../map";
 import type { Renderer } from "../renderer";
 import type { UiManager2 } from "../ui/ui2";
+import type { LootBarn } from "./loot";
 import { Pool } from "./objectPool";
 import type { Obstacle } from "./obstacle";
 import type { Emitter, ParticleBarn } from "./particles";
@@ -3066,6 +3067,7 @@ export class PlayerBarn {
         particleBarn: ParticleBarn,
         camera: Camera,
         map: Map,
+        lootBarn: LootBarn,
         arenaPrivate: boolean,
         inputBinds: InputBinds,
         touchShootHold: boolean,
@@ -3089,6 +3091,25 @@ export class PlayerBarn {
                 obstacle.isPropDisguise
             ) {
                 propDisguisePlayerIds.add(obstacle.skinPlayerId);
+            }
+        }
+        const decals = map.decalBarn.decalPool.m_getPool();
+        for (let i = 0; i < decals.length; i++) {
+            const decal = decals[i];
+            if (
+                decal.active &&
+                !decal.dead &&
+                decal.isSkin &&
+                decal.isPropDisguise
+            ) {
+                propDisguisePlayerIds.add(decal.skinPlayerId);
+            }
+        }
+        const loots = lootBarn.lootPool.m_getPool();
+        for (let i = 0; i < loots.length; i++) {
+            const loot = loots[i];
+            if (loot.active && !loot.dead && loot.isSkin && loot.isPropDisguise) {
+                propDisguisePlayerIds.add(loot.skinPlayerId);
             }
         }
 

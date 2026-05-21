@@ -186,7 +186,9 @@ export class Obstacle implements AbstractObject {
                     locked: data.door?.locked!,
                     casingSprite: null,
                 };
-                const casingImgDef = def.door?.casingImg;
+                const casingImgDef = this.isPropDisguise
+                    ? undefined
+                    : def.door?.casingImg;
                 if (casingImgDef !== undefined) {
                     let posOffset = casingImgDef.pos || v2.create(0, 0);
                     posOffset = v2.rotate(posOffset, this.rot + Math.PI * 0.5);
@@ -264,6 +266,9 @@ export class Obstacle implements AbstractObject {
             let f = v2.create(0.5, 0.5);
             if (this.isDoor) {
                 f = def.door?.spriteAnchor!;
+                if (this.isPropDisguise) {
+                    f = v2.create(0.5, 0.5);
+                }
             }
             const _ = w !== undefined;
             if (!_) {
@@ -470,7 +475,7 @@ export class Obstacle implements AbstractObject {
     }
 
     render(dt: number, camera: Camera, debug: DebugRenderOpts, layer: number) {
-        let pos = this.isDoor ? this.door.interpPos : this.pos;
+        let pos = this.isDoor && !this.isPropDisguise ? this.door.interpPos : this.pos;
 
         if (this.isSkin && camera.m_interpEnabled) {
             this.posInterpTicker += dt;
@@ -478,7 +483,7 @@ export class Obstacle implements AbstractObject {
             pos = v2.lerp(posT, this.visualPosOld, this.pos);
         }
 
-        const rot = this.isDoor ? this.door.interpRot : this.rot;
+        const rot = this.isDoor && !this.isPropDisguise ? this.door.interpRot : this.rot;
         const scale = this.scale;
 
         const screenPos = camera.m_pointToScreen(pos);
