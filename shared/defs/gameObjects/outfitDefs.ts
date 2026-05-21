@@ -3310,6 +3310,30 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
+    outfitIgris: defineOutfitSkin("outfitBase", {
+        name: "Igris",
+        noDropOnDeath: true,
+
+        rarity: 4,
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-igris.img",
+            handTint: 0xffffff,
+            handSprite: "player-hand-igris.img",
+            footTint: 0xffffff,
+            footSprite: "player-hand-igris.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-igris.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-igris.img",
+        },
+        lootImg: {
+            sprite: "loot-outfit-igris.img",
+            tint: 0xffffff,
+        },
+    }),
+
     outfitKingGalaxy: defineOutfitSkin("outfitBase", {
         name: "King Galaxy",
         noDropOnDeath: true,
