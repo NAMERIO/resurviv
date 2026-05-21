@@ -97,6 +97,7 @@ interface Emote {
     type: string;
     isPing: boolean;
     targetArenaTeam?: "A" | "B";
+    targetArenaTeams?: Array<"A" | "B">;
     /**
      * if type is "emote_loot", typestring of item goes here
      * "m870", "mosin", "1xscope", "762mm", etc
@@ -669,14 +670,26 @@ export class PlayerBarn {
         });
     }
 
-    addMapPing(type: string, pos: Vec2, playerId = 0, targetArenaTeam?: "A" | "B") {
+    addMapPing(
+        type: string,
+        pos: Vec2,
+        playerId = 0,
+        targetArenaTeam?: "A" | "B" | Array<"A" | "B">,
+    ) {
+        const targetArenaTeams = Array.isArray(targetArenaTeam)
+            ? targetArenaTeam
+            : undefined;
+        const targetArenaTeamSingle = Array.isArray(targetArenaTeam)
+            ? undefined
+            : targetArenaTeam;
         this.emotes.push({
             isPing: true,
             type,
             pos,
             playerId,
             itemType: "",
-            targetArenaTeam,
+            targetArenaTeam: targetArenaTeamSingle,
+            targetArenaTeams,
         });
     }
 }
@@ -1621,12 +1634,10 @@ export class Player extends BaseGameObject {
             ),
         );
         this.game.map.clampToMapBounds(pingPos);
-        this.game.playerBarn.addMapPing(
-            settings.hiderNoisePing,
-            pingPos,
-            this.__id,
+        this.game.playerBarn.addMapPing(settings.hiderNoisePing, pingPos, this.__id, [
+            settings.hiderTeam,
             settings.seekerTeam,
-        );
+        ]);
         this.game.bulletBarn.fireBullet({
             dir: this.dir,
             pos: this.pos,
@@ -1638,7 +1649,7 @@ export class Player extends BaseGameObject {
             playerId: this.__id,
             shotAlt: settings.hiderNoiseShotAlt,
             shotFx: true,
-            soundTargetArenaTeam: settings.seekerTeam,
+            soundGlobal: true,
         });
     }
 
@@ -3275,6 +3286,12 @@ export class Player extends BaseGameObject {
             if (emote.targetArenaTeam && player.arenaTeam !== emote.targetArenaTeam) {
                 return false;
             }
+            if (
+                emote.targetArenaTeams &&
+                (!player.arenaTeam || !emote.targetArenaTeams.includes(player.arenaTeam))
+            ) {
+                return false;
+            }
 
             if (emotePlayer) {
                 if (!emote.isPing && !player.visibleObjects.has(emotePlayer)) {
@@ -3327,6 +3344,7 @@ export class Player extends BaseGameObject {
         for (let i = 0; i < bullets.length; i++) {
             const bullet = bullets[i];
             if (
+                bullet.soundGlobal ||
                 (bullet.soundTargetArenaTeam !== undefined &&
                     bullet.soundTargetArenaTeam === player.arenaTeam) ||
                 v2.lengthSqr(v2.sub(bullet.pos, player.pos)) < radiusSquared ||
@@ -5661,6 +5679,11 @@ export class Player extends BaseGameObject {
         ) {
             for (const item of hideAndSeekSettings.seekerRemovedSpawnItems) {
                 this.invManager.set(item, 0);
+            }
+            for (const [item, amount] of Object.entries(
+                hideAndSeekSettings.seekerSpawnItems,
+            )) {
+                this.invManager.set(item as InventoryItem, amount);
             }
         }
     }

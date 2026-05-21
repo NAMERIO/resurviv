@@ -11,6 +11,8 @@ export interface HideAndSeekSettings {
     seekerTeam: "B";
     hiderPrimaryWeapon: string;
     hiderSecondaryWeapon: string;
+    seekerPrimaryWeapon: string;
+    seekerSecondaryWeapon?: string;
     hiderBlindThrowable: string;
     hiderBlindThrowableCount: number;
     hunterReleaseDelay: number;
@@ -23,6 +25,7 @@ export interface HideAndSeekSettings {
     hiderNoiseWeapon: string;
     hiderNoiseShotAlt: boolean;
     seekerRemovedSpawnItems: InventoryItem[];
+    seekerSpawnItems: Partial<Record<InventoryItem, number>>;
     seekerAdrenalineHeals: boolean;
 }
 
@@ -38,10 +41,11 @@ export const HideAndSeekSettings: HideAndSeekSettings = {
     seekerTeam: "B",
     hiderPrimaryWeapon: "prop_o_matic",
     hiderSecondaryWeapon: "",
+    seekerPrimaryWeapon: "awc",
     hiderBlindThrowable: "flashbang",
     hiderBlindThrowableCount: 1,
     hunterReleaseDelay: 60,
-    propSwitchLimit: 5,
+    propSwitchLimit: 20,
     seekerWrongPropDamage: 20,
     seekerWrongPropDamageCooldown: 0.5,
     hiderNoiseInterval: 60,
@@ -50,6 +54,7 @@ export const HideAndSeekSettings: HideAndSeekSettings = {
     hiderNoiseWeapon: "bugle",
     hiderNoiseShotAlt: false,
     seekerRemovedSpawnItems: ["bandage", "healthkit", "soda", "painkiller"],
+    seekerSpawnItems: { bandage: 10 },
     seekerAdrenalineHeals: false,
 };
 
@@ -60,13 +65,23 @@ export const PrivateLobbyMiniGameServerSettings: Record<
     pvp: {},
     hide_and_seek: {
         hideAndSeek: HideAndSeekSettings,
-        getWeaponOverride: (arenaTeam) =>
-            arenaTeam === HideAndSeekSettings.hiderTeam
-                ? {
-                      primary: HideAndSeekSettings.hiderPrimaryWeapon,
-                      secondary: HideAndSeekSettings.hiderSecondaryWeapon,
-                  }
-                : undefined,
+        getWeaponOverride: (arenaTeam) => {
+            if (arenaTeam === HideAndSeekSettings.hiderTeam) {
+                return {
+                    primary: HideAndSeekSettings.hiderPrimaryWeapon,
+                    secondary: HideAndSeekSettings.hiderSecondaryWeapon,
+                };
+            }
+
+            if (arenaTeam === HideAndSeekSettings.seekerTeam) {
+                return {
+                    primary: HideAndSeekSettings.seekerPrimaryWeapon,
+                    secondary: HideAndSeekSettings.seekerSecondaryWeapon,
+                };
+            }
+
+            return undefined;
+        },
     },
 };
 

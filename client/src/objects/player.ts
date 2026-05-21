@@ -750,7 +750,9 @@ export class Player implements AbstractObject {
 
         if (data.hideAndSeekBlindDirty) {
             this.m_localData.m_hideAndSeekBlindTime =
-                (data.hideAndSeekBlindTime ?? 0) + 1;
+                data.hideAndSeekBlindTime && data.hideAndSeekBlindTime > 0
+                    ? data.hideAndSeekBlindTime + 1
+                    : 0;
         }
         this.m_localData.m_hideAndSeekHunterReleaseTime =
             data.hideAndSeekHunterReleaseTime ?? 0;
