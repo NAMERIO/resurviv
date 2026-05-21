@@ -3516,6 +3516,15 @@ export class Player extends BaseGameObject {
                 : undefined;
         const sourceTeamId = playerSource?.teamId ?? params.sourceTeamId;
 
+        if (
+            playerSource &&
+            playerSource !== this &&
+            isHideAndSeekHider(this.game.miniGame, playerSource.arenaTeam) &&
+            isHideAndSeekSeeker(this.game.miniGame, this.arenaTeam)
+        ) {
+            return;
+        }
+
         const preHealth = this._health;
 
         if (params.source !== this && sourceTeamId !== undefined) {
@@ -4884,6 +4893,13 @@ export class Player extends BaseGameObject {
 
         const def = GameObjectDefs[obj.type];
         if (
+            def.type === "gun" &&
+            isHideAndSeekHider(this.game.miniGame, this.arenaTeam)
+        ) {
+            return;
+        }
+
+        if (
             (this.actionType == GameConfig.Action.UseItem && def.type != "gun") ||
             this.actionType == GameConfig.Action.Revive
         )
@@ -5188,6 +5204,8 @@ export class Player extends BaseGameObject {
 
     // in original game, only called on snowball or potato collision
     dropRandomLoot(): void {
+        if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
+
         // all possible droppable loot held by the player
         // 4 categories: inventory, weapons, armor, perks
         const playerLootTypes: string[] = [];
@@ -5388,6 +5406,8 @@ export class Player extends BaseGameObject {
     }
 
     customDropItem(dropMsg: net.DropItemMsg): void {
+        if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
+
         const itemDef = GameObjectDefs[dropMsg.item] as LootDef;
         switch (itemDef.type) {
             case "gun":
@@ -5409,6 +5429,8 @@ export class Player extends BaseGameObject {
     }
     dropItem(dropMsg: net.DropItemMsg): void {
         if (this.dead) return;
+        if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
+
         const battleRoyaleMode = isBattleRoyaleMapName(this.game.mapName);
         if (this.game.map.perkMode && !this.role && !battleRoyaleMode) return;
 

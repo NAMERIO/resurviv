@@ -8,6 +8,7 @@ import { math } from "../../../../shared/utils/math";
 import { assert, util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import type { Game } from "../game";
+import { isHideAndSeekHider, isHideAndSeekSeeker } from "../privateLobbyMiniGames";
 import type { DamageParams, GameObject } from "./gameObject";
 import { EXPLOSION_LOOT_PUSH_FORCE } from "./loot";
 import type { Player } from "./player";
@@ -209,6 +210,15 @@ export class ExplosionBarn {
                           explosion.damageParams.source.__type == ObjectType.Player &&
                           explosion.damageParams.source.teamId == obj.teamId
                       );
+            const sourcePlayer =
+                explosion.damageParams.source?.__type === ObjectType.Player
+                    ? (explosion.damageParams.source as Player)
+                    : undefined;
+            const isHiderEffectOnSeeker =
+                !!sourcePlayer &&
+                sourcePlayer !== obj &&
+                isHideAndSeekHider(this.game.miniGame, sourcePlayer.arenaTeam) &&
+                isHideAndSeekSeeker(this.game.miniGame, obj.arenaTeam);
 
             if (def.healTeam && isSourceTeammate) {
                 const healAmount = def.healAmount ?? 5; // default to 5 if healValue is not defined
@@ -267,7 +277,11 @@ export class ExplosionBarn {
                 obj.dropRandomLoot();
             }
 
-            if (explosion.type === "explosion_fire" && !isSourceTeammate) {
+            if (
+                explosion.type === "explosion_fire" &&
+                !isSourceTeammate &&
+                !isHiderEffectOnSeeker
+            ) {
                 obj.burnDuration = GameConfig.player.burnDuration;
                 obj.burnTicker = GameConfig.player.burnTickRate;
                 obj.burnEffect = true;
