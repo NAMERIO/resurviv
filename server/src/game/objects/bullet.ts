@@ -64,7 +64,6 @@ export interface BulletParams {
     hasModifier?: boolean;
     speedMult?: number;
     distanceMult?: number;
-    soundGlobal?: boolean;
     soundTargetArenaTeam?: "A" | "B";
 }
 
@@ -171,7 +170,6 @@ export class Bullet {
     damageSelf!: boolean;
     damage!: number;
     damageMult!: number;
-    soundGlobal!: boolean;
     soundTargetArenaTeam?: "A" | "B";
     hasModifier!: boolean;
     speedMult!: number;
@@ -273,7 +271,6 @@ export class Bullet {
         this.endPos = v2.add(params.pos, v2.mul(this.dir, this.distance));
         this.clientEndPos = v2.copy(this.endPos);
         this.damage = bulletDef.damage * this.damageMult;
-        this.soundGlobal = params.soundGlobal ?? false;
         this.soundTargetArenaTeam = params.soundTargetArenaTeam;
         this.skipCollision = !!bulletDef.skipCollision;
         this.isShrapnel = bulletDef.shrapnel;

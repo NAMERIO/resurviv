@@ -48,7 +48,7 @@ export const HideAndSeekSettings: HideAndSeekSettings = {
     propSwitchLimit: 20,
     seekerWrongPropDamage: 20,
     seekerWrongPropDamageCooldown: 0.5,
-    hiderNoiseInterval: 60,
+    hiderNoiseInterval: 5,
     hiderNoisePing: "ping_hide_and_seek_noise",
     hiderNoisePingOffsetRadius: 16,
     hiderNoiseWeapon: "bugle",

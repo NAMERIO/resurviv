@@ -90,7 +90,7 @@ export const PingDefs: Record<string, PingDef> = {
         type: "ping",
         texture: "ping-team-danger.img",
         mapTexture: "ping-map-pulse.img",
-        sound: "",
+        sound: "bugle_01",
         pingMap: true,
         pingLife: 0,
         mapLife: 5,

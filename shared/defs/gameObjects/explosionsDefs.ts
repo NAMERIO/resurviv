@@ -48,7 +48,7 @@ export const ExplosionDefs: Record<string, ExplosionDef> = {
         shrapnelCount: 0,
         shrapnelType: "shrapnel_frag",
         explosionEffectType: "flashbang",
-        decalType: "",
+        decalType: "decal_smoke_explosion",
         blindDuration: 2,
     },
     explosion_strobe: {

@@ -1648,8 +1648,7 @@ export class Player extends BaseGameObject {
             damageType: GameConfig.DamageType.Player,
             playerId: this.__id,
             shotAlt: settings.hiderNoiseShotAlt,
-            shotFx: true,
-            soundGlobal: true,
+            shotFx: false,
         });
     }
 
@@ -3344,7 +3343,6 @@ export class Player extends BaseGameObject {
         for (let i = 0; i < bullets.length; i++) {
             const bullet = bullets[i];
             if (
-                bullet.soundGlobal ||
                 (bullet.soundTargetArenaTeam !== undefined &&
                     bullet.soundTargetArenaTeam === player.arenaTeam) ||
                 v2.lengthSqr(v2.sub(bullet.pos, player.pos)) < radiusSquared ||
