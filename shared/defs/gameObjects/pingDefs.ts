@@ -93,7 +93,7 @@ export const PingDefs: Record<string, PingDef> = {
         sound: "",
         pingMap: true,
         pingLife: 0,
-        mapLife: 3,
+        mapLife: 5,
         mapScale: 0.34,
         mapEvent: true,
         worldDisplay: false,
