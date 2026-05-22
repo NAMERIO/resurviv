@@ -1,5 +1,5 @@
 import { randomInt } from "node:crypto";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { saveConfig } from "../../../../../config";
@@ -618,6 +618,20 @@ export const PrivateRouter = new Hono<Context>()
             return c.json({ message: `${slug} has ${user.gpBalance} GP` }, 200);
         },
     )
+    .post("/gp_leaderboard", databaseEnabledMiddleware, async (c) => {
+        const players = await db
+            .select({
+                slug: usersTable.slug,
+                username: usersTable.username,
+                gpBalance: usersTable.gpBalance,
+            })
+            .from(usersTable)
+            .where(sql`${usersTable.gpBalance} > 0`)
+            .orderBy(desc(usersTable.gpBalance), usersTable.slug)
+            .limit(10);
+
+        return c.json({ ok: true, players }, 200);
+    })
     .post(
         "/coinflip_check",
         databaseEnabledMiddleware,

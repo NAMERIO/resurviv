@@ -26,6 +26,7 @@ import {
 import { Command } from "../utils";
 import { balanceHandler } from "./balance";
 import { coinFlipHandler } from "./coinflip";
+import { gpLeaderboardHandler } from "./gp-leaderboard";
 import { createCommand, createSlashCommand, genericExecute } from "./helpers";
 import { searchPlayersHandler } from "./search-player";
 
@@ -364,7 +365,7 @@ const commands = {
         ],
     }),
 } as unknown as Record<
-    Exclude<Command, "search_player" | "coinflip" | "balance">,
+    Exclude<Command, "search_player" | "coinflip" | "balance" | "gp_leaderboard">,
     ReturnType<typeof createCommand>
 >;
 
@@ -391,6 +392,7 @@ export const commandHandlers: CommandHandlers = (
         [Command.SearchPlayer]: searchPlayersHandler.execute,
         [Command.CoinFlip]: coinFlipHandler.execute,
         [Command.Balance]: balanceHandler.execute,
+        [Command.GpLeaderboard]: gpLeaderboardHandler.execute,
     } as CommandHandlers,
 );
 
@@ -400,4 +402,5 @@ export const commandsToRegister: SlashCommandOptionsOnlyBuilder[] = [
     searchPlayersHandler.command,
     coinFlipHandler.command,
     balanceHandler.command,
+    gpLeaderboardHandler.command,
 ];
