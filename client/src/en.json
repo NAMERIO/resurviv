@@ -443,6 +443,8 @@
   "game-hide-seek-hunters-released": "Hunters are released",
   "game-infected-respawn-in": "Respawning in",
   "game-infected-respawned": "Respawned",
+  "game-infected-humans-win-in": "Humans about to win in",
+  "game-hide-seek-props-win-in": "Props about to win in",
   "game-seconds": "seconds",
   "game-minutes": "minutes",
   "game-minute": "minute",

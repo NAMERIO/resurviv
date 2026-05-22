@@ -80,6 +80,8 @@ function serializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     s.writeFloat(data.hideAndSeekHunterReleaseTime, 0, 60, 8);
     s.writeBoolean(data.hideAndSeekHunterReleaseSeeker);
     s.writeFloat(data.infectedRespawnTime, 0, 10, 8);
+    s.writeFloat(data.miniGameWinCountdownTime, 0, 5, 8);
+    s.writeBoolean(data.miniGameWinCountdownProps);
 
     s.writeAlignToNextByte();
 }
@@ -156,6 +158,8 @@ function deserializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     data.hideAndSeekHunterReleaseTime = s.readFloat(0, 60, 8);
     data.hideAndSeekHunterReleaseSeeker = s.readBoolean();
     data.infectedRespawnTime = s.readFloat(0, 10, 8);
+    data.miniGameWinCountdownTime = s.readFloat(0, 5, 8);
+    data.miniGameWinCountdownProps = s.readBoolean();
     s.readAlignToNextByte();
 }
 
@@ -915,6 +919,8 @@ export interface LocalDataWithDirty extends LocalData {
     hideAndSeekHunterReleaseTime: number;
     hideAndSeekHunterReleaseSeeker: boolean;
     infectedRespawnTime: number;
+    miniGameWinCountdownTime: number;
+    miniGameWinCountdownProps: boolean;
 }
 
 // the non-optional properties are used by both server and client

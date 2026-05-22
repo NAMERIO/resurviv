@@ -4,7 +4,11 @@ import { util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import { BattleRoyaleGasStages, isBattleRoyaleMapName } from "../../battleroyale/helpers";
 import type { Game } from "../game";
-import { getInfectedSettings, isInfectedZombie } from "../privateLobbyMiniGames";
+import {
+    getHideAndSeekSettings,
+    getInfectedSettings,
+    isInfectedZombie,
+} from "../privateLobbyMiniGames";
 
 interface StageData {
     mode: GasMode;
@@ -239,6 +243,7 @@ export class Gas {
         }
 
         const infectedSettings = getInfectedSettings(this.game.miniGame);
+        const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
         if (
             infectedSettings &&
             this.mode === GasMode.Moving &&
@@ -260,6 +265,15 @@ export class Gas {
             }
             this.game.checkGameOver();
         }
+        if (
+            hideAndSeekSettings &&
+            this.mode === GasMode.Moving &&
+            stage.rad <= 0 &&
+            !this.game.hideAndSeekHidersWon
+        ) {
+            this.game.hideAndSeekHidersWon = true;
+            this.game.checkGameOver();
+        }
 
         this._gasTicker = 0;
         this.gasT = 0;
@@ -277,6 +291,10 @@ export class Gas {
         return isBattleRoyaleMapName(this.game.mapName)
             ? BattleRoyaleGasStages
             : GasStages;
+    }
+
+    getTimeUntilNextStage() {
+        return Math.max(0, this.duration - this._gasTicker);
     }
 
     isInGas(pos: Vec2) {

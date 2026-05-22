@@ -200,6 +200,8 @@ export class LoadoutDisplay {
             hideAndSeekHunterReleaseTime: 0,
             hideAndSeekHunterReleaseSeeker: false,
             infectedRespawnTime: 0,
+            miniGameWinCountdownTime: 0,
+            miniGameWinCountdownProps: false,
         });
 
         this.activePlayer.layer = this.activePlayer.m_netData.m_layer;
@@ -448,6 +450,8 @@ export class LoadoutDisplay {
                 hideAndSeekHunterReleaseTime: 0,
                 hideAndSeekHunterReleaseSeeker: false,
                 infectedRespawnTime: 0,
+                miniGameWinCountdownTime: 0,
+                miniGameWinCountdownProps: false,
             });
         }
     }

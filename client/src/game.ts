@@ -93,6 +93,7 @@ export class Game {
     m_hideAndSeekHunterReleaseWasActive = false;
     m_infectedRespawnLastSecond = -1;
     m_infectedRespawnWasActive = false;
+    m_miniGameWinCountdownLastSecond = -1;
     m_canvasMode!: boolean;
 
     m_updatePass!: boolean;
@@ -1094,6 +1095,7 @@ export class Game {
         this.renderHideAndSeekBlindOverlay(dt);
         this.renderHideAndSeekHunterReleaseAnnouncement();
         this.renderInfectedRespawnAnnouncement();
+        this.renderMiniGameWinCountdownAnnouncement();
         this.m_uiManager.m_render(
             this.m_activePlayer.m_pos,
             this.m_gas,
@@ -1185,6 +1187,27 @@ export class Game {
         }
         this.m_infectedRespawnLastSecond = -1;
         this.m_infectedRespawnWasActive = false;
+    }
+
+    renderMiniGameWinCountdownAnnouncement() {
+        const localData = this.m_activePlayer.m_localData;
+        const timeLeft = localData.m_miniGameWinCountdownTime;
+        if (timeLeft > 0) {
+            const seconds = Math.ceil(timeLeft);
+            if (seconds !== this.m_miniGameWinCountdownLastSecond) {
+                const messageKey = localData.m_miniGameWinCountdownProps
+                    ? "game-hide-seek-props-win-in"
+                    : "game-infected-humans-win-in";
+                this.m_uiManager.displayAnnouncement(
+                    `${this.m_localization.translate(messageKey)} ${seconds} ${this.m_localization.translate("game-seconds")}`,
+                    1500,
+                );
+                this.m_miniGameWinCountdownLastSecond = seconds;
+            }
+            return;
+        }
+
+        this.m_miniGameWinCountdownLastSecond = -1;
     }
 
     updateAmbience() {

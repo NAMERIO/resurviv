@@ -421,6 +421,8 @@ export class Player implements AbstractObject {
         m_hideAndSeekHunterReleaseTime: number;
         m_hideAndSeekHunterReleaseSeeker: boolean;
         m_infectedRespawnTime: number;
+        m_miniGameWinCountdownTime: number;
+        m_miniGameWinCountdownProps: boolean;
     };
 
     throwableStatePrev!: string;
@@ -591,6 +593,8 @@ export class Player implements AbstractObject {
             m_hideAndSeekHunterReleaseTime: 0,
             m_hideAndSeekHunterReleaseSeeker: false,
             m_infectedRespawnTime: 0,
+            m_miniGameWinCountdownTime: 0,
+            m_miniGameWinCountdownProps: false,
         };
 
         this.playAnim(Anim.None, -1);
@@ -762,6 +766,9 @@ export class Player implements AbstractObject {
         this.m_localData.m_hideAndSeekHunterReleaseSeeker =
             data.hideAndSeekHunterReleaseSeeker ?? false;
         this.m_localData.m_infectedRespawnTime = data.infectedRespawnTime ?? 0;
+        this.m_localData.m_miniGameWinCountdownTime = data.miniGameWinCountdownTime ?? 0;
+        this.m_localData.m_miniGameWinCountdownProps =
+            data.miniGameWinCountdownProps ?? false;
 
         // Zoom more quickly when changing scopes
         if (this.m_localData.m_scope != scopeOld) {

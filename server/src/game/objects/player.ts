@@ -39,6 +39,7 @@ import {
     type Anim,
     EmoteSlot,
     GameConfig,
+    GasMode,
     type HasteType,
     type Input,
     type InventoryItem,
@@ -2171,6 +2172,27 @@ export class Player extends BaseGameObject {
     get infectedRespawnTime(): number {
         return this.infectedRespawnTicker;
     }
+    get miniGameWinCountdownTime(): number {
+        if (
+            !this.game.started ||
+            this.game.over ||
+            this.game.gas.mode !== GasMode.Waiting
+        ) {
+            return 0;
+        }
+        if (
+            !getInfectedSettings(this.game.miniGame) &&
+            !getHideAndSeekSettings(this.game.miniGame)
+        ) {
+            return 0;
+        }
+
+        const timeLeft = this.game.gas.getTimeUntilNextStage();
+        return timeLeft > 0 && timeLeft <= 5 ? timeLeft : 0;
+    }
+    get miniGameWinCountdownProps(): boolean {
+        return !!getHideAndSeekSettings(this.game.miniGame);
+    }
     get streakNextThreshold(): number {
         return StreakThresholds.get(this.streakActivationCount);
     }
@@ -3594,6 +3616,8 @@ export class Player extends BaseGameObject {
                 hideAndSeekHunterReleaseTime: player.hideAndSeekHunterReleaseTime,
                 hideAndSeekHunterReleaseSeeker: player.hideAndSeekHunterReleaseSeeker,
                 infectedRespawnTime: player.infectedRespawnTime,
+                miniGameWinCountdownTime: player.miniGameWinCountdownTime,
+                miniGameWinCountdownProps: player.miniGameWinCountdownProps,
             };
             this.startedSpectating = false;
         } else {

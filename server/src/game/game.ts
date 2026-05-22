@@ -76,6 +76,7 @@ export class Game {
     disableAirstrikes: boolean;
     disablePerks: boolean;
     infectedHumansWon = false;
+    hideAndSeekHidersWon = false;
     arenaStartLockTimer = 0;
     arenaLastCountdownSecond = -1;
     arenaGoBroadcasted = false;

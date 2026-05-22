@@ -10,7 +10,10 @@ import type { Game } from "./game";
 import type { DamageParams } from "./objects/gameObject";
 import type { Player } from "./objects/player";
 import {
+    getHideAndSeekSettings,
     getInfectedSettings,
+    isHideAndSeekHider,
+    isHideAndSeekSeeker,
     isInfectedHuman,
     isInfectedZombie,
 } from "./privateLobbyMiniGames";
@@ -129,6 +132,47 @@ export class GameModeManager {
 
     /** true if game needs to end */
     handleGameEnd(): boolean {
+        const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
+        if (hideAndSeekSettings) {
+            if (!this.game.started) return false;
+
+            const hiders = this.game.playerBarn.players.filter(
+                (p) =>
+                    !p.dead &&
+                    !p.disconnected &&
+                    isHideAndSeekHider(this.game.miniGame, p.arenaTeam),
+            );
+            const seekers = this.game.playerBarn.players.filter(
+                (p) =>
+                    !p.dead &&
+                    !p.disconnected &&
+                    isHideAndSeekSeeker(this.game.miniGame, p.arenaTeam),
+            );
+
+            if (hiders.length === 0 && seekers.length > 0) {
+                for (const player of seekers) {
+                    player.addGameOverMsg(seekers[0].teamId);
+                }
+                return true;
+            }
+
+            if (seekers.length === 0 && hiders.length > 0) {
+                for (const player of this.game.playerBarn.players) {
+                    player.addGameOverMsg(hiders[0].teamId);
+                }
+                return true;
+            }
+
+            if (this.game.hideAndSeekHidersWon && hiders.length > 0) {
+                for (const player of this.game.playerBarn.players) {
+                    player.addGameOverMsg(hiders[0].teamId);
+                }
+                return true;
+            }
+
+            return false;
+        }
+
         const infectedSettings = getInfectedSettings(this.game.miniGame);
         if (infectedSettings) {
             if (!this.game.started) return false;
