@@ -220,6 +220,10 @@ export class ExplosionBarn {
                 isHideAndSeekHider(this.game.miniGame, sourcePlayer.arenaTeam) &&
                 isHideAndSeekSeeker(this.game.miniGame, obj.arenaTeam);
 
+            if (isHiderEffectOnSeeker) {
+                return;
+            }
+
             if (def.healTeam && isSourceTeammate) {
                 const healAmount = def.healAmount ?? 5; // default to 5 if healValue is not defined
                 obj.health += healAmount;
@@ -279,8 +283,7 @@ export class ExplosionBarn {
 
             if (
                 explosion.type === "explosion_fire" &&
-                !isSourceTeammate &&
-                !isHiderEffectOnSeeker
+                !isSourceTeammate
             ) {
                 obj.burnDuration = GameConfig.player.burnDuration;
                 obj.burnTicker = GameConfig.player.burnTickRate;
