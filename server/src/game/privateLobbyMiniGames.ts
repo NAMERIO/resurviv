@@ -24,13 +24,26 @@ export interface HideAndSeekSettings {
     hiderNoisePingOffsetRadius: number;
     hiderNoiseWeapon: string;
     hiderNoiseShotAlt: boolean;
+    seekerSpeedMultiplier: number;
     seekerRemovedSpawnItems: InventoryItem[];
     seekerSpawnItems: Partial<Record<InventoryItem, number>>;
     seekerAdrenalineHeals: boolean;
 }
 
+export interface InfectedSettings {
+    zombieTeam: "A";
+    humanTeam: "B";
+    humanPrimaryWeapon: string;
+    zombieOutfit: string;
+    humanOutfit: string;
+    zombieSpeedMultiplier: number;
+    zombieDamageReduction: number;
+    zombieRespawnCooldown: number;
+}
+
 interface PrivateLobbyMiniGameServerSettings {
     hideAndSeek?: HideAndSeekSettings;
+    infected?: InfectedSettings;
     getWeaponOverride?: (
         arenaTeam: "A" | "B" | undefined,
     ) => PrivateLobbyMiniGameWeaponOverride | undefined;
@@ -53,9 +66,21 @@ export const HideAndSeekSettings: HideAndSeekSettings = {
     hiderNoisePingOffsetRadius: 16,
     hiderNoiseWeapon: "bugle",
     hiderNoiseShotAlt: false,
+    seekerSpeedMultiplier: 1.2,
     seekerRemovedSpawnItems: ["bandage", "healthkit", "soda", "painkiller"],
     seekerSpawnItems: { bandage: 10 },
     seekerAdrenalineHeals: false,
+};
+
+export const InfectedSettings: InfectedSettings = {
+    zombieTeam: "A",
+    humanTeam: "B",
+    humanPrimaryWeapon: "m9",
+    zombieOutfit: "outfitBraaains",
+    humanOutfit: "outfitBase",
+    zombieSpeedMultiplier: 1.2,
+    zombieDamageReduction: 0.4,
+    zombieRespawnCooldown: 5,
 };
 
 export const PrivateLobbyMiniGameServerSettings: Record<
@@ -83,6 +108,26 @@ export const PrivateLobbyMiniGameServerSettings: Record<
             return undefined;
         },
     },
+    infected: {
+        infected: InfectedSettings,
+        getWeaponOverride: (arenaTeam) => {
+            if (arenaTeam === InfectedSettings.humanTeam) {
+                return {
+                    primary: InfectedSettings.humanPrimaryWeapon,
+                    secondary: "",
+                };
+            }
+
+            if (arenaTeam === InfectedSettings.zombieTeam) {
+                return {
+                    primary: "",
+                    secondary: "",
+                };
+            }
+
+            return undefined;
+        },
+    },
 };
 
 export function getPrivateLobbyMiniGameWeaponOverride(
@@ -100,6 +145,13 @@ export function getHideAndSeekSettings(
     return PrivateLobbyMiniGameServerSettings[miniGame].hideAndSeek;
 }
 
+export function getInfectedSettings(
+    miniGame: PrivateLobbyMiniGame | undefined,
+): InfectedSettings | undefined {
+    if (!miniGame) return undefined;
+    return PrivateLobbyMiniGameServerSettings[miniGame].infected;
+}
+
 export function isHideAndSeekHider(
     miniGame: PrivateLobbyMiniGame | undefined,
     arenaTeam: "A" | "B" | undefined,
@@ -114,4 +166,20 @@ export function isHideAndSeekSeeker(
 ) {
     const settings = getHideAndSeekSettings(miniGame);
     return !!settings && arenaTeam === settings.seekerTeam;
+}
+
+export function isInfectedZombie(
+    miniGame: PrivateLobbyMiniGame | undefined,
+    arenaTeam: "A" | "B" | undefined,
+) {
+    const settings = getInfectedSettings(miniGame);
+    return !!settings && arenaTeam === settings.zombieTeam;
+}
+
+export function isInfectedHuman(
+    miniGame: PrivateLobbyMiniGame | undefined,
+    arenaTeam: "A" | "B" | undefined,
+) {
+    const settings = getInfectedSettings(miniGame);
+    return !!settings && arenaTeam === settings.humanTeam;
 }

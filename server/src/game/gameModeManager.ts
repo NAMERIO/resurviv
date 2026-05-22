@@ -9,6 +9,11 @@ import { isBattleRoyaleMapName } from "../battleroyale/helpers";
 import type { Game } from "./game";
 import type { DamageParams } from "./objects/gameObject";
 import type { Player } from "./objects/player";
+import {
+    getInfectedSettings,
+    isInfectedHuman,
+    isInfectedZombie,
+} from "./privateLobbyMiniGames";
 
 enum GameMode {
     /** default solos, any map besides factions */
@@ -124,6 +129,38 @@ export class GameModeManager {
 
     /** true if game needs to end */
     handleGameEnd(): boolean {
+        const infectedSettings = getInfectedSettings(this.game.miniGame);
+        if (infectedSettings) {
+            if (!this.game.started) return false;
+
+            const humans = this.game.playerBarn.players.filter(
+                (p) =>
+                    !p.dead &&
+                    !p.disconnected &&
+                    isInfectedHuman(this.game.miniGame, p.arenaTeam),
+            );
+            const zombies = this.game.playerBarn.players.filter(
+                (p) =>
+                    !p.disconnected && isInfectedZombie(this.game.miniGame, p.arenaTeam),
+            );
+
+            if (humans.length === 0 && zombies.length > 0) {
+                for (const player of zombies) {
+                    player.addGameOverMsg(zombies[0].teamId);
+                }
+                return true;
+            }
+
+            if (this.game.infectedHumansWon && humans.length > 0) {
+                for (const player of this.game.playerBarn.players) {
+                    player.addGameOverMsg(humans[0].teamId);
+                }
+                return true;
+            }
+
+            return false;
+        }
+
         if (!this.game.started || this.aliveCount() > 1) return false;
         switch (this.mode) {
             case GameMode.Solo: {

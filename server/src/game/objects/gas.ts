@@ -4,6 +4,7 @@ import { util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import { BattleRoyaleGasStages, isBattleRoyaleMapName } from "../../battleroyale/helpers";
 import type { Game } from "../game";
+import { getInfectedSettings, isInfectedZombie } from "../privateLobbyMiniGames";
 
 interface StageData {
     mode: GasMode;
@@ -235,6 +236,29 @@ export class Gas {
                     this.game.planeBarn.schedulePlane(plane.wait, plane.options);
                 }
             }
+        }
+
+        const infectedSettings = getInfectedSettings(this.game.miniGame);
+        if (
+            infectedSettings &&
+            this.mode === GasMode.Moving &&
+            stage.rad <= 0 &&
+            !this.game.infectedHumansWon
+        ) {
+            this.game.infectedHumansWon = true;
+            for (const player of [...this.game.playerBarn.players]) {
+                if (
+                    !player.dead &&
+                    isInfectedZombie(this.game.miniGame, player.arenaTeam)
+                ) {
+                    player.kill({
+                        amount: player.health,
+                        damageType: GameConfig.DamageType.Gas,
+                        dir: player.dir,
+                    });
+                }
+            }
+            this.game.checkGameOver();
         }
 
         this._gasTicker = 0;

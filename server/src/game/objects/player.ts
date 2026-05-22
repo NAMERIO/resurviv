@@ -68,15 +68,18 @@ import { Group, Team } from "../group";
 import { InventoryManager } from "../inventoryManager";
 import {
     getHideAndSeekSettings,
+    getInfectedSettings,
     getPrivateLobbyMiniGameWeaponOverride,
     isHideAndSeekHider,
     isHideAndSeekSeeker,
+    isInfectedHuman,
+    isInfectedZombie,
 } from "../privateLobbyMiniGames";
 import { QuestManager } from "../questManager";
 import { WeaponManager } from "../weaponManager";
 import type { Building } from "./building";
-import { BaseGameObject, type DamageParams, type GameObject } from "./gameObject";
 import type { Decal } from "./decal";
+import { BaseGameObject, type DamageParams, type GameObject } from "./gameObject";
 import type { Loot } from "./loot";
 import type { MapIndicator } from "./mapIndicator";
 import type { Obstacle } from "./obstacle";
@@ -1083,6 +1086,7 @@ export class Player extends BaseGameObject {
     layer: number;
     aimLayer = 0;
     dead = false;
+    infectedRespawnTicker = 0;
     downed = false;
 
     downedCount = 0;
@@ -1712,6 +1716,241 @@ export class Player extends BaseGameObject {
         this.invManager.set("9mm_cursed", this.hideAndSeekPropSwitchesLeft);
     }
 
+    private getInfectedZombieGroup(): Group | undefined {
+        return this.game.playerBarn.groups.find((group) =>
+            group.players.some((p) => isInfectedZombie(this.game.miniGame, p.arenaTeam)),
+        );
+    }
+
+    private applyInfectedLoadout(): void {
+        const settings = getInfectedSettings(this.game.miniGame);
+        if (!settings) return;
+
+        for (let i = 0; i < GameConfig.WeaponSlot.Count; i++) {
+            const type = i === GameConfig.WeaponSlot.Melee ? "fists" : "";
+            this.weaponManager.setWeapon(i, type, 0);
+            this.setDisplayWeaponType(i, type);
+        }
+
+        if (this.arenaTeam === settings.humanTeam) {
+            const gunDef = GameObjectDefs[settings.humanPrimaryWeapon] as GunDef;
+            this.weaponManager.setWeapon(
+                GameConfig.WeaponSlot.Primary,
+                settings.humanPrimaryWeapon,
+                gunDef.maxClip,
+            );
+            this.setDisplayWeaponType(
+                GameConfig.WeaponSlot.Primary,
+                settings.humanPrimaryWeapon,
+            );
+        }
+
+        this.invManager.wipeInventory();
+        this.invManager.set("1xscope", 1);
+        this.scope = "1xscope";
+        this.zoom = this.scopeZoomRadius[this.scope];
+        this.chest = "chest01";
+        this.helmet = "helmet01";
+        this.backpack = "backpack01";
+        this.setOutfit(
+            this.arenaTeam === settings.zombieTeam
+                ? settings.zombieOutfit
+                : settings.humanOutfit,
+        );
+
+        for (const perk of [...this.perks]) {
+            this.removePerk(perk.type);
+        }
+        if (this.arenaTeam === settings.humanTeam) {
+            this.addPerk("endless_ammo", false);
+        }
+
+        this.weaponManager.setCurWeapIndex(
+            this.arenaTeam === settings.humanTeam
+                ? GameConfig.WeaponSlot.Primary
+                : GameConfig.WeaponSlot.Melee,
+        );
+        this.weaponManager.showNextThrowable();
+        this.recalculateScale();
+        this.recalculateMinBoost();
+        this.inventoryDirty = true;
+        this.weapsDirty = true;
+    }
+
+    private creditInfectedKill(params: DamageParams): Player | undefined {
+        const killCreditSource =
+            params.killCreditSource?.__type === ObjectType.Player
+                ? (params.killCreditSource as Player)
+                : params.source?.__type === ObjectType.Player
+                  ? (params.source as Player)
+                  : undefined;
+        if (!killCreditSource || killCreditSource === this) return undefined;
+
+        killCreditSource.killedIds.push(this.matchDataId);
+        killCreditSource.kills++;
+        killCreditSource.questManager.trackEvent("kill", {
+            weaponType: params.gameSourceType ?? "",
+            buildingType: killCreditSource.currentBuildingType,
+        });
+
+        const leaderboardKey = killCreditSource.getLeaderboardKey();
+        const original = this.game.leaderboard.get(leaderboardKey) ?? {
+            name: killCreditSource.name,
+            kills: killCreditSource.kills - 1,
+        };
+        this.game.leaderboard.set(leaderboardKey, {
+            ...original,
+            kills: original.kills + 1,
+        });
+
+        if (!isBattleRoyaleMapName(this.game.mapName)) {
+            this.game.broadcastMsg(net.MsgType.Leaderboard, this.getKillsLeaderboardMsg());
+        }
+
+        return killCreditSource;
+    }
+
+    private broadcastInfectedKill(params: DamageParams, killCreditSource?: Player): void {
+        const killMsg = new net.KillMsg();
+        killMsg.damageType = params.damageType;
+        killMsg.itemSourceType = params.gameSourceType ?? "";
+        killMsg.mapSourceType = params.mapSourceType ?? "";
+        killMsg.targetId = this.__id;
+        killMsg.killed = true;
+        if (params.source?.__type === ObjectType.Player) {
+            killMsg.killerId = params.source.__id;
+        }
+        if (killCreditSource) {
+            killMsg.killCreditId = killCreditSource.__id;
+            killMsg.killerKills = killCreditSource.kills;
+            this.killedBy = killCreditSource;
+        }
+        this.game.broadcastMsg(net.MsgType.Kill, killMsg);
+    }
+
+    private infectHuman(params: DamageParams): void {
+        const settings = getInfectedSettings(this.game.miniGame);
+        if (!settings) return;
+
+        const killCreditSource = this.creditInfectedKill(params);
+        this.broadcastInfectedKill(params, killCreditSource);
+
+        const zombieGroup = this.getInfectedZombieGroup();
+        this.arenaTeam = settings.zombieTeam;
+        if (zombieGroup && this.group !== zombieGroup) {
+            this.group?.removePlayer(this);
+            zombieGroup.addPlayer(this);
+        }
+
+        this.health = GameConfig.player.health;
+        this.boost = 0;
+        this.downed = false;
+        this.downedBy = undefined;
+        this.cancelAction();
+        this.applyInfectedLoadout();
+        this.setDirty();
+        this.setGroupStatuses();
+        this.game.playerBarn.aliveCountDirty = true;
+        this.game.updateData();
+        this.game.checkGameOver();
+    }
+
+    private killZombieForRespawn(params: DamageParams): void {
+        const settings = getInfectedSettings(this.game.miniGame);
+        if (!settings) return;
+
+        const killCreditSource = this.creditInfectedKill(params);
+        this.broadcastInfectedKill(params, killCreditSource);
+
+        this.dead = true;
+        this.infectedRespawnTicker = settings.zombieRespawnCooldown;
+        this.killedIndex = this.game.playerBarn.nextKilledNumber++;
+        this.health = 0;
+        this.boost = 0;
+        this.cancelAction();
+        this.shootHold = false;
+        this.shootStart = false;
+        this.spectating = this.game.playerBarn.randomPlayer(this);
+        this.mapIndicator?.kill();
+        this.mapIndicator = undefined;
+        util.removeFrom(this.game.playerBarn.livingPlayers, this);
+        this.group?.checkPlayers();
+        this.team?.checkPlayers();
+        this.game.playerBarn.aliveCountDirty = true;
+        this.game.modeManager.assignNewSpectate(this);
+        this.game.deadBodyBarn.addDeadBody(this.pos, this.__id, this.layer, params.dir);
+        this.obstacleOutfit?.kill(params);
+        this.propDisguise?.kill(params);
+        this.obstacleOutfit = undefined;
+        this.propDisguise = undefined;
+        this.setDirty();
+        this.setGroupStatuses();
+        this.game.updateData();
+        this.game.checkGameOver();
+    }
+
+    private handleInfectedFatalDamage(params: DamageParams): boolean {
+        if (!getInfectedSettings(this.game.miniGame)) return false;
+        const playerSource =
+            params.source?.__type === ObjectType.Player
+                ? (params.source as Player)
+                : undefined;
+
+        if (
+            isInfectedHuman(this.game.miniGame, this.arenaTeam) &&
+            isInfectedZombie(this.game.miniGame, playerSource?.arenaTeam)
+        ) {
+            this.infectHuman(params);
+            return true;
+        }
+
+        if (
+            isInfectedZombie(this.game.miniGame, this.arenaTeam) &&
+            isInfectedHuman(this.game.miniGame, playerSource?.arenaTeam)
+        ) {
+            this.killZombieForRespawn(params);
+            return true;
+        }
+
+        return false;
+    }
+
+    respawnInfectedZombie(): void {
+        if (!isInfectedZombie(this.game.miniGame, this.arenaTeam)) return;
+
+        this.dead = false;
+        this.infectedRespawnTicker = 0;
+        this.health = GameConfig.player.health;
+        this.boost = 0;
+        this.spectating = undefined;
+        this.sentDeathEmote = false;
+        this.sendDeathEmoteTicker = 0;
+        this.layer = 0;
+        v2.set(this.pos, this.game.map.getSpawnPos());
+        this.collider.pos = this.pos;
+        this.applyInfectedLoadout();
+        this.createObstacleOutfit();
+
+        this.game.playerBarn.livingPlayers.push(this);
+        if (this.group && !this.group.livingPlayers.includes(this)) {
+            this.group.livingPlayers.push(this);
+            this.group.allDeadOrDisconnected = false;
+        }
+        if (this.team && !this.team.livingPlayers.includes(this)) {
+            this.team.livingPlayers.push(this);
+            this.team.allDeadOrDisconnected = false;
+        }
+        if (!this.game.modeManager.isSolo) {
+            this.game.playerBarn.livingPlayers.sort((a, b) => a.teamId - b.teamId);
+        }
+
+        this.game.grid.updateObject(this);
+        this.game.playerBarn.aliveCountDirty = true;
+        this.setDirty();
+        this.setGroupStatuses();
+        this.game.updateData();
+    }
+
     punishHideAndSeekWrongPropHit(): void {
         const settings = getHideAndSeekSettings(this.game.miniGame);
         if (!settings || this.arenaTeam !== settings.seekerTeam) return;
@@ -1935,7 +2174,7 @@ export class Player extends BaseGameObject {
         clanTagColor: string | null | undefined,
         canUseDeveloper = false,
         loadout?: Loadout,
-        readonly arenaTeam?: "A" | "B",
+        public arenaTeam?: "A" | "B",
         questIds?: string[],
     ) {
         super(game, pos);
@@ -2025,6 +2264,9 @@ export class Player extends BaseGameObject {
         }
 
         this.setLoadout(loadout ? loadout : joinMsg.loadout, !loadout);
+        if (getInfectedSettings(this.game.miniGame)) {
+            this.applyInfectedLoadout();
+        }
 
         if (this.game.map.sniperMode) {
             this.invManager.give("2xscope", 1);
@@ -2040,6 +2282,16 @@ export class Player extends BaseGameObject {
     update(dt: number): void {
         if (this.dead) {
             this.spectateCooldown -= dt;
+            if (this.infectedRespawnTicker > 0) {
+                this.infectedRespawnTicker = Math.max(
+                    0,
+                    this.infectedRespawnTicker - dt,
+                );
+                if (this.infectedRespawnTicker <= 0) {
+                    this.respawnInfectedZombie();
+                    return;
+                }
+            }
 
             if (this.spectateMsgCount > 0) {
                 this.spectateMsgTicker += dt;
@@ -3644,6 +3896,11 @@ export class Player extends BaseGameObject {
             }
         }
 
+        const infectedSettings = getInfectedSettings(this.game.miniGame);
+        if (infectedSettings && this.arenaTeam === infectedSettings.zombieTeam) {
+            reduceDamage(infectedSettings.zombieDamageReduction);
+        }
+
         if (
             this.hasPerk("first_hit") &&
             this._health === GameConfig.player.health &&
@@ -3694,6 +3951,10 @@ export class Player extends BaseGameObject {
         }
 
         if (this._health === 0) {
+            if (this.handleInfectedFatalDamage(params)) {
+                return;
+            }
+
             if (false || (!this.downed && this.hasPerk("self_revive"))) {
                 this.kill(params);
             } else {
@@ -6169,6 +6430,19 @@ export class Player extends BaseGameObject {
         if (this.lowHpSurgeTicker > 0 && this.hasPerk("low_hp_surge")) {
             const mult = (PerkProperties.low_hp_surge as any)?.speedMult ?? 1.3;
             if (mult && mult > 0) this.speed *= mult;
+        }
+
+        const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
+        if (
+            hideAndSeekSettings &&
+            this.arenaTeam === hideAndSeekSettings.seekerTeam
+        ) {
+            this.speed *= hideAndSeekSettings.seekerSpeedMultiplier;
+        }
+
+        const infectedSettings = getInfectedSettings(this.game.miniGame);
+        if (infectedSettings && this.arenaTeam === infectedSettings.zombieTeam) {
+            this.speed *= infectedSettings.zombieSpeedMultiplier;
         }
 
         this.speed = math.clamp(this.speed, 1, 10000);

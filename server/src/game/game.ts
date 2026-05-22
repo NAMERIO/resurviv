@@ -73,6 +73,7 @@ export class Game {
     config: ServerGameConfig;
     arenaPrivate: boolean;
     miniGame: ServerGameConfig["miniGame"];
+    infectedHumansWon = false;
     arenaStartLockTimer = 0;
     arenaLastCountdownSecond = -1;
     arenaGoBroadcasted = false;
