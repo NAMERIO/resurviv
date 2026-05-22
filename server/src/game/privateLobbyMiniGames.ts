@@ -36,6 +36,11 @@ export interface InfectedSettings {
     humanPrimaryWeapon: string;
     zombieOutfit: string;
     humanOutfit: string;
+    humanNoiseInterval: number;
+    humanNoisePing: string;
+    humanNoisePingOffsetRadius: number;
+    humanNoiseWeapon: string;
+    humanNoiseShotAlt: boolean;
     zombieSpeedMultiplier: number;
     zombieDamageReduction: number;
     zombieRespawnCooldown: number;
@@ -78,6 +83,11 @@ export const InfectedSettings: InfectedSettings = {
     humanPrimaryWeapon: "m9",
     zombieOutfit: "outfitBraaains",
     humanOutfit: "outfitBase",
+    humanNoiseInterval: 60,
+    humanNoisePing: "ping_hide_and_seek_noise",
+    humanNoisePingOffsetRadius: 16,
+    humanNoiseWeapon: "bugle",
+    humanNoiseShotAlt: false,
     zombieSpeedMultiplier: 1.2,
     zombieDamageReduction: 0.4,
     zombieRespawnCooldown: 5,

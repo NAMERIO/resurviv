@@ -1639,6 +1639,27 @@ export class Player extends BaseGameObject {
         }
     }
 
+    updateInfected(dt: number): void {
+        const settings = getInfectedSettings(this.game.miniGame);
+        if (!settings || this.arenaTeam !== settings.humanTeam) return;
+
+        if (this.infectedHumanNoiseTicker <= 0) {
+            this.infectedHumanNoiseTicker = settings.humanNoiseInterval;
+        }
+
+        this.infectedHumanNoiseTicker -= dt;
+        if (this.infectedHumanNoiseTicker <= 0) {
+            this.emitArenaNoisePing({
+                weapon: settings.humanNoiseWeapon,
+                ping: settings.humanNoisePing,
+                pingOffsetRadius: settings.humanNoisePingOffsetRadius,
+                shotAlt: settings.humanNoiseShotAlt,
+                targetArenaTeams: [settings.humanTeam, settings.zombieTeam],
+            });
+            this.infectedHumanNoiseTicker = settings.humanNoiseInterval;
+        }
+    }
+
     applyHideAndSeekBlind(duration: number): void {
         this.hideAndSeekBlindTicker = Math.max(this.hideAndSeekBlindTicker, duration);
         this.hideAndSeekBlindDirty = true;
@@ -1647,11 +1668,27 @@ export class Player extends BaseGameObject {
     emitHideAndSeekNoise(settings: ReturnType<typeof getHideAndSeekSettings>): void {
         if (!settings) return;
 
-        const weaponDef = GameObjectDefs[settings.hiderNoiseWeapon] as GunDef;
+        this.emitArenaNoisePing({
+            weapon: settings.hiderNoiseWeapon,
+            ping: settings.hiderNoisePing,
+            pingOffsetRadius: settings.hiderNoisePingOffsetRadius,
+            shotAlt: settings.hiderNoiseShotAlt,
+            targetArenaTeams: [settings.hiderTeam, settings.seekerTeam],
+        });
+    }
+
+    emitArenaNoisePing(settings: {
+        weapon: string;
+        ping: string;
+        pingOffsetRadius: number;
+        shotAlt: boolean;
+        targetArenaTeams: Array<"A" | "B">;
+    }): void {
+        const weaponDef = GameObjectDefs[settings.weapon] as GunDef;
         const pingOffsetAngle = util.random(0, Math.PI * 2);
         const pingOffsetDistance = util.random(
-            settings.hiderNoisePingOffsetRadius * 0.5,
-            settings.hiderNoisePingOffsetRadius,
+            settings.pingOffsetRadius * 0.5,
+            settings.pingOffsetRadius,
         );
         const pingPos = v2.add(
             this.pos,
@@ -1661,20 +1698,22 @@ export class Player extends BaseGameObject {
             ),
         );
         this.game.map.clampToMapBounds(pingPos);
-        this.game.playerBarn.addMapPing(settings.hiderNoisePing, pingPos, this.__id, [
-            settings.hiderTeam,
-            settings.seekerTeam,
-        ]);
+        this.game.playerBarn.addMapPing(
+            settings.ping,
+            pingPos,
+            this.__id,
+            settings.targetArenaTeams,
+        );
         this.game.bulletBarn.fireBullet({
             dir: this.dir,
             pos: this.pos,
             bulletType: weaponDef.bulletType,
-            gameSourceType: settings.hiderNoiseWeapon,
+            gameSourceType: settings.weapon,
             layer: this.layer,
             damageMult: 0,
             damageType: GameConfig.DamageType.Player,
             playerId: this.__id,
-            shotAlt: settings.hiderNoiseShotAlt,
+            shotAlt: settings.shotAlt,
             shotFx: false,
         });
     }
@@ -1757,6 +1796,8 @@ export class Player extends BaseGameObject {
                 ? settings.zombieOutfit
                 : settings.humanOutfit,
         );
+        this.infectedHumanNoiseTicker =
+            this.arenaTeam === settings.humanTeam ? settings.humanNoiseInterval : 0;
 
         for (const perk of [...this.perks]) {
             this.removePerk(perk.type);
@@ -2088,6 +2129,7 @@ export class Player extends BaseGameObject {
     hideAndSeekWrongPropDamageCooldown = 0;
     hideAndSeekPropSwitchesLeft = 0;
     hideAndSeekNoiseTicker = 0;
+    infectedHumanNoiseTicker = 0;
     get hideAndSeekBlindTime(): number {
         return this.hideAndSeekBlindTicker;
     }
@@ -2315,6 +2357,7 @@ export class Player extends BaseGameObject {
 
         this.updateStreaks(dt);
         this.updateHideAndSeek(dt);
+        this.updateInfected(dt);
 
         if (this.game.map.factionMode && this.timeUntilHidden > 0) {
             this.timeUntilHidden -= dt;
