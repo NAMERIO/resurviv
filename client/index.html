@@ -1424,10 +1424,16 @@
       <div id="modal-prestige-arena" class="modal">
         <div id="modal-prestige-wrapper">
           <div id="modal-prestige-header">
-            <div id="prestige-game-summary-button" data-l10n="prestige-game-summary-button"></div>
-            <div id="prestige-battle-button" data-l10n="prestige-battle-button"></div>
-            <div id="prestige-create-button" data-l10n="prestige-create-button"></div>
-            <div id="prestige-spectate-button" data-l10n="prestige-spectate-button"></div>
+            <div id="arena-modal-title">
+              <div class="arena-modal-title-main">Private Arena</div>
+              <div class="arena-modal-title-sub">Custom lobby</div>
+            </div>
+            <div class="arena-modal-tabs">
+              <div id="prestige-game-summary-button" data-l10n="prestige-game-summary-button"></div>
+              <div id="prestige-battle-button" data-l10n="prestige-battle-button"></div>
+              <div id="prestige-create-button" data-l10n="prestige-create-button"></div>
+              <div id="prestige-spectate-button" data-l10n="prestige-spectate-button"></div>
+            </div>
           </div>
           <div id="modal-prestige-body">
             <div id="modal-prestige-close">
@@ -1448,59 +1454,70 @@
                   <input class="battle-link-entry" maxlength="16" autocomplete="off" spellcheck="false" role="combobox" placeholder="ENTER INVITE CODE" aria-live="polite" />
                   <div id="battle-search-button" class="btn-darken"></div>
                 </div>
-                <div id="battle-player-counter">
-                  <div id="battle-total">0</div>
-                  <div>/</div>
-                  <div id="battle-max">80</div>
-                  <div class="counter-text">joined</div>
-                </div>
-                <div id="battle-code-row">
-                  <div id="battle-code-label" data-l10n="index-invite-code">Invite code</div>
-                  <div id="battle-room-code"></div>
-                  <button id="battle-copy-code" class="btn-darken" type="button" aria-label="Copy invite code"></button>
-                </div>
-                <!-- <div id="battle-spectator-code-note" class="hide" data-l10n="index-arena-spectator-code-note">Spectator code (use normal code)</div> -->
-                <div class="battle-mode active">
-                  <div class="battle-game-mode" data-l10n="spectate-game-mode"></div>
-                  <div id="battle-link-mode"></div>
-                </div>
-                <div class="battle-type active">
-                  <div class="battle-game-type" data-l10n="spectate-game-type"></div>
-                  <div id="battle-link-type"></div>
-                </div>
-                <div class="battle-minigame active">
-                  <div class="battle-game-minigame">Games</div>
-                  <div id="battle-link-minigame">PvP</div>
-                </div>
-                <div id="arena-teams-board" class="hide">
-                  <div class="arena-team-column arena-team-a">
-                    <div id="arena-team-a-title" class="arena-team-title">Team A</div>
-                    <div id="arena-team-a-list" class="arena-team-list"></div>
+                <div class="battle-left-panel">
+                  <div id="battle-player-counter">
+                    <div id="battle-total">0</div>
+                    <div>/</div>
+                    <div id="battle-max">80</div>
+                    <div class="counter-text">joined</div>
                   </div>
-                  <div class="arena-team-column arena-team-b">
-                    <div id="arena-team-b-title" class="arena-team-title">Team B</div>
-                    <div id="arena-team-b-list" class="arena-team-list"></div>
+                  <div id="battle-code-row">
+                    <div id="battle-code-label" data-l10n="index-invite-code">Invite code</div>
+                    <div id="battle-room-code"></div>
+                    <button id="battle-copy-code" class="btn-darken" type="button" aria-label="Copy invite code"></button>
+                  </div>
+                  <!-- <div id="battle-spectator-code-note" class="hide" data-l10n="index-arena-spectator-code-note">Spectator code (use normal code)</div> -->
+                  <div class="battle-mode active">
+                    <div class="battle-game-mode" data-l10n="spectate-game-mode"></div>
+                    <div id="battle-link-mode"></div>
+                  </div>
+                  <div class="battle-type active">
+                    <div class="battle-game-type" data-l10n="spectate-game-type"></div>
+                    <div id="battle-link-type"></div>
+                  </div>
+                  <div class="battle-minigame active">
+                    <div class="battle-game-minigame">Games</div>
+                    <div id="battle-link-minigame">PvP</div>
+                  </div>
+                  <div id="battle-mode-selection" class="battle-option-selection"></div>
+                  <div id="battle-type-selection" class="battle-option-selection"></div>
+                  <div id="battle-minigame-selection" class="battle-option-selection"></div>
+                  <div id="battle-private-options" class="private-option-buttons hide">
+                    <button id="battle-disable-airstrikes" class="btn-darken private-option-toggle" type="button">No Airstrikes</button>
+                    <button id="battle-disable-perks" class="btn-darken private-option-toggle" type="button">No Perks</button>
+                  </div>
+                  <div class="button-group">
+                    <div class="battle-timer hide">
+                      <div class="battle-timer-text" data-l10n="battle-timer-text"></div>:
+                      <div class="timer-group">
+                        <div id="battle-timer-hour">00</div>:
+                        <div id="battle-timer-min">00</div>:
+                        <div id="battle-timer-sec">00</div>
+                      </div>
+                    </div>
+                    <button id="battle-loadout-button" class="btn-darken" type="button" data-l10n="index-loadout">Loadout</button>
+                    <div id="game-status">
+                      <div id="game-status-to-start" data-l10n="game-status-to-start"></div>
+                      <div id="game-status-started" class="hide" data-l10n="game-status-started"></div>
+                    </div>
+                    <div id="battle-button" class="btn-darken" data-l10n="index-join-team"></div>
                   </div>
                 </div>
-                <div id="arena-spectators-board" class="hide">
-                  <div id="arena-spectators-title" class="arena-spectators-title">Spectators</div>
-                  <div id="arena-spectator-list" class="arena-spectator-list"></div>
-                </div>
-                <div class="button-group">
-                  <div class="battle-timer hide">
-                    <div class="battle-timer-text" data-l10n="battle-timer-text"></div>:
-                    <div class="timer-group">
-                      <div id="battle-timer-hour">00</div>:
-                      <div id="battle-timer-min">00</div>:
-                      <div id="battle-timer-sec">00</div>
+                <div class="battle-right-panel">
+                  <div id="arena-teams-board" class="hide">
+                    <div class="arena-team-column arena-team-a">
+                      <div id="arena-team-a-title" class="arena-team-title">Team A</div>
+                      <div id="arena-team-a-list" class="arena-team-list"></div>
+                    </div>
+                    <div class="arena-team-column arena-team-b">
+                      <div id="arena-team-b-title" class="arena-team-title">Team B</div>
+                      <div id="arena-team-b-list" class="arena-team-list"></div>
                     </div>
                   </div>
-                  <button id="battle-loadout-button" class="btn-darken" type="button" data-l10n="index-loadout">Loadout</button>
-                  <div id="game-status">
-                    <div id="game-status-to-start" data-l10n="game-status-to-start"></div>
-                    <div id="game-status-started" class="hide" data-l10n="game-status-started"></div>
+                  <div id="arena-spectators-board" class="hide">
+                    <div id="arena-spectators-title" class="arena-spectators-title">Spectators</div>
+                    <div id="arena-spectator-list" class="arena-spectator-list"></div>
                   </div>
-                  <div id="battle-button" class="btn-darken" data-l10n="index-join-team"></div>
                 </div>
               </div>
               <div id="modal-create-window" class="hide">
