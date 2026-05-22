@@ -149,6 +149,10 @@ export class Projectile extends BaseGameObject {
 
     updateStrobe(dt: number): void {
         if (!this.strobe) return;
+        if (this.game.disableAirstrikes) {
+            this.strobe.airstrikesLeft = 0;
+            return;
+        }
 
         if (this.strobe.timeToPing > 0) {
             this.strobe.timeToPing -= dt;

@@ -41,6 +41,8 @@ export interface RoomData {
     arena: boolean;
     teamsLocked: boolean;
     miniGame: PrivateLobbyMiniGame;
+    disableAirstrikes: boolean;
+    disablePerks: boolean;
 }
 
 //
@@ -116,6 +118,8 @@ export const zClientRoomData = z.object({
     arena: z.boolean().optional(),
     teamsLocked: z.boolean().optional(),
     miniGame: z.enum(PrivateLobbyMiniGameIds).optional(),
+    disableAirstrikes: z.boolean().optional(),
+    disablePerks: z.boolean().optional(),
 });
 
 export type ClientRoomData = z.infer<typeof zClientRoomData>;

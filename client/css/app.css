@@ -8115,6 +8115,54 @@ a:active {
   #modal-prestige-body
   .modal-prestige-body-inner
   #modal-create-window
+  .private-option-buttons {
+  display: -webkit-box;
+  display: flex;
+  gap: 10px;
+  margin: 0 auto 18px;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  .private-option-toggle {
+  width: 132px;
+  height: 36px;
+  border: 0;
+  border-radius: 3px;
+  color: #ffffff;
+  font-family: Roboto Condensed;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 17px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  .private-option-toggle.active {
+  background: #d45656;
+  box-shadow: inset 0 -2px #943c3c;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  .private-option-toggle:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
   .option-buttons {
   display: -webkit-box;
   display: flex;

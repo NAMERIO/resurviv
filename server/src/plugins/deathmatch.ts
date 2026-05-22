@@ -69,7 +69,7 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
 
     // remove all perks but drop droppable ones
     data.player.perks.forEach((perk) => {
-        if (droppablePerks.includes(perk.type)) {
+        if (!data.player.game.disablePerks && droppablePerks.includes(perk.type)) {
             data.player.game.lootBarn.addLoot(
                 perk.type,
                 data.player.pos,
@@ -82,6 +82,7 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
 
     // drop a new perk
     if (
+        !data.player.game.disablePerks &&
         data.source?.__id !== data.player.__id &&
         data.damageType !== GameConfig.DamageType.Bleeding &&
         Math.random() < 0.4
@@ -136,6 +137,7 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
 
         if (Math.random() < 0.2) {
             const strobeChance =
+                !data.player.game.disableAirstrikes &&
                 Math.random() < (data.player.game.mapName === "desert" ? 0.6 : 0.2);
             if (strobeChance) {
                 killer.invManager.set(

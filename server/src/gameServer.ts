@@ -84,6 +84,8 @@ class GameServer {
             teamMode: data.teamMode,
             arenaPrivate: !!data.arenaPrivate,
             miniGame: data.miniGame,
+            disableAirstrikes: !!data.disableAirstrikes,
+            disablePerks: !!data.disablePerks,
             playerData: data.playerData,
             groupHash: data.groupHash,
         });

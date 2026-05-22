@@ -136,6 +136,8 @@ class Room {
         arena: false,
         teamsLocked: false,
         miniGame: DefaultPrivateLobbyMiniGame,
+        disableAirstrikes: false,
+        disablePerks: false,
     };
 
     arenaOwnerKey?: string;
@@ -327,6 +329,8 @@ class Room {
             this.data.arena && isPrivateLobbyMiniGame(props.miniGame)
                 ? props.miniGame
                 : DefaultPrivateLobbyMiniGame;
+        this.data.disableAirstrikes = this.data.arena ? !!props.disableAirstrikes : false;
+        this.data.disablePerks = this.data.arena ? !!props.disablePerks : false;
 
         // kick players that don't fit on the new max players
         if (!this.data.arena) {
@@ -356,7 +360,7 @@ class Room {
         if (!this.data.arena) return;
         const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
         if (!mode) return;
-        const warmupKey = `${this.data.region}:${mode.mapName}:${mode.teamMode}:${this.data.miniGame}`;
+        const warmupKey = `${this.data.region}:${mode.mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.disableAirstrikes}:${this.data.disablePerks}`;
         if (this.arenaWarmupKey === warmupKey) return;
         this.arenaWarmupKey = warmupKey;
         void this.teamMenu.server
@@ -368,6 +372,8 @@ class Room {
                 teamMode: mode.teamMode,
                 arenaPrivate: true,
                 miniGame: this.data.miniGame,
+                disableAirstrikes: this.data.disableAirstrikes,
+                disablePerks: this.data.disablePerks,
                 groupHash: this.id,
                 playerData: [],
             } satisfies FindGamePrivateBody)
@@ -629,6 +635,8 @@ class Room {
             version: data.version,
             arenaPrivate: this.data.arena,
             miniGame: this.data.arena ? this.data.miniGame : DefaultPrivateLobbyMiniGame,
+            disableAirstrikes: this.data.arena ? this.data.disableAirstrikes : false,
+            disablePerks: this.data.arena ? this.data.disablePerks : false,
             groupHash: this.data.arena ? this.id : undefined,
             playerData,
         });

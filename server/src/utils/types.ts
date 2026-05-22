@@ -54,6 +54,8 @@ export interface ServerGameConfig {
     readonly teamMode: TeamMode;
     readonly arenaPrivate?: boolean;
     readonly miniGame?: PrivateLobbyMiniGame;
+    readonly disableAirstrikes?: boolean;
+    readonly disablePerks?: boolean;
 }
 
 export interface GameData {
@@ -62,6 +64,8 @@ export interface GameData {
     mapName: string;
     arenaPrivate?: boolean;
     miniGame?: PrivateLobbyMiniGame;
+    disableAirstrikes?: boolean;
+    disablePerks?: boolean;
     canJoin: boolean;
     aliveCount: number;
     startedTime: number;
@@ -76,6 +80,8 @@ export const zFindGamePrivateBody = z.object({
     teamMode: z.number(),
     arenaPrivate: z.boolean().optional(),
     miniGame: z.enum(PrivateLobbyMiniGameIds).optional(),
+    disableAirstrikes: z.boolean().optional(),
+    disablePerks: z.boolean().optional(),
     groupHash: z.string().optional(),
     playerData: z.array(
         z.object({

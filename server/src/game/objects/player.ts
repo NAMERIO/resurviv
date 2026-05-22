@@ -1444,6 +1444,8 @@ export class Player extends BaseGameObject {
         replaceOnDeath?: string,
         isFromRole?: boolean,
     ) {
+        if (this.game.disablePerks && type !== "endless_ammo") return;
+
         this._perks.push({
             type,
             droppable,
@@ -4466,15 +4468,17 @@ export class Player extends BaseGameObject {
             }
         }
 
-        for (let i = this.perks.length - 1; i >= 0; i--) {
-            const perk = this.perks[i];
-            if (perk.droppable || perk.replaceOnDeath) {
-                this.game.lootBarn.addLoot(
-                    perk.replaceOnDeath || perk.type,
-                    this.pos,
-                    this.layer,
-                    1,
-                );
+        if (!this.game.disablePerks) {
+            for (let i = this.perks.length - 1; i >= 0; i--) {
+                const perk = this.perks[i];
+                if (perk.droppable || perk.replaceOnDeath) {
+                    this.game.lootBarn.addLoot(
+                        perk.replaceOnDeath || perk.type,
+                        this.pos,
+                        this.layer,
+                        1,
+                    );
+                }
             }
         }
         this._perks.length = 0;
@@ -5237,6 +5241,8 @@ export class Player extends BaseGameObject {
         ) {
             return;
         }
+        if (this.game.disableAirstrikes && obj.type === "strobe") return;
+        if (this.game.disablePerks && def.type === "perk") return;
 
         if (
             (this.actionType == GameConfig.Action.UseItem && def.type != "gun") ||
@@ -6043,6 +6049,13 @@ export class Player extends BaseGameObject {
                 hideAndSeekSettings.seekerSpawnItems,
             )) {
                 this.invManager.set(item as InventoryItem, amount);
+            }
+        }
+
+        if (this.game.disableAirstrikes) {
+            this.invManager.set("strobe", 0);
+            if (this.weapons[GameConfig.WeaponSlot.Throwable].type === "strobe") {
+                this.weaponManager.showNextThrowable();
             }
         }
     }

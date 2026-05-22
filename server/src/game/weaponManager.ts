@@ -1478,6 +1478,12 @@ export class WeaponManager {
         }
 
         const oldThrowableType = this.weapons[GameConfig.WeaponSlot.Throwable].type;
+        if (this.player.game.disableAirstrikes && oldThrowableType === "strobe") {
+            this.player.cancelAnim();
+            this.autoThrowFast = false;
+            return;
+        }
+
         const amount = this.player.invManager.get(oldThrowableType as InventoryItem);
         if (amount <= 0) {
             this.autoThrowFast = false;

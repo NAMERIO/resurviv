@@ -73,6 +73,8 @@ export class Game {
     config: ServerGameConfig;
     arenaPrivate: boolean;
     miniGame: ServerGameConfig["miniGame"];
+    disableAirstrikes: boolean;
+    disablePerks: boolean;
     infectedHumansWon = false;
     arenaStartLockTimer = 0;
     arenaLastCountdownSecond = -1;
@@ -159,6 +161,8 @@ export class Game {
         this.config = config;
         this.arenaPrivate = !!config.arenaPrivate;
         this.miniGame = config.miniGame ?? DefaultPrivateLobbyMiniGame;
+        this.disableAirstrikes = !!config.disableAirstrikes;
+        this.disablePerks = !!config.disablePerks;
 
         this.teamMode = config.teamMode;
         this.mapName = config.mapName;
@@ -756,6 +760,8 @@ export class Game {
             mapName: this.mapName,
             arenaPrivate: this.arenaPrivate,
             miniGame: this.miniGame,
+            disableAirstrikes: this.disableAirstrikes,
+            disablePerks: this.disablePerks,
             canJoin: this.canJoin,
             aliveCount: this.aliveCount,
             startedTime: this.startedTime,

@@ -33,6 +33,8 @@ class GameProcess implements GameData {
     mapName = "";
     arenaPrivate = false;
     miniGame: ServerGameConfig["miniGame"] = DefaultPrivateLobbyMiniGame;
+    disableAirstrikes = false;
+    disablePerks = false;
     id = "";
     aliveCount = 0;
     startedTime = 0;
@@ -77,6 +79,8 @@ class GameProcess implements GameData {
                     this.mapName = msg.mapName;
                     this.arenaPrivate = !!msg.arenaPrivate;
                     this.miniGame = msg.miniGame ?? DefaultPrivateLobbyMiniGame;
+                    this.disableAirstrikes = !!msg.disableAirstrikes;
+                    this.disablePerks = !!msg.disablePerks;
                     if (this.id !== msg.id) {
                         this.manager.processById.delete(this.id);
                         this.id = msg.id;
@@ -136,6 +140,8 @@ class GameProcess implements GameData {
         this.mapName = config.mapName;
         this.arenaPrivate = !!config.arenaPrivate;
         this.miniGame = config.miniGame ?? DefaultPrivateLobbyMiniGame;
+        this.disableAirstrikes = !!config.disableAirstrikes;
+        this.disablePerks = !!config.disablePerks;
         this.stopped = false;
         this.creating = true;
         this.groupHash = undefined;
@@ -318,6 +324,8 @@ export class GameProcessManager implements GameManager {
                     !!proc.arenaPrivate === !!body.arenaPrivate &&
                     (proc.miniGame ?? DefaultPrivateLobbyMiniGame) ===
                         (body.miniGame ?? DefaultPrivateLobbyMiniGame) &&
+                    proc.disableAirstrikes === !!body.disableAirstrikes &&
+                    proc.disablePerks === !!body.disablePerks &&
                     (requestedGroupHash
                         ? proc.groupHash === requestedGroupHash
                         : !proc.groupHash)
@@ -333,6 +341,8 @@ export class GameProcessManager implements GameManager {
                 mapName: body.mapName as keyof typeof MapDefs,
                 arenaPrivate: !!body.arenaPrivate,
                 miniGame: body.miniGame ?? DefaultPrivateLobbyMiniGame,
+                disableAirstrikes: !!body.disableAirstrikes,
+                disablePerks: !!body.disablePerks,
             });
         }
 

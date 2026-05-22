@@ -266,6 +266,8 @@ export class TeamMenu {
                 arena,
                 teamsLocked: false,
                 miniGame: this.roomData.miniGame || DefaultPrivateLobbyMiniGame,
+                disableAirstrikes: !!this.roomData.disableAirstrikes,
+                disablePerks: !!this.roomData.disablePerks,
                 findingGame: false,
                 lastError: "",
             } as RoomData;
@@ -399,9 +401,12 @@ export class TeamMenu {
                 // most recent change request.
                 if (this.isLeader) {
                     this.roomData.region = ourRoomData.region;
+                    this.roomData.gameModeIdx = ourRoomData.gameModeIdx;
                     this.roomData.autoFill = ourRoomData.autoFill;
                     this.roomData.teamsLocked = ourRoomData.teamsLocked;
                     this.roomData.miniGame = ourRoomData.miniGame;
+                    this.roomData.disableAirstrikes = ourRoomData.disableAirstrikes;
+                    this.roomData.disablePerks = ourRoomData.disablePerks;
                 }
                 this.refreshUi();
                 this.onStateUpdated?.();
