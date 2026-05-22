@@ -91,6 +91,8 @@ export class Game {
     m_hideAndSeekBlindOverlay!: PIXI.Graphics;
     m_hideAndSeekHunterReleaseLastSecond = -1;
     m_hideAndSeekHunterReleaseWasActive = false;
+    m_infectedRespawnLastSecond = -1;
+    m_infectedRespawnWasActive = false;
     m_canvasMode!: boolean;
 
     m_updatePass!: boolean;
@@ -1091,6 +1093,7 @@ export class Game {
         this.m_gas.m_render(dt, this.m_camera);
         this.renderHideAndSeekBlindOverlay(dt);
         this.renderHideAndSeekHunterReleaseAnnouncement();
+        this.renderInfectedRespawnAnnouncement();
         this.m_uiManager.m_render(
             this.m_activePlayer.m_pos,
             this.m_gas,
@@ -1158,6 +1161,30 @@ export class Game {
         }
         this.m_hideAndSeekHunterReleaseLastSecond = -1;
         this.m_hideAndSeekHunterReleaseWasActive = false;
+    }
+
+    renderInfectedRespawnAnnouncement() {
+        const timeLeft = this.m_activePlayer.m_localData.m_infectedRespawnTime;
+        if (timeLeft > 0) {
+            const seconds = Math.ceil(timeLeft);
+            if (seconds !== this.m_infectedRespawnLastSecond) {
+                this.m_uiManager.displayAnnouncement(
+                    `${this.m_localization.translate("game-infected-respawn-in")} ${seconds} ${this.m_localization.translate("game-seconds")}`,
+                    1500,
+                );
+                this.m_infectedRespawnLastSecond = seconds;
+            }
+            this.m_infectedRespawnWasActive = true;
+            return;
+        }
+
+        if (this.m_infectedRespawnWasActive) {
+            this.m_uiManager.displayAnnouncement(
+                this.m_localization.translate("game-infected-respawned"),
+            );
+        }
+        this.m_infectedRespawnLastSecond = -1;
+        this.m_infectedRespawnWasActive = false;
     }
 
     updateAmbience() {

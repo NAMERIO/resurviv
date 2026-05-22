@@ -706,6 +706,8 @@ export class UiManager {
         if (player.m_netData.m_dead && !this.dead) {
             this.dead = true;
             this.m_pieTimer.stop();
+        } else if (!player.m_netData.m_dead && this.dead) {
+            this.dead = false;
         }
 
         if (localPlayer.downed || this.dead) {

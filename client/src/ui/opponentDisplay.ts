@@ -199,6 +199,7 @@ export class LoadoutDisplay {
             hideAndSeekBlindTime: 0,
             hideAndSeekHunterReleaseTime: 0,
             hideAndSeekHunterReleaseSeeker: false,
+            infectedRespawnTime: 0,
         });
 
         this.activePlayer.layer = this.activePlayer.m_netData.m_layer;
@@ -446,6 +447,7 @@ export class LoadoutDisplay {
                 hideAndSeekBlindTime: 0,
                 hideAndSeekHunterReleaseTime: 0,
                 hideAndSeekHunterReleaseSeeker: false,
+                infectedRespawnTime: 0,
             });
         }
     }

@@ -127,6 +127,7 @@ export class PlayerBarn {
     players: Player[] = [];
     livingPlayers: Player[] = [];
     newPlayers: Player[] = [];
+    dirtyPlayerInfos: Player[] = [];
     deletedPlayers: number[] = [];
     killedPlayers: Player[] = [];
     groupIdAllocator = new IDAllocator(8);
@@ -483,6 +484,7 @@ export class PlayerBarn {
 
     flush() {
         this.newPlayers.length = 0;
+        this.dirtyPlayerInfos.length = 0;
         this.deletedPlayers.length = 0;
         this.emotes.length = 0;
         this.aliveCountDirty = false;
@@ -1820,14 +1822,28 @@ export class Player extends BaseGameObject {
         this.weapsDirty = true;
     }
 
-    private creditInfectedKill(params: DamageParams): Player | undefined {
+    private markPlayerInfoDirty(): void {
+        if (!this.game.playerBarn.dirtyPlayerInfos.includes(this)) {
+            this.game.playerBarn.dirtyPlayerInfos.push(this);
+        }
+    }
+
+    private getInfectedKillCreditSource(params: DamageParams): Player | undefined {
         const killCreditSource =
             params.killCreditSource?.__type === ObjectType.Player
                 ? (params.killCreditSource as Player)
                 : params.source?.__type === ObjectType.Player
                   ? (params.source as Player)
                   : undefined;
-        if (!killCreditSource || killCreditSource === this) return undefined;
+
+        return killCreditSource && killCreditSource !== this
+            ? killCreditSource
+            : undefined;
+    }
+
+    private creditInfectedKill(params: DamageParams): Player | undefined {
+        const killCreditSource = this.getInfectedKillCreditSource(params);
+        if (!killCreditSource) return undefined;
 
         killCreditSource.killedIds.push(this.matchDataId);
         killCreditSource.kills++;
@@ -1847,7 +1863,10 @@ export class Player extends BaseGameObject {
         });
 
         if (!isBattleRoyaleMapName(this.game.mapName)) {
-            this.game.broadcastMsg(net.MsgType.Leaderboard, this.getKillsLeaderboardMsg());
+            this.game.broadcastMsg(
+                net.MsgType.Leaderboard,
+                this.getKillsLeaderboardMsg(),
+            );
         }
 
         return killCreditSource;
@@ -1883,6 +1902,9 @@ export class Player extends BaseGameObject {
         if (zombieGroup && this.group !== zombieGroup) {
             this.group?.removePlayer(this);
             zombieGroup.addPlayer(this);
+        } else if (killCreditSource) {
+            this.groupId = killCreditSource.groupId;
+            this.teamId = killCreditSource.teamId;
         }
 
         this.health = GameConfig.player.health;
@@ -1893,6 +1915,7 @@ export class Player extends BaseGameObject {
         this.applyInfectedLoadout();
         this.setDirty();
         this.setGroupStatuses();
+        this.markPlayerInfoDirty();
         this.game.playerBarn.aliveCountDirty = true;
         this.game.updateData();
         this.game.checkGameOver();
@@ -1913,7 +1936,7 @@ export class Player extends BaseGameObject {
         this.cancelAction();
         this.shootHold = false;
         this.shootStart = false;
-        this.spectating = this.game.playerBarn.randomPlayer(this);
+        this.spectating = undefined;
         this.mapIndicator?.kill();
         this.mapIndicator = undefined;
         util.removeFrom(this.game.playerBarn.livingPlayers, this);
@@ -1934,10 +1957,7 @@ export class Player extends BaseGameObject {
 
     private handleInfectedFatalDamage(params: DamageParams): boolean {
         if (!getInfectedSettings(this.game.miniGame)) return false;
-        const playerSource =
-            params.source?.__type === ObjectType.Player
-                ? (params.source as Player)
-                : undefined;
+        const playerSource = this.getInfectedKillCreditSource(params);
 
         if (
             isInfectedHuman(this.game.miniGame, this.arenaTeam) &&
@@ -2148,6 +2168,9 @@ export class Player extends BaseGameObject {
             this.hideAndSeekHunterReleaseSeeker && this.hideAndSeekHunterReleaseTime > 0
         );
     }
+    get infectedRespawnTime(): number {
+        return this.infectedRespawnTicker;
+    }
     get streakNextThreshold(): number {
         return StreakThresholds.get(this.streakActivationCount);
     }
@@ -2327,10 +2350,7 @@ export class Player extends BaseGameObject {
         if (this.dead) {
             this.spectateCooldown -= dt;
             if (this.infectedRespawnTicker > 0) {
-                this.infectedRespawnTicker = Math.max(
-                    0,
-                    this.infectedRespawnTicker - dt,
-                );
+                this.infectedRespawnTicker = Math.max(0, this.infectedRespawnTicker - dt);
                 if (this.infectedRespawnTicker <= 0) {
                     this.respawnInfectedZombie();
                     return;
@@ -3573,6 +3593,7 @@ export class Player extends BaseGameObject {
                 hideAndSeekBlindTime: player.hideAndSeekBlindTicker,
                 hideAndSeekHunterReleaseTime: player.hideAndSeekHunterReleaseTime,
                 hideAndSeekHunterReleaseSeeker: player.hideAndSeekHunterReleaseSeeker,
+                infectedRespawnTime: player.infectedRespawnTime,
             };
             this.startedSpectating = false;
         } else {
@@ -3582,7 +3603,12 @@ export class Player extends BaseGameObject {
 
         updateMsg.playerInfos = this._firstUpdate
             ? playerBarn.players
-            : playerBarn.newPlayers;
+            : [
+                  ...playerBarn.newPlayers,
+                  ...playerBarn.dirtyPlayerInfos.filter(
+                      (p) => !playerBarn.newPlayers.includes(p),
+                  ),
+              ];
 
         updateMsg.deletedPlayerIds = playerBarn.deletedPlayers;
 
@@ -3846,6 +3872,7 @@ export class Player extends BaseGameObject {
                 ? (params.source as Player)
                 : undefined;
         const sourceTeamId = playerSource?.teamId ?? params.sourceTeamId;
+        const infectedSettings = getInfectedSettings(this.game.miniGame);
 
         if (
             playerSource &&
@@ -3859,7 +3886,13 @@ export class Player extends BaseGameObject {
         const preHealth = this._health;
 
         if (params.source !== this && sourceTeamId !== undefined) {
-            if (sourceTeamId === this.teamId && !this.disconnected) {
+            const infectedFriendlyFire =
+                !!infectedSettings &&
+                (playerSource?.arenaTeam
+                    ? playerSource.arenaTeam === this.arenaTeam
+                    : sourceTeamId === this.teamId);
+            const regularFriendlyFire = !infectedSettings && sourceTeamId === this.teamId;
+            if ((infectedFriendlyFire || regularFriendlyFire) && !this.disconnected) {
                 return;
             }
         }
@@ -3941,7 +3974,6 @@ export class Player extends BaseGameObject {
             }
         }
 
-        const infectedSettings = getInfectedSettings(this.game.miniGame);
         if (infectedSettings && this.arenaTeam === infectedSettings.zombieTeam) {
             reduceDamage(infectedSettings.zombieDamageReduction);
         }
@@ -4128,6 +4160,7 @@ export class Player extends BaseGameObject {
 
     kill(params: DamageParams): void {
         if (this.dead) return;
+        if (this.handleInfectedFatalDamage(params)) return;
         if (this.downed) this.downed = false;
         this.dead = true;
         this.killedIndex = this.game.playerBarn.nextKilledNumber++;
@@ -6489,10 +6522,7 @@ export class Player extends BaseGameObject {
         }
 
         const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
-        if (
-            hideAndSeekSettings &&
-            this.arenaTeam === hideAndSeekSettings.seekerTeam
-        ) {
+        if (hideAndSeekSettings && this.arenaTeam === hideAndSeekSettings.seekerTeam) {
             this.speed *= hideAndSeekSettings.seekerSpeedMultiplier;
         }
 

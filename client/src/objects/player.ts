@@ -420,6 +420,7 @@ export class Player implements AbstractObject {
         m_hideAndSeekBlindTime: number;
         m_hideAndSeekHunterReleaseTime: number;
         m_hideAndSeekHunterReleaseSeeker: boolean;
+        m_infectedRespawnTime: number;
     };
 
     throwableStatePrev!: string;
@@ -589,6 +590,7 @@ export class Player implements AbstractObject {
             m_hideAndSeekBlindTime: 0,
             m_hideAndSeekHunterReleaseTime: 0,
             m_hideAndSeekHunterReleaseSeeker: false,
+            m_infectedRespawnTime: 0,
         };
 
         this.playAnim(Anim.None, -1);
@@ -759,6 +761,7 @@ export class Player implements AbstractObject {
             data.hideAndSeekHunterReleaseTime ?? 0;
         this.m_localData.m_hideAndSeekHunterReleaseSeeker =
             data.hideAndSeekHunterReleaseSeeker ?? false;
+        this.m_localData.m_infectedRespawnTime = data.infectedRespawnTime ?? 0;
 
         // Zoom more quickly when changing scopes
         if (this.m_localData.m_scope != scopeOld) {
@@ -3096,12 +3099,7 @@ export class PlayerBarn {
         const decals = map.decalBarn.decalPool.m_getPool();
         for (let i = 0; i < decals.length; i++) {
             const decal = decals[i];
-            if (
-                decal.active &&
-                !decal.dead &&
-                decal.isSkin &&
-                decal.isPropDisguise
-            ) {
+            if (decal.active && !decal.dead && decal.isSkin && decal.isPropDisguise) {
                 propDisguisePlayerIds.add(decal.skinPlayerId);
             }
         }
@@ -3234,6 +3232,7 @@ export class PlayerBarn {
     }
 
     setPlayerInfo(info: PlayerInfo) {
+        const existingInfo = this.playerInfo[info.playerId];
         this.playerInfo[info.playerId] = {
             playerId: info.playerId,
             teamId: info.teamId,
@@ -3249,10 +3248,12 @@ export class PlayerBarn {
             anonName: `Player${info.playerId - 2750}`,
             loadout: util.cloneDeep(info.loadout),
         };
-        this.playerIds.push(info.playerId);
-        this.playerIds.sort((a, b) => {
-            return a - b;
-        });
+        if (!existingInfo) {
+            this.playerIds.push(info.playerId);
+            this.playerIds.sort((a, b) => {
+                return a - b;
+            });
+        }
     }
 
     deletePlayerInfo(id: number) {

@@ -79,6 +79,7 @@ function serializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
 
     s.writeFloat(data.hideAndSeekHunterReleaseTime, 0, 60, 8);
     s.writeBoolean(data.hideAndSeekHunterReleaseSeeker);
+    s.writeFloat(data.infectedRespawnTime, 0, 10, 8);
 
     s.writeAlignToNextByte();
 }
@@ -154,6 +155,7 @@ function deserializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     }
     data.hideAndSeekHunterReleaseTime = s.readFloat(0, 60, 8);
     data.hideAndSeekHunterReleaseSeeker = s.readBoolean();
+    data.infectedRespawnTime = s.readFloat(0, 10, 8);
     s.readAlignToNextByte();
 }
 
@@ -912,6 +914,7 @@ export interface LocalDataWithDirty extends LocalData {
     hideAndSeekBlindTime: number;
     hideAndSeekHunterReleaseTime: number;
     hideAndSeekHunterReleaseSeeker: boolean;
+    infectedRespawnTime: number;
 }
 
 // the non-optional properties are used by both server and client
