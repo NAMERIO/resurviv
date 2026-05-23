@@ -19863,7 +19863,7 @@ div.roulette {
   display: grid;
   flex: 0 0 auto;
   gap: 6px;
-  grid-template-columns: minmax(0, 1fr) 56px;
+  grid-template-columns: 44px minmax(0, 1fr) 56px;
 }
 
 #team-clan-chat-input {
@@ -19882,6 +19882,12 @@ div.roulette {
 
 #team-clan-chat-input:disabled {
   color: rgba(255, 255, 255, 0.45);
+}
+
+#btn-team-clan-chat-gif {
+  height: 32px;
+  line-height: 32px;
+  width: 44px;
 }
 
 #btn-team-clan-chat-send {
@@ -19910,7 +19916,7 @@ div.roulette {
 }
 
 #modal-prestige-arena #team-clan-chat-input-row {
-  grid-template-columns: minmax(0, 1fr) 52px;
+  grid-template-columns: 44px minmax(0, 1fr) 52px;
 }
 
 #modal-prestige-arena #team-clan-chat-input::placeholder {
@@ -20149,11 +20155,12 @@ div.roulette {
 
   #team-clan-chat-input-row {
     gap: 4px;
-    grid-template-columns: minmax(0, 1fr) 38px;
+    grid-template-columns: 34px minmax(0, 1fr) 38px;
   }
 
   #team-clan-chat-input,
-  #btn-team-clan-chat-send {
+  #btn-team-clan-chat-send,
+  #btn-team-clan-chat-gif {
     font-size: 8px;
     height: 24px;
     line-height: 22px;

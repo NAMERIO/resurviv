@@ -35,7 +35,9 @@ import {
     zJoinClanRequest,
     zKickMemberRequest,
     zListClansRequest,
+    zResolveLobbyKlipyGifRequest,
     zResolveKlipyGifRequest,
+    zSearchLobbyKlipyGifsRequest,
     zSearchKlipyGifsRequest,
     zSendClanMessageRequest,
     zTransferOwnershipRequest,
@@ -1568,6 +1570,71 @@ ClanRouter.post(
                 403,
             );
         }
+
+        if (!Config.secrets.KLIPY_API_KEY) {
+            return c.json<SearchKlipyGifsResponse>(
+                { success: false, error: "not_configured" },
+                500,
+            );
+        }
+
+        try {
+            const gifs = await fetchKlipyGifPickerItems({
+                query,
+                section,
+                limit,
+                customerId: user.id,
+                adMaxWidth,
+                adMaxHeight,
+            });
+            return c.json<SearchKlipyGifsResponse>({ success: true, gifs });
+        } catch {
+            return c.json<SearchKlipyGifsResponse>(
+                { success: false, error: "not_found" },
+                404,
+            );
+        }
+    },
+);
+
+ClanRouter.post(
+    "/resolve_lobby_klipy_gif",
+    validateParams(zResolveLobbyKlipyGifRequest),
+    async (c) => {
+        const { url } = c.req.valid("json");
+
+        if (!parseKlipyUrl(url)) {
+            return c.json<ResolveKlipyGifResponse>(
+                { success: false, error: "invalid_url" },
+                400,
+            );
+        }
+
+        try {
+            const gif = await resolveKlipyGif(url);
+            if (!gif) {
+                return c.json<ResolveKlipyGifResponse>(
+                    { success: false, error: "not_found" },
+                    404,
+                );
+            }
+
+            return c.json<ResolveKlipyGifResponse>({ success: true, gif });
+        } catch {
+            return c.json<ResolveKlipyGifResponse>(
+                { success: false, error: "not_found" },
+                404,
+            );
+        }
+    },
+);
+
+ClanRouter.post(
+    "/search_lobby_klipy_gifs",
+    validateParams(zSearchLobbyKlipyGifsRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { query, section, limit, adMaxWidth, adMaxHeight } = c.req.valid("json");
 
         if (!Config.secrets.KLIPY_API_KEY) {
             return c.json<SearchKlipyGifsResponse>(

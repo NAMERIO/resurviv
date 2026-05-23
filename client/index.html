@@ -1522,7 +1522,23 @@
                     <div id="team-clan-chat-title">Lobby Chat</div>
                     <div id="team-clan-chat-messages"></div>
                     <div id="team-clan-chat-status"></div>
+                    <div id="team-clan-chat-gif-picker" class="clan-chat-gif-picker" style="display: none;">
+                      <div class="clan-chat-gif-search-row">
+                        <input type="text" id="team-clan-chat-gif-search" class="clan-chat-gif-search" placeholder="Search KLIPY" maxlength="50" />
+                      </div>
+                      <div id="team-clan-chat-gif-sections" class="clan-chat-gif-sections">
+                        <button class="clan-chat-gif-section active" type="button" data-section="">Trending</button>
+                        <button class="clan-chat-gif-section" type="button" data-section="happy">Happy</button>
+                        <button class="clan-chat-gif-section" type="button" data-section="love">Love</button>
+                        <button class="clan-chat-gif-section" type="button" data-section="wow">Wow</button>
+                        <button class="clan-chat-gif-section" type="button" data-section="gg">GG</button>
+                        <button class="clan-chat-gif-section" type="button" data-section="fail">Fail</button>
+                      </div>
+                      <div id="team-clan-chat-gif-grid" class="clan-chat-gif-grid"></div>
+                      <div id="team-clan-chat-gif-status" class="clan-chat-gif-status"></div>
+                    </div>
                     <div id="team-clan-chat-input-row">
+                      <button id="btn-team-clan-chat-gif" class="clan-chat-gif-btn" type="button" title="GIFs">GIF</button>
                       <input id="team-clan-chat-input" type="text" maxlength="300" placeholder="Message this lobby..." />
                       <button id="btn-team-clan-chat-send" type="button" class="btn-darken">Send</button>
                     </div>

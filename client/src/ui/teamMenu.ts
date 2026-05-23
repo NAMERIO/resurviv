@@ -4,6 +4,11 @@ import { GameConfig, TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import type { FindGameMatchData } from "../../../shared/types/api";
 import type {
+    KlipyGifPickerItem,
+    ResolveKlipyGifResponse,
+    SearchKlipyGifsResponse,
+} from "../../../shared/types/clan";
+import type {
     RoomData,
     ServerToClientTeamMsg,
     TeamLobbyChatMsg,
@@ -20,6 +25,53 @@ import type { PingTest } from "../pingTest";
 import { SDK } from "../sdk/sdk";
 import type { SiteInfo } from "../siteInfo";
 import type { Localization } from "./localization";
+
+type LobbyChatGifPreview = Extract<ResolveKlipyGifResponse, { success: true }>["gif"];
+type LobbyChatGifPickerItem = KlipyGifPickerItem;
+const blankGifSrc =
+    "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+
+function findKlipyUrl(message: string): string | null {
+    const match = message.match(/https?:\/\/(?:[a-z0-9-]+\.)?klipy\.com\/\S+/i);
+    if (!match) return null;
+
+    try {
+        const url = new URL(match[0]);
+        const hostname = url.hostname.toLowerCase();
+        if (hostname !== "klipy.com" && !hostname.endsWith(".klipy.com")) {
+            return null;
+        }
+        return url.toString();
+    } catch {
+        return null;
+    }
+}
+
+function isOnlyKlipyUrl(message: string) {
+    return /^https?:\/\/(?:[a-z0-9-]+\.)?klipy\.com\/\S+$/i.test(message.trim());
+}
+
+function lobbyGifRequest<T>(
+    url: string,
+    data: Record<string, unknown>,
+    callback: (err: any, res?: T) => void,
+) {
+    $.ajax({
+        url: api.resolveUrl(url),
+        type: "POST",
+        timeout: 10 * 1000,
+        xhrFields: {
+            withCredentials: true,
+        },
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+        },
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify(data),
+    })
+        .done((res) => callback(null, res))
+        .fail((err) => callback(err));
+}
 
 function errorTypeToString(type: string, localization: Localization) {
     const typeMap = {
@@ -101,6 +153,14 @@ export class TeamMenu {
     syncedOutfit?: string;
     syncedPlayerIcon?: string;
     lobbyMessages: TeamLobbyChatMsg["data"][] = [];
+    lobbyGifPickerSearchTimer: ReturnType<typeof setTimeout> | null = null;
+    lobbyGifPickerLoading = false;
+    lobbyGifPickerSection = "";
+    lobbyGifPreviewCache = new Map<string, LobbyChatGifPreview | null>();
+    lobbyGifPreviewPending = new Set<string>();
+    lobbyGifStillFrameCache = new Map<string, string | null>();
+    lobbyGifImageObserver: IntersectionObserver | null = null;
+    observedLobbyGifImages = new Set<HTMLImageElement>();
 
     hideUrl!: boolean;
 
@@ -159,6 +219,42 @@ export class TeamMenu {
             if (e.which === 13) {
                 this.sendLobbyChat();
                 return false;
+            }
+        });
+        $(document).on("click", "#btn-team-clan-chat-gif", (e) => {
+            e.preventDefault();
+            this.toggleLobbyGifPicker();
+        });
+        $(document).on("click", "#team-clan-chat-gif-picker", (e) => {
+            e.stopPropagation();
+        });
+        $(document).on("input", "#team-clan-chat-gif-search", () => {
+            this.scheduleLobbyGifPickerSearch();
+        });
+        $(document).on("keydown", "#team-clan-chat-gif-search", (e) => {
+            if (e.which === 13) {
+                this.loadLobbyGifPickerResults();
+                return false;
+            }
+        });
+        $(document).on(
+            "click",
+            "#team-clan-chat-gif-sections .clan-chat-gif-section",
+            (e) => {
+                const section = String($(e.currentTarget).data("section") || "");
+                this.lobbyGifPickerSection = section;
+                $("#team-clan-chat-gif-search").val("");
+                $("#team-clan-chat-gif-sections .clan-chat-gif-section").removeClass(
+                    "active",
+                );
+                $(e.currentTarget).addClass("active");
+                this.loadLobbyGifPickerResults();
+            },
+        );
+        $(document).on("click", "#team-clan-chat-gif-grid .clan-chat-gif-item", (e) => {
+            const sourceUrl = $(e.currentTarget).data("source-url") as string | undefined;
+            if (sourceUrl) {
+                this.sendLobbyGifMessage(sourceUrl);
             }
         });
         $("#team-copy-url, #team-desc-text").on("click", (e) => {
@@ -268,6 +364,7 @@ export class TeamMenu {
             this.syncedOutfit = undefined;
             this.syncedPlayerIcon = undefined;
             this.lobbyMessages = [];
+            this.hideLobbyGifPicker();
 
             // Load properties from config
             this.playerData = {
@@ -363,6 +460,7 @@ export class TeamMenu {
             this.arena = false;
             this.joinPrefs = {};
             this.lobbyMessages = [];
+            this.hideLobbyGifPicker();
             this.refreshUi();
             this.onStateUpdated?.();
 
@@ -457,6 +555,171 @@ export class TeamMenu {
         return this.getPlayerById(this.localPlayerId);
     }
 
+    toggleLobbyGifPicker() {
+        if ($("#team-clan-chat-gif-picker").is(":visible")) {
+            this.hideLobbyGifPicker();
+            return;
+        }
+        this.showLobbyGifPicker();
+    }
+
+    showLobbyGifPicker() {
+        if (!this.joined || !this.arena) return;
+        $("#team-clan-chat-gif-picker").show();
+        $("#btn-team-clan-chat-gif").addClass("active");
+        $("#team-clan-chat-gif-search").focus();
+        if ($("#team-clan-chat-gif-grid").children().length === 0) {
+            this.loadLobbyGifPickerResults();
+        }
+    }
+
+    hideLobbyGifPicker() {
+        $("#team-clan-chat-gif-picker").hide();
+        $("#btn-team-clan-chat-gif").removeClass("active");
+        this.unloadLobbyGifImages($("#team-clan-chat-gif-grid")[0]);
+    }
+
+    scheduleLobbyGifPickerSearch() {
+        if (this.lobbyGifPickerSearchTimer) {
+            clearTimeout(this.lobbyGifPickerSearchTimer);
+        }
+        this.lobbyGifPickerSearchTimer = setTimeout(() => {
+            this.loadLobbyGifPickerResults();
+        }, 250);
+    }
+
+    loadLobbyGifPickerResults() {
+        if (!this.joined || !this.arena || this.lobbyGifPickerLoading) return;
+
+        const query = (($("#team-clan-chat-gif-search").val() as string) || "").trim();
+        const grid = $("#team-clan-chat-gif-grid");
+        const adMaxWidth = Math.max(50, Math.round(grid.outerWidth() || 280));
+        this.lobbyGifPickerLoading = true;
+        $("#team-clan-chat-gif-status").text("Loading GIFs...");
+
+        lobbyGifRequest<SearchKlipyGifsResponse>(
+            "/api/clan/search_lobby_klipy_gifs",
+            {
+                query: query || undefined,
+                section: query ? undefined : this.lobbyGifPickerSection || undefined,
+                limit: 24,
+                adMaxWidth,
+                adMaxHeight: 250,
+            },
+            (err, res) => {
+                this.lobbyGifPickerLoading = false;
+                if (err || !res?.success) {
+                    $("#team-clan-chat-gif-grid").empty();
+                    $("#team-clan-chat-gif-status").text(
+                        res?.success === false && res.error === "not_configured"
+                            ? "Klipy API key is not configured."
+                            : "GIFs could not be loaded.",
+                    );
+                    return;
+                }
+
+                this.renderLobbyGifPickerResults(res.gifs);
+            },
+        );
+    }
+
+    renderLobbyGifPickerResults(gifs: LobbyChatGifPickerItem[]) {
+        const grid = $("#team-clan-chat-gif-grid");
+        this.unobserveLobbyGifImages(grid[0]);
+        grid.empty();
+
+        for (const [index, gif] of gifs.entries()) {
+            if (gif.type === "ad") {
+                grid.append(this.renderLobbyGifPickerAd(gif));
+                continue;
+            }
+
+            grid.append(
+                $("<button/>", {
+                    class: "clan-chat-gif-item",
+                    type: "button",
+                    title: gif.title,
+                })
+                    .data("source-url", gif.url)
+                    .append(
+                        this.createLobbyLazyGifImage({
+                            class: "clan-chat-gif-thumb",
+                            src: gif.url,
+                            alt: gif.title,
+                            eager: index < 4,
+                        }),
+                    ),
+            );
+        }
+
+        $("#team-clan-chat-gif-status").text(
+            gifs.length === 0 ? "No GIFs found." : "",
+        );
+    }
+
+    renderLobbyGifPickerAd(ad: Extract<LobbyChatGifPickerItem, { type: "ad" }>) {
+        const item = $("<div/>", {
+            class: "clan-chat-gif-item clan-chat-gif-ad",
+            title: ad.title,
+        });
+
+        const label = $("<span/>", {
+            class: "clan-chat-gif-ad-label",
+            text: "Ad",
+        });
+
+        if (ad.html || ad.iframeUrl) {
+            item.append(
+                $("<iframe/>", {
+                    class: "clan-chat-gif-ad-frame",
+                    title: ad.title,
+                    loading: "lazy",
+                    sandbox:
+                        "allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox",
+                    referrerpolicy: "no-referrer-when-downgrade",
+                    src: ad.iframeUrl || undefined,
+                    srcdoc: ad.html || undefined,
+                }),
+                label,
+            );
+            return item;
+        }
+
+        if (ad.imageUrl) {
+            const image = $("<img/>", {
+                class: "clan-chat-gif-ad-image",
+                src: ad.imageUrl,
+                alt: ad.title,
+                loading: "lazy",
+            });
+
+            if (ad.clickUrl) {
+                item.append(
+                    $("<a/>", {
+                        class: "clan-chat-gif-ad-link",
+                        href: ad.clickUrl,
+                        target: "_blank",
+                        rel: "noopener noreferrer",
+                        title: ad.title,
+                    }).append(image),
+                    label,
+                );
+                return item;
+            }
+
+            item.append(image, label);
+            return item;
+        }
+
+        return item.append(
+            $("<div/>", {
+                class: "clan-chat-gif-ad-empty",
+                text: "Advertisement",
+            }),
+            label,
+        );
+    }
+
     addLobbyMessage(message: TeamLobbyChatMsg["data"]) {
         const duplicateOwnMessage = this.lobbyMessages.some((existing) => {
             return (
@@ -514,6 +777,7 @@ export class TeamMenu {
         const status = $("#team-clan-chat-status");
         const input = $("#team-clan-chat-input");
         const send = $("#btn-team-clan-chat-send");
+        const gif = $("#btn-team-clan-chat-gif");
         const visible =
             this.joined && this.arena
                 ? true
@@ -522,9 +786,15 @@ export class TeamMenu {
         chat.css("display", visible ? "flex" : "none");
         input.prop("disabled", !visible);
         send.prop("disabled", !visible);
+        gif.prop("disabled", !visible);
         send.toggleClass("btn-disabled btn-opaque", !visible);
+        gif.toggleClass("btn-disabled", !visible);
+        if (!visible) {
+            this.hideLobbyGifPicker();
+        }
         status.text("Everyone in this private lobby can see these messages.");
 
+        this.unobserveLobbyGifImages(messages[0]);
         messages.empty();
         if (this.lobbyMessages.length === 0) {
             messages.append(
@@ -559,12 +829,253 @@ export class TeamMenu {
                     $("<div/>", {
                         class: "team-clan-chat-text",
                         text: msg.message,
-                    }),
+                    }).toggle(!isOnlyKlipyUrl(msg.message)),
+                    this.renderLobbyGifPreview(msg.message),
                 ),
             );
             messages.append(item);
         }
         messages.scrollTop(messages.prop("scrollHeight"));
+    }
+
+    createLobbyLazyGifImage(options: {
+        class: string;
+        src: string;
+        alt: string;
+        eager?: boolean;
+    }) {
+        const image = $("<img/>", {
+            class: `${options.class} clan-chat-lazy-gif`,
+            src: options.eager ? this.resolveLobbyImageSrc(options.src) : blankGifSrc,
+            alt: options.alt,
+            loading: options.eager ? "eager" : "lazy",
+            crossOrigin: "anonymous",
+        }).on("load", (e) => {
+            this.cacheLobbyGifStillFrame(e.currentTarget as HTMLImageElement);
+        });
+        image.data("gif-src", this.resolveLobbyImageSrc(options.src));
+        if (!options.eager) {
+            this.observeLobbyGifImage(image[0] as HTMLImageElement);
+        }
+        return image;
+    }
+
+    resolveLobbyImageSrc(src: string) {
+        try {
+            return new URL(src, window.location.href).toString();
+        } catch {
+            return src;
+        }
+    }
+
+    cacheLobbyGifStillFrame(image: HTMLImageElement) {
+        const gifSrc = $(image).data("gif-src") as string | undefined;
+        if (
+            !gifSrc ||
+            image.src !== gifSrc ||
+            this.lobbyGifStillFrameCache.has(gifSrc)
+        ) {
+            return;
+        }
+
+        const stillFrame = this.captureLobbyGifStillFrame(image);
+        this.lobbyGifStillFrameCache.set(gifSrc, stillFrame);
+    }
+
+    captureLobbyGifStillFrame(image: HTMLImageElement) {
+        if (!image.complete || !image.naturalWidth || !image.naturalHeight) {
+            return null;
+        }
+
+        try {
+            const maxStillFrameWidth = 480;
+            const scale = Math.min(1, maxStillFrameWidth / image.naturalWidth);
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+            canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+
+            const context = canvas.getContext("2d");
+            if (!context) return null;
+
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL("image/png");
+        } catch {
+            return null;
+        }
+    }
+
+    pauseLobbyGifImage(image: HTMLImageElement) {
+        const gifSrc = $(image).data("gif-src") as string | undefined;
+        if (!gifSrc || image.src !== gifSrc) return;
+
+        const cachedStillFrame = this.lobbyGifStillFrameCache.get(gifSrc);
+        if (cachedStillFrame) {
+            image.src = cachedStillFrame;
+            return;
+        }
+
+        const stillFrame = this.captureLobbyGifStillFrame(image);
+        this.lobbyGifStillFrameCache.set(gifSrc, stillFrame);
+        if (stillFrame) {
+            image.src = stillFrame;
+        }
+    }
+
+    getLobbyGifImageObserver() {
+        if (!("IntersectionObserver" in window)) return null;
+        if (!this.lobbyGifImageObserver) {
+            this.lobbyGifImageObserver = new IntersectionObserver(
+                (entries) => {
+                    for (const entry of entries) {
+                        const image = entry.target as HTMLImageElement;
+                        const gifSrc = $(image).data("gif-src") as string | undefined;
+                        if (!gifSrc) continue;
+
+                        if (entry.isIntersecting) {
+                            if (image.src !== gifSrc) {
+                                image.src = gifSrc;
+                            }
+                        } else {
+                            this.pauseLobbyGifImage(image);
+                        }
+                    }
+                },
+                { root: null, rootMargin: "80px 0px", threshold: 0 },
+            );
+        }
+        return this.lobbyGifImageObserver;
+    }
+
+    observeLobbyGifImage(image: HTMLImageElement) {
+        const observer = this.getLobbyGifImageObserver();
+        if (!observer) {
+            const gifSrc = $(image).data("gif-src") as string | undefined;
+            if (gifSrc) image.src = gifSrc;
+            return;
+        }
+
+        this.observedLobbyGifImages.add(image);
+        observer.observe(image);
+    }
+
+    unobserveLobbyGifImages(root?: HTMLElement) {
+        if (!this.lobbyGifImageObserver) return;
+
+        for (const image of Array.from(this.observedLobbyGifImages)) {
+            if (root && !root.contains(image)) continue;
+            this.lobbyGifImageObserver.unobserve(image);
+            this.observedLobbyGifImages.delete(image);
+        }
+    }
+
+    unloadLobbyGifImages(root?: HTMLElement) {
+        for (const image of Array.from(this.observedLobbyGifImages)) {
+            if (root && !root.contains(image)) continue;
+            this.pauseLobbyGifImage(image);
+        }
+    }
+
+    sendLobbyGifMessage(sourceUrl: string) {
+        if (sourceUrl.length > 300) {
+            $("#team-clan-chat-status").text("That GIF link is too long to send.");
+            return;
+        }
+
+        $("#team-clan-chat-input").val(sourceUrl);
+        this.hideLobbyGifPicker();
+        this.sendLobbyChat();
+    }
+
+    renderLobbyGifPreview(message: string) {
+        const gifUrl = findKlipyUrl(message);
+        if (!gifUrl) return $();
+
+        const preview = $("<a/>", {
+            class: "clan-chat-gif-preview loading",
+            href: gifUrl,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            title: "Open GIF",
+            "data-gif-url": gifUrl,
+        }).append(
+            $("<div/>", {
+                class: "clan-chat-gif-placeholder",
+                text: "Loading GIF...",
+            }),
+        );
+
+        const cachedGif = this.lobbyGifPreviewCache.get(gifUrl);
+        if (cachedGif === null) {
+            return this.fillLobbyGifFallback(preview);
+        }
+        if (cachedGif) {
+            return this.fillLobbyGifPreview(preview, cachedGif);
+        }
+        if (this.lobbyGifPreviewPending.has(gifUrl)) {
+            return preview;
+        }
+
+        this.lobbyGifPreviewPending.add(gifUrl);
+        lobbyGifRequest<ResolveKlipyGifResponse>(
+            "/api/clan/resolve_lobby_klipy_gif",
+            { url: gifUrl },
+            (err, res) => {
+                this.lobbyGifPreviewPending.delete(gifUrl);
+                if (err || !res?.success) {
+                    this.lobbyGifPreviewCache.set(gifUrl, null);
+                    this.fillCurrentLobbyGifPreviews(gifUrl);
+                    return;
+                }
+
+                this.lobbyGifPreviewCache.set(gifUrl, res.gif);
+                this.fillCurrentLobbyGifPreviews(gifUrl);
+            },
+        );
+
+        return preview;
+    }
+
+    fillCurrentLobbyGifPreviews(gifUrl: string) {
+        const cachedGif = this.lobbyGifPreviewCache.get(gifUrl);
+        const previews = $("#team-clan-chat-messages .clan-chat-gif-preview").filter(
+            (_index, element) => $(element).attr("data-gif-url") === gifUrl,
+        );
+
+        previews.each((_index, element) => {
+            const preview = $(element);
+            if (cachedGif) {
+                this.fillLobbyGifPreview(preview, cachedGif);
+            } else {
+                this.fillLobbyGifFallback(preview);
+            }
+        });
+    }
+
+    fillLobbyGifFallback(preview: JQuery<HTMLElement>) {
+        preview.removeClass("loading");
+        preview.empty().append(
+            $("<div/>", {
+                class: "clan-chat-gif-placeholder",
+                text: "Open GIF",
+            }),
+        );
+        return preview;
+    }
+
+    fillLobbyGifPreview(preview: JQuery<HTMLElement>, gif: LobbyChatGifPreview) {
+        preview.removeClass("loading");
+        preview.empty().append(
+            this.createLobbyLazyGifImage({
+                class: "clan-chat-gif-image",
+                src: gif.url,
+                alt: gif.title,
+            }),
+            $("<span/>", {
+                class: "clan-chat-gif-attribution",
+                text: "Powered by Klipy",
+            }),
+        );
+        return preview;
     }
 
     sendMessage(type: string, data?: unknown) {
