@@ -6,6 +6,7 @@ import type { FindGameMatchData } from "../../../shared/types/api";
 import type {
     RoomData,
     ServerToClientTeamMsg,
+    TeamLobbyChatMsg,
     TeamMenuErrorType,
     TeamPlayGameMsg,
     TeamStateMsg,
@@ -78,6 +79,7 @@ export class TeamMenu {
         inGame: boolean;
         name: string;
         outfit?: string;
+        playerIcon?: string;
         clanName?: string;
         clanTagColor?: string;
         isLeader: boolean;
@@ -97,6 +99,8 @@ export class TeamMenu {
     arena = false;
     onStateUpdated?: () => void;
     syncedOutfit?: string;
+    syncedPlayerIcon?: string;
+    lobbyMessages: TeamLobbyChatMsg["data"][] = [];
 
     hideUrl!: boolean;
 
@@ -147,6 +151,15 @@ export class TeamMenu {
         });
         this.playBtn.on("click", () => {
             this.tryStartGame();
+        });
+        $(document).on("click", "#btn-team-clan-chat-send", () => {
+            this.sendLobbyChat();
+        });
+        $(document).on("keydown", "#team-clan-chat-input", (e) => {
+            if (e.which === 13) {
+                this.sendLobbyChat();
+                return false;
+            }
         });
         $("#team-copy-url, #team-desc-text").on("click", (e) => {
             const t = $("<div/>", {
@@ -253,6 +266,8 @@ export class TeamMenu {
             this.editingName = false;
             this.joinPrefs = joinPrefs || {};
             this.syncedOutfit = undefined;
+            this.syncedPlayerIcon = undefined;
+            this.lobbyMessages = [];
 
             // Load properties from config
             this.playerData = {
@@ -301,6 +316,7 @@ export class TeamMenu {
                 };
                 this.ws.onopen = () => {
                     this.syncedOutfit = loadout?.outfit;
+                    this.syncedPlayerIcon = loadout?.player_icon;
                     if (this.create) {
                         this.sendMessage("create", {
                             arena: this.arena,
@@ -308,6 +324,7 @@ export class TeamMenu {
                             playerData: {
                                 ...this.playerData,
                                 outfit: loadout?.outfit,
+                                playerIcon: loadout?.player_icon,
                             },
                         });
                     } else {
@@ -319,6 +336,7 @@ export class TeamMenu {
                             playerData: {
                                 ...this.playerData,
                                 outfit: loadout?.outfit,
+                                playerIcon: loadout?.player_icon,
                             },
                         });
                     }
@@ -344,6 +362,7 @@ export class TeamMenu {
             this.joiningGame = false;
             this.arena = false;
             this.joinPrefs = {};
+            this.lobbyMessages = [];
             this.refreshUi();
             this.onStateUpdated?.();
 
@@ -423,12 +442,129 @@ export class TeamMenu {
                 break;
             case "keepAlive":
                 break;
+            case "lobbyChat":
+                this.addLobbyMessage(data as TeamLobbyChatMsg["data"]);
+                break;
             case "kicked":
                 this.leave("kicked");
                 break;
             case "error":
                 this.leave((data as { type: string }).type);
         }
+    }
+
+    getLocalPlayer() {
+        return this.getPlayerById(this.localPlayerId);
+    }
+
+    addLobbyMessage(message: TeamLobbyChatMsg["data"]) {
+        const duplicateOwnMessage = this.lobbyMessages.some((existing) => {
+            return (
+                message.playerId === this.localPlayerId &&
+                existing.playerId === this.localPlayerId &&
+                existing.playerId === message.playerId &&
+                existing.message === message.message &&
+                Math.abs(existing.timestamp - message.timestamp) < 3000
+            );
+        });
+        if (duplicateOwnMessage) {
+            return;
+        }
+
+        this.lobbyMessages.push(message);
+        if (this.lobbyMessages.length > 80) {
+            this.lobbyMessages.splice(0, this.lobbyMessages.length - 80);
+        }
+        this.renderLobbyChat();
+    }
+
+    sendLobbyChat() {
+        const input = $("#team-clan-chat-input");
+        const message = String(input.val() || "").trim();
+        if (!message) return;
+
+        input.val("");
+
+        const localPlayer = this.getLocalPlayer();
+        const fallbackName = String(
+            (this.playerData as { name?: string }).name ||
+                this.config.get("playerName") ||
+                "Player",
+        );
+        const fallbackLoadout = this.config.get("loadout");
+
+        this.addLobbyMessage({
+            playerId: localPlayer?.playerId ?? this.localPlayerId,
+            name: localPlayer?.name || fallbackName,
+            playerIcon: localPlayer?.playerIcon || fallbackLoadout?.player_icon,
+            clanName: localPlayer?.clanName,
+            clanTagColor: localPlayer?.clanTagColor,
+            message,
+            timestamp: Date.now(),
+        });
+
+        if (this.active && this.joined && this.arena) {
+            this.sendMessage("lobbyChat", { message });
+        }
+    }
+
+    renderLobbyChat() {
+        const chat = $("#team-clan-chat");
+        const messages = $("#team-clan-chat-messages");
+        const status = $("#team-clan-chat-status");
+        const input = $("#team-clan-chat-input");
+        const send = $("#btn-team-clan-chat-send");
+        const visible =
+            this.joined && this.arena
+                ? true
+                : chat.closest("#modal-prestige-arena.is-open").length > 0;
+
+        chat.css("display", visible ? "flex" : "none");
+        input.prop("disabled", !visible);
+        send.prop("disabled", !visible);
+        send.toggleClass("btn-disabled btn-opaque", !visible);
+        status.text("Everyone in this private lobby can see these messages.");
+
+        messages.empty();
+        if (this.lobbyMessages.length === 0) {
+            messages.append(
+                $("<div/>", {
+                    class: "team-clan-chat-empty",
+                    text: "No lobby messages yet.",
+                }),
+            );
+            return;
+        }
+
+        for (const msg of this.lobbyMessages) {
+            const isOwn = msg.playerId === this.localPlayerId;
+            const tag = msg.clanName
+                ? `${helpers.getClanTagHtml(msg.clanName, msg.clanTagColor || "")} `
+                : "";
+            const item = $("<div/>", {
+                class: `team-clan-chat-message${isOwn ? " own" : ""}`,
+            });
+            const playerIcon =
+                helpers.getSvgFromGameType(msg.playerIcon || "emote_surviv") ||
+                "img/gui/player-gui.svg";
+            item.append(
+                $("<div/>", {
+                    class: "team-clan-chat-avatar",
+                }).css("background-image", `url(${playerIcon})`),
+                $("<div/>", { class: "team-clan-chat-bubble" }).append(
+                    $("<div/>", {
+                        class: "team-clan-chat-meta",
+                        html: `${tag}${helpers.htmlEscape(msg.name)}`,
+                    }),
+                    $("<div/>", {
+                        class: "team-clan-chat-text",
+                        text: msg.message,
+                    }),
+                ),
+            );
+            messages.append(item);
+        }
+        messages.scrollTop(messages.prop("scrollHeight"));
     }
 
     sendMessage(type: string, data?: unknown) {
@@ -450,14 +586,18 @@ export class TeamMenu {
             return;
         }
 
-        const outfit = this.config.get("loadout")?.outfit;
-        if (this.syncedOutfit === outfit) {
+        const loadout = this.config.get("loadout");
+        const outfit = loadout?.outfit;
+        const playerIcon = loadout?.player_icon;
+        if (this.syncedOutfit === outfit && this.syncedPlayerIcon === playerIcon) {
             return;
         }
 
         this.syncedOutfit = outfit;
+        this.syncedPlayerIcon = playerIcon;
         this.sendMessage("changeOutfit", {
             outfit,
+            playerIcon,
         });
     }
 
@@ -654,6 +794,8 @@ export class TeamMenu {
         }
 
         if (this.joined) {
+            this.renderLobbyChat();
+
             // Regions
             const regionPops = this.siteInfo.info.pops || {};
             const regions = Object.keys(regionPops);

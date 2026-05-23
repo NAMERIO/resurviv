@@ -19743,6 +19743,180 @@ div.roulette {
   width: 100%;
 }
 
+#team-clan-chat {
+  background: #272727;
+  border: 0;
+  border-radius: 4px;
+  box-shadow: none;
+  box-sizing: border-box;
+  display: none;
+  flex-direction: column;
+  grid-area: chat;
+  min-height: 0;
+  overflow: hidden;
+  padding: 8px;
+  width: auto;
+}
+
+#team-clan-chat-title {
+  color: #fff;
+  flex: 0 0 auto;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 28px;
+  margin-bottom: 0;
+  min-height: 28px;
+  text-shadow: 0 1px 2px #000;
+}
+
+#team-clan-chat-messages {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 7px;
+}
+
+.team-clan-chat-empty {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+  line-height: 17px;
+  padding-top: 4px;
+  text-align: center;
+}
+
+.team-clan-chat-message {
+  align-items: flex-end;
+  display: flex;
+  gap: 7px;
+  max-width: 94%;
+  position: relative;
+}
+
+.team-clan-chat-message.own {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+
+.team-clan-chat-avatar {
+  background: #1f1f1f;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 78%;
+  border-radius: 5px;
+  flex: 0 0 28px;
+  height: 28px;
+  width: 28px;
+}
+
+.team-clan-chat-bubble {
+  background: #3a3a3a;
+  border-radius: 5px;
+  box-sizing: border-box;
+  color: #fff;
+  max-width: 220px;
+  overflow-wrap: anywhere;
+  padding: 7px 9px 8px;
+  position: relative;
+}
+
+.team-clan-chat-message.own .team-clan-chat-bubble {
+  background: #424242;
+}
+
+.team-clan-chat-meta {
+  color: #7cfc00;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 15px;
+  margin-bottom: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-clan-chat-text {
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+#team-clan-chat-status {
+  color: rgba(255, 255, 255, 0.68);
+  flex: 0 0 auto;
+  font-size: 10px;
+  line-height: 12px;
+  min-height: 20px;
+  padding: 5px 0 3px;
+  text-align: center;
+}
+
+#team-clan-chat-input-row {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 6px;
+  grid-template-columns: minmax(0, 1fr) 56px;
+}
+
+#team-clan-chat-input {
+  background: #202020;
+  border: 0;
+  border-radius: 3px;
+  box-sizing: border-box;
+  color: #fff;
+  font-size: 13px;
+  height: 32px;
+  line-height: 32px;
+  min-width: 0;
+  outline: 0;
+  padding: 0 8px;
+}
+
+#team-clan-chat-input:disabled {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+#btn-team-clan-chat-send {
+  background: #55b8b2;
+  border: 0;
+  border-radius: 3px;
+  box-shadow: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  height: 32px;
+  line-height: 32px;
+  padding: 0;
+  text-align: center;
+  text-shadow: 0 1px 2px #000;
+}
+
+#btn-team-clan-chat-send.btn-disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+#modal-prestige-arena #team-clan-chat {
+  height: 100%;
+}
+
+#modal-prestige-arena #team-clan-chat-input-row {
+  grid-template-columns: minmax(0, 1fr) 52px;
+}
+
+#modal-prestige-arena #team-clan-chat-input::placeholder {
+  color: rgba(255, 255, 255, 0.48);
+}
+
 #team-menu .btn-disabled {
   cursor: default !important;
   opacity: 0.55;
@@ -19940,6 +20114,54 @@ div.roulette {
     height: 27px;
     line-height: 25px;
   }
+
+  #team-clan-chat {
+    padding: 6px;
+  }
+
+  #team-clan-chat-title {
+    font-size: 11px;
+    line-height: 14px;
+    margin-bottom: 4px;
+  }
+
+  #team-clan-chat-messages {
+    padding: 5px;
+  }
+
+  .team-clan-chat-empty,
+  .team-clan-chat-text {
+    font-size: 9px;
+    line-height: 12px;
+  }
+
+  .team-clan-chat-meta {
+    font-size: 8px;
+    line-height: 11px;
+  }
+
+  #team-clan-chat-status {
+    font-size: 8px;
+    line-height: 10px;
+    min-height: 20px;
+    padding: 4px 0;
+  }
+
+  #team-clan-chat-input-row {
+    gap: 4px;
+    grid-template-columns: minmax(0, 1fr) 38px;
+  }
+
+  #team-clan-chat-input,
+  #btn-team-clan-chat-send {
+    font-size: 8px;
+    height: 24px;
+    line-height: 22px;
+  }
+
+  #team-clan-chat-input {
+    padding: 0 5px;
+  }
 }
 
 @media (max-width: 520px) {
@@ -19951,6 +20173,10 @@ div.roulette {
 
   #team-menu-columns {
     grid-template-columns: 1fr;
+  }
+
+  #team-clan-chat {
+    min-height: 210px;
   }
 
   #team-menu-member-list {
@@ -22117,14 +22343,17 @@ div.roulette {
 }
 
 #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-editor {
+  box-sizing: border-box;
   height: min(610px, calc(100vh - 44px));
-  width: min(1180px, calc(100vw - 48px));
+  left: 50%;
+  top: 50%;
+  width: min(1480px, calc(100vw - 48px));
 }
 
 #modal-prestige-arena.is-open
   #modal-prestige-wrapper.arena-joined-editor.arena-large-teams {
   height: min(700px, calc(100vh - 34px));
-  width: min(1320px, calc(100vw - 34px));
+  width: min(1640px, calc(100vw - 34px));
 }
 
 #modal-prestige-arena
@@ -23012,10 +23241,10 @@ div.roulette {
   grid-area: lobby;
   grid-template-areas:
     "counter code actions"
-    "teams teams teams"
-    "specs specs specs";
-  grid-template-columns: 150px minmax(220px, 1fr) 230px;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+    "teams teams chat"
+    "specs specs chat";
+  grid-template-columns: 150px minmax(220px, 1fr) 280px;
+  grid-template-rows: auto minmax(0, 1fr) 120px;
   height: 100%;
   min-height: 0;
   overflow: auto;
@@ -23207,9 +23436,10 @@ div.roulette {
       "code"
       "actions"
       "teams"
-      "specs";
+      "specs"
+      "chat";
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto auto auto;
+    grid-template-rows: auto auto auto auto auto 220px;
   }
 
   #modal-prestige-arena
@@ -23219,6 +23449,36 @@ div.roulette {
     #modal-battle-window.arena-joined-layout
     #arena-teams-board:not(.hide) {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 981px) and (max-width: 1180px) {
+  #modal-prestige-arena
+    #modal-prestige-wrapper.arena-joined-editor
+    #modal-prestige-body
+    .modal-prestige-body-inner
+    #modal-battle-window.arena-joined-layout {
+    grid-template-areas:
+      "counter code actions"
+      "teams teams teams"
+      "specs specs specs"
+      "chat chat chat";
+    grid-template-columns: 150px minmax(220px, 1fr) 230px;
+    grid-template-rows: auto minmax(0, 1fr) 120px 220px;
+  }
+
+  #modal-prestige-arena
+    #modal-prestige-wrapper.arena-joined-shell:not(.arena-joined-editor)
+    #modal-prestige-body
+    .modal-prestige-body-inner
+    #modal-battle-window.arena-joined-layout
+    .battle-right-panel {
+    grid-template-areas:
+      "teams"
+      "specs"
+      "chat";
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) 160px 220px;
   }
 }
 
@@ -23241,8 +23501,11 @@ div.roulette {
 /* Private arena joined lobby: match the team-card layout with inline option drawers. */
 #modal-prestige-arena.is-open
   #modal-prestige-wrapper.arena-joined-shell:not(.arena-joined-editor) {
+  box-sizing: border-box;
   height: min(620px, calc(100vh - 48px));
-  width: min(1060px, calc(100vw - 36px));
+  left: 50%;
+  top: 50%;
+  width: min(1380px, calc(100vw - 36px));
 }
 
 #modal-prestige-arena
@@ -23337,10 +23600,10 @@ div.roulette {
   gap: 10px;
   grid-area: right;
   grid-template-areas:
-    "teams"
-    "specs";
-  grid-template-columns: 1fr;
-  grid-template-rows: auto 160px;
+    "teams chat"
+    "specs chat";
+  grid-template-columns: minmax(0, 1fr) 280px;
+  grid-template-rows: minmax(0, 1fr) 160px;
   min-height: 0;
   width: 100%;
 }
@@ -23806,6 +24069,20 @@ div.roulette {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
     overflow-y: auto;
+  }
+
+  #modal-prestige-arena
+    #modal-prestige-wrapper.arena-joined-shell:not(.arena-joined-editor)
+    #modal-prestige-body
+    .modal-prestige-body-inner
+    #modal-battle-window.arena-joined-layout
+    .battle-right-panel {
+    grid-template-areas:
+      "teams"
+      "specs"
+      "chat";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 160px 220px;
   }
 }
 

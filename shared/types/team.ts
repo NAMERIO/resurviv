@@ -63,6 +63,7 @@ export interface TeamMenuPlayer {
     isLeader: boolean;
     inGame: boolean;
     outfit?: string;
+    playerIcon?: string;
     clanName?: string;
     clanTagColor?: string;
     team?: "A" | "B";
@@ -97,12 +98,26 @@ export interface TeamErrorMsg {
     };
 }
 
+export interface TeamLobbyChatMsg {
+    readonly type: "lobbyChat";
+    data: {
+        playerId: number;
+        name: string;
+        playerIcon?: string;
+        clanName?: string;
+        clanTagColor?: string;
+        message: string;
+        timestamp: number;
+    };
+}
+
 export type ServerToClientTeamMsg =
     | TeamJoinGameMsg
     | TeamStateMsg
     | TeamKeepAliveMsg
     | TeamKickedMsg
-    | TeamErrorMsg;
+    | TeamErrorMsg
+    | TeamLobbyChatMsg;
 
 //
 // Team Msgs that the client sends to the server
@@ -140,6 +155,7 @@ export const zTeamJoinMsg = z.object({
         playerData: z.object({
             name: z.string(),
             outfit: z.string().optional(),
+            playerIcon: z.string().optional(),
         }),
     }),
 });
@@ -158,10 +174,20 @@ export const zTeamChangeOutfitMsg = z.object({
     type: z.literal("changeOutfit"),
     data: z.object({
         outfit: z.string().optional(),
+        playerIcon: z.string().optional(),
     }),
 });
 
 export type TeamChangeOutfitMsg = z.infer<typeof zTeamChangeOutfitMsg>;
+
+export const zTeamLobbyChatSendMsg = z.object({
+    type: z.literal("lobbyChat"),
+    data: z.object({
+        message: z.string().trim().min(1).max(300),
+    }),
+});
+
+export type TeamLobbyChatSendMsg = z.infer<typeof zTeamLobbyChatSendMsg>;
 
 export const zTeamSetRoomPropsMsg = z.object({
     type: z.literal("setRoomProps"),
@@ -178,6 +204,7 @@ export const zTeamCreateMsg = z.object({
         playerData: z.object({
             name: z.string(),
             outfit: z.string().optional(),
+            playerIcon: z.string().optional(),
         }),
     }),
 });
@@ -231,6 +258,7 @@ export const zTeamClientMsg = z.discriminatedUnion("type", [
     zTeamSwapTeamMsg,
     zTeamChangeNameMsg,
     zTeamChangeOutfitMsg,
+    zTeamLobbyChatSendMsg,
     zGameCompleteMsg,
     zKeepAliveMsg,
 ]);
@@ -240,6 +268,7 @@ export type ClientToServerTeamMsg =
     | TeamJoinMsg
     | TeamChangeNameMsg
     | TeamChangeOutfitMsg
+    | TeamLobbyChatSendMsg
     | TeamSetRoomPropsMsg
     | TeamCreateMsg
     | TeamKickMsg

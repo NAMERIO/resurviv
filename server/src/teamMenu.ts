@@ -48,6 +48,7 @@ class Player {
 
     name = "Player";
     outfit = "outfitBase";
+    playerIcon = "emote_surviv";
     clanName = "";
     clanTagColor = "";
 
@@ -69,6 +70,7 @@ class Player {
             isLeader: this.isLeader,
             playerId: this.playerId,
             outfit: this.outfit,
+            playerIcon: this.playerIcon,
             clanName: this.clanName,
             clanTagColor: this.clanTagColor,
         };
@@ -102,6 +104,13 @@ class Player {
     setOutfit(outfit?: string) {
         this.outfit =
             outfit && GameObjectDefs[outfit]?.type === "outfit" ? outfit : "outfitBase";
+    }
+
+    setPlayerIcon(playerIcon?: string) {
+        this.playerIcon =
+            playerIcon && GameObjectDefs[playerIcon]?.type === "emote"
+                ? playerIcon
+                : "emote_surviv";
     }
 
     send<T extends ServerToClientTeamMsg["type"]>(
@@ -217,7 +226,12 @@ class Room {
             }
             case "changeOutfit": {
                 player.setOutfit(msg.data.outfit);
+                player.setPlayerIcon(msg.data.playerIcon);
                 this.sendState();
+                break;
+            }
+            case "lobbyChat": {
+                this.sendLobbyChat(player, msg.data.message);
                 break;
             }
             case "keepAlive": {
@@ -354,6 +368,31 @@ class Room {
         this.queueArenaWarmup();
 
         this.sendState();
+    }
+
+    sendLobbyChat(player: Player, message: string) {
+        if (!this.data.arena) {
+            return;
+        }
+
+        const text = message.trim();
+        if (!text) {
+            return;
+        }
+
+        const data = {
+            playerId: player.playerId,
+            name: player.name,
+            playerIcon: player.playerIcon,
+            clanName: player.clanName.trim() || undefined,
+            clanTagColor: player.clanTagColor,
+            message: text,
+            timestamp: Date.now(),
+        };
+
+        for (const target of this.players) {
+            target.send("lobbyChat", data);
+        }
     }
 
     queueArenaWarmup() {
@@ -935,6 +974,7 @@ export class TeamMenu {
             ]).then(([playerData]) => {
                 player.clanName = playerData?.clanName ?? "";
                 player.clanTagColor = playerData?.clanTagColor ?? "";
+                player.setPlayerIcon(playerData?.loadout?.player_icon);
                 if (player.room) {
                     player.room.sendState();
                 }
@@ -992,6 +1032,7 @@ export class TeamMenu {
 
                     player.setName(msg.data.playerData.name);
                     player.setOutfit(msg.data.playerData.outfit);
+                    player.setPlayerIcon(msg.data.playerData.playerIcon);
 
                     const room = this.createRoom({
                         ...msg.data.roomData,
@@ -1055,6 +1096,7 @@ export class TeamMenu {
 
                     player.setName(msg.data.playerData.name);
                     player.setOutfit(msg.data.playerData.outfit);
+                    player.setPlayerIcon(msg.data.playerData.playerIcon);
                     const joinRes = room.addPlayer(player, {
                         preferredTeam: msg.data.preferredTeam,
                         spectator:
