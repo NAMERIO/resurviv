@@ -35,6 +35,7 @@ export const enum Command {
     GetGp = "get_gp",
     GpLeaderboard = "gp_leaderboard",
     CoinFlip = "coinflip",
+    Blackjack = "blackjack",
     Balance = "balance",
     SetGameMode = "set_game_mode",
     SetBattleRoyaleMode = "set_battle_royale_mode",

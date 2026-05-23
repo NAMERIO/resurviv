@@ -25,6 +25,7 @@ import {
 } from "../../../shared/types/moderation";
 import { Command } from "../utils";
 import { balanceHandler } from "./balance";
+import { blackjackHandler } from "./blackjack";
 import { coinFlipHandler } from "./coinflip";
 import { gpLeaderboardHandler } from "./gp-leaderboard";
 import { createCommand, createSlashCommand, genericExecute } from "./helpers";
@@ -365,7 +366,10 @@ const commands = {
         ],
     }),
 } as unknown as Record<
-    Exclude<Command, "search_player" | "coinflip" | "balance" | "gp_leaderboard">,
+    Exclude<
+        Command,
+        "search_player" | "coinflip" | "blackjack" | "balance" | "gp_leaderboard"
+    >,
     ReturnType<typeof createCommand>
 >;
 
@@ -391,6 +395,7 @@ export const commandHandlers: CommandHandlers = (
         // add non generic commands here
         [Command.SearchPlayer]: searchPlayersHandler.execute,
         [Command.CoinFlip]: coinFlipHandler.execute,
+        [Command.Blackjack]: blackjackHandler.execute,
         [Command.Balance]: balanceHandler.execute,
         [Command.GpLeaderboard]: gpLeaderboardHandler.execute,
     } as CommandHandlers,
@@ -401,6 +406,7 @@ export const commandsToRegister: SlashCommandOptionsOnlyBuilder[] = [
     // add non generic commands here
     searchPlayersHandler.command,
     coinFlipHandler.command,
+    blackjackHandler.command,
     balanceHandler.command,
     gpLeaderboardHandler.command,
 ];

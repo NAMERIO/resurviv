@@ -10,6 +10,8 @@ import { MapDefs } from "../../../../../shared/defs/mapDefs";
 import { TeamMode } from "../../../../../shared/gameConfig";
 import { ClanConstants } from "../../../../../shared/types/clan";
 import {
+    zBlackjackCheckParams,
+    zBlackjackResolveParams,
     zCoinFlipCheckParams,
     zCoinFlipResolveParams,
     zDiscordBalanceParams,
@@ -710,6 +712,227 @@ export const PrivateRouter = new Hono<Context>()
                 },
                 200,
             );
+        },
+    )
+    .post(
+        "/blackjack_check",
+        databaseEnabledMiddleware,
+        validateParams(zBlackjackCheckParams),
+        async (c) => {
+            const {
+                challenger_discord_id: challengerDiscordId,
+                opponent_discord_id: opponentDiscordId,
+                bet,
+            } = c.req.valid("json");
+
+            if (challengerDiscordId === opponentDiscordId) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "same_user",
+                        message: "You cannot play blackjack against yourself.",
+                    },
+                    200,
+                );
+            }
+
+            const challenger = await findDiscordLinkedUser(challengerDiscordId);
+            if (!challenger) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "challenger_not_connected",
+                        message:
+                            "You do not have a game account connected to this Discord.",
+                    },
+                    200,
+                );
+            }
+
+            if (challenger.gpBalance < bet) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "challenger_not_enough_gp",
+                        message: "You do not have enough GP.",
+                    },
+                    200,
+                );
+            }
+
+            const opponent = await findDiscordLinkedUser(opponentDiscordId);
+            if (!opponent) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "opponent_not_connected",
+                        message:
+                            "User does not have a game account connected to this Discord.",
+                    },
+                    200,
+                );
+            }
+
+            if (opponent.gpBalance < bet) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "opponent_not_enough_gp",
+                        message: "User does not have enough GP.",
+                    },
+                    200,
+                );
+            }
+
+            return c.json(
+                {
+                    ok: true,
+                    challenger: toCoinFlipPlayer(challenger),
+                    opponent: toCoinFlipPlayer(opponent),
+                },
+                200,
+            );
+        },
+    )
+    .post(
+        "/blackjack_resolve",
+        databaseEnabledMiddleware,
+        validateParams(zBlackjackResolveParams),
+        async (c) => {
+            const {
+                challenger_discord_id: challengerDiscordId,
+                opponent_discord_id: opponentDiscordId,
+                winner_discord_id: winnerDiscordId,
+                loser_discord_id: loserDiscordId,
+                bet,
+            } = c.req.valid("json");
+
+            if (challengerDiscordId === opponentDiscordId) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "same_user",
+                        message: "You cannot play blackjack against yourself.",
+                    },
+                    200,
+                );
+            }
+
+            const expectedPlayers = new Set([challengerDiscordId, opponentDiscordId]);
+            if (
+                !expectedPlayers.has(winnerDiscordId) ||
+                !expectedPlayers.has(loserDiscordId) ||
+                winnerDiscordId === loserDiscordId
+            ) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "invalid_winner",
+                        message: "Invalid blackjack winner.",
+                    },
+                    200,
+                );
+            }
+
+            const result = await db.transaction(async (tx) => {
+                const winner = await tx.query.usersTable.findFirst({
+                    where: and(
+                        eq(usersTable.authId, winnerDiscordId),
+                        eq(usersTable.linkedDiscord, true),
+                    ),
+                    columns: {
+                        id: true,
+                        slug: true,
+                        username: true,
+                        gpBalance: true,
+                    },
+                });
+
+                if (!winner) {
+                    return {
+                        ok: false,
+                        reason: "winner_not_connected",
+                        message: "Winner does not have a connected game account.",
+                    };
+                }
+
+                const loser = await tx.query.usersTable.findFirst({
+                    where: and(
+                        eq(usersTable.authId, loserDiscordId),
+                        eq(usersTable.linkedDiscord, true),
+                    ),
+                    columns: {
+                        id: true,
+                        slug: true,
+                        username: true,
+                        gpBalance: true,
+                    },
+                });
+
+                if (!loser) {
+                    return {
+                        ok: false,
+                        reason: "loser_not_connected",
+                        message: "Loser does not have a connected game account.",
+                    };
+                }
+
+                if (winner.gpBalance < bet || loser.gpBalance < bet) {
+                    return {
+                        ok: false,
+                        reason: "not_enough_gp",
+                        message: "One player does not have enough GP.",
+                    };
+                }
+
+                const [updatedLoser] = await tx
+                    .update(usersTable)
+                    .set({
+                        gpBalance: sql`${usersTable.gpBalance} - ${bet}`,
+                    })
+                    .where(
+                        and(
+                            eq(usersTable.id, loser.id),
+                            sql`${usersTable.gpBalance} >= ${bet}`,
+                        ),
+                    )
+                    .returning({
+                        gpBalance: usersTable.gpBalance,
+                    });
+
+                if (!updatedLoser) {
+                    return {
+                        ok: false,
+                        reason: "loser_not_enough_gp",
+                        message: "Loser does not have enough GP.",
+                    };
+                }
+
+                const [updatedWinner] = await tx
+                    .update(usersTable)
+                    .set({
+                        gpBalance: sql`${usersTable.gpBalance} + ${bet}`,
+                    })
+                    .where(eq(usersTable.id, winner.id))
+                    .returning({
+                        gpBalance: usersTable.gpBalance,
+                    });
+
+                return {
+                    ok: true,
+                    bet,
+                    winner: {
+                        ...toCoinFlipPlayer(winner),
+                        gpBalance: updatedWinner?.gpBalance ?? winner.gpBalance + bet,
+                    },
+                    loser: {
+                        ...toCoinFlipPlayer(loser),
+                        gpBalance: updatedLoser.gpBalance,
+                    },
+                };
+            });
+
+            return c.json(result, 200);
         },
     )
     .post(
