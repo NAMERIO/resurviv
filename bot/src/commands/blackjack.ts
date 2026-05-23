@@ -235,6 +235,26 @@ async function sendEphemeral(interaction: ChatInputCommandInteraction, content: 
     await interaction.reply(payload);
 }
 
+async function parseApiJson<T>(
+    response: { status: number; text: () => Promise<string> },
+    route: string,
+): Promise<T> {
+    const body = await response.text();
+
+    try {
+        return JSON.parse(body) as T;
+    } catch (error) {
+        throw new Error(
+            `${route} returned non-JSON response (${response.status}): ${body.slice(0, 200)}`,
+            { cause: error },
+        );
+    }
+}
+
+function isNonJsonApiError(error: unknown) {
+    return error instanceof Error && error.message.includes("non-JSON response");
+}
+
 export const blackjackHandler = {
     command: new SlashCommandBuilder()
         .setName(Command.Blackjack)
@@ -281,7 +301,10 @@ export const blackjackHandler = {
                     bet,
                 },
             });
-            const check = (await checkRes.json()) as BlackjackCheckResponse;
+            const check = await parseApiJson<BlackjackCheckResponse>(
+                checkRes,
+                "blackjack_check",
+            );
 
             if (!check.ok) {
                 await interaction.editReply({ content: check.message });
@@ -417,7 +440,10 @@ export const blackjackHandler = {
                             bet,
                         },
                     });
-                    const result = (await resolveRes.json()) as BlackjackResolveResponse;
+                    const result = await parseApiJson<BlackjackResolveResponse>(
+                        resolveRes,
+                        "blackjack_resolve",
+                    );
 
                     if (!result.ok) {
                         await interaction.editReply({
@@ -540,7 +566,9 @@ export const blackjackHandler = {
                         releaseBlackjackUsers(challenger.id, opponent.id);
                         botLogger.error("Error while resolving blackjack:", error);
                         await interaction.editReply({
-                            content: "An error occurred while running blackjack.",
+                            content: isNonJsonApiError(error)
+                                ? "The blackjack API route is not available yet. Update and restart the API server, then try again."
+                                : "An error occurred while running blackjack.",
                             embeds: [],
                             components: [],
                         });
@@ -582,7 +610,9 @@ export const blackjackHandler = {
             releaseBlackjackUsers(challenger.id, opponent.id);
             botLogger.error("Error in blackjack command:", error);
             await interaction.editReply({
-                content: "An error occurred while running blackjack.",
+                content: isNonJsonApiError(error)
+                    ? "The blackjack API route is not available yet. Update and restart the API server, then try again."
+                    : "An error occurred while running blackjack.",
                 embeds: [],
                 components: [],
             });
