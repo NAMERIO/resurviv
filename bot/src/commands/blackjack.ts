@@ -2,10 +2,13 @@ import { randomInt } from "node:crypto";
 import {
     ActionRowBuilder,
     ButtonBuilder,
+    type ButtonInteraction,
     ButtonStyle,
     type ChatInputCommandInteraction,
     ComponentType,
     EmbedBuilder,
+    type InteractionCollector,
+    type Message,
     MessageFlags,
     SlashCommandBuilder,
     type User,
@@ -403,33 +406,26 @@ export const blackjackHandler = {
                 const playerHand = [draw(deck)];
 
                 await buttonInteraction.update({
-                    content: `${opponent}, pull or stand.`,
-                    embeds: [
-                        buildGameEmbed({
-                            challenger,
-                            opponent,
-                            bet,
-                            dealerHand,
-                            playerHand,
-                            status: "The dealer took the first card. The player has the turn.",
-                        }),
-                    ],
-                    components: [buildGameRow({ canCancel: true })],
+                    content: `${opponent} accepted ${challenger}'s blackjack challenge.`,
+                    embeds: [],
+                    components: [],
                     allowedMentions: { users: [opponent.id, challenger.id] },
                 });
 
-                const gameCollector = response.createMessageComponentCollector({
-                    componentType: ComponentType.Button,
-                    time: TIMEOUT_IN_MS,
-                });
                 let playerPulled = false;
+                let gameDone = false;
+                let currentGameCollector:
+                    | InteractionCollector<ButtonInteraction>
+                    | undefined;
 
                 const finishGame = async (
                     reason: string,
                     winnerUser: User,
                     loserUser: User,
                 ) => {
-                    gameCollector.stop("completed");
+                    gameDone = true;
+                    currentGameCollector?.stop("completed");
+                    releaseBlackjackUsers(challenger.id, opponent.id);
 
                     const resolveRes = await honoClient.blackjack_resolve.$post({
                         json: {
@@ -454,7 +450,7 @@ export const blackjackHandler = {
                         return;
                     }
 
-                    await interaction.editReply({
+                    await interaction.followUp({
                         content: `${winnerUser} won **${formatGp(result.bet)} GP** from ${loserUser}.`,
                         embeds: [
                             buildGameEmbed({
@@ -477,128 +473,170 @@ export const blackjackHandler = {
                     });
                 };
 
-                gameCollector.on("collect", async (gameInteraction) => {
-                    if (gameInteraction.user.id !== opponent.id) {
-                        await gameInteraction.reply({
-                            content: "Only the player can pull or stand.",
-                            flags: MessageFlags.Ephemeral,
-                        });
-                        return;
-                    }
+                const sendGameMessage = async ({
+                    status,
+                    canCancel,
+                }: {
+                    status: string;
+                    canCancel: boolean;
+                }) => {
+                    const gameMessage = await interaction.followUp({
+                        content: `${opponent}, pull or stand.`,
+                        embeds: [
+                            buildGameEmbed({
+                                challenger,
+                                opponent,
+                                bet,
+                                dealerHand,
+                                playerHand,
+                                status,
+                            }),
+                        ],
+                        components: [buildGameRow({ canCancel })],
+                        allowedMentions: { users: [opponent.id, challenger.id] },
+                    });
 
-                    try {
-                        if (gameInteraction.customId === CANCEL_BUTTON_ID) {
-                            if (playerPulled) {
-                                await gameInteraction.reply({
-                                    content: "You cannot cancel after pulling a card.",
-                                    flags: MessageFlags.Ephemeral,
+                    startGameCollector(gameMessage);
+                };
+
+                function startGameCollector(gameMessage: Message) {
+                    currentGameCollector?.stop("next");
+                    const gameCollector = gameMessage.createMessageComponentCollector({
+                        componentType: ComponentType.Button,
+                        time: TIMEOUT_IN_MS,
+                    });
+                    currentGameCollector = gameCollector;
+
+                    gameCollector.on("collect", async (gameInteraction) => {
+                        if (gameInteraction.user.id !== opponent.id) {
+                            await gameInteraction.reply({
+                                content: "Only the player can pull or stand.",
+                                flags: MessageFlags.Ephemeral,
+                            });
+                            return;
+                        }
+
+                        try {
+                            if (gameInteraction.customId === CANCEL_BUTTON_ID) {
+                                if (playerPulled) {
+                                    await gameInteraction.reply({
+                                        content:
+                                            "You cannot cancel after pulling a card.",
+                                        flags: MessageFlags.Ephemeral,
+                                    });
+                                    return;
+                                }
+
+                                gameDone = true;
+                                currentGameCollector?.stop("cancelled");
+                                releaseBlackjackUsers(challenger.id, opponent.id);
+                                await gameInteraction.update({
+                                    components: [
+                                        buildGameRow({
+                                            disabled: true,
+                                            canCancel: true,
+                                        }),
+                                    ],
+                                });
+                                await interaction.followUp({
+                                    content: `${opponent} cancelled the blackjack game before pulling a card.`,
+                                    allowedMentions: {
+                                        users: [opponent.id, challenger.id],
+                                    },
                                 });
                                 return;
                             }
 
-                            gameCollector.stop("cancelled");
-                            releaseBlackjackUsers(challenger.id, opponent.id);
-                            await gameInteraction.update({
-                                content: `${opponent} cancelled the blackjack game before pulling a card.`,
-                                embeds: [],
-                                components: [],
-                                allowedMentions: {
-                                    users: [opponent.id, challenger.id],
-                                },
-                            });
-                            return;
-                        }
+                            if (gameInteraction.customId === HIT_BUTTON_ID) {
+                                playerPulled = true;
+                                playerHand.push(draw(deck));
+                                const playerTotal = handValue(playerHand);
 
-                        if (gameInteraction.customId === HIT_BUTTON_ID) {
-                            playerPulled = true;
-                            playerHand.push(draw(deck));
-                            const playerTotal = handValue(playerHand);
+                                await gameInteraction.update({
+                                    components: [buildGameRow({ disabled: true })],
+                                });
 
-                            if (playerTotal > 21) {
-                                await gameInteraction.deferUpdate();
-                                await finishGame(
-                                    `${opponent} busted with **${playerTotal}**. The dealer wins.`,
-                                    challenger,
-                                    opponent,
-                                );
+                                if (playerTotal > 21) {
+                                    await finishGame(
+                                        `${opponent} busted with **${playerTotal}**. The dealer wins.`,
+                                        challenger,
+                                        opponent,
+                                    );
+                                    return;
+                                }
+
+                                await sendGameMessage({
+                                    status: `${opponent} pulled ${formatCard(playerHand[playerHand.length - 1])}.`,
+                                    canCancel: false,
+                                });
                                 return;
                             }
 
+                            const dealerCardsBeforeStand = dealerHand.length;
+
+                            while (handValue(dealerHand) < 17) {
+                                dealerHand.push(draw(deck));
+                            }
+
+                            const dealerTotal = handValue(dealerHand);
+                            const playerTotal = handValue(playerHand);
+                            const playerWins =
+                                dealerTotal > 21 || playerTotal > dealerTotal;
+                            const dealerPulledCards =
+                                dealerHand.length - dealerCardsBeforeStand;
+                            const dealerAction =
+                                dealerPulledCards > 0
+                                    ? `${challenger} pulled ${dealerPulledCards} card${dealerPulledCards === 1 ? "" : "s"}`
+                                    : `${challenger} did not pull`;
+
                             await gameInteraction.update({
-                                content: `${opponent}, pull or stand.`,
-                                embeds: [
-                                    buildGameEmbed({
-                                        challenger,
-                                        opponent,
-                                        bet,
-                                        dealerHand,
-                                        playerHand,
-                                        status: `${opponent} pulled ${formatCard(playerHand[playerHand.length - 1])}.`,
-                                    }),
-                                ],
-                                components: [buildGameRow()],
-                                allowedMentions: { users: [opponent.id, challenger.id] },
+                                components: [buildGameRow({ disabled: true })],
                             });
+                            await finishGame(
+                                dealerTotal > 21
+                                    ? `${opponent} stood with **${playerTotal}**. ${dealerAction} and busted with **${dealerTotal}**.`
+                                    : playerWins
+                                      ? `${opponent} stood with **${playerTotal}**. ${dealerAction} and stopped at **${dealerTotal}**.`
+                                      : `${opponent} stood with **${playerTotal}**. ${dealerAction}; ${challenger} wins with **${dealerTotal}**.`,
+                                playerWins ? opponent : challenger,
+                                playerWins ? challenger : opponent,
+                            );
+                        } catch (error) {
+                            gameDone = true;
+                            currentGameCollector?.stop("errored");
+                            releaseBlackjackUsers(challenger.id, opponent.id);
+                            botLogger.error("Error while resolving blackjack:", error);
+                            await interaction.followUp({
+                                content: isNonJsonApiError(error)
+                                    ? "The blackjack API route is not available yet. Update and restart the API server, then try again."
+                                    : "An error occurred while running blackjack.",
+                            });
+                        }
+                    });
+
+                    gameCollector.on("end", async (_, reason) => {
+                        if (
+                            reason === "next" ||
+                            reason === "completed" ||
+                            reason === "errored" ||
+                            reason === "cancelled" ||
+                            gameDone
+                        ) {
                             return;
                         }
 
-                        const dealerCardsBeforeStand = dealerHand.length;
-
-                        while (handValue(dealerHand) < 17) {
-                            dealerHand.push(draw(deck));
-                        }
-
-                        const dealerTotal = handValue(dealerHand);
-                        const playerTotal = handValue(playerHand);
-                        const playerWins = dealerTotal > 21 || playerTotal > dealerTotal;
-                        const dealerPulledCards =
-                            dealerHand.length - dealerCardsBeforeStand;
-                        const dealerAction =
-                            dealerPulledCards > 0
-                                ? `${challenger} pulled ${dealerPulledCards} card${dealerPulledCards === 1 ? "" : "s"}`
-                                : `${challenger} did not pull`;
-
-                        await gameInteraction.deferUpdate();
-                        await finishGame(
-                            dealerTotal > 21
-                                ? `${opponent} stood with **${playerTotal}**. ${dealerAction} and busted with **${dealerTotal}**.`
-                                : playerWins
-                                  ? `${opponent} stood with **${playerTotal}**. ${dealerAction} and stopped at **${dealerTotal}**.`
-                                  : `${opponent} stood with **${playerTotal}**. ${dealerAction}; ${challenger} wins with **${dealerTotal}**.`,
-                            playerWins ? opponent : challenger,
-                            playerWins ? challenger : opponent,
-                        );
-                    } catch (error) {
-                        gameCollector.stop("errored");
+                        gameDone = true;
                         releaseBlackjackUsers(challenger.id, opponent.id);
-                        botLogger.error("Error while resolving blackjack:", error);
-                        await interaction.editReply({
-                            content: isNonJsonApiError(error)
-                                ? "The blackjack API route is not available yet. Update and restart the API server, then try again."
-                                : "An error occurred while running blackjack.",
-                            embeds: [],
-                            components: [],
+                        await interaction.followUp({
+                            content: `${opponent} did not finish the blackjack game in time.`,
+                            allowedMentions: { users: [opponent.id, challenger.id] },
                         });
-                    }
-                });
-
-                gameCollector.on("end", async (_, reason) => {
-                    if (
-                        reason === "completed" ||
-                        reason === "errored" ||
-                        reason === "cancelled"
-                    ) {
-                        releaseBlackjackUsers(challenger.id, opponent.id);
-                        return;
-                    }
-
-                    releaseBlackjackUsers(challenger.id, opponent.id);
-                    await interaction.editReply({
-                        content: `${opponent} did not finish the blackjack game in time.`,
-                        embeds: [],
-                        components: [],
-                        allowedMentions: { users: [opponent.id, challenger.id] },
                     });
+                }
+
+                await sendGameMessage({
+                    status: "The dealer took the first card. The player has the turn.",
+                    canCancel: true,
                 });
             });
 
