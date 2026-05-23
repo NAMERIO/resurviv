@@ -542,22 +542,29 @@ export const blackjackHandler = {
                             return;
                         }
 
-                        while (
-                            handValue(dealerHand) < handValue(playerHand) &&
-                            handValue(dealerHand) < 21
-                        ) {
+                        const dealerCardsBeforeStand = dealerHand.length;
+
+                        while (handValue(dealerHand) < 17) {
                             dealerHand.push(draw(deck));
                         }
 
                         const dealerTotal = handValue(dealerHand);
                         const playerTotal = handValue(playerHand);
                         const playerWins = dealerTotal > 21 || playerTotal > dealerTotal;
+                        const dealerPulledCards =
+                            dealerHand.length - dealerCardsBeforeStand;
+                        const dealerAction =
+                            dealerPulledCards > 0
+                                ? `${challenger} pulled ${dealerPulledCards} card${dealerPulledCards === 1 ? "" : "s"}`
+                                : `${challenger} did not pull`;
 
                         await gameInteraction.deferUpdate();
                         await finishGame(
-                            playerWins
-                                ? `${challenger} stopped at **${dealerTotal}** and ${opponent} wins with **${playerTotal}**.`
-                                : `${challenger} wins with **${dealerTotal}** against **${playerTotal}**.`,
+                            dealerTotal > 21
+                                ? `${opponent} stood with **${playerTotal}**. ${dealerAction} and busted with **${dealerTotal}**.`
+                                : playerWins
+                                  ? `${opponent} stood with **${playerTotal}**. ${dealerAction} and stopped at **${dealerTotal}**.`
+                                  : `${opponent} stood with **${playerTotal}**. ${dealerAction}; ${challenger} wins with **${dealerTotal}**.`,
                             playerWins ? opponent : challenger,
                             playerWins ? challenger : opponent,
                         );
