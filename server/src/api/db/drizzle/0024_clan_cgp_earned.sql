@@ -6,8 +6,8 @@ ADD COLUMN IF NOT EXISTS "win_cgp_milli" integer NOT NULL DEFAULT 0;
 
 UPDATE "clan_member_stats"
 SET
-    "kill_cgp_milli" = ROUND("kills" * 0.25 * 10000),
-    "win_cgp_milli" = ROUND("wins" * 5 * 10000)
+    "kill_cgp_milli" = ROUND("kills" * 0.25 * 10000)::integer,
+    "win_cgp_milli" = ROUND("wins" * 5 * 10000)::integer
 WHERE "kill_cgp_milli" = 0
 AND "win_cgp_milli" = 0
 AND ("kills" > 0 OR "wins" > 0);

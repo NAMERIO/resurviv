@@ -80,6 +80,22 @@ function getRepeatedMatchupMultiplier(matchNumber: number) {
     return 0.1;
 }
 
+function getLobbyCgpMultipliers(playerCount: number) {
+    if (playerCount <= 3) {
+        return { kills: 0.25, wins: 0.1 };
+    }
+    if (playerCount <= 6) {
+        return { kills: 0.5, wins: 0.35 };
+    }
+    if (playerCount <= 9) {
+        return { kills: 1, wins: 1 };
+    }
+    if (playerCount <= 12) {
+        return { kills: 1.1, wins: 1.1 };
+    }
+    return { kills: 1.2, wins: 1.2 };
+}
+
 function toCgpMilli(value: number) {
     return Math.round(value * ClanConstants.CgpScale);
 }
@@ -103,10 +119,20 @@ async function updateClanStats(matchData: MatchDataTable[]) {
                 kills: number;
                 rank: number;
                 timeAlive: number;
+                playerCount: number;
             }
         >();
+        const gamePlayerIds = new Map<string, Set<number>>();
 
         for (const data of matchData) {
+            const gameId = String(data.gameId);
+            let playerIds = gamePlayerIds.get(gameId);
+            if (!playerIds) {
+                playerIds = new Set();
+                gamePlayerIds.set(gameId, playerIds);
+            }
+            playerIds.add(data.playerId);
+
             if (!data.userId) continue;
 
             const gameMode = data.gameMode ?? GameModeStatus.Deathmatch;
@@ -117,6 +143,10 @@ async function updateClanStats(matchData: MatchDataTable[]) {
                 existing.kills += data.kills || 0;
                 existing.rank = Math.min(existing.rank, data.rank || Infinity);
                 existing.timeAlive = Math.max(existing.timeAlive, data.timeAlive || 0);
+                existing.playerCount = Math.max(
+                    existing.playerCount,
+                    gamePlayerIds.get(gameId)?.size || 0,
+                );
                 if (
                     data.createdAt &&
                     (!existing.createdAt ||
@@ -130,14 +160,19 @@ async function updateClanStats(matchData: MatchDataTable[]) {
 
             aggregatedMatchData.set(key, {
                 userId: data.userId,
-                gameId: String(data.gameId),
+                gameId,
                 teamId: data.teamId,
                 createdAt: data.createdAt,
                 gameMode,
                 kills: data.kills || 0,
                 rank: data.rank || Infinity,
                 timeAlive: data.timeAlive || 0,
+                playerCount: gamePlayerIds.get(gameId)?.size || 0,
             });
+        }
+
+        for (const data of aggregatedMatchData.values()) {
+            data.playerCount = gamePlayerIds.get(data.gameId)?.size || data.playerCount;
         }
 
         const userIds = [...new Set([...aggregatedMatchData.values()].map((d) => d.userId))];
@@ -250,13 +285,17 @@ async function updateClanStats(matchData: MatchDataTable[]) {
             );
             const matchupMultiplier =
                 matchupMultipliers.length > 0 ? Math.min(...matchupMultipliers) : 1;
+            const lobbyMultipliers = getLobbyCgpMultipliers(data.playerCount);
             const killCgpMilli = toCgpMilli(
                 kills *
                     Config.clanCgp.killValue *
                     getSurvivalKillCgpMultiplier(data.timeAlive) *
-                    matchupMultiplier,
+                    matchupMultiplier *
+                    lobbyMultipliers.kills,
             );
-            const winCgpMilli = toCgpMilli(wins * Config.clanCgp.winValue);
+            const winCgpMilli = toCgpMilli(
+                wins * Config.clanCgp.winValue * lobbyMultipliers.wins,
+            );
 
             await db
                 .insert(clanMemberStatsTable)
