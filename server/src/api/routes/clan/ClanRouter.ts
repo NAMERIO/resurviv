@@ -8,6 +8,7 @@ import {
     type ClanLeaderboardResponse,
     type ClanMember,
     type ClanMessage,
+    type ClanWarHistoryEntry,
     ClanTagColorRegex,
     type CreateClanResponse,
     type DeleteClanMessageResponse,
@@ -59,6 +60,7 @@ import {
     clanMembersTable,
     clanMessagesTable,
     clanSeasonMembersTable,
+    clanWarHistoryTable,
     clansTable,
     usersTable,
 } from "../../db/schema";
@@ -76,6 +78,47 @@ const CLAN_SYSTEM_AUTHOR_ICON = "emote_police";
 
 const getRequestedSeason = (season?: number): number =>
     season ?? ClanConstants.CurrentSeason;
+
+function calculateTotalCgp(cgpMilli: number, clanWarCgp: number) {
+    const earnedCgp = (Number(cgpMilli) || 0) / ClanConstants.CgpScale;
+    const warCgp = Number(clanWarCgp) || 0;
+
+    return Number((earnedCgp + warCgp).toFixed(2));
+}
+
+function toStatNumber(value: unknown) {
+    return Number(value) || 0;
+}
+
+function cgpScoreSql(season: number, gameMode?: string) {
+    const gameModeFilter = gameMode
+        ? sql`AND clan_member_stats.game_mode = ${gameMode}`
+        : sql``;
+
+    return sql<number>`(
+        COALESCE((
+            SELECT SUM(kill_cgp_milli + win_cgp_milli) FROM clan_member_stats
+            WHERE clan_member_stats.clan_id = clans.id
+            AND clan_member_stats.season = ${season}
+            ${gameModeFilter}
+        ), 0)
+        + COALESCE((
+            SELECT SUM(cgp_awarded) FROM clan_war_history
+            WHERE clan_war_history.clan_id = clans.id
+            AND clan_war_history.season = ${season}
+        ), 0) * ${ClanConstants.CgpScale}
+    )`;
+}
+
+async function getPlayoffClanIds(season: number) {
+    const rows = await db
+        .select({ id: clansTable.id })
+        .from(clansTable)
+        .orderBy(desc(cgpScoreSql(season)))
+        .limit(ClanConstants.PlayoffClanCount);
+
+    return new Set(rows.map((row) => row.id));
+}
 
 function sanitizeClanSlug(name: string): string {
     let slug = slugify(
@@ -793,6 +836,7 @@ async function getClanInfo(
         .select({
             totalKills: sql<number>`COALESCE(SUM(${clanMemberStatsTable.kills}), 0)`,
             totalWins: sql<number>`COALESCE(SUM(${clanMemberStatsTable.wins}), 0)`,
+            totalCgpMilli: sql<number>`COALESCE(SUM(${clanMemberStatsTable.killCgpMilli} + ${clanMemberStatsTable.winCgpMilli}), 0)`,
         })
         .from(clanMemberStatsTable)
         .where(
@@ -801,6 +845,23 @@ async function getClanInfo(
                 eq(clanMemberStatsTable.season, season),
             ),
         );
+    const clanWarStatsResult = await db
+        .select({
+            clanWarCgp: sql<number>`COALESCE(SUM(${clanWarHistoryTable.cgpAwarded}), 0)`,
+            clanWarsPlayed: count(),
+        })
+        .from(clanWarHistoryTable)
+        .where(
+            and(
+                eq(clanWarHistoryTable.clanId, clanId),
+                eq(clanWarHistoryTable.season, season),
+            ),
+        );
+    const playoffClanIds = await getPlayoffClanIds(season);
+    const totalKills = toStatNumber(statsResult[0]?.totalKills);
+    const totalWins = toStatNumber(statsResult[0]?.totalWins);
+    const totalCgpMilli = toStatNumber(statsResult[0]?.totalCgpMilli);
+    const clanWarCgp = toStatNumber(clanWarStatsResult[0]?.clanWarCgp);
 
     return {
         id: clan.id,
@@ -811,10 +872,14 @@ async function getClanInfo(
         memberCount: memberCountResult[0]?.count || 0,
         maxMembers: ClanConstants.MaxMembers,
         createdAt: clan.createdAt.getTime(),
-        totalKills: statsResult[0]?.totalKills || 0,
-        totalWins: statsResult[0]?.totalWins || 0,
+        totalCgp: calculateTotalCgp(totalCgpMilli, clanWarCgp),
+        totalKills,
+        totalWins,
+        clanWarCgp,
+        clanWarsPlayed: toStatNumber(clanWarStatsResult[0]?.clanWarsPlayed),
         season,
         isCurrentSeason,
+        playoffQualified: playoffClanIds.has(clan.id),
     };
 }
 
@@ -897,9 +962,36 @@ async function getClanDetail(
         }
     }
 
+    const clanWarRows = await db
+        .select({
+            id: clanWarHistoryTable.id,
+            opponentClanName: clanWarHistoryTable.opponentClanName,
+            result: clanWarHistoryTable.result,
+            cgpAwarded: clanWarHistoryTable.cgpAwarded,
+            createdAt: clanWarHistoryTable.createdAt,
+        })
+        .from(clanWarHistoryTable)
+        .where(
+            and(
+                eq(clanWarHistoryTable.clanId, clanId),
+                eq(clanWarHistoryTable.season, season),
+            ),
+        )
+        .orderBy(desc(clanWarHistoryTable.createdAt))
+        .limit(20);
+
+    const clanWarHistory: ClanWarHistoryEntry[] = clanWarRows.map((war) => ({
+        id: war.id,
+        opponentClanName: war.opponentClanName,
+        result: war.result,
+        cgpAwarded: war.cgpAwarded,
+        createdAt: war.createdAt.getTime(),
+    }));
+
     return {
         ...clanInfo,
         members,
+        clanWarHistory,
     };
 }
 
@@ -990,6 +1082,8 @@ ClanRouter.post("/create", validateParams(zCreateClanRequest), async (c) => {
         season: ClanConstants.CurrentSeason,
         kills: 0,
         wins: 0,
+        killCgpMilli: 0,
+        winCgpMilli: 0,
     });
 
     const clanInfo = await getClanInfo(newClan.id);
@@ -1063,6 +1157,8 @@ ClanRouter.post("/join", validateParams(zJoinClanRequest), async (c) => {
             season: ClanConstants.CurrentSeason,
             kills: 0,
             wins: 0,
+            killCgpMilli: 0,
+            winCgpMilli: 0,
         })
         .onConflictDoNothing();
 
@@ -1813,6 +1909,21 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
                 WHERE clan_member_stats.clan_id = clans.id
                 AND clan_member_stats.season = ${ClanConstants.CurrentSeason}
             ), 0)`,
+            totalCgpMilli: sql<number>`COALESCE((
+                SELECT SUM(kill_cgp_milli + win_cgp_milli) FROM clan_member_stats
+                WHERE clan_member_stats.clan_id = clans.id
+                AND clan_member_stats.season = ${ClanConstants.CurrentSeason}
+            ), 0)`,
+            clanWarCgp: sql<number>`COALESCE((
+                SELECT SUM(cgp_awarded) FROM clan_war_history
+                WHERE clan_war_history.clan_id = clans.id
+                AND clan_war_history.season = ${ClanConstants.CurrentSeason}
+            ), 0)`,
+            clanWarsPlayed: sql<number>`(
+                SELECT COUNT(*) FROM clan_war_history
+                WHERE clan_war_history.clan_id = clans.id
+                AND clan_war_history.season = ${ClanConstants.CurrentSeason}
+            )`,
         })
         .from(clansTable)
         .where(search ? sql`${clansTable.name} ILIKE ${`%${search}%`}` : undefined)
@@ -1822,21 +1933,33 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
         ) DESC`)
         .limit(limit)
         .offset(offset);
+    const playoffClanIds = await getPlayoffClanIds(ClanConstants.CurrentSeason);
 
-    const clans: ClanInfo[] = clansData.map((c) => ({
-        id: c.id,
-        name: c.name,
-        icon: c.icon,
-        tagColor: c.tagColor,
-        ownerId: c.ownerId,
-        memberCount: c.memberCount,
-        maxMembers: ClanConstants.MaxMembers,
-        createdAt: c.createdAt.getTime(),
-        totalKills: c.totalKills,
-        totalWins: c.totalWins,
-        season: ClanConstants.CurrentSeason,
-        isCurrentSeason: true,
-    }));
+    const clans: ClanInfo[] = clansData.map((c) => {
+        const totalKills = toStatNumber(c.totalKills);
+        const totalWins = toStatNumber(c.totalWins);
+        const totalCgpMilli = toStatNumber(c.totalCgpMilli);
+        const clanWarCgp = toStatNumber(c.clanWarCgp);
+
+        return {
+            id: c.id,
+            name: c.name,
+            icon: c.icon,
+            tagColor: c.tagColor,
+            ownerId: c.ownerId,
+            memberCount: toStatNumber(c.memberCount),
+            maxMembers: ClanConstants.MaxMembers,
+            createdAt: c.createdAt.getTime(),
+            totalCgp: calculateTotalCgp(totalCgpMilli, clanWarCgp),
+            totalKills,
+            totalWins,
+            clanWarCgp,
+            clanWarsPlayed: toStatNumber(c.clanWarsPlayed),
+            season: ClanConstants.CurrentSeason,
+            isCurrentSeason: true,
+            playoffQualified: playoffClanIds.has(c.id),
+        };
+    });
 
     return c.json<ListClansResponse>({
         clans,
@@ -1850,6 +1973,10 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
     const { type, gameMode, page, limit, season } = c.req.valid("json");
 
     const offset = (page - 1) * limit;
+    const statGameMode = type === "cgp" ? undefined : gameMode;
+    const gameModeFilter = statGameMode
+        ? sql`AND clan_member_stats.game_mode = ${statGameMode}`
+        : sql``;
     const memberCountSql =
         season === ClanConstants.CurrentSeason
             ? sql<number>`(
@@ -1864,6 +1991,22 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
 
     const totalCountResult = await db.select({ count: count() }).from(clansTable);
     const totalCount = totalCountResult[0]?.count || 0;
+    const orderSql =
+        type === "cgp"
+            ? cgpScoreSql(season)
+            : type === "kills"
+              ? sql<number>`COALESCE((
+                    SELECT SUM(kills) FROM clan_member_stats
+                    WHERE clan_member_stats.clan_id = clans.id
+                    AND clan_member_stats.game_mode = ${gameMode}
+                    AND clan_member_stats.season = ${season}
+                ), 0)`
+              : sql<number>`COALESCE((
+                    SELECT SUM(wins) FROM clan_member_stats
+                    WHERE clan_member_stats.clan_id = clans.id
+                    AND clan_member_stats.game_mode = ${gameMode}
+                    AND clan_member_stats.season = ${season}
+                ), 0)`;
 
     const clansData = await db
         .select({
@@ -1877,54 +2020,66 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
             totalKills: sql<number>`COALESCE((
                 SELECT SUM(kills) FROM clan_member_stats 
                 WHERE clan_member_stats.clan_id = clans.id
-                AND clan_member_stats.game_mode = ${gameMode}
                 AND clan_member_stats.season = ${season}
+                ${gameModeFilter}
             ), 0)`,
             totalWins: sql<number>`COALESCE((
                 SELECT SUM(wins) FROM clan_member_stats 
                 WHERE clan_member_stats.clan_id = clans.id
-                AND clan_member_stats.game_mode = ${gameMode}
                 AND clan_member_stats.season = ${season}
+                ${gameModeFilter}
             ), 0)`,
+            totalCgpMilli: sql<number>`COALESCE((
+                SELECT SUM(kill_cgp_milli + win_cgp_milli) FROM clan_member_stats
+                WHERE clan_member_stats.clan_id = clans.id
+                AND clan_member_stats.season = ${season}
+                ${gameModeFilter}
+            ), 0)`,
+            clanWarCgp: sql<number>`COALESCE((
+                SELECT SUM(cgp_awarded) FROM clan_war_history
+                WHERE clan_war_history.clan_id = clans.id
+                AND clan_war_history.season = ${season}
+            ), 0)`,
+            clanWarsPlayed: sql<number>`(
+                SELECT COUNT(*) FROM clan_war_history
+                WHERE clan_war_history.clan_id = clans.id
+                AND clan_war_history.season = ${season}
+            )`,
         })
         .from(clansTable)
-        .orderBy(
-            desc(
-                type === "kills"
-                    ? sql<number>`COALESCE((
-                        SELECT SUM(kills) FROM clan_member_stats
-                        WHERE clan_member_stats.clan_id = clans.id
-                        AND clan_member_stats.game_mode = ${gameMode}
-                        AND clan_member_stats.season = ${season}
-                    ), 0)`
-                    : sql<number>`COALESCE((
-                        SELECT SUM(wins) FROM clan_member_stats
-                        WHERE clan_member_stats.clan_id = clans.id
-                        AND clan_member_stats.game_mode = ${gameMode}
-                        AND clan_member_stats.season = ${season}
-                    ), 0)`,
-            ),
-        )
+        .orderBy(desc(orderSql))
         .limit(limit)
         .offset(offset);
+    const playoffClanIds = await getPlayoffClanIds(season);
 
-    const entries = clansData.map((c, index) => ({
-        rank: offset + index + 1,
-        clan: {
-            id: c.id,
-            name: c.name,
-            icon: c.icon,
-            tagColor: c.tagColor,
-            ownerId: c.ownerId,
-            memberCount: c.memberCount,
-            maxMembers: ClanConstants.MaxMembers,
-            createdAt: c.createdAt.getTime(),
-            totalKills: c.totalKills,
-            totalWins: c.totalWins,
-            season,
-            isCurrentSeason: season === ClanConstants.CurrentSeason,
-        },
-    }));
+    const entries = clansData.map((c, index) => {
+        const totalKills = toStatNumber(c.totalKills);
+        const totalWins = toStatNumber(c.totalWins);
+        const totalCgpMilli = toStatNumber(c.totalCgpMilli);
+        const clanWarCgp = toStatNumber(c.clanWarCgp);
+
+        return {
+            rank: offset + index + 1,
+            clan: {
+                id: c.id,
+                name: c.name,
+                icon: c.icon,
+                tagColor: c.tagColor,
+                ownerId: c.ownerId,
+                memberCount: toStatNumber(c.memberCount),
+                maxMembers: ClanConstants.MaxMembers,
+                createdAt: c.createdAt.getTime(),
+                totalCgp: calculateTotalCgp(totalCgpMilli, clanWarCgp),
+                totalKills,
+                totalWins,
+                clanWarCgp,
+                clanWarsPlayed: toStatNumber(c.clanWarsPlayed),
+                season,
+                isCurrentSeason: season === ClanConstants.CurrentSeason,
+                playoffQualified: playoffClanIds.has(c.id),
+            },
+        };
+    });
 
     return c.json<ClanLeaderboardResponse>({
         entries,

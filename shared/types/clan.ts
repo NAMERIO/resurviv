@@ -9,6 +9,10 @@ export const ClanConstants = {
     MessageMaxLen: 300,
     RejoinCooldownMs: 0, // none cooldown for now
     CurrentSeason: 2,
+    CgpPerKill: 0.25,
+    CgpPerWin: 5,
+    CgpScale: 10000,
+    PlayoffClanCount: 4,
 } as const;
 
 export const ClanTagColorRegex = /^(|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|[a-zA-Z]+)$/;
@@ -60,7 +64,7 @@ export const zGetClanRequest = z.object({
 export type GetClanRequest = z.infer<typeof zGetClanRequest>;
 
 export const zClanLeaderboardRequest = z.object({
-    type: z.enum(["kills", "wins"]),
+    type: z.enum(["cgp", "kills", "wins"]).default("cgp"),
     gameMode: z
         .enum([GameModeStatus.Deathmatch, GameModeStatus.BattleRoyale])
         .default(GameModeStatus.Deathmatch),
@@ -74,6 +78,8 @@ export const zClanLeaderboardRequest = z.object({
         .default(ClanConstants.CurrentSeason),
 });
 export type ClanLeaderboardRequest = z.infer<typeof zClanLeaderboardRequest>;
+
+export type ClanLeaderboardType = ClanLeaderboardRequest["type"];
 
 export const zGetClanMessagesRequest = z.object({
     clanId: z.string().uuid(),
@@ -157,6 +163,16 @@ export type ClanMember = {
     };
 };
 
+export type ClanWarResult = "win" | "loss" | "draw";
+
+export type ClanWarHistoryEntry = {
+    id: string;
+    opponentClanName: string;
+    result: ClanWarResult;
+    cgpAwarded: number;
+    createdAt: number;
+};
+
 export type ClanInfo = {
     id: string;
     name: string;
@@ -166,14 +182,19 @@ export type ClanInfo = {
     memberCount: number;
     maxMembers: number;
     createdAt: number;
+    totalCgp: number;
     totalKills: number;
     totalWins: number;
+    clanWarCgp: number;
+    clanWarsPlayed: number;
     season: number;
     isCurrentSeason: boolean;
+    playoffQualified: boolean;
 };
 
 export type ClanDetail = ClanInfo & {
     members: ClanMember[];
+    clanWarHistory: ClanWarHistoryEntry[];
 };
 
 export type ClanMessage = {

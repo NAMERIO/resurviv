@@ -4,6 +4,8 @@ import {
     type SlashCommandOptionsOnlyBuilder,
 } from "discord.js";
 import {
+    zAddClanWarCgpBody,
+    zSetClanCgpValueBody,
     zSetBattleRoyaleModeBody,
     zSetClientThemeBody,
     zSetGameModeBody,
@@ -291,6 +293,102 @@ const commands = {
             },
         ],
     }),
+    [Command.AddCgp]: createCommand({
+        name: Command.AddCgp,
+        description: "Add clan war CGP to a clan",
+        optionValidator: zAddClanWarCgpBody,
+        isPrivateRoute: true,
+        ownerOrAdmin: true,
+        options: [
+            {
+                name: "clan",
+                description: "Clan name, slug, or id",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "amount",
+                description: "CGP amount to award",
+                required: true,
+                type: ApplicationCommandOptionType.Integer,
+            },
+            {
+                name: "opponent",
+                description: "Opponent clan name",
+                required: false,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "result",
+                description: "Result: win, loss, or draw",
+                required: false,
+                type: ApplicationCommandOptionType.String,
+            },
+        ],
+    }),
+    [Command.ClanWarCgp]: createCommand({
+        name: Command.ClanWarCgp,
+        description: "Add clan war CGP to a clan",
+        optionValidator: zAddClanWarCgpBody,
+        isPrivateRoute: true,
+        ownerOrAdmin: true,
+        options: [
+            {
+                name: "clan",
+                description: "Clan name, slug, or id",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "amount",
+                description: "CGP amount to award",
+                required: true,
+                type: ApplicationCommandOptionType.Integer,
+            },
+            {
+                name: "opponent",
+                description: "Opponent clan name",
+                required: false,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "result",
+                description: "Result: win, loss, or draw",
+                required: false,
+                type: ApplicationCommandOptionType.String,
+            },
+        ],
+    }),
+    [Command.SetKillCgp]: createCommand({
+        name: Command.SetKillCgp,
+        description: "Set CGP earned per kill",
+        optionValidator: zSetClanCgpValueBody,
+        isPrivateRoute: true,
+        ownerOnly: true,
+        options: [
+            {
+                name: "value",
+                description: "CGP per kill before multipliers",
+                required: true,
+                type: ApplicationCommandOptionType.Number,
+            },
+        ],
+    }),
+    [Command.SetWinCgp]: createCommand({
+        name: Command.SetWinCgp,
+        description: "Set CGP earned per win",
+        optionValidator: zSetClanCgpValueBody,
+        isPrivateRoute: true,
+        ownerOnly: true,
+        options: [
+            {
+                name: "value",
+                description: "CGP per win",
+                required: true,
+                type: ApplicationCommandOptionType.Number,
+            },
+        ],
+    }),
     [Command.SetGameMode]: createCommand({
         name: Command.SetGameMode,
         description: "Sets a game mode in the API",
@@ -388,6 +486,7 @@ export const commandHandlers: CommandHandlers = (
                 commands[key].optionValidator,
                 commands[key].isPrivateRoute,
                 commands[key].ownerOnly,
+                commands[key].ownerOrAdmin,
             );
         return obj;
     },

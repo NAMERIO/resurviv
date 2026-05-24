@@ -35,6 +35,10 @@ export function getConfig(isProduction: boolean, dir: string) {
         ],
         battleRoyaleMode: true,
         pauseClanStats: false,
+        clanCgp: {
+            killValue: 0.25,
+            winValue: 5,
+        },
         clientTheme: "main",
         gameTps: 100,
         netSyncTps: 33,

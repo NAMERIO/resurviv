@@ -8,6 +8,7 @@ import {
     type ClanInfo,
     type ClanLeaderboardEntry,
     type ClanLeaderboardResponse,
+    type ClanLeaderboardType,
     type ClanMember,
     type ClanMessage,
     type CreateClanResponse,
@@ -71,6 +72,13 @@ function formatTimeRemaining(ms: number): string {
         return `${hours}h ${minutes}m`;
     }
     return `${minutes}m`;
+}
+
+function formatCgp(value: number): string {
+    return value.toLocaleString(undefined, {
+        minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
+        maximumFractionDigits: 2,
+    });
 }
 
 function formatChatTime(timestamp: number): string {
@@ -312,6 +320,7 @@ export class ClanUi {
             }
         });
         $("#clan-leaderboard-type").on("change", () => {
+            this.updateLeaderboardModeVisibility();
             this.loadLeaderboard(this.getSelectedLeaderboardType());
         });
         $("#clan-leaderboard-game-mode").on("change", () => {
@@ -490,10 +499,11 @@ export class ClanUi {
 
     showLeaderboard() {
         this.renderSeasonSelects();
-        $("#clan-leaderboard-type").val("kills");
+        $("#clan-leaderboard-type").val("cgp");
         $("#clan-leaderboard-game-mode").val(GameModeStatus.Deathmatch);
         $("#clan-leaderboard-season").val(String(ClanConstants.CurrentSeason));
-        this.loadLeaderboard("kills");
+        this.updateLeaderboardModeVisibility();
+        this.loadLeaderboard("cgp");
         this.leaderboardModal.show(true);
         this.requestLeaderboardAd();
     }
@@ -539,8 +549,15 @@ export class ClanUi {
         fillSelect($("#clan-detail-season"));
     }
 
-    getSelectedLeaderboardType(): "kills" | "wins" {
-        return $("#clan-leaderboard-type").val() === "wins" ? "wins" : "kills";
+    updateLeaderboardModeVisibility() {
+        $("#clan-leaderboard-game-mode").toggle(
+            this.getSelectedLeaderboardType() !== "cgp",
+        );
+    }
+
+    getSelectedLeaderboardType(): ClanLeaderboardType {
+        const value = $("#clan-leaderboard-type").val();
+        return value === "kills" || value === "wins" ? value : "cgp";
     }
 
     getSelectedLeaderboardGameMode(): GameModeStatusType {
@@ -604,6 +621,10 @@ export class ClanUi {
             $("#clan-my-name").css("color", this.currentClan.tagColor || "");
             $("#clan-my-members").text(
                 `${this.currentClan.memberCount} / ${this.currentClan.maxMembers} Members`,
+            );
+            $("#clan-my-cgp").text(formatCgp(this.currentClan.totalCgp));
+            $("#clan-my-war-cgp").text(
+                `+${formatCgp(this.currentClan.clanWarCgp)} CGP from clan wars`,
             );
             $("#clan-my-kills").text(this.currentClan.totalKills.toLocaleString());
             $("#clan-my-wins").text(this.currentClan.totalWins.toLocaleString());
@@ -778,6 +799,10 @@ export class ClanUi {
 
             item.append(
                 $("<div/>", { class: "clan-list-stats" }).append(
+                    $("<div/>", { class: "clan-list-stat clan-list-stat-main" }).append(
+                        $("<span/>", { text: "CGP" }),
+                        $("<strong/>", { text: formatCgp(clan.totalCgp) }),
+                    ),
                     $("<div/>", { class: "clan-list-stat" }).append(
                         $("<span/>", { text: "K" }),
                         $("<strong/>", { text: clan.totalKills.toLocaleString() }),
@@ -1093,11 +1118,14 @@ export class ClanUi {
         $("#clan-detail-owner").text(`Owner: ${owner}`);
         const createdDate = new Date(clan.createdAt).toLocaleDateString();
         $("#clan-detail-created").text(`Created: ${createdDate}`);
+        $("#clan-detail-cgp").text(formatCgp(clan.totalCgp));
+        $("#clan-detail-war-cgp").text(`+${formatCgp(clan.clanWarCgp)} from clan wars`);
         $("#clan-detail-kills").text(clan.totalKills.toLocaleString());
         $("#clan-detail-wins").text(clan.totalWins.toLocaleString());
-        $("#clan-detail-games").text("0");
+        $("#clan-detail-wars").text(clan.clanWarsPlayed.toLocaleString());
         $("#clan-detail-kill-placement").text("N/A");
         $("#clan-detail-win-placement").text("N/A");
+        this.renderClanWarHistory(clan);
         const membersContainer = $("#clan-members-list");
         membersContainer.empty();
 
@@ -1199,6 +1227,42 @@ export class ClanUi {
             }
         } else {
             $("#clan-member-actions").hide();
+        }
+    }
+
+    renderClanWarHistory(clan: ClanDetail) {
+        const container = $("#clan-war-history-list");
+        container.empty();
+
+        if (clan.clanWarHistory.length === 0) {
+            container.append(
+                $("<div/>", {
+                    class: "clan-war-empty",
+                    text: "No clan wars recorded.",
+                }),
+            );
+            return;
+        }
+
+        for (const war of clan.clanWarHistory) {
+            const date = new Date(war.createdAt).toLocaleDateString();
+            container.append(
+                $("<div/>", { class: "clan-war-item" }).append(
+                    $("<div/>", { class: "clan-war-opponent" }).append(
+                        $("<span/>", { text: "vs " }),
+                        $("<strong/>", { text: war.opponentClanName || "Clan War" }),
+                    ),
+                    $("<div/>", {
+                        class: `clan-war-result ${war.result}`,
+                        text: war.result.toUpperCase(),
+                    }),
+                    $("<div/>", {
+                        class: "clan-war-cgp",
+                        text: `+${formatCgp(war.cgpAwarded)} CGP`,
+                    }),
+                    $("<div/>", { class: "clan-war-date", text: date }),
+                ),
+            );
         }
     }
 
@@ -2322,7 +2386,7 @@ export class ClanUi {
         });
     }
 
-    loadLeaderboard(type: "kills" | "wins", page: number = 1) {
+    loadLeaderboard(type: ClanLeaderboardType, page: number = 1) {
         const gameMode = this.getSelectedLeaderboardGameMode();
         const season = this.getSelectedLeaderboardSeason();
 
@@ -2354,7 +2418,7 @@ export class ClanUi {
 
     renderLeaderboard(
         entries: ClanLeaderboardEntry[],
-        type: "kills" | "wins",
+        type: ClanLeaderboardType,
         page: number,
         totalPages: number,
         season: number,
@@ -2377,7 +2441,10 @@ export class ClanUi {
                 $("<div/>", { text: "Rank" }),
                 $("<div/>"),
                 $("<div/>", { text: "Clan" }),
-                $("<div/>", { text: type === "kills" ? "Kills" : "Wins" }),
+                $("<div/>", {
+                    text:
+                        type === "cgp" ? "CGP" : type === "kills" ? "Kills" : "Wins",
+                }),
             ),
         );
 
@@ -2398,24 +2465,37 @@ export class ClanUi {
                 }).css("background-image", `url(${getClanIconUrl(entry.clan.icon)})`),
             );
 
+            const nameRow = $("<div/>", { class: "clan-leaderboard-name-row" }).append(
+                $("<div/>", {
+                    class: "clan-leaderboard-name",
+                    text: entry.clan.name,
+                }),
+            );
+            if (entry.clan.playoffQualified) {
+                nameRow.append(
+                    $("<div/>", {
+                        class: "clan-playoff-badge",
+                        text: "PLAY OFF",
+                        title: "Top 4 playoff qualifier",
+                    }),
+                );
+            }
+
             item.append(
                 $("<div/>", {
                     class: "clan-leaderboard-info",
-                }).append(
-                    $("<div/>", {
-                        class: "clan-leaderboard-name",
-                        text: entry.clan.name,
-                    }),
-                ),
+                }).append(nameRow),
             );
 
             item.append(
                 $("<div/>", {
                     class: "clan-leaderboard-stat",
                     text:
-                        type === "kills"
-                            ? entry.clan.totalKills.toLocaleString()
-                            : entry.clan.totalWins.toLocaleString(),
+                        type === "cgp"
+                            ? formatCgp(entry.clan.totalCgp)
+                            : type === "kills"
+                              ? entry.clan.totalKills.toLocaleString()
+                              : entry.clan.totalWins.toLocaleString(),
                 }),
             );
 

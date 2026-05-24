@@ -11944,6 +11944,10 @@ input [type="image"]:focus {
   border-radius: 5px;
 }
 
+.clan-my-stat-main {
+  grid-column: 1 / -1;
+}
+
 .clan-my-stat {
   display: grid;
   gap: 2px;
@@ -11961,6 +11965,14 @@ input [type="image"]:focus {
   color: #fff;
   font-size: 18px;
   font-weight: bold;
+}
+
+.clan-my-stat-subvalue,
+.clan-stat-subvalue {
+  color: #969b91;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 15px;
 }
 
 .clan-my-actions {
@@ -12394,7 +12406,7 @@ input [type="image"]:focus {
 
 .clan-list-header-row {
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr) 112px auto;
+  grid-template-columns: 46px minmax(0, 1fr) 156px auto;
   gap: 12px;
   padding: 0 12px 8px;
   color: #c4c4c4;
@@ -12412,7 +12424,7 @@ input [type="image"]:focus {
 
 .clan-list-item {
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr) 112px auto;
+  grid-template-columns: 46px minmax(0, 1fr) 156px auto;
   align-items: center;
   gap: 12px;
   min-height: 64px;
@@ -12462,7 +12474,7 @@ input [type="image"]:focus {
 
 .clan-list-stats {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.3fr 1fr 1fr;
   gap: 6px;
 }
 
@@ -12479,6 +12491,10 @@ input [type="image"]:focus {
   color: #ffe400;
   font-size: 15px;
   line-height: 17px;
+}
+
+.clan-list-stat-main strong {
+  color: #7cfc00;
 }
 
 .clan-list-status {
@@ -12644,12 +12660,20 @@ input [type="image"]:focus {
   background-image: url(../img/gui/player-gui.svg);
 }
 
+.clan-stat-box.cgp {
+  background-image: url(../img/gui/crown.svg);
+}
+
 .clan-stat-box.wins {
   background-image: url(../img/gui/crown.svg);
 }
 
 .clan-stat-box.kills {
   background-image: url(../img/gui/crosshair.svg);
+}
+
+.clan-stat-box.wars {
+  background-image: url(../img/gui/player-gui.svg);
 }
 
 .clan-stat-label {
@@ -12662,6 +12686,79 @@ input [type="image"]:focus {
   font-size: 24px;
   font-weight: bold;
   color: #ffe400;
+}
+
+.clan-war-section {
+  background-color: #282828;
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.clan-war-history-list {
+  display: grid;
+  gap: 8px;
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+.clan-war-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 74px 96px 82px;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 10px;
+  background-color: #3a3a3a;
+  border-radius: 5px;
+}
+
+.clan-war-opponent {
+  min-width: 0;
+  color: #c4c4c4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clan-war-opponent strong {
+  color: #fff;
+}
+
+.clan-war-result {
+  font-size: 13px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.clan-war-result.win {
+  color: #7cfc00;
+}
+
+.clan-war-result.loss {
+  color: #ff6969;
+}
+
+.clan-war-result.draw {
+  color: #ffe400;
+}
+
+.clan-war-cgp {
+  color: #ffe400;
+  font-weight: bold;
+  text-align: right;
+}
+
+.clan-war-date,
+.clan-war-empty {
+  color: #969b91;
+  font-size: 13px;
+  text-align: right;
+}
+
+.clan-war-empty {
+  padding: 20px;
+  text-align: center;
 }
 
 /* Members Section */
@@ -13564,7 +13661,15 @@ input [type="image"]:focus {
   min-width: 0;
 }
 
+.clan-leaderboard-name-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
 .clan-leaderboard-name {
+  min-width: 0;
   font-size: 19px;
   font-weight: bold;
   color: #7cfc00;
@@ -13572,6 +13677,22 @@ input [type="image"]:focus {
   text-shadow: 1px 1px 0px #000000;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clan-playoff-badge {
+  flex: 0 0 auto;
+  height: 20px;
+  padding: 0 7px;
+  background-color: #50afab;
+  box-shadow: inset 0 -2px #387c79;
+  border-bottom: 2px solid #387c79;
+  border-radius: 3px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 19px;
+  text-shadow: 1px 1px 0px #000000;
   white-space: nowrap;
 }
 

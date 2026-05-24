@@ -142,6 +142,15 @@ export interface ConfigType {
     pauseClanStats: boolean;
 
     /**
+     * Clan GP scoring values. Kill CGP is awarded per kill and can be modified
+     * by survival/matchup multipliers. Win CGP is awarded per win.
+     */
+    clanCgp: {
+        killValue: number;
+        winValue: number;
+    };
+
+    /**
      * The client theme, changes the splash screen background and for some the menu music.
      *
      * NOTE: Required at build time, unlike modes it wont update by fetching from the server!

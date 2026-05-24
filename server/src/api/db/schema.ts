@@ -483,6 +483,8 @@ export const clanMemberStatsTable = pgTable(
         season: integer("season").notNull().default(1),
         kills: integer("kills").notNull().default(0),
         wins: integer("wins").notNull().default(0),
+        killCgpMilli: integer("kill_cgp_milli").notNull().default(0),
+        winCgpMilli: integer("win_cgp_milli").notNull().default(0),
     },
     (table) => [
         index("idx_clan_member_stats_clan").on(table.clanId),
@@ -500,6 +502,72 @@ export const clanMemberStatsTable = pgTable(
 
 export type ClanMemberStatsTableInsert = typeof clanMemberStatsTable.$inferInsert;
 export type ClanMemberStatsTableSelect = typeof clanMemberStatsTable.$inferSelect;
+
+export const clanMatchupHistoryTable = pgTable(
+    "clan_matchup_history",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        clanId: uuid("clan_id")
+            .notNull()
+            .references(() => clansTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        opponentClanId: uuid("opponent_clan_id")
+            .notNull()
+            .references(() => clansTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        gameId: uuid("game_id").notNull(),
+        season: integer("season").notNull().default(1),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        index("idx_clan_matchup_history_clan_opponent").on(
+            table.clanId,
+            table.opponentClanId,
+            table.season,
+        ),
+        uniqueIndex("idx_clan_matchup_history_unique").on(
+            table.clanId,
+            table.opponentClanId,
+            table.gameId,
+            table.season,
+        ),
+    ],
+);
+
+export type ClanMatchupHistoryTableInsert =
+    typeof clanMatchupHistoryTable.$inferInsert;
+export type ClanMatchupHistoryTableSelect =
+    typeof clanMatchupHistoryTable.$inferSelect;
+
+export const clanWarHistoryTable = pgTable(
+    "clan_war_history",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        clanId: uuid("clan_id")
+            .notNull()
+            .references(() => clansTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        season: integer("season").notNull().default(1),
+        opponentClanName: text("opponent_clan_name").notNull().default(""),
+        result: text("result").$type<"win" | "loss" | "draw">().notNull().default("win"),
+        cgpAwarded: integer("cgp_awarded").notNull(),
+        addedByDiscordId: text("added_by_discord_id").notNull().default(""),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        index("idx_clan_war_history_clan_created").on(table.clanId, table.createdAt),
+        index("idx_clan_war_history_season").on(table.season),
+    ],
+);
+
+export type ClanWarHistoryTableInsert = typeof clanWarHistoryTable.$inferInsert;
+export type ClanWarHistoryTableSelect = typeof clanWarHistoryTable.$inferSelect;
 
 export const clanSeasonMembersTable = pgTable(
     "clan_season_members",
@@ -591,6 +659,8 @@ export const clansRelations = relations(clansTable, ({ one, many }) => ({
     }),
     members: many(clanMembersTable),
     memberStats: many(clanMemberStatsTable),
+    matchupHistory: many(clanMatchupHistoryTable),
+    clanWarHistory: many(clanWarHistoryTable),
     seasonMembers: many(clanSeasonMembersTable),
     messages: many(clanMessagesTable),
 }));
@@ -614,6 +684,27 @@ export const clanMemberStatsRelations = relations(clanMemberStatsTable, ({ one }
     user: one(usersTable, {
         fields: [clanMemberStatsTable.userId],
         references: [usersTable.id],
+    }),
+}));
+
+export const clanMatchupHistoryRelations = relations(
+    clanMatchupHistoryTable,
+    ({ one }) => ({
+        clan: one(clansTable, {
+            fields: [clanMatchupHistoryTable.clanId],
+            references: [clansTable.id],
+        }),
+        opponentClan: one(clansTable, {
+            fields: [clanMatchupHistoryTable.opponentClanId],
+            references: [clansTable.id],
+        }),
+    }),
+);
+
+export const clanWarHistoryRelations = relations(clanWarHistoryTable, ({ one }) => ({
+    clan: one(clansTable, {
+        fields: [clanWarHistoryTable.clanId],
+        references: [clansTable.id],
     }),
 }));
 

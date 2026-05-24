@@ -1,5 +1,5 @@
 import { randomInt } from "node:crypto";
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { saveConfig } from "../../../../../config";
@@ -30,7 +30,9 @@ import { Config, serverConfigPath } from "../../../config";
 import { isBehindProxy } from "../../../utils/serverHelpers";
 import {
     type SaveGameBody,
+    zAddClanWarCgpBody,
     zSetBattleRoyaleModeBody,
+    zSetClanCgpValueBody,
     zSetClientThemeBody,
     zSetGameModeBody,
     zSetPauseClanStatsBody,
@@ -49,7 +51,10 @@ import { db } from "../../db";
 import {
     clanMemberStatsTable,
     clanMembersTable,
+    clanMatchupHistoryTable,
     clanSeasonMembersTable,
+    clanWarHistoryTable,
+    clansTable,
     itemsTable,
     type MatchDataTable,
     matchDataTable,
@@ -60,6 +65,24 @@ import {
 import { MOCK_USER_ID } from "../user/auth/mock";
 import { passType, premiumPassUnlockType } from "../user/PassRouter";
 import { isBanned, logPlayerIPs, ModerationRouter } from "./ModerationRouter";
+
+function getSurvivalKillCgpMultiplier(timeAlive: number) {
+    if (timeAlive >= 5 * 60) return 1.25;
+    if (timeAlive >= 3 * 60) return 1.15;
+    if (timeAlive >= 2 * 60) return 1.1;
+    return 1;
+}
+
+function getRepeatedMatchupMultiplier(matchNumber: number) {
+    if (matchNumber <= 5) return 1;
+    if (matchNumber <= 10) return 0.75;
+    if (matchNumber <= 15) return 0.5;
+    return 0.1;
+}
+
+function toCgpMilli(value: number) {
+    return Math.round(value * ClanConstants.CgpScale);
+}
 
 // Helper function to update clan stats for players who are in clans
 async function updateClanStats(matchData: MatchDataTable[]) {
@@ -73,10 +96,13 @@ async function updateClanStats(matchData: MatchDataTable[]) {
             string,
             {
                 userId: string;
+                gameId: string;
+                teamId: number;
                 createdAt: Date | string | undefined;
                 gameMode: GameModeStatusType;
                 kills: number;
                 rank: number;
+                timeAlive: number;
             }
         >();
 
@@ -90,6 +116,7 @@ async function updateClanStats(matchData: MatchDataTable[]) {
             if (existing) {
                 existing.kills += data.kills || 0;
                 existing.rank = Math.min(existing.rank, data.rank || Infinity);
+                existing.timeAlive = Math.max(existing.timeAlive, data.timeAlive || 0);
                 if (
                     data.createdAt &&
                     (!existing.createdAt ||
@@ -103,20 +130,40 @@ async function updateClanStats(matchData: MatchDataTable[]) {
 
             aggregatedMatchData.set(key, {
                 userId: data.userId,
+                gameId: String(data.gameId),
+                teamId: data.teamId,
                 createdAt: data.createdAt,
                 gameMode,
                 kills: data.kills || 0,
                 rank: data.rank || Infinity,
+                timeAlive: data.timeAlive || 0,
             });
         }
 
-        for (const data of aggregatedMatchData.values()) {
-            if (!data.userId) continue;
+        const userIds = [...new Set([...aggregatedMatchData.values()].map((d) => d.userId))];
+        const memberships =
+            userIds.length > 0
+                ? await db
+                      .select({
+                          clanId: clanMembersTable.clanId,
+                          userId: clanMembersTable.userId,
+                          joinedAt: clanMembersTable.joinedAt,
+                      })
+                      .from(clanMembersTable)
+                      .where(inArray(clanMembersTable.userId, userIds))
+                : [];
+        const membershipsByUserId = new Map(
+            memberships.map((membership) => [membership.userId, membership]),
+        );
+        const gameTeamClans = new Map<string, Map<number, Set<string>>>();
+        const validEntries: Array<{
+            data: (typeof aggregatedMatchData extends Map<string, infer T> ? T : never);
+            membership: (typeof memberships)[number];
+            matchTime: Date;
+        }> = [];
 
-            // Check if the player is in a clan
-            const membership = await db.query.clanMembersTable.findFirst({
-                where: eq(clanMembersTable.userId, data.userId),
-            });
+        for (const data of aggregatedMatchData.values()) {
+            const membership = membershipsByUserId.get(data.userId);
 
             if (!membership) continue;
 
@@ -127,6 +174,42 @@ async function updateClanStats(matchData: MatchDataTable[]) {
                     : new Date(data.createdAt!);
             if (matchTime < membership.joinedAt) continue;
 
+            validEntries.push({ data, membership, matchTime });
+            let teamClans = gameTeamClans.get(data.gameId);
+            if (!teamClans) {
+                teamClans = new Map();
+                gameTeamClans.set(data.gameId, teamClans);
+            }
+            let clans = teamClans.get(data.teamId);
+            if (!clans) {
+                clans = new Set();
+                teamClans.set(data.teamId, clans);
+            }
+            clans.add(membership.clanId);
+        }
+
+        const matchupMultiplierCache = new Map<string, number>();
+        const getMatchupMultiplier = async (clanId: string, opponentClanId: string) => {
+            const cacheKey = `${clanId}:${opponentClanId}`;
+            const cached = matchupMultiplierCache.get(cacheKey);
+            if (cached !== undefined) return cached;
+
+            const [result] = await db
+                .select({ count: count() })
+                .from(clanMatchupHistoryTable)
+                .where(
+                    and(
+                        eq(clanMatchupHistoryTable.clanId, clanId),
+                        eq(clanMatchupHistoryTable.opponentClanId, opponentClanId),
+                        eq(clanMatchupHistoryTable.season, ClanConstants.CurrentSeason),
+                    ),
+                );
+            const multiplier = getRepeatedMatchupMultiplier((result?.count || 0) + 1);
+            matchupMultiplierCache.set(cacheKey, multiplier);
+            return multiplier;
+        };
+
+        for (const { data, membership } of validEntries) {
             await db
                 .insert(clanSeasonMembersTable)
                 .values({
@@ -148,6 +231,32 @@ async function updateClanStats(matchData: MatchDataTable[]) {
             // Update the clan member's stats
             const kills = data.kills || 0;
             const wins = data.rank === 1 ? 1 : 0;
+            const opponentClanIds = new Set<string>();
+            const teamClans = gameTeamClans.get(data.gameId);
+            if (teamClans) {
+                for (const [teamId, clans] of teamClans) {
+                    if (teamId === data.teamId) continue;
+                    for (const clanId of clans) {
+                        if (clanId !== membership.clanId) {
+                            opponentClanIds.add(clanId);
+                        }
+                    }
+                }
+            }
+            const matchupMultipliers = await Promise.all(
+                [...opponentClanIds].map((opponentClanId) =>
+                    getMatchupMultiplier(membership.clanId, opponentClanId),
+                ),
+            );
+            const matchupMultiplier =
+                matchupMultipliers.length > 0 ? Math.min(...matchupMultipliers) : 1;
+            const killCgpMilli = toCgpMilli(
+                kills *
+                    Config.clanCgp.killValue *
+                    getSurvivalKillCgpMultiplier(data.timeAlive) *
+                    matchupMultiplier,
+            );
+            const winCgpMilli = toCgpMilli(wins * Config.clanCgp.winValue);
 
             await db
                 .insert(clanMemberStatsTable)
@@ -158,6 +267,8 @@ async function updateClanStats(matchData: MatchDataTable[]) {
                     season: ClanConstants.CurrentSeason,
                     kills,
                     wins,
+                    killCgpMilli,
+                    winCgpMilli,
                 })
                 .onConflictDoUpdate({
                     target: [
@@ -169,8 +280,44 @@ async function updateClanStats(matchData: MatchDataTable[]) {
                     set: {
                         kills: sql`${clanMemberStatsTable.kills} + ${kills}`,
                         wins: sql`${clanMemberStatsTable.wins} + ${wins}`,
+                        killCgpMilli: sql`${clanMemberStatsTable.killCgpMilli} + ${killCgpMilli}`,
+                        winCgpMilli: sql`${clanMemberStatsTable.winCgpMilli} + ${winCgpMilli}`,
                     },
                 });
+        }
+
+        const matchupRows = new Map<
+            string,
+            {
+                clanId: string;
+                opponentClanId: string;
+                gameId: string;
+                season: number;
+            }
+        >();
+        for (const [gameId, teamClans] of gameTeamClans) {
+            for (const [teamId, clans] of teamClans) {
+                for (const [opponentTeamId, opponentClans] of teamClans) {
+                    if (teamId === opponentTeamId) continue;
+                    for (const clanId of clans) {
+                        for (const opponentClanId of opponentClans) {
+                            if (clanId === opponentClanId) continue;
+                            matchupRows.set(`${gameId}:${clanId}:${opponentClanId}`, {
+                                clanId,
+                                opponentClanId,
+                                gameId,
+                                season: ClanConstants.CurrentSeason,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        if (matchupRows.size > 0) {
+            await db
+                .insert(clanMatchupHistoryTable)
+                .values([...matchupRows.values()])
+                .onConflictDoNothing();
         }
     } catch (err) {
         server.logger.error("Error updating clan stats:", err);
@@ -202,6 +349,66 @@ function toCoinFlipPlayer(user: CoinFlipUser) {
         username: user.username,
         gpBalance: user.gpBalance,
     };
+}
+
+async function addClanWarCgp(c: any) {
+    const {
+        clan: clanSearch,
+        amount,
+        opponent,
+        result,
+        executor_id: executorId,
+    } = c.req.valid("json") as z.infer<typeof zAddClanWarCgpBody>;
+
+    const [clan] = await db
+        .select({
+            id: clansTable.id,
+            name: clansTable.name,
+        })
+        .from(clansTable)
+        .where(
+            sql`${clansTable.id}::text = ${clanSearch}
+                OR ${clansTable.slug} ILIKE ${clanSearch}
+                OR ${clansTable.name} ILIKE ${clanSearch}`,
+        )
+        .limit(1);
+
+    if (!clan) {
+        return c.json({ message: `Clan "${clanSearch}" not found` }, 200);
+    }
+
+    const latestWar = await db.query.clanWarHistoryTable.findFirst({
+        where: eq(clanWarHistoryTable.clanId, clan.id),
+        orderBy: desc(clanWarHistoryTable.createdAt),
+    });
+    if (
+        latestWar &&
+        Date.now() - latestWar.createdAt.getTime() < 24 * 60 * 60 * 1000
+    ) {
+        const nextWarAt = new Date(latestWar.createdAt.getTime() + 24 * 60 * 60 * 1000);
+        return c.json(
+            {
+                message: `${clan.name} already received clan war CGP in the last 24 hours. Next available: ${nextWarAt.toLocaleString("en-US")}`,
+            },
+            200,
+        );
+    }
+
+    await db.insert(clanWarHistoryTable).values({
+        clanId: clan.id,
+        season: ClanConstants.CurrentSeason,
+        opponentClanName: opponent || "Clan War",
+        result,
+        cgpAwarded: amount,
+        addedByDiscordId: executorId,
+    });
+
+    return c.json(
+        {
+            message: `Added ${amount} CGP to ${clan.name} for clan war history.`,
+        },
+        200,
+    );
 }
 
 export const PrivateRouter = new Hono<Context>()
@@ -633,6 +840,50 @@ export const PrivateRouter = new Hono<Context>()
             .limit(10);
 
         return c.json({ ok: true, players }, 200);
+    })
+    .post(
+        "/addcgp",
+        databaseEnabledMiddleware,
+        validateParams(zAddClanWarCgpBody),
+        addClanWarCgp,
+    )
+    .post(
+        "/clanwarcgp",
+        databaseEnabledMiddleware,
+        validateParams(zAddClanWarCgpBody),
+        addClanWarCgp,
+    )
+    .post(
+        "/add_cgp",
+        databaseEnabledMiddleware,
+        validateParams(zAddClanWarCgpBody),
+        addClanWarCgp,
+    )
+    .post(
+        "/clanwar_cgp",
+        databaseEnabledMiddleware,
+        validateParams(zAddClanWarCgpBody),
+        addClanWarCgp,
+    )
+    .post("/setkillcgp", validateParams(zSetClanCgpValueBody), (c) => {
+        const { value } = c.req.valid("json");
+        Config.clanCgp.killValue = value;
+        saveConfig(serverConfigPath, {
+            clanCgp: {
+                killValue: value,
+            },
+        });
+        return c.json({ message: `Kill CGP value set to ${value}` }, 200);
+    })
+    .post("/setwincgp", validateParams(zSetClanCgpValueBody), (c) => {
+        const { value } = c.req.valid("json");
+        Config.clanCgp.winValue = value;
+        saveConfig(serverConfigPath, {
+            clanCgp: {
+                winValue: value,
+            },
+        });
+        return c.json({ message: `Win CGP value set to ${value}` }, 200);
     })
     .post(
         "/coinflip_check",

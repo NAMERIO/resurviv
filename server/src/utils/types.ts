@@ -45,6 +45,18 @@ export const zSetPauseClanStatsBody = z.object({
     enabled: z.boolean(),
 });
 
+export const zAddClanWarCgpBody = z.object({
+    clan: z.string().trim().min(1),
+    amount: z.number().int().nonnegative(),
+    opponent: z.string().trim().max(32).optional().default("Clan War"),
+    result: z.enum(["win", "loss", "draw"]).optional().default("win"),
+    executor_id: z.string().default("admin"),
+});
+
+export const zSetClanCgpValueBody = z.object({
+    value: z.number().min(0).max(100),
+});
+
 export interface SaveGameBody {
     matchData: (MatchDataTable & { ip: string; findGameIp: string })[];
 }
