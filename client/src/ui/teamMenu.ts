@@ -652,9 +652,7 @@ export class TeamMenu {
             );
         }
 
-        $("#team-clan-chat-gif-status").text(
-            gifs.length === 0 ? "No GIFs found." : "",
-        );
+        $("#team-clan-chat-gif-status").text(gifs.length === 0 ? "No GIFs found." : "");
     }
 
     renderLobbyGifPickerAd(ad: Extract<LobbyChatGifPickerItem, { type: "ad" }>) {
@@ -870,11 +868,7 @@ export class TeamMenu {
 
     cacheLobbyGifStillFrame(image: HTMLImageElement) {
         const gifSrc = $(image).data("gif-src") as string | undefined;
-        if (
-            !gifSrc ||
-            image.src !== gifSrc ||
-            this.lobbyGifStillFrameCache.has(gifSrc)
-        ) {
+        if (!gifSrc || image.src !== gifSrc || this.lobbyGifStillFrameCache.has(gifSrc)) {
             return;
         }
 

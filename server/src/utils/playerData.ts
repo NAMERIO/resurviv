@@ -1,6 +1,6 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { db } from "../api/db";
 import { SideQuestSlotIndexes } from "../../../shared/defs/gameObjects/sideQuestDefs";
+import { db } from "../api/db";
 import {
     clanMembersTable,
     clansTable,

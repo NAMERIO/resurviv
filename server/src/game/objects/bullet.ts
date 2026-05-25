@@ -441,10 +441,9 @@ export class Bullet {
                 const res = collider.intersectSegment(obj.collider, posOld, this.pos);
                 if (res) {
                     if (obj.isPropDisguise && obj.skinPlayerId) {
-                        const skinPlayer =
-                            this.bulletManager.game.objectRegister.getById(
-                                obj.skinPlayerId,
-                            );
+                        const skinPlayer = this.bulletManager.game.objectRegister.getById(
+                            obj.skinPlayerId,
+                        );
                         if (
                             skinPlayer?.__type === ObjectType.Player &&
                             !skinPlayer.dead &&

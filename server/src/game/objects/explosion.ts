@@ -281,10 +281,7 @@ export class ExplosionBarn {
                 obj.dropRandomLoot();
             }
 
-            if (
-                explosion.type === "explosion_fire" &&
-                !isSourceTeammate
-            ) {
+            if (explosion.type === "explosion_fire" && !isSourceTeammate) {
                 obj.burnDuration = GameConfig.player.burnDuration;
                 obj.burnTicker = GameConfig.player.burnTickRate;
                 obj.burnEffect = true;

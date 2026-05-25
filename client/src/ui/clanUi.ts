@@ -3,8 +3,8 @@ import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import type { EmoteDef } from "../../../shared/defs/gameObjects/emoteDefs";
 import { UnlockDefs } from "../../../shared/defs/gameObjects/unlockDefs";
 import {
-    ClanConstants,
     type CancelClanJoinRequestResponse,
+    ClanConstants,
     type ClanDetail,
     type ClanInfo,
     type ClanJoinRequest,
@@ -21,8 +21,8 @@ import {
     type JoinClanResponse,
     type ListClansResponse,
     type RequestJoinClanResponse,
-    type RespondClanJoinRequestResponse,
     type ResolveKlipyGifResponse,
+    type RespondClanJoinRequestResponse,
     type SearchKlipyGifsResponse,
     type SendClanMessageResponse,
     type UpdateClanResponse,
@@ -2672,17 +2672,14 @@ export class ClanUi {
                 $("<div/>"),
                 $("<div/>", { text: "Clan" }),
                 $("<div/>", {
-                    text:
-                        type === "cgp" ? "CGP" : type === "kills" ? "Kills" : "Wins",
+                    text: type === "cgp" ? "CGP" : type === "kills" ? "Kills" : "Wins",
                 }),
             ),
         );
 
         for (const entry of entries) {
             const rankClass =
-                entry.rank <= ClanConstants.PlayoffClanCount
-                    ? ` rank-${entry.rank}`
-                    : "";
+                entry.rank <= ClanConstants.PlayoffClanCount ? ` rank-${entry.rank}` : "";
             const item = $("<div/>", { class: `clan-leaderboard-item${rankClass}` });
 
             item.append(

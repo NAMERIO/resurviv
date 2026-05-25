@@ -86,8 +86,7 @@ export class Application {
     prestigeArenaBattleDisableAirstrikesBtn = $<HTMLButtonElement>(
         "#battle-disable-airstrikes",
     );
-    prestigeArenaBattleDisablePerksBtn =
-        $<HTMLButtonElement>("#battle-disable-perks");
+    prestigeArenaBattleDisablePerksBtn = $<HTMLButtonElement>("#battle-disable-perks");
     prestigeArenaPlayerCounter = $("#battle-player-counter");
     prestigeArenaPlayerCount = $("#battle-total");
     prestigeArenaPlayerMax = $("#battle-max");
@@ -483,10 +482,7 @@ export class Application {
             });
             this.prestigeArenaModeDropdown.on("click", () => {
                 const visible = this.prestigeArenaModeSelection.css("display") !== "none";
-                this.prestigeArenaModeSelection.css(
-                    "display",
-                    visible ? "none" : "grid",
-                );
+                this.prestigeArenaModeSelection.css("display", visible ? "none" : "grid");
                 if (!visible) {
                     this.prestigeArenaTypeSelection.css("display", "none");
                     this.prestigeArenaMiniGameSelection.css("display", "none");
@@ -495,10 +491,7 @@ export class Application {
             });
             this.prestigeArenaTypeDropdown.on("click", () => {
                 const visible = this.prestigeArenaTypeSelection.css("display") !== "none";
-                this.prestigeArenaTypeSelection.css(
-                    "display",
-                    visible ? "none" : "grid",
-                );
+                this.prestigeArenaTypeSelection.css("display", visible ? "none" : "grid");
                 if (!visible) {
                     this.prestigeArenaModeSelection.css("display", "none");
                     this.prestigeArenaMiniGameSelection.css("display", "none");
@@ -1086,9 +1079,7 @@ export class Application {
 
     syncPrestigeArenaCreatePaneVisibility() {
         const showCreatePane =
-            !this.teamMenu.active ||
-            !this.teamMenu.arena ||
-            !this.teamMenu.joined;
+            !this.teamMenu.active || !this.teamMenu.arena || !this.teamMenu.joined;
         this.prestigeArenaCreatePane.toggleClass("hide", !showCreatePane);
         this.prestigeArenaWrapper.toggleClass("arena-has-create-panel", showCreatePane);
         this.prestigeArenaWrapper.toggleClass(
@@ -1130,12 +1121,8 @@ export class Application {
     }
 
     hidePrestigeArenaBattleSelections() {
-        this.prestigeArenaBattleModeSelection
-            .removeClass("is-open")
-            .css("display", "");
-        this.prestigeArenaBattleTypeSelection
-            .removeClass("is-open")
-            .css("display", "");
+        this.prestigeArenaBattleModeSelection.removeClass("is-open").css("display", "");
+        this.prestigeArenaBattleTypeSelection.removeClass("is-open").css("display", "");
         this.prestigeArenaBattleMiniGameSelection
             .removeClass("is-open")
             .css("display", "");
@@ -1745,10 +1732,7 @@ export class Application {
             titleEl.append(
                 $("<span>", {
                     class: "arena-team-count",
-                    text:
-                        capacity === undefined
-                            ? String(count)
-                            : `${count}/${capacity}`,
+                    text: capacity === undefined ? String(count) : `${count}/${capacity}`,
                 }),
             );
             if (target === "A") {

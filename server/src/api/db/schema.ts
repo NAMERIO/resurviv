@@ -567,10 +567,8 @@ export const clanMatchupHistoryTable = pgTable(
     ],
 );
 
-export type ClanMatchupHistoryTableInsert =
-    typeof clanMatchupHistoryTable.$inferInsert;
-export type ClanMatchupHistoryTableSelect =
-    typeof clanMatchupHistoryTable.$inferSelect;
+export type ClanMatchupHistoryTableInsert = typeof clanMatchupHistoryTable.$inferInsert;
+export type ClanMatchupHistoryTableSelect = typeof clanMatchupHistoryTable.$inferSelect;
 
 export const clanWarHistoryTable = pgTable(
     "clan_war_history",
@@ -706,19 +704,16 @@ export const clanMembersRelations = relations(clanMembersTable, ({ one }) => ({
     }),
 }));
 
-export const clanJoinRequestsRelations = relations(
-    clanJoinRequestsTable,
-    ({ one }) => ({
-        clan: one(clansTable, {
-            fields: [clanJoinRequestsTable.clanId],
-            references: [clansTable.id],
-        }),
-        user: one(usersTable, {
-            fields: [clanJoinRequestsTable.userId],
-            references: [usersTable.id],
-        }),
+export const clanJoinRequestsRelations = relations(clanJoinRequestsTable, ({ one }) => ({
+    clan: one(clansTable, {
+        fields: [clanJoinRequestsTable.clanId],
+        references: [clansTable.id],
     }),
-);
+    user: one(usersTable, {
+        fields: [clanJoinRequestsTable.userId],
+        references: [usersTable.id],
+    }),
+}));
 
 export const clanMemberStatsRelations = relations(clanMemberStatsTable, ({ one }) => ({
     clan: one(clansTable, {

@@ -135,9 +135,7 @@ export type ResolveKlipyGifRequest = z.infer<typeof zResolveKlipyGifRequest>;
 export const zResolveLobbyKlipyGifRequest = z.object({
     url: z.string().trim().url().max(300),
 });
-export type ResolveLobbyKlipyGifRequest = z.infer<
-    typeof zResolveLobbyKlipyGifRequest
->;
+export type ResolveLobbyKlipyGifRequest = z.infer<typeof zResolveLobbyKlipyGifRequest>;
 
 export const zSearchKlipyGifsRequest = z.object({
     clanId: z.string().uuid(),
@@ -156,9 +154,7 @@ export const zSearchLobbyKlipyGifsRequest = z.object({
     adMaxWidth: z.number().int().min(50).max(1200).optional(),
     adMaxHeight: z.number().int().min(50).max(400).optional(),
 });
-export type SearchLobbyKlipyGifsRequest = z.infer<
-    typeof zSearchLobbyKlipyGifsRequest
->;
+export type SearchLobbyKlipyGifsRequest = z.infer<typeof zSearchLobbyKlipyGifsRequest>;
 
 export const zListClansRequest = z.object({
     page: z.number().int().min(1).default(1),

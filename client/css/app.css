@@ -20656,8 +20656,7 @@ div.roulette {
 #modal-prestige-arena #modal-prestige-wrapper #modal-prestige-body {
   align-items: stretch;
   background:
-    radial-gradient(circle at 16% 0%, rgba(80, 175, 171, 0.16), transparent 30%),
-    #0d1218;
+    radial-gradient(circle at 16% 0%, rgba(80, 175, 171, 0.16), transparent 30%), #0d1218;
   box-sizing: border-box;
   height: 100%;
   justify-content: stretch;
@@ -24385,7 +24384,7 @@ div.roulette {
     #modal-prestige-wrapper.arena-joined-shell:not(.arena-joined-editor)
     #modal-prestige-body
     .modal-prestige-body-inner
-  #modal-battle-window.arena-joined-layout {
+    #modal-battle-window.arena-joined-layout {
     grid-template-areas:
       "left"
       "right";

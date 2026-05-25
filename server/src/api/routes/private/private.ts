@@ -36,13 +36,13 @@ import { isBehindProxy } from "../../../utils/serverHelpers";
 import {
     type SaveGameBody,
     zAddClanWarCgpBody,
+    zListFeaturedYoutubersBody,
+    zRemoveFeaturedYoutuberBody,
     zSetBattleRoyaleModeBody,
     zSetClanCgpValueBody,
     zSetClientThemeBody,
     zSetGameModeBody,
-    zListFeaturedYoutubersBody,
     zSetPauseClanStatsBody,
-    zRemoveFeaturedYoutuberBody,
     zUpdateRegionBody,
 } from "../../../utils/types";
 import type { Context } from "../..";
@@ -56,12 +56,12 @@ import { getRedisClient } from "../../cache";
 import { leaderboardCache } from "../../cache/leaderboard";
 import { db } from "../../db";
 import {
+    clanMatchupHistoryTable,
     clanMemberStatsTable,
     clanMembersTable,
-    clanMatchupHistoryTable,
     clanSeasonMembersTable,
-    clanWarHistoryTable,
     clansTable,
+    clanWarHistoryTable,
     itemsTable,
     type MatchDataTable,
     matchDataTable,
@@ -182,7 +182,9 @@ async function updateClanStats(matchData: MatchDataTable[]) {
             data.playerCount = gamePlayerIds.get(data.gameId)?.size || data.playerCount;
         }
 
-        const userIds = [...new Set([...aggregatedMatchData.values()].map((d) => d.userId))];
+        const userIds = [
+            ...new Set([...aggregatedMatchData.values()].map((d) => d.userId)),
+        ];
         const memberships =
             userIds.length > 0
                 ? await db
@@ -199,7 +201,7 @@ async function updateClanStats(matchData: MatchDataTable[]) {
         );
         const gameTeamClans = new Map<string, Map<number, Set<string>>>();
         const validEntries: Array<{
-            data: (typeof aggregatedMatchData extends Map<string, infer T> ? T : never);
+            data: typeof aggregatedMatchData extends Map<string, infer T> ? T : never;
             membership: (typeof memberships)[number];
             matchTime: Date;
         }> = [];
@@ -427,10 +429,7 @@ async function addClanWarCgp(c: any) {
         where: eq(clanWarHistoryTable.clanId, clan.id),
         orderBy: desc(clanWarHistoryTable.createdAt),
     });
-    if (
-        latestWar &&
-        Date.now() - latestWar.createdAt.getTime() < 24 * 60 * 60 * 1000
-    ) {
+    if (latestWar && Date.now() - latestWar.createdAt.getTime() < 24 * 60 * 60 * 1000) {
         const nextWarAt = new Date(latestWar.createdAt.getTime() + 24 * 60 * 60 * 1000);
         return c.json(
             {
@@ -589,10 +588,7 @@ export const PrivateRouter = new Hono<Context>()
                 featuredYoutubers: Config.featuredYoutubers,
             });
 
-            return c.json(
-                { message: `Removed featured YouTuber "${name}".` },
-                200,
-            );
+            return c.json({ message: `Removed featured YouTuber "${name}".` }, 200);
         },
     )
     .post(
@@ -749,7 +745,11 @@ export const PrivateRouter = new Hono<Context>()
                     const wasComplete = quest.complete;
                     const nowComplete = nextProgress >= quest.target;
 
-                    if (!wasComplete && nowComplete && !isSideQuestType(quest.questType)) {
+                    if (
+                        !wasComplete &&
+                        nowComplete &&
+                        !isSideQuestType(quest.questType)
+                    ) {
                         xpGain += def.xp;
                     }
                     if (!wasComplete && nowComplete && isSideQuestType(quest.questType)) {

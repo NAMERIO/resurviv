@@ -2,16 +2,16 @@ import { and, asc, count, desc, eq, gt, lt, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import slugify from "slugify";
 import {
-    ClanConstants,
     type CancelClanJoinRequestResponse,
+    ClanConstants,
     type ClanDetail,
     type ClanInfo,
     type ClanJoinRequest,
     type ClanLeaderboardResponse,
     type ClanMember,
     type ClanMessage,
-    type ClanWarHistoryEntry,
     ClanTagColorRegex,
+    type ClanWarHistoryEntry,
     type CreateClanResponse,
     type DeleteClanMessageResponse,
     type DeleteClanResponse,
@@ -25,8 +25,8 @@ import {
     type LeaveClanResponse,
     type ListClansResponse,
     type RequestJoinClanResponse,
-    type RespondClanJoinRequestResponse,
     type ResolveKlipyGifResponse,
+    type RespondClanJoinRequestResponse,
     type SearchKlipyGifsResponse,
     type SendClanMessageResponse,
     type TransferOwnershipResponse,
@@ -42,11 +42,11 @@ import {
     zKickMemberRequest,
     zListClansRequest,
     zRequestJoinClanRequest,
-    zRespondClanJoinRequest,
-    zResolveLobbyKlipyGifRequest,
     zResolveKlipyGifRequest,
-    zSearchLobbyKlipyGifsRequest,
+    zResolveLobbyKlipyGifRequest,
+    zRespondClanJoinRequest,
     zSearchKlipyGifsRequest,
+    zSearchLobbyKlipyGifsRequest,
     zSendClanMessageRequest,
     zTransferOwnershipRequest,
     zUpdateClanRequest,
@@ -62,14 +62,14 @@ import {
 } from "../../auth/middleware";
 import { db } from "../../db";
 import {
-    clanLeaveHistoryTable,
     clanJoinRequestsTable,
+    clanLeaveHistoryTable,
     clanMemberStatsTable,
     clanMembersTable,
     clanMessagesTable,
     clanSeasonMembersTable,
-    clanWarHistoryTable,
     clansTable,
+    clanWarHistoryTable,
     usersTable,
 } from "../../db/schema";
 import type { Context } from "../../index";
@@ -1250,144 +1250,135 @@ ClanRouter.post("/join", validateParams(zJoinClanRequest), async (c) => {
     return c.json<JoinClanResponse>({ success: true, clan: clanInfo! });
 });
 
-ClanRouter.post(
-    "/request_join",
-    validateParams(zRequestJoinClanRequest),
-    async (c) => {
-        const user = c.get("user")!;
-        const { clanId } = c.req.valid("json");
+ClanRouter.post("/request_join", validateParams(zRequestJoinClanRequest), async (c) => {
+    const user = c.get("user")!;
+    const { clanId } = c.req.valid("json");
 
-        const existingMembership = await db.query.clanMembersTable.findFirst({
-            where: eq(clanMembersTable.userId, user.id),
-        });
+    const existingMembership = await db.query.clanMembersTable.findFirst({
+        where: eq(clanMembersTable.userId, user.id),
+    });
 
-        if (existingMembership) {
+    if (existingMembership) {
+        return c.json<RequestJoinClanResponse>(
+            { success: false, error: "already_in_clan" },
+            400,
+        );
+    }
+
+    const lastLeave = await db.query.clanLeaveHistoryTable.findFirst({
+        where: eq(clanLeaveHistoryTable.userId, user.id),
+        orderBy: desc(clanLeaveHistoryTable.leftAt),
+    });
+
+    if (lastLeave) {
+        const cooldownEnd = lastLeave.leftAt.getTime() + ClanConstants.RejoinCooldownMs;
+        if (Date.now() < cooldownEnd) {
             return c.json<RequestJoinClanResponse>(
-                { success: false, error: "already_in_clan" },
+                {
+                    success: false,
+                    error: "cooldown_active",
+                    cooldownRemaining: cooldownEnd - Date.now(),
+                },
                 400,
             );
         }
+    }
 
-        const lastLeave = await db.query.clanLeaveHistoryTable.findFirst({
-            where: eq(clanLeaveHistoryTable.userId, user.id),
-            orderBy: desc(clanLeaveHistoryTable.leftAt),
-        });
+    const clan = await db.query.clansTable.findFirst({
+        where: eq(clansTable.id, clanId),
+    });
 
-        if (lastLeave) {
-            const cooldownEnd =
-                lastLeave.leftAt.getTime() + ClanConstants.RejoinCooldownMs;
-            if (Date.now() < cooldownEnd) {
-                return c.json<RequestJoinClanResponse>(
-                    {
-                        success: false,
-                        error: "cooldown_active",
-                        cooldownRemaining: cooldownEnd - Date.now(),
-                    },
-                    400,
-                );
-            }
-        }
+    if (!clan) {
+        return c.json<RequestJoinClanResponse>(
+            { success: false, error: "clan_not_found" },
+            404,
+        );
+    }
 
-        const clan = await db.query.clansTable.findFirst({
-            where: eq(clansTable.id, clanId),
-        });
+    const memberCount = await db
+        .select({ count: count() })
+        .from(clanMembersTable)
+        .where(eq(clanMembersTable.clanId, clanId));
 
-        if (!clan) {
-            return c.json<RequestJoinClanResponse>(
-                { success: false, error: "clan_not_found" },
-                404,
-            );
-        }
+    if ((memberCount[0]?.count || 0) >= ClanConstants.MaxMembers) {
+        return c.json<RequestJoinClanResponse>(
+            { success: false, error: "clan_full" },
+            400,
+        );
+    }
 
-        const memberCount = await db
-            .select({ count: count() })
-            .from(clanMembersTable)
-            .where(eq(clanMembersTable.clanId, clanId));
+    const existingRequest = await db.query.clanJoinRequestsTable.findFirst({
+        where: and(
+            eq(clanJoinRequestsTable.clanId, clanId),
+            eq(clanJoinRequestsTable.userId, user.id),
+        ),
+    });
 
-        if ((memberCount[0]?.count || 0) >= ClanConstants.MaxMembers) {
-            return c.json<RequestJoinClanResponse>(
-                { success: false, error: "clan_full" },
-                400,
-            );
-        }
+    if (existingRequest) {
+        return c.json<RequestJoinClanResponse>(
+            { success: false, error: "already_requested" },
+            400,
+        );
+    }
 
-        const existingRequest = await db.query.clanJoinRequestsTable.findFirst({
-            where: and(
+    await db.insert(clanJoinRequestsTable).values({
+        clanId,
+        userId: user.id,
+    });
+
+    await createClanSystemMessage(
+        clanId,
+        user.id,
+        "member_join",
+        `${user.username} requested to join the clan.`,
+    );
+
+    server.notifyUsersSocialEvent([clan.ownerId], {
+        type: "clan_join_requests_changed",
+        clanId,
+    });
+
+    return c.json<RequestJoinClanResponse>({
+        success: true,
+        requestPending: true,
+    });
+});
+
+ClanRouter.post("/cancel_request", validateParams(zCancelClanJoinRequest), async (c) => {
+    const user = c.get("user")!;
+    const { clanId } = c.req.valid("json");
+
+    const deleted = await db
+        .delete(clanJoinRequestsTable)
+        .where(
+            and(
                 eq(clanJoinRequestsTable.clanId, clanId),
                 eq(clanJoinRequestsTable.userId, user.id),
             ),
+        )
+        .returning({
+            clanId: clanJoinRequestsTable.clanId,
         });
 
-        if (existingRequest) {
-            return c.json<RequestJoinClanResponse>(
-                { success: false, error: "already_requested" },
-                400,
-            );
-        }
-
-        await db.insert(clanJoinRequestsTable).values({
-            clanId,
-            userId: user.id,
-        });
-
-        await createClanSystemMessage(
-            clanId,
-            user.id,
-            "member_join",
-            `${user.username} requested to join the clan.`,
+    if (deleted.length === 0) {
+        return c.json<CancelClanJoinRequestResponse>(
+            { success: false, error: "request_not_found" },
+            404,
         );
+    }
 
+    const clan = await db.query.clansTable.findFirst({
+        where: eq(clansTable.id, clanId),
+    });
+    if (clan) {
         server.notifyUsersSocialEvent([clan.ownerId], {
             type: "clan_join_requests_changed",
             clanId,
         });
+    }
 
-        return c.json<RequestJoinClanResponse>({
-            success: true,
-            requestPending: true,
-        });
-    },
-);
-
-ClanRouter.post(
-    "/cancel_request",
-    validateParams(zCancelClanJoinRequest),
-    async (c) => {
-        const user = c.get("user")!;
-        const { clanId } = c.req.valid("json");
-
-        const deleted = await db
-            .delete(clanJoinRequestsTable)
-            .where(
-                and(
-                    eq(clanJoinRequestsTable.clanId, clanId),
-                    eq(clanJoinRequestsTable.userId, user.id),
-                ),
-            )
-            .returning({
-                clanId: clanJoinRequestsTable.clanId,
-            });
-
-        if (deleted.length === 0) {
-            return c.json<CancelClanJoinRequestResponse>(
-                { success: false, error: "request_not_found" },
-                404,
-            );
-        }
-
-        const clan = await db.query.clansTable.findFirst({
-            where: eq(clansTable.id, clanId),
-        });
-        if (clan) {
-            server.notifyUsersSocialEvent([clan.ownerId], {
-                type: "clan_join_requests_changed",
-                clanId,
-            });
-        }
-
-        return c.json<CancelClanJoinRequestResponse>({ success: true });
-    },
-);
+    return c.json<CancelClanJoinRequestResponse>({ success: true });
+});
 
 ClanRouter.post("/leave", async (c) => {
     const user = c.get("user")!;
@@ -1634,11 +1625,7 @@ ClanRouter.post(
             where: eq(usersTable.id, request.userId),
         });
 
-        await addClanMember(
-            clan.id,
-            request.userId,
-            requester?.username || "A member",
-        );
+        await addClanMember(clan.id, request.userId, requester?.username || "A member");
 
         return c.json<RespondClanJoinRequestResponse>({ success: true });
     },
@@ -2255,9 +2242,7 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
         .select({ clanId: clanJoinRequestsTable.clanId })
         .from(clanJoinRequestsTable)
         .where(eq(clanJoinRequestsTable.userId, user.id));
-    const pendingRequestClanIds = new Set(
-        pendingRequestRows.map((row) => row.clanId),
-    );
+    const pendingRequestClanIds = new Set(pendingRequestRows.map((row) => row.clanId));
 
     const clans: ClanInfo[] = clansData.map((c) => {
         const totalKills = toStatNumber(c.totalKills);

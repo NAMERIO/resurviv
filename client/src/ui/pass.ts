@@ -461,7 +461,8 @@ export class Pass {
                 current: previousQuest?.current ?? 0,
                 ticker: 0,
                 delay: 0,
-                playCompleteAnim: !!previousQuest && !previousQuest.data.complete && questData.complete,
+                playCompleteAnim:
+                    !!previousQuest && !previousQuest.data.complete && questData.complete,
                 progressAnimFinished: false,
                 completeAnimFinished: false,
                 shouldRequestRefresh: false,
@@ -492,7 +493,9 @@ export class Pass {
             const info = $("<div/>", { class: "pass-quest-info" });
             const desc = $("<div/>", {
                 class: "pass-quest-desc",
-                text: quest.data.complete ? `${quest.data.title} complete` : quest.data.title,
+                text: quest.data.complete
+                    ? `${quest.data.title} complete`
+                    : quest.data.title,
             });
             const reward = $("<div/>", {
                 class: "pass-quest-xp side-quest-reward",

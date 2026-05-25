@@ -183,7 +183,9 @@ function getRandomSideQuestType(excluded?: string) {
     const questTypes = Object.keys(SideQuestDefs);
     const available = questTypes.filter((questType) => questType !== excluded);
     const source = available.length > 0 ? available : questTypes;
-    return source[Math.floor(Math.random() * source.length)] as keyof typeof SideQuestDefs;
+    return source[
+        Math.floor(Math.random() * source.length)
+    ] as keyof typeof SideQuestDefs;
 }
 
 async function rerollSideQuest(userId: string, idx: number, now: number) {

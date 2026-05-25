@@ -38,6 +38,8 @@ export const SideQuestDefs = {
 export const SideQuestSlotIndexes = [100] as const;
 export const SideQuestRefreshCooldownMs = 24 * 60 * 60 * 1000;
 
-export function isSideQuestType(questType: string): questType is keyof typeof SideQuestDefs {
+export function isSideQuestType(
+    questType: string,
+): questType is keyof typeof SideQuestDefs {
     return questType in SideQuestDefs;
 }
