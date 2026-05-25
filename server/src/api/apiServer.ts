@@ -12,7 +12,8 @@ import type { FindGamePrivateBody, FindGamePrivateRes } from "../utils/types";
 export type SocialEventType =
     | "friends_changed"
     | "clan_messages_changed"
-    | "clan_mentions_changed";
+    | "clan_mentions_changed"
+    | "clan_join_requests_changed";
 
 export interface SocialEvent {
     type: SocialEventType;

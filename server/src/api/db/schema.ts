@@ -421,6 +421,7 @@ export const clansTable = pgTable("clans", {
     slug: text("slug").notNull().unique(),
     icon: text("icon").notNull(), // Emote type for clan icon
     tagColor: text("tag_color").notNull().default(""),
+    isLocked: boolean("is_locked").notNull().default(false),
     ownerId: text("owner_id")
         .notNull()
         .references(() => usersTable.id, {
@@ -459,6 +460,34 @@ export const clanMembersTable = pgTable(
 
 export type ClanMembersTableInsert = typeof clanMembersTable.$inferInsert;
 export type ClanMembersTableSelect = typeof clanMembersTable.$inferSelect;
+
+export const clanJoinRequestsTable = pgTable(
+    "clan_join_requests",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        clanId: uuid("clan_id")
+            .notNull()
+            .references(() => clansTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        userId: text("user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        index("idx_clan_join_requests_clan").on(table.clanId),
+        index("idx_clan_join_requests_user").on(table.userId),
+        uniqueIndex("idx_clan_join_requests_unique").on(table.clanId, table.userId),
+    ],
+);
+
+export type ClanJoinRequestsTableInsert = typeof clanJoinRequestsTable.$inferInsert;
+export type ClanJoinRequestsTableSelect = typeof clanJoinRequestsTable.$inferSelect;
 
 // Track stats earned by members while in a clan
 export const clanMemberStatsTable = pgTable(
@@ -658,6 +687,7 @@ export const clansRelations = relations(clansTable, ({ one, many }) => ({
         references: [usersTable.id],
     }),
     members: many(clanMembersTable),
+    joinRequests: many(clanJoinRequestsTable),
     memberStats: many(clanMemberStatsTable),
     matchupHistory: many(clanMatchupHistoryTable),
     clanWarHistory: many(clanWarHistoryTable),
@@ -675,6 +705,20 @@ export const clanMembersRelations = relations(clanMembersTable, ({ one }) => ({
         references: [usersTable.id],
     }),
 }));
+
+export const clanJoinRequestsRelations = relations(
+    clanJoinRequestsTable,
+    ({ one }) => ({
+        clan: one(clansTable, {
+            fields: [clanJoinRequestsTable.clanId],
+            references: [clansTable.id],
+        }),
+        user: one(usersTable, {
+            fields: [clanJoinRequestsTable.userId],
+            references: [usersTable.id],
+        }),
+    }),
+);
 
 export const clanMemberStatsRelations = relations(clanMemberStatsTable, ({ one }) => ({
     clan: one(clansTable, {

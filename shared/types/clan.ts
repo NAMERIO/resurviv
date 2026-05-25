@@ -29,6 +29,22 @@ export const zJoinClanRequest = z.object({
 });
 export type JoinClanRequest = z.infer<typeof zJoinClanRequest>;
 
+export const zRequestJoinClanRequest = z.object({
+    clanId: z.string().uuid(),
+});
+export type RequestJoinClanRequest = z.infer<typeof zRequestJoinClanRequest>;
+
+export const zCancelClanJoinRequest = z.object({
+    clanId: z.string().uuid(),
+});
+export type CancelClanJoinRequest = z.infer<typeof zCancelClanJoinRequest>;
+
+export const zRespondClanJoinRequest = z.object({
+    requestId: z.string().uuid(),
+    action: z.enum(["accept", "decline"]),
+});
+export type RespondClanJoinRequest = z.infer<typeof zRespondClanJoinRequest>;
+
 export const zLeaveClanRequest = z.object({});
 export type LeaveClanRequest = z.infer<typeof zLeaveClanRequest>;
 
@@ -51,6 +67,7 @@ export const zUpdateClanRequest = z.object({
         .optional(),
     icon: z.string().min(1).optional(),
     tagColor: z.string().trim().regex(ClanTagColorRegex).optional(),
+    isLocked: z.boolean().optional(),
 });
 export type UpdateClanRequest = z.infer<typeof zUpdateClanRequest>;
 
@@ -173,6 +190,15 @@ export type ClanWarHistoryEntry = {
     createdAt: number;
 };
 
+export type ClanJoinRequest = {
+    id: string;
+    odUserId: string;
+    username: string;
+    slug: string;
+    playerIcon: string;
+    requestedAt: number;
+};
+
 export type ClanInfo = {
     id: string;
     name: string;
@@ -190,11 +216,14 @@ export type ClanInfo = {
     season: number;
     isCurrentSeason: boolean;
     playoffQualified: boolean;
+    isLocked: boolean;
+    requestPending: boolean;
 };
 
 export type ClanDetail = ClanInfo & {
     members: ClanMember[];
     clanWarHistory: ClanWarHistoryEntry[];
+    joinRequests?: ClanJoinRequest[];
 };
 
 export type ClanMessage = {
@@ -229,10 +258,41 @@ export type JoinClanResponse =
           error:
               | "clan_not_found"
               | "clan_full"
+              | "clan_locked"
               | "already_in_clan"
               | "cooldown_active"
               | "server_error";
           cooldownRemaining?: number;
+      };
+
+export type RequestJoinClanResponse =
+    | { success: true; requestPending: true }
+    | {
+          success: false;
+          error:
+              | "clan_not_found"
+              | "clan_full"
+              | "already_in_clan"
+              | "already_requested"
+              | "cooldown_active"
+              | "server_error";
+          cooldownRemaining?: number;
+      };
+
+export type CancelClanJoinRequestResponse =
+    | { success: true }
+    | { success: false; error: "request_not_found" | "server_error" };
+
+export type RespondClanJoinRequestResponse =
+    | { success: true }
+    | {
+          success: false;
+          error:
+              | "not_owner"
+              | "request_not_found"
+              | "clan_full"
+              | "already_in_clan"
+              | "server_error";
       };
 
 export type LeaveClanResponse =

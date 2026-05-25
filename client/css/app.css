@@ -11693,7 +11693,8 @@ input [type="image"]:focus {
 }
 
 #modal-clan-page .modal-content {
-  width: 1120px;
+  width: 1420px;
+  max-width: 98vw;
 }
 
 #modal-clan-main .modal-content {
@@ -11740,7 +11741,7 @@ input [type="image"]:focus {
 
 #clan-page-detail {
   min-width: 0;
-  overflow-y: auto;
+  overflow: hidden;
   padding-right: 4px;
 }
 
@@ -12506,13 +12507,18 @@ input [type="image"]:focus {
   border-radius: 3px;
 }
 
+.clan-list-status-joined {
+  color: #7cfc00;
+  background-color: rgba(124, 252, 0, 0.16);
+}
+
 /* Clan Detail/Page View */
 .clan-detail-header {
   display: flex;
   align-items: center;
   gap: 20px;
-  margin-bottom: 20px;
-  padding: 20px;
+  margin-bottom: 14px;
+  padding: 14px 16px;
   background-color: #282828;
   border-radius: 5px;
 }
@@ -12522,8 +12528,8 @@ input [type="image"]:focus {
 }
 
 .clan-detail-icon {
-  width: 75px;
-  height: 75px;
+  width: 64px;
+  height: 64px;
   background-color: #252525;
   border-radius: 5px;
   background-size: 80%;
@@ -12554,6 +12560,7 @@ input [type="image"]:focus {
 
 .clan-detail-info {
   flex: 1;
+  min-width: 0;
 }
 
 .clan-detail-name-wrapper {
@@ -12563,7 +12570,7 @@ input [type="image"]:focus {
 }
 
 .clan-detail-name {
-  font-size: 30px;
+  font-size: 28px;
   font-weight: bold;
   color: #fff;
   margin-bottom: 5px;
@@ -12630,8 +12637,26 @@ input [type="image"]:focus {
 }
 
 .clan-detail-meta {
-  font-size: 16px;
+  font-size: 14px;
   color: #c4c4c4;
+}
+
+.clan-lock-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  margin-top: 6px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.clan-lock-control input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
 }
 
 .clan-stat-box.kill-placement,
@@ -12640,20 +12665,22 @@ input [type="image"]:focus {
 }
 
 .clan-detail-stats {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  flex: 0 0 360px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
 }
 
 .clan-stat-box {
-  flex: 1;
   background-color: #1f1f1f;
   border-radius: 5px;
-  padding: 15px;
+  min-height: 58px;
+  padding: 9px 10px 7px 42px;
   text-align: center;
   background-repeat: no-repeat;
-  background-position: 15px center;
-  background-size: 28px;
+  background-position: 12px center;
+  background-size: 22px;
 }
 
 .clan-stat-box.games {
@@ -12677,15 +12704,21 @@ input [type="image"]:focus {
 }
 
 .clan-stat-label {
-  font-size: 16px;
+  font-size: 13px;
   color: #fff;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
 }
 
 .clan-stat-value {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: bold;
   color: #ffe400;
+  line-height: 22px;
+}
+
+.clan-stat-subvalue {
+  font-size: 10px;
+  line-height: 12px;
 }
 
 .clan-war-section {
@@ -12695,11 +12728,30 @@ input [type="image"]:focus {
   margin-bottom: 20px;
 }
 
+.clan-war-column {
+  flex: 0 0 300px;
+  min-width: 280px;
+  min-height: 0;
+}
+
+.clan-war-column .clan-war-section {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .clan-war-history-list {
   display: grid;
   gap: 8px;
   max-height: 190px;
   overflow-y: auto;
+}
+
+.clan-war-column .clan-war-history-list {
+  flex: 1 1 auto;
+  max-height: none;
 }
 
 .clan-war-item {
@@ -12711,6 +12763,30 @@ input [type="image"]:focus {
   padding: 8px 10px;
   background-color: #3a3a3a;
   border-radius: 5px;
+}
+
+.clan-war-column .clan-war-item {
+  grid-template-columns: minmax(0, 1fr) 64px;
+  grid-template-areas:
+    "opponent result"
+    "cgp date";
+}
+
+.clan-war-column .clan-war-opponent {
+  grid-area: opponent;
+}
+
+.clan-war-column .clan-war-result {
+  grid-area: result;
+}
+
+.clan-war-column .clan-war-cgp {
+  grid-area: cgp;
+  text-align: left;
+}
+
+.clan-war-column .clan-war-date {
+  grid-area: date;
 }
 
 .clan-war-opponent {
@@ -12766,6 +12842,10 @@ input [type="image"]:focus {
   background-color: #282828;
   border-radius: 5px;
   padding: 15px;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .clan-members-header {
@@ -12790,7 +12870,9 @@ input [type="image"]:focus {
 }
 
 .clan-members-list {
-  max-height: 280px;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
   overflow-y: auto;
 }
 
@@ -12862,6 +12944,10 @@ input [type="image"]:focus {
 .clan-member-controls {
   display: flex;
   gap: 8px;
+}
+
+.clan-request-item .clan-member-controls {
+  flex-shrink: 0;
 }
 
 .clan-btn-small {
@@ -14045,25 +14131,20 @@ input [type="image"]:focus {
 
   #modal-clan-page .clan-stat-box {
     min-width: 0;
-    padding: 40px 8px 10px;
-    background-position: center 9px;
-    background-size: 24px;
-  }
-
-  #modal-clan-page .clan-stat-box.kill-placement,
-  #modal-clan-page .clan-stat-box.win-placement {
-    padding-top: 10px;
+    padding: 9px 8px 7px 38px;
+    background-position: 10px center;
+    background-size: 21px;
   }
 
   #modal-clan-page .clan-stat-label {
-    font-size: 14px;
-    line-height: 16px;
-    min-height: 32px;
+    font-size: 12px;
+    line-height: 14px;
+    min-height: 0;
   }
 
   #modal-clan-page .clan-stat-value {
-    font-size: 22px;
-    line-height: 24px;
+    font-size: 20px;
+    line-height: 22px;
   }
 }
 
@@ -14116,8 +14197,14 @@ input [type="image"]:focus {
     min-width: 350px;
   }
 
+  #modal-clan-page .clan-war-column {
+    flex-basis: 300px;
+    min-width: 280px;
+  }
+
   #modal-clan-page .clan-members-section,
-  #modal-clan-page .clan-chat-panel {
+  #modal-clan-page .clan-chat-panel,
+  #modal-clan-page .clan-war-section {
     padding: 16px;
   }
 }
@@ -14153,8 +14240,14 @@ input [type="image"]:focus {
     min-width: 350px;
   }
 
+  #modal-clan-page .clan-war-column {
+    flex-basis: 300px;
+    min-width: 280px;
+  }
+
   #modal-clan-page .clan-members-section,
-  #modal-clan-page .clan-chat-panel {
+  #modal-clan-page .clan-chat-panel,
+  #modal-clan-page .clan-war-section {
     padding: 16px;
   }
 }
@@ -14188,30 +14281,31 @@ input [type="image"]:focus {
     min-width: 350px;
   }
 
+  #modal-clan-page .clan-war-column {
+    flex-basis: 300px;
+    min-width: 280px;
+  }
+
   #modal-clan-page .clan-members-section,
-  #modal-clan-page .clan-chat-panel {
+  #modal-clan-page .clan-chat-panel,
+  #modal-clan-page .clan-war-section {
     padding: 16px;
   }
 
   #modal-clan-page .clan-stat-box {
-    padding: 38px 6px 8px;
-    background-position: center 8px;
-  }
-
-  #modal-clan-page .clan-stat-box.kill-placement,
-  #modal-clan-page .clan-stat-box.win-placement {
-    padding-top: 8px;
+    padding: 9px 7px 7px 36px;
+    background-position: 9px center;
   }
 
   #modal-clan-page .clan-stat-label {
-    font-size: 14px;
-    line-height: 16px;
-    min-height: 32px;
+    font-size: 12px;
+    line-height: 14px;
+    min-height: 0;
   }
 
   #modal-clan-page .clan-stat-value {
-    font-size: 22px;
-    line-height: 24px;
+    font-size: 20px;
+    line-height: 22px;
   }
 }
 

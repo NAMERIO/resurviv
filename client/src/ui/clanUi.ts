@@ -4,8 +4,10 @@ import type { EmoteDef } from "../../../shared/defs/gameObjects/emoteDefs";
 import { UnlockDefs } from "../../../shared/defs/gameObjects/unlockDefs";
 import {
     ClanConstants,
+    type CancelClanJoinRequestResponse,
     type ClanDetail,
     type ClanInfo,
+    type ClanJoinRequest,
     type ClanLeaderboardEntry,
     type ClanLeaderboardResponse,
     type ClanLeaderboardType,
@@ -18,6 +20,8 @@ import {
     type GetMyClanResponse,
     type JoinClanResponse,
     type ListClansResponse,
+    type RequestJoinClanResponse,
+    type RespondClanJoinRequestResponse,
     type ResolveKlipyGifResponse,
     type SearchKlipyGifsResponse,
     type SendClanMessageResponse,
@@ -141,6 +145,7 @@ export class ClanUi {
 
     currentClan: ClanDetail | null = null;
     viewingClan: ClanDetail | null = null;
+    clanPageTab: "details" | "requests" = "details";
     cooldownUntil: number | null = null;
     availableIcons: string[] = [];
     selectedIcon: string = "emote_surviv";
@@ -253,6 +258,9 @@ export class ClanUi {
             const tagColor = ($("#clan-main-tag-color-input").val() as string) || "";
             this.updateClan({ tagColor });
         });
+        $("#clan-lock-toggle").on("change", () => {
+            this.updateClan({ isLocked: $("#clan-lock-toggle").prop("checked") });
+        });
         $("#btn-clan-cancel-name").on("click", () => {
             this.cancelNameEdit();
         });
@@ -336,6 +344,12 @@ export class ClanUi {
                     this.getSelectedClanDetailSeason(),
                 );
             }
+        });
+        $("#btn-clan-page-details-tab").on("click", () => {
+            this.setClanPageTab("details");
+        });
+        $("#btn-clan-page-requests-tab").on("click", () => {
+            this.setClanPageTab("requests");
         });
         $("#btn-clan-chat-send").on("click", () => {
             this.sendClanMessage();
@@ -489,12 +503,28 @@ export class ClanUi {
 
     showClanPage(clanId: string, season: number = ClanConstants.CurrentSeason) {
         this.viewingClanId = clanId;
+        this.clanPageTab = "details";
         this.resetClanMessages();
         $("#clan-chat-section").hide();
         $("#clan-detail-season").val(String(season));
+        this.setClanPageTab("details");
         this.loadClanDetail(clanId, season);
         this.mainModal.hide();
         this.clanPageModal.show(true);
+    }
+
+    setClanPageTab(tab: "details" | "requests") {
+        this.clanPageTab = tab;
+        $("#btn-clan-page-details-tab").toggleClass("active", tab === "details");
+        $("#btn-clan-page-requests-tab").toggleClass("active", tab === "requests");
+        $("#clan-war-column").toggle(tab === "details");
+        $("#clan-page-detail").toggle(tab === "details");
+        $("#clan-requests-section").toggle(tab === "requests");
+        $("#clan-chat-section").toggle(
+            tab === "details" &&
+                !!this.viewingClan &&
+                this.canUseClanChat(this.viewingClan),
+        );
     }
 
     showLeaderboard() {
@@ -814,7 +844,14 @@ export class ClanUi {
                 ),
             );
 
-            if (isFull) {
+            if (this.currentClan?.id === clan.id) {
+                item.append(
+                    $("<div/>", {
+                        class: "clan-list-status clan-list-status-joined",
+                        text: "JOINED",
+                    }),
+                );
+            } else if (isFull) {
                 item.append(
                     $("<div/>", {
                         class: "clan-list-status",
@@ -823,11 +860,23 @@ export class ClanUi {
                 );
             } else if (!this.currentClan) {
                 const joinBtn = $("<div/>", {
-                    class: "clan-btn clan-btn-teal clan-btn-small",
-                    text: "Join",
+                    class: `clan-btn ${
+                        clan.requestPending ? "clan-btn-grey" : "clan-btn-teal"
+                    } clan-btn-small`,
+                    text: clan.requestPending
+                        ? "Cancel"
+                        : clan.isLocked
+                          ? "Request"
+                          : "Join",
                 }).on("click", (e) => {
                     e.stopPropagation();
-                    this.joinClan(clan.id);
+                    if (clan.requestPending) {
+                        this.cancelJoinRequest(clan.id);
+                    } else if (clan.isLocked) {
+                        this.requestJoinClan(clan.id);
+                    } else {
+                        this.joinClan(clan.id);
+                    }
                 });
                 item.append(joinBtn);
             }
@@ -890,6 +939,7 @@ export class ClanUi {
                 const errorMessages: Record<string, string> = {
                     clan_not_found: "Clan not found.",
                     clan_full: "This clan is full.",
+                    clan_locked: "This clan is locked. Send a request to join.",
                     already_in_clan: "You are already in a clan.",
                     cooldown_active: "You must wait before joining a new clan.",
                     server_error: "Server error. Please try again.",
@@ -905,6 +955,109 @@ export class ClanUi {
         });
     }
 
+    requestJoinClan(clanId: string) {
+        if (this.currentClan) {
+            this.showError("You must leave your current clan first.");
+            return;
+        }
+
+        if (this.cooldownUntil && this.cooldownUntil > Date.now()) {
+            this.showError(
+                `You must wait ${formatTimeRemaining(this.cooldownUntil - Date.now())} before joining a clan.`,
+            );
+            return;
+        }
+
+        clanRequest<RequestJoinClanResponse>(
+            "/api/clan/request_join",
+            { clanId },
+            (err, res) => {
+                if (err) {
+                    this.showError("Server error. Please try again.");
+                    return;
+                }
+
+                if (!res?.success) {
+                    const errorMessages: Record<string, string> = {
+                        clan_not_found: "Clan not found.",
+                        clan_full: "This clan is full.",
+                        already_in_clan: "You are already in a clan.",
+                        already_requested: "You already requested to join this clan.",
+                        cooldown_active: "You must wait before joining a new clan.",
+                        server_error: "Server error. Please try again.",
+                    };
+                    this.showError(errorMessages[res?.error || "server_error"]);
+                    return;
+                }
+
+                this.loadClanList(1);
+                if (this.viewingClanId === clanId) {
+                    this.loadClanDetail(clanId, this.getSelectedClanDetailSeason());
+                }
+            },
+        );
+    }
+
+    cancelJoinRequest(clanId: string) {
+        clanRequest<CancelClanJoinRequestResponse>(
+            "/api/clan/cancel_request",
+            { clanId },
+            (err, res) => {
+                if (err || !res) {
+                    this.showError("Server error. Please try again.");
+                    return;
+                }
+
+                if (!res.success) {
+                    const errorMessages: Record<string, string> = {
+                        request_not_found: "This request no longer exists.",
+                        server_error: "Server error. Please try again.",
+                    };
+                    this.showError(errorMessages[res.error || "server_error"]);
+                    return;
+                }
+
+                this.loadClanList(1);
+                if (this.viewingClanId === clanId) {
+                    this.loadClanDetail(clanId, this.getSelectedClanDetailSeason());
+                }
+            },
+        );
+    }
+
+    respondToJoinRequest(requestId: string, action: "accept" | "decline") {
+        clanRequest<RespondClanJoinRequestResponse>(
+            "/api/clan/respond_request",
+            { requestId, action },
+            (err, res) => {
+                if (err || !res) {
+                    this.showError("Server error. Please try again.");
+                    return;
+                }
+
+                if (!res.success) {
+                    const errorMessages: Record<string, string> = {
+                        not_owner: "Only the clan owner can manage requests.",
+                        request_not_found: "This request no longer exists.",
+                        clan_full: "This clan is full.",
+                        already_in_clan: "This player is already in a clan.",
+                        server_error: "Server error. Please try again.",
+                    };
+                    this.showError(errorMessages[res.error || "server_error"]);
+                    return;
+                }
+
+                this.loadMyClan();
+                if (this.viewingClanId) {
+                    this.loadClanDetail(
+                        this.viewingClanId,
+                        this.getSelectedClanDetailSeason(),
+                    );
+                }
+            },
+        );
+    }
+
     loadClanDetail(clanId: string, season: number = ClanConstants.CurrentSeason) {
         clanRequest<{ success: boolean; clan?: ClanDetail }>(
             "/api/clan/get",
@@ -918,15 +1071,15 @@ export class ClanUi {
                 this.viewingClan = res.clan;
                 $("#clan-detail-season").val(String(res.clan.season));
                 this.renderClanDetail(res.clan);
+                this.renderClanRequests(res.clan);
                 this.resetClanMessages();
                 if (this.canUseClanChat(res.clan)) {
-                    $("#clan-chat-section").show();
                     this.loadClanMessages(false);
                     this.startClanMessagePolling();
                 } else {
-                    $("#clan-chat-section").hide();
                     this.stopClanMessagePolling();
                 }
+                this.setClanPageTab(this.clanPageTab);
             },
         );
     }
@@ -1118,6 +1271,8 @@ export class ClanUi {
         $("#clan-detail-owner").text(`Owner: ${owner}`);
         const createdDate = new Date(clan.createdAt).toLocaleDateString();
         $("#clan-detail-created").text(`Created: ${createdDate}`);
+        $("#clan-detail-lock-status").text(clan.isLocked ? "Locked" : "Open");
+        $("#clan-lock-toggle").prop("checked", clan.isLocked);
         $("#clan-detail-cgp").text(formatCgp(clan.totalCgp));
         $("#clan-detail-war-cgp").text(`+${formatCgp(clan.clanWarCgp)} from clan wars`);
         $("#clan-detail-kills").text(clan.totalKills.toLocaleString());
@@ -1140,10 +1295,17 @@ export class ClanUi {
             $("#btn-clan-edit-name").show();
             $("#clan-tag-color-input").show();
             $("#clan-tag-color-input").val(normalizeColorInputValue(clan.tagColor));
+            $("#clan-lock-control").show();
+            $("#btn-clan-page-requests-tab").show();
         } else {
             $("#btn-clan-edit-icon").hide();
             $("#btn-clan-edit-name").hide();
             $("#clan-tag-color-input").hide();
+            $("#clan-lock-control").hide();
+            $("#btn-clan-page-requests-tab").hide();
+            if (this.clanPageTab === "requests") {
+                this.clanPageTab = "details";
+            }
         }
         this.cancelNameEdit();
 
@@ -1264,6 +1426,74 @@ export class ClanUi {
                 ),
             );
         }
+    }
+
+    renderClanRequests(clan: ClanDetail) {
+        const requests = clan.joinRequests || [];
+        $("#clan-requests-count").text(`${requests.length} pending`);
+        const container = $("#clan-requests-list");
+        container.empty();
+
+        if (requests.length === 0) {
+            container.append(
+                $("<div/>", {
+                    class: "clan-members-empty",
+                    text: "No pending join requests.",
+                }),
+            );
+            return;
+        }
+
+        for (const request of requests) {
+            container.append(this.createClanRequestItem(request));
+        }
+    }
+
+    createClanRequestItem(request: ClanJoinRequest) {
+        const requestedDate = new Date(request.requestedAt).toLocaleDateString();
+        const item = $("<div/>", { class: "clan-member-item clan-request-item" });
+
+        item.append(
+            $("<div/>", {
+                class: "clan-member-icon",
+            }).css("background-image", `url(${getClanIconUrl(request.playerIcon)})`),
+        );
+
+        item.append(
+            $("<div/>", { class: "clan-member-info" }).append(
+                $("<div/>", {
+                    class: "clan-member-name",
+                    text: request.username,
+                }),
+                $("<div/>", {
+                    class: "clan-member-stats",
+                    text: `Requested ${requestedDate}`,
+                }),
+            ),
+        );
+
+        const controls = $("<div/>", { class: "clan-member-controls" });
+        controls.append(
+            $("<div/>", {
+                class: "clan-btn-small clan-btn-transfer",
+                text: "Accept",
+            }).on("click", (e) => {
+                e.stopPropagation();
+                this.respondToJoinRequest(request.id, "accept");
+            }),
+        );
+        controls.append(
+            $("<div/>", {
+                class: "clan-btn-small clan-btn-kick",
+                text: "Decline",
+            }).on("click", (e) => {
+                e.stopPropagation();
+                this.respondToJoinRequest(request.id, "decline");
+            }),
+        );
+        item.append(controls);
+
+        return item;
     }
 
     resetClanMessages() {
@@ -2548,7 +2778,12 @@ export class ClanUi {
         $("#btn-clan-edit-name").toggle(canEditViewedClan);
     }
 
-    updateClan(updates: { name?: string; icon?: string; tagColor?: string }) {
+    updateClan(updates: {
+        name?: string;
+        icon?: string;
+        tagColor?: string;
+        isLocked?: boolean;
+    }) {
         clanRequest<UpdateClanResponse>("/api/clan/update", updates, (err, res) => {
             if (err) {
                 this.showError("Server error. Please try again.");
@@ -2568,6 +2803,8 @@ export class ClanUi {
             this.currentClan = res.clan;
             this.viewingClan = res.clan;
             this.renderClanDetail(res.clan);
+            this.renderClanRequests(res.clan);
+            this.setClanPageTab(this.clanPageTab);
             this.cancelNameEdit();
             this.updateMainCard();
         });

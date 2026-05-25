@@ -2464,17 +2464,30 @@
       <div id="modal-clan-page" class="modal">
         <div class="modal-content">
           <div class="modal-clans-header">
-            <div class="modal-clans-tab active" id="btn-clan-back-to-hub">
+            <div class="modal-clans-tab" id="btn-clan-back-to-hub">
               <div class="tab-icon" style="background-image: url(img/gui/return-arrow.svg);"></div>
               Back
             </div>
-            <div class="modal-clans-tab">
+            <div class="modal-clans-tab active" id="btn-clan-page-details-tab">
               <div class="tab-icon" style="background-image: url(img/gui/crown.svg);"></div>
               Clan Details
+            </div>
+            <div class="modal-clans-tab" id="btn-clan-page-requests-tab" style="display: none;">
+              <div class="tab-icon" style="background-image: url(img/gui/player-gui.svg);"></div>
+              Requests
             </div>
             <div class="modal-clans-close close"></div>
           </div>
           <div class="modal-clans-body">
+            <div id="clan-war-column" class="clan-column clan-war-column">
+              <div class="clan-war-section">
+                <div class="clan-members-header">
+                  <div class="clan-members-title">Recent Clan Wars</div>
+                  <div class="clan-members-count">History</div>
+                </div>
+                <div id="clan-war-history-list" class="clan-war-history-list"></div>
+              </div>
+            </div>
             <div id="clan-page-detail" class="clan-column" style="flex: 1;">
               <div class="clan-season-bar">
                 <div id="clan-detail-season-label" class="clan-season-label">Current Season</div>
@@ -2498,34 +2511,32 @@
                   </div>
                   <div id="clan-detail-members-count" class="clan-detail-meta">0 / 20 Members</div>
                   <div id="clan-detail-owner" class="clan-detail-meta">Owner: Unknown</div>
+                  <div id="clan-detail-lock-status" class="clan-detail-meta">Open</div>
                   <div id="clan-detail-created" class="clan-detail-meta">Created: N/A</div>
+                  <label id="clan-lock-control" class="clan-lock-control" style="display: none;">
+                    <input id="clan-lock-toggle" type="checkbox" />
+                    <span>Lock Clan</span>
+                  </label>
                 </div>
-              </div>
-              <div class="clan-detail-stats">
-                <div class="clan-stat-box cgp">
-                  <div class="clan-stat-label">Total CGP</div>
-                  <div id="clan-detail-cgp" class="clan-stat-value">0</div>
-                  <div id="clan-detail-war-cgp" class="clan-stat-subvalue">+0 from clan wars</div>
+                <div class="clan-detail-stats">
+                  <div class="clan-stat-box cgp">
+                    <div class="clan-stat-label">Total CGP</div>
+                    <div id="clan-detail-cgp" class="clan-stat-value">0</div>
+                    <div id="clan-detail-war-cgp" class="clan-stat-subvalue">+0 from clan wars</div>
+                  </div>
+                  <div class="clan-stat-box wins">
+                    <div class="clan-stat-label">Wins</div>
+                    <div id="clan-detail-wins" class="clan-stat-value">0</div>
+                  </div>
+                  <div class="clan-stat-box kills">
+                    <div class="clan-stat-label">Kills</div>
+                    <div id="clan-detail-kills" class="clan-stat-value">0</div>
+                  </div>
+                  <div class="clan-stat-box wars">
+                    <div class="clan-stat-label">Clan Wars</div>
+                    <div id="clan-detail-wars" class="clan-stat-value">0</div>
+                  </div>
                 </div>
-                <div class="clan-stat-box wins">
-                  <div class="clan-stat-label">Wins</div>
-                  <div id="clan-detail-wins" class="clan-stat-value">0</div>
-                </div>
-                <div class="clan-stat-box kills">
-                  <div class="clan-stat-label">Kills</div>
-                  <div id="clan-detail-kills" class="clan-stat-value">0</div>
-                </div>
-                <div class="clan-stat-box wars">
-                  <div class="clan-stat-label">Clan Wars</div>
-                  <div id="clan-detail-wars" class="clan-stat-value">0</div>
-                </div>
-              </div>
-              <div class="clan-war-section">
-                <div class="clan-members-header">
-                  <div class="clan-members-title">Recent Clan Wars</div>
-                  <div class="clan-members-count">History</div>
-                </div>
-                <div id="clan-war-history-list" class="clan-war-history-list"></div>
               </div>
               <div class="clan-members-section">
                 <div class="clan-members-header">
@@ -2537,6 +2548,15 @@
               <div id="clan-member-actions" class="clan-actions" style="display: none;">
                 <div id="btn-clan-leave" class="clan-btn clan-btn-red">Leave Clan</div>
                 <div id="btn-clan-delete" class="clan-btn clan-btn-red" style="display: none;">Delete Clan</div>
+              </div>
+            </div>
+            <div id="clan-requests-section" class="clan-column" style="flex: 1; display: none;">
+              <div class="clan-members-section">
+                <div class="clan-members-header">
+                  <div class="clan-members-title">Join Requests</div>
+                  <div class="clan-members-count" id="clan-requests-count">0 pending</div>
+                </div>
+                <div id="clan-requests-list" class="clan-members-list"></div>
               </div>
             </div>
             <div id="clan-chat-section" class="clan-column clan-chat-section" style="display: none;">

@@ -789,6 +789,21 @@ export class Application {
                 this.clanUi.loadMentionNotifications(true);
             }
         });
+        events.addEventListener("clan_join_requests_changed", (event) => {
+            const data = this.parseSocialEvent(event);
+            if (data?.clanId && this.clanUi.currentClan?.id === data.clanId) {
+                this.clanUi.loadMyClan();
+                if (
+                    this.clanUi.viewingClan?.id === data.clanId &&
+                    this.clanUi.clanPageModal.isVisible()
+                ) {
+                    this.clanUi.loadClanDetail(
+                        data.clanId,
+                        this.clanUi.getSelectedClanDetailSeason(),
+                    );
+                }
+            }
+        });
         events.onerror = () => {
             // EventSource reconnects automatically. The existing slow polling remains
             // as a fallback if the stream cannot be maintained.
