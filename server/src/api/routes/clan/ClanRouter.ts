@@ -118,11 +118,15 @@ function cgpScoreSql(season: number, gameMode?: string) {
     )`;
 }
 
+function clanRankOrder(scoreSql: ReturnType<typeof cgpScoreSql>) {
+    return [desc(scoreSql), asc(clansTable.createdAt), asc(clansTable.id)] as const;
+}
+
 async function getPlayoffClanIds(season: number) {
     const rows = await db
         .select({ id: clansTable.id })
         .from(clansTable)
-        .orderBy(desc(cgpScoreSql(season)))
+        .orderBy(...clanRankOrder(cgpScoreSql(season)))
         .limit(ClanConstants.PlayoffClanCount);
 
     return new Set(rows.map((row) => row.id));
@@ -2370,7 +2374,7 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
             )`,
         })
         .from(clansTable)
-        .orderBy(desc(orderSql))
+        .orderBy(...clanRankOrder(orderSql))
         .limit(limit)
         .offset(offset);
     const playoffClanIds = await getPlayoffClanIds(season);
