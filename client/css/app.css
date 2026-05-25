@@ -13783,6 +13783,10 @@ input [type="image"]:focus {
   color: #cd7f32;
 }
 
+.clan-leaderboard-item.rank-4 .clan-leaderboard-rank {
+  color: #50afab;
+}
+
 .clan-leaderboard-icon {
   width: 44px;
   height: 44px;

@@ -2679,7 +2679,10 @@ export class ClanUi {
         );
 
         for (const entry of entries) {
-            const rankClass = entry.rank <= 3 ? ` rank-${entry.rank}` : "";
+            const rankClass =
+                entry.rank <= ClanConstants.PlayoffClanCount
+                    ? ` rank-${entry.rank}`
+                    : "";
             const item = $("<div/>", { class: `clan-leaderboard-item${rankClass}` });
 
             item.append(
