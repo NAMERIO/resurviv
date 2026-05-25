@@ -5,6 +5,8 @@ import {
 } from "discord.js";
 import {
     zAddClanWarCgpBody,
+    zListFeaturedYoutubersBody,
+    zRemoveFeaturedYoutuberBody,
     zSetClanCgpValueBody,
     zSetBattleRoyaleModeBody,
     zSetClientThemeBody,
@@ -458,6 +460,29 @@ const commands = {
             {
                 name: "theme",
                 description: "The client theme",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+            },
+        ],
+    }),
+    [Command.FuturedYoutubers]: createCommand({
+        name: Command.FuturedYoutubers,
+        description: "List featured YouTubers",
+        optionValidator: zListFeaturedYoutubersBody,
+        isPrivateRoute: true,
+        ownerOnly: true,
+        options: [],
+    }),
+    [Command.RemoveFuturedYoutubers]: createCommand({
+        name: Command.RemoveFuturedYoutubers,
+        description: "Remove a featured YouTuber by name",
+        optionValidator: zRemoveFeaturedYoutuberBody,
+        isPrivateRoute: true,
+        ownerOnly: true,
+        options: [
+            {
+                name: "name",
+                description: "Featured YouTuber name to remove",
                 required: true,
                 type: ApplicationCommandOptionType.String,
             },

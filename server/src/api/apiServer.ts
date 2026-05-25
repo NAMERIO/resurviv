@@ -193,7 +193,7 @@ export class ApiServer {
         const data: SiteInfoRes = {
             modes: this.modes,
             pops: {},
-            youtube: { name: "", link: "" },
+            youtube: this.getFeaturedYoutuber(),
             twitch: [],
             country: "US",
             gitRevision: GIT_VERSION,
@@ -208,6 +208,33 @@ export class ApiServer {
             };
         }
         return data;
+    }
+
+    private getFeaturedYoutuber() {
+        const youtubers = Config.featuredYoutubers.filter(
+            (youtuber) => youtuber.name.trim() && youtuber.link.trim(),
+        );
+        if (youtubers.length === 0) {
+            return null;
+        }
+
+        const youtuber = youtubers[Math.floor(Math.random() * youtubers.length)];
+        return {
+            ...youtuber,
+            img: youtuber.img || this.getYouTubeAvatarUrl(youtuber.link),
+        };
+    }
+
+    private getYouTubeAvatarUrl(link: string) {
+        try {
+            const url = new URL(link);
+            const handle = url.pathname.match(/\/@([^/?#]+)/)?.[1];
+            if (handle) {
+                return `https://unavatar.io/youtube/${encodeURIComponent(handle)}`;
+            }
+        } catch {}
+
+        return "/img/yt_icon_rgb.png";
     }
 
     updateRegion(regionId: string, regionData: RegionData) {

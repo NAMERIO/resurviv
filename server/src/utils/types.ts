@@ -57,6 +57,12 @@ export const zSetClanCgpValueBody = z.object({
     value: z.number().min(0).max(100),
 });
 
+export const zListFeaturedYoutubersBody = z.object({});
+
+export const zRemoveFeaturedYoutuberBody = z.object({
+    name: z.string().trim().min(1),
+});
+
 export interface SaveGameBody {
     matchData: (MatchDataTable & { ip: string; findGameIp: string })[];
 }

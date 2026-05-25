@@ -80,7 +80,8 @@ export interface SiteInfoRes {
     youtube: {
         name: string;
         link: string;
-    };
+        img?: string;
+    } | null;
     twitch: Array<{
         name: string;
         viewers: number;

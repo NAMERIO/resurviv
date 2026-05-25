@@ -45,6 +45,8 @@ export const enum Command {
     SetBattleRoyaleMode = "set_battle_royale_mode",
     SetPauseClanStats = "set_pause_clan_stats",
     SetClientTheme = "set_client_theme",
+    FuturedYoutubers = "futured-youtubers",
+    RemoveFuturedYoutubers = "remove-futured-youtubers",
 }
 
 export const honoClient = hc<PrivateRouteApp>(API_URL, {

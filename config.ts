@@ -39,6 +39,7 @@ export function getConfig(isProduction: boolean, dir: string) {
             killValue: 0.25,
             winValue: 5,
         },
+        featuredYoutubers: [],
         clientTheme: "main",
         gameTps: 100,
         netSyncTps: 33,

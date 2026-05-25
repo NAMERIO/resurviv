@@ -246,8 +246,12 @@ export class SiteInfo {
             const displayYoutuber = this.info.youtube;
             if (displayYoutuber) {
                 $(".btn-youtuber")
-                    .attr("href", this.info.youtube.link)
-                    .html(this.info.youtube.name);
+                    .attr("href", displayYoutuber.link)
+                    .css(
+                        "background-image",
+                        `url(${displayYoutuber.img || "/img/yt_icon_rgb.png"})`,
+                    )
+                    .html(displayYoutuber.name);
             }
             featuredYoutuberElem.css("display", displayYoutuber ? "block" : "none");
 

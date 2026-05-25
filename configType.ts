@@ -151,6 +151,16 @@ export interface ConfigType {
     };
 
     /**
+     * Featured YouTubers shown on the home screen.
+     * The API rotates through this list every 5 minutes.
+     */
+    featuredYoutubers: Array<{
+        name: string;
+        link: string;
+        img?: string;
+    }>;
+
+    /**
      * The client theme, changes the splash screen background and for some the menu music.
      *
      * NOTE: Required at build time, unlike modes it wont update by fetching from the server!

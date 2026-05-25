@@ -35,7 +35,9 @@ import {
     zSetClanCgpValueBody,
     zSetClientThemeBody,
     zSetGameModeBody,
+    zListFeaturedYoutubersBody,
     zSetPauseClanStatsBody,
+    zRemoveFeaturedYoutuberBody,
     zUpdateRegionBody,
 } from "../../../utils/types";
 import type { Context } from "../..";
@@ -542,6 +544,52 @@ export const PrivateRouter = new Hono<Context>()
             200,
         );
     })
+    .post("/futured-youtubers", validateParams(zListFeaturedYoutubersBody), (c) => {
+        const youtubers = Config.featuredYoutubers;
+        if (youtubers.length === 0) {
+            return c.json({ message: "No featured YouTubers are configured." }, 200);
+        }
+
+        return c.json(
+            {
+                message: youtubers
+                    .map(
+                        (youtuber, index) =>
+                            `${index + 1}. ${youtuber.name} - ${youtuber.link}`,
+                    )
+                    .join("\n"),
+            },
+            200,
+        );
+    })
+    .post(
+        "/remove-futured-youtubers",
+        validateParams(zRemoveFeaturedYoutuberBody),
+        (c) => {
+            const { name } = c.req.valid("json");
+            const normalizedName = name.toLowerCase();
+            const previousLength = Config.featuredYoutubers.length;
+            Config.featuredYoutubers = Config.featuredYoutubers.filter(
+                (youtuber) => youtuber.name.toLowerCase() !== normalizedName,
+            );
+
+            if (Config.featuredYoutubers.length === previousLength) {
+                return c.json(
+                    { message: `No featured YouTuber found named "${name}".` },
+                    200,
+                );
+            }
+
+            saveConfig(serverConfigPath, {
+                featuredYoutubers: Config.featuredYoutubers,
+            });
+
+            return c.json(
+                { message: `Removed featured YouTuber "${name}".` },
+                200,
+            );
+        },
+    )
     .post(
         "/toggle_captcha",
         validateParams(

@@ -8319,17 +8319,38 @@ a:active {
 }
 
 #featured-youtuber {
-  display: none !important;
-  margin-top: 12px;
+  display: none;
+  left: 12px;
+  max-width: calc(100vw - 24px);
+  position: absolute;
+  top: calc(var(--side-pad) + 108px);
+  width: 330px;
+  z-index: 5;
 }
 
 .youtube-header {
+  align-items: center;
   background: rgba(0, 0, 0, 0.5);
   border-radius: 4px;
-  display: inline-block;
+  display: flex;
+  gap: 7px;
   height: 26px;
+  justify-content: center;
   line-height: 28px;
   padding: 4px 12px;
+  text-align: center;
+}
+
+.youtube-header::before {
+  background-image: url(/img/yt_icon_rgb.png);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  content: "";
+  display: block;
+  flex: 0 0 auto;
+  height: 18px;
+  width: 24px;
 }
 
 #youtube-header-title {
@@ -8340,22 +8361,24 @@ a:active {
 }
 
 .btn-youtuber {
-  background-image: url(/img/yt_icon_rgb.png);
-  background-size: 36px;
+  background-color: rgba(0, 0, 0, 0.68);
+  background-size: 34px 34px;
   background-repeat: no-repeat;
-  background-position: 4px 4px;
+  background-position: 5px center;
   box-sizing: border-box;
   color: gold !important;
   display: block;
   font-size: 18px;
   height: 40px;
   line-height: 36px;
-  margin: auto;
   margin-top: 2px;
+  overflow: hidden;
+  padding-left: 48px;
   text-align: left;
-  text-indent: 48px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   width: auto;
 }
 
@@ -10857,6 +10880,7 @@ input [type="image"]:focus {
     box-sizing: border-box;
     margin: auto;
     font-size: 18px;
+    padding-left: 0;
     text-align: left;
     text-indent: 48px;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
