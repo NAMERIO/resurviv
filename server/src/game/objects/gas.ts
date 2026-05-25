@@ -305,6 +305,15 @@ export class Gas {
             : GasStages;
     }
 
+    get finalCloseStarted() {
+        const stages = this._getStages();
+        return (
+            !isBattleRoyaleMapName(this.game.mapName) &&
+            this.stage >= stages.length - 1 &&
+            this.mode === GasMode.Moving
+        );
+    }
+
     getTimeUntilNextStage() {
         return Math.max(0, this.duration - this._gasTicker);
     }

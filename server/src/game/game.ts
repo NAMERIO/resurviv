@@ -427,6 +427,9 @@ export class Game {
         if (isBattleRoyaleMapName(this.mapName) && this.battleRoyaleJoinClosed) {
             return false;
         }
+        if (this.gas.finalCloseStarted) {
+            return false;
+        }
         return !this.over;
         return (
             this.aliveCount < this.map.mapDef.gameMode.maxPlayers &&
