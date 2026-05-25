@@ -1,5 +1,6 @@
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { type QuestDef, QuestDefs } from "../../../shared/defs/gameObjects/questDefs";
+import { isSideQuestType } from "../../../shared/defs/gameObjects/sideQuestDefs";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import type { ObstacleDef } from "../../../shared/defs/mapObjectsTyping";
 import { TeamModeToString } from "../../../shared/defs/types/misc";
@@ -10,7 +11,7 @@ export class QuestManager {
     player: Player;
     game: Game;
 
-    quests: Array<{ id: string; delta: number }> = [];
+    quests: Array<{ id: string; delta: number; reset?: boolean }> = [];
     private gameOverFlushed = false;
 
     constructor(player: Player) {
@@ -35,6 +36,14 @@ export class QuestManager {
             rank: teamRank,
             mode: TeamModeToString[this.game.teamMode],
         });
+
+        if (teamRank !== 1) {
+            for (const quest of this.quests) {
+                if (isSideQuestType(quest.id) && quest.id === "side_quest_win_streak_3") {
+                    quest.reset = true;
+                }
+            }
+        }
     }
 
     flushProgress(winningTeamId?: number) {
@@ -48,8 +57,9 @@ export class QuestManager {
             .map((quest) => ({
                 id: quest.id,
                 delta: Math.round(quest.delta),
+                reset: quest.reset,
             }))
-            .filter((quest) => quest.delta > 0);
+            .filter((quest) => quest.delta > 0 || quest.reset);
 
         if (progress.length === 0) return;
 

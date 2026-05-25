@@ -246,10 +246,16 @@ export type QuestState = {
     timeToRefresh: number;
 };
 
+export type SideQuestState = QuestState & {
+    gpReward: number;
+    title: string;
+};
+
 export type GetPassResponse = {
     success: true;
     pass: PassState;
     quests: QuestState[];
+    sideQuests: SideQuestState[];
 };
 
 export const zOpenLootBoxRequest = z.object({

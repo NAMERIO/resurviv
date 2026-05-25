@@ -684,8 +684,10 @@ export class Application {
                 }
             };
             const onQuit = (errMsg?: string) => {
-                if (this.game!.m_updatePass) {
-                    this.pass.scheduleUpdatePass(this.game!.m_updatePassDelay);
+                if (this.account.loggedIn) {
+                    this.pass.scheduleUpdatePass(
+                        this.game!.m_updatePass ? this.game!.m_updatePassDelay : 1,
+                    );
                 }
                 this.game!.free();
                 this.errorMessage = this.localization.translate(errMsg || "");

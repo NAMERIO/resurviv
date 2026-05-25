@@ -648,7 +648,10 @@ export class Game {
         this.msgsToSend.serializeMsg(type, msg);
     }
 
-    sendQuestProgress(userId: string, progress: Array<{ id: string; delta: number }>) {
+    sendQuestProgress(
+        userId: string,
+        progress: Array<{ id: string; delta: number; reset?: boolean }>,
+    ) {
         if (this.arenaPrivate) {
             return;
         }

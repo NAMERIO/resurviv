@@ -7,6 +7,12 @@ import {
 } from "../../../../../shared/defs/gameObjects/passDefs";
 import { QuestDefs } from "../../../../../shared/defs/gameObjects/questDefs";
 import {
+    isSideQuestType,
+    SideQuestDefs,
+    SideQuestRefreshCooldownMs,
+    SideQuestSlotIndexes,
+} from "../../../../../shared/defs/gameObjects/sideQuestDefs";
+import {
     type BuyFullPassResponse,
     type BuyPremiumPassResponse,
     type GetPassResponse,
@@ -173,6 +179,116 @@ async function rerollSlot(
     return questType;
 }
 
+function getRandomSideQuestType(excluded?: string) {
+    const questTypes = Object.keys(SideQuestDefs);
+    const available = questTypes.filter((questType) => questType !== excluded);
+    const source = available.length > 0 ? available : questTypes;
+    return source[Math.floor(Math.random() * source.length)] as keyof typeof SideQuestDefs;
+}
+
+async function rerollSideQuest(userId: string, idx: number, now: number) {
+    const quest = await db.query.userQuestTable.findFirst({
+        where: and(eq(userQuestTable.userId, userId), eq(userQuestTable.idx, idx)),
+    });
+    if (!quest || quest.complete || quest.nextRefreshAt > now) {
+        return false;
+    }
+
+    const questType = getRandomSideQuestType(quest.questType);
+    const questDef = SideQuestDefs[questType];
+    await db
+        .update(userQuestTable)
+        .set({
+            questType,
+            progress: 0,
+            target: questDef.target,
+            complete: false,
+            rerolled: true,
+            timeAcquired: now,
+            nextRefreshAt: now + SideQuestRefreshCooldownMs,
+        })
+        .where(and(eq(userQuestTable.userId, userId), eq(userQuestTable.idx, idx)));
+
+    return true;
+}
+
+async function getSideQuests(userId: string, now: number) {
+    let sideQuestRows = await db.query.userQuestTable.findMany({
+        where: and(
+            eq(userQuestTable.userId, userId),
+            inArray(userQuestTable.idx, [...SideQuestSlotIndexes]),
+        ),
+        orderBy: userQuestTable.idx,
+    });
+
+    const existingSlots = new Set(sideQuestRows.map((quest) => quest.idx));
+    const missingSlots = SideQuestSlotIndexes.filter((slot) => !existingSlots.has(slot));
+
+    if (missingSlots.length > 0) {
+        await db
+            .insert(userQuestTable)
+            .values(
+                missingSlots.map((slot) => {
+                    const questType = getRandomSideQuestType();
+                    const questDef = SideQuestDefs[questType];
+                    return {
+                        userId,
+                        idx: slot,
+                        questType,
+                        progress: 0,
+                        target: questDef.target,
+                        complete: false,
+                        rerolled: false,
+                        timeAcquired: now,
+                        nextRefreshAt: 0,
+                    };
+                }),
+            )
+            .onConflictDoNothing({
+                target: [userQuestTable.userId, userQuestTable.idx],
+            });
+
+        return db.query.userQuestTable.findMany({
+            where: and(
+                eq(userQuestTable.userId, userId),
+                inArray(userQuestTable.idx, [...SideQuestSlotIndexes]),
+            ),
+            orderBy: userQuestTable.idx,
+        });
+    }
+
+    const expiredCompletedQuests = sideQuestRows.filter(
+        (quest) => quest.complete && quest.nextRefreshAt <= now,
+    );
+    for (const quest of expiredCompletedQuests) {
+        const questType = getRandomSideQuestType(quest.questType);
+        const questDef = SideQuestDefs[questType];
+        await db
+            .update(userQuestTable)
+            .set({
+                questType,
+                progress: 0,
+                target: questDef.target,
+                complete: false,
+                rerolled: false,
+                timeAcquired: now,
+                nextRefreshAt: 0,
+            })
+            .where(eq(userQuestTable.id, quest.id));
+    }
+    if (expiredCompletedQuests.length > 0) {
+        sideQuestRows = await db.query.userQuestTable.findMany({
+            where: and(
+                eq(userQuestTable.userId, userId),
+                inArray(userQuestTable.idx, [...SideQuestSlotIndexes]),
+            ),
+            orderBy: userQuestTable.idx,
+        });
+    }
+
+    return sideQuestRows;
+}
+
 export const PassRouter = new Hono<Context>();
 
 PassRouter.post("/get_pass", validateParams(zGetPassRequest), async (c) => {
@@ -181,6 +297,7 @@ PassRouter.post("/get_pass", validateParams(zGetPassRequest), async (c) => {
     const now = Date.now();
 
     const { pass, quests } = await getPassAndQuests(user.id, now);
+    const sideQuests = await getSideQuests(user.id, now);
 
     let activeQuests = quests;
 
@@ -269,6 +386,22 @@ PassRouter.post("/get_pass", validateParams(zGetPassRequest), async (c) => {
                 rerolled: quest.rerolled,
                 timeToRefresh: quest.nextRefreshAt - now,
             })),
+            sideQuests: sideQuests.map((quest) => {
+                const questDef = isSideQuestType(quest.questType)
+                    ? SideQuestDefs[quest.questType]
+                    : undefined;
+                return {
+                    idx: quest.idx,
+                    type: quest.questType,
+                    progress: quest.progress,
+                    target: quest.target,
+                    complete: quest.complete,
+                    rerolled: quest.rerolled,
+                    timeToRefresh: Math.max(0, quest.nextRefreshAt - now),
+                    gpReward: questDef?.gp ?? 0,
+                    title: questDef?.title ?? quest.questType,
+                };
+            }),
         },
         200,
     );
@@ -278,6 +411,11 @@ PassRouter.post("/refresh_quest", validateParams(zRefreshQuestRequest), async (c
     const user = c.get("user")!;
     const { idx } = c.req.valid("json");
     const now = Date.now();
+
+    if (SideQuestSlotIndexes.includes(idx as (typeof SideQuestSlotIndexes)[number])) {
+        const success = await rerollSideQuest(user.id, idx, now);
+        return c.json<RefreshQuestResponse>({ success }, 200);
+    }
 
     const quests = await db.query.userQuestTable.findMany({
         where: and(
@@ -312,7 +450,7 @@ PassRouter.post(
 );
 
 PassRouter.post("/set_pass_unlock", validateParams(zSetPassUnlockRequest), (c) => {
-    // survev has not social media
+    // surviv has not social media
     // trivial to add tho
 
     return c.json<SetPassUnlockResponse>({ success: true }, 200);
@@ -577,7 +715,7 @@ function isRemovedQuestType(questType: string) {
 }
 
 const questTypes = Object.keys(QuestDefs).filter((questType) => {
-    return !isRemovedQuestType(questType);
+    return !isRemovedQuestType(questType) && !isSideQuestType(questType);
 });
 const defaultQuestType = questTypes[0] || "quest_kills";
 

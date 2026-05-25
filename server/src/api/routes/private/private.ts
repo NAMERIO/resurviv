@@ -6,6 +6,11 @@ import { saveConfig } from "../../../../../config";
 import { GameObjectDefs } from "../../../../../shared/defs/gameObjectDefs";
 import { PassDefs } from "../../../../../shared/defs/gameObjects/passDefs";
 import { QuestDefs } from "../../../../../shared/defs/gameObjects/questDefs";
+import {
+    isSideQuestType,
+    SideQuestDefs,
+    SideQuestRefreshCooldownMs,
+} from "../../../../../shared/defs/gameObjects/sideQuestDefs";
 import { MapDefs } from "../../../../../shared/defs/mapDefs";
 import { TeamMode } from "../../../../../shared/gameConfig";
 import { ClanConstants } from "../../../../../shared/types/clan";
@@ -659,7 +664,8 @@ export const PrivateRouter = new Hono<Context>()
                     .array(
                         z.object({
                             id: z.string(),
-                            delta: z.number().finite().positive(),
+                            delta: z.number().finite().min(0),
+                            reset: z.boolean().optional(),
                         }),
                     )
                     .refine(
@@ -677,8 +683,12 @@ export const PrivateRouter = new Hono<Context>()
             }
 
             const validEntries = progress
-                .map((e) => ({ id: e.id, delta: Math.round(e.delta) }))
-                .filter((e) => QuestDefs[e.id] && e.delta > 0);
+                .map((e) => ({
+                    id: e.id,
+                    delta: Math.round(e.delta),
+                    reset: !!e.reset,
+                }))
+                .filter((e) => QuestDefs[e.id] && (e.delta > 0 || e.reset));
 
             if (validEntries.length === 0) {
                 return c.json({ success: true }, 200);
@@ -699,8 +709,9 @@ export const PrivateRouter = new Hono<Context>()
             }
 
             let xpGain = 0;
+            let sideQuestGpGain = 0;
 
-            const deltaById = new Map(validEntries.map((e) => [e.id, e.delta]));
+            const entryById = new Map(validEntries.map((e) => [e.id, e]));
             const passDef = PassDefs[passType];
             const now = Date.now();
 
@@ -715,7 +726,21 @@ export const PrivateRouter = new Hono<Context>()
                 if (!pass) return;
 
                 for (const quest of userQuests) {
-                    const delta = deltaById.get(quest.questType) ?? 0;
+                    const entry = entryById.get(quest.questType);
+                    if (!entry) continue;
+
+                    if (entry.reset && !quest.complete && quest.progress > 0) {
+                        await tx
+                            .update(userQuestTable)
+                            .set({
+                                progress: 0,
+                                complete: false,
+                            })
+                            .where(eq(userQuestTable.id, quest.id));
+                        continue;
+                    }
+
+                    const delta = entry.delta;
                     if (delta <= 0) continue;
 
                     const def = QuestDefs[quest.questType];
@@ -724,8 +749,11 @@ export const PrivateRouter = new Hono<Context>()
                     const wasComplete = quest.complete;
                     const nowComplete = nextProgress >= quest.target;
 
-                    if (!wasComplete && nowComplete) {
+                    if (!wasComplete && nowComplete && !isSideQuestType(quest.questType)) {
                         xpGain += def.xp;
+                    }
+                    if (!wasComplete && nowComplete && isSideQuestType(quest.questType)) {
+                        sideQuestGpGain += SideQuestDefs[quest.questType].gp;
                     }
 
                     if (nextProgress === quest.progress && wasComplete === nowComplete) {
@@ -737,8 +765,23 @@ export const PrivateRouter = new Hono<Context>()
                         .set({
                             progress: nextProgress,
                             complete: nowComplete,
+                            nextRefreshAt:
+                                !wasComplete &&
+                                nowComplete &&
+                                isSideQuestType(quest.questType)
+                                    ? now + SideQuestRefreshCooldownMs
+                                    : quest.nextRefreshAt,
                         })
                         .where(eq(userQuestTable.id, quest.id));
+                }
+
+                if (sideQuestGpGain > 0) {
+                    await tx
+                        .update(usersTable)
+                        .set({
+                            gpBalance: sql`${usersTable.gpBalance} + ${sideQuestGpGain}`,
+                        })
+                        .where(eq(usersTable.id, userId));
                 }
 
                 if (xpGain <= 0) return;

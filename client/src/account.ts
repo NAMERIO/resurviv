@@ -50,6 +50,7 @@ import type {
     SetPassUnlockRequest,
     SetPassUnlockResponse,
     SetQuestRequest,
+    SideQuestState,
     ShopLootBox,
     SkinGift,
     SocialGpRewardKey,
@@ -157,6 +158,7 @@ export class Account {
     userAuctionListings: AuctionListing[] = [];
     soldMarketListings: SoldMarketListing[] = [];
     quests: Quest[] = [];
+    sideQuests: SideQuestState[] = [];
     questPriv = "";
     pass: Record<string, PassType> = {};
     friends: FriendUser[] = [];
@@ -627,14 +629,19 @@ export class Account {
         this.ajaxRequest("/api/user/get_pass", args, (err, res) => {
             this.pass = {};
             this.quests = [];
+            this.sideQuests = [];
             this.questPriv = "";
             if (err || !res.success) {
                 errorLogManager.storeGeneric("account", "get_pass_error");
             } else {
                 this.pass = res.pass || {};
                 this.quests = res.quests || [];
+                this.sideQuests = res.sideQuests || [];
                 this.questPriv = res.questPriv || "";
                 this.quests.sort((a, b) => {
+                    return a.idx - b.idx;
+                });
+                this.sideQuests.sort((a, b) => {
                     return a.idx - b.idx;
                 });
                 this.emit("pass", this.pass, this.quests, true);

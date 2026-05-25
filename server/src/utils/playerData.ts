@@ -1,5 +1,6 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../api/db";
+import { SideQuestSlotIndexes } from "../../../shared/defs/gameObjects/sideQuestDefs";
 import {
     clanMembersTable,
     clansTable,
@@ -18,6 +19,7 @@ export async function getFindGamePlayerData(
     const userIds = [
         ...new Set(players.map((p) => p.userId).filter((id) => id !== null)),
     ];
+    const activeQuestSlots = [0, 1, ...SideQuestSlotIndexes];
 
     const accountData =
         userIds.length > 0
@@ -37,7 +39,10 @@ export async function getFindGamePlayerData(
                           .from(usersTable)
                           .leftJoin(
                               userQuestTable,
-                              and(eq(userQuestTable.userId, usersTable.id)),
+                              and(
+                                  eq(userQuestTable.userId, usersTable.id),
+                                  inArray(userQuestTable.idx, activeQuestSlots),
+                              ),
                           )
                           .leftJoin(
                               clanMembersTable,

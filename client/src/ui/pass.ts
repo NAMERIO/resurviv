@@ -133,6 +133,37 @@ function humanizeTime(time: number, minutesFloor = false) {
     return (timeText += `${minutes}m`);
 }
 
+type QuestUiState = {
+    data: {
+        idx: number;
+        type: string;
+        complete: boolean;
+        progress: number;
+        target: number;
+        rerolled: boolean;
+        title?: string;
+        gpReward?: number;
+        timeToRefresh?: number;
+    };
+    start: number;
+    current: number;
+    ticker: number;
+    delay: number;
+    playCompleteAnim: boolean;
+    progressAnimFinished: boolean;
+    completeAnimFinished: boolean;
+    shouldRequestRefresh: boolean;
+    refreshTime: number;
+    refreshSet: boolean;
+    refreshEnabled: boolean;
+    timer: {
+        enabled: boolean;
+        str: string;
+        displayed: boolean;
+    };
+    elems: Record<string, JQuery<HTMLElement>>;
+};
+
 export class Pass {
     pass = {
         data: {
@@ -151,49 +182,8 @@ export class Pass {
         elems: {},
     };
 
-    quests: Array<{
-        data: {
-            idx: number;
-            type: string;
-            complete: boolean;
-            progress: number;
-            target: number;
-            rerolled: boolean;
-        };
-        start: number;
-        current: number;
-        ticker: number;
-        delay: number;
-        playCompleteAnim: boolean;
-        progressAnimFinished: boolean;
-        completeAnimFinished: boolean;
-        shouldRequestRefresh: boolean;
-        refreshTime: number;
-        refreshSet: boolean;
-        refreshEnabled: boolean;
-        timer: {
-            enabled: boolean;
-            str: string;
-            displayed: boolean;
-        };
-        elems: Record<string, JQuery<HTMLElement>>;
-        // elems: {
-        //     main: JQuery<HTMLElement>;
-        //     xp: JQuery<HTMLElement>;
-        //     info: JQuery<HTMLElement>;
-        //     desc: JQuery<HTMLElement>;
-        //     cur: JQuery<HTMLElement>;
-        //     target: JQuery<HTMLElement>;
-        //     refresh: JQuery<HTMLElement>;
-        //     refreshPrompt: JQuery<HTMLElement>;
-        //     refreshConfirm: JQuery<HTMLElement>;
-        //     refreshCancel: JQuery<HTMLElement>;
-        //     counter: JQuery<HTMLElement>;
-        //     barFill: JQuery<HTMLElement>;
-        //     timer: JQuery<HTMLElement>;
-        //     loading: JQuery<HTMLElement>;
-        // }
-    }> = [];
+    quests: QuestUiState[] = [];
+    sideQuests: QuestUiState[] = [];
 
     loaded = false;
     lockDisplayed = false;
@@ -264,6 +254,7 @@ export class Pass {
         const newQuests = [];
         $("#pass-items-wrapper").removeClass("logged-out").addClass("logged-in");
         this.pass.data = pass;
+        this.renderSideQuests();
         let questAnimCount = 0;
         for (let passIdx = 0; passIdx < quests.length; passIdx++) {
             const questData = quests[passIdx];
@@ -284,7 +275,7 @@ export class Pass {
                     enabled: false,
                     str: "",
                 },
-            } as (typeof this.quests)[number];
+            } as QuestUiState;
             const curQuest = this.quests.find((existingQuest) => {
                 return (
                     existingQuest.data.idx == quest.data.idx &&
@@ -446,6 +437,117 @@ export class Pass {
         });
         this.updatePassTrackProgress(this.pass.currentLevel, this.pass.currentXp);
         this.loaded = true;
+    }
+
+    renderSideQuests() {
+        const container = $("#side-quest-list");
+        container.empty();
+
+        const sideQuests = this.account.sideQuests || [];
+        $("#side-quest-section").css("display", sideQuests.length > 0 ? "block" : "none");
+
+        const nextSideQuests: QuestUiState[] = [];
+        for (const questData of sideQuests) {
+            questData.progress = math.min(questData.progress, questData.target);
+            const previousQuest = this.sideQuests.find((existingQuest) => {
+                return (
+                    existingQuest.data.idx === questData.idx &&
+                    existingQuest.data.type === questData.type
+                );
+            });
+            const quest = {
+                data: questData,
+                start: previousQuest?.current ?? 0,
+                current: previousQuest?.current ?? 0,
+                ticker: 0,
+                delay: 0,
+                playCompleteAnim: !!previousQuest && !previousQuest.data.complete && questData.complete,
+                progressAnimFinished: false,
+                completeAnimFinished: false,
+                shouldRequestRefresh: false,
+                refreshTime: Date.now() + questData.timeToRefresh,
+                refreshSet: true,
+                refreshEnabled: !questData.complete && questData.timeToRefresh <= 0,
+                timer: {
+                    enabled: questData.complete,
+                    str: "",
+                    displayed: false,
+                },
+                elems: {},
+            } as QuestUiState;
+
+            const isSurvivalQuest = quest.data.type === "side_quest_survive_10m";
+            const currentText = isSurvivalQuest
+                ? `${Math.floor(quest.current / 60)}m`
+                : `${Math.round(quest.current)}`;
+            const targetText = isSurvivalQuest
+                ? `${Math.floor(quest.data.target / 60)}m`
+                : `${quest.data.target}`;
+            const card = $("<div/>", {
+                class: `pass-quest side-quest ${quest.data.complete ? "complete" : ""}`,
+            });
+            const timer = $("<div/>", {
+                class: "pass-quest-timer side-quest-timer",
+            }).css("display", "none");
+            const info = $("<div/>", { class: "pass-quest-info" });
+            const desc = $("<div/>", {
+                class: "pass-quest-desc",
+                text: quest.data.complete ? `${quest.data.title} complete` : quest.data.title,
+            });
+            const reward = $("<div/>", {
+                class: "pass-quest-xp side-quest-reward",
+                text: `${quest.data.gpReward?.toLocaleString() ?? 0} GP`,
+            });
+            const refresh = $("<div/>", {
+                class: `pass-quest-refresh ${quest.refreshEnabled ? "" : "pass-quest-refresh-disabled"}`,
+                title: quest.refreshEnabled ? "Change side quest" : "",
+            }).on("click", () => {
+                if (!quest.refreshEnabled) return;
+                this.account.refreshQuest(quest.data.idx);
+            });
+            const barFill = $("<div/>", { class: "pass-quest-bar-fill" }).css({
+                width: `${(quest.current / quest.data.target) * 100}%`,
+            });
+            const cur = $("<span/>", {
+                class: "pass-quest-counter-current",
+                text: currentText,
+            });
+            const target = $("<span/>", {
+                class: "pass-quest-counter-target",
+                text: targetText,
+            });
+            const counter = $("<div/>", { class: "pass-quest-counter" }).append(
+                cur,
+                $("<span/>", { text: "/" }),
+                target,
+            );
+            info.append(
+                desc,
+                reward,
+                refresh,
+                $("<div/>", { class: "pass-quest-progress" }).append(
+                    $("<div/>", { class: "pass-quest-bar" }).append(barFill),
+                    counter,
+                ),
+            );
+            card.append(timer, info);
+            container.append(card);
+
+            quest.elems = {
+                main: card,
+                xp: reward,
+                info,
+                desc,
+                cur,
+                target,
+                refresh,
+                counter,
+                barFill,
+                timer,
+            };
+            nextSideQuests.push(quest);
+        }
+        this.sideQuests = nextSideQuests;
     }
 
     getPassItemsSignature(passType: string) {
@@ -805,7 +907,7 @@ export class Pass {
         this.updatePassTicker = delay;
     }
 
-    setQuestRefreshEnabled(quest: (typeof this.quests)[number]) {
+    setQuestRefreshEnabled(quest: QuestUiState) {
         const shouldEnableRefresh =
             (!quest.data.rerolled && !quest.data.complete) ||
             quest.refreshTime - Date.now() < 0;
@@ -931,7 +1033,7 @@ export class Pass {
             });
     }
 
-    animateQuestComplete(quest: (typeof this.quests)[number]) {
+    animateQuestComplete(quest: QuestUiState) {
         quest.elems.barFill
             .queue((el) => {
                 quest.elems.main.addClass("pass-bg-pulse");
@@ -1071,6 +1173,72 @@ export class Pass {
                     fixedQuest.timer.str = refreshTimeText;
                     fixedQuest.elems.timer.html(refreshTimeText);
                 }
+            }
+        }
+        for (const sideQuest of this.sideQuests) {
+            sideQuest.ticker += dt;
+            if (!sideQuest.progressAnimFinished) {
+                const progressT = math.clamp(sideQuest.ticker / 1, 0, 1);
+                sideQuest.current = math.lerp(
+                    math.easeOutExpo(progressT),
+                    sideQuest.start,
+                    sideQuest.data.progress,
+                );
+                const pctComplete = (sideQuest.current / sideQuest.data.target) * 100;
+                const isSurvivalQuest = sideQuest.data.type === "side_quest_survive_10m";
+                const currentText = isSurvivalQuest
+                    ? `${Math.floor(sideQuest.current / 60)}m`
+                    : `${Math.round(sideQuest.current)}`;
+                sideQuest.elems.cur.html(currentText);
+                sideQuest.elems.barFill.css({
+                    width: `${pctComplete}%`,
+                });
+                if (progressT >= 1) {
+                    sideQuest.progressAnimFinished = true;
+                }
+            }
+            if (
+                sideQuest.playCompleteAnim &&
+                !sideQuest.completeAnimFinished &&
+                sideQuest.ticker > 1.25
+            ) {
+                this.animateQuestComplete(sideQuest);
+                sideQuest.completeAnimFinished = true;
+            }
+            const completionPhaseReady =
+                !sideQuest.playCompleteAnim ||
+                (sideQuest.completeAnimFinished && sideQuest.ticker > 4.25);
+            const showRefreshTimer = sideQuest.data.complete && completionPhaseReady;
+            if (showRefreshTimer !== sideQuest.timer.displayed) {
+                sideQuest.timer.displayed = showRefreshTimer;
+                sideQuest.elems.main.removeClass("pass-bg-pulse");
+                sideQuest.elems.main.stop().animate(
+                    {
+                        opacity: 1,
+                    },
+                    250,
+                );
+                sideQuest.elems.info.css("display", showRefreshTimer ? "none" : "block");
+                sideQuest.elems.timer.css("display", showRefreshTimer ? "block" : "none");
+            }
+            if (showRefreshTimer) {
+                const refreshTimeRemainingMs = Math.max(
+                    sideQuest.refreshTime - Date.now(),
+                    0,
+                );
+                const refreshTimeText = humanizeTime(refreshTimeRemainingMs / 1000);
+                if (refreshTimeText !== sideQuest.timer.str) {
+                    sideQuest.timer.str = refreshTimeText;
+                    sideQuest.elems.timer.html(refreshTimeText);
+                }
+            }
+            if (
+                !sideQuest.data.complete &&
+                !sideQuest.refreshEnabled &&
+                sideQuest.refreshTime <= Date.now()
+            ) {
+                sideQuest.refreshEnabled = true;
+                sideQuest.elems.refresh.removeClass("pass-quest-refresh-disabled");
             }
         }
         this.pass.ticker += dt;
