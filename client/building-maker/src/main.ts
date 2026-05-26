@@ -437,44 +437,7 @@ function loadInitialDoc(): EditorDoc {
     } catch (err) {
         console.warn("Failed to load Building Maker document", err);
     }
-    const next = createEmptyDoc();
-    next.items.push(
-        makeItemFromPalette(
-            {
-                id: "starter-floor",
-                name: "floor_surface",
-                category: "floors",
-                kind: "floor",
-                layer: "floor",
-                assetScale: 1,
-                fallbackWidth: 24,
-                fallbackHeight: 16,
-                localCollider: createAabbCollider(24, 16),
-            },
-            v2.create(0, 0),
-            next,
-            "base",
-        ),
-    );
-    next.items.push(
-        makeItemFromPalette(
-            {
-                id: "starter-hitbox",
-                name: "floor_collision",
-                category: "floors",
-                kind: "hitbox",
-                layer: "hitboxes",
-                assetScale: 1,
-                fallbackWidth: 24,
-                fallbackHeight: 16,
-                localCollider: createAabbCollider(24, 16),
-            },
-            v2.create(0, 0),
-            next,
-            "base",
-        ),
-    );
-    return next;
+    return createEmptyDoc();
 }
 
 function normalizeDoc(value: Partial<EditorDoc>): EditorDoc {
