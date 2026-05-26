@@ -71,6 +71,7 @@ import {
     getHideAndSeekSettings,
     getInfectedSettings,
     getPrivateLobbyMiniGameWeaponOverride,
+    isAmongUsMiniGame,
     isHideAndSeekHider,
     isHideAndSeekSeeker,
     isInfectedHuman,
@@ -1823,6 +1824,35 @@ export class Player extends BaseGameObject {
         this.weapsDirty = true;
     }
 
+    private applyAmongUsLoadout(): void {
+        if (!isAmongUsMiniGame(this.game.miniGame)) return;
+
+        for (let i = 0; i < GameConfig.WeaponSlot.Count; i++) {
+            const type = i === GameConfig.WeaponSlot.Melee ? "fists" : "";
+            this.weaponManager.setWeapon(i, type, 0);
+            this.setDisplayWeaponType(i, type);
+        }
+
+        this.invManager.emptyAll();
+        this.invManager.set("1xscope", 1);
+        this.scope = "1xscope";
+        this.zoom = this.scopeZoomRadius[this.scope];
+
+        for (const perk of [...this.perks]) {
+            this.removePerk(perk.type);
+        }
+
+        this.streakReady = false;
+        this.streakActive = false;
+        this.streakDirty = true;
+        this.weaponManager.setCurWeapIndex(GameConfig.WeaponSlot.Melee);
+        this.weaponManager.showNextThrowable();
+        this.recalculateScale();
+        this.recalculateMinBoost();
+        this.inventoryDirty = true;
+        this.weapsDirty = true;
+    }
+
     private markPlayerInfoDirty(): void {
         if (!this.game.playerBarn.dirtyPlayerInfos.includes(this)) {
             this.game.playerBarn.dirtyPlayerInfos.push(this);
@@ -2355,6 +2385,8 @@ export class Player extends BaseGameObject {
         this.setLoadout(loadout ? loadout : joinMsg.loadout, !loadout);
         if (getInfectedSettings(this.game.miniGame)) {
             this.applyInfectedLoadout();
+        } else if (isAmongUsMiniGame(this.game.miniGame)) {
+            this.applyAmongUsLoadout();
         }
 
         if (this.game.map.sniperMode) {

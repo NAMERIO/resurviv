@@ -147,6 +147,10 @@ export function getPrivateLobbyMiniGameMapName(
     return miniGame === "among_us" ? "among_us" : undefined;
 }
 
+export function isAmongUsMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
+    return miniGame === "among_us";
+}
+
 export function getPrivateLobbyMiniGameWeaponOverride(
     miniGame: PrivateLobbyMiniGame | undefined,
     arenaTeam: "A" | "B" | undefined,
