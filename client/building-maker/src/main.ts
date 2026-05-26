@@ -1,5 +1,4 @@
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
-import { Main as BaseMainMap } from "../../../shared/defs/maps/baseDefs";
 import type { MapObjectDef, ObstacleDef } from "../../../shared/defs/mapObjectsTyping";
 import type { BuildingDef, FloorImage } from "../../../shared/defs/types/building";
 import { GameConfig } from "../../../shared/gameConfig";
@@ -7,7 +6,6 @@ import { collider } from "../../../shared/utils/collider";
 import type { AABB, Circle, Collider } from "../../../shared/utils/coldet";
 import { generateTerrain } from "../../../shared/utils/terrainGen";
 import { v2, type Vec2 } from "../../../shared/utils/v2";
-import { DeatchmatchMain } from "../../../server/src/deathmatch/maps/main";
 import "./styles.css";
 
 const PPU = 16;
@@ -18,9 +16,24 @@ const MIN_CAMERA_ZOOM = 0.04;
 const MAX_CAMERA_ZOOM = 12;
 const DEFAULT_SCOPE = "1xscope";
 const scopeOrder = ["1xscope", "2xscope", "4xscope", "8xscope", "15xscope"] as const;
-const mainMapDef = DeatchmatchMain;
-const fallbackMapConfig = BaseMainMap.mapGen.map;
-const gameUndergroundColor = mainMapDef.biome.colors.underground;
+// Matches deathmatch/main terrain without importing server map data stripped from production clients.
+const editorMapColors = {
+    background: 0x20536e,
+    water: 0x3282ab,
+    beach: 0xcdb35b,
+    riverbank: 0x905e24,
+    grass: 0x80af49,
+    underground: 0x1b0d03,
+} as const;
+const editorMapConfig = {
+    baseWidth: 225,
+    baseHeight: 225,
+    scale: 1.28125,
+    extension: 112,
+    shoreInset: 20,
+    grassInset: 10,
+} as const;
+const gameUndergroundColor = editorMapColors.underground;
 const editorMap = createEditorMapEnvironment();
 
 const layerOrder = [
@@ -528,24 +541,21 @@ function createAabbCollider(width: number, height: number): AABB {
 }
 
 function createEditorMapEnvironment(): EditorMapEnvironment {
-    const mapConfig = mainMapDef.mapGen.map;
-    const scale = mapConfig.scale?.large ?? fallbackMapConfig.scale.large;
-    const extension = mapConfig.extension ?? fallbackMapConfig.extension;
-    const width = mapConfig.baseWidth * scale + extension;
-    const height = mapConfig.baseHeight * scale + extension;
+    const width = editorMapConfig.baseWidth * editorMapConfig.scale + editorMapConfig.extension;
+    const height = editorMapConfig.baseHeight * editorMapConfig.scale + editorMapConfig.extension;
     const seed = 218051654;
 
     return {
         width,
         height,
-        shoreInset: mapConfig.shoreInset,
-        grassInset: mapConfig.grassInset,
+        shoreInset: editorMapConfig.shoreInset,
+        grassInset: editorMapConfig.grassInset,
         seed,
         terrain: generateTerrain(
             width,
             height,
-            mapConfig.shoreInset,
-            mapConfig.grassInset,
+            editorMapConfig.shoreInset,
+            editorMapConfig.grassInset,
             [],
             seed,
         ),
@@ -933,7 +943,7 @@ function draw() {
 }
 
 function drawBackground() {
-    const mapColors = mainMapDef.biome.colors;
+    const mapColors = editorMapColors;
     ctx.fillStyle = hexCss(mode === "basement" ? gameUndergroundColor : mapColors.background);
     ctx.fillRect(0, 0, viewWidth, viewHeight);
 
@@ -966,7 +976,7 @@ function drawBackground() {
 }
 
 function drawMainMapTerrain() {
-    const mapColors = mainMapDef.biome.colors;
+    const mapColors = editorMapColors;
     const left = -editorMap.width / 2;
     const right = editorMap.width / 2;
     const bottom = -editorMap.height / 2;
