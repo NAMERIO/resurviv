@@ -6,6 +6,7 @@ import { collider } from "../../../shared/utils/collider";
 import type { AABB, Circle, Collider } from "../../../shared/utils/coldet";
 import { generateTerrain } from "../../../shared/utils/terrainGen";
 import { v2, type Vec2 } from "../../../shared/utils/v2";
+import { SharedAtlas } from "../../atlas-builder/defs/shared";
 import "./styles.css";
 
 const PPU = 16;
@@ -552,6 +553,8 @@ function buildPalette(): PaletteEntry[] {
     ];
     const seenSprites = new Set<string>();
 
+    addSharedAtlasSpriteEntries(entries, seenSprites);
+
     for (const [name, def] of Object.entries(MapObjectDefs as Record<string, MapObjectDef>)) {
         if (def.type === "obstacle") {
             const obstacle = def as ObstacleDef;
@@ -632,6 +635,67 @@ function buildSpriteSpawnOptions(): PaletteEntry[] {
     }
 
     return Array.from(bySprite.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function addSharedAtlasSpriteEntries(entries: PaletteEntry[], seenSprites: Set<string>) {
+    for (const sourcePath of SharedAtlas.images) {
+        const imageRole = classifyBuildingSpritePath(sourcePath);
+
+        if (imageRole) {
+            addImageEntry(
+                entries,
+                seenSprites,
+                {
+                    sprite: sourcePathToGameSprite(sourcePath),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+                imageRole,
+            );
+            continue;
+        }
+
+        addRawSpriteEntry(entries, seenSprites, sourcePath);
+    }
+}
+
+function classifyBuildingSpritePath(sourcePath: string): "floor" | "roof" | null {
+    const lower = sourcePath.toLowerCase();
+    if (lower.includes("ceiling")) return "roof";
+    if (lower.includes("floor")) return "floor";
+    return null;
+}
+
+function sourcePathToGameSprite(sourcePath: string): string {
+    const fileName = sourcePath.split("/").pop() || sourcePath;
+    return fileName.replace(/\.(svg|png)$/i, ".img");
+}
+
+function addRawSpriteEntry(
+    entries: PaletteEntry[],
+    seenSprites: Set<string>,
+    sourcePath: string,
+) {
+    const sprite = sourcePathToGameSprite(sourcePath);
+    if (!sprite || seenSprites.has(`object:${sprite}`)) {
+        return;
+    }
+
+    seenSprites.add(`object:${sprite}`);
+    const basement = sprite.toLowerCase().includes("basement");
+    entries.push({
+        id: `sprite-${sprite}`,
+        name: sprite,
+        category: basement ? "basement" : "objects",
+        kind: basement ? "basementObject" : "object",
+        layer: basement ? "basement" : "objects",
+        sprite,
+        assetScale: 0.5,
+        fallbackWidth: 4,
+        fallbackHeight: 4,
+        localCollider: createAabbCollider(4, 4),
+    });
 }
 
 function addImageEntry(
