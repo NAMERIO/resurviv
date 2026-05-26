@@ -20,7 +20,7 @@ export const SideQuestDefs = {
     side_quest_kills_20: {
         type: "quest",
         event: "kill",
-        target: 20,
+        target: 200,
         xp: 0,
         gp: 100,
         title: "Kill 20 players",
@@ -28,10 +28,10 @@ export const SideQuestDefs = {
     side_quest_survive_10m: {
         type: "quest",
         event: "survived",
-        target: 600,
+        target: 3600,
         xp: 0,
         gp: 75,
-        title: "Survive 10 minutes",
+        title: "Survive 1 hour",
     },
 } satisfies Record<string, SideQuestDef>;
 
