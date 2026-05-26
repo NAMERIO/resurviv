@@ -67,7 +67,10 @@ button:disabled {
 .maker-shell {
   position: relative;
   display: grid;
-  grid-template-columns: clamp(230px, 17vw, 270px) minmax(0, 1fr);
+  grid-template-columns: var(--asset-panel-width, clamp(230px, 17vw, 270px)) minmax(
+      0,
+      1fr
+    );
   grid-template-rows: 100%;
   width: 100%;
   height: 100%;
@@ -95,6 +98,33 @@ button:disabled {
   width: 100%;
   border-right: 6px solid var(--game-border);
   box-shadow: 10px 0 18px var(--game-shadow);
+}
+
+.panel-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -7px;
+  bottom: 0;
+  z-index: 10;
+  width: 12px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.panel-resize-handle::after {
+  position: absolute;
+  top: 0;
+  right: 4px;
+  bottom: 0;
+  width: 2px;
+  background: rgb(255 255 255 / 18%);
+  content: "";
+}
+
+.maker-shell.resizing-assets,
+.maker-shell.resizing-assets * {
+  cursor: col-resize;
+  user-select: none;
 }
 
 .maker-shell.assets-collapsed .maker-panel.left {
@@ -592,8 +622,7 @@ button:disabled {
   resize: vertical;
   padding: 10px;
   font-family:
-    "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo,
-    monospace;
+    "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 12px;
   line-height: 1.45;
 }
@@ -674,7 +703,7 @@ button:disabled {
 
 @media (max-width: 1180px) {
   .maker-shell {
-    grid-template-columns: 240px minmax(0, 1fr);
+    grid-template-columns: var(--asset-panel-width, 240px) minmax(0, 1fr);
   }
 
   .maker-panel.right {
@@ -691,7 +720,7 @@ button:disabled {
   .maker-panel.left {
     position: absolute;
     inset: 0 auto 0 0;
-    width: min(300px, 86vw);
+    width: min(var(--asset-panel-width, 300px), 86vw);
   }
 
   .stage {

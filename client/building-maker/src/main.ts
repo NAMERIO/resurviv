@@ -12,9 +12,13 @@ import "./styles.css";
 const PPU = 16;
 const STORAGE_KEY = "resurviv-building-maker-doc";
 const SAVES_KEY = "resurviv-building-maker-saves";
+const ASSET_PANEL_WIDTH_KEY = "resurviv-building-maker-asset-panel-width";
 const HISTORY_LIMIT = 80;
 const MIN_CAMERA_ZOOM = 0.04;
 const MAX_CAMERA_ZOOM = 12;
+const MIN_ASSET_PANEL_WIDTH = 150;
+const MAX_ASSET_PANEL_WIDTH = 520;
+const MIN_GRID_SIZE = 0.03125;
 const DEFAULT_SCOPE = "1xscope";
 const scopeOrder = ["1xscope", "2xscope", "4xscope", "8xscope", "15xscope"] as const;
 // Matches deathmatch/main terrain without importing server map data stripped from production clients.
@@ -40,9 +44,9 @@ const editorMap = createEditorMapEnvironment();
 const layerOrder = [
     "basementFloor",
     "floor",
-    "walls",
     "objects",
     "basement",
+    "walls",
     "roof",
     "hitboxes",
 ] as const;
@@ -106,6 +110,7 @@ interface EditorItem {
     tint: number;
     surfaceType?: string;
     ignoreMapSpawnReplacement?: boolean;
+    inheritOri?: boolean;
     localCollider?: Collider;
 }
 
@@ -225,6 +230,7 @@ root.innerHTML = `
       <div class="panel-scroll">
         <div id="asset-list" class="asset-list"></div>
       </div>
+      <div id="asset-resize-handle" class="panel-resize-handle" title="Resize asset browser"></div>
     </aside>
 
     <main class="stage">
@@ -305,7 +311,7 @@ root.innerHTML = `
               </label>
               <div class="field">
                 <label for="grid-size">Grid</label>
-                <input id="grid-size" class="number-field" type="number" min="0.25" step="0.25" aria-label="Grid size">
+                <input id="grid-size" class="number-field" type="number" min="${MIN_GRID_SIZE}" step="${MIN_GRID_SIZE}" aria-label="Grid size">
               </div>
             </div>
           </div>
@@ -387,18 +393,23 @@ let spaceDown = false;
 let lastFrameTime = performance.now();
 
 const imageCache = new Map<string, ImageState>();
+let spriteObjectTypeCache: Map<string, string> | null = null;
 const palette = buildPalette();
 const spriteSpawnOptions = buildSpriteSpawnOptions();
 
 const buildingNameInput = document.getElementById("building-name") as HTMLInputElement;
 const assetSearch = document.getElementById("asset-search") as HTMLInputElement;
-const assetCategorySelect = document.getElementById("asset-category") as HTMLSelectElement;
+const assetCategorySelect = document.getElementById(
+    "asset-category",
+) as HTMLSelectElement;
 const gridSizeInput = document.getElementById("grid-size") as HTMLInputElement;
 const snapToggle = document.getElementById("snap-toggle") as HTMLInputElement;
 const statusLeft = document.getElementById("status-left") as HTMLSpanElement;
 const statusRight = document.getElementById("status-right") as HTMLSpanElement;
 const previewBanner = document.getElementById("preview-banner") as HTMLDivElement;
 const makerShell = document.getElementById("maker-shell") as HTMLDivElement;
+const assetPanel = document.getElementById("asset-panel") as HTMLElement;
+const assetResizeHandle = document.getElementById("asset-resize-handle") as HTMLElement;
 
 function defaultLayers(): Record<LayerId, LayerState> {
     return {
@@ -479,7 +490,9 @@ function normalizeItem(item: Partial<EditorItem>): EditorItem {
         tint: finite(item.tint, 0xffffff),
         surfaceType: item.surfaceType,
         ignoreMapSpawnReplacement: item.ignoreMapSpawnReplacement,
-        localCollider: item.localCollider || createAabbCollider(fallbackWidth, fallbackHeight),
+        inheritOri: item.inheritOri,
+        localCollider:
+            item.localCollider || createAabbCollider(fallbackWidth, fallbackHeight),
     };
 }
 
@@ -505,8 +518,10 @@ function createAabbCollider(width: number, height: number): AABB {
 }
 
 function createEditorMapEnvironment(): EditorMapEnvironment {
-    const width = editorMapConfig.baseWidth * editorMapConfig.scale + editorMapConfig.extension;
-    const height = editorMapConfig.baseHeight * editorMapConfig.scale + editorMapConfig.extension;
+    const width =
+        editorMapConfig.baseWidth * editorMapConfig.scale + editorMapConfig.extension;
+    const height =
+        editorMapConfig.baseHeight * editorMapConfig.scale + editorMapConfig.extension;
     const seed = 218051654;
 
     return {
@@ -555,7 +570,9 @@ function buildPalette(): PaletteEntry[] {
 
     addSharedAtlasSpriteEntries(entries, seenSprites);
 
-    for (const [name, def] of Object.entries(MapObjectDefs as Record<string, MapObjectDef>)) {
+    for (const [name, def] of Object.entries(
+        MapObjectDefs as Record<string, MapObjectDef>,
+    )) {
         if (def.type === "obstacle") {
             const obstacle = def as ObstacleDef;
             const sprite = obstacle.img?.sprite;
@@ -614,7 +631,8 @@ function buildPalette(): PaletteEntry[] {
     }
 
     return entries.sort((a, b) => {
-        const cat = paletteCategories.indexOf(a.category) - paletteCategories.indexOf(b.category);
+        const cat =
+            paletteCategories.indexOf(a.category) - paletteCategories.indexOf(b.category);
         return cat || a.name.localeCompare(b.name);
     });
 }
@@ -635,6 +653,29 @@ function buildSpriteSpawnOptions(): PaletteEntry[] {
     }
 
     return Array.from(bySprite.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function objectTypeForSprite(sprite?: string): string | undefined {
+    if (!sprite) return undefined;
+    if (!spriteObjectTypeCache) {
+        spriteObjectTypeCache = new Map();
+        for (const [name, def] of Object.entries(
+            MapObjectDefs as Record<string, MapObjectDef>,
+        )) {
+            if (def.type === "obstacle") {
+                const obstacle = def as ObstacleDef;
+                if (obstacle.img?.sprite && !spriteObjectTypeCache.has(obstacle.img.sprite)) {
+                    spriteObjectTypeCache.set(obstacle.img.sprite, name);
+                }
+            } else if (def.type === "decal") {
+                const decal = def as MapObjectDef & { img?: { sprite?: string } };
+                if (decal.img?.sprite && !spriteObjectTypeCache.has(decal.img.sprite)) {
+                    spriteObjectTypeCache.set(decal.img.sprite, name);
+                }
+            }
+        }
+    }
+    return spriteObjectTypeCache.get(sprite);
 }
 
 function addSharedAtlasSpriteEntries(entries: PaletteEntry[], seenSprites: Set<string>) {
@@ -663,6 +704,7 @@ function addSharedAtlasSpriteEntries(entries: PaletteEntry[], seenSprites: Set<s
 function classifyBuildingSpritePath(sourcePath: string): "floor" | "roof" | null {
     const lower = sourcePath.toLowerCase();
     if (lower.includes("ceiling")) return "roof";
+    if (lower.includes("cafeteria")) return "floor";
     if (lower.includes("floor")) return "floor";
     return null;
 }
@@ -683,19 +725,53 @@ function addRawSpriteEntry(
     }
 
     seenSprites.add(`object:${sprite}`);
-    const basement = sprite.toLowerCase().includes("basement");
+    const objectType = objectTypeForSprite(sprite);
+    const def = objectType ? MapObjectDefs[objectType] : undefined;
+    const obstacle = def?.type === "obstacle" ? (def as ObstacleDef) : undefined;
+    const collisionSize = fallbackSizeFromCollider(obstacle?.collision);
+    const classification = obstacle
+        ? classifyObstacle(objectType!, obstacle)
+        : classifyRawSpritePath(sprite);
     entries.push({
         id: `sprite-${sprite}`,
-        name: sprite,
-        category: basement ? "basement" : "objects",
-        kind: basement ? "basementObject" : "object",
-        layer: basement ? "basement" : "objects",
+        name: objectType || sprite,
+        category: classification.category,
+        kind: classification.kind,
+        layer: classification.layer,
+        type: objectType,
         sprite,
-        assetScale: 0.5,
-        fallbackWidth: 4,
-        fallbackHeight: 4,
-        localCollider: createAabbCollider(4, 4),
+        assetScale: obstacle?.img?.scale ?? 0.5,
+        fallbackWidth: obstacle ? collisionSize.width : 4,
+        fallbackHeight: obstacle ? collisionSize.height : 4,
+        localCollider: obstacle?.collision || createAabbCollider(4, 4),
     });
+}
+
+function classifyRawSpritePath(sprite: string): {
+    category: PaletteCategory;
+    kind: ItemKind;
+    layer: LayerId;
+} {
+    const lower = sprite.toLowerCase();
+    const basement = lower.includes("basement");
+
+    if (basement) {
+        return {
+            category: "basement",
+            kind: lower.includes("wall") ? "basementWall" : "basementObject",
+            layer: "basement",
+        };
+    }
+    if (lower.includes("door")) {
+        return { category: "doors", kind: "door", layer: "walls" };
+    }
+    if (lower.includes("window")) {
+        return { category: "windows", kind: "window", layer: "walls" };
+    }
+    if (lower.includes("wall")) {
+        return { category: "walls", kind: "wall", layer: "walls" };
+    }
+    return { category: "objects", kind: "object", layer: "objects" };
 }
 
 function addImageEntry(
@@ -704,7 +780,11 @@ function addImageEntry(
     img: FloorImage,
     imageRole: "floor" | "roof",
 ) {
-    if (!img.sprite || img.sprite === "none" || seenSprites.has(`${imageRole}:${img.sprite}`)) {
+    if (
+        !img.sprite ||
+        img.sprite === "none" ||
+        seenSprites.has(`${imageRole}:${img.sprite}`)
+    ) {
         return;
     }
     seenSprites.add(`${imageRole}:${img.sprite}`);
@@ -790,8 +870,11 @@ function makeItemFromPalette(
         fallbackHeight: entry.fallbackHeight,
         alpha: 1,
         tint: 0xffffff,
-        surfaceType: entry.kind === "floor" || entry.kind === "basementFloor" ? "wood" : undefined,
-        localCollider: entry.localCollider || createAabbCollider(entry.fallbackWidth, entry.fallbackHeight),
+        surfaceType:
+            entry.kind === "floor" || entry.kind === "basementFloor" ? "wood" : undefined,
+        localCollider:
+            entry.localCollider ||
+            createAabbCollider(entry.fallbackWidth, entry.fallbackHeight),
     };
 }
 
@@ -869,14 +952,22 @@ function itemSize(item: EditorItem): { width: number; height: number } {
 
 function itemBounds(item: EditorItem): AABB {
     const size = itemSize(item);
-    return collider.createAabbExtents(v2.create(item.x, item.y), v2.create(size.width / 2, size.height / 2));
+    return collider.createAabbExtents(
+        v2.create(item.x, item.y),
+        v2.create(size.width / 2, size.height / 2),
+    );
 }
 
 function itemColliders(item: EditorItem): Collider[] {
-    if (item.kind === "hitbox" || item.kind === "floor" || item.kind === "basementFloor") {
+    if (
+        item.kind === "hitbox" ||
+        item.kind === "floor" ||
+        item.kind === "basementFloor"
+    ) {
         return [
             collider.transform(
-                item.localCollider || createAabbCollider(item.fallbackWidth, item.fallbackHeight),
+                item.localCollider ||
+                    createAabbCollider(item.fallbackWidth, item.fallbackHeight),
                 v2.create(item.x, item.y),
                 item.rotation,
                 item.scale,
@@ -898,17 +989,30 @@ function itemColliders(item: EditorItem): Collider[] {
         }
     }
 
-    return [collider.transform(createAabbCollider(itemSize(item).width, itemSize(item).height), v2.create(item.x, item.y), item.rotation, 1)];
+    return [
+        collider.transform(
+            createAabbCollider(itemSize(item).width, itemSize(item).height),
+            v2.create(item.x, item.y),
+            item.rotation,
+            1,
+        ),
+    ];
 }
 
 function worldToScreen(pos: Vec2): Vec2 {
     const z = PPU * camera.zoom;
-    return v2.create(viewWidth / 2 + (pos.x - camera.x) * z, viewHeight / 2 - (pos.y - camera.y) * z);
+    return v2.create(
+        viewWidth / 2 + (pos.x - camera.x) * z,
+        viewHeight / 2 - (pos.y - camera.y) * z,
+    );
 }
 
 function screenToWorld(pos: Vec2): Vec2 {
     const z = PPU * camera.zoom;
-    return v2.create(camera.x + (pos.x - viewWidth / 2) / z, camera.y + (viewHeight / 2 - pos.y) / z);
+    return v2.create(
+        camera.x + (pos.x - viewWidth / 2) / z,
+        camera.y + (viewHeight / 2 - pos.y) / z,
+    );
 }
 
 function resizeCanvas() {
@@ -919,9 +1023,7 @@ function resizeCanvas() {
     const pixelWidth = Math.max(1, Math.floor(nextWidth * dpr));
     const pixelHeight = Math.max(1, Math.floor(nextHeight * dpr));
     const needsBackingResize =
-        canvas.width !== pixelWidth ||
-        canvas.height !== pixelHeight ||
-        canvasDpr !== dpr;
+        canvas.width !== pixelWidth || canvas.height !== pixelHeight || canvasDpr !== dpr;
 
     viewWidth = nextWidth;
     viewHeight = nextHeight;
@@ -971,7 +1073,9 @@ function draw() {
 
 function drawBackground() {
     const mapColors = editorMapColors;
-    ctx.fillStyle = hexCss(mode === "basement" ? gameUndergroundColor : mapColors.background);
+    ctx.fillStyle = hexCss(
+        mode === "basement" ? gameUndergroundColor : mapColors.background,
+    );
     ctx.fillRect(0, 0, viewWidth, viewHeight);
 
     if (mode !== "basement") {
@@ -979,7 +1083,9 @@ function drawBackground() {
     }
 
     const topLeft = worldToScreen(v2.create(-editorMap.width / 2, editorMap.height / 2));
-    const bottomRight = worldToScreen(v2.create(editorMap.width / 2, -editorMap.height / 2));
+    const bottomRight = worldToScreen(
+        v2.create(editorMap.width / 2, -editorMap.height / 2),
+    );
     ctx.save();
     ctx.strokeStyle = "rgba(0,0,0,0.22)";
     ctx.lineWidth = 2;
@@ -1009,7 +1115,13 @@ function drawMainMapTerrain() {
     const bottom = -editorMap.height / 2;
     const top = editorMap.height / 2;
 
-    fillWorldRect(left, bottom, editorMap.width, editorMap.height, hexCss(mapColors.water));
+    fillWorldRect(
+        left,
+        bottom,
+        editorMap.width,
+        editorMap.height,
+        hexCss(mapColors.water),
+    );
     fillWorldPolygon(editorMap.terrain.shore, hexCss(mapColors.beach));
     fillWorldPolygon(editorMap.terrain.grass, hexCss(mapColors.grass));
 
@@ -1032,7 +1144,13 @@ function drawMainMapTerrain() {
     ctx.restore();
 }
 
-function fillWorldRect(x: number, y: number, width: number, height: number, color: string) {
+function fillWorldRect(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    color: string,
+) {
     const topLeft = worldToScreen(v2.create(x, y + height));
     const bottomRight = worldToScreen(v2.create(x + width, y));
     ctx.fillStyle = color;
@@ -1058,7 +1176,9 @@ function fillWorldPolygon(points: Vec2[], color: string) {
 }
 
 function mapPointToScreen(point: Vec2): Vec2 {
-    return worldToScreen(v2.create(point.x - editorMap.width / 2, point.y - editorMap.height / 2));
+    return worldToScreen(
+        v2.create(point.x - editorMap.width / 2, point.y - editorMap.height / 2),
+    );
 }
 
 function drawGrid() {
@@ -1102,8 +1222,8 @@ function drawGrid() {
     if (camera.zoom >= 1.5) {
         addGrid(doc.gridSize, "rgba(66,66,66,0.32)");
     }
-    if (camera.zoom >= 4.5 && doc.gridSize > 0.25) {
-        addGrid(0.25, "rgba(66,66,66,0.25)");
+    if (camera.zoom >= 4.5 && doc.gridSize > MIN_GRID_SIZE) {
+        addGrid(Math.max(MIN_GRID_SIZE, doc.gridSize / 4), "rgba(66,66,66,0.25)");
     }
 
     ctx.strokeStyle = "rgba(0,0,0,0.24)";
@@ -1121,7 +1241,8 @@ function drawGrid() {
 
 function shouldDrawInMode(item: EditorItem): boolean {
     if (preview) return item.layer !== "hitboxes" || doc.layers.hitboxes.visible;
-    if (mode === "roof") return item.layer === "roof" || item.layer === "floor" || item.layer === "walls";
+    if (mode === "roof")
+        return item.layer === "roof" || item.layer === "floor" || item.layer === "walls";
     if (mode === "basement") return isBasementItem(item);
     return item.layer !== "roof" && !isBasementItem(item);
 }
@@ -1134,9 +1255,11 @@ function isEditableInMode(item: EditorItem): boolean {
 }
 
 function isBasementItem(item: EditorItem): boolean {
-    return item.layer === "basement" ||
+    return (
+        item.layer === "basement" ||
         item.layer === "basementFloor" ||
-        (item.layer === "hitboxes" && item.name.toLowerCase().includes("basement"));
+        (item.layer === "hitboxes" && item.name.toLowerCase().includes("basement"))
+    );
 }
 
 function drawItem(item: EditorItem) {
@@ -1153,7 +1276,13 @@ function drawItem(item: EditorItem) {
 
     const image = getImage(item.sprite);
     if (image?.loaded && !image.failed) {
-        ctx.drawImage(image.img, -screenWidth / 2, -screenHeight / 2, screenWidth, screenHeight);
+        ctx.drawImage(
+            image.img,
+            -screenWidth / 2,
+            -screenHeight / 2,
+            screenWidth,
+            screenHeight,
+        );
     } else {
         ctx.fillStyle = fillForItem(item);
         ctx.strokeStyle = strokeForItem(item);
@@ -1203,7 +1332,9 @@ function strokeForItem(item: EditorItem): string {
 }
 
 function shortLabel(item: EditorItem): string {
-    return (item.type || item.sprite || item.name).replace(/^map-/, "").replace(/\.img$/, "");
+    return (item.type || item.sprite || item.name)
+        .replace(/^map-/, "")
+        .replace(/\.img$/, "");
 }
 
 function drawColliders(item: EditorItem, selected: boolean) {
@@ -1254,7 +1385,10 @@ function drawItemSelection(item: EditorItem) {
     ctx.stroke();
 
     const top = v2.mul(v2.add(corners[0], corners[1]), 0.5);
-    const handleWorld = v2.add(top, v2.rotate(v2.create(0, itemSize(item).height * 0.22 + 1.2), item.rotation));
+    const handleWorld = v2.add(
+        top,
+        v2.rotate(v2.create(0, itemSize(item).height * 0.22 + 1.2), item.rotation),
+    );
     const handle = worldToScreen(handleWorld);
     const topScreen = worldToScreen(top);
     ctx.beginPath();
@@ -1276,7 +1410,12 @@ function drawSelectionBox() {
     ctx.save();
     ctx.strokeStyle = "#65d0bf";
     ctx.setLineDash([6, 4]);
-    ctx.strokeRect(Math.min(min.x, max.x), Math.min(min.y, max.y), Math.abs(max.x - min.x), Math.abs(max.y - min.y));
+    ctx.strokeRect(
+        Math.min(min.x, max.x),
+        Math.min(min.y, max.y),
+        Math.abs(max.x - min.x),
+        Math.abs(max.y - min.y),
+    );
     ctx.restore();
 }
 
@@ -1288,8 +1427,18 @@ function drawDragSelection() {
     ctx.strokeStyle = "#ffffff";
     ctx.fillStyle = "rgba(255,255,255,0.08)";
     ctx.setLineDash([4, 4]);
-    ctx.fillRect(Math.min(min.x, max.x), Math.min(min.y, max.y), Math.abs(max.x - min.x), Math.abs(max.y - min.y));
-    ctx.strokeRect(Math.min(min.x, max.x), Math.min(min.y, max.y), Math.abs(max.x - min.x), Math.abs(max.y - min.y));
+    ctx.fillRect(
+        Math.min(min.x, max.x),
+        Math.min(min.y, max.y),
+        Math.abs(max.x - min.x),
+        Math.abs(max.y - min.y),
+    );
+    ctx.strokeRect(
+        Math.min(min.x, max.x),
+        Math.min(min.y, max.y),
+        Math.abs(max.x - min.x),
+        Math.abs(max.y - min.y),
+    );
     ctx.restore();
 }
 
@@ -1305,7 +1454,9 @@ function drawPreviewPlayer() {
     ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
-    const dirEnd = worldToScreen(v2.add(preview.pos, v2.mul(preview.dir, preview.radius * 1.35)));
+    const dirEnd = worldToScreen(
+        v2.add(preview.pos, v2.mul(preview.dir, preview.radius * 1.35)),
+    );
     ctx.beginPath();
     ctx.moveTo(p.x, p.y);
     ctx.lineTo(dirEnd.x, dirEnd.y);
@@ -1321,7 +1472,9 @@ function itemCorners(item: EditorItem): Vec2[] {
         v2.create(size.width / 2, -size.height / 2),
         v2.create(-size.width / 2, -size.height / 2),
     ];
-    return points.map((p) => v2.add(v2.create(item.x, item.y), v2.rotate(p, item.rotation)));
+    return points.map((p) =>
+        v2.add(v2.create(item.x, item.y), v2.rotate(p, item.rotation)),
+    );
 }
 
 function selectionBounds(): AABB | null {
@@ -1343,13 +1496,93 @@ function selectedItems(): EditorItem[] {
     return doc.items.filter((item) => selectedIds.has(item.id));
 }
 
+function inferMapObjectType(item: EditorItem): string | undefined {
+    const spriteType = objectTypeForSprite(item.sprite);
+    if (spriteType) return spriteType;
+
+    const candidates = [item.type, item.name, item.sprite];
+    for (const candidate of candidates) {
+        if (!candidate) continue;
+        const base = candidate
+            .split("/")
+            .pop()
+            ?.replace(/\.(img|svg|png)$/i, "");
+        if (base && MapObjectDefs[base]) return base;
+    }
+    return undefined;
+}
+
+function applyFloorRole(item: EditorItem, basement = mode === "basement") {
+    item.kind = basement ? "basementFloor" : "floor";
+    item.layer = basement ? "basementFloor" : "floor";
+    item.type = undefined;
+    item.surfaceType ||= "wood";
+}
+
+function applyRoofRole(item: EditorItem) {
+    item.kind = "roof";
+    item.layer = "roof";
+    item.type = undefined;
+    item.surfaceType = undefined;
+}
+
+function applyMapObjectRole(item: EditorItem) {
+    const inferredType = inferMapObjectType(item);
+    if (inferredType) item.type = inferredType;
+
+    const def = item.type ? MapObjectDefs[item.type] : undefined;
+    const obstacle = def?.type === "obstacle" ? (def as ObstacleDef) : undefined;
+    if (obstacle) {
+        const classification = classifyObstacle(item.type!, obstacle);
+        item.kind = mode === "basement" ? "basementObject" : classification.kind;
+        item.layer =
+            mode === "basement"
+                ? "basement"
+                : classification.layer === "walls"
+                  ? "walls"
+                  : "objects";
+        item.sprite = obstacle.img?.sprite ?? item.sprite;
+        item.assetScale = obstacle.img?.scale ?? item.assetScale;
+        item.localCollider = obstacle.collision || item.localCollider;
+    } else {
+        item.kind = mode === "basement" ? "basementObject" : "object";
+        item.layer = mode === "basement" ? "basement" : "objects";
+    }
+    item.surfaceType = undefined;
+}
+
+function applyRoleToSelection(role: "floor" | "roof" | "mapObject") {
+    const selected = selectedItems();
+    if (!selected.length) return;
+    for (const item of selected) {
+        if (role === "floor") applyFloorRole(item);
+        if (role === "roof") applyRoofRole(item);
+        if (role === "mapObject") applyMapObjectRole(item);
+    }
+    commit("change selected role");
+    renderAllPanels();
+}
+
+function itemExportRole(item: EditorItem): "floor" | "roof" | "mapObject" | "none" {
+    if (item.layer === "floor" || item.layer === "basementFloor") return "floor";
+    if (item.layer === "roof") return "roof";
+    if (item.layer === "walls" || item.layer === "objects" || item.layer === "basement")
+        return "mapObject";
+    return "none";
+}
+
 function hitTest(pos: Vec2): EditorItem | null {
     for (let i = layerOrder.length - 1; i >= 0; i--) {
         const layer = layerOrder[i];
         if (!doc.layers[layer].visible) continue;
         for (let j = doc.items.length - 1; j >= 0; j--) {
             const item = doc.items[j];
-            if (item.layer !== layer || !shouldDrawInMode(item) || !isEditableInMode(item)) continue;
+            if (
+                item.layer !== layer ||
+                !shouldDrawInMode(item) ||
+                !isEditableInMode(item)
+            )
+                continue;
             if (pointInItem(pos, item)) return item;
         }
     }
@@ -1368,7 +1601,10 @@ function handleAt(pos: Vec2): "rotate" | null {
     if (!item || !isEditableInMode(item)) return null;
     const corners = itemCorners(item);
     const top = v2.mul(v2.add(corners[0], corners[1]), 0.5);
-    const handleWorld = v2.add(top, v2.rotate(v2.create(0, itemSize(item).height * 0.22 + 1.2), item.rotation));
+    const handleWorld = v2.add(
+        top,
+        v2.rotate(v2.create(0, itemSize(item).height * 0.22 + 1.2), item.rotation),
+    );
     if (v2.length(v2.sub(pos, handleWorld)) <= 0.9 / camera.zoom) return "rotate";
     return null;
 }
@@ -1408,7 +1644,11 @@ canvas.addEventListener("pointerdown", (event) => {
         dragState = {
             type: "move",
             startWorld: pointer.world,
-            originals: selectedItems().map((item) => ({ id: item.id, x: item.x, y: item.y })),
+            originals: selectedItems().map((item) => ({
+                id: item.id,
+                x: item.x,
+                y: item.y,
+            })),
         };
         renderSelectionPanel();
         return;
@@ -1450,7 +1690,8 @@ canvas.addEventListener("pointermove", (event) => {
     if (state.type === "rotate") {
         const item = doc.items.find((candidate) => candidate.id === state.itemId);
         if (!item) return;
-        item.rotation = Math.atan2(pointer.world.y - item.y, pointer.world.x - item.x) - Math.PI / 2;
+        item.rotation =
+            Math.atan2(pointer.world.y - item.y, pointer.world.x - item.x) - Math.PI / 2;
         if (doc.snapToGrid) item.rotation = oriToRad(radToOri(item.rotation));
         renderSelectionPanel();
         return;
@@ -1464,7 +1705,12 @@ canvas.addEventListener("pointermove", (event) => {
                 .filter((item) => shouldDrawInMode(item) && isEditableInMode(item))
                 .filter((item) => {
                     const bounds = itemBounds(item);
-                    return bounds.min.x >= min.x && bounds.max.x <= max.x && bounds.min.y >= min.y && bounds.max.y <= max.y;
+                    return (
+                        bounds.min.x >= min.x &&
+                        bounds.max.x <= max.x &&
+                        bounds.min.y >= min.y &&
+                        bounds.max.y <= max.y
+                    );
                 })
                 .map((item) => item.id),
         );
@@ -1483,31 +1729,39 @@ canvas.addEventListener("contextmenu", (event) => {
     event.preventDefault();
 });
 
-canvas.addEventListener("wheel", (event) => {
-    event.preventDefault();
-
-    if (event.ctrlKey || event.altKey || event.metaKey) {
-        zoomAtScreenPoint(
-            v2.create(event.offsetX, event.offsetY),
-            event.deltaY > 0 ? 0.82 : 1.22,
-        );
-        return;
-    }
-
-    const z = PPU * camera.zoom;
-    const horizontalDelta = event.deltaX + (event.shiftKey ? event.deltaY : 0);
-    const verticalDelta = event.shiftKey ? 0 : event.deltaY;
-    camera.x += horizontalDelta / z;
-    camera.y -= verticalDelta / z;
-}, { passive: false });
-
-window.addEventListener("wheel", (event) => {
-    const target = event.target;
-    if (!(target instanceof Node) || !root.contains(target)) return;
-    if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+canvas.addEventListener(
+    "wheel",
+    (event) => {
         event.preventDefault();
-    }
-}, { passive: false });
+
+        if (event.ctrlKey || event.altKey || event.metaKey) {
+            zoomAtScreenPoint(
+                v2.create(event.offsetX, event.offsetY),
+                event.deltaY > 0 ? 0.82 : 1.22,
+            );
+            return;
+        }
+
+        const z = PPU * camera.zoom;
+        const horizontalDelta = event.deltaX + (event.shiftKey ? event.deltaY : 0);
+        const verticalDelta = event.shiftKey ? 0 : event.deltaY;
+        camera.x += horizontalDelta / z;
+        camera.y -= verticalDelta / z;
+    },
+    { passive: false },
+);
+
+window.addEventListener(
+    "wheel",
+    (event) => {
+        const target = event.target;
+        if (!(target instanceof Node) || !root.contains(target)) return;
+        if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+            event.preventDefault();
+        }
+    },
+    { passive: false },
+);
 
 canvas.addEventListener("dragover", (event) => {
     event.preventDefault();
@@ -1519,7 +1773,9 @@ canvas.addEventListener("drop", (event) => {
     const entry = palette.find((candidate) => candidate.id === id);
     if (!entry) return;
     const rect = canvas.getBoundingClientRect();
-    const pos = screenToWorld(v2.create(event.clientX - rect.left, event.clientY - rect.top));
+    const pos = screenToWorld(
+        v2.create(event.clientX - rect.left, event.clientY - rect.top),
+    );
     addItemFromEntry(entry, pos);
 });
 
@@ -1574,7 +1830,11 @@ window.addEventListener("keyup", (event) => {
 });
 
 function isTypingTarget(target: EventTarget | null): boolean {
-    return target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement;
+    return (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement
+    );
 }
 
 function commit(_label: string) {
@@ -1657,7 +1917,9 @@ function rotateSelection(direction: 1 | -1) {
     commit("rotate");
 }
 
-function alignSelection(which: "left" | "center" | "right" | "top" | "middle" | "bottom") {
+function alignSelection(
+    which: "left" | "center" | "right" | "top" | "middle" | "bottom",
+) {
     const selected = selectedItems();
     if (selected.length < 2) return;
     const bounds = selectionBounds();
@@ -1666,10 +1928,12 @@ function alignSelection(which: "left" | "center" | "right" | "top" | "middle" | 
         const itemBox = itemBounds(item);
         if (which === "left") item.x += bounds.min.x - itemBox.min.x;
         if (which === "right") item.x += bounds.max.x - itemBox.max.x;
-        if (which === "center") item.x += (bounds.min.x + bounds.max.x - itemBox.min.x - itemBox.max.x) / 2;
+        if (which === "center")
+            item.x += (bounds.min.x + bounds.max.x - itemBox.min.x - itemBox.max.x) / 2;
         if (which === "bottom") item.y += bounds.min.y - itemBox.min.y;
         if (which === "top") item.y += bounds.max.y - itemBox.max.y;
-        if (which === "middle") item.y += (bounds.min.y + bounds.max.y - itemBox.min.y - itemBox.max.y) / 2;
+        if (which === "middle")
+            item.y += (bounds.min.y + bounds.max.y - itemBox.min.y - itemBox.max.y) / 2;
         item.x = snap(item.x);
         item.y = snap(item.y);
     }
@@ -1702,8 +1966,10 @@ function updatePreview(dt: number) {
     if (!preview) return;
     const keys = pressedKeys;
     const move = v2.create(
-        (keys.has("KeyD") || keys.has("ArrowRight") ? 1 : 0) - (keys.has("KeyA") || keys.has("ArrowLeft") ? 1 : 0),
-        (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) - (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0),
+        (keys.has("KeyD") || keys.has("ArrowRight") ? 1 : 0) -
+            (keys.has("KeyA") || keys.has("ArrowLeft") ? 1 : 0),
+        (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) -
+            (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0),
     );
     if (v2.lengthSqr(move) > 0) {
         const dir = v2.normalize(move);
@@ -1726,7 +1992,8 @@ function updateEditorCamera(dt: number) {
 
     if (v2.lengthSqr(move) === 0) return;
 
-    const panSpeed = (pressedKeys.has("ShiftLeft") || pressedKeys.has("ShiftRight") ? 52 : 28) /
+    const panSpeed =
+        (pressedKeys.has("ShiftLeft") || pressedKeys.has("ShiftRight") ? 52 : 28) /
         Math.max(camera.zoom, 0.25);
     const delta = v2.mul(v2.normalize(move), panSpeed * dt);
     camera.x += delta.x;
@@ -1766,11 +2033,17 @@ function resolvePlayerCollisions(pos: Vec2, radius: number): Vec2 {
 function previewColliders(): Collider[] {
     const out: Collider[] = [];
     for (const item of doc.items) {
-        if (item.layer === "roof" || item.layer === "floor" || item.layer === "basementFloor") continue;
+        if (
+            item.layer === "roof" ||
+            item.layer === "floor" ||
+            item.layer === "basementFloor"
+        )
+            continue;
         if (item.kind === "hitbox" || item.type) {
             if (item.type) {
                 const def = MapObjectDefs[item.type];
-                if (def?.type === "obstacle" && !(def as ObstacleDef).collidable) continue;
+                if (def?.type === "obstacle" && !(def as ObstacleDef).collidable)
+                    continue;
             }
             out.push(...itemColliders(item));
         }
@@ -1793,7 +2066,9 @@ function renderPalette() {
         .filter((entry) => activeCategory === "all" || entry.category === activeCategory)
         .filter((entry) => {
             if (!search) return true;
-            return `${entry.name} ${entry.type || ""} ${entry.sprite || ""}`.toLowerCase().includes(search);
+            return `${entry.name} ${entry.type || ""} ${entry.sprite || ""}`
+                .toLowerCase()
+                .includes(search);
         });
 
     list.innerHTML = "";
@@ -1873,7 +2148,15 @@ function renderSelectionPanel() {
         return;
     }
     if (selected.length > 1) {
-        panel.innerHTML = `<div class="selection-empty">${selected.length} parts selected. Use alignment, duplicate, delete, or drag them together.</div>`;
+        panel.innerHTML = `
+          <div class="selection-empty">${selected.length} parts selected. Use alignment, duplicate, delete, or drag them together.</div>
+          <div class="field-grid" style="margin-top: 8px;">
+            <button id="role-floor" class="mini-button" title="Export selected sprites through floor.imgs">Use as floor</button>
+            <button id="role-roof" class="mini-button" title="Export selected sprites through ceiling.imgs">Use as roof</button>
+            <button id="role-object" class="mini-button" title="Export selected typed parts through mapObjects">Use as object</button>
+          </div>
+        `;
+        bindRoleButtons();
         return;
     }
 
@@ -1891,6 +2174,15 @@ function renderSelectionPanel() {
         <label for="sel-sprite">Sprite</label>
         <input id="sel-sprite" class="text-field" value="${escapeAttr(item.sprite || "")}" list="sprite-name-list">
       </div>
+      <div class="field" style="margin-top: 8px;">
+        <label for="sel-export-role">Export as</label>
+        <select id="sel-export-role" class="select-field">
+          <option value="floor" ${itemExportRole(item) === "floor" ? "selected" : ""}>Floor image</option>
+          <option value="roof" ${itemExportRole(item) === "roof" ? "selected" : ""}>Roof image</option>
+          <option value="mapObject" ${itemExportRole(item) === "mapObject" ? "selected" : ""}>Map object / wall</option>
+          <option value="none" ${itemExportRole(item) === "none" ? "selected" : ""}>Hitbox only</option>
+        </select>
+      </div>
       <div class="field-grid" style="margin-top: 8px;">
         <div class="field">
           <label for="sel-layer">Layer</label>
@@ -1901,8 +2193,22 @@ function renderSelectionPanel() {
         <div class="field">
           <label for="sel-kind">Kind</label>
           <select id="sel-kind" class="select-field">
-            ${["floor", "roof", "wall", "door", "window", "object", "basementWall", "basementObject", "basementFloor", "hitbox"]
-                .map((kind) => `<option value="${kind}" ${item.kind === kind ? "selected" : ""}>${kind}</option>`)
+            ${[
+                "floor",
+                "roof",
+                "wall",
+                "door",
+                "window",
+                "object",
+                "basementWall",
+                "basementObject",
+                "basementFloor",
+                "hitbox",
+            ]
+                .map(
+                    (kind) =>
+                        `<option value="${kind}" ${item.kind === kind ? "selected" : ""}>${kind}</option>`,
+                )
                 .join("")}
           </select>
         </div>
@@ -1939,6 +2245,15 @@ function renderSelectionPanel() {
         <span>Ignore map spawn replacement</span>
         <input id="sel-ignore-replacement" type="checkbox" ${item.ignoreMapSpawnReplacement ? "checked" : ""}>
       </label>
+      <label class="check-row">
+        <span>Keep object rotation fixed</span>
+        <input id="sel-fixed-ori" type="checkbox" ${item.inheritOri === false ? "checked" : ""}>
+      </label>
+      <div class="field-grid" style="margin-top: 8px;">
+        <button id="role-floor" class="mini-button" title="Export this sprite through floor.imgs">Use as floor</button>
+        <button id="role-roof" class="mini-button" title="Export this sprite through ceiling.imgs">Use as roof</button>
+        <button id="role-object" class="mini-button" title="Export this part through mapObjects when it has an object type">Use as object</button>
+      </div>
       <datalist id="object-type-list">
         ${Object.keys(MapObjectDefs)
             .map((name) => `<option value="${escapeAttr(name)}"></option>`)
@@ -1946,7 +2261,10 @@ function renderSelectionPanel() {
       </datalist>
       <datalist id="sprite-name-list">
         ${spriteSpawnOptions
-            .map((entry) => `<option value="${escapeAttr(entry.sprite || entry.name)}"></option>`)
+            .map(
+                (entry) =>
+                    `<option value="${escapeAttr(entry.sprite || entry.name)}"></option>`,
+            )
             .join("")}
       </datalist>
     `;
@@ -1963,8 +2281,33 @@ function renderSelectionPanel() {
         }
     });
     bindText("sel-sprite", (value) => (item.sprite = value || undefined));
-    bindSelect("sel-layer", (value) => (item.layer = value as LayerId));
-    bindSelect("sel-kind", (value) => (item.kind = value as ItemKind));
+    bindSelect("sel-export-role", (value) => {
+        if (value === "floor") applyFloorRole(item);
+        if (value === "roof") applyRoofRole(item);
+        if (value === "mapObject") applyMapObjectRole(item);
+        if (value === "none") {
+            item.kind = "hitbox";
+            item.layer = "hitboxes";
+            item.type = undefined;
+        }
+    });
+    bindSelect("sel-layer", (value) => {
+        item.layer = value as LayerId;
+        if (item.layer === "floor") applyFloorRole(item, false);
+        if (item.layer === "basementFloor") applyFloorRole(item, true);
+        if (item.layer === "roof") applyRoofRole(item);
+    });
+    bindSelect("sel-kind", (value) => {
+        item.kind = value as ItemKind;
+        if (item.kind === "floor") applyFloorRole(item, false);
+        if (item.kind === "basementFloor") applyFloorRole(item, true);
+        if (item.kind === "roof") applyRoofRole(item);
+        if (item.kind === "wall" || item.kind === "door" || item.kind === "window")
+            item.layer = "walls";
+        if (item.kind === "object") item.layer = "objects";
+        if (item.kind === "basementWall" || item.kind === "basementObject")
+            item.layer = "basement";
+    });
     bindNumber("sel-x", (value) => (item.x = snap(value)));
     bindNumber("sel-y", (value) => (item.y = snap(value)));
     bindNumber("sel-ori", (value) => (item.rotation = oriToRad(value)));
@@ -1976,6 +2319,24 @@ function renderSelectionPanel() {
         item.ignoreMapSpawnReplacement = ignore.checked;
         commit("edit selected");
     });
+    const fixedOri = document.getElementById("sel-fixed-ori") as HTMLInputElement;
+    fixedOri.addEventListener("change", () => {
+        item.inheritOri = fixedOri.checked ? false : undefined;
+        commit("edit selected");
+    });
+    bindRoleButtons();
+}
+
+function bindRoleButtons() {
+    document
+        .getElementById("role-floor")
+        ?.addEventListener("click", () => applyRoleToSelection("floor"));
+    document
+        .getElementById("role-roof")
+        ?.addEventListener("click", () => applyRoleToSelection("roof"));
+    document
+        .getElementById("role-object")
+        ?.addEventListener("click", () => applyRoleToSelection("mapObject"));
 }
 
 function bindText(id: string, update: (value: string) => void) {
@@ -2012,7 +2373,9 @@ function renderWarnings() {
         list.innerHTML = `<li class="ok">Export checks passed.</li>`;
         return;
     }
-    list.innerHTML = warnings.map((warning) => `<li>${escapeHtml(warning)}</li>`).join("");
+    list.innerHTML = warnings
+        .map((warning) => `<li>${escapeHtml(warning)}</li>`)
+        .join("");
 }
 
 function validateDoc(): string[] {
@@ -2026,22 +2389,48 @@ function validateDoc(): string[] {
     if (!doc.items.some((item) => item.layer === "hitboxes" || item.layer === "walls")) {
         warnings.push("No collision/hitbox or wall objects are present.");
     }
-    const hasBasement = doc.items.some((item) => item.layer === "basement" || item.layer === "basementFloor");
+    const hasBasement = doc.items.some(
+        (item) => item.layer === "basement" || item.layer === "basementFloor",
+    );
     if (hasBasement && !doc.items.some((item) => item.layer === "basementFloor")) {
         warnings.push("Basement mode has objects but no basement floor.");
     }
     if (!doc.items.some((item) => item.layer === "roof")) {
-        warnings.push("No roof images are present. This is valid, but the exported ceiling will be empty.");
+        warnings.push(
+            "No roof images are present. This is valid, but the exported ceiling will be empty.",
+        );
     }
     for (const item of doc.items) {
         if (item.type && !MapObjectDefs[item.type]) {
             warnings.push(`${item.name} uses unknown object type "${item.type}".`);
         }
-        if (item.sprite && !item.sprite.endsWith(".img") && !item.sprite.endsWith(".svg") && !item.sprite.endsWith(".png")) {
-            warnings.push(`${item.name} sprite "${item.sprite}" does not look like a game asset name.`);
+        if (
+            (item.layer === "walls" || item.layer === "objects" || item.layer === "basement") &&
+            !inferMapObjectType(item)
+        ) {
+            warnings.push(
+                `${item.name} is on ${layerLabels[item.layer]} but has no object type or matching game sprite, so it will not export as a mapObject.`,
+            );
+        }
+        if ((item.layer === "floor" || item.layer === "basementFloor" || item.layer === "roof") && !item.sprite) {
+            warnings.push(
+                `${item.name} is on ${layerLabels[item.layer]} but has no sprite, so no image will export.`,
+            );
+        }
+        if (
+            item.sprite &&
+            !item.sprite.endsWith(".img") &&
+            !item.sprite.endsWith(".svg") &&
+            !item.sprite.endsWith(".png")
+        ) {
+            warnings.push(
+                `${item.name} sprite "${item.sprite}" does not look like a game asset name.`,
+            );
         }
         if (Math.abs(item.rotation - oriToRad(radToOri(item.rotation))) > 0.001) {
-            warnings.push(`${item.name} rotation will export as nearest ori ${radToOri(item.rotation)}.`);
+            warnings.push(
+                `${item.name} rotation will export as nearest ori ${radToOri(item.rotation)}.`,
+            );
         }
     }
     return Array.from(new Set(warnings)).slice(0, 12);
@@ -2052,30 +2441,89 @@ function syncStaticControls() {
     snapToggle.checked = doc.snapToGrid;
     gridSizeInput.value = String(doc.gridSize);
     (document.getElementById("undo") as HTMLButtonElement).disabled = historyIndex <= 0;
-    (document.getElementById("redo") as HTMLButtonElement).disabled = historyIndex >= history.length - 1;
+    (document.getElementById("redo") as HTMLButtonElement).disabled =
+        historyIndex >= history.length - 1;
 }
 
 function syncModeButtons() {
-    document.querySelectorAll<HTMLButtonElement>("#mode-tabs button").forEach((button) => {
-        button.classList.toggle("active", button.dataset.mode === mode);
-    });
+    document
+        .querySelectorAll<HTMLButtonElement>("#mode-tabs button")
+        .forEach((button) => {
+            button.classList.toggle("active", button.dataset.mode === mode);
+        });
 }
 
 function syncScopeButtons() {
-    document.querySelectorAll<HTMLButtonElement>("#scope-tabs button").forEach((button) => {
-        button.classList.toggle("active", button.dataset.scope === activeScope);
-    });
+    document
+        .querySelectorAll<HTMLButtonElement>("#scope-tabs button")
+        .forEach((button) => {
+            button.classList.toggle("active", button.dataset.scope === activeScope);
+        });
 }
 
 function syncPanelToggles() {
-    const assetToggle = document.getElementById("toggle-assets") as HTMLButtonElement | null;
-    const inspectorToggle = document.getElementById("toggle-inspector") as HTMLButtonElement | null;
+    const assetToggle = document.getElementById(
+        "toggle-assets",
+    ) as HTMLButtonElement | null;
+    const inspectorToggle = document.getElementById(
+        "toggle-inspector",
+    ) as HTMLButtonElement | null;
     const assetsOpen = !makerShell.classList.contains("assets-collapsed");
     const inspectorOpen = !makerShell.classList.contains("inspector-collapsed");
     assetToggle?.classList.toggle("active", assetsOpen);
     assetToggle?.setAttribute("aria-pressed", String(assetsOpen));
     inspectorToggle?.classList.toggle("active", inspectorOpen);
     inspectorToggle?.setAttribute("aria-pressed", String(inspectorOpen));
+}
+
+function loadAssetPanelWidth(): number {
+    const saved = Number(localStorage.getItem(ASSET_PANEL_WIDTH_KEY));
+    return Number.isFinite(saved) ? clampAssetPanelWidth(saved) : 260;
+}
+
+function clampAssetPanelWidth(width: number): number {
+    const viewportMax = Math.max(MIN_ASSET_PANEL_WIDTH, window.innerWidth - 360);
+    return Math.round(
+        clamp(width, MIN_ASSET_PANEL_WIDTH, Math.min(MAX_ASSET_PANEL_WIDTH, viewportMax)),
+    );
+}
+
+function setAssetPanelWidth(width: number, persist = true) {
+    const nextWidth = clampAssetPanelWidth(width);
+    makerShell.style.setProperty("--asset-panel-width", `${nextWidth}px`);
+    if (persist) {
+        localStorage.setItem(ASSET_PANEL_WIDTH_KEY, String(nextWidth));
+    }
+    resizeCanvas();
+}
+
+function setupAssetPanelResize() {
+    setAssetPanelWidth(loadAssetPanelWidth(), false);
+
+    assetResizeHandle.addEventListener("pointerdown", (event) => {
+        if (makerShell.classList.contains("assets-collapsed")) return;
+        event.preventDefault();
+        assetResizeHandle.setPointerCapture(event.pointerId);
+        makerShell.classList.add("resizing-assets");
+
+        const startX = event.clientX;
+        const startWidth = assetPanel.getBoundingClientRect().width;
+
+        const move = (moveEvent: PointerEvent) => {
+            setAssetPanelWidth(startWidth + moveEvent.clientX - startX);
+        };
+        const stop = (upEvent: PointerEvent) => {
+            assetResizeHandle.releasePointerCapture(upEvent.pointerId);
+            makerShell.classList.remove("resizing-assets");
+            window.removeEventListener("pointermove", move);
+            window.removeEventListener("pointerup", stop);
+            window.removeEventListener("pointercancel", stop);
+        };
+
+        window.addEventListener("pointermove", move);
+        window.addEventListener("pointerup", stop);
+        window.addEventListener("pointercancel", stop);
+    });
 }
 
 function zoomAtScreenPoint(screenPoint: Vec2, factor: number) {
@@ -2089,6 +2537,8 @@ function zoomAtScreenPoint(screenPoint: Vec2, factor: number) {
 }
 
 function setupControls() {
+    setupAssetPanelResize();
+
     buildingNameInput.addEventListener("change", () => {
         doc.name = sanitizeKey(buildingNameInput.value.trim() || "new_building_01");
         commit("rename");
@@ -2098,7 +2548,7 @@ function setupControls() {
         commit("snap");
     });
     gridSizeInput.addEventListener("change", () => {
-        doc.gridSize = Math.max(0.25, Number(gridSizeInput.value) || 1);
+        doc.gridSize = Math.max(MIN_GRID_SIZE, Number(gridSizeInput.value) || 1);
         commit("grid");
     });
     assetSearch.addEventListener("input", renderPalette);
@@ -2119,14 +2569,16 @@ function setupControls() {
         makerShell.classList.toggle("inspector-collapsed");
         syncPanelToggles();
     });
-    document.querySelectorAll<HTMLButtonElement>("#mode-tabs button").forEach((button) => {
-        button.addEventListener("click", () => {
-            mode = button.dataset.mode as EditorMode;
-            selectedIds.clear();
-            syncModeButtons();
-            renderSelectionPanel();
+    document
+        .querySelectorAll<HTMLButtonElement>("#mode-tabs button")
+        .forEach((button) => {
+            button.addEventListener("click", () => {
+                mode = button.dataset.mode as EditorMode;
+                selectedIds.clear();
+                syncModeButtons();
+                renderSelectionPanel();
+            });
         });
-    });
     document.getElementById("new-doc")?.addEventListener("click", () => {
         doc = createEmptyDoc();
         selectedIds.clear();
@@ -2149,13 +2601,15 @@ function setupControls() {
         camera.zoom = scopeToCameraZoom(activeScope);
         syncScopeButtons();
     });
-    document.querySelectorAll<HTMLButtonElement>("#scope-tabs button").forEach((button) => {
-        button.addEventListener("click", () => {
-            activeScope = button.dataset.scope || DEFAULT_SCOPE;
-            camera.zoom = scopeToCameraZoom(activeScope);
-            syncScopeButtons();
+    document
+        .querySelectorAll<HTMLButtonElement>("#scope-tabs button")
+        .forEach((button) => {
+            button.addEventListener("click", () => {
+                activeScope = button.dataset.scope || DEFAULT_SCOPE;
+                camera.zoom = scopeToCameraZoom(activeScope);
+                syncScopeButtons();
+            });
         });
-    });
     document.getElementById("export")?.addEventListener("click", openExportDialog);
     document.getElementById("import")?.addEventListener("click", openImportDialog);
     document.getElementById("local-save")?.addEventListener("click", saveNamedDoc);
@@ -2163,12 +2617,24 @@ function setupControls() {
     document.getElementById("preview")?.addEventListener("click", enterPreviewMode);
     document.getElementById("exit-preview")?.addEventListener("click", exitPreviewMode);
     document.getElementById("dialog-close")?.addEventListener("click", closeDialog);
-    document.getElementById("align-left")?.addEventListener("click", () => alignSelection("left"));
-    document.getElementById("align-center")?.addEventListener("click", () => alignSelection("center"));
-    document.getElementById("align-right")?.addEventListener("click", () => alignSelection("right"));
-    document.getElementById("align-top")?.addEventListener("click", () => alignSelection("top"));
-    document.getElementById("align-middle")?.addEventListener("click", () => alignSelection("middle"));
-    document.getElementById("align-bottom")?.addEventListener("click", () => alignSelection("bottom"));
+    document
+        .getElementById("align-left")
+        ?.addEventListener("click", () => alignSelection("left"));
+    document
+        .getElementById("align-center")
+        ?.addEventListener("click", () => alignSelection("center"));
+    document
+        .getElementById("align-right")
+        ?.addEventListener("click", () => alignSelection("right"));
+    document
+        .getElementById("align-top")
+        ?.addEventListener("click", () => alignSelection("top"));
+    document
+        .getElementById("align-middle")
+        ?.addEventListener("click", () => alignSelection("middle"));
+    document
+        .getElementById("align-bottom")
+        ?.addEventListener("click", () => alignSelection("bottom"));
 }
 
 function sanitizeKey(value: string): string {
@@ -2233,7 +2699,11 @@ function openLoadDialog() {
             </div>`,
         )
         .join("");
-    openDialog("Local Saves", rows || `<div class="selection-empty">No local saves yet.</div>`, `<span></span>`);
+    openDialog(
+        "Local Saves",
+        rows || `<div class="selection-empty">No local saves yet.</div>`,
+        `<span></span>`,
+    );
     document.querySelectorAll<HTMLButtonElement>("[data-load]").forEach((button) => {
         button.addEventListener("click", () => {
             const save = saves[button.dataset.load || ""];
@@ -2247,14 +2717,16 @@ function openLoadDialog() {
             renderAllPanels();
         });
     });
-    document.querySelectorAll<HTMLButtonElement>("[data-delete-save]").forEach((button) => {
-        button.addEventListener("click", () => {
-            const name = button.dataset.deleteSave || "";
-            delete saves[name];
-            localStorage.setItem(SAVES_KEY, JSON.stringify(saves));
-            openLoadDialog();
+    document
+        .querySelectorAll<HTMLButtonElement>("[data-delete-save]")
+        .forEach((button) => {
+            button.addEventListener("click", () => {
+                const name = button.dataset.deleteSave || "";
+                delete saves[name];
+                localStorage.setItem(SAVES_KEY, JSON.stringify(saves));
+                openLoadDialog();
+            });
         });
-    });
 }
 
 function saveNamedDoc() {
@@ -2287,7 +2759,9 @@ function closeDialog() {
 }
 
 function generateExport(): string {
-    const hasBasement = doc.items.some((item) => item.layer === "basement" || item.layer === "basementFloor");
+    const hasBasement = doc.items.some(
+        (item) => item.layer === "basement" || item.layer === "basementFloor",
+    );
     const base = buildBuildingDef("base");
     const baseCode = `${doc.name}: ${formatBuilding(base, hasBasement ? doc.name + "_basement" : undefined)}`;
     if (!hasBasement) return `${baseCode},`;
@@ -2302,18 +2776,18 @@ function buildBuildingDef(section: "base" | "basement") {
     const floorItems = doc.items.filter((item) => floorLayers.includes(item.layer));
     const roofItems = isBasement ? [] : doc.items.filter((item) => item.layer === "roof");
     const hitboxes = doc.items.filter((item) => {
-        if (item.layer !== "hitboxes") return false;
+        if (item.layer !== "hitboxes" && item.kind !== "hitbox") return false;
         const basementHitbox = item.name.toLowerCase().includes("basement");
         return isBasement ? basementHitbox : !basementHitbox;
     });
-    const mapObjects = doc.items.filter((item) => objectLayers.includes(item.layer) && item.type);
+    const mapObjects = doc.items.filter(
+        (item) => objectLayers.includes(item.layer) && inferMapObjectType(item),
+    );
 
     const surfaceColliders = hitboxes.length
         ? hitboxes.map((item) => firstAabb(itemColliders(item)[0]))
         : floorItems.map((item) => firstAabb(itemColliders(item)[0]));
-    const zoomColliders = roofItems.length
-        ? [boundsForItems([...floorItems, ...mapObjects])]
-        : surfaceColliders;
+    const zoomColliders = roofItems.length ? [boundsForItems([...floorItems, ...mapObjects])] : [];
 
     return {
         mapDisplay: !isBasement,
@@ -2322,7 +2796,7 @@ function buildBuildingDef(section: "base" | "basement") {
         floorImgs: floorItems.filter((item) => item.sprite).map(itemToFloorImage),
         floorSurfaces: [
             {
-                type: floorItems[0]?.surfaceType || "wood",
+                type: floorItems[0]?.surfaceType || hitboxes[0]?.surfaceType || "wood",
                 collision: surfaceColliders.filter(Boolean) as AABB[],
             },
         ],
@@ -2345,11 +2819,12 @@ function itemToFloorImage(item: EditorItem) {
 
 function itemToMapObject(item: EditorItem) {
     return {
-        type: item.type || item.name,
+        type: inferMapObjectType(item) || item.name,
         pos: v2.create(item.x, item.y),
         scale: item.scale,
         ori: radToOri(item.rotation),
         ignoreMapSpawnReplacement: item.ignoreMapSpawnReplacement,
+        inheritOri: item.inheritOri,
     };
 }
 
@@ -2382,8 +2857,11 @@ function formatBuilding(
     lines.push(
         `    map: { display: ${building.mapDisplay}, color: ${hexColor(building.mapColor)}, scale: 1 },`,
     );
-    lines.push(`    terrain: { grass: ${doc.terrain.grass}, beach: ${doc.terrain.beach} },`);
+    lines.push(
+        `    terrain: { grass: ${doc.terrain.grass}, beach: ${doc.terrain.beach} },`,
+    );
     lines.push(`    zIdx: ${building.zIdx},`);
+    lines.push(`    ori: 0,`);
     lines.push(`    floor: {`);
     lines.push(`        surfaces: [`);
     for (const surface of building.floorSurfaces) {
@@ -2417,14 +2895,17 @@ function formatBuilding(
     lines.push(`    },`);
     lines.push(`    mapObjects: [`);
     for (const obj of building.mapObjects) {
-        const extra = obj.ignoreMapSpawnReplacement
-            ? `,\n            ignoreMapSpawnReplacement: true`
-            : "";
+        const extraLines: string[] = [];
+        if (obj.ignoreMapSpawnReplacement) extraLines.push("ignoreMapSpawnReplacement: true");
+        if (obj.inheritOri === false) extraLines.push("inheritOri: false");
         lines.push(`        {`);
         lines.push(`            type: "${obj.type}",`);
         lines.push(`            pos: ${formatVec(obj.pos)},`);
         lines.push(`            scale: ${formatNum(obj.scale)},`);
-        lines.push(`            ori: ${obj.ori}${extra ? extra : ""},`);
+        lines.push(`            ori: ${obj.ori},`);
+        for (const line of extraLines) {
+            lines.push(`            ${line},`);
+        }
         lines.push(`        },`);
     }
     lines.push(`    ],`);
@@ -2471,10 +2952,13 @@ function importDocument(text: string): EditorDoc {
     if (evaluated.schemaVersion === 1) return normalizeDoc(evaluated);
 
     const defs: Record<string, BuildingDef> =
-        evaluated.type === "building" ? { [doc.name]: evaluated as BuildingDef } : evaluated;
+        evaluated.type === "building"
+            ? { [doc.name]: evaluated as BuildingDef }
+            : evaluated;
     const [name, baseDef] =
         Object.entries(defs).find(([, def]) => def?.type === "building") || [];
-    if (!name || !baseDef) throw new Error("Could not find a BuildingDef in that import.");
+    if (!name || !baseDef)
+        throw new Error("Could not find a BuildingDef in that import.");
 
     const next = createEmptyDoc();
     next.name = sanitizeKey(name);
@@ -2485,7 +2969,9 @@ function importDocument(text: string): EditorDoc {
     return next;
 }
 
-function evaluateBuildingSnippet(text: string): Record<string, BuildingDef> | BuildingDef | EditorDoc {
+function evaluateBuildingSnippet(
+    text: string,
+): Record<string, BuildingDef> | BuildingDef | EditorDoc {
     const expression = expressionFromSnippet(text);
     const fakeUtil = {
         mergeDeep: (_base: unknown, value: unknown) => value,
@@ -2512,7 +2998,11 @@ function expressionFromSnippet(text: string): string {
     return trimmed;
 }
 
-function importBuildingIntoDoc(next: EditorDoc, building: BuildingDef, basement: boolean) {
+function importBuildingIntoDoc(
+    next: EditorDoc,
+    building: BuildingDef,
+    basement: boolean,
+) {
     const floorLayer: LayerId = basement ? "basementFloor" : "floor";
     const objectLayer: LayerId = basement ? "basement" : "objects";
     const wallLayer: LayerId = basement ? "basement" : "walls";
@@ -2592,8 +3082,16 @@ function importBuildingIntoDoc(next: EditorDoc, building: BuildingDef, basement:
         next.items.push({
             id: makeId("part"),
             name: obj.type,
-            kind: basement ? classification.kind === "wall" ? "basementWall" : "basementObject" : classification.kind,
-            layer: basement ? objectLayer : classification.layer === "walls" ? wallLayer : objectLayer,
+            kind: basement
+                ? classification.kind === "wall"
+                    ? "basementWall"
+                    : "basementObject"
+                : classification.kind,
+            layer: basement
+                ? objectLayer
+                : classification.layer === "walls"
+                  ? wallLayer
+                  : objectLayer,
             type: obj.type,
             sprite: obstacle?.img?.sprite,
             x: obj.pos.x,
@@ -2601,11 +3099,16 @@ function importBuildingIntoDoc(next: EditorDoc, building: BuildingDef, basement:
             rotation: oriToRad(obj.ori || 0),
             scale: obj.scale || 1,
             assetScale: obstacle?.img?.scale ?? 1,
-            fallbackWidth: obstacle ? fallbackSizeFromCollider(obstacle.collision).width : 3,
-            fallbackHeight: obstacle ? fallbackSizeFromCollider(obstacle.collision).height : 3,
+            fallbackWidth: obstacle
+                ? fallbackSizeFromCollider(obstacle.collision).width
+                : 3,
+            fallbackHeight: obstacle
+                ? fallbackSizeFromCollider(obstacle.collision).height
+                : 3,
             alpha: 1,
             tint: 0xffffff,
             ignoreMapSpawnReplacement: obj.ignoreMapSpawnReplacement,
+            inheritOri: obj.inheritOri,
             localCollider: obstacle?.collision || createAabbCollider(3, 3),
         });
     }
@@ -2630,7 +3133,9 @@ function escapeAttr(value: string): string {
 
 function formatNum(value: number): string {
     const rounded = Math.round(value * 1000) / 1000;
-    return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
+    return Number.isInteger(rounded)
+        ? String(rounded)
+        : rounded.toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
 }
 
 function hexColor(value: number): string {
@@ -2650,7 +3155,11 @@ function hexCss(value: number): string {
 function scopeToCameraZoom(scope: string): number {
     const desktopScopes = GameConfig.scopeZoomRadius.desktop;
     const radius = desktopScopes[scope] || desktopScopes[DEFAULT_SCOPE];
-    return clamp((desktopScopes[DEFAULT_SCOPE] / radius) * 1.6, MIN_CAMERA_ZOOM, MAX_CAMERA_ZOOM);
+    return clamp(
+        (desktopScopes[DEFAULT_SCOPE] / radius) * 1.6,
+        MIN_CAMERA_ZOOM,
+        MAX_CAMERA_ZOOM,
+    );
 }
 
 function scopeLabel(scope: string): string {
@@ -2677,6 +3186,7 @@ function radToOri(rad: number): number {
 }
 
 window.addEventListener("resize", resizeCanvas);
+window.addEventListener("resize", () => setAssetPanelWidth(loadAssetPanelWidth(), false));
 if ("ResizeObserver" in window) {
     new ResizeObserver(() => resizeCanvas()).observe(canvas.parentElement ?? canvas);
 }

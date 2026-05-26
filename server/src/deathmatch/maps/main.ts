@@ -85,25 +85,7 @@ export const mapDef: PartialMapDef = {
             : [],
         fixedSpawns: [
             {
-                cache_01: 1,
-                cache_02: 1, // mosin tree
-                cache_07: 1,
-                bunker_structure_02: 1,
-                bunker_structure_05: 1,
-                chest_01: 1,
-                chest_03: { odds: 0.2 },
-                stone_04: 2,
-                stone_05: 2,
-                stone_03: 5,
-                tree_02: 3,
-                teahouse_complex_01su: 1,
-                shack_03b: 3,
-                shack_01: 2,
-                mansion_structure_01: 1,
-                police_01: 1,
-                bank_01: 1,
-                greenhouse_01: 1,
-                house_red_02: 1,
+       cafetria_01: 1
             },
         ],
         importantSpawns: ["logging_complex_01tw", "club_complex_01"],
