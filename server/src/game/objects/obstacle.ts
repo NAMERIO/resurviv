@@ -9,6 +9,7 @@ import { math } from "../../../../shared/utils/math";
 import { util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import type { Game } from "../game";
+import { isAmongUsMiniGame } from "../privateLobbyMiniGames";
 import type { Building } from "./building";
 import { BaseGameObject, type DamageParams } from "./gameObject";
 import type { Player } from "./player";
@@ -364,6 +365,7 @@ export class Obstacle extends BaseGameObject {
 
     damage(params: DamageParams): void {
         if (this.isSkin) return;
+        if (isAmongUsMiniGame(this.game.miniGame)) return;
 
         const def = MapObjectDefs[this.type] as ObstacleDef;
         if (this.health === 0 || !this.destructible) return;
