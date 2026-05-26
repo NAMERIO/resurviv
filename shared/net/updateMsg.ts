@@ -230,6 +230,7 @@ export interface PlayerInfo {
     name: string;
     clanName: string;
     clanTagColor: string;
+    amongUsRole?: string;
 
     loadout: {
         heal: string;
@@ -251,6 +252,10 @@ function serializePlayerInfo(s: BitStream, data: PlayerInfo) {
     if (data.clanTagColor) {
         s.writeString(data.clanTagColor);
     }
+    s.writeBoolean(Boolean(data.amongUsRole));
+    if (data.amongUsRole) {
+        s.writeString(data.amongUsRole);
+    }
 
     s.writeGameType(data.loadout.heal);
     s.writeGameType(data.loadout.boost);
@@ -266,6 +271,7 @@ function deserializePlayerInfo(s: BitStream, data: PlayerInfo) {
     data.name = s.readString();
     data.clanName = s.readBoolean() ? s.readString() : "";
     data.clanTagColor = s.readBoolean() ? s.readString() : "";
+    data.amongUsRole = s.readBoolean() ? s.readString() : "";
     data.loadout = {} as PlayerInfo["loadout"];
     data.loadout.heal = s.readGameType();
     data.loadout.boost = s.readGameType();

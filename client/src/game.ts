@@ -1630,21 +1630,22 @@ export class Game {
                     discordPresence.updateKills(msg.killerKills);
                 }
 
-                // Add killfeed entry for this kill
-                const killText = this.m_ui2Manager.getKillFeedText(
-                    targetName,
-                    killfeedKillerInfo.teamId ? killfeedKillerName : "",
-                    sourceType,
-                    msg.damageType,
-                    msg.downed && !msg.killed,
-                );
-                const killColor = this.m_ui2Manager.getKillFeedColor(
-                    activeTeamId,
-                    targetInfo.teamId,
-                    killerInfo.teamId,
-                    this.m_map.factionMode,
-                );
-                this.m_ui2Manager.addKillFeedMessage(killText, killColor);
+                if (!this.m_map.getMapDef().gameMode.amongUsMode) {
+                    const killText = this.m_ui2Manager.getKillFeedText(
+                        targetName,
+                        killfeedKillerInfo.teamId ? killfeedKillerName : "",
+                        sourceType,
+                        msg.damageType,
+                        msg.downed && !msg.killed,
+                    );
+                    const killColor = this.m_ui2Manager.getKillFeedColor(
+                        activeTeamId,
+                        targetInfo.teamId,
+                        killerInfo.teamId,
+                        this.m_map.factionMode,
+                    );
+                    this.m_ui2Manager.addKillFeedMessage(killText, killColor);
+                }
                 if (msg.killed) {
                     this.m_playerBarn.addDeathEffect(
                         msg.targetId,

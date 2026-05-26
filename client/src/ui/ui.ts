@@ -241,6 +241,7 @@ export class UiManager {
 
     displayingStats = false;
     teamMemberHealthBarWidth!: number;
+    hideTeamStatus = false;
 
     teamMemberHeight = 48;
     groupPlayerCount = 0;
@@ -641,6 +642,11 @@ export class UiManager {
 
     onMapLoad(map: Map, camera: Camera) {
         this.resize(map, camera);
+        if (this.hideTeamStatus) {
+            $("#ui-team, #ui-team-indicators").css("display", "");
+        }
+        this.hideTeamStatus = !!map.getMapDef().gameMode.amongUsMode;
+        this.applyTeamStatusVisibility();
         const displayLeader = map.getMapDef().gameMode.killLeaderEnabled;
         const displayLeaderboard = !map.mapName.startsWith("br_");
 
@@ -654,6 +660,12 @@ export class UiManager {
         if (!device.mobile) {
             $("#ui-killfeed-wrapper").css("top", displayLeader ? "60px" : "12px");
         }
+    }
+
+    applyTeamStatusVisibility() {
+        if (!this.hideTeamStatus) return;
+
+        $("#ui-team, #ui-team-indicators").css("display", "none");
     }
 
     m_update(
@@ -1934,6 +1946,7 @@ export class UiManager {
             this.bigmapDisplayed ? "none" : "block",
         );
         $(".js-ui-map-show").css("display", this.bigmapDisplayed ? "block" : "none");
+        this.applyTeamStatusVisibility();
         this.updateSpectatorCountDisplay(true);
         this.redraw(this.game.m_camera);
     }

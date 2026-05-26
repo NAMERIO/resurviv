@@ -1,4 +1,5 @@
 import * as PIXI from "pixi.js-legacy";
+import { AmongUsRoleDefs } from "../../../shared/defs/amongUsRoleDefs";
 import { GameObjectDefs, type LootDef } from "../../../shared/defs/gameObjectDefs";
 import type { DeathEffectDef } from "../../../shared/defs/gameObjects/deathEffectDefs";
 import type {
@@ -1117,8 +1118,13 @@ export class Player implements AbstractObject {
         const activeGroupId = playerBarn.getPlayerInfo(activeId).groupId;
         const playerInfo = playerBarn.getPlayerInfo(this.__id);
         const inSameGroup = playerInfo.groupId == activeGroupId;
+        const isKnownImpostor = playerInfo.amongUsRole === "impostor";
         this.nameText.text = playerBarn.getPlayerName(this.__id, activeId, false);
-        this.nameText.visible = !isActivePlayer && inSameGroup;
+        this.nameText.style.fill = isKnownImpostor
+            ? AmongUsRoleDefs.impostor.color
+            : 0x00ffff;
+        this.nameText.tint = 0xffffff;
+        this.nameText.visible = (!isActivePlayer && inSameGroup) || isKnownImpostor;
 
         // Locate nearby obstacles that may play interaction effects
         let insideObstacle: Obstacle | null = null;
@@ -3203,9 +3209,10 @@ export class PlayerBarn {
                     ? 0
                     : 0.6;
 
-            status.minimapAlpha =
-                math.smoothstep(status.timeSinceVisible!, 0, 0.1) *
-                math.lerp(math.smoothstep(status.timeSinceUpdate!, 2, 2.5), 1, fade);
+            status.minimapAlpha = status.visible
+                ? math.smoothstep(status.timeSinceVisible!, 0, 0.1) *
+                  math.lerp(math.smoothstep(status.timeSinceUpdate!, 2, 2.5), 1, fade)
+                : 0;
 
             // @HACK: Fix issue in non-faction mode when spectating and swapping
             // between teams. We don't want the old player indicators to fade out
@@ -3247,6 +3254,7 @@ export class PlayerBarn {
             name: info.name,
             clanName: info.clanName || "",
             clanTagColor: info.clanTagColor || "",
+            amongUsRole: info.amongUsRole || "",
             nameTruncated: helpers.truncateString(
                 info.name || "",
                 "bold 16px arial",
@@ -3281,6 +3289,7 @@ export class PlayerBarn {
                 name: "",
                 clanName: "",
                 clanTagColor: "",
+                amongUsRole: "",
                 nameTruncated: "",
                 anonName: "",
                 loadout: {},

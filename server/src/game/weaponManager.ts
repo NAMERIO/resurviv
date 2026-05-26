@@ -1,3 +1,4 @@
+import { AmongUsRoleDefs } from "../../../shared/defs/amongUsRoleDefs";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { DamageStreakProperties } from "../../../shared/defs/gameObjects/damageStreakDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
@@ -23,7 +24,7 @@ import type { GameObject } from "../game/objects/gameObject";
 import type { Player } from "../game/objects/player";
 import type { Obstacle } from "./objects/obstacle";
 import type { Projectile } from "./objects/projectile";
-import { isHideAndSeekHider } from "./privateLobbyMiniGames";
+import { isAmongUsMiniGame, isHideAndSeekHider } from "./privateLobbyMiniGames";
 
 /**
  * List of throwables to cycle based on the definition `inventoryOrder`
@@ -1428,9 +1429,15 @@ export class WeaponManager {
                 });
                 if (obj.interactable) obj.interact(this.player);
             } else if (obj.__type === ObjectType.Player) {
+                const meleeDamage =
+                    isAmongUsMiniGame(this.player.game.miniGame) &&
+                    this.player.amongUsRole === "impostor" &&
+                    this.activeWeapon === "karambit"
+                        ? AmongUsRoleDefs.impostor.karambitDamage
+                        : meleeDef.damage;
                 obj.damage({
                     amount:
-                        meleeDef.damage *
+                        meleeDamage *
                         (this.player.hasPerk("melee_striker")
                             ? ((PerkProperties.melee_striker
                                   ?.meleeDamageMult as number) ?? 1)

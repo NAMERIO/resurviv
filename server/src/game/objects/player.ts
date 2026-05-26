@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { generateUsername } from "unique-username-generator";
+import type { AmongUsRole } from "../../../../shared/defs/amongUsRoleDefs";
 import {
     GameObjectDefs,
     type LootDef,
@@ -46,7 +47,7 @@ import {
 } from "../../../../shared/gameConfig";
 import * as net from "../../../../shared/net/net";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
-import type { GroupStatus } from "../../../../shared/net/updateMsg";
+import type { GroupStatus, PlayerInfo } from "../../../../shared/net/updateMsg";
 import { type Circle, coldet } from "../../../../shared/utils/coldet";
 import { collider } from "../../../../shared/utils/collider";
 import type { Loadout } from "../../../../shared/utils/loadout";
@@ -148,6 +149,8 @@ export class PlayerBarn {
         role: string;
         time: number;
     }> = [];
+
+    amongUsRolesAssigned = false;
 
     sendWinEmoteTicker = 0;
     sentWinEmotes = false;
@@ -391,6 +394,8 @@ export class PlayerBarn {
     }
 
     update(dt: number) {
+        this.assignAmongUsRoles();
+
         let sendWinEmotes = false;
         if (this.game.over && !this.sentWinEmotes) {
             this.sendWinEmoteTicker -= dt;
@@ -443,6 +448,23 @@ export class PlayerBarn {
                 }
             }
         }
+    }
+
+    assignAmongUsRoles() {
+        if (this.amongUsRolesAssigned) return;
+        if (!isAmongUsMiniGame(this.game.miniGame)) return;
+
+        const players = this.livingPlayers.filter(
+            (p) => !p.disconnected && !p.dead && !p.spectatorOnly,
+        );
+        if (players.length < 2) return;
+
+        const impostor = players[util.randomInt(0, players.length - 1)];
+        for (const player of players) {
+            player.amongUsRole = player === impostor ? "impostor" : "crewmate";
+            player.markPlayerInfoDirty();
+        }
+        this.amongUsRolesAssigned = true;
     }
 
     removePlayer(player: Player) {
@@ -1827,8 +1849,12 @@ export class Player extends BaseGameObject {
     private applyAmongUsLoadout(): void {
         if (!isAmongUsMiniGame(this.game.miniGame)) return;
 
+        const amongUsMelee = "karambit";
+        this.loadout.melee = amongUsMelee;
+        this.meleeSkin = amongUsMelee;
+
         for (let i = 0; i < GameConfig.WeaponSlot.Count; i++) {
-            const type = i === GameConfig.WeaponSlot.Melee ? "fists" : "";
+            const type = i === GameConfig.WeaponSlot.Melee ? amongUsMelee : "";
             this.weaponManager.setWeapon(i, type, 0);
             this.setDisplayWeaponType(i, type);
         }
@@ -1853,7 +1879,27 @@ export class Player extends BaseGameObject {
         this.weapsDirty = true;
     }
 
-    private markPlayerInfoDirty(): void {
+    getPlayerInfoFor(viewer: Player): PlayerInfo {
+        return {
+            playerId: this.playerId,
+            teamId: this.teamId,
+            groupId: this.groupId,
+            name: this.name,
+            clanName: this.clanName,
+            clanTagColor: this.clanTagColor,
+            amongUsRole:
+                isAmongUsMiniGame(this.game.miniGame) && this === viewer
+                    ? this.amongUsRole
+                    : "",
+            loadout: {
+                heal: this.loadout.heal,
+                boost: this.loadout.boost,
+                death_effect: this.loadout.death_effect,
+            },
+        };
+    }
+
+    markPlayerInfoDirty(): void {
         if (!this.game.playerBarn.dirtyPlayerInfos.includes(this)) {
             this.game.playerBarn.dirtyPlayerInfos.push(this);
         }
@@ -2247,6 +2293,8 @@ export class Player extends BaseGameObject {
     lostHealth = false;
 
     msgsToSend: Array<{ type: number; msg: net.Msg }> = [];
+
+    amongUsRole: AmongUsRole | "" = "";
 
     weaponManager = new WeaponManager(this);
     recoilTicker = 0;
@@ -3657,14 +3705,16 @@ export class Player extends BaseGameObject {
             updateMsg.activePlayerData = player;
         }
 
-        updateMsg.playerInfos = this._firstUpdate
-            ? playerBarn.players
-            : [
-                  ...playerBarn.newPlayers,
-                  ...playerBarn.dirtyPlayerInfos.filter(
-                      (p) => !playerBarn.newPlayers.includes(p),
-                  ),
-              ];
+        updateMsg.playerInfos = (
+            this._firstUpdate
+                ? playerBarn.players
+                : [
+                      ...playerBarn.newPlayers,
+                      ...playerBarn.dirtyPlayerInfos.filter(
+                          (p) => !playerBarn.newPlayers.includes(p),
+                      ),
+                  ]
+        ).map((p) => p.getPlayerInfoFor(player));
 
         updateMsg.deletedPlayerIds = playerBarn.deletedPlayers;
 
@@ -3942,13 +3992,21 @@ export class Player extends BaseGameObject {
         const preHealth = this._health;
 
         if (params.source !== this && sourceTeamId !== undefined) {
+            const amongUsImpostorAttack =
+                isAmongUsMiniGame(this.game.miniGame) &&
+                playerSource?.amongUsRole === "impostor" &&
+                params.gameSourceType === "karambit";
             const infectedFriendlyFire =
                 !!infectedSettings &&
                 (playerSource?.arenaTeam
                     ? playerSource.arenaTeam === this.arenaTeam
                     : sourceTeamId === this.teamId);
             const regularFriendlyFire = !infectedSettings && sourceTeamId === this.teamId;
-            if ((infectedFriendlyFire || regularFriendlyFire) && !this.disconnected) {
+            if (
+                (infectedFriendlyFire || regularFriendlyFire) &&
+                !amongUsImpostorAttack &&
+                !this.disconnected
+            ) {
                 return;
             }
         }
@@ -5244,6 +5302,17 @@ export class Player extends BaseGameObject {
         const players: Player[] = this.game.modeManager.getPlayerStatusPlayers(this)!;
         const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
         return players.map((p) => {
+            if (isAmongUsMiniGame(this.game.miniGame)) {
+                return {
+                    hasData: true,
+                    pos: p.pos,
+                    visible: p === this,
+                    dead: p.dead,
+                    downed: p.downed,
+                    role: p.role,
+                };
+            }
+
             const hiddenByDebug = p.isInvisibleTo(this);
             const hideAndSeekVisible =
                 hideAndSeekSettings && this.arenaTeam
