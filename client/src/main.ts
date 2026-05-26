@@ -471,9 +471,12 @@ export class Application {
             this.prestigeArenaCopyCodeBtn.on("click", (e) => {
                 const code = (this.prestigeArenaRoomCode.text() || "").trim();
                 if (!code) return;
+                const miniGameDef = getPrivateLobbyMiniGameDef(
+                    this.teamMenu.roomData.miniGame,
+                );
                 const inviteUrl = new URL(window.location.href);
                 inviteUrl.search = "?arena";
-                inviteUrl.hash = `#${code}`;
+                inviteUrl.hash = miniGameDef.singleTeam ? `#${code}?A` : `#${code}`;
                 helpers.copyTextToClipboard(inviteUrl.toString());
                 this.showCopyToast(
                     this.prestigeArenaCopyCodeBtn.offset()?.left ?? e.pageX,
@@ -1249,6 +1252,14 @@ export class Application {
             modes.findIndex((m) => m.mapName === mapName && m.teamMode === teamMode);
 
         const applySelection = (mapName: string, teamMode: number, syncRoom = true) => {
+            if (
+                syncRoom &&
+                this.teamMenu.active &&
+                this.teamMenu.arena &&
+                !this.teamMenu.isLeader
+            ) {
+                return;
+            }
             let idx = findModeIdx(mapName, teamMode);
             if (idx < 0) {
                 idx = arenaModes.findIndex((m) => m.mapName === mapName);
@@ -1328,11 +1339,7 @@ export class Application {
             }
 
             if (syncRoom) {
-                if (
-                    this.teamMenu.active &&
-                    this.teamMenu.arena &&
-                    this.teamMenu.isLeader
-                ) {
+                if (this.teamMenu.active && this.teamMenu.arena) {
                     this.teamMenu.setRoomProperty("gameModeIdx", idx);
                 } else {
                     this.teamMenu.roomData.gameModeIdx = idx;
@@ -1344,6 +1351,14 @@ export class Application {
             miniGame: PrivateLobbyMiniGame,
             syncRoom = true,
         ) => {
+            if (
+                syncRoom &&
+                this.teamMenu.active &&
+                this.teamMenu.arena &&
+                !this.teamMenu.isLeader
+            ) {
+                return;
+            }
             const miniGameDef = getPrivateLobbyMiniGameDef(miniGame);
             this.prestigeArenaSelectedMiniGame = miniGame;
             this.prestigeArenaMiniGameSelection
@@ -1360,12 +1375,7 @@ export class Application {
                 "url(/img/gui/emote.svg)",
             );
             this.applyBattleMiniGameStyle(miniGame);
-            if (
-                syncRoom &&
-                this.teamMenu.active &&
-                this.teamMenu.arena &&
-                this.teamMenu.isLeader
-            ) {
+            if (syncRoom && this.teamMenu.active && this.teamMenu.arena) {
                 this.teamMenu.setRoomProperty("miniGame", miniGame);
             } else {
                 this.teamMenu.roomData.miniGame = miniGame;
@@ -1643,17 +1653,26 @@ export class Application {
             this.prestigeArenaTeamsBoard.addClass("hide");
             this.prestigeArenaWrapper.removeClass("arena-large-teams");
             this.prestigeArenaBattlePane.removeClass("arena-large-teams");
-            this.prestigeArenaTeamsBoard.removeClass("arena-large-teams");
+            this.prestigeArenaTeamsBoard.removeClass(
+                "arena-large-teams arena-single-team",
+            );
             this.prestigeArenaSpectatorsBoard.addClass("hide");
             return;
         }
 
         const mode = this.siteInfo.info.modes?.[this.teamMenu.roomData.gameModeIdx];
         const teamSize = Math.max(1, mode?.teamMode ?? 2);
+        const miniGameDef = getPrivateLobbyMiniGameDef(this.teamMenu.roomData.miniGame);
+        const singleTeam = !!miniGameDef.singleTeam;
         const largeTeams = teamSize >= 10;
         this.prestigeArenaWrapper.toggleClass("arena-large-teams", largeTeams);
         this.prestigeArenaBattlePane.toggleClass("arena-large-teams", largeTeams);
         this.prestigeArenaTeamsBoard.toggleClass("arena-large-teams", largeTeams);
+        this.prestigeArenaTeamsBoard.toggleClass("arena-single-team", singleTeam);
+        this.prestigeArenaTeamsBoard.css(
+            "--arena-single-team-columns",
+            String(Math.min(teamSize, 5)),
+        );
         this.applyBattleModeStyleByIdx(this.teamMenu.roomData.gameModeIdx);
         this.applyBattleMiniGameStyle(this.teamMenu.roomData.miniGame);
         const teamA = this.teamMenu.players.filter((p) => p.team === "A" && !p.spectator);
@@ -1741,7 +1760,6 @@ export class Application {
             titleEl.append(buildJoinButton(target, label));
         };
 
-        const miniGameDef = getPrivateLobbyMiniGameDef(this.teamMenu.roomData.miniGame);
         renderHeading(
             $("#arena-team-a-title"),
             miniGameDef.teamNames.A,
@@ -1749,13 +1767,16 @@ export class Application {
             teamA.length,
             teamSize,
         );
-        renderHeading(
-            $("#arena-team-b-title"),
-            miniGameDef.teamNames.B,
-            "B",
-            teamB.length,
-            teamSize,
-        );
+        $(".arena-team-b").toggleClass("hide", singleTeam);
+        if (!singleTeam) {
+            renderHeading(
+                $("#arena-team-b-title"),
+                miniGameDef.teamNames.B,
+                "B",
+                teamB.length,
+                teamSize,
+            );
+        }
         renderHeading(
             $("#arena-spectators-title"),
             "Spectators",
@@ -1837,7 +1858,9 @@ export class Application {
 
         for (let i = 0; i < teamSize; i++) {
             buildSlot(this.prestigeArenaTeamAList, teamA[i], "A");
-            buildSlot(this.prestigeArenaTeamBList, teamB[i], "B");
+            if (!singleTeam) {
+                buildSlot(this.prestigeArenaTeamBList, teamB[i], "B");
+            }
         }
         this.prestigeArenaTeamsBoard.removeClass("hide");
         this.prestigeArenaSpectatorList.empty();
@@ -1918,7 +1941,9 @@ export class Application {
         }
         this.prestigeArenaSpectatorsBoard.removeClass("hide");
 
-        const dropTargets = $(".arena-team-a, .arena-team-b, #arena-spectators-board");
+        const dropTargets = singleTeam
+            ? $(".arena-team-a, #arena-spectators-board")
+            : $(".arena-team-a, .arena-team-b, #arena-spectators-board");
         dropTargets.toggleClass("arena-drop-enabled", hostCanAssign);
         if (hostCanAssign) {
             $(
@@ -2203,6 +2228,12 @@ export class Application {
                 code = code.slice(0, suffixIdx).trim();
                 if (suffix === "S" || suffix === "SPEC") {
                     spectator = true;
+                } else if (suffix === "A" || suffix === "TEAM_A") {
+                    preferredTeam = "A";
+                    spectator = false;
+                } else if (suffix === "B" || suffix === "TEAM_B") {
+                    preferredTeam = "B";
+                    spectator = false;
                 }
             }
             return code;

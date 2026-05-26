@@ -151,6 +151,10 @@ export function isAmongUsMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
     return miniGame === "among_us";
 }
 
+export function isSingleTeamMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
+    return isAmongUsMiniGame(miniGame);
+}
+
 export function getPrivateLobbyMiniGameWeaponOverride(
     miniGame: PrivateLobbyMiniGame | undefined,
     arenaTeam: "A" | "B" | undefined,

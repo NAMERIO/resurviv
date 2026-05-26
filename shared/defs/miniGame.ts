@@ -11,6 +11,7 @@ export const DefaultPrivateLobbyMiniGame: PrivateLobbyMiniGame = "pvp";
 export interface PrivateLobbyMiniGameDef {
     id: PrivateLobbyMiniGame;
     name: string;
+    singleTeam?: boolean;
     teamNames: {
         A: string;
         B: string;
@@ -45,9 +46,10 @@ export const PrivateLobbyMiniGameDefs = {
     among_us: {
         id: "among_us",
         name: "AMONG US",
+        singleTeam: true,
         teamNames: {
-            A: "Crewmates",
-            B: "Impostors",
+            A: "Players",
+            B: "",
         },
     },
 } satisfies Record<PrivateLobbyMiniGame, PrivateLobbyMiniGameDef>;
