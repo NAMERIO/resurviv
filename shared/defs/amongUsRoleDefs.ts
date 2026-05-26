@@ -14,13 +14,13 @@ export const AmongUsRoleDefs = {
         id: "crewmate",
         name: "Crewmate",
         color: 0xffffff,
-        karambitDamage: 24,
+        karambitDamage: 0,
     },
     impostor: {
         id: "impostor",
         name: "Impostor",
         color: 0xff3333,
-        karambitDamage: 100,
+        karambitDamage: 1000,
     },
 } satisfies Record<AmongUsRole, AmongUsRoleDef>;
 
