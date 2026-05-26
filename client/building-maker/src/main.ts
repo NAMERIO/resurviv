@@ -1,5 +1,5 @@
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
-import { MapDefs } from "../../../shared/defs/mapDefs";
+import { Main as BaseMainMap } from "../../../shared/defs/maps/baseDefs";
 import type { MapObjectDef, ObstacleDef } from "../../../shared/defs/mapObjectsTyping";
 import type { BuildingDef, FloorImage } from "../../../shared/defs/types/building";
 import { GameConfig } from "../../../shared/gameConfig";
@@ -7,6 +7,7 @@ import { collider } from "../../../shared/utils/collider";
 import type { AABB, Circle, Collider } from "../../../shared/utils/coldet";
 import { generateTerrain } from "../../../shared/utils/terrainGen";
 import { v2, type Vec2 } from "../../../shared/utils/v2";
+import { DeatchmatchMain } from "../../../server/src/deathmatch/maps/main";
 import "./styles.css";
 
 const PPU = 16;
@@ -17,7 +18,8 @@ const MIN_CAMERA_ZOOM = 0.04;
 const MAX_CAMERA_ZOOM = 12;
 const DEFAULT_SCOPE = "1xscope";
 const scopeOrder = ["1xscope", "2xscope", "4xscope", "8xscope", "15xscope"] as const;
-const mainMapDef = MapDefs.main;
+const mainMapDef = DeatchmatchMain;
+const fallbackMapConfig = BaseMainMap.mapGen.map;
 const gameUndergroundColor = mainMapDef.biome.colors.underground;
 const editorMap = createEditorMapEnvironment();
 
@@ -527,9 +529,10 @@ function createAabbCollider(width: number, height: number): AABB {
 
 function createEditorMapEnvironment(): EditorMapEnvironment {
     const mapConfig = mainMapDef.mapGen.map;
-    const scale = mapConfig.scale.large;
-    const width = mapConfig.baseWidth * scale + mapConfig.extension;
-    const height = mapConfig.baseHeight * scale + mapConfig.extension;
+    const scale = mapConfig.scale?.large ?? fallbackMapConfig.scale.large;
+    const extension = mapConfig.extension ?? fallbackMapConfig.extension;
+    const width = mapConfig.baseWidth * scale + extension;
+    const height = mapConfig.baseHeight * scale + extension;
     const seed = 218051654;
 
     return {
