@@ -138,7 +138,14 @@ export const PrivateLobbyMiniGameServerSettings: Record<
             return undefined;
         },
     },
+    among_us: {},
 };
+
+export function getPrivateLobbyMiniGameMapName(
+    miniGame: PrivateLobbyMiniGame | undefined,
+) {
+    return miniGame === "among_us" ? "among_us" : undefined;
+}
 
 export function getPrivateLobbyMiniGameWeaponOverride(
     miniGame: PrivateLobbyMiniGame | undefined,

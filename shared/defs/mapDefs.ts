@@ -16,6 +16,7 @@ import { Woods as BattleRoyaleWoods } from "../../server/src/battleroyale/maps/m
 import { WoodsSnow as BattleRoyaleWoodsSnow } from "../../server/src/battleroyale/maps/maps/woodsSnowDefs";
 import { WoodsSpring as BattleRoyaleWoodsSpring } from "../../server/src/battleroyale/maps/maps/woodsSpringDefs";
 import { WoodsSummer as BattleRoyaleWoodsSummer } from "../../server/src/battleroyale/maps/maps/woodsSummerDefs";
+import { DeathmatchAmongUs } from "../../server/src/deathmatch/gameModes/amongUs/map";
 import { DeathmatchAprilFools } from "../../server/src/deathmatch/maps/aprilFools";
 import { DeatchmatchCobalt } from "../../server/src/deathmatch/maps/cobalt";
 import { DeatchmatchDesert } from "../../server/src/deathmatch/maps/desert";
@@ -29,7 +30,6 @@ import { DeatchmatchSnow } from "../../server/src/deathmatch/maps/snow";
 import { DeathmatchValentine } from "../../server/src/deathmatch/maps/valentine";
 import { DeatchmatchWoods as Woods } from "../../server/src/deathmatch/maps/woods";
 import type { Vec2 } from "../utils/v2";
-import { Main } from "./maps/baseDefs";
 import { Beach } from "./maps/beachDefs";
 import { Birthday } from "./maps/birthdayDefs";
 import { MainSpring } from "./maps/mainSpringDefs";
@@ -65,6 +65,7 @@ export type Atlas =
 
 export const MapDefs = {
     main: DeatchmatchMain,
+    among_us: DeathmatchAmongUs,
     br_main: BattleRoyaleMain,
     main_spring: MainSpring,
     br_main_spring: BattleRoyaleMainSpring,
@@ -171,6 +172,8 @@ export interface MapDef {
         turkeyMode?: boolean;
         spookyKillSounds?: boolean;
         infernoMode?: boolean;
+        amongUsMode?: boolean;
+        disableGas?: boolean;
     };
     gameConfig: {
         planes: {

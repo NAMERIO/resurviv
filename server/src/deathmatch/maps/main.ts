@@ -83,11 +83,7 @@ export const mapDef: PartialMapDef = {
                   [] as Record<string, number>[],
               )
             : [],
-        fixedSpawns: [
-            {
-       cafetria_01: 1
-            },
-        ],
+        fixedSpawns: [{}],
         importantSpawns: ["logging_complex_01tw", "club_complex_01"],
         customSpawnRules: {
             locationSpawns: [],

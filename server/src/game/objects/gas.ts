@@ -148,11 +148,13 @@ export class Gas {
     private _running = false;
 
     doDamage = false;
+    disabled = false;
 
     mapSize: number;
 
     constructor(readonly game: Game) {
         const map = game.map;
+        this.disabled = !!map.mapDef.gameMode.disableGas;
         this.mapSize = (map.width + map.height) / 2;
         this.posOld = v2.create(map.width / 2, map.height / 2);
         this.posNew = v2.copy(this.posOld);
@@ -163,9 +165,26 @@ export class Gas {
         this.radNew = this.currentRad = stage.rad * this.mapSize;
         this.duration = stage.duration;
         this.damage = stage.damage;
+
+        if (this.disabled) {
+            this.mode = GasMode.Inactive;
+            this.stage = 0;
+            this.circleIdx = -1;
+            this.radOld = this.radNew = this.currentRad = this.mapSize * 2;
+            this.duration = 0;
+            this.damage = 0;
+            this.gasT = 0;
+        }
     }
 
     update(dt: number) {
+        if (this.disabled) {
+            this.doDamage = false;
+            this.dirty = false;
+            this.timeDirty = false;
+            return;
+        }
+
         this._gasTicker += dt;
 
         if (this._running) {
@@ -192,6 +211,15 @@ export class Gas {
     }
 
     advanceGasStage() {
+        if (this.disabled) {
+            this.mode = GasMode.Inactive;
+            this._running = false;
+            this.doDamage = false;
+            this.dirty = true;
+            this.timeDirty = true;
+            return;
+        }
+
         this.stage++;
         this._running = true;
 
@@ -319,10 +347,12 @@ export class Gas {
     }
 
     isInGas(pos: Vec2) {
+        if (this.disabled) return false;
         return v2.distance(pos, this.currentPos) >= this.currentRad;
     }
 
     isOutSideSafeZone(pos: Vec2) {
+        if (this.disabled) return false;
         return v2.distance(pos, this.posNew) >= this.radNew;
     }
 

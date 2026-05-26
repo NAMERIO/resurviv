@@ -1,4 +1,9 @@
-export const PrivateLobbyMiniGameIds = ["pvp", "hide_and_seek", "infected"] as const;
+export const PrivateLobbyMiniGameIds = [
+    "pvp",
+    "hide_and_seek",
+    "infected",
+    "among_us",
+] as const;
 
 export type PrivateLobbyMiniGame = (typeof PrivateLobbyMiniGameIds)[number];
 export const DefaultPrivateLobbyMiniGame: PrivateLobbyMiniGame = "pvp";
@@ -35,6 +40,14 @@ export const PrivateLobbyMiniGameDefs = {
         teamNames: {
             A: "Zombies",
             B: "Humans",
+        },
+    },
+    among_us: {
+        id: "among_us",
+        name: "AMONG US",
+        teamNames: {
+            A: "Crewmates",
+            B: "Impostors",
         },
     },
 } satisfies Record<PrivateLobbyMiniGame, PrivateLobbyMiniGameDef>;

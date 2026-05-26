@@ -14638,7 +14638,10 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 {
                     type: "wood",
                     collision: [
-                        collider.createAabbExtents(v2.create(-5.875, -5.469), v2.create(2, 2)),
+                        collider.createAabbExtents(
+                            v2.create(-5.875, -6.469),
+                            v2.create(86, 39),
+                        ),
                     ],
                 },
             ],

@@ -25,6 +25,7 @@ import type { ApiServer } from "./api/apiServer";
 import { validateSessionToken } from "./api/auth";
 import { hashIp, isBanned } from "./api/routes/private/ModerationRouter";
 import { Config } from "./config";
+import { getPrivateLobbyMiniGameMapName } from "./game/privateLobbyMiniGames";
 import { ServerLogger } from "./utils/logger";
 import { getFindGamePlayerData } from "./utils/playerData";
 import {
@@ -399,7 +400,9 @@ class Room {
         if (!this.data.arena) return;
         const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
         if (!mode) return;
-        const warmupKey = `${this.data.region}:${mode.mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.disableAirstrikes}:${this.data.disablePerks}`;
+        const mapName =
+            getPrivateLobbyMiniGameMapName(this.data.miniGame) ?? mode.mapName;
+        const warmupKey = `${this.data.region}:${mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.disableAirstrikes}:${this.data.disablePerks}`;
         if (this.arenaWarmupKey === warmupKey) return;
         this.arenaWarmupKey = warmupKey;
         void this.teamMenu.server
@@ -407,7 +410,7 @@ class Room {
                 region: this.data.region,
                 version: GameConfig.protocolVersion,
                 autoFill: false,
-                mapName: mode.mapName,
+                mapName,
                 teamMode: mode.teamMode,
                 arenaPrivate: true,
                 miniGame: this.data.miniGame,
@@ -666,8 +669,13 @@ class Room {
             }
         }
 
+        const mapName =
+            this.data.arena && this.data.miniGame
+                ? (getPrivateLobbyMiniGameMapName(this.data.miniGame) ?? mode.mapName)
+                : mode.mapName;
+
         const res = await this.teamMenu.server.findGame({
-            mapName: mode.mapName,
+            mapName,
             teamMode: mode.teamMode,
             autoFill: this.data.arena ? false : this.data.autoFill,
             region: region,
