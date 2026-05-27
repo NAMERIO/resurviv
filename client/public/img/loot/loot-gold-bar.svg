@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="128"
+   height="128"
+   version="1.1"
+   id="svg17"
+   sodipodi:docname="loot-gold-bar.svg"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview17"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="2.2400922"
+     inkscape:cx="31.918329"
+     inkscape:cy="24.775766"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="1920"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg17" />
+  <defs
+     id="defs1">
+    <mask
+       maskUnits="userSpaceOnUse"
+       id="a">
+      <path
+         fill="#fff"
+         stroke-width="2.922"
+         stroke-linecap="square"
+         stroke-linejoin="bevel"
+         d="M20.052 39.272h22.579v8.535H20.052z"
+         id="path1" />
+    </mask>
+    <clipPath
+       id="f">
+      <rect
+         ry="1.411"
+         rx="1.436"
+         y="260.117"
+         x="-1.7460001"
+         height="4.2329998"
+         width="10.054"
+         fill="#ffbd0d"
+         stroke-width="1.618"
+         id="rect5" />
+    </clipPath>
+  </defs>
+  <rect
+     width="10.054"
+     height="4.2329998"
+     x="-1.7460001"
+     y="260.117"
+     rx="1.436"
+     ry="1.411"
+     clip-path="url(#f)"
+     transform="matrix(-11.974033,0,0,-11.974033,102.99939,3201.744)"
+     fill="#ffbd0d"
+     stroke-width="1.587"
+     id="rect29"
+     style="stroke:#000000;stroke-opacity:1;stroke-width:1.0270558;stroke-dasharray:none" />
+</svg>

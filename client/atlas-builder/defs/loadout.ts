@@ -514,6 +514,7 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/loot-getdowntonite-fists.svg",
         "loot/loot-ghost-poke-fists.svg",
         "loot/loot-gold-drops-fists.svg",
+        "loot/loot-gold-bar.svg",
         "loot/loot-graphbars-fists.svg",
         "loot/loot-grizzly-fists.svg",
         "loot/loot-horsepower-fists.svg",

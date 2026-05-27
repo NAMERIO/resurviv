@@ -1,12 +1,9 @@
 import * as PIXI from "pixi.js-legacy";
-import {
-    AmongUsTaskDefs,
-    type AmongUsTaskId,
-} from "../../shared/defs/amongUsTaskDefs";
+import { AmongUsTaskDefs, type AmongUsTaskId } from "../../shared/defs/amongUsTaskDefs";
 import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
+import { RoleDefs } from "../../shared/defs/gameObjects/roleDefs";
 import { MapObjectDefs } from "../../shared/defs/mapObjectDefs";
 import type { ObstacleDef } from "../../shared/defs/mapObjectsTyping";
-import { RoleDefs } from "../../shared/defs/gameObjects/roleDefs";
 import { GameConfig, Input, TeamMode, WeaponSlot } from "../../shared/gameConfig";
 import * as net from "../../shared/net/net";
 import { ObjectType } from "../../shared/net/objectSerializeFns";
@@ -143,6 +140,7 @@ export class Game {
     m_amongUsTask: AmongUsTaskId | null = null;
     m_amongUsCompletedTasks = new Set<AmongUsTaskId>();
     m_amongUsTaskCloseTimeout = 0;
+    m_amongUsDraggedTaskItem: HTMLButtonElement | null = null;
     m_canvasMode!: boolean;
 
     m_updatePass!: boolean;
@@ -1226,37 +1224,143 @@ export class Game {
 
         closeButton.onclick = () => this.closeAmongUsTask();
         bottleGrid.onclick = (event) => {
+            if (!this.m_amongUsTask) return;
+            const def = AmongUsTaskDefs[this.m_amongUsTask];
+            if (def.type !== "shoot_targets") return;
+
             const bottle = (event.target as HTMLElement).closest<HTMLButtonElement>(
                 ".among-us-task-bottle",
             );
-            if (!bottle || bottle.disabled || !this.m_amongUsTask) return;
+            if (!bottle || bottle.disabled) return;
 
-            const def = AmongUsTaskDefs[this.m_amongUsTask];
             const weapon = document.getElementById("among-us-task-weapon")!;
             bottle.disabled = true;
             bottle.classList.add("broken");
             weapon.classList.remove("firing");
             void weapon.offsetWidth;
             weapon.classList.add("firing");
-            this.m_audioManager.playSound(def.shootSound, { channel: "activePlayer" });
-            this.m_audioManager.playSound(def.breakSound, { channel: "sfx" });
+            if (def.shootSound) {
+                this.m_audioManager.playSound(def.shootSound, {
+                    channel: "activePlayer",
+                });
+            }
+            if (def.breakSound) {
+                this.m_audioManager.playSound(def.breakSound, { channel: "sfx" });
+            }
 
             const broken = bottleGrid.querySelectorAll(".broken").length;
             document.getElementById("among-us-task-progress")!.textContent =
                 `${broken} / ${def.targetCount}`;
             if (broken !== def.targetCount) return;
 
-            this.m_amongUsCompletedTasks.add(this.m_amongUsTask);
-            document.getElementById("among-us-task-panel")!.classList.add("completed");
-            document.getElementById("among-us-task-status")!.textContent =
-                "TASK COMPLETE";
-            this.m_uiManager.displayAnnouncement("TASK COMPLETE", 2500);
-            window.clearTimeout(this.m_amongUsTaskCloseTimeout);
-            this.m_amongUsTaskCloseTimeout = window.setTimeout(
-                () => this.closeAmongUsTask(true),
-                350,
-            );
+            this.completeAmongUsTask();
         };
+        document.addEventListener("pointerdown", (event) => {
+            if (!this.m_amongUsTask) return;
+            const def = AmongUsTaskDefs[this.m_amongUsTask];
+            if (def.type !== "drag_to_station") return;
+
+            const item = (event.target as HTMLElement).closest<HTMLButtonElement>(
+                ".among-us-task-drag-item",
+            );
+            if (!item) return;
+
+            event.preventDefault();
+            item.setPointerCapture(event.pointerId);
+            this.m_amongUsDraggedTaskItem = item;
+            item.classList.remove("placed", "loose");
+            item.classList.add("dragging");
+            this.updateAmongUsDragTaskProgress();
+            this.moveAmongUsDraggedTaskItem(event.clientX, event.clientY);
+        });
+        document.addEventListener("pointermove", (event) => {
+            if (!this.m_amongUsDraggedTaskItem) return;
+            this.moveAmongUsDraggedTaskItem(event.clientX, event.clientY);
+        });
+        document.addEventListener("pointerup", (event) => {
+            if (!this.m_amongUsDraggedTaskItem || !this.m_amongUsTask) return;
+            const item = this.m_amongUsDraggedTaskItem;
+            this.m_amongUsDraggedTaskItem = null;
+            item.classList.remove("dragging");
+
+            const taskContent = document.querySelector<HTMLElement>(
+                ".among-us-task-content",
+            )!;
+            const dropZone = document.getElementById("among-us-task-drop-zone")!;
+            const rect = dropZone.getBoundingClientRect();
+            const insideDropZone =
+                event.clientX >= rect.left &&
+                event.clientX <= rect.right &&
+                event.clientY >= rect.top &&
+                event.clientY <= rect.bottom;
+
+            item.style.left = "";
+            item.style.top = "";
+            item.style.setProperty("--placed-rot", this.getAmongUsBarRotation(item));
+
+            if (insideDropZone) {
+                item.classList.add("placed");
+                dropZone.append(item);
+                item.style.left = `${event.clientX - rect.left}px`;
+                item.style.top = `${event.clientY - rect.top}px`;
+            } else {
+                const contentRect = taskContent.getBoundingClientRect();
+                const x = Math.max(
+                    18,
+                    Math.min(event.clientX - contentRect.left, contentRect.width - 18),
+                );
+                const y = Math.max(
+                    18,
+                    Math.min(event.clientY - contentRect.top, contentRect.height - 18),
+                );
+                item.classList.add("loose");
+                taskContent.append(item);
+                item.style.left = `${x}px`;
+                item.style.top = `${y}px`;
+            }
+
+            this.updateAmongUsDragTaskProgress();
+        });
+    }
+
+    moveAmongUsDraggedTaskItem(clientX: number, clientY: number) {
+        const item = this.m_amongUsDraggedTaskItem;
+        if (!item) return;
+        item.style.left = `${clientX}px`;
+        item.style.top = `${clientY}px`;
+    }
+
+    getAmongUsBarRotation(item: HTMLButtonElement) {
+        const index = Number(item.dataset.index) || 0;
+        return `${(index % 2 === 0 ? -1 : 1) * (3 + index)}deg`;
+    }
+
+    updateAmongUsDragTaskProgress() {
+        if (!this.m_amongUsTask) return;
+        const def = AmongUsTaskDefs[this.m_amongUsTask];
+        if (def.type !== "drag_to_station") return;
+
+        const dropZone = document.getElementById("among-us-task-drop-zone")!;
+        const placed = dropZone.querySelectorAll(
+            ".among-us-task-drag-item.placed",
+        ).length;
+        document.getElementById("among-us-task-progress")!.textContent =
+            `${placed} / ${def.targetCount}`;
+        if (placed === def.targetCount) this.completeAmongUsTask();
+    }
+
+    completeAmongUsTask() {
+        if (!this.m_amongUsTask) return;
+
+        this.m_amongUsCompletedTasks.add(this.m_amongUsTask);
+        document.getElementById("among-us-task-panel")!.classList.add("completed");
+        document.getElementById("among-us-task-status")!.textContent = "TASK COMPLETE";
+        this.m_uiManager.displayAnnouncement("TASK COMPLETE", 2500);
+        window.clearTimeout(this.m_amongUsTaskCloseTimeout);
+        this.m_amongUsTaskCloseTimeout = window.setTimeout(
+            () => this.closeAmongUsTask(true),
+            350,
+        );
     }
 
     openNearbyAmongUsTask() {
@@ -1306,10 +1410,22 @@ export class Game {
         const panel = document.getElementById("among-us-task-panel")!;
         const bottleGrid = document.getElementById("among-us-task-bottles")!;
         const weapon = document.getElementById("among-us-task-weapon")!;
+        const dropZone = document.getElementById("among-us-task-drop-zone")!;
+        panel
+            .querySelectorAll(".among-us-task-drag-item")
+            .forEach((item) => item.remove());
         window.clearTimeout(this.m_amongUsTaskCloseTimeout);
         this.m_amongUsTaskCloseTimeout = 0;
         this.m_amongUsTask = taskId;
-        panel.classList.remove("completed", "closing");
+        panel.classList.remove(
+            "completed",
+            "closing",
+            "shoot-targets",
+            "drag-to-station",
+        );
+        panel.classList.add(
+            def.type === "drag_to_station" ? "drag-to-station" : "shoot-targets",
+        );
         weapon.classList.remove("firing");
         document.getElementById("among-us-task-title")!.textContent = def.title;
         document.getElementById("among-us-task-instruction")!.textContent =
@@ -1317,12 +1433,20 @@ export class Game {
         document.getElementById("among-us-task-progress")!.textContent =
             `0 / ${def.targetCount}`;
         document.getElementById("among-us-task-status")!.textContent = "";
-        (
-            document.getElementById("among-us-task-weapon") as HTMLImageElement
-        ).src = def.weaponImage;
-        bottleGrid.innerHTML = Array.from({ length: def.targetCount }, (_, index) => {
-            return `<button class="among-us-task-bottle" type="button" data-index="${index}" aria-label="Break bottle ${index + 1}"><img src="${def.targetImage}" alt=""><span class="among-us-task-shard shard-a"></span><span class="among-us-task-shard shard-b"></span><span class="among-us-task-shard shard-c"></span></button>`;
-        }).join("");
+        (document.getElementById("among-us-task-weapon") as HTMLImageElement).src =
+            def.type === "drag_to_station"
+                ? (def.stationImage ?? "")
+                : (def.weaponImage ?? "");
+        dropZone.innerHTML = "";
+        if (def.type === "drag_to_station") {
+            bottleGrid.innerHTML = Array.from({ length: def.targetCount }, (_, index) => {
+                return `<button class="among-us-task-drag-item" type="button" data-index="${index}" aria-label="Move gold bar ${index + 1}"><img src="${def.targetImage}" alt=""></button>`;
+            }).join("");
+        } else {
+            bottleGrid.innerHTML = Array.from({ length: def.targetCount }, (_, index) => {
+                return `<button class="among-us-task-bottle" type="button" data-index="${index}" aria-label="Break bottle ${index + 1}"><img src="${def.targetImage}" alt=""><span class="among-us-task-shard shard-a"></span><span class="among-us-task-shard shard-b"></span><span class="among-us-task-shard shard-c"></span></button>`;
+            }).join("");
+        }
         document.body.classList.add("among-us-task-active");
         document.getElementById("ui-among-us-task")!.style.display = "flex";
         this.m_input.onWindowFocus();
@@ -1342,9 +1466,19 @@ export class Game {
         }
 
         this.m_amongUsTask = null;
-        panel.classList.remove("closing", "completed");
+        this.m_amongUsDraggedTaskItem = null;
+        panel.classList.remove(
+            "closing",
+            "completed",
+            "shoot-targets",
+            "drag-to-station",
+        );
         document.getElementById("among-us-task-weapon")!.classList.remove("firing");
         document.getElementById("among-us-task-bottles")!.innerHTML = "";
+        document.getElementById("among-us-task-drop-zone")!.innerHTML = "";
+        panel
+            .querySelectorAll(".among-us-task-drag-item")
+            .forEach((item) => item.remove());
         document.getElementById("among-us-task-progress")!.textContent = "0 / 6";
         document.getElementById("among-us-task-status")!.textContent = "";
         document.body.classList.remove("among-us-task-active");

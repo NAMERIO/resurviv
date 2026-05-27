@@ -12592,6 +12592,33 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
         },
     }),
+    among_us_task_crate: createCrate({
+        collision: collider.createAabbExtents(v2.create(0, 0), v2.create(2, 2)),
+        destructible: false,
+        hitParticle: "goldChip",
+        loot: [],
+        map: { display: false },
+        amongUsTask: "crate_gold_bars",
+        img: { sprite: "map-crate-05.img" },
+        sound: {
+            bullet: "wall_brick_bullet",
+            punch: "wall_brick_bullet",
+            explode: "crate_break_02",
+        },
+        button: {
+            interactionRad: 1.25,
+            interactionText: "game-use",
+            useOnce: false,
+            useType: "",
+            useDelay: 0,
+            useDir: v2.create(-1, 0),
+            useImg: "map-crate-05.img",
+            sound: {
+                on: "button_press_01",
+                off: "button_press_01",
+            },
+        },
+    }),
     candle_01: {
         type: "obstacle",
         map: { display: false, color: 0xffffff, scale: 1 },
@@ -14959,7 +14986,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 ori: 3,
             },
             {
-                type: "crate_05",
+                type: "among_us_task_crate",
                 pos: v2.create(-77.375, 6.031),
                 scale: 1,
                 ori: 0,
