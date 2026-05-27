@@ -1571,6 +1571,16 @@ export class UiManager {
         map: Map,
         ui2: UiManager2,
     ) {
+        const localStats = playerStats.find(
+            (stats) => stats.playerId === this.game.m_localId,
+        );
+        const amongUsMode = Boolean(map.getMapDef().gameMode.amongUsMode);
+        if (amongUsMode && !gameOver && localStats?.dead) {
+            this.beginSpectating();
+            this.clearStatsElems();
+            this.hideStats();
+            return;
+        }
         // If we're spectating a team that's not our own, and the game isn't over yet,
         // don't display the stats screen again.
         if (!spectating || teamId == localTeamId || gameOver) {
@@ -1603,7 +1613,6 @@ export class UiManager {
             const spectatingAnotherTeam = spectating && localTeamId != teamId;
             const localRole =
                 playerBarn.getPlayerInfo(this.game.m_localId).amongUsRole || "";
-            const amongUsMode = Boolean(gameMode.amongUsMode);
             const titleClass = amongUsMode
                 ? this.getAmongUsTitleClass(localRole, isLocalTeamWinner)
                 : "";
@@ -1832,6 +1841,16 @@ export class UiManager {
     }
 
     showTeamAd(playerStats: PlayerStatsMsg["playerStats"], _ui2Manager: unknown) {
+        const amongUsMode = Boolean(
+            this.game.m_map.getMapDef().gameMode.amongUsMode,
+        );
+        if (amongUsMode && playerStats.dead) {
+            this.beginSpectating();
+            this.setSpectating(true, this.game.teamMode);
+            this.clearStatsElems();
+            this.hideStats();
+            return;
+        }
         this.toggleEscMenu(true);
         this.displayMapLarge(true);
         this.clearStatsElems();
