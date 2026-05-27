@@ -113,6 +113,8 @@ interface Emote {
 }
 
 const boostHeals: Array<{ maxBoost: number; heal: number }> = [];
+const amongUsInitialKillCooldown = 20;
+const amongUsEmergencyCallCooldown = 5;
 {
     const boostBreakPoints = GameConfig.player.boostBreakpoints;
     const max = GameConfig.player.boostBreakpoints.reduce((a, b) => a + b, 0);
@@ -507,6 +509,9 @@ export class PlayerBarn {
         const impostor = players[util.randomInt(0, players.length - 1)];
         for (const player of players) {
             player.amongUsRole = player === impostor ? "impostor" : "crewmate";
+            if (player.amongUsRole === "impostor") {
+                player.resetAmongUsKillCooldown();
+            }
             player.markPlayerInfoDirty();
         }
         this.amongUsRolesAssigned = true;
@@ -516,9 +521,12 @@ export class PlayerBarn {
         if (
             !this.game.map.amongUsMode ||
             caller.dead ||
+            caller.downed ||
             caller.disconnected ||
             this.game.over ||
-            this.amongUsMeeting
+            this.amongUsMeeting ||
+            caller.amongUsEmergencyCallCooldownTime > 0 ||
+            caller.amongUsEmergencyCallsRemaining <= 0
         ) {
             return false;
         }
@@ -536,6 +544,7 @@ export class PlayerBarn {
             );
         }
 
+        caller.amongUsEmergencyCallsUsed++;
         this.amongUsEmergencyMeetingSeq++;
         this.amongUsMeeting = {
             sequence: this.amongUsEmergencyMeetingSeq,
@@ -734,6 +743,15 @@ export class PlayerBarn {
         meeting.timeLeft = 0;
         this.broadcastAmongUsMeetingState(true);
         this.amongUsMeeting = undefined;
+        for (const player of this.livingPlayers) {
+            if (
+                player.amongUsRole === "impostor" &&
+                !player.dead &&
+                !player.disconnected
+            ) {
+                player.resetAmongUsKillCooldown();
+            }
+        }
     }
 
     private resetAmongUsEmergencyButton(button?: Obstacle): void {
@@ -2581,8 +2599,31 @@ export class Player extends BaseGameObject {
     get miniGameWinCountdownProps(): boolean {
         return !!getHideAndSeekSettings(this.game.miniGame);
     }
+    get amongUsKillCooldownTime(): number {
+        if (
+            !this.game.map.amongUsMode ||
+            this.amongUsRole !== "impostor" ||
+            this.dead ||
+            this.disconnected
+        ) {
+            return 0;
+        }
+        return this.amongUsKillCooldownTicker;
+    }
     get amongUsEmergencyMeetingSeq(): number {
         return this.game.playerBarn.amongUsEmergencyMeetingSeq;
+    }
+    get amongUsEmergencyCallCooldownTime(): number {
+        if (!this.game.map.amongUsMode || this.dead || this.disconnected) {
+            return 0;
+        }
+        return math.max(0, amongUsEmergencyCallCooldown - this.game.startedTime);
+    }
+    get amongUsEmergencyCallsRemaining(): number {
+        if (!this.game.map.amongUsMode || this.dead || this.disconnected) {
+            return 0;
+        }
+        return math.max(0, 1 - this.amongUsEmergencyCallsUsed);
     }
     get streakNextThreshold(): number {
         return StreakThresholds.get(this.streakActivationCount);
@@ -2595,6 +2636,10 @@ export class Player extends BaseGameObject {
     }
     get activeStreakTimeLeft(): number {
         return this.streakActiveTimer;
+    }
+
+    resetAmongUsKillCooldown() {
+        this.amongUsKillCooldownTicker = amongUsInitialKillCooldown;
     }
 
     // infinity since we aren't dead yet ;)
@@ -2610,6 +2655,8 @@ export class Player extends BaseGameObject {
     msgsToSend: Array<{ type: number; msg: net.Msg }> = [];
 
     amongUsRole: AmongUsRole | "" = "";
+    amongUsKillCooldownTicker = 0;
+    amongUsEmergencyCallsUsed = 0;
 
     weaponManager = new WeaponManager(this);
     recoilTicker = 0;
@@ -2793,6 +2840,17 @@ export class Player extends BaseGameObject {
         }
 
         this.timeAlive += dt;
+
+        if (
+            this.game.map.amongUsMode &&
+            this.amongUsRole === "impostor" &&
+            !this.game.playerBarn.isAmongUsMeetingLocked
+        ) {
+            this.amongUsKillCooldownTicker = math.max(
+                0,
+                this.amongUsKillCooldownTicker - dt,
+            );
+        }
 
         this.updateStreaks(dt);
         this.updateHideAndSeek(dt);
@@ -4016,6 +4074,9 @@ export class Player extends BaseGameObject {
                 infectedRespawnTime: player.infectedRespawnTime,
                 miniGameWinCountdownTime: player.miniGameWinCountdownTime,
                 miniGameWinCountdownProps: player.miniGameWinCountdownProps,
+                amongUsKillCooldownTime: player.amongUsKillCooldownTime,
+                amongUsEmergencyCallCooldownTime: player.amongUsEmergencyCallCooldownTime,
+                amongUsEmergencyCallsRemaining: player.amongUsEmergencyCallsRemaining,
                 amongUsEmergencyMeetingSeq: player.amongUsEmergencyMeetingSeq,
             };
             this.startedSpectating = false;
@@ -4333,9 +4394,12 @@ export class Player extends BaseGameObject {
 
         if (params.source !== this && sourceTeamId !== undefined) {
             const amongUsImpostorAttack =
-                isAmongUsMiniGame(this.game.miniGame) &&
+                (isAmongUsMiniGame(this.game.miniGame) || this.game.map.amongUsMode) &&
                 playerSource?.amongUsRole === "impostor" &&
                 params.gameSourceType === "karambit";
+            if (amongUsImpostorAttack && playerSource.amongUsKillCooldownTime > 0) {
+                return;
+            }
             const infectedFriendlyFire =
                 !!infectedSettings &&
                 (playerSource?.arenaTeam
@@ -4665,6 +4729,14 @@ export class Player extends BaseGameObject {
             : params.source;
         if (killCreditSource?.__type === ObjectType.Player) {
             this.killedBy = killCreditSource;
+            if (
+                (isAmongUsMiniGame(this.game.miniGame) || this.game.map.amongUsMode) &&
+                killCreditSource !== this &&
+                killCreditSource.amongUsRole === "impostor" &&
+                params.gameSourceType === "karambit"
+            ) {
+                killCreditSource.resetAmongUsKillCooldown();
+            }
 
             if (killCreditSource !== this && killCreditSource.teamId !== this.teamId) {
                 killCreditSource.killedIds.push(this.matchDataId);

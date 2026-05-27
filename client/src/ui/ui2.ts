@@ -1,5 +1,5 @@
-import { GameObjectDefs, type LootDef } from "../../../shared/defs/gameObjectDefs";
 import type { AmongUsTaskId } from "../../../shared/defs/amongUsTaskDefs";
+import { GameObjectDefs, type LootDef } from "../../../shared/defs/gameObjectDefs";
 import {
     DamageStreakDefs,
     DefaultStreakType,
@@ -333,6 +333,7 @@ export class UiManager2 {
             progressFill: HTMLElement;
             timerFill: HTMLElement;
             dmgText: HTMLElement;
+            label: HTMLElement;
             tooltipTitle: HTMLElement;
             tooltipDesc: HTMLElement;
         },
@@ -544,6 +545,7 @@ export class UiManager2 {
                 dmgText: el.getElementsByClassName(
                     "ui-streak-dmg-text",
                 )[0] as HTMLElement,
+                label: el.getElementsByClassName("ui-streak-label")[0] as HTMLElement,
                 tooltipTitle: el.getElementsByClassName(
                     "tooltip-title",
                 )[0] as HTMLElement,
@@ -927,12 +929,30 @@ export class UiManager2 {
                 interactionUsable = true;
             }
         }
+        const amongUsEmergencyButton =
+            !!map.getMapDef().gameMode.amongUsMode &&
+            interactionType === InteractionType.Object &&
+            (interactionObject as Obstacle | null)?.type === "control_panel_01";
+        if (amongUsEmergencyButton) {
+            const callCooldown =
+                activePlayer.m_localData.m_amongUsEmergencyCallCooldownTime;
+            const callsRemaining =
+                activePlayer.m_localData.m_amongUsEmergencyCallsRemaining;
+            if (callCooldown > 0) {
+                state.interaction.text = `Emergency meeting: ${Math.ceil(callCooldown)}s`;
+            } else if (callsRemaining <= 0) {
+                state.interaction.text = "Emergency calls 0/1";
+            } else {
+                state.interaction.text = "Emergency calls 1/1";
+            }
+        } else {
+            state.interaction.text = this.getInteractionText(
+                interactionType,
+                interactionObject!,
+                activePlayer,
+            );
+        }
         state.interaction.type = interactionType;
-        state.interaction.text = this.getInteractionText(
-            interactionType,
-            interactionObject!,
-            activePlayer,
-        );
         state.interaction.key = this.getInteractionKey(interactionType);
         state.interaction.usable = interactionUsable && !spectating;
         state.loading = activePlayer.m_netData.m_loadingBlaster;
@@ -1099,7 +1119,47 @@ export class UiManager2 {
             const ld = activePlayer.m_localData;
             const sd = this.dom.streakSingle;
             if (sd) {
-                if (!this.streakEnabled) {
+                const amongUsMode = !!map.getMapDef().gameMode.amongUsMode;
+                const amongUsRole =
+                    playerBarn.getPlayerInfo(activePlayer.__id).amongUsRole || "";
+                const killCooldown = ld.m_amongUsKillCooldownTime;
+                const showAmongUsKillCard = amongUsMode && amongUsRole === "impostor";
+                const hideAmongUsCard = amongUsMode && amongUsRole !== "impostor";
+
+                if (showAmongUsKillCard) {
+                    const pct = math.clamp((killCooldown / 20) * 100, 0, 100);
+                    const ready = killCooldown <= 0;
+                    sd.div.style.display = "";
+                    sd.div.classList.remove(
+                        "streak-ready",
+                        "streak-active",
+                        "streak-used",
+                        "among-us-kill-ready",
+                    );
+                    sd.div.classList.add(
+                        ready ? "among-us-kill-ready" : "among-us-kill-cooldown",
+                    );
+                    sd.image.src = "img/loot/loot-melee-karambit-rugged.svg";
+                    sd.label.textContent = "KILL";
+                    sd.tooltipTitle.textContent = "Kill cooldown";
+                    sd.tooltipDesc.textContent = ready
+                        ? "Ready to kill."
+                        : "Impostor kills unlock when this reaches 0.";
+                    sd.progressFill.style.height = ready ? "100%" : "0%";
+                    sd.timerFill.style.height = ready ? "0%" : `${pct}%`;
+                    sd.dmgText.textContent = ready
+                        ? "READY"
+                        : `${Math.ceil(killCooldown)}s`;
+                } else if (!this.streakEnabled || hideAmongUsCard) {
+                    sd.div.style.display = hideAmongUsCard ? "none" : "";
+                    sd.div.classList.remove(
+                        "among-us-kill-cooldown",
+                        "among-us-kill-ready",
+                        "streak-ready",
+                        "streak-active",
+                        "streak-used",
+                    );
+                    sd.label.textContent = "Streak";
                     sd.div.classList.remove(
                         "streak-ready",
                         "streak-active",
@@ -1109,6 +1169,12 @@ export class UiManager2 {
                     sd.timerFill.style.height = "0%";
                     sd.dmgText.textContent = "";
                 } else {
+                    sd.div.style.display = "";
+                    sd.div.classList.remove(
+                        "among-us-kill-cooldown",
+                        "among-us-kill-ready",
+                    );
+                    sd.label.textContent = "Streak";
                     const def = DamageStreakDefs[this.chosenStreakType];
                     const isActive = ld.m_streakActive;
                     const isReady = ld.m_streakReady;

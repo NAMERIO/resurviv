@@ -202,6 +202,9 @@ export class LoadoutDisplay {
             infectedRespawnTime: 0,
             miniGameWinCountdownTime: 0,
             miniGameWinCountdownProps: false,
+            amongUsKillCooldownTime: 0,
+            amongUsEmergencyCallCooldownTime: 0,
+            amongUsEmergencyCallsRemaining: 1,
             amongUsEmergencyMeetingSeq: 0,
         });
 
@@ -454,6 +457,9 @@ export class LoadoutDisplay {
                 infectedRespawnTime: 0,
                 miniGameWinCountdownTime: 0,
                 miniGameWinCountdownProps: false,
+                amongUsKillCooldownTime: 0,
+                amongUsEmergencyCallCooldownTime: 0,
+                amongUsEmergencyCallsRemaining: 1,
                 amongUsEmergencyMeetingSeq: 0,
             });
         }

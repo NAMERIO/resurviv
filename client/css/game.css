@@ -6883,6 +6883,35 @@ span.ui-stats-header-value {
   border-color: #00d4ff;
 }
 
+.ui-streak-icon.among-us-kill-cooldown {
+  opacity: 1;
+  border-color: #ff3b3b;
+  box-shadow: 0 0 14px rgba(255, 0, 0, 0.45);
+}
+
+.ui-streak-icon.among-us-kill-cooldown .ui-streak-label {
+  color: #ff6969;
+}
+
+.ui-streak-icon.among-us-kill-cooldown .ui-streak-timer-fill {
+  background: rgba(255, 40, 40, 0.45);
+}
+
+.ui-streak-icon.among-us-kill-ready {
+  opacity: 1;
+  pointer-events: none;
+  border-color: #39ff72;
+  box-shadow: 0 0 14px rgba(57, 255, 114, 0.5);
+}
+
+.ui-streak-icon.among-us-kill-ready .ui-streak-label {
+  color: #39ff72;
+}
+
+.ui-streak-icon.among-us-kill-ready .ui-streak-progress-fill {
+  background: rgba(57, 255, 114, 0.32);
+}
+
 .ui-streak-icon.streak-used {
   opacity: 0.2;
   pointer-events: none;

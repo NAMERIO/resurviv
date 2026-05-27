@@ -878,6 +878,7 @@ export class Game {
                 inputMsg.inputs.includes(Input.Interact) ||
                 inputMsg.inputs.includes(Input.Use)
             ) {
+                this.displayAmongUsEmergencyCallAttemptMessage();
                 this.openNearbyAmongUsTask();
                 this.openNearbyAmongUsCameras();
             }
@@ -1326,6 +1327,56 @@ export class Game {
             this.m_uiManager.displayAnnouncement(
                 this.m_localization.translate("game-among-us-emergency-meeting"),
             );
+        }
+    }
+
+    displayAmongUsEmergencyCallAttemptMessage() {
+        if (!this.m_map.getMapDef().gameMode.amongUsMode) return;
+        if (
+            this.m_amongUsMeeting &&
+            this.m_amongUsMeeting.phase !== net.AmongUsMeetingPhase.None
+        ) {
+            return;
+        }
+
+        const obstacles = this.m_map.m_obstaclePool.m_getPool();
+        for (const obstacle of obstacles) {
+            if (
+                !obstacle.active ||
+                obstacle.dead ||
+                obstacle.layer !== this.m_activePlayer.layer ||
+                obstacle.type !== "control_panel_01"
+            ) {
+                continue;
+            }
+            const def = MapObjectDefs[obstacle.type] as ObstacleDef;
+            if (
+                !def.button ||
+                !collider.intersectCircle(
+                    obstacle.collider,
+                    this.m_activePlayer.m_pos,
+                    def.button.interactionRad + this.m_activePlayer.m_rad,
+                )
+            ) {
+                continue;
+            }
+
+            const callCooldown =
+                this.m_activePlayer.m_localData.m_amongUsEmergencyCallCooldownTime;
+            if (callCooldown > 0) {
+                this.m_uiManager.displayAnnouncement(
+                    `EMERGENCY MEETING READY IN ${Math.ceil(callCooldown)}S`,
+                    1200,
+                );
+                return;
+            }
+
+            if (this.m_activePlayer.m_localData.m_amongUsEmergencyCallsRemaining <= 0) {
+                this.m_uiManager.displayAnnouncement("EMERGENCY CALLS 0/1", 1600);
+                return;
+            }
+
+            return;
         }
     }
 

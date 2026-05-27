@@ -603,6 +603,21 @@ export class Obstacle extends BaseGameObject {
     useButton(): void {
         if (!this.button.canUse) return;
 
+        if (
+            this.type === "control_panel_01" &&
+            this.parentBuilding?.type === "cafetria_01" &&
+            this.game.map.amongUsMode &&
+            this.interactedBy
+        ) {
+            const meetingCalled = this.game.playerBarn.callAmongUsEmergencyMeeting(
+                this.interactedBy,
+                this,
+            );
+            this.button.onOff = meetingCalled;
+            this.button.seq++;
+            return;
+        }
+
         this.button.onOff = !this.button.onOff;
         this.button.seq++;
 
@@ -627,22 +642,6 @@ export class Obstacle extends BaseGameObject {
         }
         if (this.button.onOff && this.isPuzzlePiece) {
             this.parentBuilding?.puzzlePieceToggled(this);
-        }
-        if (
-            this.button.onOff &&
-            this.type === "control_panel_01" &&
-            this.parentBuilding?.type === "cafetria_01" &&
-            this.game.map.amongUsMode &&
-            this.interactedBy
-        ) {
-            const meetingCalled = this.game.playerBarn.callAmongUsEmergencyMeeting(
-                this.interactedBy,
-                this,
-            );
-            if (!meetingCalled) {
-                this.button.onOff = false;
-                this.button.seq++;
-            }
         }
         const def = MapObjectDefs[this.type] as ObstacleDef;
         if (def.button?.destroyOnUse && def.destroyType) {
