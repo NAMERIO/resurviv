@@ -388,6 +388,7 @@ export {
     AmongUsMeetingChatMsg,
     AmongUsMeetingChatSendMsg,
     AmongUsMeetingPhase,
+    AmongUsMeetingReason,
     AmongUsMeetingStateMsg,
     AmongUsMeetingVoteMsg,
 } from "./amongUsMeetingMsg";

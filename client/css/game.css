@@ -2908,6 +2908,19 @@ img {
   font-weight: bold;
 }
 
+.among-us-caller-label {
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: #ff4d4d;
+  text-shadow: 1px 1px #000;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
 .among-us-player-card.selected .among-us-player-name {
   max-width: calc(100% - 146px);
 }

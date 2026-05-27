@@ -8,6 +8,11 @@ export enum AmongUsMeetingPhase {
     Ejection,
 }
 
+export enum AmongUsMeetingReason {
+    Report,
+    Emergency,
+}
+
 export interface AmongUsMeetingVote {
     voterId: number;
     targetId: number;
@@ -17,6 +22,7 @@ export class AmongUsMeetingStateMsg implements AbstractMsg {
     sequence = 0;
     phase = AmongUsMeetingPhase.None;
     seconds = 0;
+    reason = AmongUsMeetingReason.Report;
     callerId = 0;
     ejectedId = 0;
     ejectedWasImpostor = false;
@@ -29,6 +35,7 @@ export class AmongUsMeetingStateMsg implements AbstractMsg {
         s.writeUint8(this.sequence);
         s.writeBits(this.phase, 3);
         s.writeUint8(this.seconds);
+        s.writeBits(this.reason, 2);
         s.writeUint16(this.callerId);
         s.writeUint16(this.ejectedId);
         s.writeBoolean(this.ejectedWasImpostor);
@@ -45,6 +52,7 @@ export class AmongUsMeetingStateMsg implements AbstractMsg {
         this.sequence = s.readUint8();
         this.phase = s.readBits(3);
         this.seconds = s.readUint8();
+        this.reason = s.readBits(2);
         this.callerId = s.readUint16();
         this.ejectedId = s.readUint16();
         this.ejectedWasImpostor = s.readBoolean();

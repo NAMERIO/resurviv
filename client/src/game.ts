@@ -3329,6 +3329,14 @@ export class Game {
                 ? `<span class="among-us-card-actions"><button class="among-us-vote-cancel btn-darken" type="button" aria-label="Cancel vote"></button><button class="among-us-vote-confirm btn-darken" type="button" aria-label="Confirm vote"></button></span>`
                 : "";
         };
+        const renderCallerLabel = (playerId: number) => {
+            if (meeting.callerId !== playerId) return "";
+            const text =
+                meeting.reason === net.AmongUsMeetingReason.Emergency
+                    ? "CALLED MEETING"
+                    : "REPORTED BODY";
+            return `<span class="among-us-caller-label">${text}</span>`;
+        };
         const cards = meeting.participantIds.map((playerId) => {
             const info = this.m_playerBarn.getPlayerInfo(playerId);
             const outfit = helpers.getSvgFromGameType(
@@ -3351,7 +3359,7 @@ export class Game {
                 this.m_activeId,
                 false,
             );
-            return `<div class="among-us-player-card${selected}${selectable}${deadClass}${ejected}" data-player-id="${playerId}"><span class="among-us-outfit" style="background-image:url('${outfit}')"></span><span class="among-us-player-name">${helpers.htmlEscape(name)}</span><span class="among-us-card-votes">${renderVotes(playerId)}</span>${renderActions(playerId)}</div>`;
+            return `<div class="among-us-player-card${selected}${selectable}${deadClass}${ejected}" data-player-id="${playerId}"><span class="among-us-outfit" style="background-image:url('${outfit}')"></span><span class="among-us-player-name">${helpers.htmlEscape(name)}</span>${renderCallerLabel(playerId)}<span class="among-us-card-votes">${renderVotes(playerId)}</span>${renderActions(playerId)}</div>`;
         });
         const skipSelected =
             canVote && this.m_amongUsMeetingSelectedId === 0 ? " selected" : "";

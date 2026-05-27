@@ -159,6 +159,7 @@ export class PlayerBarn {
         sequence: number;
         phase: net.AmongUsMeetingPhase;
         timeLeft: number;
+        reason: net.AmongUsMeetingReason;
         callerId: number;
         participantIds: number[];
         votes: Map<number, number>;
@@ -577,10 +578,15 @@ export class PlayerBarn {
             caller.amongUsEmergencyCallsUsed++;
         }
         this.amongUsEmergencyMeetingSeq++;
+        const reason =
+            opts.emergencyButton || opts.consumeEmergencyCall
+                ? net.AmongUsMeetingReason.Emergency
+                : net.AmongUsMeetingReason.Report;
         this.amongUsMeeting = {
             sequence: this.amongUsEmergencyMeetingSeq,
             phase: net.AmongUsMeetingPhase.Discussion,
             timeLeft: 20,
+            reason,
             callerId: caller.playerId,
             participantIds: this.getAmongUsMeetingParticipantIds(),
             votes: new Map<number, number>(),
@@ -851,6 +857,7 @@ export class PlayerBarn {
         msg.sequence = meeting.sequence;
         msg.phase = meeting.phase;
         msg.seconds = Math.max(0, Math.ceil(meeting.timeLeft));
+    msg.reason = meeting.reason;
         msg.callerId = meeting.callerId;
         msg.ejectedId = meeting.ejectedId;
         msg.ejectedWasImpostor = meeting.ejectedWasImpostor;
