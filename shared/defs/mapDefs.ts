@@ -173,6 +173,7 @@ export interface MapDef {
         spookyKillSounds?: boolean;
         infernoMode?: boolean;
         amongUsMode?: boolean;
+        amongUsVisionRadius?: number;
         disableGas?: boolean;
     };
     gameConfig: {

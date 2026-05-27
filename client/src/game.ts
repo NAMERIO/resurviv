@@ -46,6 +46,32 @@ import { Touch } from "./ui/touch";
 import { UiManager } from "./ui/ui";
 import { UiManager2 } from "./ui/ui2";
 
+const amongUsVisionDarkAlpha = 0.82;
+const amongUsVisionFadeDistance = 8;
+const amongUsVisionClearRadiusScale = 0.35;
+const amongUsVisionTextureFadeRadiusScale = 0.1;
+
+function createAmongUsVisionGradient() {
+    const size = 1024;
+    const center = size * 0.5;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d")!;
+    const fadeRadius = center * amongUsVisionTextureFadeRadiusScale;
+    const gradient = ctx.createRadialGradient(center, center, 0, center, center, fadeRadius);
+    gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
+    gradient.addColorStop(amongUsVisionClearRadiusScale, "rgba(0, 0, 0, 0)");
+    gradient.addColorStop(1, `rgba(0, 0, 0, ${amongUsVisionDarkAlpha})`);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+
+    const sprite = new PIXI.Sprite(PIXI.Texture.from(canvas));
+    sprite.anchor.set(0.5, 0.5);
+    sprite.visible = false;
+    return sprite;
+}
+
 export interface Ctx {
     audioManager: AudioManager;
     renderer: Renderer;
@@ -89,6 +115,7 @@ export class Game {
 
     m_debugDisplay!: PIXI.Graphics;
     m_hideAndSeekBlindOverlay!: PIXI.Graphics;
+    m_amongUsVisionGradient!: PIXI.Sprite;
     m_hideAndSeekHunterReleaseLastSecond = -1;
     m_hideAndSeekHunterReleaseWasActive = false;
     m_infectedRespawnLastSecond = -1;
@@ -325,6 +352,7 @@ export class Game {
         // Render ordering
         this.m_debugDisplay = new PIXI.Graphics();
         this.m_hideAndSeekBlindOverlay = new PIXI.Graphics();
+        this.m_amongUsVisionGradient = createAmongUsVisionGradient();
         const pixiContainers = [
             this.m_map.display.ground,
             this.m_renderer.layers[0],
@@ -334,6 +362,7 @@ export class Game {
             this.m_renderer.layers[3],
             this.m_debugDisplay,
             this.m_gas.gasRenderer.display,
+            this.m_amongUsVisionGradient,
             this.m_hideAndSeekBlindOverlay,
             this.m_touch.container,
             this.m_emoteBarn.container,
@@ -1086,12 +1115,20 @@ export class Game {
             : 0x80af49;
         this.m_pixi.renderer.background.color = grassColor;
         // Module rendering
-        this.m_playerBarn.m_render(this.m_camera, debug);
+        const amongUsVisionRadius =
+            this.m_map.getMapDef().gameMode.amongUsVisionRadius;
+        this.m_playerBarn.m_render(
+            this.m_camera,
+            debug,
+            this.m_activePlayer,
+            amongUsVisionRadius,
+        );
         this.m_bulletBarn.m_render(this.m_camera);
         this.m_flareBarn.m_render(this.m_camera);
         this.m_decalBarn.m_render(this.m_camera, debug, this.m_activePlayer.layer);
         this.m_map.m_render(this.m_camera);
         this.m_gas.m_render(dt, this.m_camera);
+        this.renderAmongUsVisionOverlay();
         this.renderHideAndSeekBlindOverlay(dt);
         this.renderHideAndSeekHunterReleaseAnnouncement();
         this.renderInfectedRespawnAnnouncement();
@@ -1110,6 +1147,23 @@ export class Game {
             }
             debugLines.flush();
         }
+    }
+
+    renderAmongUsVisionOverlay() {
+        const radius = this.m_map.getMapDef().gameMode.amongUsVisionRadius;
+        this.m_amongUsVisionGradient.visible = false;
+        if (!radius) return;
+
+        const center = this.m_camera.m_pointToScreen(this.m_activePlayer.m_visualPos);
+        const fadeEnd = this.m_camera.m_scaleToScreen(
+            radius + amongUsVisionFadeDistance,
+        );
+        const gradientSize = (fadeEnd * 2) / amongUsVisionTextureFadeRadiusScale;
+
+        this.m_amongUsVisionGradient.position.set(center.x, center.y);
+        this.m_amongUsVisionGradient.width = gradientSize;
+        this.m_amongUsVisionGradient.height = gradientSize;
+        this.m_amongUsVisionGradient.visible = true;
     }
 
     renderHideAndSeekBlindOverlay(dt: number) {

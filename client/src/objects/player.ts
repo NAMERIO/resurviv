@@ -112,6 +112,7 @@ function createSprite() {
 
 const desktopZoomRads = Object.values(GameConfig.scopeZoomRadius.desktop);
 const mobileZoomRads = Object.values(GameConfig.scopeZoomRadius.mobile);
+const amongUsVisionFadeDistance = 8;
 
 class Gun {
     gunBarrel = createSprite();
@@ -1703,16 +1704,18 @@ export class Player implements AbstractObject {
         }
     }
 
-    render(camera: Camera, debug: DebugRenderOpts) {
+    render(camera: Camera, debug: DebugRenderOpts, visionAlpha = 1) {
         const screenPos = camera.m_pointToScreen(this.m_visualPos);
         const screenScale = camera.m_pixels(1);
         this.container.position.set(screenPos.x, screenPos.y);
         this.container.scale.set(screenScale, screenScale);
         this.container.visible = !this.m_netData.m_dead;
         this.bodyContainer.visible = !this.propDisguiseActive;
-        this.container.alpha = this.localInvisiblePreview ? 0.45 : 1;
+        this.container.alpha = (this.localInvisiblePreview ? 0.45 : 1) * visionAlpha;
         this.auraContainer.position.set(screenPos.x, screenPos.y);
         this.auraContainer.scale.set(screenScale, screenScale);
+        this.auraContainer.alpha = visionAlpha;
+        this.deathEffectContainer.alpha = visionAlpha;
 
         if (IS_DEV && debug.players) {
             debugLines.addCircle(this.m_pos, this.m_rad, 0xff0000, 0);
@@ -3224,12 +3227,29 @@ export class PlayerBarn {
         }
     }
 
-    m_render(camera: Camera, debug: DebugRenderOpts) {
+    m_render(
+        camera: Camera,
+        debug: DebugRenderOpts,
+        activePlayer?: Player,
+        limitedVisionRadius?: number,
+    ) {
         const players = this.playerPool.m_getPool();
         for (let i = 0; i < players.length; i++) {
             const p = players[i];
             if (p.active) {
-                p.render(camera, debug);
+                let visionAlpha = 1;
+                if (limitedVisionRadius && activePlayer && p !== activePlayer) {
+                    const dx = p.m_visualPos.x - activePlayer.m_visualPos.x;
+                    const dy = p.m_visualPos.y - activePlayer.m_visualPos.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy) - p.m_rad;
+                    visionAlpha = math.clamp(
+                        (limitedVisionRadius + amongUsVisionFadeDistance - dist) /
+                            amongUsVisionFadeDistance,
+                        0,
+                        1,
+                    );
+                }
+                p.render(camera, debug, visionAlpha);
             }
         }
     }

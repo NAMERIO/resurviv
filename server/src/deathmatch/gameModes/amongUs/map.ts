@@ -19,6 +19,7 @@ export const AmongUsMapDef: PartialMapDef = {
         maxPlayers: 24,
         killLeaderEnabled: false,
         amongUsMode: true,
+        amongUsVisionRadius: 24,
         disableGas: true,
     },
     assets: {

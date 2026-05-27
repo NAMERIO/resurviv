@@ -1847,7 +1847,9 @@ export class Player extends BaseGameObject {
     }
 
     private applyAmongUsLoadout(): void {
-        if (!isAmongUsMiniGame(this.game.miniGame)) return;
+        if (!isAmongUsMiniGame(this.game.miniGame) && !this.game.map.amongUsMode) {
+            return;
+        }
 
         const amongUsMelee = "karambit";
         this.loadout.melee = amongUsMelee;
@@ -2433,7 +2435,7 @@ export class Player extends BaseGameObject {
         this.setLoadout(loadout ? loadout : joinMsg.loadout, !loadout);
         if (getInfectedSettings(this.game.miniGame)) {
             this.applyInfectedLoadout();
-        } else if (isAmongUsMiniGame(this.game.miniGame)) {
+        } else if (isAmongUsMiniGame(this.game.miniGame) || this.game.map.amongUsMode) {
             this.applyAmongUsLoadout();
         }
 
