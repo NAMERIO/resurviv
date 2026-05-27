@@ -1,4 +1,5 @@
 import { GameObjectDefs, type LootDef } from "../../../shared/defs/gameObjectDefs";
+import type { AmongUsTaskId } from "../../../shared/defs/amongUsTaskDefs";
 import {
     DamageStreakDefs,
     DefaultStreakType,
@@ -700,6 +701,7 @@ export class UiManager2 {
         lootBarn: LootBarn,
         map: Map,
         inputBinds: InputBinds,
+        completedAmongUsTasks?: ReadonlySet<AmongUsTaskId>,
     ) {
         const state = this.newState;
 
@@ -798,6 +800,13 @@ export class UiManager2 {
                     !obstacle.dead &&
                     util.sameLayer(obstacle.layer, activePlayer.layer)
                 ) {
+                    const obstacleDef = MapObjectDefs[obstacle.type] as ObstacleDef;
+                    if (
+                        obstacleDef.amongUsTask &&
+                        completedAmongUsTasks?.has(obstacleDef.amongUsTask)
+                    ) {
+                        continue;
+                    }
                     const interact = obstacle.getInteraction();
                     if (interact) {
                         const res = collider.intersectCircle(

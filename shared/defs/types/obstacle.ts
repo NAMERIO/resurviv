@@ -1,5 +1,6 @@
 import type { AABB, Collider } from "../../utils/coldet";
 import type { Vec2 } from "../../utils/v2";
+import type { AmongUsTaskId } from "../amongUsTaskDefs";
 import type { LootSpawnDef, TerrainSpawnDef } from "../mapObjectsTyping";
 
 export interface ObstacleDef {
@@ -107,6 +108,7 @@ export interface ObstacleDef {
     airdropCrate?: boolean;
     isBush?: boolean;
     isDecalAnchor?: boolean;
+    amongUsTask?: AmongUsTaskId;
     swapWeaponOnDestroy?: boolean;
     regrow?: boolean;
     regrowTimer?: number;

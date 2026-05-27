@@ -1,9 +1,16 @@
 import * as PIXI from "pixi.js-legacy";
+import {
+    AmongUsTaskDefs,
+    type AmongUsTaskId,
+} from "../../shared/defs/amongUsTaskDefs";
 import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
+import { MapObjectDefs } from "../../shared/defs/mapObjectDefs";
+import type { ObstacleDef } from "../../shared/defs/mapObjectsTyping";
 import { RoleDefs } from "../../shared/defs/gameObjects/roleDefs";
 import { GameConfig, Input, TeamMode, WeaponSlot } from "../../shared/gameConfig";
 import * as net from "../../shared/net/net";
 import { ObjectType } from "../../shared/net/objectSerializeFns";
+import { collider } from "../../shared/utils/collider";
 import { math } from "../../shared/utils/math";
 import { v2 } from "../../shared/utils/v2";
 import type { Ambiance } from "./ambiance";
@@ -133,6 +140,9 @@ export class Game {
     m_amongUsMeetingDeadline = 0;
     m_amongUsMeetingSelectedId = -1;
     m_amongUsMeetingChatMessages: Array<{ playerId: number; message: string }> = [];
+    m_amongUsTask: AmongUsTaskId | null = null;
+    m_amongUsCompletedTasks = new Set<AmongUsTaskId>();
+    m_amongUsTaskCloseTimeout = 0;
     m_canvasMode!: boolean;
 
     m_updatePass!: boolean;
@@ -321,6 +331,7 @@ export class Game {
         );
         this.m_ui2Manager = new UiManager2(this.m_localization, this.m_inputBinds);
         this.initAmongUsMeetingUi();
+        this.initAmongUsTaskUi();
         {
             const loadout = this.m_config.get("loadout");
             this.m_ui2Manager.setChosenStreakType(loadout?.streak || "");
@@ -424,8 +435,14 @@ export class Game {
         this.m_amongUsMeeting = null;
         this.m_amongUsMeetingSelectedId = -1;
         this.m_amongUsMeetingChatMessages = [];
+        this.m_amongUsTask = null;
+        this.m_amongUsCompletedTasks.clear();
+        window.clearTimeout(this.m_amongUsTaskCloseTimeout);
+        this.m_amongUsTaskCloseTimeout = 0;
         document.body.classList.remove("among-us-meeting-active");
+        document.body.classList.remove("among-us-task-active");
         document.getElementById("ui-among-us-meeting")!.style.display = "none";
+        document.getElementById("ui-among-us-task")!.style.display = "none";
 
         // Process config
         this.m_camera.m_setShakeEnabled(this.m_config.get("screenShake")!);
@@ -751,6 +768,12 @@ export class Game {
                 inputMsg.addInput(Input.Interact);
                 inputMsg.addInput(Input.Cancel);
             }
+            if (
+                inputMsg.inputs.includes(Input.Interact) ||
+                inputMsg.inputs.includes(Input.Use)
+            ) {
+                this.openNearbyAmongUsTask();
+            }
 
             // Process 'use' actions trigger from the ui
             for (let i = 0; i < this.m_ui2Manager.uiEvents.length; i++) {
@@ -1031,6 +1054,7 @@ export class Game {
             this.m_lootBarn,
             this.m_map,
             this.m_inputBinds,
+            this.m_amongUsCompletedTasks,
         );
         if (this.editor?.enabled && this.editor.toolParams.explosionDecalBrush) {
             this.m_emoteBarn.inputReset();
@@ -1196,6 +1220,138 @@ export class Game {
         }
     }
 
+    initAmongUsTaskUi() {
+        const bottleGrid = document.getElementById("among-us-task-bottles")!;
+        const closeButton = document.getElementById("among-us-task-close")!;
+
+        closeButton.onclick = () => this.closeAmongUsTask();
+        bottleGrid.onclick = (event) => {
+            const bottle = (event.target as HTMLElement).closest<HTMLButtonElement>(
+                ".among-us-task-bottle",
+            );
+            if (!bottle || bottle.disabled || !this.m_amongUsTask) return;
+
+            const def = AmongUsTaskDefs[this.m_amongUsTask];
+            const weapon = document.getElementById("among-us-task-weapon")!;
+            bottle.disabled = true;
+            bottle.classList.add("broken");
+            weapon.classList.remove("firing");
+            void weapon.offsetWidth;
+            weapon.classList.add("firing");
+            this.m_audioManager.playSound(def.shootSound, { channel: "activePlayer" });
+            this.m_audioManager.playSound(def.breakSound, { channel: "sfx" });
+
+            const broken = bottleGrid.querySelectorAll(".broken").length;
+            document.getElementById("among-us-task-progress")!.textContent =
+                `${broken} / ${def.targetCount}`;
+            if (broken !== def.targetCount) return;
+
+            this.m_amongUsCompletedTasks.add(this.m_amongUsTask);
+            document.getElementById("among-us-task-panel")!.classList.add("completed");
+            document.getElementById("among-us-task-status")!.textContent =
+                "TASK COMPLETE";
+            this.m_uiManager.displayAnnouncement("TASK COMPLETE", 2500);
+            window.clearTimeout(this.m_amongUsTaskCloseTimeout);
+            this.m_amongUsTaskCloseTimeout = window.setTimeout(
+                () => this.closeAmongUsTask(true),
+                350,
+            );
+        };
+    }
+
+    openNearbyAmongUsTask() {
+        if (!this.m_map.getMapDef().gameMode.amongUsMode) return;
+
+        const obstacles = this.m_map.m_obstaclePool.m_getPool();
+        for (const obstacle of obstacles) {
+            if (
+                !obstacle.active ||
+                obstacle.dead ||
+                obstacle.layer !== this.m_activePlayer.layer
+            ) {
+                continue;
+            }
+            const def = MapObjectDefs[obstacle.type] as ObstacleDef;
+            if (
+                !def.amongUsTask ||
+                !def.button ||
+                !collider.intersectCircle(
+                    obstacle.collider,
+                    this.m_activePlayer.m_pos,
+                    def.button.interactionRad + this.m_activePlayer.m_rad,
+                )
+            ) {
+                continue;
+            }
+            if (this.m_amongUsCompletedTasks.has(def.amongUsTask)) return;
+            this.openAmongUsTask(def.amongUsTask);
+            return;
+        }
+    }
+
+    openAmongUsTask(taskId: AmongUsTaskId) {
+        if (
+            !this.m_map.getMapDef().gameMode.amongUsMode ||
+            (this.m_amongUsMeeting &&
+                this.m_amongUsMeeting.phase !== net.AmongUsMeetingPhase.None)
+        ) {
+            return;
+        }
+        if (this.m_amongUsCompletedTasks.has(taskId)) {
+            this.m_uiManager.displayAnnouncement("TASK ALREADY COMPLETE", 1800);
+            return;
+        }
+
+        const def = AmongUsTaskDefs[taskId];
+        const panel = document.getElementById("among-us-task-panel")!;
+        const bottleGrid = document.getElementById("among-us-task-bottles")!;
+        const weapon = document.getElementById("among-us-task-weapon")!;
+        window.clearTimeout(this.m_amongUsTaskCloseTimeout);
+        this.m_amongUsTaskCloseTimeout = 0;
+        this.m_amongUsTask = taskId;
+        panel.classList.remove("completed", "closing");
+        weapon.classList.remove("firing");
+        document.getElementById("among-us-task-title")!.textContent = def.title;
+        document.getElementById("among-us-task-instruction")!.textContent =
+            def.instruction;
+        document.getElementById("among-us-task-progress")!.textContent =
+            `0 / ${def.targetCount}`;
+        document.getElementById("among-us-task-status")!.textContent = "";
+        (
+            document.getElementById("among-us-task-weapon") as HTMLImageElement
+        ).src = def.weaponImage;
+        bottleGrid.innerHTML = Array.from({ length: def.targetCount }, (_, index) => {
+            return `<button class="among-us-task-bottle" type="button" data-index="${index}" aria-label="Break bottle ${index + 1}"><img src="${def.targetImage}" alt=""><span class="among-us-task-shard shard-a"></span><span class="among-us-task-shard shard-b"></span><span class="among-us-task-shard shard-c"></span></button>`;
+        }).join("");
+        document.body.classList.add("among-us-task-active");
+        document.getElementById("ui-among-us-task")!.style.display = "flex";
+        this.m_input.onWindowFocus();
+    }
+
+    closeAmongUsTask(slideDown = false) {
+        const panel = document.getElementById("among-us-task-panel")!;
+        window.clearTimeout(this.m_amongUsTaskCloseTimeout);
+        this.m_amongUsTaskCloseTimeout = 0;
+        if (slideDown && this.m_amongUsTask) {
+            panel.classList.add("closing");
+            this.m_amongUsTaskCloseTimeout = window.setTimeout(
+                () => this.closeAmongUsTask(),
+                390,
+            );
+            return;
+        }
+
+        this.m_amongUsTask = null;
+        panel.classList.remove("closing", "completed");
+        document.getElementById("among-us-task-weapon")!.classList.remove("firing");
+        document.getElementById("among-us-task-bottles")!.innerHTML = "";
+        document.getElementById("among-us-task-progress")!.textContent = "0 / 6";
+        document.getElementById("among-us-task-status")!.textContent = "";
+        document.body.classList.remove("among-us-task-active");
+        document.getElementById("ui-among-us-task")!.style.display = "none";
+        this.m_input.onWindowFocus();
+    }
+
     initAmongUsMeetingUi() {
         const cards = document.getElementById("among-us-meeting-cards")!;
         const chatInput = document.getElementById(
@@ -1268,6 +1424,9 @@ export class Game {
 
         this.m_amongUsMeeting = msg;
         this.m_amongUsMeetingDeadline = performance.now() + msg.seconds * 1000;
+        if (msg.phase !== net.AmongUsMeetingPhase.None) {
+            this.closeAmongUsTask();
+        }
 
         if (msg.phase === net.AmongUsMeetingPhase.Ejection && msg.ejectedId) {
             const ejectedName = this.m_playerBarn.getPlayerName(

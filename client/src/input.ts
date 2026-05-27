@@ -108,13 +108,16 @@ export class InputHandler {
         const element = target instanceof HTMLElement ? target : null;
         if (
             element?.closest(
-                "input, textarea, select, [contenteditable='true'], #ui-among-us-meeting",
+                "input, textarea, select, [contenteditable='true'], #ui-among-us-meeting, #ui-among-us-task",
             )
         ) {
             return true;
         }
 
-        return document.body.classList.contains("among-us-meeting-active");
+        return (
+            document.body.classList.contains("among-us-meeting-active") ||
+            document.body.classList.contains("among-us-task-active")
+        );
     }
 
     checkCaptureInput(

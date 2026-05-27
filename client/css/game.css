@@ -1940,6 +1940,281 @@ img {
   cursor: default;
 }
 
+#ui-among-us-task {
+  position: absolute;
+  inset: 0;
+  z-index: 92;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.7);
+  pointer-events: auto;
+  color: #fff;
+  font-family: "Roboto Condensed", Arial, sans-serif;
+}
+
+#among-us-task-panel {
+  position: relative;
+  width: min(760px, calc(100vw - 32px));
+  min-height: 430px;
+  box-sizing: border-box;
+  padding: 62px 26px 28px;
+  border: 4px solid #1a2227;
+  border-radius: 8px;
+  background: #4c5558;
+  box-shadow: inset 0 0 0 4px #7e8c8f, 0 18px 42px rgba(0, 0, 0, 0.8);
+}
+
+#among-us-task-close {
+  position: absolute;
+  top: 11px;
+  right: 13px;
+  z-index: 1;
+  width: 38px;
+  height: 38px;
+  border: 3px solid #572424;
+  border-radius: 6px;
+  background: #cf3939 url(/img/gui/close.svg) center/24px no-repeat;
+  cursor: pointer;
+}
+
+.among-us-task-header {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 51px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding: 0 64px 0 20px;
+  border-bottom: 4px solid #3e555f;
+  background: #29363c;
+  font-size: 27px;
+  font-weight: bold;
+  text-shadow: 2px 2px #000;
+}
+
+#among-us-task-progress {
+  color: #a6d569;
+  font-size: 22px;
+}
+
+#among-us-task-instruction {
+  text-align: center;
+  margin: 7px 0 16px;
+  font-size: 20px;
+  color: #ecf0ef;
+  text-shadow: 1px 1px #202020;
+}
+
+.among-us-task-content {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 22px;
+  min-height: 264px;
+  align-items: center;
+}
+
+.among-us-task-weapon-stage {
+  position: relative;
+  display: flex;
+  height: 210px;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #263237;
+  border-radius: 7px;
+  background: #343e42;
+}
+
+#among-us-task-weapon {
+  width: 138px;
+  transform: rotate(-9deg);
+  transform-origin: 18% 50%;
+  filter: drop-shadow(2px 3px 2px #101010);
+}
+
+#among-us-task-weapon.firing {
+  animation: among-us-task-recoil 150ms ease-out;
+}
+
+.among-us-task-flash {
+  position: absolute;
+  top: 14px;
+  right: 15px;
+  width: 35px;
+  height: 35px;
+  opacity: 0;
+  background: #ffda54;
+  clip-path: polygon(0 42%, 42% 42%, 58% 0, 64% 40%, 100% 26%, 75% 56%, 95% 90%, 53% 70%, 24% 100%, 30% 60%);
+}
+
+#among-us-task-weapon.firing + .among-us-task-flash {
+  animation: among-us-task-flash 120ms ease-out;
+}
+
+@keyframes among-us-task-recoil {
+  0% { transform: rotate(-9deg) translateX(0); }
+  35% { transform: rotate(-16deg) translateX(-12px); }
+  100% { transform: rotate(-9deg) translateX(0); }
+}
+
+@keyframes among-us-task-flash {
+  0% { opacity: 1; transform: scale(0.5); }
+  100% { opacity: 0; transform: scale(1.25); }
+}
+
+#among-us-task-bottles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 17px 18px;
+  padding: 18px;
+  border: 3px solid #263237;
+  border-radius: 7px;
+  background: #394448;
+}
+
+.among-us-task-bottle {
+  position: relative;
+  height: 106px;
+  border: 0;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  cursor: crosshair;
+}
+
+.among-us-task-bottle:hover:not(:disabled) {
+  background: rgba(166, 213, 105, 0.2);
+}
+
+.among-us-task-bottle img {
+  height: 88px;
+  transition: transform 100ms ease, opacity 100ms ease;
+  filter: drop-shadow(2px 3px 1px #121212);
+}
+
+.among-us-task-bottle.broken img {
+  animation: among-us-bottle-break 260ms forwards;
+}
+
+.among-us-task-shard {
+  position: absolute;
+  left: 50%;
+  top: 53%;
+  width: 11px;
+  height: 16px;
+  opacity: 0;
+  background: #ebeded;
+  clip-path: polygon(45% 0, 100% 26%, 65% 100%, 0 68%);
+}
+
+.among-us-task-bottle.broken .among-us-task-shard {
+  animation: among-us-bottle-shard 420ms ease-out forwards;
+}
+
+.among-us-task-bottle.broken .shard-b {
+  animation-delay: 12ms;
+  --shard-x: 35px;
+  --shard-y: -24px;
+}
+
+.among-us-task-bottle.broken .shard-a {
+  --shard-x: -34px;
+  --shard-y: -18px;
+}
+
+.among-us-task-bottle.broken .shard-c {
+  animation-delay: 22ms;
+  --shard-x: 8px;
+  --shard-y: 34px;
+}
+
+@keyframes among-us-bottle-break {
+  to { opacity: 0; transform: scale(0.35) rotate(12deg); }
+}
+
+@keyframes among-us-bottle-shard {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(var(--shard-x), var(--shard-y)) rotate(75deg); }
+}
+
+#among-us-task-status {
+  min-height: 30px;
+  margin-top: 12px;
+  text-align: center;
+  color: #a6d569;
+  font-size: 28px;
+  font-weight: bold;
+  text-shadow: 2px 2px #111;
+}
+
+#among-us-task-panel.completed {
+  box-shadow: inset 0 0 0 4px #a6d569, 0 18px 42px rgba(0, 0, 0, 0.8);
+}
+
+#among-us-task-panel.closing {
+  animation: among-us-task-slide-down 390ms ease-in forwards;
+}
+
+@keyframes among-us-task-slide-down {
+  to {
+    opacity: 0;
+    transform: translateY(calc(100vh + 40px));
+  }
+}
+
+@media (max-width: 650px), (max-height: 560px) {
+  #among-us-task-panel {
+    min-height: 0;
+    padding: 58px 12px 10px;
+  }
+
+  .among-us-task-header {
+    font-size: 21px;
+    padding-left: 12px;
+  }
+
+  #among-us-task-progress {
+    font-size: 18px;
+  }
+
+  #among-us-task-instruction {
+    font-size: 16px;
+    margin: 4px 0 9px;
+  }
+
+  .among-us-task-content {
+    grid-template-columns: 102px 1fr;
+    gap: 9px;
+    min-height: 0;
+  }
+
+  .among-us-task-weapon-stage {
+    height: 150px;
+  }
+
+  #among-us-task-weapon {
+    width: 92px;
+  }
+
+  .among-us-task-flash {
+    top: 43px;
+    right: 2px;
+  }
+
+  #among-us-task-bottles {
+    gap: 6px;
+    padding: 7px;
+  }
+
+  .among-us-task-bottle {
+    height: 72px;
+  }
+
+  .among-us-task-bottle img {
+    height: 61px;
+  }
+}
+
 .among-us-meeting-panel {
   position: relative;
   box-sizing: border-box;

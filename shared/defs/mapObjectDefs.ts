@@ -12560,6 +12560,38 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             enter: "none",
         },
     }),
+    among_us_task_bottles: createBottle({
+        collision: collider.createCircle(v2.create(0, 0), 0.5),
+        destructible: false,
+        health: 20,
+        hitParticle: "bottleWhiteChip",
+        explodeParticle: "bottleWhiteBreak",
+        amongUsTask: "bottle_shooting",
+        img: {
+            sprite: "map-bottle-04.img",
+            residue: "none",
+        },
+        loot: [],
+        sound: {
+            bullet: "glass_bullet",
+            punch: "glass_bullet",
+            explode: "window_break_01",
+            enter: "none",
+        },
+        button: {
+            interactionRad: 1.25,
+            interactionText: "game-use",
+            useOnce: false,
+            useType: "",
+            useDelay: 0,
+            useDir: v2.create(-1, 0),
+            useImg: "map-bottle-04.img",
+            sound: {
+                on: "button_press_01",
+                off: "button_press_01",
+            },
+        },
+    }),
     candle_01: {
         type: "obstacle",
         map: { display: false, color: 0xffffff, scale: 1 },
@@ -15701,7 +15733,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 ori: 0,
             },
             {
-                type: "bottle_05",
+                type: "among_us_task_bottles",
                 pos: v2.create(16.688, -16.937),
                 scale: 1,
                 ori: 0,
