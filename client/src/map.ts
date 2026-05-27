@@ -31,6 +31,8 @@ import type { Renderer } from "./renderer";
 
 // Drawing
 
+const buildingSpritePixelsPerUnit = 16;
+
 function drawLine(canvas: PIXI.Graphics, pt0: Vec2, pt1: Vec2) {
     canvas.moveTo(pt0.x, pt0.y);
     canvas.lineTo(pt1.x, pt1.y);
@@ -503,6 +505,7 @@ export class Map {
             const mapColors = this.mapDef.biome.colors;
             const places = this.mapData.places;
             const objects = this.mapData.objects;
+            const showAmongUsCafeteriaImage = !!this.mapDef.gameMode.amongUsMode;
             let screenScale = device.screenHeight;
             if (device.mobile) {
                 if (!device.isLandscape) {
@@ -510,7 +513,14 @@ export class Map {
                 }
                 screenScale *= math.min(device.pixelRatio, 2);
             }
-            const scale = this.height / screenScale;
+            const textureWidth = screenScale;
+            const textureHeight = showAmongUsCafeteriaImage
+                ? (screenScale * this.height) / this.width
+                : screenScale;
+            const mapScale = showAmongUsCafeteriaImage
+                ? screenScale / this.width
+                : screenScale / this.height;
+            const scale = 1 / mapScale;
 
             // Background
             const background = new PIXI.Graphics();
@@ -546,10 +556,44 @@ export class Map {
 
             mapRender.addChild(background);
 
+            const amongUsFloorSprites: PIXI.Sprite[] = [];
+            if (showAmongUsCafeteriaImage) {
+                const floorContainer = new PIXI.Container();
+                const cafeteriaDef = MapObjectDefs.cafetria_01 as BuildingDef;
+                for (const obj of objects) {
+                    if (obj.type !== "cafetria_01") continue;
+
+                    const rotation = math.oriToRad(obj.ori);
+                    for (const image of cafeteriaDef.floor.imgs) {
+                        if (!image.sprite || image.sprite === "none") continue;
+
+                        const sprite = new PIXI.Sprite(PIXI.Texture.from(image.sprite));
+                        const pos = v2.add(
+                            obj.pos,
+                            v2.rotate(image.pos ?? v2.create(0, 0), rotation),
+                        );
+                        const spriteScale =
+                            (obj.scale * image.scale) / buildingSpritePixelsPerUnit;
+                        sprite.anchor.set(0.5, 0.5);
+                        sprite.position.set(pos.x, this.height - pos.y);
+                        sprite.scale.set(spriteScale, spriteScale);
+                        if (image.mirrorX) sprite.scale.x *= -1;
+                        if (image.mirrorY) sprite.scale.y *= -1;
+                        sprite.rotation = -rotation + math.oriToRad(image.rot ?? 0);
+                        sprite.alpha = image.alpha;
+                        sprite.tint = image.tint;
+                        amongUsFloorSprites.push(sprite);
+                        floorContainer.addChild(sprite);
+                    }
+                }
+                mapRender.addChild(floorContainer);
+            }
+
             // Render minimap objects, sorted by zIdx
             const minimapRenders = [];
             for (let i = 0; i < objects.length; i++) {
                 const obj = objects[i];
+                if (showAmongUsCafeteriaImage && obj.type === "cafetria_01") continue;
                 minimapRenders.push(this.getMinimapRender(obj));
             }
             minimapRenders.sort((a, b) => {
@@ -616,8 +660,8 @@ export class Map {
                 });
                 const richText = new PIXI.Text(place.name, style);
                 richText.anchor.set(0.5, 0.5);
-                richText.x = (place.pos.x * this.height) / scale;
-                richText.y = (place.pos.y * this.height) / scale;
+                richText.x = place.pos.x * textureWidth;
+                richText.y = place.pos.y * textureHeight;
                 richText.alpha = 0.75;
                 nameContainer.addChild(richText);
             }
@@ -625,19 +669,16 @@ export class Map {
 
             // Generate and/or update the texture
             if (this.mapTexture) {
-                this.mapTexture.resize(screenScale, screenScale);
+                this.mapTexture.resize(textureWidth, textureHeight);
             } else {
                 this.mapTexture = PIXI.RenderTexture.create({
-                    width: screenScale,
-                    height: screenScale,
+                    width: textureWidth,
+                    height: textureHeight,
                     scaleMode: PIXI.SCALE_MODES.LINEAR,
                     resolution: 1,
                 });
             }
-            mapRender.scale = new PIXI.Point(
-                screenScale / this.height,
-                screenScale / this.height,
-            );
+            mapRender.scale = new PIXI.Point(mapScale, mapScale);
             renderer.render(mapRender, {
                 renderTexture: this.mapTexture,
                 clear: true,
@@ -646,6 +687,14 @@ export class Map {
                 renderTexture: this.mapTexture,
                 clear: false,
             });
+            for (const sprite of amongUsFloorSprites) {
+                sprite.parent?.removeChild(sprite);
+                sprite.destroy({
+                    children: true,
+                    texture: false,
+                    baseTexture: false,
+                });
+            }
             mapRender.destroy({
                 children: true,
                 texture: true,

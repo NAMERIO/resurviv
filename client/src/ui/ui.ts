@@ -1,9 +1,11 @@
 import $ from "jquery";
 import * as PIXI from "pixi.js-legacy";
+import type { AmongUsTaskId } from "../../../shared/defs/amongUsTaskDefs";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { PingDefs } from "../../../shared/defs/gameObjects/pingDefs";
 import { type RoleDef, RoleDefs } from "../../../shared/defs/gameObjects/roleDefs";
 import type { MapDef } from "../../../shared/defs/mapDefs";
+import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import { Action, GameConfig, GasMode, TeamMode } from "../../../shared/gameConfig";
 import type { LeaderboardMsg } from "../../../shared/net/leaderboardMsg";
 import type { PlayerStatsMsg } from "../../../shared/net/playerStatsMsg";
@@ -213,6 +215,7 @@ export class UiManager {
     mapIndicatorBarn!: MapIndicatorBarn;
     playerMapSprites: MapSprite[] = [];
     playerPingSprites = {} as Record<number, MapSprite[]>;
+    amongUsTaskMapMarkers = new globalThis.Map<string, MapSprite>();
     container = new PIXI.Container() as ContainerWithMask;
 
     resetWeapSlotStyling!: () => void;
@@ -567,6 +570,7 @@ export class UiManager {
 
     m_free() {
         this.gasRenderer.free();
+        this.clearAmongUsTaskMapMarkers();
 
         this.clearUI();
 
@@ -641,6 +645,7 @@ export class UiManager {
     }
 
     onMapLoad(map: Map, camera: Camera) {
+        this.clearAmongUsTaskMapMarkers();
         this.resize(map, camera);
         if (this.hideTeamStatus) {
             $("#ui-team, #ui-team-indicators").css("display", "");
@@ -677,6 +682,7 @@ export class UiManager {
         camera: Camera,
         teamMode: TeamMode,
         factionMode: boolean,
+        completedAmongUsTasks: ReadonlySet<AmongUsTaskId>,
     ) {
         const localPlayer = player;
 
@@ -971,6 +977,7 @@ export class UiManager {
             });
         }
         this.updatePlayerMapSprites(player, playerBarn, map);
+        this.updateAmongUsTaskMapMarkers(map, completedAmongUsTasks);
         this.mapSpriteBarn.update(dt, this, map);
         this.m_pieTimer.update(dt, camera);
 
@@ -1149,6 +1156,75 @@ export class UiManager {
 
     clearLeaderboard() {
         $("#ui-kill-leaderboard").empty();
+    }
+
+    clearAmongUsTaskMapMarkers() {
+        for (const marker of this.amongUsTaskMapMarkers.values()) {
+            marker.free();
+        }
+        this.amongUsTaskMapMarkers.clear();
+    }
+
+    updateAmongUsTaskMapMarkers(map: Map, completedTasks: ReadonlySet<AmongUsTaskId>) {
+        if (!map.getMapDef().gameMode.amongUsMode) {
+            if (this.amongUsTaskMapMarkers.size > 0) {
+                this.clearAmongUsTaskMapMarkers();
+            }
+            return;
+        }
+
+        const activeStationIds = new Set<string>();
+        for (let objectIdx = 0; objectIdx < map.mapData.objects.length; objectIdx++) {
+            const object = map.mapData.objects[objectIdx];
+            const buildingDef = MapObjectDefs[object.type];
+            if (!buildingDef || buildingDef.type !== "building") continue;
+
+            const rotation = math.oriToRad(object.ori);
+            for (
+                let stationIdx = 0;
+                stationIdx < buildingDef.mapObjects.length;
+                stationIdx++
+            ) {
+                const station = buildingDef.mapObjects[stationIdx];
+                if (typeof station.type !== "string") continue;
+
+                const stationDef = MapObjectDefs[station.type];
+                if (
+                    !stationDef ||
+                    stationDef.type !== "obstacle" ||
+                    !stationDef.amongUsTask ||
+                    completedTasks.has(stationDef.amongUsTask)
+                ) {
+                    continue;
+                }
+
+                const stationId = `${objectIdx}:${stationIdx}`;
+                activeStationIds.add(stationId);
+                let marker = this.amongUsTaskMapMarkers.get(stationId);
+                if (!marker) {
+                    marker = this.mapSpriteBarn.addSprite();
+                    marker.scale = device.uiLayout == device.UiLayout.Sm ? 0.18 : 0.24;
+                    marker.zOrder = 100;
+                    marker.sprite.texture = PIXI.Texture.from(
+                        PingDefs.ping_danger.mapTexture!,
+                    );
+                    marker.sprite.tint = 0xe3262e;
+                    this.amongUsTaskMapMarkers.set(stationId, marker);
+                }
+                marker.pos = v2.add(
+                    object.pos,
+                    v2.rotate(v2.mul(station.pos, object.scale), rotation),
+                );
+                marker.visible = true;
+            }
+        }
+
+        for (const [stationId, marker] of this.amongUsTaskMapMarkers) {
+            if (!activeStationIds.has(stationId)) {
+                marker.free();
+                this.amongUsTaskMapMarkers.delete(stationId);
+            }
+        }
     }
 
     createPing(
@@ -2275,14 +2351,19 @@ export class UiManager {
         const thisMinimapSize = this.getMinimapSize();
         const thisMinimapBorderWidth = this.getMinimapBorderWidth();
         const layoutSm = device.uiLayout == device.UiLayout.Sm;
+        const mapAspect =
+            this.mapSprite.texture.height > 0
+                ? this.mapSprite.texture.width / this.mapSprite.texture.height
+                : 1;
 
         this.display.border.clear();
         this.container.mask?.clear();
 
         if (this.bigmapDisplayed) {
-            const smallestDim = math.min(screenWidth, screenHeight);
-            this.mapSprite.width = smallestDim;
-            this.mapSprite.height = smallestDim;
+            const mapWidth = math.min(screenWidth, screenHeight * mapAspect);
+            const mapHeight = mapWidth / mapAspect;
+            this.mapSprite.width = mapWidth;
+            this.mapSprite.height = mapHeight;
             this.mapSprite.x = screenWidth / 2;
             this.mapSprite.y = screenHeight / 2;
             this.mapSprite.alpha = 1;
@@ -2304,8 +2385,8 @@ export class UiManager {
             const minimapScale = (this.screenScaleFactor * 1600) / 1.2;
             const minimapSize = thisMinimapSize * this.screenScaleFactor;
 
-            this.mapSprite.width = minimapScale;
             this.mapSprite.height = minimapScale;
+            this.mapSprite.width = minimapScale * mapAspect;
             this.mapSprite.alpha = 0.8;
 
             // Start with a fall back

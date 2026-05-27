@@ -11,8 +11,8 @@ export const AmongUsSecurityCameraDefs: readonly AmongUsSecurityCameraDef[] = [
     {
         id: "west-hall",
         label: "WEST HALL",
-        pos: v2.create(-61.875, 6.531),
-        ori: 3,
+        pos: v2.create(-57.719, 9.438),
+        ori: 0,
     },
     {
         id: "cafeteria",

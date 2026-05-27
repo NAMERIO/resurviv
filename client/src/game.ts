@@ -1150,6 +1150,7 @@ export class Game {
             this.m_camera,
             this.teamMode,
             this.m_map.factionMode,
+            this.m_amongUsCompletedTasks,
         );
         this.m_ui2Manager.m_update(
             dt,
