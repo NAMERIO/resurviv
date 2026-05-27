@@ -425,6 +425,7 @@ export class Player implements AbstractObject {
         m_infectedRespawnTime: number;
         m_miniGameWinCountdownTime: number;
         m_miniGameWinCountdownProps: boolean;
+        m_amongUsEmergencyMeetingSeq: number;
     };
 
     throwableStatePrev!: string;
@@ -597,6 +598,7 @@ export class Player implements AbstractObject {
             m_infectedRespawnTime: 0,
             m_miniGameWinCountdownTime: 0,
             m_miniGameWinCountdownProps: false,
+            m_amongUsEmergencyMeetingSeq: 0,
         };
 
         this.playAnim(Anim.None, -1);
@@ -771,6 +773,8 @@ export class Player implements AbstractObject {
         this.m_localData.m_miniGameWinCountdownTime = data.miniGameWinCountdownTime ?? 0;
         this.m_localData.m_miniGameWinCountdownProps =
             data.miniGameWinCountdownProps ?? false;
+        this.m_localData.m_amongUsEmergencyMeetingSeq =
+            data.amongUsEmergencyMeetingSeq ?? 0;
 
         // Zoom more quickly when changing scopes
         if (this.m_localData.m_scope != scopeOld) {

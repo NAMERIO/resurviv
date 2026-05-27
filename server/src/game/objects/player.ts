@@ -151,6 +151,7 @@ export class PlayerBarn {
     }> = [];
 
     amongUsRolesAssigned = false;
+    amongUsEmergencyMeetingSeq = 0;
 
     sendWinEmoteTicker = 0;
     sentWinEmotes = false;
@@ -465,6 +466,32 @@ export class PlayerBarn {
             player.markPlayerInfoDirty();
         }
         this.amongUsRolesAssigned = true;
+    }
+
+    callAmongUsEmergencyMeeting(caller: Player) {
+        if (
+            !this.game.map.amongUsMode ||
+            caller.dead ||
+            caller.disconnected ||
+            this.game.over
+        ) {
+            return;
+        }
+
+        const spawnOffsets = this.game.map.mapDef.gameMode.amongUsSpawnOffsets;
+        if (!spawnOffsets?.length) return;
+
+        const attendees = this.livingPlayers.filter(
+            (player) => !player.dead && !player.disconnected && !player.spectatorOnly,
+        );
+        for (let i = 0; i < attendees.length; i++) {
+            attendees[i].moveToAmongUsMeeting(
+                v2.add(this.game.map.center, spawnOffsets[i % spawnOffsets.length]),
+            );
+        }
+
+        this.amongUsEmergencyMeetingSeq++;
+        this.game.updateData();
     }
 
     removePlayer(player: Player) {
@@ -1881,6 +1908,17 @@ export class Player extends BaseGameObject {
         this.weapsDirty = true;
     }
 
+    moveToAmongUsMeeting(pos: Vec2): void {
+        this.cancelAction();
+        this.shootHold = false;
+        this.shootStart = false;
+        this.layer = 0;
+        v2.set(this.pos, pos);
+        this.collider.pos = this.pos;
+        this.game.grid.updateObject(this);
+        this.setDirty();
+    }
+
     getPlayerInfoFor(viewer: Player): PlayerInfo {
         return {
             playerId: this.playerId,
@@ -2270,6 +2308,9 @@ export class Player extends BaseGameObject {
     }
     get miniGameWinCountdownProps(): boolean {
         return !!getHideAndSeekSettings(this.game.miniGame);
+    }
+    get amongUsEmergencyMeetingSeq(): number {
+        return this.game.playerBarn.amongUsEmergencyMeetingSeq;
     }
     get streakNextThreshold(): number {
         return StreakThresholds.get(this.streakActivationCount);
@@ -3700,6 +3741,7 @@ export class Player extends BaseGameObject {
                 infectedRespawnTime: player.infectedRespawnTime,
                 miniGameWinCountdownTime: player.miniGameWinCountdownTime,
                 miniGameWinCountdownProps: player.miniGameWinCountdownProps,
+                amongUsEmergencyMeetingSeq: player.amongUsEmergencyMeetingSeq,
             };
             this.startedSpectating = false;
         } else {

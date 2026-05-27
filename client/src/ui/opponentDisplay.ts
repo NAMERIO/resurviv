@@ -202,6 +202,7 @@ export class LoadoutDisplay {
             infectedRespawnTime: 0,
             miniGameWinCountdownTime: 0,
             miniGameWinCountdownProps: false,
+            amongUsEmergencyMeetingSeq: 0,
         });
 
         this.activePlayer.layer = this.activePlayer.m_netData.m_layer;
@@ -452,6 +453,7 @@ export class LoadoutDisplay {
                 infectedRespawnTime: 0,
                 miniGameWinCountdownTime: 0,
                 miniGameWinCountdownProps: false,
+                amongUsEmergencyMeetingSeq: 0,
             });
         }
     }

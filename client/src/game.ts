@@ -121,6 +121,7 @@ export class Game {
     m_infectedRespawnLastSecond = -1;
     m_infectedRespawnWasActive = false;
     m_miniGameWinCountdownLastSecond = -1;
+    m_amongUsEmergencyMeetingSeq = 0;
     m_canvasMode!: boolean;
 
     m_updatePass!: boolean;
@@ -407,6 +408,7 @@ export class Game {
         this.updateIntervals = [];
         this.lastUpdateTime = 0;
         this.debugPingTime = 0;
+        this.m_amongUsEmergencyMeetingSeq = 0;
 
         // Process config
         this.m_camera.m_setShakeEnabled(this.m_config.get("screenShake")!);
@@ -1129,6 +1131,7 @@ export class Game {
         this.m_map.m_render(this.m_camera);
         this.m_gas.m_render(dt, this.m_camera);
         this.renderAmongUsVisionOverlay();
+        this.renderAmongUsEmergencyMeetingAnnouncement();
         this.renderHideAndSeekBlindOverlay(dt);
         this.renderHideAndSeekHunterReleaseAnnouncement();
         this.renderInfectedRespawnAnnouncement();
@@ -1164,6 +1167,18 @@ export class Game {
         this.m_amongUsVisionGradient.width = gradientSize;
         this.m_amongUsVisionGradient.height = gradientSize;
         this.m_amongUsVisionGradient.visible = true;
+    }
+
+    renderAmongUsEmergencyMeetingAnnouncement() {
+        const sequence = this.m_activePlayer.m_localData.m_amongUsEmergencyMeetingSeq;
+        if (sequence === this.m_amongUsEmergencyMeetingSeq) return;
+
+        this.m_amongUsEmergencyMeetingSeq = sequence;
+        if (sequence > 0) {
+            this.m_uiManager.displayAnnouncement(
+                this.m_localization.translate("game-among-us-emergency-meeting"),
+            );
+        }
     }
 
     renderHideAndSeekBlindOverlay(dt: number) {

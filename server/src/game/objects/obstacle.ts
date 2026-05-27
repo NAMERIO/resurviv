@@ -628,6 +628,15 @@ export class Obstacle extends BaseGameObject {
         if (this.button.onOff && this.isPuzzlePiece) {
             this.parentBuilding?.puzzlePieceToggled(this);
         }
+        if (
+            this.button.onOff &&
+            this.type === "control_panel_01" &&
+            this.parentBuilding?.type === "cafetria_01" &&
+            this.game.map.amongUsMode &&
+            this.interactedBy
+        ) {
+            this.game.playerBarn.callAmongUsEmergencyMeeting(this.interactedBy);
+        }
         const def = MapObjectDefs[this.type] as ObstacleDef;
         if (def.button?.destroyOnUse && def.destroyType) {
             this.killTicker = this.button.useDelay;

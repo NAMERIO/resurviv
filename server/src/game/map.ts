@@ -2217,7 +2217,7 @@ export class GameMap {
     }
 
     getSpawnPos(group?: Group, team?: Team): Vec2 {
-        if (Config.debug.spawnMode === "fixed") {
+        if (Config.debug.spawnMode === "fixed" && !this.amongUsMode) {
             return v2.copy(Config.debug.spawnPos ?? this.center);
         }
 
