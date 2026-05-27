@@ -29,7 +29,11 @@ export const isItemInLoadout = (
 export function onPlayerJoin(data: Player) {
     if (isBattleRoyaleMapName(data.game.mapName)) return;
 
-    data.scope = "4xscope";
+    data.scope =
+        isAmongUsMiniGame(data.game.miniGame) || data.game.map.amongUsMode
+            ? "1xscope"
+            : "4xscope";
+    data.zoom = data.scopeZoomRadius[data.scope];
     data.boost = 100;
     data.weaponManager.setCurWeapIndex(WeaponSlot.Primary);
     if (!isAmongUsMiniGame(data.game.miniGame) && !data.game.map.amongUsMode) {

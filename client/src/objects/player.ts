@@ -3172,13 +3172,17 @@ export class PlayerBarn {
             disconnected: false,
             dead: activePlayer.m_netData.m_dead,
             downed: activePlayer.m_netData.m_downed,
+            dir: activePlayer.m_netData.m_dir,
             role: activePlayer.m_netData.m_role,
             outfit: activePlayer.m_netData.m_outfit,
             visible: true,
         });
 
         const fullStatusMode = map.factionMode || arenaPrivate;
-        const statusUpdateRate = getPlayerStatusUpdateRate(fullStatusMode);
+        const statusUpdateRate = getPlayerStatusUpdateRate(
+            fullStatusMode,
+            !!map.getMapDef().gameMode.amongUsMode,
+        );
         const keys = Object.keys(this.playerStatus);
         for (let i = 0; i < keys.length; i++) {
             const status = this.playerStatus[keys[i] as unknown as number];
@@ -3406,6 +3410,7 @@ export class PlayerBarn {
             visible: false,
             dead: false,
             downed: false,
+            dir: newStatus.dir ? v2.copy(newStatus.dir) : v2.create(1, 0),
             disconnected: false,
             role: "",
             outfit: newStatus.outfit || "",
@@ -3431,6 +3436,9 @@ export class PlayerBarn {
         status.posDelta = v2.length(v2.sub(newStatus.pos!, status.pos));
         status.dead = newStatus.dead!;
         status.downed = newStatus.downed!;
+        if (newStatus.dir) {
+            status.dir = v2.copy(newStatus.dir);
+        }
         status.role = newStatus.role!;
         if (newStatus.outfit !== undefined) {
             status.outfit = newStatus.outfit;

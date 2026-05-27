@@ -68,6 +68,7 @@ const amongUsVisionClearRadiusScale = 0.35;
 const amongUsVisionTextureFadeRadiusScale = 0.1;
 const amongUsCameraFeedRadius = 22;
 const amongUsCameraFeedWorldSize = amongUsCameraFeedRadius * 2;
+const amongUsCameraPlayerCullMargin = 2;
 const amongUsCameraMaxPixelRatio = 2;
 const amongUsCameraRenderIntervalMs = 1000 / 60;
 const cafeteriaFloorSprite = {
@@ -1873,6 +1874,10 @@ export class Game {
         if (!ctx) return;
 
         ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        if (feed.disabled) {
+            this.drawAmongUsCameraNoSignal(ctx, rect.width, rect.height, now);
+            return;
+        }
         this.drawAmongUsCameraBaseScene(
             ctx,
             rect.width,
@@ -1884,6 +1889,22 @@ export class Game {
         this.drawAmongUsCameraObjects(ctx, rect.width, rect.height, feedIndex, feedPos);
         this.drawAmongUsCameraPlayers(ctx, rect.width, rect.height, feedPos, now);
         this.drawAmongUsCameraStatic(ctx, rect.width, rect.height, now);
+    }
+
+    drawAmongUsCameraNoSignal(
+        ctx: CanvasRenderingContext2D,
+        width: number,
+        height: number,
+        now: number,
+    ) {
+        ctx.fillStyle = "#030404";
+        ctx.fillRect(0, 0, width, height);
+        this.drawAmongUsCameraStatic(ctx, width, height, now);
+        ctx.fillStyle = "rgba(220, 228, 222, 0.92)";
+        ctx.font = `bold ${Math.max(18, Math.floor(width / 11))}px "Roboto Condensed", Arial, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("NO SIGNAL", width * 0.5, height * 0.5);
     }
 
     drawAmongUsCameraBaseScene(
@@ -1985,6 +2006,8 @@ export class Game {
 
         const image = this.m_amongUsCameraImage;
         if (image && this.m_amongUsCameraImageLoaded) {
+            const imageWidth = image.naturalWidth;
+            const imageHeight = image.naturalHeight;
             const sx0 = this.amongUsCameraWorldToImageX(
                 feedPos.x - amongUsCameraFeedRadius,
             );
@@ -1997,12 +2020,18 @@ export class Game {
             const sy1 = this.amongUsCameraWorldToImageY(
                 feedPos.y - amongUsCameraFeedRadius,
             );
-            const sx = math.clamp(sx0, 0, image.naturalWidth);
-            const sy = math.clamp(sy0, 0, image.naturalHeight);
-            const sw = math.clamp(sx1, 0, image.naturalWidth) - sx;
-            const sh = math.clamp(sy1, 0, image.naturalHeight) - sy;
+            const sx = math.clamp(sx0, 0, imageWidth);
+            const sy = math.clamp(sy0, 0, imageHeight);
+            const sw = math.clamp(sx1, 0, imageWidth) - sx;
+            const sh = math.clamp(sy1, 0, imageHeight) - sy;
             if (sw > 1 && sh > 1) {
-                ctx.drawImage(image, sx, sy, sw, sh, 0, 0, width, height);
+                const requestedWidth = sx1 - sx0;
+                const requestedHeight = sy1 - sy0;
+                const dx = ((sx - sx0) / requestedWidth) * width;
+                const dy = ((sy - sy0) / requestedHeight) * height;
+                const dw = (sw / requestedWidth) * width;
+                const dh = (sh / requestedHeight) * height;
+                ctx.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
             }
         }
 
@@ -2486,7 +2515,7 @@ export class Game {
                 height,
                 feedPos,
                 player.__id,
-                player.m_visualPos,
+                this.getAmongUsCameraPlayerTrackPos(player.__id, player.m_visualPos, now),
                 player.m_netData.m_downed,
                 player.m_netData.m_dir,
                 player.m_netData.m_outfit,
@@ -2511,26 +2540,15 @@ export class Game {
                 height,
                 feedPos,
                 playerId,
-                this.getAmongUsCameraPlayerTrackPos(status, now),
+                this.getAmongUsCameraPlayerTrackPos(playerId, status.pos, now),
                 status.downed,
-                undefined,
+                status.dir,
                 status.outfit || this.m_playerBarn.getPlayerInfo(playerId).loadout.outfit,
             );
         }
     }
 
-    getAmongUsCameraPlayerTrackPos(
-        status: {
-            playerId?: number;
-            pos: Vec2;
-            posTarget?: Vec2;
-        },
-        now: number,
-    ) {
-        const playerId = status.playerId;
-        const target = status.posTarget ?? status.pos;
-        if (!playerId) return target;
-
+    getAmongUsCameraPlayerTrackPos(playerId: number, target: Vec2, now: number) {
         let track = this.m_amongUsCameraPlayerTracks.get(playerId);
         if (!track) {
             track = {
@@ -2579,10 +2597,8 @@ export class Game {
     ) {
         const dx = pos.x - feedPos.x;
         const dy = pos.y - feedPos.y;
-        if (
-            Math.abs(dx) > amongUsCameraFeedRadius ||
-            Math.abs(dy) > amongUsCameraFeedRadius
-        ) {
+        const cullRadius = amongUsCameraFeedRadius + amongUsCameraPlayerCullMargin;
+        if (Math.abs(dx) > cullRadius || Math.abs(dy) > cullRadius) {
             return;
         }
 

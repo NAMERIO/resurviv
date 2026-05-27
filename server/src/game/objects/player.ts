@@ -194,7 +194,10 @@ export class PlayerBarn {
             this.game.map.mapDef.gameConfig.bagSizes,
         );
 
-        this.playerStatusRate = net.getPlayerStatusUpdateRate(this.game.map.factionMode);
+        this.playerStatusRate = net.getPlayerStatusUpdateRate(
+            this.game.map.factionMode,
+            this.game.map.amongUsMode,
+        );
     }
 
     randomPlayer(player?: Player) {
@@ -3919,6 +3922,9 @@ export class Player extends BaseGameObject {
                 newVisibleObjects.delete(obj);
             }
         }
+        if (game.map.amongUsMode) {
+            this.addAmongUsCameraObjects(newVisibleObjects);
+        }
         // client crashes if active player is not visible
         // so make sure its always added to visible objects
         newVisibleObjects.add(this);
@@ -4165,6 +4171,27 @@ export class Player extends BaseGameObject {
 
         this.sendData(msgStream.getBuffer());
         this._firstUpdate = false;
+    }
+
+    addAmongUsCameraObjects(visibleObjects: Set<GameObject>) {
+        const addBuildingTree = (building: Building) => {
+            if (!building.__id) return;
+            visibleObjects.add(building);
+
+            for (const child of building.childObjects) {
+                if (!child.__id) continue;
+                visibleObjects.add(child);
+                if (child.__type === ObjectType.Building) {
+                    addBuildingTree(child as Building);
+                }
+            }
+        };
+
+        for (const building of this.game.map.buildings) {
+            if (building.type === "cafetria_01") {
+                addBuildingTree(building);
+            }
+        }
     }
 
     spectate(spectateMsg: net.SpectateMsg): void {
@@ -5608,6 +5635,7 @@ export class Player extends BaseGameObject {
                 return {
                     hasData: true,
                     pos: p.pos,
+                    dir: p.dir,
                     visible: p === this,
                     dead: p.dead,
                     downed: p.downed,

@@ -5,6 +5,7 @@ export interface AmongUsSecurityCameraDef {
     label: string;
     pos: Vec2;
     ori: number;
+    disabled?: boolean;
 }
 
 export const AmongUsSecurityCameraDefs: readonly AmongUsSecurityCameraDef[] = [
@@ -17,13 +18,13 @@ export const AmongUsSecurityCameraDefs: readonly AmongUsSecurityCameraDef[] = [
     {
         id: "cafeteria",
         label: "CAFETERIA",
-        pos: v2.create(-3.125, 27.531),
-        ori: 2,
+        pos: v2.create(22.281, 10.5),
+        ori: 0,
     },
     {
         id: "lower-hall",
         label: "LOWER HALL",
-        pos: v2.create(13.875, -22.969),
+        pos: v2.create(-14.5, -32.344),
         ori: 0,
     },
     {
@@ -31,5 +32,6 @@ export const AmongUsSecurityCameraDefs: readonly AmongUsSecurityCameraDef[] = [
         label: "EAST HALL",
         pos: v2.create(52.125, 8.531),
         ori: 1,
+        disabled: true,
     },
 ];

@@ -15194,12 +15194,14 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 scale: 1,
                 ori: 1,
             },
-            ...AmongUsSecurityCameraDefs.map((camera) => ({
-                type: "among_us_security_camera",
-                pos: v2.copy(camera.pos),
-                scale: 1,
-                ori: camera.ori,
-            })),
+            ...AmongUsSecurityCameraDefs.filter((camera) => !camera.disabled).map(
+                (camera) => ({
+                    type: "among_us_security_camera",
+                    pos: v2.copy(camera.pos),
+                    scale: 1,
+                    ori: camera.ori,
+                }),
+            ),
             {
                 type: "decal_initiative_01",
                 pos: v2.create(-42.875, 20.281),

@@ -171,6 +171,10 @@ function serializePlayerStatus(s: BitStream, players: PlayerStatus[]) {
 
         if (info.hasData) {
             s.writeMapPos(info.pos, 11);
+            s.writeBoolean(Boolean(info.dir));
+            if (info.dir) {
+                s.writeUnitVec(info.dir, 7);
+            }
             s.writeBoolean(info.visible);
             s.writeBoolean(info.dead);
             s.writeBoolean(info.downed);
@@ -198,6 +202,7 @@ function deserializePlayerStatus(s: BitStream): PlayerStatus[] {
 
         if (p.hasData) {
             p.pos = s.readMapPos(11);
+            p.dir = s.readBoolean() ? s.readUnitVec(7) : undefined;
             p.visible = s.readBoolean();
             p.dead = s.readBoolean();
             p.downed = s.readBoolean();
@@ -810,7 +815,10 @@ export class UpdateMsg implements AbstractMsg {
     }
 }
 
-export function getPlayerStatusUpdateRate(factionMode: boolean) {
+export function getPlayerStatusUpdateRate(factionMode: boolean, amongUsMode = false) {
+    if (amongUsMode) {
+        return 1 / 12;
+    }
     if (factionMode) {
         return 0.5;
     }
@@ -946,6 +954,7 @@ export interface PlayerStatus {
     playerId?: number;
     pos: Vec2;
     posTarget?: Vec2;
+    dir?: Vec2;
     posDelta?: number;
     health?: number;
     posInterp?: number;
