@@ -788,6 +788,8 @@ export class UiManager2 {
         let interactionType = InteractionType.None;
         let interactionObject: Obstacle | Loot | Player | null = null;
         let interactionUsable = true;
+        const amongUsMode = !!map.getMapDef().gameMode.amongUsMode;
+        const amongUsRole = playerBarn.getPlayerInfo(activePlayer.__id).amongUsRole || "";
 
         if (activePlayer.canInteract(map)) {
             // Usable obstacles
@@ -805,7 +807,8 @@ export class UiManager2 {
                     const obstacleDef = MapObjectDefs[obstacle.type] as ObstacleDef;
                     if (
                         obstacleDef.amongUsTask &&
-                        completedAmongUsTasks?.has(obstacleDef.amongUsTask)
+                        (completedAmongUsTasks?.has(obstacleDef.amongUsTask) ||
+                            (amongUsMode && amongUsRole === "impostor"))
                     ) {
                         continue;
                     }
@@ -930,7 +933,7 @@ export class UiManager2 {
             }
         }
         const amongUsEmergencyButton =
-            !!map.getMapDef().gameMode.amongUsMode &&
+            amongUsMode &&
             interactionType === InteractionType.Object &&
             (interactionObject as Obstacle | null)?.type === "control_panel_01";
         if (amongUsEmergencyButton) {
@@ -1119,9 +1122,6 @@ export class UiManager2 {
             const ld = activePlayer.m_localData;
             const sd = this.dom.streakSingle;
             if (sd) {
-                const amongUsMode = !!map.getMapDef().gameMode.amongUsMode;
-                const amongUsRole =
-                    playerBarn.getPlayerInfo(activePlayer.__id).amongUsRole || "";
                 const killCooldown = ld.m_amongUsKillCooldownTime;
                 const showAmongUsKillCard = amongUsMode && amongUsRole === "impostor";
                 const hideAmongUsCard = amongUsMode && amongUsRole !== "impostor";

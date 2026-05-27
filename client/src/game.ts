@@ -66,7 +66,7 @@ const amongUsVisionDarkAlpha = 0.82;
 const amongUsVisionFadeDistance = 8;
 const amongUsVisionClearRadiusScale = 0.35;
 const amongUsVisionTextureFadeRadiusScale = 0.1;
-const amongUsCameraFeedRadius = 22;
+const amongUsCameraFeedRadius = 16;
 const amongUsCameraFeedWorldSize = amongUsCameraFeedRadius * 2;
 const amongUsCameraPlayerCullMargin = 2;
 const amongUsCameraMaxPixelRatio = 2;
@@ -1055,6 +1055,7 @@ export class Game {
             this.editor.postSerialization();
         }
 
+        this.updateAmongUsTaskGlowState();
         this.m_map.m_update(
             dt,
             this.m_activePlayer,
@@ -1330,6 +1331,30 @@ export class Game {
         }
     }
 
+    updateAmongUsTaskGlowState() {
+        const amongUsMode = !!this.m_map.getMapDef().gameMode.amongUsMode;
+        const canDoTasks = amongUsMode && this.getLocalAmongUsRole() !== "impostor";
+        const obstacles = this.m_map.m_obstaclePool.m_getPool();
+        for (const obstacle of obstacles) {
+            if (!obstacle.active) {
+                obstacle.amongUsTaskGlowEnabled = false;
+                continue;
+            }
+
+            const def = MapObjectDefs[obstacle.type] as ObstacleDef;
+            obstacle.amongUsTaskGlowEnabled =
+                canDoTasks &&
+                !!def.amongUsTask &&
+                !this.m_amongUsCompletedTasks.has(def.amongUsTask);
+        }
+    }
+
+    getLocalAmongUsRole() {
+        return (
+            this.m_playerBarn.getPlayerInfo(this.m_activePlayer.__id).amongUsRole || ""
+        );
+    }
+
     displayAmongUsEmergencyCallAttemptMessage() {
         if (!this.m_map.getMapDef().gameMode.amongUsMode) return;
         if (
@@ -1550,6 +1575,7 @@ export class Game {
 
     completeAmongUsTask() {
         if (!this.m_amongUsTask) return;
+        if (this.getLocalAmongUsRole() === "impostor") return;
 
         this.m_amongUsCompletedTasks.add(this.m_amongUsTask);
         document.getElementById("among-us-task-panel")!.classList.add("completed");
@@ -1564,6 +1590,7 @@ export class Game {
 
     openNearbyAmongUsTask() {
         if (!this.m_map.getMapDef().gameMode.amongUsMode) return;
+        if (this.getLocalAmongUsRole() === "impostor") return;
 
         const obstacles = this.m_map.m_obstaclePool.m_getPool();
         for (const obstacle of obstacles) {
@@ -1595,6 +1622,7 @@ export class Game {
     openAmongUsTask(taskId: AmongUsTaskId) {
         if (
             !this.m_map.getMapDef().gameMode.amongUsMode ||
+            this.getLocalAmongUsRole() === "impostor" ||
             (this.m_amongUsMeeting &&
                 this.m_amongUsMeeting.phase !== net.AmongUsMeetingPhase.None)
         ) {

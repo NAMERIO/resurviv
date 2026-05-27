@@ -32,6 +32,8 @@ export class Obstacle implements AbstractObject {
     active!: boolean;
 
     sprite = new PIXI.Sprite() as ObstacleSprite;
+    amongUsTaskGlow = new PIXI.Graphics();
+    amongUsTaskGlowEnabled = false;
 
     isNew!: boolean;
     smokeEmitter!: Emitter | null;
@@ -110,6 +112,8 @@ export class Obstacle implements AbstractObject {
         this.isNew = false;
         this.smokeEmitter = null;
         this.sprite.visible = false;
+        this.amongUsTaskGlow.visible = false;
+        this.amongUsTaskGlowEnabled = false;
         this.img = "";
         this.visualPosOld = v2.create(0, 0);
     }
@@ -117,6 +121,9 @@ export class Obstacle implements AbstractObject {
     m_free() {
         this.sprite.visible = false;
         this.sprite.parent?.removeChild(this.sprite);
+        this.amongUsTaskGlow.clear();
+        this.amongUsTaskGlow.visible = false;
+        this.amongUsTaskGlow.parent?.removeChild(this.amongUsTaskGlow);
         if (this.door?.casingSprite) {
             this.door.casingSprite.destroy();
             this.door.casingSprite = null;
@@ -478,6 +485,10 @@ export class Obstacle implements AbstractObject {
 
             renderer.addPIXIObj(this.sprite, layer, zOrd, zIdx);
 
+            if (this.amongUsTaskGlowEnabled && !this.dead) {
+                renderer.addPIXIObj(this.amongUsTaskGlow, layer, zOrd + 2, zIdx + 1);
+            }
+
             if (this.isDoor && this.door.casingSprite) {
                 renderer.addPIXIObj(this.door.casingSprite, layer, zOrd + 1, zIdx);
             }
@@ -519,6 +530,27 @@ export class Obstacle implements AbstractObject {
             this.door.casingSprite.scale.set(casingScale, casingScale);
             this.door.casingSprite.rotation = -rot;
             this.door.casingSprite.visible = !this.dead;
+        }
+
+        if (this.amongUsTaskGlowEnabled && !this.dead && this.sprite.visible) {
+            const aabb = collider.toAabb(this.collider);
+            const min = camera.m_pointToScreen(aabb.min);
+            const max = camera.m_pointToScreen(aabb.max);
+            const x = Math.min(min.x, max.x) - 6;
+            const y = Math.min(min.y, max.y) - 6;
+            const width = Math.abs(max.x - min.x) + 12;
+            const height = Math.abs(max.y - min.y) + 12;
+            const pulse = 0.55 + Math.sin(performance.now() / 220) * 0.2;
+
+            this.amongUsTaskGlow.clear();
+            this.amongUsTaskGlow.visible = true;
+            this.amongUsTaskGlow.lineStyle(8, 0xfff06a, 0.22 * pulse);
+            this.amongUsTaskGlow.drawRoundedRect(x, y, width, height, 8);
+            this.amongUsTaskGlow.lineStyle(2, 0xfff06a, 0.85);
+            this.amongUsTaskGlow.drawRoundedRect(x, y, width, height, 8);
+        } else if (this.amongUsTaskGlow.visible) {
+            this.amongUsTaskGlow.clear();
+            this.amongUsTaskGlow.visible = false;
         }
 
         if (IS_DEV && debug.obstacles && util.sameLayer(layer, this.layer)) {
