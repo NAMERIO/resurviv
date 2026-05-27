@@ -2227,7 +2227,9 @@ export class GameMap {
         if (this.amongUsMode && amongUsSpawnOffsets?.length) {
             getPos = () => {
                 const offset =
-                    amongUsSpawnOffsets[util.randomInt(0, amongUsSpawnOffsets.length - 1)];
+                    amongUsSpawnOffsets[
+                        util.randomInt(0, amongUsSpawnOffsets.length - 1)
+                    ];
                 return v2.add(this.center, offset);
             };
         } else if (this.amongUsMode) {

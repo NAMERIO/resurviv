@@ -2,10 +2,10 @@ import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import type { MapObjectDef, ObstacleDef } from "../../../shared/defs/mapObjectsTyping";
 import type { BuildingDef, FloorImage } from "../../../shared/defs/types/building";
 import { GameConfig } from "../../../shared/gameConfig";
-import { collider } from "../../../shared/utils/collider";
 import type { AABB, Circle, Collider } from "../../../shared/utils/coldet";
+import { collider } from "../../../shared/utils/collider";
 import { generateTerrain } from "../../../shared/utils/terrainGen";
-import { v2, type Vec2 } from "../../../shared/utils/v2";
+import { type Vec2, v2 } from "../../../shared/utils/v2";
 import { SharedAtlas } from "../../atlas-builder/defs/shared";
 import "./styles.css";
 
@@ -664,7 +664,10 @@ function objectTypeForSprite(sprite?: string): string | undefined {
         )) {
             if (def.type === "obstacle") {
                 const obstacle = def as ObstacleDef;
-                if (obstacle.img?.sprite && !spriteObjectTypeCache.has(obstacle.img.sprite)) {
+                if (
+                    obstacle.img?.sprite &&
+                    !spriteObjectTypeCache.has(obstacle.img.sprite)
+                ) {
                     spriteObjectTypeCache.set(obstacle.img.sprite, name);
                 }
             } else if (def.type === "decal") {
@@ -2405,14 +2408,21 @@ function validateDoc(): string[] {
             warnings.push(`${item.name} uses unknown object type "${item.type}".`);
         }
         if (
-            (item.layer === "walls" || item.layer === "objects" || item.layer === "basement") &&
+            (item.layer === "walls" ||
+                item.layer === "objects" ||
+                item.layer === "basement") &&
             !inferMapObjectType(item)
         ) {
             warnings.push(
                 `${item.name} is on ${layerLabels[item.layer]} but has no object type or matching game sprite, so it will not export as a mapObject.`,
             );
         }
-        if ((item.layer === "floor" || item.layer === "basementFloor" || item.layer === "roof") && !item.sprite) {
+        if (
+            (item.layer === "floor" ||
+                item.layer === "basementFloor" ||
+                item.layer === "roof") &&
+            !item.sprite
+        ) {
             warnings.push(
                 `${item.name} is on ${layerLabels[item.layer]} but has no sprite, so no image will export.`,
             );
@@ -2787,7 +2797,9 @@ function buildBuildingDef(section: "base" | "basement") {
     const surfaceColliders = hitboxes.length
         ? hitboxes.map((item) => firstAabb(itemColliders(item)[0]))
         : floorItems.map((item) => firstAabb(itemColliders(item)[0]));
-    const zoomColliders = roofItems.length ? [boundsForItems([...floorItems, ...mapObjects])] : [];
+    const zoomColliders = roofItems.length
+        ? [boundsForItems([...floorItems, ...mapObjects])]
+        : [];
 
     return {
         mapDisplay: !isBasement,
@@ -2896,7 +2908,8 @@ function formatBuilding(
     lines.push(`    mapObjects: [`);
     for (const obj of building.mapObjects) {
         const extraLines: string[] = [];
-        if (obj.ignoreMapSpawnReplacement) extraLines.push("ignoreMapSpawnReplacement: true");
+        if (obj.ignoreMapSpawnReplacement)
+            extraLines.push("ignoreMapSpawnReplacement: true");
         if (obj.inheritOri === false) extraLines.push("inheritOri: false");
         lines.push(`        {`);
         lines.push(`            type: "${obj.type}",`);

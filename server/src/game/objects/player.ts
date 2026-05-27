@@ -857,7 +857,7 @@ export class PlayerBarn {
         msg.sequence = meeting.sequence;
         msg.phase = meeting.phase;
         msg.seconds = Math.max(0, Math.ceil(meeting.timeLeft));
-    msg.reason = meeting.reason;
+        msg.reason = meeting.reason;
         msg.callerId = meeting.callerId;
         msg.ejectedId = meeting.ejectedId;
         msg.ejectedWasImpostor = meeting.ejectedWasImpostor;

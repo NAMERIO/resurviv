@@ -1841,9 +1841,7 @@ export class UiManager {
     }
 
     showTeamAd(playerStats: PlayerStatsMsg["playerStats"], _ui2Manager: unknown) {
-        const amongUsMode = Boolean(
-            this.game.m_map.getMapDef().gameMode.amongUsMode,
-        );
+        const amongUsMode = Boolean(this.game.m_map.getMapDef().gameMode.amongUsMode);
         if (amongUsMode && playerStats.dead) {
             this.beginSpectating();
             this.setSpectating(true, this.game.teamMode);
