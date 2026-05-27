@@ -549,7 +549,7 @@ export class PlayerBarn {
         this.amongUsMeeting = {
             sequence: this.amongUsEmergencyMeetingSeq,
             phase: net.AmongUsMeetingPhase.Discussion,
-            timeLeft: 60,
+            timeLeft: 20,
             callerId: caller.playerId,
             participantIds: attendees.map((player) => player.playerId),
             votes: new Map<number, number>(),
@@ -640,7 +640,7 @@ export class PlayerBarn {
         switch (meeting.phase) {
             case net.AmongUsMeetingPhase.Discussion:
                 meeting.phase = net.AmongUsMeetingPhase.Voting;
-                meeting.timeLeft = 30;
+                meeting.timeLeft = 60;
                 this.broadcastAmongUsMeetingState();
                 break;
             case net.AmongUsMeetingPhase.Voting:

@@ -1325,6 +1325,7 @@ export class Game {
 
         this.m_amongUsEmergencyMeetingSeq = sequence;
         if (sequence > 0) {
+            this.m_audioManager.playSound("cell_control_01", { channel: "sfx" });
             this.m_uiManager.displayAnnouncement(
                 this.m_localization.translate("game-among-us-emergency-meeting"),
             );
