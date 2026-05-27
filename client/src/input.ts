@@ -108,7 +108,7 @@ export class InputHandler {
         const element = target instanceof HTMLElement ? target : null;
         if (
             element?.closest(
-                "input, textarea, select, [contenteditable='true'], #ui-among-us-meeting, #ui-among-us-task",
+                "input, textarea, select, [contenteditable='true'], #ui-among-us-meeting, #ui-among-us-task, #ui-among-us-cameras",
             )
         ) {
             return true;
@@ -116,7 +116,8 @@ export class InputHandler {
 
         return (
             document.body.classList.contains("among-us-meeting-active") ||
-            document.body.classList.contains("among-us-task-active")
+            document.body.classList.contains("among-us-task-active") ||
+            document.body.classList.contains("among-us-cameras-active")
         );
     }
 

@@ -179,6 +179,11 @@ function serializePlayerStatus(s: BitStream, players: PlayerStatus[]) {
             if (info.role !== "") {
                 s.writeGameType(info.role);
             }
+
+            s.writeBoolean(Boolean(info.outfit));
+            if (info.outfit) {
+                s.writeGameType(info.outfit);
+            }
         }
     });
 
@@ -200,6 +205,7 @@ function deserializePlayerStatus(s: BitStream): PlayerStatus[] {
             if (s.readBoolean()) {
                 p.role = s.readGameType();
             }
+            p.outfit = s.readBoolean() ? s.readGameType() : "";
         }
         return p;
     });
@@ -948,6 +954,7 @@ export interface PlayerStatus {
     downed: boolean;
     disconnected?: boolean;
     role: string;
+    outfit?: string;
     timeSinceUpdate?: number;
     timeSinceVisible?: number;
     minimapAlpha?: number;

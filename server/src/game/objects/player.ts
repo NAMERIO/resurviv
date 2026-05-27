@@ -5599,10 +5599,12 @@ export class Player extends BaseGameObject {
     }
 
     getPlayerStatus() {
-        const players: Player[] = this.game.modeManager.getPlayerStatusPlayers(this)!;
+        const players: Player[] = this.game.map.amongUsMode
+            ? this.game.playerBarn.players
+            : this.game.modeManager.getPlayerStatusPlayers(this)!;
         const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
         return players.map((p) => {
-            if (isAmongUsMiniGame(this.game.miniGame)) {
+            if (isAmongUsMiniGame(this.game.miniGame) || this.game.map.amongUsMode) {
                 return {
                     hasData: true,
                     pos: p.pos,
@@ -5610,6 +5612,7 @@ export class Player extends BaseGameObject {
                     dead: p.dead,
                     downed: p.downed,
                     role: p.role,
+                    outfit: p.outfit,
                 };
             }
 

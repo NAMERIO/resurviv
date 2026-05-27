@@ -1,6 +1,7 @@
 import { collider } from "../utils/collider";
 import { util } from "../utils/util";
 import { v2 } from "../utils/v2";
+import { AmongUsSecurityCameraDefs } from "./amongUsSecurityCameraDefs";
 import type {
     BuildingDef,
     LootSpawnDef,
@@ -13020,6 +13021,62 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             enter: "none",
         },
     },
+    among_us_security_monitor: {
+        type: "obstacle",
+        obstacleType: "furniture",
+        scale: {
+            createMin: 1,
+            createMax: 1,
+            destroy: 0.85,
+        },
+        collision: collider.createAabbExtents(v2.create(0, 0.05), v2.create(4, 0.2)),
+        height: 0.5,
+        collidable: true,
+        destructible: false,
+        health: 25,
+        hitParticle: "clothHit",
+        explodeParticle: "barrelBreak",
+        reflectBullets: false,
+        loot: [],
+        map: { display: false, color: 0x663300, scale: 0.875 },
+        terrain: { grass: false, beach: true },
+        img: {
+            sprite: "map-screen-01.img",
+            residue: "map-screen-res-01.img",
+            scale: 0.5,
+            alpha: 1,
+            tint: 0xffffff,
+            zIdx: 10,
+        },
+        button: {
+            interactionRad: 1,
+            interactionText: "game-use",
+            useOnce: false,
+            useType: "",
+            useDelay: 0.05,
+            useDir: v2.create(0, 1),
+            useImg: "map-screen-01.img",
+            offImg: "map-screen-01.img",
+            sound: {
+                on: "button_press_01",
+                off: "button_press_01",
+            },
+        },
+        sound: {
+            bullet: "cloth_bullet",
+            punch: "cloth_punch",
+            explode: "screen_break_01",
+            enter: "none",
+        },
+    },
+    among_us_security_camera: createControlPanel({
+        collision: collider.createAabbExtents(v2.create(0, 0), v2.create(0.45, 0.55)),
+        collidable: true,
+        destructible: false,
+        health: 25,
+        reflectBullets: false,
+        img: { sprite: "map-switch-01.img" },
+    }),
     sandbags_01: createSandBags({}),
     sandbags_02: createSandBags({
         collision: collider.createAabbExtents(v2.create(0, 0), v2.create(1.1, 1.4)),
@@ -15100,23 +15157,29 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 ori: 0,
             },
             {
-                type: "screen_01",
+                type: "among_us_security_monitor",
                 pos: v2.create(-49.875, 21.281),
                 scale: 1,
                 ori: 3,
             },
             {
-                type: "screen_01",
+                type: "among_us_security_monitor",
                 pos: v2.create(-43.125, 27.531),
                 scale: 1,
                 ori: 2,
             },
             {
-                type: "screen_01",
+                type: "among_us_security_monitor",
                 pos: v2.create(-35.625, 21.281),
                 scale: 1,
                 ori: 1,
             },
+            ...AmongUsSecurityCameraDefs.map((camera) => ({
+                type: "among_us_security_camera",
+                pos: v2.copy(camera.pos),
+                scale: 1,
+                ori: camera.ori,
+            })),
             {
                 type: "decal_initiative_01",
                 pos: v2.create(-42.875, 20.281),

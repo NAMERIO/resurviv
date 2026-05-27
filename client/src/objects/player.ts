@@ -3173,6 +3173,7 @@ export class PlayerBarn {
             dead: activePlayer.m_netData.m_dead,
             downed: activePlayer.m_netData.m_downed,
             role: activePlayer.m_netData.m_role,
+            outfit: activePlayer.m_netData.m_outfit,
             visible: true,
         });
 
@@ -3407,6 +3408,7 @@ export class PlayerBarn {
             downed: false,
             disconnected: false,
             role: "",
+            outfit: newStatus.outfit || "",
             timeSinceUpdate: 0,
             timeSinceVisible: 0,
             minimapAlpha: 0,
@@ -3430,6 +3432,9 @@ export class PlayerBarn {
         status.dead = newStatus.dead!;
         status.downed = newStatus.downed!;
         status.role = newStatus.role!;
+        if (newStatus.outfit !== undefined) {
+            status.outfit = newStatus.outfit;
+        }
         if (newStatus.health !== undefined) {
             status.health = newStatus.health;
         }
