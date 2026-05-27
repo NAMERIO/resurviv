@@ -434,6 +434,7 @@ export class PlayerBarn {
                 player.emoteFromSlot(EmoteSlot.Win);
             }
         }
+        this.updateAmongUsSecurityCameraState();
 
         // doing this after updates ensures that gameover msgs sent are always accurate
         // if this was done in netsync, players could die while waiting for the next netsync call
@@ -463,6 +464,33 @@ export class PlayerBarn {
                         ];
                     randomPlayer.promoteToRole(scheduledRole.role);
                 }
+            }
+        }
+    }
+
+    updateAmongUsSecurityCameraState() {
+        if (!this.game.map.amongUsMode) return;
+
+        const active = this.players.some(
+            (player) => player.amongUsCamerasOpen && !player.dead && !player.disconnected,
+        );
+
+        for (const building of this.game.map.buildings) {
+            if (building.type !== "cafetria_01") continue;
+
+            for (const obj of building.childObjects) {
+                if (
+                    obj.__type !== ObjectType.Obstacle ||
+                    obj.type !== "among_us_security_camera" ||
+                    !obj.isButton ||
+                    obj.button.onOff === active
+                ) {
+                    continue;
+                }
+
+                obj.button.onOff = active;
+                obj.button.seq++;
+                obj.setDirty();
             }
         }
     }
@@ -1147,6 +1175,7 @@ export class Player extends BaseGameObject {
     scopeZoomRadius: Record<string, number>;
 
     scope = "1xscope";
+    amongUsCamerasOpen = false;
 
     get inventory() {
         return this.invManager.items;
@@ -5301,6 +5330,8 @@ export class Player extends BaseGameObject {
 
     handleInput(msg: net.InputMsg): void {
         this.ack = msg.seq;
+        this.amongUsCamerasOpen =
+            this.game.map.amongUsMode && Boolean(msg.amongUsCamerasOpen);
 
         if (this.dead) return;
         if (this.game.map.perkMode && !this.role) return;

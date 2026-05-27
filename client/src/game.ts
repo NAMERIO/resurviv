@@ -720,6 +720,7 @@ export class Game {
         // Input
         const inputMsg = new net.InputMsg();
         inputMsg.seq = this.seq;
+        inputMsg.amongUsCamerasOpen = this.m_amongUsCamerasOpen;
         if (!this.m_spectating) {
             if (device.touch) {
                 const touchPlayerMovement = this.m_touch.getTouchMovement(this.m_camera);

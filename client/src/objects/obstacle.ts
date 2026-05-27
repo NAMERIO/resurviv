@@ -351,6 +351,17 @@ export class Obstacle implements AbstractObject {
             }
             button.seqOld = button.seq;
         }
+        if (this.type === "among_us_security_camera" && this.isButton && !this.dead) {
+            const img = this.button.onOff
+                ? Math.floor(performance.now() / 350) % 2 === 0
+                    ? "map-switch-01.img"
+                    : "map-switch-03.img"
+                : "map-switch-03.img";
+            if (img !== this.img) {
+                this.sprite.texture = PIXI.Texture.from(img);
+                this.img = img;
+            }
+        }
 
         // Door
         if (this.isDoor) {
