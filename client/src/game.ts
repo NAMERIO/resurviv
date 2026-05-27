@@ -1,6 +1,10 @@
 import * as PIXI from "pixi.js-legacy";
 import { AmongUsSecurityCameraDefs } from "../../shared/defs/amongUsSecurityCameraDefs";
-import { AmongUsTaskDefs, type AmongUsTaskId } from "../../shared/defs/amongUsTaskDefs";
+import {
+    type AmongUsTaskDef,
+    AmongUsTaskDefs,
+    type AmongUsTaskId,
+} from "../../shared/defs/amongUsTaskDefs";
 import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
 import type { OutfitDef } from "../../shared/defs/gameObjects/outfitDefs";
 import { RoleDefs } from "../../shared/defs/gameObjects/roleDefs";
@@ -1329,7 +1333,55 @@ export class Game {
         closeButton.onclick = () => this.closeAmongUsTask();
         bottleGrid.onclick = (event) => {
             if (!this.m_amongUsTask) return;
-            const def = AmongUsTaskDefs[this.m_amongUsTask];
+            const def: AmongUsTaskDef = AmongUsTaskDefs[this.m_amongUsTask];
+            const weapon = document.getElementById("among-us-task-weapon")!;
+            const playShot = () => {
+                weapon.classList.remove("firing");
+                void weapon.offsetWidth;
+                weapon.classList.add("firing");
+                if (def.shootSound) {
+                    this.m_audioManager.playSound(def.shootSound, {
+                        channel: "activePlayer",
+                    });
+                }
+                if (def.breakSound) {
+                    this.m_audioManager.playSound(def.breakSound, { channel: "sfx" });
+                }
+            };
+
+            if (def.type === "water_plant") {
+                const plant = (event.target as HTMLElement).closest<HTMLButtonElement>(
+                    ".among-us-task-plant",
+                );
+                if (!plant || plant.disabled) return;
+
+                const watered = Math.min(
+                    Number(plant.dataset.watered ?? 0) + 1,
+                    def.targetCount,
+                );
+                const percent = Math.round((watered / def.targetCount) * 100);
+                plant.dataset.watered = `${watered}`;
+                plant.style.setProperty("--water-progress", `${percent}%`);
+                plant
+                    .querySelector(".among-us-task-water-meter")
+                    ?.setAttribute("aria-valuenow", `${percent}`);
+                plant.classList.remove("watering");
+                void plant.offsetWidth;
+                plant.classList.add("watering");
+                playShot();
+                document.getElementById("among-us-task-progress")!.textContent =
+                    `${percent}%`;
+                if (watered !== def.targetCount) return;
+
+                plant.disabled = true;
+                plant.classList.add("full");
+                const plantImg = plant.querySelector<HTMLImageElement>("img");
+                if (plantImg && def.completedTargetImage) {
+                    plantImg.src = def.completedTargetImage;
+                }
+                this.completeAmongUsTask();
+                return;
+            }
             if (def.type !== "shoot_targets") return;
 
             const bottle = (event.target as HTMLElement).closest<HTMLButtonElement>(
@@ -1337,20 +1389,9 @@ export class Game {
             );
             if (!bottle || bottle.disabled) return;
 
-            const weapon = document.getElementById("among-us-task-weapon")!;
             bottle.disabled = true;
             bottle.classList.add("broken");
-            weapon.classList.remove("firing");
-            void weapon.offsetWidth;
-            weapon.classList.add("firing");
-            if (def.shootSound) {
-                this.m_audioManager.playSound(def.shootSound, {
-                    channel: "activePlayer",
-                });
-            }
-            if (def.breakSound) {
-                this.m_audioManager.playSound(def.breakSound, { channel: "sfx" });
-            }
+            playShot();
 
             const broken = bottleGrid.querySelectorAll(".broken").length;
             document.getElementById("among-us-task-progress")!.textContent =
@@ -1527,16 +1568,21 @@ export class Game {
             "closing",
             "shoot-targets",
             "drag-to-station",
+            "water-plant",
         );
         panel.classList.add(
-            def.type === "drag_to_station" ? "drag-to-station" : "shoot-targets",
+            def.type === "drag_to_station"
+                ? "drag-to-station"
+                : def.type === "water_plant"
+                  ? "water-plant"
+                  : "shoot-targets",
         );
         weapon.classList.remove("firing");
         document.getElementById("among-us-task-title")!.textContent = def.title;
         document.getElementById("among-us-task-instruction")!.textContent =
             def.instruction;
         document.getElementById("among-us-task-progress")!.textContent =
-            `0 / ${def.targetCount}`;
+            def.type === "water_plant" ? "0%" : `0 / ${def.targetCount}`;
         document.getElementById("among-us-task-status")!.textContent = "";
         (document.getElementById("among-us-task-weapon") as HTMLImageElement).src =
             def.type === "drag_to_station"
@@ -1547,6 +1593,8 @@ export class Game {
             bottleGrid.innerHTML = Array.from({ length: def.targetCount }, (_, index) => {
                 return `<button class="among-us-task-drag-item" type="button" data-index="${index}" aria-label="Move gold bar ${index + 1}"><img src="${def.targetImage}" alt=""></button>`;
             }).join("");
+        } else if (def.type === "water_plant") {
+            bottleGrid.innerHTML = `<button class="among-us-task-plant" type="button" data-watered="0" aria-label="Water flower pot"><span class="among-us-task-water-meter" role="progressbar" aria-label="Water level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="among-us-task-water-fill"></span></span><img src="${def.targetImage}" alt="Flower pot"><span class="among-us-task-water-splash"></span></button>`;
         } else {
             bottleGrid.innerHTML = Array.from({ length: def.targetCount }, (_, index) => {
                 return `<button class="among-us-task-bottle" type="button" data-index="${index}" aria-label="Break bottle ${index + 1}"><img src="${def.targetImage}" alt=""><span class="among-us-task-shard shard-a"></span><span class="among-us-task-shard shard-b"></span><span class="among-us-task-shard shard-c"></span></button>`;
@@ -1577,6 +1625,7 @@ export class Game {
             "completed",
             "shoot-targets",
             "drag-to-station",
+            "water-plant",
         );
         document.getElementById("among-us-task-weapon")!.classList.remove("firing");
         document.getElementById("among-us-task-bottles")!.innerHTML = "";

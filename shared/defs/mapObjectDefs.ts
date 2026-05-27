@@ -12620,6 +12620,26 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
         },
     }),
+    among_us_task_planter: createPlanter({
+        collision: collider.createAabbExtents(v2.create(0, 0), v2.create(1.5, 1.5)),
+        destructible: false,
+        loot: [],
+        amongUsTask: "plant_watering",
+        img: { sprite: "map-planter-04.img" },
+        button: {
+            interactionRad: 1.25,
+            interactionText: "game-use",
+            useOnce: false,
+            useType: "",
+            useDelay: 0,
+            useDir: v2.create(1, 0),
+            useImg: "map-planter-04.img",
+            sound: {
+                on: "button_press_01",
+                off: "button_press_01",
+            },
+        },
+    }),
     candle_01: {
         type: "obstacle",
         map: { display: false, color: 0xffffff, scale: 1 },
@@ -14899,7 +14919,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 ori: 0,
             },
             {
-                type: "planter_04",
+                type: "among_us_task_planter",
                 pos: v2.create(58.125, -17.969),
                 scale: 1,
                 ori: 0,
@@ -14911,7 +14931,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 ori: 0,
             },
             {
-                type: "planter_04",
+                type: "among_us_task_planter",
                 pos: v2.create(67.625, -7.219),
                 scale: 1,
                 ori: 0,

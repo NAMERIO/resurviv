@@ -6349,6 +6349,7 @@ export class Player extends BaseGameObject {
             isItemInLoadout(loadout.outfit, "outfit") &&
             loadout.outfit !== "outfitBase"
         ) {
+            this.loadout.outfit = loadout.outfit;
             this.setOutfit(loadout.outfit);
         }
 

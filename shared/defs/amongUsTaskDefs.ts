@@ -1,15 +1,20 @@
-export const AmongUsTaskIds = ["bottle_shooting", "crate_gold_bars"] as const;
+export const AmongUsTaskIds = [
+    "bottle_shooting",
+    "crate_gold_bars",
+    "plant_watering",
+] as const;
 
 export type AmongUsTaskId = (typeof AmongUsTaskIds)[number];
 
 export interface AmongUsTaskDef {
     id: AmongUsTaskId;
-    type: "shoot_targets" | "drag_to_station";
+    type: "shoot_targets" | "drag_to_station" | "water_plant";
     title: string;
     instruction: string;
     stationObject: string;
     targetCount: number;
     targetImage: string;
+    completedTargetImage?: string;
     stationImage?: string;
     weaponImage?: string;
     shootSound?: string;
@@ -38,5 +43,18 @@ export const AmongUsTaskDefs = {
         targetCount: 4,
         targetImage: "/img/loot/loot-gold-bar.svg",
         stationImage: "/img/map/map-crate-05.svg",
+    },
+    plant_watering: {
+        id: "plant_watering",
+        type: "water_plant",
+        title: "WATER THE FLOWER",
+        instruction: "Shoot the flower pot with water until the meter is full.",
+        stationObject: "among_us_task_planter",
+        targetCount: 8,
+        targetImage: "/img/map/map-planter-04.svg",
+        completedTargetImage: "/img/map/map-planter-05.svg",
+        weaponImage: "/img/loot/loot-weapon-water.svg",
+        shootSound: "water_gun_01",
+        breakSound: "watering_01",
     },
 } satisfies Record<AmongUsTaskId, AmongUsTaskDef>;

@@ -2139,7 +2139,7 @@ img {
   height: 38px;
   border: 0;
   border-radius: 3px;
-  background: rgba(120, 28, 28, 0.9) url(/img/gui/close.svg) center/22px no-repeat;
+  background: rgba(120, 28, 28, 0.9) url(/img/gui/close.svg) center / 22px no-repeat;
   cursor: pointer;
 }
 
@@ -2228,11 +2228,59 @@ img {
   height: 35px;
   opacity: 0;
   background: #ffda54;
-  clip-path: polygon(0 42%, 42% 42%, 58% 0, 64% 40%, 100% 26%, 75% 56%, 95% 90%, 53% 70%, 24% 100%, 30% 60%);
+  clip-path: polygon(
+    0 42%,
+    42% 42%,
+    58% 0,
+    64% 40%,
+    100% 26%,
+    75% 56%,
+    95% 90%,
+    53% 70%,
+    24% 100%,
+    30% 60%
+  );
 }
 
 #among-us-task-weapon.firing + .among-us-task-flash {
   animation: among-us-task-flash 120ms ease-out;
+}
+
+.among-us-task-water-stream {
+  position: absolute;
+  left: calc(50% + 46px);
+  top: 38px;
+  z-index: 2;
+  display: none;
+  width: 136px;
+  height: 10px;
+  border-radius: 10px;
+  opacity: 0;
+  transform: rotate(-7deg);
+  transform-origin: left center;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(104, 205, 255, 0.92) 0 13px,
+    rgba(190, 239, 255, 0.85) 13px 19px,
+    transparent 19px 25px
+  );
+  pointer-events: none;
+}
+
+#among-us-task-panel.water-plant #among-us-task-weapon {
+  width: 150px;
+  transform: rotate(-5deg);
+}
+
+#among-us-task-panel.water-plant .among-us-task-flash {
+  display: none;
+}
+
+#among-us-task-panel.water-plant
+  #among-us-task-weapon.firing
+  ~ .among-us-task-water-stream {
+  display: block;
+  animation: among-us-task-water-stream 210ms ease-out;
 }
 
 #among-us-task-drop-zone {
@@ -2259,14 +2307,41 @@ img {
 }
 
 @keyframes among-us-task-recoil {
-  0% { transform: rotate(-9deg) translateX(0); }
-  35% { transform: rotate(-16deg) translateX(-12px); }
-  100% { transform: rotate(-9deg) translateX(0); }
+  0% {
+    transform: rotate(-9deg) translateX(0);
+  }
+  35% {
+    transform: rotate(-16deg) translateX(-12px);
+  }
+  100% {
+    transform: rotate(-9deg) translateX(0);
+  }
 }
 
 @keyframes among-us-task-flash {
-  0% { opacity: 1; transform: scale(0.5); }
-  100% { opacity: 0; transform: scale(1.25); }
+  0% {
+    opacity: 1;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
+@keyframes among-us-task-water-stream {
+  0% {
+    opacity: 1;
+    transform: rotate(-7deg) scaleX(0.1);
+  }
+  40% {
+    opacity: 1;
+    transform: rotate(-7deg) scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(-7deg) scaleX(1);
+  }
 }
 
 #among-us-task-bottles {
@@ -2285,6 +2360,87 @@ img {
   min-height: 210px;
 }
 
+#among-us-task-panel.water-plant #among-us-task-bottles {
+  display: flex;
+  min-height: 226px;
+  align-items: center;
+  justify-content: center;
+}
+
+.among-us-task-plant {
+  --water-progress: 0%;
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 226px;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 45px 10px 12px;
+  border: 0;
+  border-radius: 3px;
+  background: #333;
+  cursor: crosshair;
+}
+
+.among-us-task-plant:hover:not(:disabled) {
+  background: #3f4b3f;
+}
+
+.among-us-task-plant img {
+  height: 162px;
+  filter: drop-shadow(2px 3px 2px #121212);
+  transition: filter 180ms ease;
+}
+
+.among-us-task-water-meter {
+  position: absolute;
+  top: 17px;
+  left: 22px;
+  right: 22px;
+  height: 18px;
+  box-sizing: border-box;
+  padding: 3px;
+  border: 2px solid #101010;
+  border-radius: 3px;
+  background: #1d1d1d;
+  overflow: hidden;
+}
+
+.among-us-task-water-fill {
+  display: block;
+  width: var(--water-progress);
+  height: 100%;
+  border-radius: 1px;
+  background: linear-gradient(90deg, #2786bc, #75d6ef);
+  transition: width 140ms ease-out;
+}
+
+.among-us-task-water-splash {
+  position: absolute;
+  left: 43%;
+  top: 77px;
+  width: 64px;
+  height: 42px;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 12px 30px, #74d5f5 0 4px, transparent 5px),
+    radial-gradient(circle at 34px 16px, #a9e9ff 0 5px, transparent 6px),
+    radial-gradient(circle at 51px 34px, #5bc7ef 0 4px, transparent 5px);
+  pointer-events: none;
+}
+
+.among-us-task-plant.watering .among-us-task-water-splash {
+  animation: among-us-task-water-splash 250ms ease-out;
+}
+
+.among-us-task-plant.full .among-us-task-water-fill {
+  background: linear-gradient(90deg, #5aaa39, #9fcf63);
+}
+
+.among-us-task-plant.full img {
+  filter: drop-shadow(0 0 8px rgba(159, 207, 99, 0.55));
+}
+
 .among-us-task-bottle {
   position: relative;
   height: 106px;
@@ -2300,7 +2456,9 @@ img {
 
 .among-us-task-bottle img {
   height: 88px;
-  transition: transform 100ms ease, opacity 100ms ease;
+  transition:
+    transform 100ms ease,
+    opacity 100ms ease;
   filter: drop-shadow(2px 3px 1px #121212);
 }
 
@@ -2433,12 +2591,32 @@ img {
 }
 
 @keyframes among-us-bottle-break {
-  to { opacity: 0; transform: scale(0.35) rotate(12deg); }
+  to {
+    opacity: 0;
+    transform: scale(0.35) rotate(12deg);
+  }
 }
 
 @keyframes among-us-bottle-shard {
-  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  100% { opacity: 0; transform: translate(var(--shard-x), var(--shard-y)) rotate(75deg); }
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--shard-x), var(--shard-y)) rotate(75deg);
+  }
+}
+
+@keyframes among-us-task-water-splash {
+  0% {
+    opacity: 1;
+    transform: translateY(8px) scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-13px) scale(1.25);
+  }
 }
 
 #among-us-task-status {
@@ -2506,9 +2684,20 @@ img {
     width: 118px;
   }
 
+  #among-us-task-panel.water-plant #among-us-task-weapon {
+    width: 94px;
+  }
+
   .among-us-task-flash {
     top: 43px;
     right: 2px;
+  }
+
+  .among-us-task-water-stream {
+    left: calc(50% + 27px);
+    top: 71px;
+    width: 72px;
+    height: 7px;
   }
 
   #among-us-task-panel.drag-to-station #among-us-task-drop-zone {
@@ -2527,6 +2716,31 @@ img {
 
   .among-us-task-bottle img {
     height: 61px;
+  }
+
+  #among-us-task-panel.water-plant #among-us-task-bottles {
+    min-height: 150px;
+  }
+
+  .among-us-task-plant {
+    height: 150px;
+    padding: 35px 6px 7px;
+  }
+
+  .among-us-task-plant img {
+    height: 105px;
+  }
+
+  .among-us-task-water-meter {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    height: 15px;
+  }
+
+  .among-us-task-water-splash {
+    top: 54px;
+    transform: scale(0.8);
   }
 
   .among-us-task-drag-item {
