@@ -19,6 +19,7 @@ import * as net from "../../shared/net/net";
 import { ObjectType } from "../../shared/net/objectSerializeFns";
 import { collider } from "../../shared/utils/collider";
 import { math } from "../../shared/utils/math";
+import { util } from "../../shared/utils/util";
 import { type Vec2, v2 } from "../../shared/utils/v2";
 import type { Ambiance } from "./ambiance";
 import type { AudioManager } from "./audioManager";
@@ -66,6 +67,9 @@ const amongUsVisionDarkAlpha = 0.82;
 const amongUsVisionFadeDistance = 8;
 const amongUsVisionClearRadiusScale = 0.35;
 const amongUsVisionTextureFadeRadiusScale = 0.1;
+const amongUsWallShadowAlpha = 0.62;
+const amongUsWallShadowExtend = 180;
+const amongUsWallShadowMergeEpsilon = 0.35;
 const amongUsCameraFeedRadius = 16;
 const amongUsCameraFeedWorldSize = amongUsCameraFeedRadius * 2;
 const amongUsCameraPlayerCullMargin = 2;
@@ -132,6 +136,16 @@ interface AmongUsCameraPlayerTrack {
     pos: Vec2;
     target: Vec2;
     lastRenderTime: number;
+}
+
+interface AmongUsWallShadowBox {
+    min: Vec2;
+    max: Vec2;
+}
+
+interface AmongUsWallShadowScreenBox {
+    min: { x: number; y: number };
+    max: { x: number; y: number };
 }
 
 function colorToCss(tint: number) {
@@ -209,6 +223,12 @@ export class Game {
 
     m_debugDisplay!: PIXI.Graphics;
     m_hideAndSeekBlindOverlay!: PIXI.Graphics;
+    m_amongUsWallShadowCanvas!: HTMLCanvasElement;
+    m_amongUsWallShadowTexture!: PIXI.Texture;
+    m_amongUsWallShadowOverlay!: PIXI.Sprite;
+    m_amongUsPlayerVisionMaskCanvas!: HTMLCanvasElement;
+    m_amongUsPlayerVisionMaskTexture!: PIXI.Texture;
+    m_amongUsPlayerVisionMask!: PIXI.Sprite;
     m_amongUsVisionGradient!: PIXI.Sprite;
     m_hideAndSeekHunterReleaseLastSecond = -1;
     m_hideAndSeekHunterReleaseWasActive = false;
@@ -472,6 +492,26 @@ export class Game {
         // Render ordering
         this.m_debugDisplay = new PIXI.Graphics();
         this.m_hideAndSeekBlindOverlay = new PIXI.Graphics();
+        this.m_amongUsWallShadowCanvas = document.createElement("canvas");
+        this.m_amongUsWallShadowCanvas.width = 1;
+        this.m_amongUsWallShadowCanvas.height = 1;
+        this.m_amongUsWallShadowTexture = PIXI.Texture.from(
+            this.m_amongUsWallShadowCanvas,
+        );
+        this.m_amongUsWallShadowOverlay = new PIXI.Sprite(
+            this.m_amongUsWallShadowTexture,
+        );
+        this.m_amongUsWallShadowOverlay.alpha = amongUsWallShadowAlpha;
+        this.m_amongUsWallShadowOverlay.visible = false;
+        this.m_amongUsPlayerVisionMaskCanvas = document.createElement("canvas");
+        this.m_amongUsPlayerVisionMaskCanvas.width = 1;
+        this.m_amongUsPlayerVisionMaskCanvas.height = 1;
+        this.m_amongUsPlayerVisionMaskTexture = PIXI.Texture.from(
+            this.m_amongUsPlayerVisionMaskCanvas,
+        );
+        this.m_amongUsPlayerVisionMask = new PIXI.Sprite(
+            this.m_amongUsPlayerVisionMaskTexture,
+        );
         this.m_amongUsVisionGradient = createAmongUsVisionGradient();
         const pixiContainers = [
             this.m_map.display.ground,
@@ -482,6 +522,7 @@ export class Game {
             this.m_renderer.layers[3],
             this.m_debugDisplay,
             this.m_gas.gasRenderer.display,
+            this.m_amongUsWallShadowOverlay,
             this.m_amongUsVisionGradient,
             this.m_hideAndSeekBlindOverlay,
             this.m_touch.container,
@@ -1307,16 +1348,264 @@ export class Game {
     renderAmongUsVisionOverlay() {
         const radius = this.m_map.getMapDef().gameMode.amongUsVisionRadius;
         this.m_amongUsVisionGradient.visible = false;
+        this.m_amongUsWallShadowOverlay.visible = false;
+        this.clearAmongUsPlayerShadowMasks();
         if (!radius) return;
 
         const center = this.m_camera.m_pointToScreen(this.m_activePlayer.m_visualPos);
         const fadeEnd = this.m_camera.m_scaleToScreen(radius + amongUsVisionFadeDistance);
         const gradientSize = (fadeEnd * 2) / amongUsVisionTextureFadeRadiusScale;
 
+        this.renderAmongUsWallShadows(radius);
         this.m_amongUsVisionGradient.position.set(center.x, center.y);
         this.m_amongUsVisionGradient.width = gradientSize;
         this.m_amongUsVisionGradient.height = gradientSize;
         this.m_amongUsVisionGradient.visible = true;
+        this.applyAmongUsPlayerShadowMasks();
+    }
+
+    renderAmongUsWallShadows(radius: number) {
+        const playerPos = this.m_activePlayer.m_visualPos;
+        const maxDistSqr = (radius + amongUsVisionFadeDistance) ** 2;
+        const canvasWidth = Math.max(1, Math.ceil(this.m_camera.m_screenWidth));
+        const canvasHeight = Math.max(1, Math.ceil(this.m_camera.m_screenHeight));
+        if (
+            this.m_amongUsWallShadowCanvas.width !== canvasWidth ||
+            this.m_amongUsWallShadowCanvas.height !== canvasHeight
+        ) {
+            this.m_amongUsWallShadowCanvas.width = canvasWidth;
+            this.m_amongUsWallShadowCanvas.height = canvasHeight;
+            this.m_amongUsWallShadowTexture.destroy(true);
+            this.m_amongUsWallShadowTexture = PIXI.Texture.from(
+                this.m_amongUsWallShadowCanvas,
+            );
+            this.m_amongUsWallShadowOverlay.texture = this.m_amongUsWallShadowTexture;
+        }
+        if (
+            this.m_amongUsPlayerVisionMaskCanvas.width !== canvasWidth ||
+            this.m_amongUsPlayerVisionMaskCanvas.height !== canvasHeight
+        ) {
+            this.m_amongUsPlayerVisionMaskCanvas.width = canvasWidth;
+            this.m_amongUsPlayerVisionMaskCanvas.height = canvasHeight;
+            this.m_amongUsPlayerVisionMaskTexture.destroy(true);
+            this.m_amongUsPlayerVisionMaskTexture = PIXI.Texture.from(
+                this.m_amongUsPlayerVisionMaskCanvas,
+            );
+            this.m_amongUsPlayerVisionMask.texture =
+                this.m_amongUsPlayerVisionMaskTexture;
+        }
+
+        const ctx = this.m_amongUsWallShadowCanvas.getContext("2d");
+        const maskCtx = this.m_amongUsPlayerVisionMaskCanvas.getContext("2d");
+        if (!ctx || !maskCtx) return;
+
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+        ctx.fillStyle = "#000000";
+        maskCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+        maskCtx.globalCompositeOperation = "source-over";
+        maskCtx.fillStyle = "#ffffff";
+        maskCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+        maskCtx.globalCompositeOperation = "destination-out";
+        maskCtx.fillStyle = "#000000";
+        const boxes: AmongUsWallShadowBox[] = [];
+
+        for (const obstacle of this.m_map.m_obstaclePool.m_getPool()) {
+            if (
+                !obstacle.active ||
+                obstacle.dead ||
+                !util.sameLayer(obstacle.layer, this.m_activePlayer.layer) ||
+                !this.isAmongUsWallShadowCaster(obstacle)
+            ) {
+                continue;
+            }
+
+            const aabb = collider.toAabb(obstacle.collider);
+            const center = v2.mul(v2.add(aabb.min, aabb.max), 0.5);
+            if (v2.lengthSqr(v2.sub(center, playerPos)) > maxDistSqr) continue;
+
+            boxes.push({
+                min: v2.copy(aabb.min),
+                max: v2.copy(aabb.max),
+            });
+        }
+
+        for (const box of this.mergeAmongUsWallShadowBoxes(boxes)) {
+            this.drawAmongUsWallShadowBox(ctx, maskCtx, playerPos, box);
+        }
+        maskCtx.globalCompositeOperation = "source-over";
+
+        this.m_amongUsWallShadowTexture.baseTexture.update();
+        this.m_amongUsPlayerVisionMaskTexture.baseTexture.update();
+        this.m_amongUsWallShadowOverlay.visible = true;
+    }
+
+    applyAmongUsPlayerShadowMasks() {
+        for (const player of this.m_playerBarn.playerPool.m_getPool()) {
+            if (!player.active || player === this.m_activePlayer) continue;
+            player.container.mask = this.m_amongUsPlayerVisionMask;
+            player.auraContainer.mask = this.m_amongUsPlayerVisionMask;
+            player.deathEffectContainer.mask = this.m_amongUsPlayerVisionMask;
+        }
+    }
+
+    clearAmongUsPlayerShadowMasks() {
+        for (const player of this.m_playerBarn.playerPool.m_getPool()) {
+            if (!player.active) continue;
+            if (player.container.mask === this.m_amongUsPlayerVisionMask) {
+                player.container.mask = null;
+            }
+            if (player.auraContainer.mask === this.m_amongUsPlayerVisionMask) {
+                player.auraContainer.mask = null;
+            }
+            if (player.deathEffectContainer.mask === this.m_amongUsPlayerVisionMask) {
+                player.deathEffectContainer.mask = null;
+            }
+        }
+    }
+
+    mergeAmongUsWallShadowBoxes(boxes: AmongUsWallShadowBox[]) {
+        const merged = boxes.map((box) => ({
+            min: v2.copy(box.min),
+            max: v2.copy(box.max),
+        }));
+        let changed = true;
+
+        while (changed) {
+            changed = false;
+            for (let i = 0; i < merged.length && !changed; i++) {
+                for (let j = i + 1; j < merged.length; j++) {
+                    const combined = this.combineAmongUsWallShadowBoxes(
+                        merged[i],
+                        merged[j],
+                    );
+                    if (!combined) continue;
+
+                    merged[i] = combined;
+                    merged.splice(j, 1);
+                    changed = true;
+                    break;
+                }
+            }
+        }
+
+        return merged;
+    }
+
+    combineAmongUsWallShadowBoxes(
+        a: AmongUsWallShadowBox,
+        b: AmongUsWallShadowBox,
+    ): AmongUsWallShadowBox | null {
+        const eps = amongUsWallShadowMergeEpsilon;
+        const sameY =
+            Math.abs(a.min.y - b.min.y) <= eps && Math.abs(a.max.y - b.max.y) <= eps;
+        const sameX =
+            Math.abs(a.min.x - b.min.x) <= eps && Math.abs(a.max.x - b.max.x) <= eps;
+        const xTouches = a.max.x + eps >= b.min.x && b.max.x + eps >= a.min.x;
+        const yTouches = a.max.y + eps >= b.min.y && b.max.y + eps >= a.min.y;
+
+        if ((!sameY || !xTouches) && (!sameX || !yTouches)) return null;
+
+        return {
+            min: v2.create(Math.min(a.min.x, b.min.x), Math.min(a.min.y, b.min.y)),
+            max: v2.create(Math.max(a.max.x, b.max.x), Math.max(a.max.y, b.max.y)),
+        };
+    }
+
+    isAmongUsWallShadowCaster(obstacle: Obstacle) {
+        if (obstacle.isWindow || !obstacle.collidable) return false;
+        const type = obstacle.type.toLowerCase();
+        return obstacle.isWall || type.includes("wall");
+    }
+
+    drawAmongUsWallShadowWedge(
+        ctx: CanvasRenderingContext2D,
+        maskCtx: CanvasRenderingContext2D,
+        playerPos: Vec2,
+        minCorner: Vec2,
+        maxCorner: Vec2,
+        box: AmongUsWallShadowScreenBox,
+    ) {
+        const extend = (corner: Vec2) => {
+            const dir = v2.normalizeSafe(v2.sub(corner, playerPos), v2.create(1, 0));
+            return v2.add(corner, v2.mul(dir, amongUsWallShadowExtend));
+        };
+        const p0 = this.m_camera.m_pointToScreen(minCorner);
+        const p1 = this.m_camera.m_pointToScreen(maxCorner);
+        const p2 = this.m_camera.m_pointToScreen(extend(maxCorner));
+        const p3 = this.m_camera.m_pointToScreen(extend(minCorner));
+
+        const drawPath = (targetCtx: CanvasRenderingContext2D) => {
+            targetCtx.beginPath();
+            targetCtx.rect(
+                box.min.x,
+                box.min.y,
+                box.max.x - box.min.x,
+                box.max.y - box.min.y,
+            );
+            targetCtx.moveTo(p0.x, p0.y);
+            targetCtx.lineTo(p1.x, p1.y);
+            targetCtx.lineTo(p2.x, p2.y);
+            targetCtx.lineTo(p3.x, p3.y);
+            targetCtx.closePath();
+            targetCtx.fill();
+        };
+        drawPath(ctx);
+        drawPath(maskCtx);
+    }
+
+    drawAmongUsWallShadowBox(
+        ctx: CanvasRenderingContext2D,
+        maskCtx: CanvasRenderingContext2D,
+        playerPos: Vec2,
+        box: AmongUsWallShadowBox,
+    ) {
+        const corners = [
+            v2.create(box.min.x, box.min.y),
+            v2.create(box.max.x, box.min.y),
+            v2.create(box.max.x, box.max.y),
+            v2.create(box.min.x, box.max.y),
+        ];
+        const sorted = corners
+            .map((corner) => ({
+                corner,
+                angle: Math.atan2(corner.y - playerPos.y, corner.x - playerPos.x),
+            }))
+            .sort((a, b) => a.angle - b.angle);
+        let largestGap = -1;
+        let gapIndex = 0;
+        for (let i = 0; i < sorted.length; i++) {
+            const next = (i + 1) % sorted.length;
+            const rawGap = sorted[next].angle - sorted[i].angle;
+            const gap = next === 0 ? rawGap + Math.PI * 2 : rawGap;
+            if (gap > largestGap) {
+                largestGap = gap;
+                gapIndex = i;
+            }
+        }
+
+        const minCorner = sorted[(gapIndex + 1) % sorted.length].corner;
+        const maxCorner = sorted[gapIndex].corner;
+        const screenCorners = corners.map((corner) =>
+            this.m_camera.m_pointToScreen(corner),
+        );
+        const screenBox = {
+            min: {
+                x: Math.min(...screenCorners.map((corner) => corner.x)),
+                y: Math.min(...screenCorners.map((corner) => corner.y)),
+            },
+            max: {
+                x: Math.max(...screenCorners.map((corner) => corner.x)),
+                y: Math.max(...screenCorners.map((corner) => corner.y)),
+            },
+        };
+        this.drawAmongUsWallShadowWedge(
+            ctx,
+            maskCtx,
+            playerPos,
+            minCorner,
+            maxCorner,
+            screenBox,
+        );
     }
 
     renderAmongUsEmergencyMeetingAnnouncement() {
