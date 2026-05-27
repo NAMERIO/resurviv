@@ -2223,7 +2223,14 @@ export class GameMap {
 
         let getPos: () => Vec2;
 
-        if (this.amongUsMode) {
+        const amongUsSpawnOffsets = this.mapDef.gameMode.amongUsSpawnOffsets;
+        if (this.amongUsMode && amongUsSpawnOffsets?.length) {
+            getPos = () => {
+                const offset =
+                    amongUsSpawnOffsets[util.randomInt(0, amongUsSpawnOffsets.length - 1)];
+                return v2.add(this.center, offset);
+            };
+        } else if (this.amongUsMode) {
             getPos = () => {
                 return v2.add(this.center, util.randomPointInCircle(24));
             };
@@ -2271,10 +2278,20 @@ export class GameMap {
                 return v2.add(pos, util.randomPointInCircle(rad));
             };
         }
-        return this.getRandomSpawnPos(getPos, group, team);
+        return this.getRandomSpawnPos(
+            getPos,
+            group,
+            team,
+            amongUsSpawnOffsets?.length ? GameConfig.player.radius * 2 : undefined,
+        );
     }
 
-    getRandomSpawnPos(getPos: () => Vec2, group?: Group, team?: Team): Vec2 {
+    getRandomSpawnPos(
+        getPos: () => Vec2,
+        group?: Group,
+        team?: Team,
+        minPlayerSpawnRad?: number,
+    ): Vec2 {
         let pos = getPos();
 
         this.trySpawn(
@@ -2291,9 +2308,9 @@ export class GameMap {
                     if (group && player.groupId === group.id) continue;
                     if (team && player.teamId === team.id) continue;
 
-                    const minSpawnRad = this.amongUsMode
-                        ? 6
-                        : GameConfig.player.minSpawnRad;
+                    const minSpawnRad =
+                        minPlayerSpawnRad ??
+                        (this.amongUsMode ? 6 : GameConfig.player.minSpawnRad);
                     if (v2.distance(player.pos, pos) < minSpawnRad) {
                         return false;
                     }

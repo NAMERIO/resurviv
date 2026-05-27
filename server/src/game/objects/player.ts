@@ -4617,7 +4617,11 @@ export class Player extends BaseGameObject {
             }
         }
 
-        if (!this.game.disablePerks) {
+        if (
+            !this.game.disablePerks &&
+            !isAmongUsMiniGame(this.game.miniGame) &&
+            !this.game.map.amongUsMode
+        ) {
             for (let i = this.perks.length - 1; i >= 0; i--) {
                 const perk = this.perks[i];
                 if (perk.droppable || perk.replaceOnDeath) {

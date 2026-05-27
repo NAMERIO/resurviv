@@ -6,6 +6,7 @@ import { ObjectType } from "../../../shared/net/objectSerializeFns";
 import { isBattleRoyaleMapName } from "../battleroyale/helpers";
 import type { Player } from "../game/objects/player";
 import { GamePlugin, type PlayerDamageEvent } from "../game/pluginManager";
+import { isAmongUsMiniGame } from "../game/privateLobbyMiniGames";
 
 /**
  * Checks if an item is present in the player's loadout
@@ -31,8 +32,10 @@ export function onPlayerJoin(data: Player) {
     data.scope = "4xscope";
     data.boost = 100;
     data.weaponManager.setCurWeapIndex(WeaponSlot.Primary);
-    data.addPerk("endless_ammo", false);
-    if (!data.game.map.perkMode) data.addPerk("takedown", false);
+    if (!isAmongUsMiniGame(data.game.miniGame) && !data.game.map.amongUsMode) {
+        data.addPerk("endless_ammo", false);
+        if (!data.game.map.perkMode) data.addPerk("takedown", false);
+    }
 }
 
 const perks = [
@@ -57,6 +60,9 @@ const droppablePerks = ["ap_rounds", "self_revive", "pyro", "phoenix"];
 export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
     if (isBattleRoyaleMapName(data.player.game.mapName)) return;
 
+    const amongUsMode =
+        isAmongUsMiniGame(data.player.game.miniGame) || data.player.game.map.amongUsMode;
+
     if (data.player.game.aliveCount < 5) {
         data.player.game.playerBarn.emotes.push({
             playerId: 0,
@@ -69,7 +75,11 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
 
     // remove all perks but drop droppable ones
     data.player.perks.forEach((perk) => {
-        if (!data.player.game.disablePerks && droppablePerks.includes(perk.type)) {
+        if (
+            !amongUsMode &&
+            !data.player.game.disablePerks &&
+            droppablePerks.includes(perk.type)
+        ) {
             data.player.game.lootBarn.addLoot(
                 perk.type,
                 data.player.pos,
@@ -82,6 +92,7 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
 
     // drop a new perk
     if (
+        !amongUsMode &&
         !data.player.game.disablePerks &&
         data.source?.__id !== data.player.__id &&
         data.damageType !== GameConfig.DamageType.Bleeding &&

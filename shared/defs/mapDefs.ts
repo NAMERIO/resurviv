@@ -174,6 +174,7 @@ export interface MapDef {
         infernoMode?: boolean;
         amongUsMode?: boolean;
         amongUsVisionRadius?: number;
+        amongUsSpawnOffsets?: Vec2[];
         disableGas?: boolean;
     };
     gameConfig: {

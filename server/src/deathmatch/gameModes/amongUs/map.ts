@@ -20,6 +20,18 @@ export const AmongUsMapDef: PartialMapDef = {
         killLeaderEnabled: false,
         amongUsMode: true,
         amongUsVisionRadius: 24,
+        amongUsSpawnOffsets: [
+            v2.create(-3.594, 1.25),
+            v2.create(0.625, 2.813),
+            v2.create(3.688, 6.281),
+            v2.create(3.469, 10.844),
+            v2.create(1, 14.531),
+            v2.create(-3.125, 15),
+            v2.create(-7.75, 2.594),
+            v2.create(-9.969, 6.656),
+            v2.create(-10.094, 11.031),
+            v2.create(-7.406, 14.406),
+        ],
         disableGas: true,
     },
     assets: {
