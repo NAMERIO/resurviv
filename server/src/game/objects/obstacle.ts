@@ -635,7 +635,14 @@ export class Obstacle extends BaseGameObject {
             this.game.map.amongUsMode &&
             this.interactedBy
         ) {
-            this.game.playerBarn.callAmongUsEmergencyMeeting(this.interactedBy);
+            const meetingCalled = this.game.playerBarn.callAmongUsEmergencyMeeting(
+                this.interactedBy,
+                this,
+            );
+            if (!meetingCalled) {
+                this.button.onOff = false;
+                this.button.seq++;
+            }
         }
         const def = MapObjectDefs[this.type] as ObstacleDef;
         if (def.button?.destroyOnUse && def.destroyType) {

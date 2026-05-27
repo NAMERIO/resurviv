@@ -152,6 +152,18 @@ export class PlayerBarn {
 
     amongUsRolesAssigned = false;
     amongUsEmergencyMeetingSeq = 0;
+    amongUsMeeting?: {
+        sequence: number;
+        phase: net.AmongUsMeetingPhase;
+        timeLeft: number;
+        callerId: number;
+        participantIds: number[];
+        votes: Map<number, number>;
+        ejectedId: number;
+        ejectedWasImpostor: boolean;
+        ejectionExploded: boolean;
+        emergencyButton?: Obstacle;
+    };
 
     sendWinEmoteTicker = 0;
     sentWinEmotes = false;
@@ -396,6 +408,7 @@ export class PlayerBarn {
 
     update(dt: number) {
         this.assignAmongUsRoles();
+        this.updateAmongUsMeeting(dt);
 
         let sendWinEmotes = false;
         if (this.game.over && !this.sentWinEmotes) {
@@ -468,22 +481,24 @@ export class PlayerBarn {
         this.amongUsRolesAssigned = true;
     }
 
-    callAmongUsEmergencyMeeting(caller: Player) {
+    callAmongUsEmergencyMeeting(caller: Player, emergencyButton?: Obstacle): boolean {
         if (
             !this.game.map.amongUsMode ||
             caller.dead ||
             caller.disconnected ||
-            this.game.over
+            this.game.over ||
+            this.amongUsMeeting
         ) {
-            return;
+            return false;
         }
 
         const spawnOffsets = this.game.map.mapDef.gameMode.amongUsSpawnOffsets;
-        if (!spawnOffsets?.length) return;
+        if (!spawnOffsets?.length) return false;
 
         const attendees = this.livingPlayers.filter(
             (player) => !player.dead && !player.disconnected && !player.spectatorOnly,
         );
+        if (attendees.length === 0) return false;
         for (let i = 0; i < attendees.length; i++) {
             attendees[i].moveToAmongUsMeeting(
                 v2.add(this.game.map.center, spawnOffsets[i % spawnOffsets.length]),
@@ -491,7 +506,231 @@ export class PlayerBarn {
         }
 
         this.amongUsEmergencyMeetingSeq++;
+        this.amongUsMeeting = {
+            sequence: this.amongUsEmergencyMeetingSeq,
+            phase: net.AmongUsMeetingPhase.Discussion,
+            timeLeft: 60,
+            callerId: caller.playerId,
+            participantIds: attendees.map((player) => player.playerId),
+            votes: new Map<number, number>(),
+            ejectedId: 0,
+            ejectedWasImpostor: false,
+            ejectionExploded: false,
+            emergencyButton,
+        };
+        this.broadcastAmongUsMeetingState();
         this.game.updateData();
+        return true;
+    }
+
+    get isAmongUsMeetingLocked(): boolean {
+        return this.amongUsMeeting !== undefined;
+    }
+
+    voteInAmongUsMeeting(voter: Player, targetId: number): void {
+        const meeting = this.amongUsMeeting;
+        if (
+            !meeting ||
+            meeting.phase !== net.AmongUsMeetingPhase.Voting ||
+            voter.dead ||
+            voter.disconnected ||
+            !meeting.participantIds.includes(voter.playerId) ||
+            meeting.votes.has(voter.playerId)
+        ) {
+            return;
+        }
+
+        if (targetId !== 0) {
+            const target = this.players.find((player) => player.playerId === targetId);
+            if (
+                !target ||
+                target.dead ||
+                target.disconnected ||
+                !meeting.participantIds.includes(targetId)
+            ) {
+                return;
+            }
+        }
+
+        meeting.votes.set(voter.playerId, targetId);
+        this.broadcastAmongUsMeetingState();
+
+        const eligibleVoters = meeting.participantIds.filter((id) => {
+            const player = this.players.find((candidate) => candidate.playerId === id);
+            return player && !player.dead && !player.disconnected;
+        });
+        if (meeting.votes.size >= eligibleVoters.length) {
+            this.finishAmongUsVoting();
+        }
+    }
+
+    chatInAmongUsMeeting(player: Player, text: string): void {
+        const meeting = this.amongUsMeeting;
+        if (
+            !meeting ||
+            (meeting.phase !== net.AmongUsMeetingPhase.Discussion &&
+                meeting.phase !== net.AmongUsMeetingPhase.Voting) ||
+            player.dead ||
+            player.disconnected ||
+            !meeting.participantIds.includes(player.playerId)
+        ) {
+            return;
+        }
+
+        const message = text.trim().slice(0, 120);
+        if (!message) return;
+
+        const chatMsg = new net.AmongUsMeetingChatMsg();
+        chatMsg.playerId = player.playerId;
+        chatMsg.message = message;
+        this.game.broadcastMsg(net.MsgType.AmongUsMeetingChat, chatMsg);
+    }
+
+    private updateAmongUsMeeting(dt: number): void {
+        const meeting = this.amongUsMeeting;
+        if (!meeting) return;
+        if (this.game.over) {
+            this.closeAmongUsMeeting();
+            return;
+        }
+
+        meeting.timeLeft -= dt;
+        if (meeting.timeLeft > 0) return;
+
+        switch (meeting.phase) {
+            case net.AmongUsMeetingPhase.Discussion:
+                meeting.phase = net.AmongUsMeetingPhase.Voting;
+                meeting.timeLeft = 30;
+                this.broadcastAmongUsMeetingState();
+                break;
+            case net.AmongUsMeetingPhase.Voting:
+                this.finishAmongUsVoting();
+                break;
+            case net.AmongUsMeetingPhase.Reveal:
+                if (meeting.ejectedId !== 0) {
+                    this.startAmongUsEjection();
+                } else {
+                    this.closeAmongUsMeeting();
+                }
+                break;
+            case net.AmongUsMeetingPhase.Ejection:
+                if (meeting.ejectionExploded) {
+                    this.closeAmongUsMeeting();
+                } else {
+                    this.explodeAmongUsEjectedPlayer();
+                    meeting.ejectionExploded = true;
+                    meeting.timeLeft = 1;
+                }
+                break;
+        }
+    }
+
+    private startAmongUsEjection(): void {
+        const meeting = this.amongUsMeeting;
+        if (!meeting) return;
+
+        const ejected = this.players.find(
+            (player) => player.playerId === meeting.ejectedId,
+        );
+        if (!ejected || ejected.dead) {
+            this.closeAmongUsMeeting();
+            return;
+        }
+
+        meeting.phase = net.AmongUsMeetingPhase.Ejection;
+        meeting.timeLeft = 2;
+        this.broadcastAmongUsMeetingState(true);
+    }
+
+    private explodeAmongUsEjectedPlayer(): void {
+        const meeting = this.amongUsMeeting;
+        if (!meeting) return;
+
+        const ejected = this.players.find(
+            (player) => player.playerId === meeting.ejectedId,
+        );
+        if (!ejected || ejected.dead) return;
+
+        this.game.explosionBarn.addVisualExplosion(
+            "explosion_among_us_eject",
+            ejected.pos,
+            ejected.layer,
+        );
+        ejected.kill({
+            damageType: GameConfig.DamageType.Player,
+            gameSourceType: "explosion_among_us_eject",
+            dir: v2.create(0, 0),
+        });
+    }
+
+    private finishAmongUsVoting(): void {
+        const meeting = this.amongUsMeeting;
+        if (!meeting || meeting.phase !== net.AmongUsMeetingPhase.Voting) return;
+
+        const totals = new Map<number, number>();
+        for (const targetId of meeting.votes.values()) {
+            totals.set(targetId, (totals.get(targetId) ?? 0) + 1);
+        }
+
+        let maxVotes = 0;
+        let ejectedId = 0;
+        let tied = false;
+        for (const [targetId, votes] of totals) {
+            if (votes > maxVotes) {
+                maxVotes = votes;
+                ejectedId = targetId;
+                tied = false;
+            } else if (votes === maxVotes) {
+                tied = true;
+            }
+        }
+
+        meeting.ejectedId = tied || ejectedId === 0 ? 0 : ejectedId;
+        meeting.ejectedWasImpostor =
+            this.players.find((player) => player.playerId === meeting.ejectedId)
+                ?.amongUsRole === "impostor";
+        meeting.ejectionExploded = false;
+        meeting.phase = net.AmongUsMeetingPhase.Reveal;
+        meeting.timeLeft = meeting.ejectedId !== 0 ? 3 : 4;
+        this.broadcastAmongUsMeetingState(true);
+    }
+
+    private closeAmongUsMeeting(): void {
+        const meeting = this.amongUsMeeting;
+        if (!meeting) return;
+        this.resetAmongUsEmergencyButton(meeting.emergencyButton);
+        meeting.phase = net.AmongUsMeetingPhase.None;
+        meeting.timeLeft = 0;
+        this.broadcastAmongUsMeetingState(true);
+        this.amongUsMeeting = undefined;
+    }
+
+    private resetAmongUsEmergencyButton(button?: Obstacle): void {
+        if (!button?.isButton) return;
+        if (!button.button.onOff && button.button.canUse) return;
+        button.button.onOff = false;
+        button.button.canUse = true;
+        button.button.seq++;
+        button.setDirty();
+    }
+
+    private broadcastAmongUsMeetingState(showVotes = false): void {
+        const meeting = this.amongUsMeeting;
+        if (!meeting) return;
+
+        const msg = new net.AmongUsMeetingStateMsg();
+        msg.sequence = meeting.sequence;
+        msg.phase = meeting.phase;
+        msg.seconds = Math.max(0, Math.ceil(meeting.timeLeft));
+        msg.callerId = meeting.callerId;
+        msg.ejectedId = meeting.ejectedId;
+        msg.ejectedWasImpostor = meeting.ejectedWasImpostor;
+        msg.participantIds = meeting.participantIds;
+        msg.submittedVoterIds = [...meeting.votes.keys()];
+        msg.votes = showVotes
+            ? [...meeting.votes].map(([voterId, targetId]) => ({ voterId, targetId }))
+            : [];
+        this.game.broadcastMsg(net.MsgType.AmongUsMeetingState, msg);
     }
 
     removePlayer(player: Player) {
@@ -1932,6 +2171,7 @@ export class Player extends BaseGameObject {
                     ? this.amongUsRole
                     : "",
             loadout: {
+                outfit: this.loadout.outfit,
                 heal: this.loadout.heal,
                 boost: this.loadout.boost,
                 death_effect: this.loadout.death_effect,
@@ -5037,6 +5277,18 @@ export class Player extends BaseGameObject {
 
         if (this.dead) return;
         if (this.game.map.perkMode && !this.role) return;
+        if (this.game.playerBarn.isAmongUsMeetingLocked) {
+            this.moveLeft = false;
+            this.moveRight = false;
+            this.moveUp = false;
+            this.moveDown = false;
+            this.touchMoveActive = false;
+            this.touchMoveDir = v2.create(0, 0);
+            this.touchMoveLen = 0;
+            this.shootHold = false;
+            this.shootStart = false;
+            return;
+        }
         if (this.game.arenaPrivate && this.game.arenaStartLockTimer > 0) {
             this.moveLeft = false;
             this.moveRight = false;

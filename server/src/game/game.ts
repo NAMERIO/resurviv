@@ -455,6 +455,8 @@ export class Game {
             | net.DropItemMsg
             | net.SpectateMsg
             | net.PerkModeRoleSelectMsg
+            | net.AmongUsMeetingVoteMsg
+            | net.AmongUsMeetingChatSendMsg
             | net.EditMsg
             | undefined = undefined;
 
@@ -500,6 +502,14 @@ export class Game {
                 break;
             case net.MsgType.PerkModeRoleSelect:
                 msg = new net.PerkModeRoleSelectMsg();
+                msg.deserialize(stream);
+                break;
+            case net.MsgType.AmongUsMeetingVote:
+                msg = new net.AmongUsMeetingVoteMsg();
+                msg.deserialize(stream);
+                break;
+            case net.MsgType.AmongUsMeetingChatSend:
+                msg = new net.AmongUsMeetingChatSendMsg();
                 msg.deserialize(stream);
                 break;
             case net.MsgType.Edit:
@@ -595,6 +605,20 @@ export class Game {
             }
             case net.MsgType.PerkModeRoleSelect: {
                 player.roleSelect((msg as net.PerkModeRoleSelectMsg).role);
+                break;
+            }
+            case net.MsgType.AmongUsMeetingVote: {
+                this.playerBarn.voteInAmongUsMeeting(
+                    player,
+                    (msg as net.AmongUsMeetingVoteMsg).targetId,
+                );
+                break;
+            }
+            case net.MsgType.AmongUsMeetingChatSend: {
+                this.playerBarn.chatInAmongUsMeeting(
+                    player,
+                    (msg as net.AmongUsMeetingChatSendMsg).message,
+                );
                 break;
             }
             case net.MsgType.Edit: {

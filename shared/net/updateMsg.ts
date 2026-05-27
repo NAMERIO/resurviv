@@ -235,6 +235,7 @@ export interface PlayerInfo {
     amongUsRole?: string;
 
     loadout: {
+        outfit: string;
         heal: string;
         boost: string;
         death_effect: string;
@@ -259,6 +260,7 @@ function serializePlayerInfo(s: BitStream, data: PlayerInfo) {
         s.writeString(data.amongUsRole);
     }
 
+    s.writeGameType(data.loadout.outfit);
     s.writeGameType(data.loadout.heal);
     s.writeGameType(data.loadout.boost);
     s.writeGameType(data.loadout.death_effect);
@@ -275,6 +277,7 @@ function deserializePlayerInfo(s: BitStream, data: PlayerInfo) {
     data.clanTagColor = s.readBoolean() ? s.readString() : "";
     data.amongUsRole = s.readBoolean() ? s.readString() : "";
     data.loadout = {} as PlayerInfo["loadout"];
+    data.loadout.outfit = s.readGameType();
     data.loadout.heal = s.readGameType();
     data.loadout.boost = s.readGameType();
     data.loadout.death_effect = s.readGameType();

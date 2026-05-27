@@ -618,6 +618,9 @@ export class UiManager2 {
         window.addEventListener("focus", this.clearQueuedItemActions);
 
         this.onKeyUp = (e: KeyboardEvent) => {
+            if (this.inputBinds.input.isGameplayInputBlocked(e.target)) {
+                return;
+            }
             // Add an input handler specifically to handle fullscreen on Firefox;
             // "requestFullscreen() must be called from inside a short running user-generated event handler."
             const keyCode = e.which || e.keyCode;

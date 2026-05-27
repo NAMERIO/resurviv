@@ -30,6 +30,16 @@ export const ExplosionDefs: Record<string, ExplosionDef> = {
         explosionEffectType: "frag",
         decalType: "decal_frag_explosion",
     },
+    explosion_among_us_eject: {
+        type: "explosion",
+        damage: 0,
+        obstacleDamage: 0,
+        rad: { min: 5, max: 12 },
+        shrapnelCount: 0,
+        shrapnelType: "",
+        explosionEffectType: "frag",
+        decalType: "",
+    },
     explosion_smoke: {
         type: "explosion",
         damage: 0,

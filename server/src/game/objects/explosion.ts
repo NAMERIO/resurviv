@@ -326,6 +326,20 @@ export class ExplosionBarn {
         this.explosions.push(explosion);
         this.newExplosions.push(explosion);
     }
+
+    addVisualExplosion(type: string, pos: Vec2, layer: number) {
+        const def = GameObjectDefs[type];
+        assert(def.type === "explosion", `Invalid explosion with type ${type}`);
+        this.newExplosions.push({
+            rad: def.rad.max,
+            type,
+            pos,
+            layer,
+            damageParams: {
+                damageType: GameConfig.DamageType.Player,
+            },
+        });
+    }
 }
 
 interface Explosion {

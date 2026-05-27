@@ -205,6 +205,32 @@ export class GameModeManager {
             return false;
         }
 
+        if (this.game.map.amongUsMode) {
+            if (!this.game.started) return false;
+
+            const living = this.game.playerBarn.players.filter(
+                (player) => !player.dead && !player.disconnected,
+            );
+            const impostors = living.filter((player) => player.amongUsRole === "impostor");
+            const crewmates = living.filter((player) => player.amongUsRole === "crewmate");
+
+            if (impostors.length === 0 && crewmates.length > 0) {
+                for (const player of this.game.playerBarn.players) {
+                    player.addGameOverMsg(crewmates[0].teamId);
+                }
+                return true;
+            }
+
+            if (impostors.length > 0 && crewmates.length <= impostors.length) {
+                for (const player of this.game.playerBarn.players) {
+                    player.addGameOverMsg(impostors[0].teamId);
+                }
+                return true;
+            }
+
+            return false;
+        }
+
         if (!this.game.started || this.aliveCount() > 1) return false;
         switch (this.mode) {
             case GameMode.Solo: {
@@ -232,6 +258,9 @@ export class GameModeManager {
     isGameStarted(): boolean {
         if (this.game.arenaPrivate && this.game.arenaStartLockTimer > 0) {
             return false;
+        }
+        if (this.game.map.amongUsMode) {
+            return this.game.trueAliveCount > 0;
         }
         if (this.game.arenaPrivate) {
             return this.aliveCount() > 1;

@@ -410,6 +410,7 @@ export class LoadoutDisplay {
             clanName: "",
             clanTagColor: "",
             loadout: {
+                outfit: this.loadout.outfit,
                 heal: this.loadout.heal,
                 boost: this.loadout.boost,
                 death_effect: this.loadout.death_effect,

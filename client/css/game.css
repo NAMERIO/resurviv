@@ -1919,6 +1919,418 @@ img {
   width: 100vw;
 }
 
+#ui-among-us-meeting {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  gap: 34px;
+  box-sizing: border-box;
+  padding: 0 46px;
+  background-color: #000;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.86), rgba(0, 0, 0, 0.86)), url(/img/main_splash.png);
+  background-position: center;
+  background-size: cover;
+  pointer-events: auto;
+  font-family: "Roboto Condensed", Arial, sans-serif;
+  color: #fff;
+  cursor: default;
+}
+
+.among-us-meeting-panel {
+  position: relative;
+  box-sizing: border-box;
+  width: clamp(620px, calc(100vw - 540px), 780px);
+  height: min(590px, calc(100vh - 42px));
+  min-height: 420px;
+  padding: 76px 18px 18px;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.78);
+  box-shadow:
+    0 0 0 4px rgba(0, 0, 0, 0.55),
+    0 12px 32px rgba(0, 0, 0, 0.75);
+}
+
+.among-us-meeting-header {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 58px;
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  align-items: center;
+  padding: 0 18px;
+  color: #fff;
+  background: rgba(131, 175, 80, 0.92);
+  box-shadow: inset 0 -3px #5b7a38;
+}
+
+#among-us-chat-send {
+  height: 36px;
+  border: 0;
+  border-bottom: 2px solid #563619;
+  border-radius: 4px;
+  background: #8f5827;
+  box-shadow: inset 0 -2px #563619;
+  color: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: bold;
+  text-shadow: 1px 1px #000;
+  cursor: pointer;
+}
+
+#among-us-chat-send:hover {
+  filter: brightness(80%);
+}
+
+#among-us-meeting-title {
+  text-align: center;
+  font-size: 32px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-shadow: 3px 3px #000;
+}
+
+#among-us-meeting-timer {
+  text-align: right;
+  font-size: 20px;
+  font-weight: bold;
+  text-shadow: 3px 3px #000;
+  white-space: nowrap;
+}
+
+#among-us-meeting-cards {
+  position: absolute;
+  top: 76px;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  box-sizing: border-box;
+  padding-bottom: 74px;
+  overflow-y: auto;
+  display: grid;
+  align-content: start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.among-us-player-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 62px;
+  padding: 6px 12px;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.11);
+  box-shadow: inset 0 -2px rgba(0, 0, 0, 0.35);
+  text-shadow: 1px 1px #000;
+  cursor: default;
+  overflow: hidden;
+}
+
+.among-us-player-card.selectable {
+  cursor: pointer;
+}
+
+.among-us-player-card.selectable:hover {
+  background: rgba(131, 175, 80, 0.32);
+}
+
+.among-us-player-card.selected {
+  border-color: #83af50;
+  background: rgba(131, 175, 80, 0.38);
+}
+
+.among-us-player-card.ejected {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+.among-us-outfit {
+  height: 48px;
+  width: 48px;
+  margin-right: 10px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.among-us-player-name {
+  max-width: calc(100% - 68px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.among-us-player-card.selected .among-us-player-name {
+  max-width: calc(100% - 146px);
+}
+
+.among-us-card-votes {
+  position: absolute;
+  display: flex;
+  gap: 3px;
+  left: 70px;
+  bottom: 3px;
+}
+
+.among-us-vote-outfit {
+  height: 20px;
+  width: 20px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: translateX(100px);
+  animation: among-us-vote-slide 360ms forwards;
+}
+
+@keyframes among-us-vote-slide {
+  to {
+    transform: translateX(0);
+  }
+}
+
+.among-us-card-actions {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  display: flex;
+  gap: 8px;
+  transform: translateY(-50%);
+}
+
+.among-us-card-actions button {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  border: 2px solid;
+  background-position: center;
+  background-size: 22px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.among-us-vote-cancel {
+  border-color: #ef4141 !important;
+  background-color: rgba(80, 0, 0, 0.62);
+  background-image: url(/img/gui/close.svg);
+}
+
+.among-us-vote-confirm {
+  border-color: #46e154 !important;
+  background-color: rgba(0, 80, 14, 0.62);
+  background-image: url(/img/gui/checked.svg);
+}
+
+#among-us-meeting-chat {
+  position: relative;
+  display: flex;
+  box-sizing: border-box;
+  width: 420px;
+  height: min(590px, calc(100vh - 42px));
+  min-height: 420px;
+  flex-direction: column;
+  padding: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.92);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.65);
+  color: #fff;
+  text-shadow: 1px 1px #000;
+}
+
+.among-us-chat-title {
+  color: #83af50;
+  font-size: 21px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+#among-us-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  border: 2px solid #1c252d;
+  border-radius: 4px;
+  background: rgba(13, 17, 22, 0.7);
+}
+
+.among-us-chat-message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 7px 0;
+  font-size: 17px;
+  word-break: break-word;
+}
+
+.among-us-chat-message.own {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.among-us-chat-message strong {
+  color: #83af50;
+}
+
+.among-us-chat-message.own strong {
+  color: #c7c7c7;
+}
+
+.among-us-chat-message span {
+  display: inline-block;
+  max-width: 82%;
+  padding: 5px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.among-us-chat-message.own span {
+  background: rgba(150, 150, 150, 0.28);
+}
+
+.among-us-chat-compose {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+#among-us-chat-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 8px;
+  border: 2px solid #1c252d;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #111;
+  font-family: inherit;
+  font-size: 16px;
+}
+
+@media (max-width: 1150px) {
+  #ui-among-us-meeting {
+    gap: 24px;
+    padding: 0 28px;
+  }
+
+  .among-us-meeting-panel {
+    width: max(520px, calc(100vw - 430px));
+  }
+
+  #among-us-meeting-chat {
+    width: 360px;
+  }
+}
+
+@media (max-width: 850px), (max-height: 620px) {
+  #ui-among-us-meeting {
+    gap: 10px;
+    padding: 0 10px;
+  }
+
+  .among-us-meeting-panel {
+    width: max(260px, calc(100vw - 330px));
+    height: calc(100vh - 20px);
+    min-height: 0;
+    padding: 65px 10px 10px;
+    border-width: 5px;
+  }
+
+  .among-us-meeting-header {
+    height: 54px;
+    grid-template-columns: 1fr 148px;
+    padding: 0 8px;
+  }
+
+  #among-us-chat-send {
+    height: 34px;
+    font-size: 14px;
+  }
+
+  #among-us-meeting-title {
+    font-size: 25px;
+  }
+
+  #among-us-meeting-timer {
+    font-size: 13px;
+  }
+
+  #among-us-meeting-cards {
+    top: 65px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    gap: 8px;
+    grid-template-columns: 1fr;
+    padding-bottom: 0;
+  }
+
+  .among-us-player-card {
+    min-height: 68px;
+    padding: 5px 8px;
+  }
+
+  .among-us-outfit {
+    height: 52px;
+    width: 52px;
+    margin-right: 8px;
+  }
+
+  .among-us-player-name {
+    font-size: 21px;
+  }
+
+  #among-us-meeting-chat {
+    width: 300px;
+    height: calc(100vh - 20px);
+    min-height: 0;
+  }
+}
+
+.among-us-skip-card {
+  position: absolute;
+  left: 1px;
+  bottom: 1px;
+  z-index: 2;
+  width: 200px;
+  background: rgba(99, 99, 99, 0.42);
+}
+
+.among-us-skip-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  width: 42px;
+  margin-right: 12px;
+  border-radius: 50%;
+  background: #494949;
+  background-image: url(/img/gui/return-arrow.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 24px;
+  box-shadow: inset 0 -px #000000;
+}
+
+@media (max-width: 850px), (max-height: 620px) {
+  .among-us-skip-card {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    width: auto;
+    z-index: auto;
+  }
+}
+
 /**
  * ui-lower-center
  */

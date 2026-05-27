@@ -59,7 +59,14 @@ function createAmongUsVisionGradient() {
     canvas.height = size;
     const ctx = canvas.getContext("2d")!;
     const fadeRadius = center * amongUsVisionTextureFadeRadiusScale;
-    const gradient = ctx.createRadialGradient(center, center, 0, center, center, fadeRadius);
+    const gradient = ctx.createRadialGradient(
+        center,
+        center,
+        0,
+        center,
+        center,
+        fadeRadius,
+    );
     gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
     gradient.addColorStop(amongUsVisionClearRadiusScale, "rgba(0, 0, 0, 0)");
     gradient.addColorStop(1, `rgba(0, 0, 0, ${amongUsVisionDarkAlpha})`);
@@ -122,6 +129,10 @@ export class Game {
     m_infectedRespawnWasActive = false;
     m_miniGameWinCountdownLastSecond = -1;
     m_amongUsEmergencyMeetingSeq = 0;
+    m_amongUsMeeting: net.AmongUsMeetingStateMsg | null = null;
+    m_amongUsMeetingDeadline = 0;
+    m_amongUsMeetingSelectedId = -1;
+    m_amongUsMeetingChatMessages: Array<{ playerId: number; message: string }> = [];
     m_canvasMode!: boolean;
 
     m_updatePass!: boolean;
@@ -309,6 +320,7 @@ export class Game {
             this.m_inputBindUi,
         );
         this.m_ui2Manager = new UiManager2(this.m_localization, this.m_inputBinds);
+        this.initAmongUsMeetingUi();
         {
             const loadout = this.m_config.get("loadout");
             this.m_ui2Manager.setChosenStreakType(loadout?.streak || "");
@@ -409,6 +421,11 @@ export class Game {
         this.lastUpdateTime = 0;
         this.debugPingTime = 0;
         this.m_amongUsEmergencyMeetingSeq = 0;
+        this.m_amongUsMeeting = null;
+        this.m_amongUsMeetingSelectedId = -1;
+        this.m_amongUsMeetingChatMessages = [];
+        document.body.classList.remove("among-us-meeting-active");
+        document.getElementById("ui-among-us-meeting")!.style.display = "none";
 
         // Process config
         this.m_camera.m_setShakeEnabled(this.m_config.get("screenShake")!);
@@ -1117,8 +1134,7 @@ export class Game {
             : 0x80af49;
         this.m_pixi.renderer.background.color = grassColor;
         // Module rendering
-        const amongUsVisionRadius =
-            this.m_map.getMapDef().gameMode.amongUsVisionRadius;
+        const amongUsVisionRadius = this.m_map.getMapDef().gameMode.amongUsVisionRadius;
         this.m_playerBarn.m_render(
             this.m_camera,
             debug,
@@ -1132,6 +1148,7 @@ export class Game {
         this.m_gas.m_render(dt, this.m_camera);
         this.renderAmongUsVisionOverlay();
         this.renderAmongUsEmergencyMeetingAnnouncement();
+        this.renderAmongUsMeetingUi();
         this.renderHideAndSeekBlindOverlay(dt);
         this.renderHideAndSeekHunterReleaseAnnouncement();
         this.renderInfectedRespawnAnnouncement();
@@ -1158,9 +1175,7 @@ export class Game {
         if (!radius) return;
 
         const center = this.m_camera.m_pointToScreen(this.m_activePlayer.m_visualPos);
-        const fadeEnd = this.m_camera.m_scaleToScreen(
-            radius + amongUsVisionFadeDistance,
-        );
+        const fadeEnd = this.m_camera.m_scaleToScreen(radius + amongUsVisionFadeDistance);
         const gradientSize = (fadeEnd * 2) / amongUsVisionTextureFadeRadiusScale;
 
         this.m_amongUsVisionGradient.position.set(center.x, center.y);
@@ -1179,6 +1194,220 @@ export class Game {
                 this.m_localization.translate("game-among-us-emergency-meeting"),
             );
         }
+    }
+
+    initAmongUsMeetingUi() {
+        const cards = document.getElementById("among-us-meeting-cards")!;
+        const chatInput = document.getElementById(
+            "among-us-chat-input",
+        ) as HTMLInputElement;
+        const chatSend = document.getElementById("among-us-chat-send")!;
+
+        cards.onclick = (event) => {
+            const target = event.target as HTMLElement;
+            if (target.closest(".among-us-vote-cancel")) {
+                this.m_amongUsMeetingSelectedId = -1;
+                this.renderAmongUsMeetingUi(true);
+                return;
+            }
+            if (target.closest(".among-us-vote-confirm")) {
+                if (
+                    this.m_amongUsMeeting?.phase === net.AmongUsMeetingPhase.Voting &&
+                    this.m_amongUsMeetingSelectedId >= 0 &&
+                    !this.m_amongUsMeeting.submittedVoterIds.includes(this.m_localId)
+                ) {
+                    const voteMsg = new net.AmongUsMeetingVoteMsg();
+                    voteMsg.targetId = this.m_amongUsMeetingSelectedId;
+                    this.m_sendMessage(net.MsgType.AmongUsMeetingVote, voteMsg, 16);
+                }
+                return;
+            }
+            const card = target.closest<HTMLElement>(".among-us-player-card");
+            if (
+                !card ||
+                this.m_amongUsMeeting?.phase !== net.AmongUsMeetingPhase.Voting ||
+                this.m_amongUsMeeting.submittedVoterIds.includes(this.m_localId)
+            ) {
+                return;
+            }
+            this.m_amongUsMeetingSelectedId = Number(card.dataset.playerId);
+            this.renderAmongUsMeetingUi(true);
+        };
+        const sendChat = () => {
+            if (
+                !this.m_amongUsMeeting ||
+                (this.m_amongUsMeeting.phase !== net.AmongUsMeetingPhase.Discussion &&
+                    this.m_amongUsMeeting.phase !== net.AmongUsMeetingPhase.Voting)
+            ) {
+                return;
+            }
+            const message = chatInput.value.trim();
+            if (!message) return;
+            const chatMsg = new net.AmongUsMeetingChatSendMsg();
+            chatMsg.message = message;
+            this.m_sendMessage(net.MsgType.AmongUsMeetingChatSend, chatMsg, 256);
+            chatInput.value = "";
+        };
+        chatSend.onclick = sendChat;
+        chatInput.onkeydown = (event) => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendChat();
+            }
+        };
+    }
+
+    applyAmongUsMeetingState(msg: net.AmongUsMeetingStateMsg) {
+        const newMeeting =
+            !this.m_amongUsMeeting || this.m_amongUsMeeting.sequence !== msg.sequence;
+        if (newMeeting) {
+            this.m_amongUsMeetingChatMessages = [];
+            this.m_amongUsMeetingSelectedId = -1;
+            this.m_input.onWindowFocus();
+        }
+
+        this.m_amongUsMeeting = msg;
+        this.m_amongUsMeetingDeadline = performance.now() + msg.seconds * 1000;
+
+        if (msg.phase === net.AmongUsMeetingPhase.Ejection && msg.ejectedId) {
+            const ejectedName = this.m_playerBarn.getPlayerName(
+                msg.ejectedId,
+                this.m_activeId,
+                false,
+            );
+            this.m_uiManager.displayAnnouncement(
+                `${ejectedName.toUpperCase()} WAS VOTED OUT`,
+                2500,
+            );
+        }
+
+        if (msg.phase === net.AmongUsMeetingPhase.None) {
+            const ejectedName = msg.ejectedId
+                ? this.m_playerBarn.getPlayerName(msg.ejectedId, this.m_activeId, false)
+                : "";
+            if (msg.ejectedWasImpostor) {
+                this.m_uiManager.displayAnnouncement(
+                    `${ejectedName.toUpperCase()} WAS THE IMPOSTOR - CREWMATES WIN`,
+                    5000,
+                );
+            } else if (!ejectedName) {
+                this.m_uiManager.displayAnnouncement("NO ONE WAS VOTED OUT", 3000);
+            }
+        }
+
+        this.renderAmongUsMeetingUi(true);
+    }
+
+    addAmongUsMeetingChatMessage(msg: net.AmongUsMeetingChatMsg) {
+        if (
+            !this.m_amongUsMeeting ||
+            this.m_amongUsMeeting.phase === net.AmongUsMeetingPhase.None
+        ) {
+            return;
+        }
+        this.m_amongUsMeetingChatMessages.push({
+            playerId: msg.playerId,
+            message: msg.message,
+        });
+        const messages = document.getElementById("among-us-chat-messages")!;
+        messages.innerHTML = this.m_amongUsMeetingChatMessages
+            .map(({ playerId, message }) => {
+                const name = this.m_playerBarn.getPlayerName(
+                    playerId,
+                    this.m_activeId,
+                    false,
+                );
+                const ownClass = playerId === this.m_localId ? " own" : "";
+                return `<div class="among-us-chat-message${ownClass}"><strong>${helpers.htmlEscape(name)}:</strong><span>${helpers.htmlEscape(message)}</span></div>`;
+            })
+            .join("");
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    renderAmongUsMeetingUi(rebuildCards = false) {
+        const overlay = document.getElementById("ui-among-us-meeting")!;
+        const meeting = this.m_amongUsMeeting;
+        const visible =
+            meeting &&
+            meeting.phase !== net.AmongUsMeetingPhase.None &&
+            meeting.phase !== net.AmongUsMeetingPhase.Ejection;
+        document.body.classList.toggle(
+            "among-us-meeting-active",
+            !!meeting && meeting.phase !== net.AmongUsMeetingPhase.None,
+        );
+        overlay.style.display = visible ? "flex" : "none";
+        if (!visible || !meeting) return;
+
+        const remainingSeconds = Math.max(
+            0,
+            Math.floor((this.m_amongUsMeetingDeadline - performance.now()) / 1000),
+        );
+        const title = document.getElementById("among-us-meeting-title")!;
+        const timer = document.getElementById("among-us-meeting-timer")!;
+        if (meeting.phase === net.AmongUsMeetingPhase.Discussion) {
+            title.textContent = "DISCUSSION";
+            timer.textContent = `Voting starts in ${remainingSeconds}`;
+        } else if (meeting.phase === net.AmongUsMeetingPhase.Voting) {
+            title.textContent = "VOTE";
+            timer.textContent = `Voting closes in ${remainingSeconds}`;
+        } else {
+            title.textContent = "VOTE RESULTS";
+            timer.textContent = `Results closing in ${remainingSeconds}`;
+        }
+        if (!rebuildCards) return;
+
+        const canVote =
+            meeting.phase === net.AmongUsMeetingPhase.Voting &&
+            !meeting.submittedVoterIds.includes(this.m_localId);
+        const votesByTarget = new globalThis.Map<number, number[]>();
+        for (const vote of meeting.votes) {
+            const voters = votesByTarget.get(vote.targetId) ?? [];
+            voters.push(vote.voterId);
+            votesByTarget.set(vote.targetId, voters);
+        }
+        const renderVotes = (targetId: number) =>
+            (votesByTarget.get(targetId) ?? [])
+                .map((voterId) => {
+                    const voterInfo = this.m_playerBarn.getPlayerInfo(voterId);
+                    const voterOutfit = helpers.getSvgFromGameType(
+                        voterInfo.loadout.outfit || "outfitBase",
+                    );
+                    return `<span class="among-us-vote-outfit" style="background-image:url('${voterOutfit}')"></span>`;
+                })
+                .join("");
+        const renderActions = (targetId: number) =>
+            canVote && this.m_amongUsMeetingSelectedId === targetId
+                ? `<span class="among-us-card-actions"><button class="among-us-vote-cancel btn-darken" type="button" aria-label="Cancel vote"></button><button class="among-us-vote-confirm btn-darken" type="button" aria-label="Confirm vote"></button></span>`
+                : "";
+        const cards = meeting.participantIds.map((playerId) => {
+            const info = this.m_playerBarn.getPlayerInfo(playerId);
+            const outfit = helpers.getSvgFromGameType(
+                info.loadout.outfit || "outfitBase",
+            );
+            const selected =
+                canVote && this.m_amongUsMeetingSelectedId === playerId
+                    ? " selected"
+                    : "";
+            const selectable = canVote ? " selectable" : "";
+            const ejected =
+                meeting.ejectedId === playerId &&
+                meeting.phase === net.AmongUsMeetingPhase.Reveal
+                    ? " ejected"
+                    : "";
+            const name = this.m_playerBarn.getPlayerName(
+                playerId,
+                this.m_activeId,
+                false,
+            );
+            return `<div class="among-us-player-card${selected}${selectable}${ejected}" data-player-id="${playerId}"><span class="among-us-outfit" style="background-image:url('${outfit}')"></span><span class="among-us-player-name">${helpers.htmlEscape(name)}</span><span class="among-us-card-votes">${renderVotes(playerId)}</span>${renderActions(playerId)}</div>`;
+        });
+        const skipSelected =
+            canVote && this.m_amongUsMeetingSelectedId === 0 ? " selected" : "";
+        const skipSelectable = canVote ? " selectable" : "";
+        cards.push(
+            `<div class="among-us-player-card among-us-skip-card${skipSelected}${skipSelectable}" data-player-id="0"><span class="among-us-skip-icon"></span><span class="among-us-player-name">Skip Vote</span><span class="among-us-card-votes">${renderVotes(0)}</span>${renderActions(0)}</div>`,
+        );
+        document.getElementById("among-us-meeting-cards")!.innerHTML = cards.join("");
     }
 
     renderHideAndSeekBlindOverlay(dt: number) {
@@ -1557,6 +1786,18 @@ export class Game {
                 );
                 break;
             }
+            case net.MsgType.AmongUsMeetingState: {
+                const msg = new net.AmongUsMeetingStateMsg();
+                msg.deserialize(stream);
+                this.applyAmongUsMeetingState(msg);
+                break;
+            }
+            case net.MsgType.AmongUsMeetingChat: {
+                const msg = new net.AmongUsMeetingChatMsg();
+                msg.deserialize(stream);
+                this.addAmongUsMeetingChatMessage(msg);
+                break;
+            }
             case net.MsgType.Map: {
                 const msg = new net.MapMsg();
                 msg.deserialize(stream);
@@ -1576,6 +1817,9 @@ export class Game {
                 this.m_bulletBarn.onMapLoad(this.m_map);
                 this.m_particleBarn.onMapLoad(this.m_map);
                 this.m_uiManager.onMapLoad(this.m_map, this.m_camera);
+                if (this.m_map.getMapDef().gameMode.amongUsMode) {
+                    this.m_uiManager.setWaitingForPlayers(false);
+                }
                 if (this.m_map.perkMode) {
                     const role = this.m_config.get("perkModeRole")!;
                     this.m_uiManager.setRoleMenuOptions(

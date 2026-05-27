@@ -363,6 +363,10 @@ export enum MsgType {
     PerkModeRoleSelect,
     Leaderboard,
     ArenaCountdown,
+    AmongUsMeetingState,
+    AmongUsMeetingVote,
+    AmongUsMeetingChat,
+    AmongUsMeetingChatSend,
 }
 
 export enum PickupMsgType {
@@ -380,6 +384,13 @@ export class UpdatePassMsg {
 }
 
 export { AliveCountsMsg } from "./aliveCountsMsg";
+export {
+    AmongUsMeetingChatMsg,
+    AmongUsMeetingChatSendMsg,
+    AmongUsMeetingPhase,
+    AmongUsMeetingStateMsg,
+    AmongUsMeetingVoteMsg,
+} from "./amongUsMeetingMsg";
 export { ArenaCountdownMsg } from "./arenaCountdownMsg";
 export { DisconnectMsg } from "./disconnectMsg";
 export { DropItemMsg } from "./dropItemMsg";
