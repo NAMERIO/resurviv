@@ -2865,13 +2865,38 @@ img {
   text-decoration: line-through;
 }
 
+.among-us-player-card.dead {
+  opacity: 0.62;
+  cursor: default;
+}
+
+.among-us-player-card.dead:hover {
+  background: rgba(255, 255, 255, 0.11);
+}
+
 .among-us-outfit {
+  position: relative;
   height: 48px;
   width: 48px;
   margin-right: 10px;
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+.among-us-player-card.dead .among-us-outfit {
+  filter: grayscale(0.9) brightness(0.62);
+}
+
+.among-us-player-card.dead .among-us-outfit::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 24px;
+  height: 24px;
+  background: url(/img/gui/skull.svg) center / contain no-repeat;
+  filter: drop-shadow(1px 1px 0 #000);
 }
 
 .among-us-player-name {
@@ -4190,6 +4215,15 @@ img {
   font-size: 48px;
   margin: 20px;
   color: gold;
+}
+
+.ui-stats-header-title-among-us-win,
+.ui-stats-header-title-among-us-crewmate {
+  color: #1f8fff;
+}
+
+.ui-stats-header-title-among-us-impostor {
+  color: #ff3333;
 }
 
 .ui-stats-header-reason {

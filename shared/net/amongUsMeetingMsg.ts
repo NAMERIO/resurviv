@@ -21,6 +21,7 @@ export class AmongUsMeetingStateMsg implements AbstractMsg {
     ejectedId = 0;
     ejectedWasImpostor = false;
     participantIds: number[] = [];
+    deadParticipantIds: number[] = [];
     submittedVoterIds: number[] = [];
     votes: AmongUsMeetingVote[] = [];
 
@@ -32,6 +33,7 @@ export class AmongUsMeetingStateMsg implements AbstractMsg {
         s.writeUint16(this.ejectedId);
         s.writeBoolean(this.ejectedWasImpostor);
         s.writeArray(this.participantIds, 4, (id) => s.writeUint16(id));
+        s.writeArray(this.deadParticipantIds, 4, (id) => s.writeUint16(id));
         s.writeArray(this.submittedVoterIds, 4, (id) => s.writeUint16(id));
         s.writeArray(this.votes, 4, (vote) => {
             s.writeUint16(vote.voterId);
@@ -47,6 +49,7 @@ export class AmongUsMeetingStateMsg implements AbstractMsg {
         this.ejectedId = s.readUint16();
         this.ejectedWasImpostor = s.readBoolean();
         this.participantIds = s.readArray(4, () => s.readUint16());
+        this.deadParticipantIds = s.readArray(4, () => s.readUint16());
         this.submittedVoterIds = s.readArray(4, () => s.readUint16());
         this.votes = s.readArray(4, () => ({
             voterId: s.readUint16(),

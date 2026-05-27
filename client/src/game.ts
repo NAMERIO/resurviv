@@ -571,7 +571,7 @@ export class Game {
         this.m_amongUsEmergencyMeetingSeq = 0;
         this.m_amongUsMeeting = null;
         this.m_amongUsMeetingSelectedId = -1;
-        this.m_amongUsMeetingChatMessages = [];
+        this.clearAmongUsMeetingChat();
         this.m_amongUsTask = null;
         this.m_amongUsCompletedTasks.clear();
         this.m_amongUsCamerasOpen = false;
@@ -1203,6 +1203,7 @@ export class Game {
             this.m_spectating,
             this.m_playerBarn,
             this.m_lootBarn,
+            this.m_deadBodyBarn,
             this.m_map,
             this.m_inputBinds,
             this.m_amongUsCompletedTasks,
@@ -3129,6 +3130,11 @@ export class Game {
                 if (
                     this.m_amongUsMeeting?.phase === net.AmongUsMeetingPhase.Voting &&
                     this.m_amongUsMeetingSelectedId >= 0 &&
+                    !this.m_amongUsMeeting.deadParticipantIds.includes(this.m_localId) &&
+                    (this.m_amongUsMeetingSelectedId === 0 ||
+                        !this.m_amongUsMeeting.deadParticipantIds.includes(
+                            this.m_amongUsMeetingSelectedId,
+                        )) &&
                     !this.m_amongUsMeeting.submittedVoterIds.includes(this.m_localId)
                 ) {
                     const voteMsg = new net.AmongUsMeetingVoteMsg();
@@ -3145,14 +3151,22 @@ export class Game {
             ) {
                 return;
             }
-            this.m_amongUsMeetingSelectedId = Number(card.dataset.playerId);
+            const playerId = Number(card.dataset.playerId);
+            if (
+                playerId !== 0 &&
+                this.m_amongUsMeeting.deadParticipantIds.includes(playerId)
+            ) {
+                return;
+            }
+            this.m_amongUsMeetingSelectedId = playerId;
             this.renderAmongUsMeetingUi(true);
         };
         const sendChat = () => {
             if (
                 !this.m_amongUsMeeting ||
                 (this.m_amongUsMeeting.phase !== net.AmongUsMeetingPhase.Discussion &&
-                    this.m_amongUsMeeting.phase !== net.AmongUsMeetingPhase.Voting)
+                    this.m_amongUsMeeting.phase !== net.AmongUsMeetingPhase.Voting) ||
+                this.m_amongUsMeeting.deadParticipantIds.includes(this.m_localId)
             ) {
                 return;
             }
@@ -3172,11 +3186,21 @@ export class Game {
         };
     }
 
+    clearAmongUsMeetingChat() {
+        this.m_amongUsMeetingChatMessages = [];
+        const messages = document.getElementById("among-us-chat-messages");
+        if (messages) messages.innerHTML = "";
+        const input = document.getElementById(
+            "among-us-chat-input",
+        ) as HTMLInputElement | null;
+        if (input) input.value = "";
+    }
+
     applyAmongUsMeetingState(msg: net.AmongUsMeetingStateMsg) {
         const newMeeting =
             !this.m_amongUsMeeting || this.m_amongUsMeeting.sequence !== msg.sequence;
         if (newMeeting) {
-            this.m_amongUsMeetingChatMessages = [];
+            this.clearAmongUsMeetingChat();
             this.m_amongUsMeetingSelectedId = -1;
             this.m_input.onWindowFocus();
         }
@@ -3275,8 +3299,12 @@ export class Game {
         }
         if (!rebuildCards) return;
 
+        const localCanVote =
+            meeting.participantIds.includes(this.m_localId) &&
+            !meeting.deadParticipantIds.includes(this.m_localId);
         const canVote =
             meeting.phase === net.AmongUsMeetingPhase.Voting &&
+            localCanVote &&
             !meeting.submittedVoterIds.includes(this.m_localId);
         const votesByTarget = new globalThis.Map<number, number[]>();
         for (const vote of meeting.votes) {
@@ -3294,20 +3322,25 @@ export class Game {
                     return `<span class="among-us-vote-outfit" style="background-image:url('${voterOutfit}')"></span>`;
                 })
                 .join("");
-        const renderActions = (targetId: number) =>
-            canVote && this.m_amongUsMeetingSelectedId === targetId
+        const renderActions = (targetId: number) => {
+            const targetDead =
+                targetId !== 0 && meeting.deadParticipantIds.includes(targetId);
+            return canVote && !targetDead && this.m_amongUsMeetingSelectedId === targetId
                 ? `<span class="among-us-card-actions"><button class="among-us-vote-cancel btn-darken" type="button" aria-label="Cancel vote"></button><button class="among-us-vote-confirm btn-darken" type="button" aria-label="Confirm vote"></button></span>`
                 : "";
+        };
         const cards = meeting.participantIds.map((playerId) => {
             const info = this.m_playerBarn.getPlayerInfo(playerId);
             const outfit = helpers.getSvgFromGameType(
                 info.loadout.outfit || "outfitBase",
             );
+            const dead = meeting.deadParticipantIds.includes(playerId);
             const selected =
-                canVote && this.m_amongUsMeetingSelectedId === playerId
+                canVote && !dead && this.m_amongUsMeetingSelectedId === playerId
                     ? " selected"
                     : "";
-            const selectable = canVote ? " selectable" : "";
+            const selectable = canVote && !dead ? " selectable" : "";
+            const deadClass = dead ? " dead" : "";
             const ejected =
                 meeting.ejectedId === playerId &&
                 meeting.phase === net.AmongUsMeetingPhase.Reveal
@@ -3318,7 +3351,7 @@ export class Game {
                 this.m_activeId,
                 false,
             );
-            return `<div class="among-us-player-card${selected}${selectable}${ejected}" data-player-id="${playerId}"><span class="among-us-outfit" style="background-image:url('${outfit}')"></span><span class="among-us-player-name">${helpers.htmlEscape(name)}</span><span class="among-us-card-votes">${renderVotes(playerId)}</span>${renderActions(playerId)}</div>`;
+            return `<div class="among-us-player-card${selected}${selectable}${deadClass}${ejected}" data-player-id="${playerId}"><span class="among-us-outfit" style="background-image:url('${outfit}')"></span><span class="among-us-player-name">${helpers.htmlEscape(name)}</span><span class="among-us-card-votes">${renderVotes(playerId)}</span>${renderActions(playerId)}</div>`;
         });
         const skipSelected =
             canVote && this.m_amongUsMeetingSelectedId === 0 ? " selected" : "";

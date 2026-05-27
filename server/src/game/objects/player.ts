@@ -81,6 +81,7 @@ import {
 import { QuestManager } from "../questManager";
 import { WeaponManager } from "../weaponManager";
 import type { Building } from "./building";
+import type { DeadBody } from "./deadBody";
 import type { Decal } from "./decal";
 import { BaseGameObject, type DamageParams, type GameObject } from "./gameObject";
 import type { Loot } from "./loot";
@@ -356,6 +357,10 @@ export class PlayerBarn {
         if (!this.game.modeManager.isSolo) {
             this.livingPlayers.sort((a, b) => a.teamId - b.teamId);
         }
+        if (this.game.map.amongUsMode && this.amongUsRolesAssigned) {
+            player.amongUsRole = "crewmate";
+            player.markPlayerInfoDirty();
+        }
         this.aliveCountDirty = true;
         // this.game.pluginManager.emit("playerJoin", player);
         onPlayerJoin(player);
@@ -499,12 +504,12 @@ export class PlayerBarn {
 
     assignAmongUsRoles() {
         if (this.amongUsRolesAssigned) return;
-        if (!isAmongUsMiniGame(this.game.miniGame)) return;
+        if (!this.game.map.amongUsMode) return;
 
         const players = this.livingPlayers.filter(
             (p) => !p.disconnected && !p.dead && !p.spectatorOnly,
         );
-        if (players.length < 2) return;
+        if (players.length < 3) return;
 
         const impostor = players[util.randomInt(0, players.length - 1)];
         for (const player of players) {
@@ -519,14 +524,38 @@ export class PlayerBarn {
 
     callAmongUsEmergencyMeeting(caller: Player, emergencyButton?: Obstacle): boolean {
         if (
+            caller.amongUsEmergencyCallCooldownTime > 0 ||
+            caller.amongUsEmergencyCallsRemaining <= 0
+        ) {
+            return false;
+        }
+
+        return this.startAmongUsMeeting(caller, {
+            emergencyButton,
+            consumeEmergencyCall: true,
+        });
+    }
+
+    reportAmongUsDeadBody(caller: Player, deadBody: DeadBody): boolean {
+        if (!deadBody || deadBody.destroyed) return false;
+        return this.startAmongUsMeeting(caller);
+    }
+
+    private startAmongUsMeeting(
+        caller: Player,
+        opts: {
+            emergencyButton?: Obstacle;
+            consumeEmergencyCall?: boolean;
+        } = {},
+    ): boolean {
+        if (
             !this.game.map.amongUsMode ||
             caller.dead ||
             caller.downed ||
             caller.disconnected ||
+            caller.spectatorOnly ||
             this.game.over ||
-            this.amongUsMeeting ||
-            caller.amongUsEmergencyCallCooldownTime > 0 ||
-            caller.amongUsEmergencyCallsRemaining <= 0
+            this.amongUsMeeting
         ) {
             return false;
         }
@@ -544,19 +573,21 @@ export class PlayerBarn {
             );
         }
 
-        caller.amongUsEmergencyCallsUsed++;
+        if (opts.consumeEmergencyCall) {
+            caller.amongUsEmergencyCallsUsed++;
+        }
         this.amongUsEmergencyMeetingSeq++;
         this.amongUsMeeting = {
             sequence: this.amongUsEmergencyMeetingSeq,
             phase: net.AmongUsMeetingPhase.Discussion,
             timeLeft: 20,
             callerId: caller.playerId,
-            participantIds: attendees.map((player) => player.playerId),
+            participantIds: this.getAmongUsMeetingParticipantIds(),
             votes: new Map<number, number>(),
             ejectedId: 0,
             ejectedWasImpostor: false,
             ejectionExploded: false,
-            emergencyButton,
+            emergencyButton: opts.emergencyButton,
         };
         this.broadcastAmongUsMeetingState();
         this.game.updateData();
@@ -565,6 +596,51 @@ export class PlayerBarn {
 
     get isAmongUsMeetingLocked(): boolean {
         return this.amongUsMeeting !== undefined;
+    }
+
+    private getAmongUsMeetingParticipantIds(): number[] {
+        return this.players
+            .filter((player) => !player.spectatorOnly)
+            .map((player) => player.playerId);
+    }
+
+    private getAmongUsDeadParticipantIds(): number[] {
+        const meeting = this.amongUsMeeting;
+        if (!meeting) return [];
+
+        return meeting.participantIds.filter((id) => {
+            const player = this.players.find((candidate) => candidate.playerId === id);
+            return !player || player.dead || player.disconnected;
+        });
+    }
+
+    private getAmongUsEligibleVoterIds(): number[] {
+        const meeting = this.amongUsMeeting;
+        if (!meeting) return [];
+
+        return meeting.participantIds.filter((id) => {
+            const player = this.players.find((candidate) => candidate.playerId === id);
+            return (
+                player && !player.dead && !player.disconnected && !player.spectatorOnly
+            );
+        });
+    }
+
+    refreshAmongUsMeetingAfterParticipantChange(): void {
+        const meeting = this.amongUsMeeting;
+        if (!meeting) return;
+
+        if (
+            meeting.phase === net.AmongUsMeetingPhase.Voting &&
+            meeting.votes.size >= this.getAmongUsEligibleVoterIds().length
+        ) {
+            this.finishAmongUsVoting();
+            return;
+        }
+
+        this.broadcastAmongUsMeetingState(
+            meeting.phase !== net.AmongUsMeetingPhase.Voting,
+        );
     }
 
     voteInAmongUsMeeting(voter: Player, targetId: number): void {
@@ -595,10 +671,7 @@ export class PlayerBarn {
         meeting.votes.set(voter.playerId, targetId);
         this.broadcastAmongUsMeetingState();
 
-        const eligibleVoters = meeting.participantIds.filter((id) => {
-            const player = this.players.find((candidate) => candidate.playerId === id);
-            return player && !player.dead && !player.disconnected;
-        });
+        const eligibleVoters = this.getAmongUsEligibleVoterIds();
         if (meeting.votes.size >= eligibleVoters.length) {
             this.finishAmongUsVoting();
         }
@@ -709,6 +782,12 @@ export class PlayerBarn {
 
         const totals = new Map<number, number>();
         for (const targetId of meeting.votes.values()) {
+            if (targetId !== 0) {
+                const target = this.players.find(
+                    (player) => player.playerId === targetId,
+                );
+                if (!target || target.dead || target.disconnected) continue;
+            }
             totals.set(targetId, (totals.get(targetId) ?? 0) + 1);
         }
 
@@ -743,6 +822,7 @@ export class PlayerBarn {
         meeting.timeLeft = 0;
         this.broadcastAmongUsMeetingState(true);
         this.amongUsMeeting = undefined;
+        this.game.deadBodyBarn.clear();
         for (const player of this.livingPlayers) {
             if (
                 player.amongUsRole === "impostor" &&
@@ -775,6 +855,7 @@ export class PlayerBarn {
         msg.ejectedId = meeting.ejectedId;
         msg.ejectedWasImpostor = meeting.ejectedWasImpostor;
         msg.participantIds = meeting.participantIds;
+        msg.deadParticipantIds = this.getAmongUsDeadParticipantIds();
         msg.submittedVoterIds = [...meeting.votes.keys()];
         msg.votes = showVotes
             ? [...meeting.votes].map(([voterId, targetId]) => ({ voterId, targetId }))
@@ -4561,13 +4642,18 @@ export class Player extends BaseGameObject {
     /**
      * adds gameover message to "this.msgsToSend" for the player and all their spectators
      */
-    addGameOverMsg(winningTeamId: number = 0): void {
+    addGameOverMsg(winningTeamId: number = 0, opts: { gameOver?: boolean } = {}): void {
         this.questManager.flushProgress(winningTeamId);
 
+        const gameOver = opts.gameOver || !!winningTeamId;
         const aliveCount = this.game.modeManager.aliveCount();
         const teamRank = winningTeamId == this.teamId ? 1 : aliveCount + 1;
 
-        if (this.game.modeManager.showStatsMsg(this)) {
+        if (
+            !gameOver &&
+            ((this.game.map.amongUsMode && winningTeamId === 0) ||
+                this.game.modeManager.showStatsMsg(this))
+        ) {
             const statsMsg = new net.PlayerStatsMsg();
             statsMsg.playerStats = this.getPlayerStatsSnapshot(this);
             this.msgsToSend.push({ type: net.MsgType.PlayerStats, msg: statsMsg });
@@ -4581,7 +4667,7 @@ export class Player extends BaseGameObject {
             gameOverMsg.teamRank = teamRank; // gameover msg sent after alive count updated
             gameOverMsg.teamId = this.teamId;
             gameOverMsg.winningTeamId = winningTeamId;
-            gameOverMsg.gameOver = !!winningTeamId;
+            gameOverMsg.gameOver = gameOver;
             this.msgsToSend.push({ type: net.MsgType.GameOver, msg: gameOverMsg });
 
             for (const spectator of this.spectators) {
@@ -4938,7 +5024,25 @@ export class Player extends BaseGameObject {
 
         this.game.modeManager.assignNewSpectate(this);
 
+        if (this.game.map.amongUsMode) {
+            const aliveKiller = this.getAliveKiller();
+            const spectateTargets = this.game.playerBarn.livingPlayers.filter(
+                (player) => player !== this && !player.dead && !player.disconnected,
+            );
+            const spectateTarget =
+                aliveKiller && !aliveKiller.dead && !aliveKiller.disconnected
+                    ? aliveKiller
+                    : spectateTargets.length > 0
+                      ? util.randomItem(spectateTargets)
+                      : undefined;
+            if (spectateTarget) {
+                this.spectating = spectateTarget;
+                this.spectateCooldown = 0;
+            }
+        }
+
         this.game.deadBodyBarn.addDeadBody(this.pos, this.__id, this.layer, params.dir);
+        this.game.playerBarn.refreshAmongUsMeetingAfterParticipantChange();
 
         //
         // Kill outfit obstacle
@@ -5536,6 +5640,14 @@ export class Player extends BaseGameObject {
                     }
                     break;
                 case GameConfig.Input.Interact: {
+                    const deadBody = this.getReportableDeadBody();
+                    if (
+                        deadBody &&
+                        this.game.playerBarn.reportAmongUsDeadBody(this, deadBody)
+                    ) {
+                        break;
+                    }
+
                     const loot = this.getClosestLoot();
                     const obstacles = this.getInteractableObstacles();
                     const playerToRevive = this.getPlayerToRevive();
@@ -5579,6 +5691,14 @@ export class Player extends BaseGameObject {
                     break;
                 }
                 case GameConfig.Input.Use: {
+                    const deadBody = this.getReportableDeadBody();
+                    if (
+                        deadBody &&
+                        this.game.playerBarn.reportAmongUsDeadBody(this, deadBody)
+                    ) {
+                        break;
+                    }
+
                     const obstacles = this.getInteractableObstacles();
                     for (let i = 0; i < obstacles.length; i++) {
                         obstacles[i].interact(this);
@@ -5688,6 +5808,25 @@ export class Player extends BaseGameObject {
         return closestLoot;
     }
 
+    getReportableDeadBody(): DeadBody | undefined {
+        if (
+            !this.game.map.amongUsMode ||
+            this.dead ||
+            this.downed ||
+            this.disconnected ||
+            this.spectatorOnly ||
+            this.game.playerBarn.isAmongUsMeetingLocked
+        ) {
+            return undefined;
+        }
+
+        return this.game.deadBodyBarn.getReportableDeadBody(
+            this.pos,
+            this.rad,
+            this.layer,
+        );
+    }
+
     getInteractableObstacles(): Obstacle[] {
         const objs = this.game.grid.intersectCollider(
             collider.createCircle(this.pos, this.rad + 5),
@@ -5742,6 +5881,7 @@ export class Player extends BaseGameObject {
                     visible: p === this,
                     dead: p.dead,
                     downed: p.downed,
+                    disconnected: p.disconnected,
                     role: p.role,
                     outfit: p.outfit,
                 };

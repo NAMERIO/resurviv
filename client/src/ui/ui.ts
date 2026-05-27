@@ -1498,6 +1498,36 @@ export class UiManager {
         )} ${this.localization.translate("game-you-died")}.`;
     }
 
+    getAmongUsTitleText(localRole: string, victory: boolean) {
+        if (victory) {
+            return this.localization.translate("game-among-us-you-won") || "You won";
+        }
+        if (localRole === "crewmate") {
+            return (
+                this.localization.translate("game-among-us-impostor-won") ||
+                "IMPOSTOR won"
+            );
+        }
+        if (localRole === "impostor") {
+            return (
+                this.localization.translate("game-among-us-crewmates-won") ||
+                "CREWMATES won"
+            );
+        }
+        return this.localization.translate("game-team-eliminated");
+    }
+
+    getAmongUsTitleClass(localRole: string, victory: boolean) {
+        if (victory) return "ui-stats-header-title-among-us-win";
+        if (localRole === "crewmate") {
+            return "ui-stats-header-title-among-us-impostor";
+        }
+        if (localRole === "impostor") {
+            return "ui-stats-header-title-among-us-crewmate";
+        }
+        return "";
+    }
+
     getOverviewElems(
         teamMode: TeamMode,
         teamRank: number,
@@ -1567,15 +1597,21 @@ export class UiManager {
 
             this.setBannerAd(statsDelay, ui2);
 
+            const gameMode = map.getMapDef().gameMode;
             const isLocalTeamWinner =
                 localTeamId == winningTeamId || (spectating && winningTeamId == teamId);
             const spectatingAnotherTeam = spectating && localTeamId != teamId;
-            const S = isLocalTeamWinner
-                ? this.getTitleVictoryText(
-                      spectatingAnotherTeam,
-                      map.getMapDef().gameMode,
-                  )
-                : this.getTitleDefeatText(teamMode, spectatingAnotherTeam);
+            const localRole =
+                playerBarn.getPlayerInfo(this.game.m_localId).amongUsRole || "";
+            const amongUsMode = Boolean(gameMode.amongUsMode);
+            const titleClass = amongUsMode
+                ? this.getAmongUsTitleClass(localRole, isLocalTeamWinner)
+                : "";
+            const S = amongUsMode
+                ? this.getAmongUsTitleText(localRole, isLocalTeamWinner)
+                : isLocalTeamWinner
+                  ? this.getTitleVictoryText(spectatingAnotherTeam, gameMode)
+                  : this.getTitleDefeatText(teamMode, spectatingAnotherTeam);
             let teamKills = 0;
             for (let i = 0; i < playerStats.length; i++) {
                 teamKills += playerStats[i].kills;
@@ -1589,7 +1625,7 @@ export class UiManager {
             const I = $("<div/>")
                 .append(
                     $("<div/>", {
-                        class: "ui-stats-header-title",
+                        class: `ui-stats-header-title${titleClass ? ` ${titleClass}` : ""}`,
                         html: S,
                     }),
                 )

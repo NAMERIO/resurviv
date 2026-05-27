@@ -33,6 +33,7 @@ import { device } from "../device";
 import { helpers } from "../helpers";
 import type { InputBinds } from "../inputBinds";
 import type { Map } from "../map";
+import type { DeadBody, DeadBodyBarn } from "../objects/deadBody";
 import type { Loot, LootBarn } from "../objects/loot";
 import type { Obstacle } from "../objects/obstacle";
 import type { Player, PlayerBarn } from "../objects/player";
@@ -48,6 +49,7 @@ enum InteractionType {
     Loot,
     Revive,
     Object,
+    Report,
 }
 
 const WeaponSlotToBind = {
@@ -701,6 +703,7 @@ export class UiManager2 {
         spectating: boolean,
         playerBarn: PlayerBarn,
         lootBarn: LootBarn,
+        deadBodyBarn: DeadBodyBarn,
         map: Map,
         inputBinds: InputBinds,
         completedAmongUsTasks?: ReadonlySet<AmongUsTaskId>,
@@ -786,18 +789,35 @@ export class UiManager2 {
 
         // Interaction
         let interactionType = InteractionType.None;
-        let interactionObject: Obstacle | Loot | Player | null = null;
+        let interactionObject: Obstacle | Loot | Player | DeadBody | null = null;
         let interactionUsable = true;
         const amongUsMode = !!map.getMapDef().gameMode.amongUsMode;
         const amongUsRole = playerBarn.getPlayerInfo(activePlayer.__id).amongUsRole || "";
 
-        if (activePlayer.canInteract(map)) {
+        if (!spectating && activePlayer.canInteract(map)) {
+            if (amongUsMode) {
+                const deadBody = deadBodyBarn.getReportableDeadBody(
+                    activePlayer.m_netData.m_pos,
+                    activePlayer.m_rad,
+                    activePlayer.layer,
+                );
+                if (deadBody) {
+                    interactionType = InteractionType.Report;
+                    interactionObject = deadBody;
+                    interactionUsable = true;
+                }
+            }
+
             // Usable obstacles
             let closestObj = null;
             let closestPen = 0;
             const obstacles = map.m_obstaclePool.m_getPool();
 
-            for (let i = 0; i < obstacles.length; i++) {
+            for (
+                let i = 0;
+                interactionType === InteractionType.None && i < obstacles.length;
+                i++
+            ) {
                 const obstacle = obstacles[i];
                 if (
                     obstacle.active &&
@@ -826,7 +846,7 @@ export class UiManager2 {
                     }
                 }
             }
-            if (closestObj) {
+            if (interactionType === InteractionType.None && closestObj) {
                 interactionType = InteractionType.Object;
                 interactionObject = closestObj;
                 interactionUsable = true;
@@ -834,7 +854,11 @@ export class UiManager2 {
 
             // Loot
             const loot = lootBarn.getClosestLoot();
-            if (loot && !activePlayer.m_netData.m_downed) {
+            if (
+                interactionType === InteractionType.None &&
+                loot &&
+                !activePlayer.m_netData.m_downed
+            ) {
                 // Ignore if it's a gun and we have full guns w/ fists out...
                 // unless we're on a small screen
                 const itemDef = GameObjectDefs[loot.type] as LootDef;
@@ -1890,7 +1914,7 @@ export class UiManager2 {
 
     getInteractionText(
         type: InteractionType,
-        object: Obstacle | Loot | Player,
+        object: Obstacle | Loot | Player | DeadBody,
         player: Player,
     ) {
         switch (type) {
@@ -1908,6 +1932,8 @@ export class UiManager2 {
                     return this.localization.translate("game-revive-self");
                 }
                 return this.localization.translate("game-revive-teammate");
+            case InteractionType.Report:
+                return this.localization.translate("game-report-body");
             case InteractionType.Object: {
                 const x = (object as Obstacle).getInteraction()!;
                 return `${this.localization.translate(
@@ -1939,6 +1965,7 @@ export class UiManager2 {
                     this.inputBinds.getBind(Input.Interact);
                 break;
             case InteractionType.Object:
+            case InteractionType.Report:
                 bind =
                     this.inputBinds.getBind(Input.Use) ||
                     this.inputBinds.getBind(Input.Interact);

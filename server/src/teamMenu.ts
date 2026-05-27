@@ -3,6 +3,7 @@ import type { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 import type { UpgradeWebSocket, WSContext } from "hono/ws";
 import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
+import { MapDefs } from "../../shared/defs/mapDefs";
 import {
     DefaultPrivateLobbyMiniGame,
     isPrivateLobbyMiniGame,
@@ -507,6 +508,10 @@ class Room {
 
     getArenaTeamCapacity() {
         const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
+        const miniGameMapName = getPrivateLobbyMiniGameMapName(this.data.miniGame);
+        if (this.isSingleTeamArena() && miniGameMapName && miniGameMapName in MapDefs) {
+            return MapDefs[miniGameMapName].gameMode.maxPlayers;
+        }
         const cap = mode?.teamMode ?? 2;
         return Math.max(1, cap);
     }

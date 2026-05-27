@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import type { AmongUsRole } from "../../../shared/defs/amongUsRoleDefs";
 import { WeaponTypeToDefs } from "../../../shared/defs/gameObjectDefs";
 import type { MapDefs } from "../../../shared/defs/mapDefs";
 import { DefaultPrivateLobbyMiniGame } from "../../../shared/defs/miniGame";
@@ -77,6 +78,7 @@ export class Game {
     disablePerks: boolean;
     infectedHumansWon = false;
     hideAndSeekHidersWon = false;
+    amongUsWinningRole?: AmongUsRole;
     arenaStartLockTimer = 0;
     arenaLastCountdownSecond = -1;
     arenaGoBroadcasted = false;
@@ -638,6 +640,29 @@ export class Game {
         player.spectating = undefined;
         player.dirNew = v2.create(1, 0);
         player.setPartDirty();
+        if (this.map.amongUsMode) {
+            if (!player.dead) {
+                if (
+                    player.health < GameConfig.player.reviveHealth &&
+                    player.lastDamagedBy
+                ) {
+                    player.lastDamagedBy.health += GameConfig.player.reviveHealth;
+                }
+                player.kill({
+                    damageType: GameConfig.DamageType.Bleeding,
+                    dir: player.dir,
+                    source: player.downedBy,
+                });
+            } else {
+                this.playerBarn.refreshAmongUsMeetingAfterParticipantChange();
+            }
+
+            if (this.playerBarn.players.every((p) => p.disconnected)) {
+                this.stop();
+            }
+            return;
+        }
+
         const battleRoyaleMode = isBattleRoyaleMapName(this.mapName);
         const battleRoyaleBodyEligible =
             player.timeAlive >= 5 || player.pickedUpLoot || player.lostHealth;
