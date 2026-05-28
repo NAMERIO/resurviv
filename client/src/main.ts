@@ -1561,6 +1561,7 @@ export class Application {
             } else {
                 this.teamMenu.roomData.miniGame = miniGame;
             }
+            this.syncPrestigeArenaCreateOptions();
             this.renderPrestigeArenaTeams();
         };
 
@@ -2028,7 +2029,7 @@ export class Application {
             this.prestigeArenaSpectatorList.empty();
             $(".arena-team-b").addClass("hide");
             this.prestigeArenaSpectatorsBoard.addClass("hide");
-            this.setPrestigeArenaMobilePanel("chat");
+            this.setPrestigeArenaMobilePanel("spectators");
 
             $("#arena-team-a-title")
                 .empty()

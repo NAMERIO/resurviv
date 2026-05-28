@@ -5191,6 +5191,14 @@ a:active {
   width: min(1656px, calc(100vw - 24px));
 }
 
+#modal-prestige-arena.is-open
+  #modal-prestige-wrapper.arena-joined-shell:has(
+    #modal-battle-window.arena-battle-royale
+  ) {
+  height: min(520px, calc(100vh - 24px));
+  width: min(900px, calc(100vw - 24px));
+}
+
 #modal-prestige-arena #modal-prestige-header {
   align-items: end;
   display: grid;
@@ -5892,6 +5900,11 @@ a:active {
   width: 100%;
 }
 
+#modal-prestige-arena #modal-battle-window.arena-joined-layout.arena-battle-royale {
+  grid-template-columns: 326px 520px;
+  justify-content: start;
+}
+
 #modal-prestige-arena #modal-battle-window.arena-joined-layout > .input-group {
   display: none !important;
 }
@@ -5969,6 +5982,15 @@ a:active {
     "mode type"
     "game game"
     "create create";
+}
+
+#modal-prestige-arena
+  #modal-create-window.arena-battle-royale
+  .private-option-buttons,
+#modal-prestige-arena
+  #modal-create-window.arena-battle-royale
+  .create-impostors-group {
+  display: none !important;
 }
 
 #modal-prestige-arena #battle-player-counter {
@@ -6125,6 +6147,26 @@ a:active {
   width: 100%;
 }
 
+#modal-prestige-arena
+  #modal-battle-window.arena-joined-layout.arena-battle-royale
+  .battle-right-panel:has(#arena-teams-board.arena-battle-royale-summary) {
+  align-content: stretch;
+  grid-template-areas:
+    "teams"
+    ".";
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+#modal-prestige-arena
+  #modal-battle-window.arena-joined-layout.arena-battle-royale
+  #team-clan-chat,
+#modal-prestige-arena
+  #modal-battle-window.arena-joined-layout.arena-battle-royale
+  #arena-mobile-panel-tabs {
+  display: none !important;
+}
+
 #modal-prestige-arena #arena-teams-board {
   display: grid;
   gap: 14px;
@@ -6145,6 +6187,8 @@ a:active {
 
 #modal-prestige-arena #arena-teams-board.arena-battle-royale-summary {
   grid-template-columns: minmax(0, 1fr);
+  justify-self: start;
+  width: min(520px, 100%);
 }
 
 #modal-prestige-arena #arena-teams-board.arena-single-team .arena-team-b {
@@ -6623,7 +6667,7 @@ a:active {
   }
 
   #modal-prestige-arena
-    #modal-battle-window.arena-joined-layout
+    #modal-battle-window.arena-joined-layout:not(.arena-battle-royale)
     .battle-right-panel:has(#arena-teams-board.arena-battle-royale-summary) {
     grid-template-areas:
       "teams"
@@ -6794,7 +6838,7 @@ a:active {
   }
 
   #modal-prestige-arena
-    #modal-battle-window.arena-joined-layout
+    #modal-battle-window.arena-joined-layout:not(.arena-battle-royale)
     .battle-right-panel:has(#arena-teams-board.arena-battle-royale-summary) {
     grid-template-areas:
       "teams"
@@ -6914,7 +6958,7 @@ a:active {
   }
 
   #modal-prestige-arena
-    #modal-battle-window.arena-joined-layout
+    #modal-battle-window.arena-joined-layout:not(.arena-battle-royale)
     .battle-right-panel:has(#arena-teams-board.arena-battle-royale-summary) {
     grid-template-areas:
       "teams"
@@ -7015,7 +7059,7 @@ a:active {
   }
 
   #modal-prestige-arena
-    #modal-battle-window.arena-joined-layout
+    #modal-battle-window.arena-joined-layout:not(.arena-battle-royale)
     .battle-right-panel:has(#arena-teams-board.arena-battle-royale-summary) {
     grid-template-rows: auto 190px;
   }
