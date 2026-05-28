@@ -327,7 +327,9 @@ export class TeamMenu {
         });
     }
 
-    applyInviteCodeVisibility(toggleEl: HTMLElement | JQuery<HTMLElement> = $("#team-hide-url")) {
+    applyInviteCodeVisibility(
+        toggleEl: HTMLElement | JQuery<HTMLElement> = $("#team-hide-url"),
+    ) {
         $("#team-desc-text, #team-code-text").css({
             opacity: this.hideUrl ? 0 : 1,
         });

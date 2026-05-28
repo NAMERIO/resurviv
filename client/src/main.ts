@@ -1327,7 +1327,10 @@ export class Application {
             "aria-pressed",
             String(!!this.teamMenu.roomData.disablePerks),
         );
-        this.prestigeArenaDisableAirstrikesBtn.prop("disabled", !canEdit || isBattleRoyale);
+        this.prestigeArenaDisableAirstrikesBtn.prop(
+            "disabled",
+            !canEdit || isBattleRoyale,
+        );
         this.prestigeArenaDisablePerksBtn.prop("disabled", !canEdit || isBattleRoyale);
         this.prestigeArenaBattleDisableAirstrikesBtn.prop(
             "disabled",
@@ -2488,7 +2491,10 @@ export class Application {
     setPrestigeArenaMobilePanel(panel: "spectators" | "chat") {
         const chatActive = panel === "chat";
         this.prestigeArenaModal.toggleClass("arena-mobile-chat-active", chatActive);
-        this.prestigeArenaModal.toggleClass("arena-mobile-spectators-active", !chatActive);
+        this.prestigeArenaModal.toggleClass(
+            "arena-mobile-spectators-active",
+            !chatActive,
+        );
         $("#arena-mobile-chat-tab").toggleClass("selected", chatActive);
         $("#arena-mobile-spectators-tab").toggleClass("selected", !chatActive);
     }

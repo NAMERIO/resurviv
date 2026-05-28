@@ -5129,7 +5129,6 @@ a:active {
   text-transform: uppercase;
 }
 
-
 /* Private arena modal */
 #modal-prestige-arena {
   background: rgba(0, 0, 0, 0.74);
@@ -5452,7 +5451,10 @@ a:active {
   display: contents;
 }
 
-#modal-prestige-arena #modal-battle-window:not(.arena-joined-layout) .battle-left-panel > :not(.button-group),
+#modal-prestige-arena
+  #modal-battle-window:not(.arena-joined-layout)
+  .battle-left-panel
+  > :not(.button-group),
 #modal-prestige-arena #modal-battle-window:not(.arena-joined-layout) .battle-right-panel {
   display: none !important;
 }
@@ -5464,7 +5466,10 @@ a:active {
   width: 100%;
 }
 
-#modal-prestige-arena #modal-battle-window:not(.arena-joined-layout) .button-group > :not(#battle-button) {
+#modal-prestige-arena
+  #modal-battle-window:not(.arena-joined-layout)
+  .button-group
+  > :not(#battle-button) {
   display: none !important;
 }
 
@@ -5793,7 +5798,10 @@ a:active {
   pointer-events: none;
   position: absolute;
   top: calc(100% + 6px);
-  transition: max-height 160ms ease, opacity 160ms ease, padding 160ms ease;
+  transition:
+    max-height 160ms ease,
+    opacity 160ms ease,
+    padding 160ms ease;
   z-index: 45;
 }
 
@@ -5984,12 +5992,8 @@ a:active {
     "create create";
 }
 
-#modal-prestige-arena
-  #modal-create-window.arena-battle-royale
-  .private-option-buttons,
-#modal-prestige-arena
-  #modal-create-window.arena-battle-royale
-  .create-impostors-group {
+#modal-prestige-arena #modal-create-window.arena-battle-royale .private-option-buttons,
+#modal-prestige-arena #modal-create-window.arena-battle-royale .create-impostors-group {
   display: none !important;
 }
 
@@ -6199,15 +6203,11 @@ a:active {
   display: none !important;
 }
 
-#modal-prestige-arena
-  #arena-teams-board.arena-battle-royale-summary
-  .arena-team-column {
+#modal-prestige-arena #arena-teams-board.arena-battle-royale-summary .arena-team-column {
   grid-template-rows: auto auto;
 }
 
-#modal-prestige-arena
-  #arena-teams-board.arena-battle-royale-summary
-  .arena-team-list {
+#modal-prestige-arena #arena-teams-board.arena-battle-royale-summary .arena-team-list {
   overflow: visible;
 }
 
@@ -6313,7 +6313,10 @@ a:active {
   display: grid;
   gap: 7px;
   grid-auto-flow: column;
-  grid-template-columns: repeat(var(--arena-team-columns, var(--arena-single-team-columns, 1)), minmax(0, 1fr));
+  grid-template-columns: repeat(
+      var(--arena-team-columns, var(--arena-single-team-columns, 1)),
+      minmax(0, 1fr)
+    );
   grid-template-rows: repeat(var(--arena-team-rows, 5), 34px);
 }
 
@@ -6361,8 +6364,7 @@ a:active {
 
 #modal-prestige-arena .arena-br-lobby-card {
   background:
-    linear-gradient(135deg, rgba(25, 38, 50, 0.94), rgba(31, 73, 100, 0.88)),
-    #263846;
+    linear-gradient(135deg, rgba(25, 38, 50, 0.94), rgba(31, 73, 100, 0.88)), #263846;
   border: 1px solid rgba(115, 204, 199, 0.22);
   border-radius: 5px;
   box-shadow:

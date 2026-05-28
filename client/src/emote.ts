@@ -646,10 +646,7 @@ export class EmoteBarn {
         if (factionMode || ping.type != "ping_airstrike") {
             // Pings always play at full volume
             this.audioManager.playSound(pingSound, {
-                channel:
-                    ping.type === "ping_hide_and_seek_noise"
-                        ? "otherPlayers"
-                        : "ui",
+                channel: ping.type === "ping_hide_and_seek_noise" ? "otherPlayers" : "ui",
             });
         } else {
             // If we're too far from an air strike ping in non-faction mode, reduce the ping sound
@@ -662,9 +659,7 @@ export class EmoteBarn {
         }
         if (indicator) {
             indicator.pos = ping.pos;
-            indicator.pingSprite.sprite.texture = PIXI.Texture.from(
-                pingData.texture!,
-            );
+            indicator.pingSprite.sprite.texture = PIXI.Texture.from(pingData.texture!);
             indicator.indSpriteInner.sprite.texture = PIXI.Texture.from(
                 pingData.texture!,
             );

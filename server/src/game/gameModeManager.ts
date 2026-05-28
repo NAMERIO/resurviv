@@ -130,15 +130,17 @@ export class GameModeManager {
 
                 // calculate each group killed index
                 // by basing it on the last player to die killed index
-                const groups = Array.from(groupsByRankKey.values()).map((groupPlayers) => {
-                    return {
-                        killedIndex:
-                            groupPlayers.sort((a, b) => {
-                                return b.killedIndex - a.killedIndex;
-                            })[0].killedIndex ?? Infinity,
-                        players: groupPlayers,
-                    };
-                });
+                const groups = Array.from(groupsByRankKey.values()).map(
+                    (groupPlayers) => {
+                        return {
+                            killedIndex:
+                                groupPlayers.sort((a, b) => {
+                                    return b.killedIndex - a.killedIndex;
+                                })[0].killedIndex ?? Infinity,
+                            players: groupPlayers,
+                        };
+                    },
+                );
 
                 groups.sort((a, b) => b.killedIndex - a.killedIndex);
 
