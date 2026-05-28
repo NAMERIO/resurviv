@@ -6972,6 +6972,19 @@ a:active {
   #modal-prestige-wrapper
   #modal-prestige-body
   .modal-prestige-body-inner
+  #modal-battle-window
+  .button-group
+  #game-status.error {
+  background: #4a1919;
+  height: auto;
+  min-height: 38px;
+  padding: 4px 10px;
+  line-height: 16px;
+}
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
   #modal-summary-window
   .button-group
   #game-status
@@ -24993,4 +25006,285 @@ div.roulette {
   #arena-teams-board.arena-single-team
   .arena-team-b {
   display: none !important;
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .battle-impostors.hide,
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  .create-impostors-group.hide {
+  display: none !important;
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .battle-impostors,
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  .create-impostors-group
+  #create-impostors {
+  align-items: center;
+  background: #8a3a3a;
+  border: 0;
+  border-radius: 4px;
+  box-shadow: inset 0 -2px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+  color: #ffffff;
+  display: inline-flex;
+  height: 50px;
+  margin: 0;
+  max-width: none;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .battle-impostors
+  .battle-game-impostors,
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  .create-impostors-group
+  #create-impostors
+  .create-game-impostors {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 15px;
+  line-height: 18px;
+  margin-right: 12px;
+  min-width: 76px;
+  padding-left: 14px;
+  text-transform: uppercase;
+  width: 76px;
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  .battle-impostors
+  #battle-link-impostors,
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  .create-impostors-group
+  #create-impostors
+  #create-link-impostors {
+  flex: 1;
+  font-size: 20px;
+  line-height: 23px;
+  min-width: 0;
+  overflow: hidden;
+  padding-right: 24px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  .create-impostors-group
+  #create-impostors {
+  cursor: pointer;
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  .create-impostors-group
+  #create-impostors
+  .create-link-arrow {
+  background: url(../img/gui/index-dropdown-arrow.svg);
+  background-position: 12px 50%;
+  background-repeat: no-repeat;
+  height: 50px;
+  position: absolute;
+  right: 6px;
+  width: 30px;
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-unjoined-shell
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window.arena-among-us:not(.hide) {
+  grid-template-areas:
+    "region region"
+    "mode type"
+    "game game"
+    "impostors impostors"
+    "options options"
+    "create create";
+  grid-template-rows: auto auto auto auto auto auto;
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-unjoined-shell
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  .create-impostors-group {
+  grid-area: impostors;
+  min-width: 0;
+  position: relative;
+  width: 100%;
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-unjoined-shell
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  #create-impostors-selection {
+  background: #202020;
+  border-radius: 4px;
+  box-shadow: 6px 6px 8px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+  display: none;
+  gap: 6px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 6px;
+  max-height: 168px;
+  overflow-y: auto;
+  padding: 6px;
+  position: static;
+  width: 100%;
+  z-index: 20;
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-unjoined-shell
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  #create-impostors-selection
+  .selection-button-impostors,
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-joined-shell:not(.arena-joined-editor)
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window.arena-joined-layout
+  .battle-option-selection
+  .selection-button-impostors {
+  align-items: center;
+  background-color: #303030;
+  border: 0;
+  border-radius: 3px;
+  box-shadow: none;
+  box-sizing: border-box;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  font-family: Roboto Condensed;
+  font-size: 15px;
+  font-weight: 700;
+  height: 34px;
+  justify-content: center;
+  line-height: 16px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-unjoined-shell
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-create-window
+  #create-impostors-selection
+  .selection-button-impostors.selected,
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-joined-shell:not(.arena-joined-editor)
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window.arena-joined-layout
+  .battle-option-selection
+  .selection-button-impostors.selected {
+  background-color: #d45656;
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-joined-shell:not(.arena-joined-editor)
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window.arena-joined-layout.arena-among-us
+  .battle-left-panel {
+  grid-template-areas:
+    "counter"
+    "code"
+    "mode"
+    "mode-menu"
+    "type"
+    "type-menu"
+    "game"
+    "game-menu"
+    "impostors"
+    "impostors-menu"
+    "options"
+    "actions"
+    ".";
+  grid-template-rows:
+    52px
+    44px
+    52px
+    auto
+    52px
+    auto
+    52px
+    auto
+    52px
+    auto
+    38px
+    82px
+    minmax(0, 1fr);
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-joined-shell:not(.arena-joined-editor)
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window.arena-joined-layout
+  .battle-impostors {
+  cursor: pointer;
+  grid-area: impostors;
+  height: 52px;
+  pointer-events: auto;
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-joined-shell:not(.arena-joined-editor)
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window.arena-joined-layout
+  #battle-impostors-selection {
+  grid-area: impostors-menu;
 }

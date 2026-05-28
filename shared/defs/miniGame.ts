@@ -8,6 +8,10 @@ export const PrivateLobbyMiniGameIds = [
 export type PrivateLobbyMiniGame = (typeof PrivateLobbyMiniGameIds)[number];
 export const DefaultPrivateLobbyMiniGame: PrivateLobbyMiniGame = "pvp";
 
+export const AmongUsImpostorCounts = [1, 2, 3] as const;
+export type AmongUsImpostorCount = (typeof AmongUsImpostorCounts)[number];
+export const DefaultAmongUsImpostorCount: AmongUsImpostorCount = 1;
+
 export interface PrivateLobbyMiniGameDef {
     id: PrivateLobbyMiniGame;
     name: string;
@@ -66,4 +70,10 @@ export function isPrivateLobbyMiniGame(
     return (
         !!miniGame && PrivateLobbyMiniGameIds.includes(miniGame as PrivateLobbyMiniGame)
     );
+}
+
+export function normalizeAmongUsImpostorCount(count: unknown): AmongUsImpostorCount {
+    return AmongUsImpostorCounts.includes(count as AmongUsImpostorCount)
+        ? (count as AmongUsImpostorCount)
+        : DefaultAmongUsImpostorCount;
 }

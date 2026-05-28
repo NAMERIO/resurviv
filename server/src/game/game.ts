@@ -3,7 +3,12 @@ import path from "node:path";
 import type { AmongUsRole } from "../../../shared/defs/amongUsRoleDefs";
 import { WeaponTypeToDefs } from "../../../shared/defs/gameObjectDefs";
 import type { MapDefs } from "../../../shared/defs/mapDefs";
-import { DefaultPrivateLobbyMiniGame } from "../../../shared/defs/miniGame";
+import {
+    type AmongUsImpostorCount,
+    DefaultAmongUsImpostorCount,
+    DefaultPrivateLobbyMiniGame,
+    normalizeAmongUsImpostorCount,
+} from "../../../shared/defs/miniGame";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import { GameModeStatus } from "../../../shared/types/stats";
@@ -74,6 +79,7 @@ export class Game {
     config: ServerGameConfig;
     arenaPrivate: boolean;
     miniGame: ServerGameConfig["miniGame"];
+    amongUsImpostorCount: AmongUsImpostorCount;
     disableAirstrikes: boolean;
     disablePerks: boolean;
     infectedHumansWon = false;
@@ -164,6 +170,10 @@ export class Game {
         this.config = config;
         this.arenaPrivate = !!config.arenaPrivate;
         this.miniGame = config.miniGame ?? DefaultPrivateLobbyMiniGame;
+        this.amongUsImpostorCount =
+            this.miniGame === "among_us"
+                ? normalizeAmongUsImpostorCount(config.amongUsImpostorCount)
+                : DefaultAmongUsImpostorCount;
         this.disableAirstrikes = !!config.disableAirstrikes;
         this.disablePerks = !!config.disablePerks;
 
@@ -816,6 +826,7 @@ export class Game {
             mapName: this.mapName,
             arenaPrivate: this.arenaPrivate,
             miniGame: this.miniGame,
+            amongUsImpostorCount: this.amongUsImpostorCount,
             disableAirstrikes: this.disableAirstrikes,
             disablePerks: this.disablePerks,
             canJoin: this.canJoin,

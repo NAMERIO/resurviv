@@ -5,8 +5,10 @@ import type { UpgradeWebSocket, WSContext } from "hono/ws";
 import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
 import { MapDefs } from "../../shared/defs/mapDefs";
 import {
+    DefaultAmongUsImpostorCount,
     DefaultPrivateLobbyMiniGame,
     isPrivateLobbyMiniGame,
+    normalizeAmongUsImpostorCount,
 } from "../../shared/defs/miniGame";
 import { GameConfig } from "../../shared/gameConfig";
 import type { FindGameError } from "../../shared/types/api";
@@ -150,6 +152,7 @@ class Room {
         arena: false,
         teamsLocked: false,
         miniGame: DefaultPrivateLobbyMiniGame,
+        amongUsImpostorCount: DefaultAmongUsImpostorCount,
         disableAirstrikes: false,
         disablePerks: false,
     };
@@ -364,6 +367,9 @@ class Room {
             this.data.arena && isPrivateLobbyMiniGame(props.miniGame)
                 ? props.miniGame
                 : DefaultPrivateLobbyMiniGame;
+        this.data.amongUsImpostorCount = normalizeAmongUsImpostorCount(
+            props.amongUsImpostorCount,
+        );
         this.data.maxPlayers = this.data.arena
             ? this.getArenaTeamCapacity() * (this.isSingleTeamArena() ? 1 : 2)
             : modes[gameModeIdx].teamMode;
@@ -427,7 +433,7 @@ class Room {
         if (!mode) return;
         const mapName =
             getPrivateLobbyMiniGameMapName(this.data.miniGame) ?? mode.mapName;
-        const warmupKey = `${this.data.region}:${mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.disableAirstrikes}:${this.data.disablePerks}`;
+        const warmupKey = `${this.data.region}:${mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.amongUsImpostorCount}:${this.data.disableAirstrikes}:${this.data.disablePerks}`;
         if (this.arenaWarmupKey === warmupKey) return;
         this.arenaWarmupKey = warmupKey;
         void this.teamMenu.server
@@ -439,6 +445,10 @@ class Room {
                 teamMode: mode.teamMode,
                 arenaPrivate: true,
                 miniGame: this.data.miniGame,
+                amongUsImpostorCount:
+                    this.data.miniGame === "among_us"
+                        ? this.data.amongUsImpostorCount
+                        : undefined,
                 disableAirstrikes: this.data.disableAirstrikes,
                 disablePerks: this.data.disablePerks,
                 groupHash: this.id,
@@ -514,6 +524,10 @@ class Room {
         }
         const cap = mode?.teamMode ?? 2;
         return Math.max(1, cap);
+    }
+
+    getAmongUsRequiredPlayerCount() {
+        return this.data.amongUsImpostorCount * 2 + 1;
     }
 
     getPlayerTeam(player: Player): "A" | "B" | undefined {
@@ -643,6 +657,16 @@ class Room {
                 this.sendState();
                 return;
             }
+
+            if (
+                this.data.miniGame === "among_us" &&
+                teamACount < this.getAmongUsRequiredPlayerCount()
+            ) {
+                this.data.lastError = "waiting_for_players";
+                this.data.findingGame = false;
+                this.sendState();
+                return;
+            }
         }
 
         if (this.data.arena || isBattleRoyaleMode) {
@@ -734,6 +758,10 @@ class Room {
             version: data.version,
             arenaPrivate: this.data.arena,
             miniGame: this.data.arena ? this.data.miniGame : DefaultPrivateLobbyMiniGame,
+            amongUsImpostorCount:
+                this.data.arena && this.data.miniGame === "among_us"
+                    ? this.data.amongUsImpostorCount
+                    : undefined,
             disableAirstrikes: this.data.arena ? this.data.disableAirstrikes : false,
             disablePerks: this.data.arena ? this.data.disablePerks : false,
             groupHash: this.data.arena ? this.id : undefined,

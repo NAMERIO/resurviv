@@ -2908,6 +2908,10 @@ img {
   font-weight: bold;
 }
 
+.among-us-player-card.impostor .among-us-player-name {
+  color: #ff3333;
+}
+
 .among-us-caller-label {
   position: absolute;
   right: 8px;

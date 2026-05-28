@@ -223,6 +223,7 @@ export class GameModeManager {
 
         if (this.game.map.amongUsMode) {
             if (!this.game.started) return false;
+            if (!this.game.playerBarn.amongUsRolesAssigned) return false;
 
             const living = this.game.playerBarn.players.filter(
                 (player) => !player.dead && !player.disconnected,
@@ -238,7 +239,7 @@ export class GameModeManager {
                 return this.endAmongUsGame("crewmate");
             }
 
-            if (impostors.length > 0 && crewmates.length <= 1) {
+            if (impostors.length > 0 && crewmates.length <= impostors.length) {
                 return this.endAmongUsGame("impostor");
             }
 
@@ -293,7 +294,7 @@ export class GameModeManager {
             return false;
         }
         if (this.game.map.amongUsMode) {
-            return this.game.trueAliveCount >= 3;
+            return this.game.trueAliveCount >= this.game.amongUsImpostorCount * 2 + 1;
         }
         if (this.game.arenaPrivate) {
             return this.aliveCount() > 1;

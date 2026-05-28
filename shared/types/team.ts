@@ -1,7 +1,11 @@
 // /api/team_v2 websocket msgs typing
 
 import { z } from "zod";
-import { type PrivateLobbyMiniGame, PrivateLobbyMiniGameIds } from "../defs/miniGame";
+import {
+    type AmongUsImpostorCount,
+    type PrivateLobbyMiniGame,
+    PrivateLobbyMiniGameIds,
+} from "../defs/miniGame";
 import type { FindGameMatchData } from "./api";
 
 export type TeamMenuErrorType =
@@ -41,6 +45,7 @@ export interface RoomData {
     arena: boolean;
     teamsLocked: boolean;
     miniGame: PrivateLobbyMiniGame;
+    amongUsImpostorCount: AmongUsImpostorCount;
     disableAirstrikes: boolean;
     disablePerks: boolean;
 }
@@ -133,6 +138,7 @@ export const zClientRoomData = z.object({
     arena: z.boolean().optional(),
     teamsLocked: z.boolean().optional(),
     miniGame: z.enum(PrivateLobbyMiniGameIds).optional(),
+    amongUsImpostorCount: z.number().int().min(1).max(3).optional(),
     disableAirstrikes: z.boolean().optional(),
     disablePerks: z.boolean().optional(),
 });

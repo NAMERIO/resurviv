@@ -6,6 +6,7 @@ import { Cron } from "croner";
 import { randomUUID } from "crypto";
 import z from "zod";
 import { version } from "../../package.json";
+import { normalizeAmongUsImpostorCount } from "../../shared/defs/miniGame";
 import { GameConfig } from "../../shared/gameConfig";
 import * as net from "../../shared/net/net";
 import { isBattleRoyaleMapName } from "./battleroyale/helpers";
@@ -84,6 +85,9 @@ class GameServer {
             teamMode: data.teamMode,
             arenaPrivate: !!data.arenaPrivate,
             miniGame: data.miniGame,
+            amongUsImpostorCount: normalizeAmongUsImpostorCount(
+                data.amongUsImpostorCount,
+            ),
             disableAirstrikes: !!data.disableAirstrikes,
             disablePerks: !!data.disablePerks,
             playerData: data.playerData,

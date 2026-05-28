@@ -2,7 +2,12 @@ import type { WebSocket } from "uWebSockets.js";
 import { type ChildProcess, fork } from "child_process";
 import { randomUUID } from "crypto";
 import { type MapDef, MapDefs } from "../../../shared/defs/mapDefs";
-import { DefaultPrivateLobbyMiniGame } from "../../../shared/defs/miniGame";
+import {
+    type AmongUsImpostorCount,
+    DefaultAmongUsImpostorCount,
+    DefaultPrivateLobbyMiniGame,
+    normalizeAmongUsImpostorCount,
+} from "../../../shared/defs/miniGame";
 import type { TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import { util } from "../../../shared/utils/util";
@@ -33,6 +38,7 @@ class GameProcess implements GameData {
     mapName = "";
     arenaPrivate = false;
     miniGame: ServerGameConfig["miniGame"] = DefaultPrivateLobbyMiniGame;
+    amongUsImpostorCount: AmongUsImpostorCount = DefaultAmongUsImpostorCount;
     disableAirstrikes = false;
     disablePerks = false;
     id = "";
@@ -79,6 +85,9 @@ class GameProcess implements GameData {
                     this.mapName = msg.mapName;
                     this.arenaPrivate = !!msg.arenaPrivate;
                     this.miniGame = msg.miniGame ?? DefaultPrivateLobbyMiniGame;
+                    this.amongUsImpostorCount = normalizeAmongUsImpostorCount(
+                        msg.amongUsImpostorCount,
+                    );
                     this.disableAirstrikes = !!msg.disableAirstrikes;
                     this.disablePerks = !!msg.disablePerks;
                     if (this.id !== msg.id) {
@@ -140,6 +149,9 @@ class GameProcess implements GameData {
         this.mapName = config.mapName;
         this.arenaPrivate = !!config.arenaPrivate;
         this.miniGame = config.miniGame ?? DefaultPrivateLobbyMiniGame;
+        this.amongUsImpostorCount = normalizeAmongUsImpostorCount(
+            config.amongUsImpostorCount,
+        );
         this.disableAirstrikes = !!config.disableAirstrikes;
         this.disablePerks = !!config.disablePerks;
         this.stopped = false;
@@ -324,6 +336,8 @@ export class GameProcessManager implements GameManager {
                     !!proc.arenaPrivate === !!body.arenaPrivate &&
                     (proc.miniGame ?? DefaultPrivateLobbyMiniGame) ===
                         (body.miniGame ?? DefaultPrivateLobbyMiniGame) &&
+                    proc.amongUsImpostorCount ===
+                        normalizeAmongUsImpostorCount(body.amongUsImpostorCount) &&
                     proc.disableAirstrikes === !!body.disableAirstrikes &&
                     proc.disablePerks === !!body.disablePerks &&
                     (requestedGroupHash
@@ -341,6 +355,9 @@ export class GameProcessManager implements GameManager {
                 mapName: body.mapName as keyof typeof MapDefs,
                 arenaPrivate: !!body.arenaPrivate,
                 miniGame: body.miniGame ?? DefaultPrivateLobbyMiniGame,
+                amongUsImpostorCount: normalizeAmongUsImpostorCount(
+                    body.amongUsImpostorCount,
+                ),
                 disableAirstrikes: !!body.disableAirstrikes,
                 disablePerks: !!body.disablePerks,
             });

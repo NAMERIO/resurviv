@@ -1,5 +1,8 @@
 import $ from "jquery";
-import { DefaultPrivateLobbyMiniGame } from "../../../shared/defs/miniGame";
+import {
+    DefaultAmongUsImpostorCount,
+    DefaultPrivateLobbyMiniGame,
+} from "../../../shared/defs/miniGame";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import type { FindGameMatchData } from "../../../shared/types/api";
@@ -378,6 +381,8 @@ export class TeamMenu {
                 arena,
                 teamsLocked: false,
                 miniGame: this.roomData.miniGame || DefaultPrivateLobbyMiniGame,
+                amongUsImpostorCount:
+                    this.roomData.amongUsImpostorCount || DefaultAmongUsImpostorCount,
                 disableAirstrikes: !!this.roomData.disableAirstrikes,
                 disablePerks: !!this.roomData.disablePerks,
                 findingGame: false,
@@ -522,6 +527,7 @@ export class TeamMenu {
                     this.roomData.autoFill = ourRoomData.autoFill;
                     this.roomData.teamsLocked = ourRoomData.teamsLocked;
                     this.roomData.miniGame = ourRoomData.miniGame;
+                    this.roomData.amongUsImpostorCount = ourRoomData.amongUsImpostorCount;
                     this.roomData.disableAirstrikes = ourRoomData.disableAirstrikes;
                     this.roomData.disablePerks = ourRoomData.disablePerks;
                 }

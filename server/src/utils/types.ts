@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { MapDefs } from "../../../shared/defs/mapDefs";
 import {
+    type AmongUsImpostorCount,
     type PrivateLobbyMiniGame,
     PrivateLobbyMiniGameIds,
 } from "../../../shared/defs/miniGame";
@@ -72,6 +73,7 @@ export interface ServerGameConfig {
     readonly teamMode: TeamMode;
     readonly arenaPrivate?: boolean;
     readonly miniGame?: PrivateLobbyMiniGame;
+    readonly amongUsImpostorCount?: AmongUsImpostorCount;
     readonly disableAirstrikes?: boolean;
     readonly disablePerks?: boolean;
 }
@@ -82,6 +84,7 @@ export interface GameData {
     mapName: string;
     arenaPrivate?: boolean;
     miniGame?: PrivateLobbyMiniGame;
+    amongUsImpostorCount?: AmongUsImpostorCount;
     disableAirstrikes?: boolean;
     disablePerks?: boolean;
     canJoin: boolean;
@@ -98,6 +101,7 @@ export const zFindGamePrivateBody = z.object({
     teamMode: z.number(),
     arenaPrivate: z.boolean().optional(),
     miniGame: z.enum(PrivateLobbyMiniGameIds).optional(),
+    amongUsImpostorCount: z.number().int().min(1).max(3).optional(),
     disableAirstrikes: z.boolean().optional(),
     disablePerks: z.boolean().optional(),
     groupHash: z.string().optional(),

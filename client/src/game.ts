@@ -3359,7 +3359,8 @@ export class Game {
                 this.m_activeId,
                 false,
             );
-            return `<div class="among-us-player-card${selected}${selectable}${deadClass}${ejected}" data-player-id="${playerId}"><span class="among-us-outfit" style="background-image:url('${outfit}')"></span><span class="among-us-player-name">${helpers.htmlEscape(name)}</span>${renderCallerLabel(playerId)}<span class="among-us-card-votes">${renderVotes(playerId)}</span>${renderActions(playerId)}</div>`;
+            const roleClass = info.amongUsRole === "impostor" ? " impostor" : "";
+            return `<div class="among-us-player-card${selected}${selectable}${deadClass}${ejected}${roleClass}" data-player-id="${playerId}"><span class="among-us-outfit" style="background-image:url('${outfit}')"></span><span class="among-us-player-name">${helpers.htmlEscape(name)}</span>${renderCallerLabel(playerId)}<span class="among-us-card-votes">${renderVotes(playerId)}</span>${renderActions(playerId)}</div>`;
         });
         const skipSelected =
             canVote && this.m_amongUsMeetingSelectedId === 0 ? " selected" : "";

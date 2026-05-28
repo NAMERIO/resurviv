@@ -511,10 +511,16 @@ export class PlayerBarn {
             (p) => !p.disconnected && !p.dead && !p.spectatorOnly,
         );
         if (players.length < 3) return;
+        const impostorCount = math.min(
+            this.game.amongUsImpostorCount,
+            players.length - 1,
+        );
+        if (players.length < impostorCount * 2 + 1) return;
 
-        const impostor = players[util.randomInt(0, players.length - 1)];
+        util.shuffleArray(players);
+        const impostors = new Set(players.slice(0, impostorCount));
         for (const player of players) {
-            player.amongUsRole = player === impostor ? "impostor" : "crewmate";
+            player.amongUsRole = impostors.has(player) ? "impostor" : "crewmate";
             if (player.amongUsRole === "impostor") {
                 player.resetAmongUsKillCooldown();
             }
@@ -2297,6 +2303,13 @@ export class Player extends BaseGameObject {
     }
 
     getPlayerInfoFor(viewer: Player): PlayerInfo {
+        const amongUsMode =
+            isAmongUsMiniGame(this.game.miniGame) || this.game.map.amongUsMode;
+        const canSeeAmongUsRole =
+            amongUsMode &&
+            (this === viewer ||
+                (viewer.amongUsRole === "impostor" && this.amongUsRole === "impostor"));
+
         return {
             playerId: this.playerId,
             teamId: this.teamId,
@@ -2304,10 +2317,7 @@ export class Player extends BaseGameObject {
             name: this.name,
             clanName: this.clanName,
             clanTagColor: this.clanTagColor,
-            amongUsRole:
-                isAmongUsMiniGame(this.game.miniGame) && this === viewer
-                    ? this.amongUsRole
-                    : "",
+            amongUsRole: canSeeAmongUsRole ? this.amongUsRole : "",
             loadout: {
                 outfit: this.loadout.outfit,
                 heal: this.loadout.heal,
@@ -4486,6 +4496,9 @@ export class Player extends BaseGameObject {
                 playerSource?.amongUsRole === "impostor" &&
                 params.gameSourceType === "karambit";
             if (amongUsImpostorAttack && playerSource.amongUsKillCooldownTime > 0) {
+                return;
+            }
+            if (amongUsImpostorAttack && this.amongUsRole === "impostor") {
                 return;
             }
             const infectedFriendlyFire =

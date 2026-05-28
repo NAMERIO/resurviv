@@ -20,6 +20,7 @@ async function createAmongUsPlayers(crewCount: number) {
     });
 
     game.started = true;
+    game.playerBarn.amongUsRolesAssigned = true;
     return { game, impostor, crewmates };
 }
 
@@ -58,7 +59,6 @@ test("Among Us impostor win counts unassigned survivors as crew", async () => {
 
 test("Among Us late joiners become crewmates after roles are assigned", async () => {
     const { game, impostor } = await createAmongUsPlayers(2);
-    game.playerBarn.amongUsRolesAssigned = true;
 
     const lateCrew = game.playerBarn.addTestPlayer({
         group: impostor.group,
@@ -66,6 +66,40 @@ test("Among Us late joiners become crewmates after roles are assigned", async ()
     });
 
     expect(lateCrew.amongUsRole).toBe("crewmate");
+});
+
+test("Among Us impostors can see each other's roles", async () => {
+    const { game, impostor, crewmates } = await createAmongUsPlayers(2);
+    const secondImpostor = game.playerBarn.addTestPlayer({
+        group: impostor.group,
+        name: "Impostor 2",
+    });
+    secondImpostor.amongUsRole = "impostor";
+
+    expect(secondImpostor.getPlayerInfoFor(impostor).amongUsRole).toBe("impostor");
+    expect(impostor.getPlayerInfoFor(secondImpostor).amongUsRole).toBe("impostor");
+    expect(impostor.getPlayerInfoFor(crewmates[0]).amongUsRole).toBe("");
+    expect(crewmates[0].getPlayerInfoFor(impostor).amongUsRole).toBe("");
+});
+
+test("Among Us impostors cannot karambit kill other impostors", async () => {
+    const { game, impostor } = await createAmongUsPlayers(2);
+    const secondImpostor = game.playerBarn.addTestPlayer({
+        group: impostor.group,
+        name: "Impostor 2",
+    });
+    secondImpostor.amongUsRole = "impostor";
+
+    secondImpostor.damage({
+        amount: 1000,
+        damageType: GameConfig.DamageType.Player,
+        dir: v2.create(1, 0),
+        source: impostor,
+        gameSourceType: "karambit",
+    });
+
+    expect(secondImpostor.dead).toBe(false);
+    expect(secondImpostor.health).toBe(GameConfig.player.health);
 });
 
 test("Among Us impostor win only marks impostors as winners", async () => {
@@ -127,4 +161,56 @@ test("Among Us crewmate win only marks crewmates as winners", async () => {
         winningTeamId: crewmates[0].teamId,
         teamRank: 1,
     });
+});
+
+test("Among Us assigns the configured impostor count", async () => {
+    const game = await createGame(TeamMode.Ten, "among_us");
+    game.amongUsImpostorCount = 3;
+    const group = game.playerBarn.addGroup(false);
+
+    for (let i = 0; i < 7; i++) {
+        game.playerBarn.addTestPlayer({
+            group,
+            name: `Player ${i + 1}`,
+        });
+    }
+
+    game.playerBarn.assignAmongUsRoles();
+
+    expect(
+        game.playerBarn.players.filter((player) => player.amongUsRole === "impostor"),
+    ).toHaveLength(3);
+});
+
+test("Among Us impostors win when living crew equals living impostors", async () => {
+    const game = await createGame(TeamMode.Ten, "among_us");
+    const group = game.playerBarn.addGroup(false);
+    const impostors = Array.from({ length: 2 }, (_, idx) => {
+        const player = game.playerBarn.addTestPlayer({
+            group,
+            name: `Impostor ${idx + 1}`,
+        });
+        player.amongUsRole = "impostor";
+        return player;
+    });
+    const crewmates = Array.from({ length: 3 }, (_, idx) => {
+        const player = game.playerBarn.addTestPlayer({
+            group,
+            name: `Crewmate ${idx + 1}`,
+        });
+        player.amongUsRole = "crewmate";
+        return player;
+    });
+
+    game.started = true;
+    game.playerBarn.amongUsRolesAssigned = true;
+    crewmates[2].kill({
+        amount: 999,
+        damageType: GameConfig.DamageType.Player,
+        dir: v2.create(1, 0),
+        source: impostors[0],
+        gameSourceType: "karambit",
+    });
+
+    expect(game.over).toBe(true);
 });
