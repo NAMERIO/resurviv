@@ -4223,6 +4223,15 @@ export class Player extends BaseGameObject {
 
             const emoteDef = GameObjectDefs[emote.type];
 
+            if (
+                game.map.amongUsMode &&
+                emote.isPing &&
+                emoteDef.type === "ping" &&
+                !emoteDef.mapEvent
+            ) {
+                return player.__id === emote.playerId;
+            }
+
             if (emote.targetArenaTeam && player.arenaTeam !== emote.targetArenaTeam) {
                 return false;
             }

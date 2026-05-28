@@ -616,9 +616,9 @@ export class EmoteBarn {
         let indicator: Indicator | null = null;
         let pingSound = pingData.sound!;
         if (ping.type == "ping_airdrop") {
-            indicator = this.pingIndicators[airdropIdx].ping;
+            indicator = this.pingIndicators[airdropIdx]?.ping ?? null;
         } else if (ping.type == "ping_airstrike") {
-            indicator = this.pingIndicators[airstrikeIdx].ping;
+            indicator = this.pingIndicators[airstrikeIdx]?.ping ?? null;
         } else {
             const playerInfo = this.playerBarn.getPlayerInfo(ping.playerId);
             const activeInfo = this.playerBarn.getPlayerInfo(this.activePlayer.__id);
@@ -628,8 +628,9 @@ export class EmoteBarn {
                 const groupInfo = this.playerBarn.getGroupInfo(activeGroupId);
                 if (groupInfo) {
                     const c = groupInfo.playerIds.indexOf(ping.playerId);
-                    if (c !== -1 && this.pingIndicators[c]?.ping) {
-                        indicator = this.pingIndicators[c].ping;
+                    const groupIndicator = this.pingIndicators[c]?.ping;
+                    if (c !== -1 && groupIndicator) {
+                        indicator = groupIndicator;
                     }
                 }
             }
