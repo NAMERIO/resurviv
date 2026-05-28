@@ -79,7 +79,7 @@ export class GameModeManager {
 
     // used when saving the game match data
     getPlayersSortedByRank(): Array<{ player: Player; rank: number }> {
-        const players = [...this.game.playerBarn.players];
+        const players = [...this.game.playerBarn.matchPlayers];
 
         if (this.game.map.amongUsMode && this.game.amongUsWinningRole) {
             const winningRole = this.game.amongUsWinningRole;
@@ -114,17 +114,29 @@ export class GameModeManager {
                 // the logic is basically the exact same for both
                 // just uses team instead of group on faction...
 
-                const key = this.mode === GameMode.Faction ? "teams" : "groups";
+                const getRankKey = (player: Player) =>
+                    this.mode === GameMode.Faction ? player.teamId : player.groupId;
+                const groupsByRankKey = new Map<number, Player[]>();
+
+                for (const player of players) {
+                    const rankKey = getRankKey(player);
+                    const groupPlayers = groupsByRankKey.get(rankKey);
+                    if (groupPlayers) {
+                        groupPlayers.push(player);
+                    } else {
+                        groupsByRankKey.set(rankKey, [player]);
+                    }
+                }
 
                 // calculate each group killed index
                 // by basing it on the last player to die killed index
-                const groups = this.game.playerBarn[key].map((group) => {
+                const groups = Array.from(groupsByRankKey.values()).map((groupPlayers) => {
                     return {
                         killedIndex:
-                            group.players.sort((a, b) => {
+                            groupPlayers.sort((a, b) => {
                                 return b.killedIndex - a.killedIndex;
                             })[0].killedIndex ?? Infinity,
-                        players: group.players,
+                        players: groupPlayers,
                     };
                 });
 

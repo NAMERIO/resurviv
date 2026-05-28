@@ -131,6 +131,7 @@ const amongUsEmergencyCallCooldown = 15;
 
 export class PlayerBarn {
     players: Player[] = [];
+    matchPlayers: Player[] = [];
     livingPlayers: Player[] = [];
     newPlayers: Player[] = [];
     dirtyPlayerInfos: Player[] = [];
@@ -349,6 +350,7 @@ export class PlayerBarn {
         this.newPlayers.push(player);
         this.game.objectRegister.register(player);
         this.players.push(player);
+        this.matchPlayers.push(player);
         this.livingPlayers.push(player);
         if (this.game.arenaPrivate && this.players.length === 1) {
             this.game.arenaStartLockTimer = 0;
