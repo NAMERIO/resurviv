@@ -207,12 +207,13 @@ export class Application {
 
     getTeamModeDisplayName(teamMode: number) {
         const teamModeMap: Record<number, string> = {
-            1: "Solo",
-            2: "Duo",
-            4: "Squad",
+            1: "1v1",
+            2: "2v2",
+            4: "4v4",
             10: "10v10",
+            15: "15v15",
         };
-        return teamModeMap[teamMode] || "Duo";
+        return teamModeMap[teamMode] || "2v2";
     }
 
     getTeamModeIcon(teamMode: number) {
@@ -1282,7 +1283,7 @@ export class Application {
         }
 
         const maps = Array.from(new Set(arenaModes.map((m) => m.mapName)));
-        const teamModes = [1, 2, 4, 10];
+        const teamModes = [1, 2, 4, 10, 15];
         const mapStyleByName = new Map<
             string,
             {
@@ -1866,14 +1867,16 @@ export class Application {
         const miniGameDef = getPrivateLobbyMiniGameDef(this.teamMenu.roomData.miniGame);
         const singleTeam = !!miniGameDef.singleTeam;
         const largeTeams = teamSize >= 10;
+        const largeTeamColumns = largeTeams ? Math.ceil(teamSize / 5) : 1;
         this.prestigeArenaWrapper.toggleClass("arena-large-teams", largeTeams);
         this.prestigeArenaBattlePane.toggleClass("arena-large-teams", largeTeams);
         this.prestigeArenaTeamsBoard.toggleClass("arena-large-teams", largeTeams);
         this.prestigeArenaTeamsBoard.toggleClass("arena-single-team", singleTeam);
-        this.prestigeArenaTeamsBoard.css(
-            "--arena-single-team-columns",
-            String(Math.min(teamSize, 5)),
-        );
+        this.prestigeArenaTeamsBoard.css({
+            "--arena-single-team-columns": String(Math.min(teamSize, 5)),
+            "--arena-team-columns": String(largeTeamColumns),
+            "--arena-team-rows": String(Math.min(teamSize, 5)),
+        });
         this.applyBattleModeStyleByIdx(this.teamMenu.roomData.gameModeIdx);
         this.applyBattleMiniGameStyle(this.teamMenu.roomData.miniGame);
         const teamA = this.teamMenu.players.filter((p) => p.team === "A" && !p.spectator);

@@ -83,7 +83,7 @@ function serializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     s.writeFloat(data.miniGameWinCountdownTime, 0, 5, 8);
     s.writeBoolean(data.miniGameWinCountdownProps);
     s.writeFloat(data.amongUsKillCooldownTime, 0, 20, 8);
-    s.writeFloat(data.amongUsEmergencyCallCooldownTime, 0, 5, 8);
+    s.writeFloat(data.amongUsEmergencyCallCooldownTime, 0, 15, 8);
     s.writeUint8(data.amongUsEmergencyCallsRemaining);
     s.writeUint8(data.amongUsEmergencyMeetingSeq);
 
@@ -165,7 +165,7 @@ function deserializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     data.miniGameWinCountdownTime = s.readFloat(0, 5, 8);
     data.miniGameWinCountdownProps = s.readBoolean();
     data.amongUsKillCooldownTime = s.readFloat(0, 20, 8);
-    data.amongUsEmergencyCallCooldownTime = s.readFloat(0, 5, 8);
+    data.amongUsEmergencyCallCooldownTime = s.readFloat(0, 15, 8);
     data.amongUsEmergencyCallsRemaining = s.readUint8();
     data.amongUsEmergencyMeetingSeq = s.readUint8();
     s.readAlignToNextByte();

@@ -3,6 +3,7 @@ export enum TeamMode {
     Duo = 2,
     Squad = 4,
     Ten = 10,
+    Fifteen = 15,
 }
 
 export enum EmoteSlot {

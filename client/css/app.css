@@ -25288,3 +25288,63 @@ div.roulette {
   #battle-impostors-selection {
   grid-area: impostors-menu;
 }
+
+/* Private arena 10v10/15v15 board: keep each team at 5 rows, then add columns. */
+#modal-prestige-arena.is-open
+  #modal-prestige-wrapper.arena-joined-shell.arena-large-teams {
+  height: min(760px, calc(100vh - 24px));
+  width: min(1760px, calc(100vw - 24px));
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-joined-editor.arena-large-teams
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window.arena-joined-layout {
+  grid-template-columns: 270px minmax(0, 1fr);
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-joined-shell.arena-large-teams
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  #arena-teams-board.arena-large-teams {
+  gap: 12px;
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-joined-shell.arena-large-teams
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  #arena-teams-board.arena-large-teams
+  .arena-team-column {
+  min-width: 0;
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-joined-shell.arena-large-teams
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  #arena-teams-board.arena-large-teams
+  .arena-team-list {
+  display: grid;
+  gap: 8px;
+  grid-auto-flow: column;
+  grid-template-columns: repeat(var(--arena-team-columns, 2), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--arena-team-rows, 5), 34px);
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-joined-shell.arena-large-teams
+  #modal-prestige-body
+  .modal-prestige-body-inner
+  #modal-battle-window
+  #arena-teams-board.arena-large-teams
+  .arena-team-slot {
+  font-size: 15px;
+  height: 34px;
+  min-height: 34px;
+}

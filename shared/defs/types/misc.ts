@@ -23,4 +23,5 @@ export const TeamModeToString = {
     [TeamMode.Duo]: "duo",
     [TeamMode.Squad]: "squad",
     [TeamMode.Ten]: "squad",
+    [TeamMode.Fifteen]: "squad",
 } as const;

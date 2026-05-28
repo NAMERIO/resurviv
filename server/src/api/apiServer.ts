@@ -129,6 +129,7 @@ export class ApiServer {
             TeamMode.Duo,
             TeamMode.Squad,
             TeamMode.Ten,
+            TeamMode.Fifteen,
         ] as const;
         const hasMode = (
             mapName: (typeof Config.modes)[number]["mapName"],

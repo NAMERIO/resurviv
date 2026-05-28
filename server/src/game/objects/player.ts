@@ -115,7 +115,7 @@ interface Emote {
 
 const boostHeals: Array<{ maxBoost: number; heal: number }> = [];
 const amongUsInitialKillCooldown = 20;
-const amongUsEmergencyCallCooldown = 5;
+const amongUsEmergencyCallCooldown = 15;
 {
     const boostBreakPoints = GameConfig.player.boostBreakpoints;
     const max = GameConfig.player.boostBreakpoints.reduce((a, b) => a + b, 0);
