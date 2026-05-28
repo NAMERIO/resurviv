@@ -98,6 +98,7 @@ export const PrivateLobbyMiniGameServerSettings: Record<
     PrivateLobbyMiniGameServerSettings
 > = {
     pvp: {},
+    battle_royale: {},
     hide_and_seek: {
         hideAndSeek: HideAndSeekSettings,
         getWeaponOverride: (arenaTeam) => {
@@ -153,6 +154,10 @@ export function isAmongUsMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
 
 export function isSingleTeamMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
     return isAmongUsMiniGame(miniGame);
+}
+
+export function isBattleRoyaleMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
+    return miniGame === "battle_royale";
 }
 
 export function getPrivateLobbyMiniGameWeaponOverride(

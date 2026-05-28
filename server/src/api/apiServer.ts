@@ -115,6 +115,15 @@ export class ApiServer {
         for (const mapName of forcedPrivateMaps) {
             this.privateLobbyMaps.add(mapName);
         }
+        if (Config.battleRoyaleMode) {
+            for (const mapName of Object.keys(MapDefs)) {
+                if (mapName.startsWith("br_")) {
+                    this.privateLobbyMaps.add(
+                        mapName as (typeof Config.modes)[number]["mapName"],
+                    );
+                }
+            }
+        }
 
         this.ensurePrivateLobbyModes();
 
@@ -124,12 +133,17 @@ export class ApiServer {
     }
 
     private ensurePrivateLobbyModes() {
-        const privateTeamModes = [
+        const privateDeathmatchTeamModes = [
             TeamMode.Solo,
             TeamMode.Duo,
             TeamMode.Squad,
             TeamMode.Ten,
             TeamMode.Fifteen,
+        ] as const;
+        const privateBattleRoyaleTeamModes = [
+            TeamMode.Solo,
+            TeamMode.Duo,
+            TeamMode.Squad,
         ] as const;
         const hasMode = (
             mapName: (typeof Config.modes)[number]["mapName"],
@@ -137,6 +151,9 @@ export class ApiServer {
         ) => this.modes.some((m) => m.mapName === mapName && m.teamMode === teamMode);
 
         for (const mapName of this.privateLobbyMaps) {
+            const privateTeamModes = mapName.startsWith("br_")
+                ? privateBattleRoyaleTeamModes
+                : privateDeathmatchTeamModes;
             for (const teamMode of privateTeamModes) {
                 if (hasMode(mapName, teamMode)) continue;
                 this.modes.push({

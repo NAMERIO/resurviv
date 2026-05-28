@@ -1,5 +1,6 @@
 export const PrivateLobbyMiniGameIds = [
     "pvp",
+    "battle_royale",
     "hide_and_seek",
     "infected",
     "among_us",
@@ -16,6 +17,7 @@ export interface PrivateLobbyMiniGameDef {
     id: PrivateLobbyMiniGame;
     name: string;
     singleTeam?: boolean;
+    battleRoyale?: boolean;
     teamNames: {
         A: string;
         B: string;
@@ -25,10 +27,19 @@ export interface PrivateLobbyMiniGameDef {
 export const PrivateLobbyMiniGameDefs = {
     pvp: {
         id: "pvp",
-        name: "PvP",
+        name: "Deathmatch",
         teamNames: {
             A: "Team A",
             B: "Team B",
+        },
+    },
+    battle_royale: {
+        id: "battle_royale",
+        name: "Battle Royale",
+        battleRoyale: true,
+        teamNames: {
+            A: "Players",
+            B: "",
         },
     },
     hide_and_seek: {

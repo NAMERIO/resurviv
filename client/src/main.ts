@@ -187,8 +187,25 @@ export class Application {
     prestigeArenaSelectedImpostorCount = DefaultAmongUsImpostorCount;
     prestigeArenaModalRequestedOpen = false;
     modeDisplayNameByMap: Record<string, string> = {
-        main: "Deathmatch",
+        main: "Normal",
         br_main: "Battle Royale",
+        br_main_spring: "Spring",
+        br_main_summer: "Summer",
+        br_desert: "Desert",
+        br_faction: "Faction",
+        br_halloween: "Halloween",
+        br_potato: "Potato",
+        br_potato_spring: "Potato Spring",
+        br_snow: "Snow",
+        br_woods: "Woods",
+        br_woods_snow: "Woods Snow",
+        br_woods_spring: "Woods Spring",
+        br_woods_summer: "Woods Summer",
+        br_savannah: "Savannah",
+        br_cobalt: "Cobalt",
+        br_turkey: "Turkey",
+        br_birthday: "Birthday",
+        br_beach: "Beach",
         woods: "Woods",
         potato: "Potato",
         desert: "Desert",
@@ -203,6 +220,22 @@ export class Application {
 
     getModeDisplayName(mapName: string) {
         return this.modeDisplayNameByMap[mapName] || mapName;
+    }
+
+    isBattleRoyaleMiniGame(miniGame?: PrivateLobbyMiniGame) {
+        return miniGame === "battle_royale";
+    }
+
+    getArenaTeamModeDisplayName(teamMode: number, miniGame?: PrivateLobbyMiniGame) {
+        if (this.isBattleRoyaleMiniGame(miniGame)) {
+            const teamModeMap: Record<number, string> = {
+                1: "Solo",
+                2: "Duo",
+                4: "Squad",
+            };
+            return teamModeMap[teamMode] || "Duo";
+        }
+        return this.getTeamModeDisplayName(teamMode);
     }
 
     getTeamModeDisplayName(teamMode: number) {
@@ -1230,6 +1263,17 @@ export class Application {
             !this.teamMenu.arena ||
             !this.teamMenu.joined ||
             this.teamMenu.isLeader;
+        const isBattleRoyale = this.isBattleRoyaleMiniGame(
+            this.teamMenu.roomData.miniGame || this.prestigeArenaSelectedMiniGame,
+        );
+        $("#modal-create-window .private-option-buttons").toggleClass(
+            "hide",
+            isBattleRoyale,
+        );
+        this.prestigeArenaBattleOptions.toggleClass(
+            "hide",
+            isBattleRoyale || !this.teamMenu.isLeader,
+        );
         this.prestigeArenaDisableAirstrikesBtn.toggleClass(
             "active",
             !!this.teamMenu.roomData.disableAirstrikes,
@@ -1262,10 +1306,16 @@ export class Application {
             "aria-pressed",
             String(!!this.teamMenu.roomData.disablePerks),
         );
-        this.prestigeArenaDisableAirstrikesBtn.prop("disabled", !canEdit);
-        this.prestigeArenaDisablePerksBtn.prop("disabled", !canEdit);
-        this.prestigeArenaBattleDisableAirstrikesBtn.prop("disabled", !canEdit);
-        this.prestigeArenaBattleDisablePerksBtn.prop("disabled", !canEdit);
+        this.prestigeArenaDisableAirstrikesBtn.prop("disabled", !canEdit || isBattleRoyale);
+        this.prestigeArenaDisablePerksBtn.prop("disabled", !canEdit || isBattleRoyale);
+        this.prestigeArenaBattleDisableAirstrikesBtn.prop(
+            "disabled",
+            !canEdit || isBattleRoyale,
+        );
+        this.prestigeArenaBattleDisablePerksBtn.prop(
+            "disabled",
+            !canEdit || isBattleRoyale,
+        );
     }
 
     setPrestigeArenaCreateOption(
@@ -1299,7 +1349,7 @@ export class Application {
         this.prestigeArenaBattleMiniGameSelection.empty();
         this.prestigeArenaBattleImpostorCountSelection.empty();
         const modes = this.siteInfo.info.modes || [];
-        const allowedPrivateMaps = new Set([
+        const allowedPrivateDeathmatchMaps = new Set([
             "main",
             "snow",
             "cobalt",
@@ -1310,13 +1360,27 @@ export class Application {
             "woods",
         ]);
         const gameModeStyles = this.siteInfo.getGameModeStyles();
-        const arenaModes = modes.filter((m) => allowedPrivateMaps.has(m.mapName));
-        if (!arenaModes.length) {
+        const deathmatchArenaModes = modes.filter((m) =>
+            allowedPrivateDeathmatchMaps.has(m.mapName),
+        );
+        const battleRoyaleArenaModes = modes.filter(
+            (m) => m.mapName.startsWith("br_") && [1, 2, 4].includes(m.teamMode),
+        );
+        if (!deathmatchArenaModes.length && !battleRoyaleArenaModes.length) {
             return;
         }
 
-        const maps = Array.from(new Set(arenaModes.map((m) => m.mapName)));
-        const teamModes = [1, 2, 4, 10, 15];
+        let arenaModes = deathmatchArenaModes.length
+            ? deathmatchArenaModes
+            : battleRoyaleArenaModes;
+        const getArenaModesForMiniGame = (miniGame: PrivateLobbyMiniGame) => {
+            if (this.isBattleRoyaleMiniGame(miniGame) && battleRoyaleArenaModes.length) {
+                return battleRoyaleArenaModes;
+            }
+            return deathmatchArenaModes.length ? deathmatchArenaModes : arenaModes;
+        };
+        const getTeamModesForMiniGame = (miniGame: PrivateLobbyMiniGame) =>
+            this.isBattleRoyaleMiniGame(miniGame) ? [1, 2, 4] : [1, 2, 4, 10, 15];
         const mapStyleByName = new Map<
             string,
             {
@@ -1370,8 +1434,9 @@ export class Application {
             this.prestigeArenaSelectedTeamMode = modes[idx].teamMode;
 
             const mapLabel = this.getModeDisplayName(this.prestigeArenaSelectedMap);
-            const teamLabel = this.getTeamModeDisplayName(
+            const teamLabel = this.getArenaTeamModeDisplayName(
                 this.prestigeArenaSelectedTeamMode,
+                this.prestigeArenaSelectedMiniGame,
             );
             const teamIcon = this.getTeamModeIcon(this.prestigeArenaSelectedTeamMode);
             this.prestigeArenaModeLabel.text(mapLabel);
@@ -1446,6 +1511,16 @@ export class Application {
             }
             const miniGameDef = getPrivateLobbyMiniGameDef(miniGame);
             this.prestigeArenaSelectedMiniGame = miniGame;
+            renderModeAndTypeOptions(miniGame);
+            const nextMode =
+                arenaModes.find(
+                    (m) =>
+                        m.mapName === this.prestigeArenaSelectedMap &&
+                        m.teamMode === this.prestigeArenaSelectedTeamMode,
+                ) || arenaModes[0];
+            if (nextMode) {
+                applySelection(nextMode.mapName, nextMode.teamMode, syncRoom);
+            }
             this.prestigeArenaMiniGameSelection
                 .add(this.prestigeArenaBattleMiniGameSelection)
                 .find(".selection-button-minigame")
@@ -1480,62 +1555,70 @@ export class Application {
             this.setPrestigeArenaImpostorCount(count, syncRoom);
         };
 
-        for (let i = 0; i < maps.length; i++) {
-            const mapName = maps[i];
-            const mapLabel = this.getModeDisplayName(mapName);
-            const style = mapStyleByName.get(mapName);
-            const createButton = () => {
-                const btn = $("<div>", {
-                    class: "selection-button-mode arena-mode-option",
-                    "data-map-name": mapName,
-                    role: "button",
-                    "aria-pressed": "false",
-                    text: mapLabel,
-                });
-                if (style?.buttonCss) {
-                    btn.addClass(style.buttonCss);
-                }
-                if (style?.icon) {
-                    btn.css("background-image", `url(${style.icon})`);
-                }
-                btn.on("click", () => {
-                    applySelection(mapName, this.prestigeArenaSelectedTeamMode);
-                    this.prestigeArenaModeSelection.css("display", "none");
-                    this.prestigeArenaImpostorCountSelection.css("display", "none");
-                    this.hidePrestigeArenaBattleSelections();
-                });
-                return btn;
-            };
-            const btn = createButton();
-            const battleBtn = createButton();
-            this.prestigeArenaModeSelection.append(btn);
-            this.prestigeArenaBattleModeSelection.append(battleBtn);
-        }
+        const renderModeAndTypeOptions = (miniGame: PrivateLobbyMiniGame) => {
+            arenaModes = getArenaModesForMiniGame(miniGame);
+            const maps = Array.from(new Set(arenaModes.map((m) => m.mapName)));
+            const teamModes = getTeamModesForMiniGame(miniGame);
+            this.prestigeArenaModeSelection.empty();
+            this.prestigeArenaTypeSelection.empty();
+            this.prestigeArenaBattleModeSelection.empty();
+            this.prestigeArenaBattleTypeSelection.empty();
 
-        for (let i = 0; i < teamModes.length; i++) {
-            const teamMode = teamModes[i];
-            const teamLabel = this.getTeamModeDisplayName(teamMode);
-            const teamIcon = this.getTeamModeIcon(teamMode);
-            const createButton = () => {
-                const btn = $("<div>", {
-                    class: "selection-button-type",
-                    "data-team-mode": String(teamMode),
-                    role: "button",
-                    "aria-pressed": "false",
-                    text: teamLabel,
-                });
-                btn.css("background-image", `url(${teamIcon})`);
-                btn.on("click", () => {
-                    applySelection(this.prestigeArenaSelectedMap, teamMode);
-                    this.prestigeArenaTypeSelection.css("display", "none");
-                    this.prestigeArenaImpostorCountSelection.css("display", "none");
-                    this.hidePrestigeArenaBattleSelections();
-                });
-                return btn;
-            };
-            this.prestigeArenaTypeSelection.append(createButton());
-            this.prestigeArenaBattleTypeSelection.append(createButton());
-        }
+            for (let i = 0; i < maps.length; i++) {
+                const mapName = maps[i];
+                const mapLabel = this.getModeDisplayName(mapName);
+                const style = mapStyleByName.get(mapName);
+                const createButton = () => {
+                    const btn = $("<div>", {
+                        class: "selection-button-mode arena-mode-option",
+                        "data-map-name": mapName,
+                        role: "button",
+                        "aria-pressed": "false",
+                        text: mapLabel,
+                    });
+                    if (style?.buttonCss) {
+                        btn.addClass(style.buttonCss);
+                    }
+                    if (style?.icon) {
+                        btn.css("background-image", `url(${style.icon})`);
+                    }
+                    btn.on("click", () => {
+                        applySelection(mapName, this.prestigeArenaSelectedTeamMode);
+                        this.prestigeArenaModeSelection.css("display", "none");
+                        this.prestigeArenaImpostorCountSelection.css("display", "none");
+                        this.hidePrestigeArenaBattleSelections();
+                    });
+                    return btn;
+                };
+                this.prestigeArenaModeSelection.append(createButton());
+                this.prestigeArenaBattleModeSelection.append(createButton());
+            }
+
+            for (let i = 0; i < teamModes.length; i++) {
+                const teamMode = teamModes[i];
+                const teamLabel = this.getArenaTeamModeDisplayName(teamMode, miniGame);
+                const teamIcon = this.getTeamModeIcon(teamMode);
+                const createButton = () => {
+                    const btn = $("<div>", {
+                        class: "selection-button-type",
+                        "data-team-mode": String(teamMode),
+                        role: "button",
+                        "aria-pressed": "false",
+                        text: teamLabel,
+                    });
+                    btn.css("background-image", `url(${teamIcon})`);
+                    btn.on("click", () => {
+                        applySelection(this.prestigeArenaSelectedMap, teamMode);
+                        this.prestigeArenaTypeSelection.css("display", "none");
+                        this.prestigeArenaImpostorCountSelection.css("display", "none");
+                        this.hidePrestigeArenaBattleSelections();
+                    });
+                    return btn;
+                };
+                this.prestigeArenaTypeSelection.append(createButton());
+                this.prestigeArenaBattleTypeSelection.append(createButton());
+            }
+        };
 
         for (const miniGame of PrivateLobbyMiniGameIds) {
             const miniGameDef = PrivateLobbyMiniGameDefs[miniGame];
@@ -1584,23 +1667,24 @@ export class Application {
             this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined
                 ? this.teamMenu.roomData.gameModeIdx
                 : this.config.get("gameModeIdx");
-        if (
+        const initialMiniGame =
+            this.teamMenu.roomData.miniGame || DefaultPrivateLobbyMiniGame;
+        arenaModes = getArenaModesForMiniGame(initialMiniGame);
+        const configuredArenaMode =
             configuredMode !== undefined &&
             modes[configuredMode] &&
-            allowedPrivateMaps.has(modes[configuredMode].mapName)
-        ) {
-            applySelection(
-                modes[configuredMode].mapName,
-                modes[configuredMode].teamMode,
-                false,
-            );
-        } else {
-            applySelection(arenaModes[0].mapName, arenaModes[0].teamMode, false);
+            arenaModes.some(
+                (m) =>
+                    m.mapName === modes[configuredMode].mapName &&
+                    m.teamMode === modes[configuredMode].teamMode,
+            )
+                ? modes[configuredMode]
+                : arenaModes[0];
+        if (configuredArenaMode) {
+            this.prestigeArenaSelectedMap = configuredArenaMode.mapName;
+            this.prestigeArenaSelectedTeamMode = configuredArenaMode.teamMode;
         }
-        applyMiniGameSelection(
-            this.teamMenu.roomData.miniGame || DefaultPrivateLobbyMiniGame,
-            false,
-        );
+        applyMiniGameSelection(initialMiniGame, false);
         applyImpostorCountSelection(
             this.teamMenu.roomData.amongUsImpostorCount ||
                 this.prestigeArenaSelectedImpostorCount,
@@ -1620,7 +1704,10 @@ export class Application {
         if (!mode) return;
         this.prestigeArenaBattleModeLabel.text(this.getModeDisplayName(mode.mapName));
         this.prestigeArenaBattleTypeLabel.text(
-            this.getTeamModeDisplayName(mode.teamMode),
+            this.getArenaTeamModeDisplayName(
+                mode.teamMode,
+                this.teamMenu.roomData.miniGame || this.prestigeArenaSelectedMiniGame,
+            ),
         );
         this.prestigeArenaBattleTypeLabel.css(
             "background-image",
@@ -1728,6 +1815,7 @@ export class Application {
     syncPrestigeArenaAmongUsOptions() {
         const miniGame = this.prestigeArenaSelectedMiniGame;
         const isAmongUs = miniGame === "among_us";
+        const isBattleRoyale = this.isBattleRoyaleMiniGame(miniGame);
         const impostorCount = normalizeAmongUsImpostorCount(
             this.teamMenu.roomData.amongUsImpostorCount ||
                 this.prestigeArenaSelectedImpostorCount,
@@ -1751,6 +1839,8 @@ export class Application {
         this.prestigeArenaBattleImpostorCountRow.toggleClass("hide", !isAmongUs);
         this.prestigeArenaCreatePane.toggleClass("arena-among-us", isAmongUs);
         this.prestigeArenaBattlePane.toggleClass("arena-among-us", isAmongUs);
+        this.prestigeArenaCreatePane.toggleClass("arena-battle-royale", isBattleRoyale);
+        this.prestigeArenaBattlePane.toggleClass("arena-battle-royale", isBattleRoyale);
         if (!isAmongUs) {
             this.prestigeArenaImpostorCountSelection.css("display", "none");
             this.prestigeArenaBattleImpostorCountSelection
@@ -1803,11 +1893,13 @@ export class Application {
                 this.applyBattleModeStyleByIdx(modeIdx);
                 const miniGameDef = getPrivateLobbyMiniGameDef(data.miniGame);
                 this.applyBattleMiniGameStyle(data.miniGame);
-                const joinTarget = parsedInvite.preferredTeam
-                    ? miniGameDef.teamNames[parsedInvite.preferredTeam]
-                    : "Spectate";
+                const joinTarget = miniGameDef.battleRoyale
+                    ? "Join"
+                    : parsedInvite.preferredTeam
+                      ? miniGameDef.teamNames[parsedInvite.preferredTeam]
+                      : "Spectate";
                 this.prestigeArenaJoinBtn.text(
-                    `${joinTarget} ${this.getModeDisplayName(mode.mapName)} ${this.getTeamModeDisplayName(mode.teamMode)} ${miniGameDef.name}`,
+                    `${joinTarget} ${this.getModeDisplayName(mode.mapName)} ${this.getArenaTeamModeDisplayName(mode.teamMode, data.miniGame)} ${miniGameDef.name}`,
                 );
             },
             error: () => {
@@ -1861,7 +1953,9 @@ export class Application {
         this.prestigeArenaWrapper.removeClass("arena-large-teams");
         this.prestigeArenaBattlePane.removeClass("arena-large-teams");
         this.prestigeArenaBattlePane.removeClass("arena-joined-layout");
-        this.prestigeArenaTeamsBoard.removeClass("arena-large-teams");
+        this.prestigeArenaTeamsBoard.removeClass(
+            "arena-large-teams arena-single-team arena-battle-royale-summary",
+        );
         this.prestigeArenaSpectatorsBoard.addClass("hide");
         this.prestigeArenaBattleOptions.addClass("hide");
         this.hidePrestigeArenaBattleSelections();
@@ -1889,7 +1983,7 @@ export class Application {
             this.prestigeArenaWrapper.removeClass("arena-large-teams");
             this.prestigeArenaBattlePane.removeClass("arena-large-teams");
             this.prestigeArenaTeamsBoard.removeClass(
-                "arena-large-teams arena-single-team",
+                "arena-large-teams arena-single-team arena-battle-royale-summary",
             );
             this.prestigeArenaSpectatorsBoard.addClass("hide");
             return;
@@ -1898,7 +1992,108 @@ export class Application {
         const mode = this.siteInfo.info.modes?.[this.teamMenu.roomData.gameModeIdx];
         const teamSize = Math.max(1, mode?.teamMode ?? 2);
         const miniGameDef = getPrivateLobbyMiniGameDef(this.teamMenu.roomData.miniGame);
+        const battleRoyaleLobby = !!miniGameDef.battleRoyale;
         const singleTeam = !!miniGameDef.singleTeam;
+        if (battleRoyaleLobby) {
+            const players = this.teamMenu.players;
+            const owner = players.find((p) => p.isLeader) || players[0];
+            const maxPlayers = this.teamMenu.roomData.maxPlayers || 80;
+            this.prestigeArenaWrapper.removeClass("arena-large-teams");
+            this.prestigeArenaBattlePane.removeClass("arena-large-teams");
+            this.prestigeArenaTeamsBoard
+                .removeClass("arena-large-teams arena-single-team")
+                .addClass("arena-battle-royale-summary");
+            this.prestigeArenaTeamBList.empty();
+            this.prestigeArenaSpectatorList.empty();
+            $(".arena-team-b").addClass("hide");
+            this.prestigeArenaSpectatorsBoard.addClass("hide");
+
+            $("#arena-team-a-title")
+                .empty()
+                .append($("<span>", { class: "arena-team-name", text: "Battle Royale" }))
+                .append(
+                    $("<span>", {
+                        class: "arena-team-count",
+                        text: `${players.length}/${maxPlayers}`,
+                    }),
+                );
+            this.prestigeArenaTeamAList.append(
+                $("<div>", { class: "arena-br-lobby-card" })
+                    .append(
+                        $("<div>", { class: "arena-br-lobby-hero" })
+                            .append(
+                                $("<div>", {
+                                    class: "arena-br-lobby-mode",
+                                    text: "Private Battle Royale",
+                                }),
+                            )
+                            .append(
+                                $("<div>", {
+                                    class: "arena-br-lobby-sub",
+                                    text: `${this.getArenaTeamModeDisplayName(
+                                        teamSize,
+                                        this.teamMenu.roomData.miniGame,
+                                    )} lobby`,
+                                }),
+                            ),
+                    )
+                    .append(
+                        $("<div>", { class: "arena-br-lobby-row arena-br-lobby-owner" })
+                            .append(
+                                $("<span>", {
+                                    class: "arena-br-lobby-label",
+                                    text: "Owner",
+                                }),
+                            )
+                            .append(
+                                $("<span>", {
+                                    class: "arena-br-lobby-value",
+                                    html: owner
+                                        ? owner.clanName
+                                            ? `${helpers.getClanTagHtml(owner.clanName, owner.clanTagColor || "")} ${helpers.htmlEscape(owner.name)}`
+                                            : helpers.htmlEscape(owner.name)
+                                        : "Waiting",
+                                }),
+                            ),
+                    )
+                    .append(
+                        $("<div>", { class: "arena-br-lobby-row arena-br-lobby-players" })
+                            .append(
+                                $("<span>", {
+                                    class: "arena-br-lobby-label",
+                                    text: "Players",
+                                }),
+                            )
+                            .append(
+                                $("<span>", {
+                                    class: "arena-br-lobby-value",
+                                    text: `${players.length}/${maxPlayers}`,
+                                }),
+                            ),
+                    )
+                    .append(
+                        $("<div>", { class: "arena-br-lobby-row arena-br-lobby-type" })
+                            .append(
+                                $("<span>", {
+                                    class: "arena-br-lobby-label",
+                                    text: "Type",
+                                }),
+                            )
+                            .append(
+                                $("<span>", {
+                                    class: "arena-br-lobby-value",
+                                    text: this.getArenaTeamModeDisplayName(
+                                        teamSize,
+                                        this.teamMenu.roomData.miniGame,
+                                    ),
+                                }),
+                            ),
+                    ),
+            );
+            this.prestigeArenaTeamsBoard.removeClass("hide");
+            return;
+        }
+        this.prestigeArenaTeamsBoard.removeClass("arena-battle-royale-summary");
         const largeTeams = teamSize >= 10;
         const largeTeamColumns = largeTeams ? Math.ceil(teamSize / 5) : 1;
         this.prestigeArenaWrapper.toggleClass("arena-large-teams", largeTeams);
@@ -2283,7 +2478,9 @@ export class Application {
             this.prestigeArenaWrapper.removeClass("arena-unjoined-shell");
             this.prestigeArenaWrapper.removeClass("arena-large-teams");
             this.prestigeArenaBattlePane.removeClass("arena-large-teams");
-            this.prestigeArenaTeamsBoard.removeClass("arena-large-teams");
+            this.prestigeArenaTeamsBoard.removeClass(
+                "arena-large-teams arena-single-team arena-battle-royale-summary",
+            );
             this.lastArenaPreloadedMapName = "";
             this.prestigeArenaModalRequestedOpen = false;
             this.setPrestigeArenaModalVisible(false);
@@ -2305,7 +2502,9 @@ export class Application {
             this.prestigeArenaWrapper.addClass("arena-unjoined-shell");
             this.prestigeArenaWrapper.removeClass("arena-large-teams");
             this.prestigeArenaBattlePane.removeClass("arena-large-teams");
-            this.prestigeArenaTeamsBoard.removeClass("arena-large-teams");
+            this.prestigeArenaTeamsBoard.removeClass(
+                "arena-large-teams arena-single-team arena-battle-royale-summary",
+            );
             this.prestigeArenaBattleTab.removeClass("hide");
             this.prestigeArenaCreateTab.addClass("hide");
             if (this.teamMenu.create) {

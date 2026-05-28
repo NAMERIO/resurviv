@@ -298,19 +298,13 @@ export class TeamMenu {
         }
 
         if (!device.mobile) {
-            // Hide invite link
-            this.hideUrl = false;
+            this.hideUrl = !!this.config.get("teamInviteHidden");
+            this.applyInviteCodeVisibility();
             $("#team-hide-url").on("click", (e) => {
                 const el = e.currentTarget;
                 this.hideUrl = !this.hideUrl;
-                $("#team-desc-text, #team-code-text").css({
-                    opacity: this.hideUrl ? 0 : 1,
-                });
-                $(el).css({
-                    "background-image": this.hideUrl
-                        ? "url(../img/gui/hide.svg)"
-                        : "url(../img/gui/eye.svg)",
-                });
+                this.config.set("teamInviteHidden", this.hideUrl);
+                this.applyInviteCodeVisibility(el);
             });
         }
 
@@ -330,6 +324,17 @@ export class TeamMenu {
     getPlayerById(playerId: number) {
         return this.players.find((x) => {
             return x.playerId == playerId;
+        });
+    }
+
+    applyInviteCodeVisibility(toggleEl: HTMLElement | JQuery<HTMLElement> = $("#team-hide-url")) {
+        $("#team-desc-text, #team-code-text").css({
+            opacity: this.hideUrl ? 0 : 1,
+        });
+        $(toggleEl).css({
+            "background-image": this.hideUrl
+                ? "url(../img/gui/hide.svg)"
+                : "url(../img/gui/eye.svg)",
         });
     }
 
@@ -1425,6 +1430,7 @@ export class TeamMenu {
                     }
                 }
             }
+            this.applyInviteCodeVisibility();
 
             // Play button
             this.playBtn.html(
