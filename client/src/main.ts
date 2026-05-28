@@ -575,6 +575,39 @@ export class Application {
                     this.prestigeArenaBattleImpostorCountSelection,
                 );
             });
+            $(document).on("click", (e) => {
+                if (!this.prestigeArenaModal.hasClass("is-open")) return;
+                const target = $(e.target);
+                if (
+                    target.closest(
+                        [
+                            "#create-mode",
+                            "#create-type",
+                            "#create-minigame",
+                            "#create-impostors",
+                            "#create-mode-selection",
+                            "#create-type-selection",
+                            "#create-minigame-selection",
+                            "#create-impostors-selection",
+                            "#modal-battle-window .battle-mode",
+                            "#modal-battle-window .battle-type",
+                            "#modal-battle-window .battle-minigame",
+                            "#modal-battle-window .battle-impostors",
+                            "#battle-mode-selection",
+                            "#battle-type-selection",
+                            "#battle-minigame-selection",
+                            "#battle-impostors-selection",
+                        ].join(","),
+                    ).length
+                ) {
+                    return;
+                }
+                this.prestigeArenaModeSelection.css("display", "none");
+                this.prestigeArenaTypeSelection.css("display", "none");
+                this.prestigeArenaMiniGameSelection.css("display", "none");
+                this.prestigeArenaImpostorCountSelection.css("display", "none");
+                this.hidePrestigeArenaBattleSelections();
+            });
             this.prestigeArenaRegionSelect.on("change", () => {
                 const region = this.prestigeArenaRegionSelect.find(":selected").val();
                 if (region) {
