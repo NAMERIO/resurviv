@@ -518,12 +518,12 @@ class Room {
 
     getArenaTeamCapacity() {
         const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
+        const cap = Math.max(1, mode?.teamMode ?? 2);
         const miniGameMapName = getPrivateLobbyMiniGameMapName(this.data.miniGame);
         if (this.isSingleTeamArena() && miniGameMapName && miniGameMapName in MapDefs) {
-            return MapDefs[miniGameMapName].gameMode.maxPlayers;
+            return Math.min(cap, MapDefs[miniGameMapName].gameMode.maxPlayers);
         }
-        const cap = mode?.teamMode ?? 2;
-        return Math.max(1, cap);
+        return cap;
     }
 
     getAmongUsRequiredPlayerCount() {
