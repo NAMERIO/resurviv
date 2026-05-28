@@ -599,87 +599,85 @@ export class EmoteBarn {
 
     addPing(ping: Emote, factionMode: boolean) {
         // Given the ping position, create an indicator on the map and make a sound
-        if (this.activePlayer) {
-            const pingData = PingDefs[ping.type];
-            if (pingData) {
-                this.uiManager.createPing(
-                    ping.type,
-                    ping.pos!,
-                    ping.playerId,
-                    this.activePlayer.__id,
-                    this.playerBarn,
-                );
-                let indicator: Indicator | null = null;
-                let pingSound = pingData.sound!;
-                if (ping.type == "ping_airdrop") {
-                    indicator = this.pingIndicators[airdropIdx].ping;
-                } else if (ping.type == "ping_airstrike") {
-                    indicator = this.pingIndicators[airstrikeIdx].ping;
-                } else {
-                    const playerInfo = this.playerBarn.getPlayerInfo(ping.playerId);
-                    const activeGroupId = this.playerBarn.getPlayerInfo(
-                        this.activePlayer.__id,
-                    ).groupId;
-                    const groupId = playerInfo.groupId;
-                    if (activeGroupId == groupId) {
-                        const groupInfo =
-                            groupId !== undefined
-                                ? this.playerBarn.getGroupInfo(groupId)
-                                : undefined;
-                        if (groupInfo) {
-                            const c = groupInfo.playerIds.indexOf(ping.playerId);
-                            if (c !== -1) {
-                                indicator = this.pingIndicators[c].ping;
-                            }
-                        }
+        if (!this.activePlayer) {
+            return;
+        }
+        const pingData = PingDefs[ping.type];
+        if (!pingData || !ping.pos) {
+            return;
+        }
+        this.uiManager.createPing(
+            ping.type,
+            ping.pos,
+            ping.playerId,
+            this.activePlayer.__id,
+            this.playerBarn,
+        );
+        let indicator: Indicator | null = null;
+        let pingSound = pingData.sound!;
+        if (ping.type == "ping_airdrop") {
+            indicator = this.pingIndicators[airdropIdx].ping;
+        } else if (ping.type == "ping_airstrike") {
+            indicator = this.pingIndicators[airstrikeIdx].ping;
+        } else {
+            const playerInfo = this.playerBarn.getPlayerInfo(ping.playerId);
+            const activeInfo = this.playerBarn.getPlayerInfo(this.activePlayer.__id);
+            const activeGroupId = activeInfo?.groupId;
+            const groupId = playerInfo?.groupId;
+            if (activeGroupId !== undefined && activeGroupId == groupId) {
+                const groupInfo = this.playerBarn.getGroupInfo(activeGroupId);
+                if (groupInfo) {
+                    const c = groupInfo.playerIds.indexOf(ping.playerId);
+                    if (c !== -1 && this.pingIndicators[c]?.ping) {
+                        indicator = this.pingIndicators[c].ping;
                     }
-                    const playerStatus = this.playerBarn.getPlayerStatus(ping.playerId);
-                    if (
-                        playerStatus &&
-                        (playerStatus.role == "leader" || playerStatus.role == "captain")
-                    ) {
-                        pingSound = pingData.soundLeader!;
-                    }
-                }
-
-                if (factionMode || ping.type != "ping_airstrike") {
-                    // Pings always play at full volume
-                    this.audioManager.playSound(pingSound, {
-                        channel:
-                            ping.type === "ping_hide_and_seek_noise"
-                                ? "otherPlayers"
-                                : "ui",
-                    });
-                } else {
-                    // If we're too far from an air strike ping in non-faction mode, reduce the ping sound
-                    this.audioManager.playSound(pingSound, {
-                        channel: "ui",
-                        fallOff: 1,
-                        soundPos: ping.pos,
-                        rangeMult: 20,
-                    });
-                }
-                if (indicator) {
-                    indicator.pos = ping.pos!;
-                    indicator.pingSprite.sprite.texture = PIXI.Texture.from(
-                        pingData.texture!,
-                    );
-                    indicator.indSpriteInner.sprite.texture = PIXI.Texture.from(
-                        pingData.texture!,
-                    );
-                    indicator.indSpriteInner.sprite.tint = pingData.mapEvent
-                        ? pingData.tint!
-                        : indicator.indSpriteInner.baseTint;
-                    indicator.indSpriteOuter.sprite.tint = pingData.mapEvent
-                        ? pingData.tint!
-                        : indicator.indSpriteOuter.baseTint;
-                    indicator.fadeIn = this.pingFadeIn;
-                    indicator.life = this.pingLife;
-                    indicator.fadeOut = this.pingFadeOut;
-                    indicator.mapEvent = pingData.mapEvent;
-                    indicator.worldDisplay = pingData.worldDisplay;
                 }
             }
+            const playerStatus = this.playerBarn.getPlayerStatus(ping.playerId);
+            if (
+                playerStatus &&
+                (playerStatus.role == "leader" || playerStatus.role == "captain")
+            ) {
+                pingSound = pingData.soundLeader!;
+            }
+        }
+
+        if (factionMode || ping.type != "ping_airstrike") {
+            // Pings always play at full volume
+            this.audioManager.playSound(pingSound, {
+                channel:
+                    ping.type === "ping_hide_and_seek_noise"
+                        ? "otherPlayers"
+                        : "ui",
+            });
+        } else {
+            // If we're too far from an air strike ping in non-faction mode, reduce the ping sound
+            this.audioManager.playSound(pingSound, {
+                channel: "ui",
+                fallOff: 1,
+                soundPos: ping.pos,
+                rangeMult: 20,
+            });
+        }
+        if (indicator) {
+            indicator.pos = ping.pos;
+            indicator.pingSprite.sprite.texture = PIXI.Texture.from(
+                pingData.texture!,
+            );
+            indicator.indSpriteInner.sprite.texture = PIXI.Texture.from(
+                pingData.texture!,
+            );
+            indicator.indSpriteInner.sprite.tint = pingData.mapEvent
+                ? pingData.tint!
+                : indicator.indSpriteInner.baseTint;
+            indicator.indSpriteOuter.sprite.tint = pingData.mapEvent
+                ? pingData.tint!
+                : indicator.indSpriteOuter.baseTint;
+            indicator.fadeIn = this.pingFadeIn;
+            indicator.life = this.pingLife;
+            indicator.fadeOut = this.pingFadeOut;
+            indicator.mapEvent = pingData.mapEvent;
+            indicator.worldDisplay = pingData.worldDisplay;
         }
     }
 
