@@ -431,6 +431,12 @@ export class Application {
             $("#btn-prestige-arena").on("click", () => {
                 this.showPrestigeArenaModal();
             });
+            $("#arena-mobile-spectators-tab").on("click", () => {
+                this.setPrestigeArenaMobilePanel("spectators");
+            });
+            $("#arena-mobile-chat-tab").on("click", () => {
+                this.setPrestigeArenaMobilePanel("chat");
+            });
             $("#modal-prestige-close").on("click", () => {
                 if (this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined) {
                     this.hidePrestigeArenaModal();
@@ -588,24 +594,28 @@ export class Application {
                 if (!this.canEditPrestigeArenaLiveOptions()) return;
                 this.togglePrestigeArenaBattleSelection(
                     this.prestigeArenaBattleModeSelection,
+                    this.prestigeArenaBattleModeRow,
                 );
             });
             this.prestigeArenaBattleTypeRow.on("click", () => {
                 if (!this.canEditPrestigeArenaLiveOptions()) return;
                 this.togglePrestigeArenaBattleSelection(
                     this.prestigeArenaBattleTypeSelection,
+                    this.prestigeArenaBattleTypeRow,
                 );
             });
             this.prestigeArenaBattleMiniGameRow.on("click", () => {
                 if (!this.canEditPrestigeArenaLiveOptions()) return;
                 this.togglePrestigeArenaBattleSelection(
                     this.prestigeArenaBattleMiniGameSelection,
+                    this.prestigeArenaBattleMiniGameRow,
                 );
             });
             this.prestigeArenaBattleImpostorCountRow.on("click", () => {
                 if (!this.canEditPrestigeArenaLiveOptions()) return;
                 this.togglePrestigeArenaBattleSelection(
                     this.prestigeArenaBattleImpostorCountSelection,
+                    this.prestigeArenaBattleImpostorCountRow,
                 );
             });
             $(document).on("click", (e) => {
@@ -1184,8 +1194,7 @@ export class Application {
 
         updateButton(this.playMode0Btn, this.getSelectedGameModeIdx());
 
-        const canShowArenaButton =
-            this.active && !device.mobile && !!this.siteInfo.info.modes?.length;
+        const canShowArenaButton = this.active && !!this.siteInfo.info.modes?.length;
         $("#open-arena-button").css("display", canShowArenaButton ? "block" : "none");
 
         this.syncPrestigeArenaRoomUi();
@@ -1246,7 +1255,10 @@ export class Application {
             .css("display", "");
     }
 
-    togglePrestigeArenaBattleSelection(selection: JQuery<HTMLElement>) {
+    togglePrestigeArenaBattleSelection(
+        selection: JQuery<HTMLElement>,
+        anchor?: JQuery<HTMLElement>,
+    ) {
         const visible = selection.hasClass("is-open");
         this.prestigeArenaModeSelection.css("display", "none");
         this.prestigeArenaTypeSelection.css("display", "none");
@@ -1254,6 +1266,15 @@ export class Application {
         this.prestigeArenaImpostorCountSelection.css("display", "none");
         this.hidePrestigeArenaBattleSelections();
         selection.css("display", "");
+        if (!visible && anchor?.length) {
+            const position = anchor.position();
+            selection.css({
+                left: `${position.left}px`,
+                right: "auto",
+                top: `${position.top + anchor.outerHeight()! + 6}px`,
+                width: `${anchor.outerWidth()}px`,
+            });
+        }
         selection.toggleClass("is-open", !visible);
     }
 
@@ -2007,6 +2028,7 @@ export class Application {
             this.prestigeArenaSpectatorList.empty();
             $(".arena-team-b").addClass("hide");
             this.prestigeArenaSpectatorsBoard.addClass("hide");
+            this.setPrestigeArenaMobilePanel("chat");
 
             $("#arena-team-a-title")
                 .empty()
@@ -2095,7 +2117,10 @@ export class Application {
         }
         this.prestigeArenaTeamsBoard.removeClass("arena-battle-royale-summary");
         const largeTeams = teamSize >= 10;
-        const largeTeamColumns = largeTeams ? Math.ceil(teamSize / 5) : 1;
+        const largeTeamColumns = largeTeams ? 2 : 1;
+        const largeTeamRows = largeTeams
+            ? Math.ceil(teamSize / largeTeamColumns)
+            : Math.min(teamSize, 5);
         this.prestigeArenaWrapper.toggleClass("arena-large-teams", largeTeams);
         this.prestigeArenaBattlePane.toggleClass("arena-large-teams", largeTeams);
         this.prestigeArenaTeamsBoard.toggleClass("arena-large-teams", largeTeams);
@@ -2103,7 +2128,7 @@ export class Application {
         this.prestigeArenaTeamsBoard.css({
             "--arena-single-team-columns": String(Math.min(teamSize, 5)),
             "--arena-team-columns": String(largeTeamColumns),
-            "--arena-team-rows": String(Math.min(teamSize, 5)),
+            "--arena-team-rows": String(largeTeamRows),
         });
         this.applyBattleModeStyleByIdx(this.teamMenu.roomData.gameModeIdx);
         this.applyBattleMiniGameStyle(this.teamMenu.roomData.miniGame);
@@ -2432,7 +2457,6 @@ export class Application {
             });
             return;
         }
-        if (device.mobile) return;
         this.prestigeArenaModalRequestedOpen = true;
         this.prestigeArenaSummaryTab.addClass("hide");
         this.prestigeArenaSpectateTab.addClass("hide");
@@ -2451,12 +2475,21 @@ export class Application {
 
     hidePrestigeArenaModal() {
         this.prestigeArenaModalRequestedOpen = false;
+        this.setPrestigeArenaMobilePanel("spectators");
         this.prestigeArenaModeSelection.css("display", "none");
         this.prestigeArenaTypeSelection.css("display", "none");
         this.prestigeArenaMiniGameSelection.css("display", "none");
         this.prestigeArenaImpostorCountSelection.css("display", "none");
         this.hidePrestigeArenaBattleSelections();
         this.setPrestigeArenaModalVisible(false);
+    }
+
+    setPrestigeArenaMobilePanel(panel: "spectators" | "chat") {
+        const chatActive = panel === "chat";
+        this.prestigeArenaModal.toggleClass("arena-mobile-chat-active", chatActive);
+        this.prestigeArenaModal.toggleClass("arena-mobile-spectators-active", !chatActive);
+        $("#arena-mobile-chat-tab").toggleClass("selected", chatActive);
+        $("#arena-mobile-spectators-tab").toggleClass("selected", !chatActive);
     }
 
     setPrestigeArenaModalVisible(visible: boolean) {

@@ -5162,6 +5162,7 @@ a:active {
 }
 
 #modal-prestige-arena #modal-prestige-wrapper {
+  --arena-modal-scale: 1;
   color: #ffffff;
   display: grid;
   grid-template-rows: 58px minmax(0, 1fr);
@@ -5171,7 +5172,8 @@ a:active {
   pointer-events: none;
   position: fixed;
   top: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(var(--arena-modal-scale));
+  transform-origin: center;
   width: min(920px, calc(100vw - 8px));
   z-index: 1201;
 }
@@ -5895,6 +5897,7 @@ a:active {
 }
 
 #modal-prestige-arena #modal-battle-window.arena-joined-layout .battle-left-panel {
+  align-content: start;
   background: #303030;
   border-radius: 5px;
   display: grid;
@@ -5915,6 +5918,20 @@ a:active {
   padding: 12px;
   position: relative;
   width: 100%;
+}
+
+#modal-prestige-arena
+  #modal-battle-window.arena-joined-layout
+  .battle-left-panel:has(#battle-private-options.hide) {
+  align-content: start;
+  grid-template-areas:
+    "counter"
+    "code"
+    "mode"
+    "type"
+    "game"
+    "actions";
+  grid-template-rows: 52px 44px 50px 50px 50px auto;
 }
 
 #modal-prestige-arena
@@ -6102,7 +6119,7 @@ a:active {
     "teams chat"
     "specs chat";
   grid-template-columns: minmax(0, 1fr) 280px;
-  grid-template-rows: minmax(0, 1fr) 168px;
+  grid-template-rows: minmax(0, 0.9fr) 206px;
   min-height: 0;
   min-width: 0;
   width: 100%;
@@ -6136,6 +6153,18 @@ a:active {
 
 #modal-prestige-arena #arena-teams-board.arena-battle-royale-summary .arena-team-b {
   display: none !important;
+}
+
+#modal-prestige-arena
+  #arena-teams-board.arena-battle-royale-summary
+  .arena-team-column {
+  grid-template-rows: auto auto;
+}
+
+#modal-prestige-arena
+  #arena-teams-board.arena-battle-royale-summary
+  .arena-team-list {
+  overflow: visible;
 }
 
 #modal-prestige-arena .arena-team-column {
@@ -6461,6 +6490,10 @@ a:active {
   width: 100%;
 }
 
+#modal-prestige-arena #arena-mobile-panel-tabs {
+  display: none;
+}
+
 #modal-prestige-arena #team-clan-chat-messages {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 3px;
@@ -6576,11 +6609,259 @@ a:active {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto 170px 260px;
   }
+
+  #modal-prestige-arena
+    #modal-battle-window.arena-joined-layout
+    #arena-teams-board.arena-battle-royale-summary
+    + #arena-spectators-board.hide
+    + #team-clan-chat,
+  #modal-prestige-arena
+    #modal-battle-window.arena-joined-layout
+    .battle-right-panel:has(#arena-teams-board.arena-battle-royale-summary)
+    #team-clan-chat {
+    min-height: 220px;
+  }
+
+  #modal-prestige-arena
+    #modal-battle-window.arena-joined-layout
+    .battle-right-panel:has(#arena-teams-board.arena-battle-royale-summary) {
+    grid-template-areas:
+      "teams"
+      "chat";
+    grid-template-rows: auto 260px;
+  }
+}
+
+@media (max-height: 760px) and (orientation: landscape) {
+  #modal-prestige-arena #modal-prestige-wrapper,
+  #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell,
+  #modal-prestige-arena.is-open
+    #modal-prestige-wrapper.arena-joined-shell.arena-large-teams {
+    --arena-modal-scale: 0.9;
+    height: calc((100vh - 8px) / 0.9);
+    width: calc((100vw - 8px) / 0.9);
+  }
+
+  #modal-prestige-arena #modal-prestige-header {
+    grid-template-columns: minmax(180px, max-content) minmax(0, 1fr);
+  }
+
+  #modal-prestige-arena #arena-modal-title {
+    height: 50px;
+  }
+
+  #modal-prestige-arena #prestige-game-summary-button,
+  #modal-prestige-arena #prestige-battle-button,
+  #modal-prestige-arena #prestige-create-button,
+  #modal-prestige-arena #prestige-spectate-button {
+    height: 44px;
+  }
+
+  #modal-prestige-arena #modal-prestige-wrapper {
+    grid-template-rows: 50px minmax(0, 1fr);
+  }
+
+  #modal-prestige-arena #modal-prestige-body {
+    padding: 8px;
+  }
+
+  #modal-prestige-arena #modal-battle-window.arena-joined-layout {
+    grid-template-areas: "left right";
+    grid-template-columns: 300px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  #modal-prestige-arena #modal-battle-window.arena-joined-layout .battle-right-panel {
+    gap: 8px;
+    grid-template-areas:
+      "teams"
+      "mobileTabs"
+      "mobilePanel";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(150px, 1fr) 34px minmax(116px, 0.62fr);
+    overflow: hidden;
+  }
+
+  #modal-prestige-arena #arena-mobile-panel-tabs {
+    display: grid;
+    gap: 6px;
+    grid-area: mobileTabs;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #modal-prestige-arena #arena-mobile-panel-tabs button {
+    background: #303030;
+    border: 0;
+    border-radius: 4px;
+    box-shadow: inset 0 -2px rgba(0, 0, 0, 0.35);
+    color: rgba(255, 255, 255, 0.72);
+    cursor: pointer;
+    font-family: Roboto Condensed;
+    font-size: 15px;
+    font-weight: 700;
+    height: 34px;
+    line-height: 18px;
+    text-transform: uppercase;
+  }
+
+  #modal-prestige-arena #arena-mobile-panel-tabs button.selected {
+    background: #347370;
+    color: #ffffff;
+  }
+
+  #modal-prestige-arena #arena-spectators-board,
+  #modal-prestige-arena #team-clan-chat {
+    grid-area: mobilePanel;
+    height: 100%;
+    min-height: 0;
+  }
+
+  #modal-prestige-arena.arena-mobile-chat-active #arena-spectators-board {
+    display: none !important;
+  }
+
+  #modal-prestige-arena:not(.arena-mobile-chat-active) #team-clan-chat {
+    display: none !important;
+  }
+
+  #modal-prestige-arena #modal-battle-window.arena-joined-layout #arena-teams-board {
+    min-height: 150px;
+  }
+
+  #modal-prestige-arena #modal-battle-window.arena-joined-layout #arena-spectators-board {
+    padding: 7px;
+  }
+
+  #modal-prestige-arena
+    #modal-battle-window.arena-joined-layout
+    #arena-spectators-board
+    .arena-spectators-title {
+    font-size: 15px;
+    line-height: 18px;
+    margin-bottom: 4px;
+    min-height: 18px;
+  }
+
+  #modal-prestige-arena
+    #modal-battle-window.arena-joined-layout
+    #arena-spectators-board
+    .arena-spectator-item {
+    height: 26px;
+    min-height: 26px;
+  }
+
+  #modal-prestige-arena #modal-battle-window.arena-joined-layout .battle-left-panel {
+    grid-template-areas:
+      "counter"
+      "code"
+      "mode"
+      "type"
+      "game"
+      "impostors"
+      "options"
+      "actions";
+    grid-template-columns: minmax(0, 1fr);
+    overflow: visible;
+  }
+
+  #modal-prestige-arena #create-mode-selection,
+  #modal-prestige-arena #create-type-selection,
+  #modal-prestige-arena #create-minigame-selection,
+  #modal-prestige-arena #create-impostors-selection,
+  #modal-prestige-arena .battle-option-selection {
+    grid-template-columns: minmax(0, 1fr);
+    max-height: 220px;
+    width: min(420px, calc(100vw - 24px));
+  }
+
+  #modal-prestige-arena #create-type-selection,
+  #modal-prestige-arena #create-impostors-selection {
+    left: auto;
+    right: 0;
+  }
+
+  #modal-prestige-arena
+    #modal-battle-window.arena-joined-layout.arena-battle-royale
+    .battle-left-panel {
+    grid-template-areas:
+      "counter"
+      "code"
+      "mode"
+      "type"
+      "game"
+      "actions";
+  }
+
+  #modal-prestige-arena
+    #modal-battle-window.arena-joined-layout
+    .battle-right-panel:has(#arena-teams-board.arena-battle-royale-summary) {
+    grid-template-areas:
+      "teams"
+      "mobileTabs"
+      "mobilePanel";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 34px minmax(116px, 0.62fr);
+  }
+
+  #modal-prestige-arena
+    #modal-battle-window.arena-joined-layout
+    #arena-teams-board.arena-battle-royale-summary {
+    min-height: 0;
+  }
+
+  #modal-prestige-arena .arena-br-lobby-card {
+    align-content: start;
+    gap: 7px;
+    padding: 10px;
+  }
+
+  #modal-prestige-arena .arena-br-lobby-hero {
+    min-height: 58px;
+    padding: 10px 12px;
+  }
+
+  #modal-prestige-arena .arena-br-lobby-mode {
+    font-size: 24px;
+    line-height: 26px;
+  }
+
+  #modal-prestige-arena .arena-br-lobby-sub {
+    font-size: 14px;
+    line-height: 16px;
+  }
+
+  #modal-prestige-arena .arena-br-lobby-row {
+    grid-template-columns: 26px 82px minmax(0, 1fr);
+    min-height: 42px;
+    padding: 4px 10px;
+  }
+
+  #modal-prestige-arena .arena-br-lobby-row::before {
+    background-size: 17px;
+    height: 26px;
+    width: 26px;
+  }
+
+  #modal-prestige-arena .arena-br-lobby-value {
+    font-size: 20px;
+    line-height: 24px;
+  }
 }
 
 @media (max-width: 700px) {
+  #modal-prestige-arena #modal-prestige-wrapper,
+  #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell,
+  #modal-prestige-arena.is-open
+    #modal-prestige-wrapper.arena-joined-shell.arena-large-teams {
+    --arena-modal-scale: 0.82;
+    height: calc((100vh - 86px) / 0.82);
+    top: 50%;
+    width: calc((100vw - 16px) / 0.82);
+  }
+
   #modal-prestige-arena #modal-prestige-wrapper {
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: 42px minmax(0, 1fr);
   }
 
   #modal-prestige-arena #modal-prestige-header {
@@ -6592,6 +6873,7 @@ a:active {
   }
 
   #modal-prestige-arena .arena-modal-tabs {
+    gap: 5px;
     flex-wrap: wrap;
   }
 
@@ -6599,14 +6881,46 @@ a:active {
   #modal-prestige-arena #prestige-battle-button,
   #modal-prestige-arena #prestige-create-button,
   #modal-prestige-arena #prestige-spectate-button {
-    flex: 1 1 130px;
+    background-position: 12px center;
+    background-size: 20px;
+    flex: 1 1 105px;
+    font-size: 17px;
+    height: 38px;
+    min-width: 105px;
+    padding-left: 38px;
+  }
+
+  #modal-prestige-arena #modal-prestige-body {
+    padding: 6px;
   }
 
   #modal-prestige-arena .modal-prestige-body-inner,
   #modal-prestige-arena #modal-create-window:not(.hide),
   #modal-prestige-arena #modal-battle-window:not(.arena-joined-layout),
   #modal-prestige-arena #modal-battle-window.arena-joined-layout .battle-left-panel {
-    padding: 10px;
+    padding: 7px;
+  }
+
+  #modal-prestige-arena #modal-battle-window.arena-joined-layout {
+    gap: 8px;
+  }
+
+  #modal-prestige-arena #modal-battle-window.arena-joined-layout .battle-right-panel {
+    grid-template-areas:
+      "teams"
+      "mobileTabs"
+      "mobilePanel";
+    grid-template-rows: minmax(150px, 1fr) 34px 190px;
+  }
+
+  #modal-prestige-arena
+    #modal-battle-window.arena-joined-layout
+    .battle-right-panel:has(#arena-teams-board.arena-battle-royale-summary) {
+    grid-template-areas:
+      "teams"
+      "mobileTabs"
+      "mobilePanel";
+    grid-template-rows: auto 34px 190px;
   }
 
   #modal-prestige-arena #modal-create-window:not(.hide) {
@@ -6631,6 +6945,7 @@ a:active {
   }
 
   #modal-prestige-arena #modal-battle-window.arena-joined-layout .battle-left-panel {
+    gap: 6px;
     grid-template-areas:
       "counter"
       "code"
@@ -6641,6 +6956,125 @@ a:active {
       "options"
       "actions";
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  #modal-prestige-arena #battle-player-counter {
+    height: 44px;
+  }
+
+  #modal-prestige-arena #battle-code-row {
+    height: 40px;
+  }
+
+  #modal-prestige-arena .battle-mode,
+  #modal-prestige-arena .battle-type,
+  #modal-prestige-arena .battle-minigame,
+  #modal-prestige-arena .battle-impostors,
+  #modal-prestige-arena #create-mode,
+  #modal-prestige-arena #create-type,
+  #modal-prestige-arena #create-minigame,
+  #modal-prestige-arena #create-impostors {
+    height: 44px;
+  }
+
+  #modal-prestige-arena .battle-game-mode,
+  #modal-prestige-arena .battle-game-type,
+  #modal-prestige-arena .battle-game-minigame,
+  #modal-prestige-arena .battle-game-impostors,
+  #modal-prestige-arena .create-game-mode,
+  #modal-prestige-arena .create-game-type,
+  #modal-prestige-arena .create-game-minigame,
+  #modal-prestige-arena .create-game-impostors {
+    flex-basis: 76px;
+    font-size: 13px;
+    padding-left: 10px;
+    padding-right: 8px;
+  }
+
+  #modal-prestige-arena #battle-link-mode,
+  #modal-prestige-arena #battle-link-type,
+  #modal-prestige-arena #battle-link-minigame,
+  #modal-prestige-arena #battle-link-impostors,
+  #modal-prestige-arena #create-link-mode,
+  #modal-prestige-arena #create-link-type,
+  #modal-prestige-arena #create-link-minigame,
+  #modal-prestige-arena #create-link-impostors {
+    font-size: 18px;
+    line-height: 20px;
+  }
+
+  #modal-prestige-arena #battle-loadout-button,
+  #modal-prestige-arena #game-status,
+  #modal-prestige-arena #battle-button,
+  #modal-prestige-arena #create-button,
+  #modal-prestige-arena #spectate-button,
+  #modal-prestige-arena #check-summary {
+    font-size: 16px;
+    height: 38px;
+    min-height: 38px;
+  }
+
+  #modal-prestige-arena
+    #modal-battle-window.arena-joined-layout
+    .battle-right-panel:has(#arena-teams-board.arena-battle-royale-summary) {
+    grid-template-rows: auto 190px;
+  }
+
+  #modal-prestige-arena .arena-team-column {
+    padding: 6px;
+  }
+
+  #modal-prestige-arena .arena-br-lobby-card {
+    gap: 6px;
+    padding: 8px;
+  }
+
+  #modal-prestige-arena .arena-br-lobby-hero {
+    min-height: 48px;
+    padding: 8px 10px;
+  }
+
+  #modal-prestige-arena .arena-br-lobby-mode {
+    font-size: 20px;
+    line-height: 22px;
+  }
+
+  #modal-prestige-arena .arena-br-lobby-sub {
+    font-size: 12px;
+    line-height: 14px;
+  }
+
+  #modal-prestige-arena .arena-br-lobby-row {
+    gap: 8px;
+    grid-template-columns: 24px 70px minmax(0, 1fr);
+    min-height: 36px;
+    padding: 3px 8px;
+  }
+
+  #modal-prestige-arena .arena-br-lobby-row::before {
+    background-size: 15px;
+    height: 24px;
+    width: 24px;
+  }
+
+  #modal-prestige-arena .arena-br-lobby-label {
+    font-size: 12px;
+  }
+
+  #modal-prestige-arena .arena-br-lobby-value {
+    font-size: 17px;
+    line-height: 20px;
+  }
+
+  #modal-prestige-arena #team-clan-chat {
+    padding: 7px;
+  }
+
+  #modal-prestige-arena #team-clan-chat-title {
+    font-size: 16px;
+    line-height: 20px;
+    margin-bottom: 5px;
+    min-height: 20px;
   }
 
   #modal-prestige-arena
@@ -6656,31 +7090,83 @@ a:active {
   }
 
   #modal-prestige-arena #battle-mode-selection {
-    left: 10px;
-    right: 10px;
+    left: 7px;
+    right: 7px;
     top: 174px;
+    width: auto;
   }
 
   #modal-prestige-arena #battle-type-selection {
-    left: 10px;
-    right: 10px;
+    left: 7px;
+    right: 7px;
     top: 232px;
+    width: auto;
   }
 
   #modal-prestige-arena #battle-minigame-selection {
-    left: 10px;
-    right: 10px;
+    left: 7px;
+    right: 7px;
     top: 290px;
+    width: auto;
   }
 
   #modal-prestige-arena #battle-impostors-selection {
-    left: 10px;
-    right: 10px;
+    left: 7px;
+    right: 7px;
     top: 348px;
+    width: auto;
+  }
+
+  #modal-prestige-arena #create-mode-selection,
+  #modal-prestige-arena #create-type-selection,
+  #modal-prestige-arena #create-minigame-selection,
+  #modal-prestige-arena #create-impostors-selection,
+  #modal-prestige-arena .battle-option-selection {
+    grid-template-columns: minmax(0, 1fr);
+    max-height: 240px;
+    width: auto;
+  }
+
+  #modal-prestige-arena #create-impostors-selection {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   #modal-prestige-arena #arena-teams-board {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  #modal-prestige-arena #modal-prestige-wrapper,
+  #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell,
+  #modal-prestige-arena.is-open
+    #modal-prestige-wrapper.arena-joined-shell.arena-large-teams {
+    --arena-modal-scale: 0.74;
+    height: calc((100vh - 78px) / 0.74);
+    width: calc((100vw - 12px) / 0.74);
+  }
+}
+
+@media (max-width: 420px), (max-height: 620px) {
+  #modal-prestige-arena #modal-prestige-wrapper,
+  #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell,
+  #modal-prestige-arena.is-open
+    #modal-prestige-wrapper.arena-joined-shell.arena-large-teams {
+    --arena-modal-scale: 0.68;
+    height: calc((100vh - 64px) / 0.68);
+    width: calc((100vw - 10px) / 0.68);
+  }
+}
+
+@media (max-width: 850px) and (max-height: 374px),
+  (max-width: 850px) and (max-height: 320px) {
+  #modal-prestige-arena #modal-prestige-wrapper,
+  #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell,
+  #modal-prestige-arena.is-open
+    #modal-prestige-wrapper.arena-joined-shell.arena-large-teams {
+    --arena-modal-scale: 0.58;
+    height: calc((100vh - 34px) / 0.58);
+    width: calc((100vw - 8px) / 0.58);
   }
 }
 
@@ -16537,6 +17023,27 @@ div.roulette {
   line-height: 69px;
   padding-left: 51px;
   text-transform: uppercase;
+}
+
+@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+  #open-arena-button {
+    left: 50%;
+    top: calc(var(--side-pad) + 46px);
+    transform: translateX(-50%) scale(0.72);
+    transform-origin: top center;
+    width: 232px;
+    z-index: 7;
+  }
+}
+
+@media (max-width: 850px) and (orientation: landscape),
+  (max-width: 900px) and (min-resolution: 3dppx) and (orientation: landscape) {
+  #open-arena-button {
+    left: 8px;
+    top: calc(var(--side-pad) + 62px);
+    transform: scale(0.62);
+    transform-origin: top left;
+  }
 }
 
 @media (max-width: 1800px) {
