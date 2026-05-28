@@ -1139,6 +1139,13 @@ export class TeamMenu {
 
     swapPlayerTeam(playerId: number, team: "A" | "B" | "spectator") {
         if (!this.arena) return;
+        const player = this.getPlayerById(playerId);
+        if (!player) return;
+        if (team === "spectator") {
+            if (player.spectator) return;
+        } else if (!player.spectator && player.team === team) {
+            return;
+        }
         this.sendMessage("swapTeam", {
             playerId,
             team,
@@ -1426,7 +1433,12 @@ export class TeamMenu {
                         const historyPath = this.arena
                             ? `/?arena${this.roomData.roomUrl}`
                             : this.roomData.roomUrl;
-                        window.history.replaceState("", "", historyPath);
+                        const nextUrl = new URL(historyPath, window.location.href);
+                        const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+                        const nextPath = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+                        if (currentPath !== nextPath) {
+                            window.history.replaceState("", "", historyPath);
+                        }
                     }
                 }
             }
