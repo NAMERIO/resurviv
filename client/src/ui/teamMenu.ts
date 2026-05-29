@@ -314,6 +314,12 @@ export class TeamMenu {
             }
         }, 10 * 1000);
 
+        document.addEventListener("visibilitychange", () => {
+            if (this.joined && document.visibilityState === "visible") {
+                this.sendMessage("keepAlive", {});
+            }
+        });
+
         this.config.addModifiedListener((key) => {
             if (key === "loadout") {
                 this.syncOutfit();

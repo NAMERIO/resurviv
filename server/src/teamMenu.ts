@@ -85,6 +85,7 @@ class Player {
     }
 
     lastMsgTime = Date.now();
+    lastServerKeepAliveTime = 0;
 
     disconnectTimeout: ReturnType<typeof setTimeout>;
 
@@ -945,6 +946,10 @@ export class TeamMenu {
                 // kick players that haven't sent a keep alive msg in over a minute
                 // client sends it every 45 seconds
                 for (const player of room.players) {
+                    if (player.lastServerKeepAliveTime < Date.now() - 15 * 1000) {
+                        player.send("keepAlive", {});
+                        player.lastServerKeepAliveTime = Date.now();
+                    }
                     if (player.lastMsgTime < Date.now() - 8 * 60 * 1000) {
                         player.send("error", { type: "lost_conn" });
                         room.removePlayer(player);
