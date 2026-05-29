@@ -188,7 +188,7 @@ export class Application {
     prestigeArenaModalRequestedOpen = false;
     modeDisplayNameByMap: Record<string, string> = {
         main: "Normal",
-        br_main: "Battle Royale",
+        br_main: "Normal",
         br_main_spring: "Spring",
         br_main_summer: "Summer",
         br_desert: "Desert",
