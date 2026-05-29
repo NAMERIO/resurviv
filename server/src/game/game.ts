@@ -862,26 +862,7 @@ export class Game {
          *
          * it also seems to be unused by the client so we could also remove it?
          */
-        const teamTotal = new Set(players.map(({ player }) => player.teamId)).size;
-
-        const teamKills = players.reduce(
-            (acc, curr) => {
-                acc[curr.player.teamId] =
-                    (acc[curr.player.teamId] ?? 0) + curr.player.kills;
-                return acc;
-            },
-            {} as Record<string, number>,
-        );
-
-        const teamCounts = players.reduce(
-            (acc, curr) => {
-                acc[curr.player.teamId] = (acc[curr.player.teamId] ?? 0) + 1;
-                return acc;
-            },
-            {} as Record<string, number>,
-        );
-
-        const values: SaveGameBody["matchData"] = players.map(({ player, rank }) => {
+        const rawValues: SaveGameBody["matchData"] = players.map(({ player, rank }) => {
             return {
                 // *NOTE: userId is optional; we save the game stats for non logged users too
                 userId: player.userId,
@@ -892,13 +873,13 @@ export class Game {
                     ? GameModeStatus.BattleRoyale
                     : GameModeStatus.Deathmatch,
                 teamMode: this.teamMode,
-                teamCount: Math.min(teamCounts[player.teamId] ?? 1, this.teamMode),
-                teamTotal: teamTotal,
+                teamCount: 1,
+                teamTotal: 1,
                 teamId: player.teamId,
                 timeAlive: Math.round(player.timeAlive),
                 died: player.dead,
                 kills: player.kills,
-                team_kills: teamKills[player.groupId] ?? 0,
+                teamKills: 0,
                 damageDealt: Math.round(player.damageDealt),
                 damageTaken: Math.round(player.damageTaken),
                 killerId: player.killedBy?.matchDataId || 0,
@@ -911,6 +892,68 @@ export class Game {
                 findGameIp: player.findGameIp,
             };
         });
+
+        const matchDataByParticipant = new Map<string, SaveGameBody["matchData"][number]>();
+        for (const data of rawValues) {
+            const key = data.userId ? `user:${data.userId}` : `ip:${data.findGameIp}`;
+            const existing = matchDataByParticipant.get(key);
+            if (!existing) {
+                matchDataByParticipant.set(key, { ...data, killedIds: [...data.killedIds] });
+                continue;
+            }
+
+            const latest = data.playerId > existing.playerId ? data : existing;
+            const kills = existing.kills + data.kills;
+            const timeAlive = existing.timeAlive + data.timeAlive;
+            const damageDealt = existing.damageDealt + data.damageDealt;
+            const damageTaken = existing.damageTaken + data.damageTaken;
+            const killedIds = Array.from(
+                new Set([...existing.killedIds, ...data.killedIds]),
+            );
+
+            existing.username = latest.username;
+            existing.playerId = latest.playerId;
+            existing.teamId = latest.teamId;
+            existing.rank = latest.rank;
+            existing.died = latest.died;
+            existing.killerId = latest.killerId;
+            existing.ip = latest.ip;
+            existing.findGameIp = latest.findGameIp;
+            existing.teamMode = latest.teamMode;
+            existing.gameMode = latest.gameMode;
+            existing.mapId = latest.mapId;
+            existing.mapSeed = latest.mapSeed;
+            existing.region = latest.region;
+            existing.gameId = latest.gameId;
+            existing.userId = latest.userId;
+            existing.kills = kills;
+            existing.timeAlive = timeAlive;
+            existing.damageDealt = damageDealt;
+            existing.damageTaken = damageTaken;
+            existing.killedIds = killedIds;
+        }
+
+        const values = Array.from(matchDataByParticipant.values());
+        const teamTotal = new Set(values.map((data) => data.teamId)).size;
+        const teamKills = values.reduce(
+            (acc, data) => {
+                acc[data.teamId] = (acc[data.teamId] ?? 0) + data.kills;
+                return acc;
+            },
+            {} as Record<string, number>,
+        );
+        const teamCounts = values.reduce(
+            (acc, data) => {
+                acc[data.teamId] = (acc[data.teamId] ?? 0) + 1;
+                return acc;
+            },
+            {} as Record<string, number>,
+        );
+        for (const data of values) {
+            data.teamTotal = teamTotal;
+            data.teamKills = teamKills[data.teamId] ?? 0;
+            data.teamCount = Math.min(teamCounts[data.teamId] ?? 1, this.teamMode);
+        }
 
         // only save the game if it has more than 2 players lol
         if (values.length < 2) return;
