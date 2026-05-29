@@ -873,6 +873,14 @@ export class Game {
             {} as Record<string, number>,
         );
 
+        const teamCounts = players.reduce(
+            (acc, curr) => {
+                acc[curr.player.teamId] = (acc[curr.player.teamId] ?? 0) + 1;
+                return acc;
+            },
+            {} as Record<string, number>,
+        );
+
         const values: SaveGameBody["matchData"] = players.map(({ player, rank }) => {
             return {
                 // *NOTE: userId is optional; we save the game stats for non logged users too
@@ -884,7 +892,7 @@ export class Game {
                     ? GameModeStatus.BattleRoyale
                     : GameModeStatus.Deathmatch,
                 teamMode: this.teamMode,
-                teamCount: player.group?.players.length ?? 1,
+                teamCount: Math.min(teamCounts[player.teamId] ?? 1, this.teamMode),
                 teamTotal: teamTotal,
                 teamId: player.teamId,
                 timeAlive: Math.round(player.timeAlive),
