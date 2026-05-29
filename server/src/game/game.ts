@@ -893,12 +893,18 @@ export class Game {
             };
         });
 
-        const matchDataByParticipant = new Map<string, SaveGameBody["matchData"][number]>();
+        const matchDataByParticipant = new Map<
+            string,
+            SaveGameBody["matchData"][number]
+        >();
         for (const data of rawValues) {
             const key = data.userId ? `user:${data.userId}` : `ip:${data.findGameIp}`;
             const existing = matchDataByParticipant.get(key);
             if (!existing) {
-                matchDataByParticipant.set(key, { ...data, killedIds: [...data.killedIds] });
+                matchDataByParticipant.set(key, {
+                    ...data,
+                    killedIds: [...data.killedIds],
+                });
                 continue;
             }
 

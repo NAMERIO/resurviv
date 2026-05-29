@@ -31,15 +31,8 @@ export function useUserStats(
 ) {
     const cache = new Map<string, { data: UserStatsResponse; error: boolean }>();
 
-    const fetchUserStats = async () => {
-        const args: UserStatsRequest = {
-            slug: slug(),
-            interval: interval(),
-            mapIdFilter: mapIdFilter(),
-            gameModeFilter: ALL_GAME_MODE_STATUS,
-        };
-
-        const cacheKey = `${interval()}${mapIdFilter()}${ALL_GAME_MODE_STATUS}`;
+    const fetchUserStats = async (args: UserStatsRequest) => {
+        const cacheKey = `${args.interval}${args.mapIdFilter}${args.gameModeFilter}`;
         const cached = cache.get(cacheKey);
 
         if (cached) {
@@ -69,12 +62,13 @@ export function useUserStats(
     };
 
     return createResource<UserStatsResponse | null, UserStatsRequest>(
-        () => ({
-            slug: slug(),
-            interval: interval(),
-            mapIdFilter: mapIdFilter(),
-            gameModeFilter: ALL_GAME_MODE_STATUS,
-        }),
+        () =>
+            ({
+                slug: slug(),
+                interval: interval(),
+                mapIdFilter: mapIdFilter(),
+                gameModeFilter: ALL_GAME_MODE_STATUS,
+            }) satisfies UserStatsRequest,
         fetchUserStats,
     );
 }
