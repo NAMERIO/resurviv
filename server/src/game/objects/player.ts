@@ -374,7 +374,9 @@ export class PlayerBarn {
             name: player.name,
             kills: 0,
         };
-        player.kills = data.kills;
+        if (!isBattleRoyaleMapName(this.game.mapName)) {
+            player.kills = data.kills;
+        }
         this.game.leaderboard.set(leaderboardKey, { ...data, name: player.name });
 
         this.game.updateData();
@@ -1096,6 +1098,9 @@ export class PlayerBarn {
     getTrackedKills(
         player: Pick<Player, "kills"> & { getLeaderboardKey(): string },
     ): number {
+        if (isBattleRoyaleMapName(this.game.mapName)) {
+            return player.kills;
+        }
         return (
             this.game.leaderboard.get(player.getLeaderboardKey())?.kills ?? player.kills
         );

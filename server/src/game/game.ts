@@ -909,7 +909,9 @@ export class Game {
             }
 
             const latest = data.playerId > existing.playerId ? data : existing;
-            const kills = existing.kills + data.kills;
+            const kills = isBattleRoyaleMapName(this.mapName)
+                ? existing.kills + data.kills
+                : Math.max(existing.kills, data.kills);
             const timeAlive = existing.timeAlive + data.timeAlive;
             const damageDealt = existing.damageDealt + data.damageDealt;
             const damageTaken = existing.damageTaken + data.damageTaken;
