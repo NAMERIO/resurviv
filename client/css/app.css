@@ -17588,6 +17588,7 @@ div.roulette {
   flex-direction: column;
 }
 
+#friends-list-search-input,
 #friends-search-input {
   box-sizing: border-box;
   font-size: 15px;
@@ -17862,6 +17863,7 @@ div.roulette {
   padding: 8px 0 16px;
 }
 
+#friends-list-search-input,
 #friends-search-input {
   background: #fff;
   border: 0;
@@ -18151,6 +18153,7 @@ div.roulette {
   padding: 10px;
 }
 
+#friends-list-search-input,
 #friends-search-input {
   background: #1f1f1f;
   border: 1px solid #555;
