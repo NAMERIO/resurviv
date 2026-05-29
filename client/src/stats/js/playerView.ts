@@ -35,6 +35,8 @@ const templates = {
     playerCards,
 };
 
+const STATS_TEAM_MODES: TeamMode[] = [1, 2, 4] as TeamMode[];
+
 export interface TeamModes {
     teamMode: TeamMode;
     gameMode: GameModeStatus;
@@ -125,15 +127,14 @@ function getPlayerCardData(
     }
 
     // Insert blank cards for all teammodes
-    const keys = Object.keys(TeamModeToString) as unknown as TeamMode[];
     const gameModes =
         gameModeFilter === ALL_GAME_MODE_STATUS
             ? (["deathmatch", "battleroyale"] as GameModeStatus[])
             : ([gameModeFilter] as GameModeStatus[]);
 
     for (const gameMode of gameModes) {
-        for (let i = 0; i < keys.length; i++) {
-            const teamMode = keys[i];
+        for (let i = 0; i < STATS_TEAM_MODES.length; i++) {
+            const teamMode = STATS_TEAM_MODES[i];
             if (
                 !teamModes.find((x) => x.teamMode == teamMode && x.gameMode == gameMode)
             ) {
