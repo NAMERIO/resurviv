@@ -5929,15 +5929,17 @@ export class Player extends BaseGameObject {
                     ? this.arenaTeam === hideAndSeekSettings.hiderTeam ||
                       p.arenaTeam === this.arenaTeam
                     : false;
+            const arenaShowsAllPlayers =
+                this.game.arenaPrivate && !isBattleRoyaleMapName(this.game.mapName);
             const visible =
                 this.game.arenaPrivate && hideAndSeekSettings && this.arenaTeam
                     ? hideAndSeekVisible
-                    : this.game.arenaPrivate ||
+                    : arenaShowsAllPlayers ||
                       (!hiddenByDebug &&
                           (p.teamId === this.teamId || p.timeUntilHidden > 0));
             return {
                 hasData:
-                    (this.game.arenaPrivate && visible) ||
+                    (arenaShowsAllPlayers && visible) ||
                     (!hiddenByDebug && visible) ||
                     (!hiddenByDebug && p.playerStatusDirty) ||
                     (hiddenByDebug && p.teamId === this.teamId),

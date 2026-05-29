@@ -140,6 +140,8 @@ class Room {
     players: Player[] = [];
     arenaTeams = new Map<Player, "A" | "B">();
     arenaSpectators = new Set<Player>();
+    battleRoyaleArenaReachedMaxPlayers = false;
+    currentArenaGameId = "";
 
     data: RoomData = {
         roomUrl: "",
@@ -189,8 +191,15 @@ class Room {
         }
 
         if (this.data.arena && this.isBattleRoyaleArena()) {
-            if (this.players.length >= this.data.maxPlayers) {
+            if (opts?.spectator) {
+                this.arenaSpectators.add(player);
+            } else if (this.getBattleRoyaleArenaPlayerCount() >= this.data.maxPlayers) {
                 return { ok: false, error: "join_full" };
+            } else if (
+                this.getBattleRoyaleArenaPlayerCount() + 1 >=
+                this.data.maxPlayers
+            ) {
+                this.battleRoyaleArenaReachedMaxPlayers = true;
             }
         } else if (this.data.arena) {
             const cap = this.getArenaTeamCapacity();
@@ -552,6 +561,8 @@ class Room {
         // Keep private arena lobbies alive between rounds.
         this.data.findingGame = false;
         this.data.lastError = "";
+        this.currentArenaGameId = "";
+        this.battleRoyaleArenaReachedMaxPlayers = false;
         for (const player of this.players) {
             player.inGame = false;
         }
@@ -594,6 +605,21 @@ class Room {
         return count;
     }
 
+    getBattleRoyaleArenaPlayerCount() {
+        let count = 0;
+        for (const p of this.players) {
+            if (!this.arenaSpectators.has(p)) count++;
+        }
+        return count;
+    }
+
+    canBattleRoyaleArenaJoinInProgressAsPlayer() {
+        if (!this.isBattleRoyaleArena()) return false;
+        if (this.battleRoyaleArenaReachedMaxPlayers) return false;
+        if (this.getBattleRoyaleArenaPlayerCount() >= this.data.maxPlayers) return false;
+        return true;
+    }
+
     getArenaTeamCount(team: "A" | "B") {
         let count = 0;
         for (const p of this.players) {
@@ -633,7 +659,13 @@ class Room {
         }
         if (this.isBattleRoyaleArena()) {
             this.arenaTeams.clear();
-            this.arenaSpectators.clear();
+            if (
+                !this.currentArenaGameId &&
+                !this.data.findingGame &&
+                !this.players.some((p) => p.inGame)
+            ) {
+                this.arenaSpectators.clear();
+            }
             return;
         }
         const cap = this.getArenaTeamCapacity();
@@ -859,10 +891,16 @@ class Room {
 
         if (this.data.arena || isBattleRoyaleMode) {
             this.data.lastError = "";
+            if (this.data.arena) {
+                this.currentArenaGameId = res.gameId;
+            }
         }
 
         for (const roomPlayer of queuedPlayers) {
             roomPlayer.inGame = true;
+            if (this.isBattleRoyaleArena()) {
+                this.arenaSpectators.delete(roomPlayer);
+            }
             const token = tokenMap.get(roomPlayer);
 
             if (!token) {
@@ -870,6 +908,95 @@ class Room {
                 continue;
             }
 
+            roomPlayer.send("joinGame", {
+                zone: "",
+                data: token,
+                gameId: res.gameId,
+                addrs: res.addrs,
+                hosts: res.hosts,
+                useHttps: res.useHttps,
+            });
+        }
+
+        this.sendState();
+    }
+
+    async joinArenaPlayersToCurrentGame(players: Player[], spectator: boolean) {
+        if (!this.data.arena || !this.currentArenaGameId) return;
+
+        const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
+        if (!mode) return;
+
+        const mapName =
+            this.data.arena && this.data.miniGame
+                ? (getPrivateLobbyMiniGameMapName(this.data.miniGame) ?? mode.mapName)
+                : mode.mapName;
+
+        const tokenMap = new Map<Player, string>();
+        const playerData = await getFindGamePlayerData(
+            players.map((player) => {
+                const token = randomUUID();
+                tokenMap.set(player, token);
+                const arenaSpectator = spectator || this.isArenaSpectator(player);
+                return {
+                    roomId:
+                        arenaSpectator && !this.isBattleRoyaleArena()
+                            ? `${this.id}-S-${player.playerId}`
+                            : this.data.arena &&
+                                !this.isBattleRoyaleArena() &&
+                                this.getPlayerTeam(player)
+                              ? `${this.id}-${this.getPlayerTeam(player)}`
+                              : this.id,
+                    spectator: arenaSpectator,
+                    arenaTeam:
+                        this.data.arena && !this.isBattleRoyaleArena()
+                            ? this.getPlayerTeam(player)
+                            : undefined,
+                    token,
+                    userId: player.userId,
+                    ip: player.ip,
+                } satisfies FindGamePrivateBody["playerData"][0];
+            }),
+        );
+
+        const res = await this.teamMenu.server.findGame({
+            mapName,
+            teamMode: mode.teamMode,
+            autoFill: false,
+            region: this.data.region,
+            version: GameConfig.protocolVersion,
+            arenaPrivate: true,
+            miniGame: this.data.miniGame,
+            amongUsImpostorCount:
+                this.data.miniGame === "among_us"
+                    ? this.data.amongUsImpostorCount
+                    : undefined,
+            disableAirstrikes: this.data.disableAirstrikes,
+            disablePerks: this.data.disablePerks,
+            groupHash: this.id,
+            targetGameId: this.currentArenaGameId,
+            playerData,
+        });
+
+        if ("error" in res) {
+            if (!spectator && this.isBattleRoyaleArena()) {
+                await this.joinArenaPlayersToCurrentGame(players, true);
+                return;
+            }
+            for (const roomPlayer of players) {
+                this.removePlayerWithError(roomPlayer, "join_game_failed");
+            }
+            return;
+        }
+
+        for (const roomPlayer of players) {
+            const token = tokenMap.get(roomPlayer);
+            if (!token) continue;
+
+            roomPlayer.inGame = true;
+            if (spectator || res.forcedSpectator) {
+                this.arenaSpectators.add(roomPlayer);
+            }
             roomPlayer.send("joinGame", {
                 zone: "",
                 data: token,
@@ -1202,7 +1329,9 @@ export class TeamMenu {
                     }
                     const createJoinRes = room.addPlayer(
                         player,
-                        arena ? { spectator: true } : undefined,
+                        arena && !room.isBattleRoyaleArena()
+                            ? { spectator: true }
+                            : undefined,
                     );
                     if (!createJoinRes.ok) {
                         player.send("error", { type: createJoinRes.error });
@@ -1229,9 +1358,13 @@ export class TeamMenu {
                         break;
                     }
 
-                    const roomParticipantCount = room.data.arena
-                        ? room.players.filter((p) => !room.isArenaSpectator(p)).length
-                        : room.players.length;
+                    const roomParticipantCount =
+                        room.data.arena && room.isBattleRoyaleArena()
+                            ? room.getBattleRoyaleArenaPlayerCount()
+                            : room.data.arena
+                              ? room.players.filter((p) => !room.isArenaSpectator(p))
+                                    .length
+                              : room.players.length;
                     const roomParticipantsFull =
                         roomParticipantCount >= room.data.maxPlayers;
                     if (roomParticipantsFull && !room.data.arena) {
@@ -1244,8 +1377,13 @@ export class TeamMenu {
 
                     const gameInProgress =
                         room.data.findingGame || room.players.some((p) => p.inGame);
-                    const wantsSpectator =
-                        !!msg.data.spectator || (room.data.arena && gameInProgress);
+                    const battleRoyaleLatePlayer =
+                        room.isBattleRoyaleArena() &&
+                        gameInProgress &&
+                        room.canBattleRoyaleArenaJoinInProgressAsPlayer();
+                    const wantsSpectator = room.isBattleRoyaleArena()
+                        ? gameInProgress && !battleRoyaleLatePlayer
+                        : !!msg.data.spectator || (room.data.arena && gameInProgress);
 
                     player.setName(msg.data.playerData.name);
                     player.setOutfit(msg.data.playerData.outfit);
@@ -1260,6 +1398,14 @@ export class TeamMenu {
                     if (!joinRes.ok) {
                         player.send("error", { type: joinRes.error });
                         break;
+                    }
+
+                    if (
+                        room.isBattleRoyaleArena() &&
+                        gameInProgress &&
+                        room.currentArenaGameId
+                    ) {
+                        void room.joinArenaPlayersToCurrentGame([player], wantsSpectator);
                     }
                 }
             }

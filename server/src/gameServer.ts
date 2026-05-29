@@ -77,7 +77,7 @@ class GameServer {
             };
         }
 
-        const gameId = await this.manager.findGame({
+        const findGameRes = await this.manager.findGame({
             region: data.region,
             version: data.version,
             autoFill: data.autoFill,
@@ -92,13 +92,15 @@ class GameServer {
             disablePerks: !!data.disablePerks,
             playerData: data.playerData,
             groupHash: data.groupHash,
+            targetGameId: data.targetGameId,
         });
 
         return {
-            gameId,
+            gameId: findGameRes.gameId,
             useHttps: this.region.https,
             hosts: [this.region.address],
             addrs: [this.region.address],
+            forcedSpectator: findGameRes.forcedSpectator,
         };
     }
 
@@ -313,9 +315,6 @@ app.post("/api/find_game", (res, req) => {
                     return;
                 }
 
-                console.log({
-                    findGameParseBody: parsed.data,
-                });
                 returnJson(res, await server.findGame(parsed.data));
             } catch (error) {
                 server.logger.warn("API find_game error: ", error);
@@ -377,7 +376,9 @@ app.ws<GameSocketData>("/play", {
             return;
         }
 
-        if (!gameData.canJoin) {
+        const canJoinClosedBattleRoyalePrivateGame =
+            gameData.arenaPrivate && isBattleRoyaleMapName(gameData.mapName);
+        if (!gameData.canJoin && !canJoinClosedBattleRoyalePrivateGame) {
             server.logger.warn("game_started");
             forbidden(res);
             return;

@@ -105,6 +105,7 @@ export const zFindGamePrivateBody = z.object({
     disableAirstrikes: z.boolean().optional(),
     disablePerks: z.boolean().optional(),
     groupHash: z.string().optional(),
+    targetGameId: z.string().optional(),
     playerData: z.array(
         z.object({
             roomId: z.string().optional(),
@@ -130,6 +131,7 @@ export type FindGamePrivateRes =
           useHttps: boolean;
           hosts: string[];
           addrs: string[];
+          forcedSpectator?: boolean;
       }
     | { error: FindGameError };
 

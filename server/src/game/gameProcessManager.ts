@@ -175,7 +175,8 @@ class GameProcess implements GameData {
             autoFill,
             tokens,
         });
-        this.avaliableSlots = Math.max(0, this.avaliableSlots - tokens.length);
+        const playerTokenCount = tokens.filter((token) => !token.spectator).length;
+        this.avaliableSlots = Math.max(0, this.avaliableSlots - playerTokenCount);
     }
 
     handleMsg(data: ArrayBuffer, socketId: string, ip: string) {
@@ -324,30 +325,84 @@ export class GameProcessManager implements GameManager {
         return this.processById.get(id);
     }
 
-    async findGame(body: FindGamePrivateBody): Promise<string> {
+    async findGame(
+        body: FindGamePrivateBody,
+    ): Promise<{ gameId: string; forcedSpectator?: boolean }> {
         const requestedGroupHash = body.groupHash;
-        let game = this.processes
-            .filter((proc) => {
-                return (
-                    (proc.canJoin || proc.creating) &&
-                    proc.avaliableSlots > 0 &&
-                    proc.teamMode === body.teamMode &&
-                    proc.mapName === body.mapName &&
-                    !!proc.arenaPrivate === !!body.arenaPrivate &&
-                    (proc.miniGame ?? DefaultPrivateLobbyMiniGame) ===
-                        (body.miniGame ?? DefaultPrivateLobbyMiniGame) &&
-                    proc.amongUsImpostorCount ===
-                        normalizeAmongUsImpostorCount(body.amongUsImpostorCount) &&
-                    proc.disableAirstrikes === !!body.disableAirstrikes &&
-                    proc.disablePerks === !!body.disablePerks &&
-                    (requestedGroupHash
-                        ? proc.groupHash === requestedGroupHash
-                        : !proc.groupHash)
-                );
-            })
-            .sort((a, b) => {
-                return a.startedTime - b.startedTime;
-            })[0];
+        const targetGame = body.targetGameId
+            ? this.processById.get(body.targetGameId)
+            : undefined;
+        const spectatorOnly =
+            !!body.arenaPrivate &&
+            body.playerData.length > 0 &&
+            body.playerData.every((player) => player.spectator);
+        const battleRoyaleArenaLateJoin =
+            !!body.arenaPrivate &&
+            !!requestedGroupHash &&
+            body.mapName.startsWith("br_") &&
+            body.playerData.length > 0 &&
+            !spectatorOnly;
+        const matchingGames = this.processes.filter((proc) => {
+            return (
+                !proc.stopped &&
+                proc.teamMode === body.teamMode &&
+                proc.mapName === body.mapName &&
+                !!proc.arenaPrivate === !!body.arenaPrivate &&
+                (proc.miniGame ?? DefaultPrivateLobbyMiniGame) ===
+                    (body.miniGame ?? DefaultPrivateLobbyMiniGame) &&
+                proc.amongUsImpostorCount ===
+                    normalizeAmongUsImpostorCount(body.amongUsImpostorCount) &&
+                proc.disableAirstrikes === !!body.disableAirstrikes &&
+                proc.disablePerks === !!body.disablePerks &&
+                (requestedGroupHash
+                    ? proc.groupHash === requestedGroupHash
+                    : !proc.groupHash)
+            );
+        });
+        let forceSpectator = false;
+        let playerData = body.playerData;
+        let game =
+            targetGame && !targetGame.stopped
+                ? targetGame
+                : matchingGames
+                      .filter((proc) => {
+                          return (
+                              (proc.canJoin && proc.avaliableSlots > 0) ||
+                              proc.creating ||
+                              spectatorOnly
+                          );
+                      })
+                      .sort((a, b) => {
+                          return a.startedTime - b.startedTime;
+                      })[0];
+
+        if (
+            game &&
+            targetGame === game &&
+            battleRoyaleArenaLateJoin &&
+            (!game.canJoin || game.avaliableSlots <= 0)
+        ) {
+            forceSpectator = true;
+            playerData = body.playerData.map((player) => ({
+                ...player,
+                spectator: true,
+            }));
+        }
+
+        if (!game && battleRoyaleArenaLateJoin) {
+            game = matchingGames
+                .filter((proc) => !proc.creating)
+                .sort((a, b) => {
+                    return a.startedTime - b.startedTime;
+                })[0];
+            if (game) {
+                forceSpectator = true;
+                playerData = body.playerData.map((player) => ({
+                    ...player,
+                    spectator: true,
+                }));
+            }
+        }
 
         if (!game) {
             game = this.newGame({
@@ -375,15 +430,15 @@ export class GameProcessManager implements GameManager {
         if (!game.created) {
             return await new Promise((resolve) => {
                 game.onCreatedCbs.push((game) => {
-                    game.addJoinTokens(body.playerData, autoFill, requestedGroupHash);
-                    resolve(game.id);
+                    game.addJoinTokens(playerData, autoFill, requestedGroupHash);
+                    resolve({ gameId: game.id, forcedSpectator: forceSpectator });
                 });
             });
         }
 
-        game.addJoinTokens(body.playerData, autoFill, requestedGroupHash);
+        game.addJoinTokens(playerData, autoFill, requestedGroupHash);
 
-        return game.id;
+        return { gameId: game.id, forcedSpectator: forceSpectator };
     }
 
     onOpen(socketId: string, socket: WebSocket<GameSocketData>): void {
