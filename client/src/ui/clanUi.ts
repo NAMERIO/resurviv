@@ -2705,7 +2705,7 @@ export class ClanUi {
                 nameRow.append(
                     $("<div/>", {
                         class: "clan-playoff-badge",
-                        text: "PLAYOFF",
+                        text: "PLAYOFFS",
                         title: "Top 4 playoff qualifier",
                     }),
                 );
