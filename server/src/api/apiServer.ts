@@ -88,7 +88,7 @@ export class ApiServer {
 
     regions: Record<string, Region> = {};
 
-    modes = expandConfiguredModes(Config.modes, Config.battleRoyaleMode);
+    modes = expandConfiguredModes(Config.modes, Config.br_modes, Config.battleRoyaleMode);
     privateLobbyMaps = new Set<(typeof Config.modes)[number]["mapName"]>();
     clientTheme = Config.clientTheme;
 
@@ -165,11 +165,26 @@ export class ApiServer {
         }
     }
 
-    setMode(index: number, mode: (typeof Config.modes)[number]) {
-        this.modes[index] = mode;
-        this.modes = expandConfiguredModes(this.modes, this.battleRoyaleMode);
+    getConfiguredModes(modeType: "deathmatch" | "br") {
+        return modeType === "br" ? Config.br_modes : Config.modes;
+    }
+
+    setMode(
+        index: number,
+        modeType: "deathmatch" | "br",
+        mode: (typeof Config.modes)[number],
+    ) {
+        this.getConfiguredModes(modeType)[index] = mode;
+        this.rebuildModes();
+    }
+
+    private rebuildModes() {
+        this.modes = expandConfiguredModes(
+            Config.modes,
+            Config.br_modes,
+            this.battleRoyaleMode,
+        );
         this.ensurePrivateLobbyModes();
-        Config.modes = this.modes;
     }
 
     init(app: Hono<any>, upgradeWebSocket: UpgradeWebSocket) {
@@ -268,9 +283,7 @@ export class ApiServer {
     async setBattleRoyaleMode(enabled: boolean) {
         this.battleRoyaleMode = enabled;
         Config.battleRoyaleMode = enabled;
-        this.modes = expandConfiguredModes(this.modes, enabled);
-        this.ensurePrivateLobbyModes();
-        Config.modes = this.modes;
+        this.rebuildModes();
 
         const results = await Promise.allSettled(
             Object.values(this.regions).map((region) =>
@@ -298,7 +311,11 @@ export class ApiServer {
     }
 }
 
-function expandConfiguredModes(modes: typeof Config.modes, battleRoyaleMode: boolean) {
+function expandConfiguredModes(
+    modes: typeof Config.modes,
+    battleRoyaleModes: typeof Config.br_modes,
+    battleRoyaleMode: boolean,
+) {
     const expandedModes: typeof Config.modes = [];
     const addedModes = new Map<string, number>();
 
@@ -316,20 +333,32 @@ function expandConfiguredModes(modes: typeof Config.modes, battleRoyaleMode: boo
     };
 
     for (const mode of modes) {
-        if (!battleRoyaleMode && mode.mapName.startsWith("br_")) continue;
-
+        if (mode.mapName.startsWith("br_")) continue;
         addMode(mode);
+    }
 
-        if (mode.mapName.startsWith("br_") || !battleRoyaleMode) continue;
+    if (!battleRoyaleMode) {
+        return expandedModes;
+    }
 
-        const battleRoyaleMapName = `br_${mode.mapName}` as keyof typeof MapDefs;
+    for (const mode of battleRoyaleModes) {
+        const battleRoyaleMapName = toBattleRoyaleMapName(mode.mapName);
+        if (!battleRoyaleMapName) continue;
+
         addMode({
             ...mode,
-            mapName: MapDefs[battleRoyaleMapName] ? battleRoyaleMapName : "br_main",
+            mapName: battleRoyaleMapName,
         });
     }
 
     return expandedModes;
+}
+
+export function toBattleRoyaleMapName(mapName: string) {
+    const battleRoyaleMapName = (
+        mapName.startsWith("br_") ? mapName : `br_${mapName}`
+    ) as keyof typeof MapDefs;
+    return MapDefs[battleRoyaleMapName] ? battleRoyaleMapName : undefined;
 }
 
 export const server = new ApiServer();

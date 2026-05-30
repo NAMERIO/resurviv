@@ -34,6 +34,7 @@ export const enum Command {
     RemoveGp = "remove_gp",
     GetGp = "get_gp",
     AddCgp = "addcgp",
+    RemoveCgp = "removecgp",
     ClanWarCgp = "clanwarcgp",
     SetKillCgp = "setkillcgp",
     SetWinCgp = "setwincgp",

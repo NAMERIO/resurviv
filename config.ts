@@ -33,6 +33,11 @@ export function getConfig(isProduction: boolean, dir: string) {
             { mapName: "main", teamMode: TeamMode.Duo, enabled: true },
             { mapName: "main", teamMode: TeamMode.Squad, enabled: true },
         ],
+        br_modes: [
+            { mapName: "main", teamMode: TeamMode.Solo, enabled: true },
+            { mapName: "main", teamMode: TeamMode.Duo, enabled: true },
+            { mapName: "main", teamMode: TeamMode.Squad, enabled: true },
+        ],
         battleRoyaleMode: true,
         pauseClanStats: false,
         clanCgp: {

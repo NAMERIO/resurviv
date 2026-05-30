@@ -328,6 +328,39 @@ const commands = {
             },
         ],
     }),
+    [Command.RemoveCgp]: createCommand({
+        name: Command.RemoveCgp,
+        description: "Remove clan war CGP from a clan",
+        optionValidator: zAddClanWarCgpBody,
+        isPrivateRoute: true,
+        ownerOrAdmin: true,
+        options: [
+            {
+                name: "clan",
+                description: "Clan name, slug, or id",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "amount",
+                description: "CGP amount to remove",
+                required: true,
+                type: ApplicationCommandOptionType.Integer,
+            },
+            {
+                name: "opponent",
+                description: "Adjustment note",
+                required: false,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "result",
+                description: "Result: win, loss, or draw",
+                required: false,
+                type: ApplicationCommandOptionType.String,
+            },
+        ],
+    }),
     [Command.ClanWarCgp]: createCommand({
         name: Command.ClanWarCgp,
         description: "Add clan war CGP to a clan",
@@ -396,12 +429,23 @@ const commands = {
         description: "Sets a game mode in the API",
         optionValidator: zSetGameModeBody,
         isPrivateRoute: true,
+        ownerOnly: true,
         options: [
             {
                 name: "index",
                 description: "The mode index, e.g 0 for solo / first play button",
                 required: true,
                 type: ApplicationCommandOptionType.Integer,
+            },
+            {
+                name: "mode_type",
+                description: "deathmatch or br",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+                choices: [
+                    { name: "Deathmatch", value: "deathmatch" },
+                    { name: "Battle Royale", value: "br" },
+                ],
             },
             {
                 name: "map_name",
