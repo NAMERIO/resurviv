@@ -39,6 +39,13 @@ export const CustomConfig: DeepPartial<ConfigType> = {
             enabled: false,
         },
     ],
+    br_modes: [
+        {
+            mapName: "main",
+            teamMode: 2,
+            enabled: true,
+        },
+    ],
     defaultItems: {
         backpack: "backpack03",
         helmet: "helmet03",

@@ -30,6 +30,21 @@ interface ServerConfig {
     };
 }
 
+export interface ConfiguredMode {
+    /**
+     * The ID of the map this mode will be running
+     */
+    mapName: keyof typeof MapDefs;
+    /**
+     * The team mode, "Solo", "Duo" or "Squad" are the only supported values
+     */
+    teamMode: TeamMode;
+    /**
+     * Enables / disables the mode, will apply a "disabled" effect to the button client-side
+     */
+    enabled: boolean;
+}
+
 export interface ConfigType {
     /**
      * API server configuration.
@@ -111,20 +126,13 @@ export interface ConfigType {
      *
      * NOTE: The client side UI currently only supports a maximum of 3 modes!
      */
-    modes: Array<{
-        /**
-         * The ID of the map this mode will be running
-         */
-        mapName: keyof typeof MapDefs;
-        /**
-         * The team mode, "Solo", "Duo" or "Squad" are the only supported values
-         */
-        teamMode: TeamMode;
-        /**
-         * Enables / disables the mode, will apply a "disabled" effect to the button client-side
-         */
-        enabled: boolean;
-    }>;
+    modes: ConfiguredMode[];
+
+    /**
+     * Enabled Battle Royale game modes. Map names are configured without the `br_`
+     * prefix, for example `main` runs as `br_main`.
+     */
+    br_modes: ConfiguredMode[];
 
     /**
      * Enables Battle Royale modes.

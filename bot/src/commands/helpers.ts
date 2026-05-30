@@ -30,6 +30,7 @@ export function createCommand<T extends z.ZodSchema = z.ZodSchema>(config: {
             | ApplicationCommandOptionType.Integer
             | ApplicationCommandOptionType.Boolean
             | ApplicationCommandOptionType.User;
+        choices?: { name: string; value: string | number }[];
     }[];
 }) {
     return config;
@@ -115,11 +116,16 @@ export function createSlashCommand(config: ReturnType<typeof createCommand>) {
         .setName(config.name)
         .setDescription(config.description);
 
-    const configureBuilderOption = (opt: any, option: any) =>
-        opt
+    const configureBuilderOption = (opt: any, option: any) => {
+        const configured = opt
             .setName(option.name as string)
             .setDescription(option.description)
             .setRequired(option.required);
+        if (option.choices) {
+            configured.addChoices(...option.choices);
+        }
+        return configured;
+    };
 
     for (const option of config.options) {
         switch (option.type) {

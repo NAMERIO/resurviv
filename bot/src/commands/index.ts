@@ -396,12 +396,23 @@ const commands = {
         description: "Sets a game mode in the API",
         optionValidator: zSetGameModeBody,
         isPrivateRoute: true,
+        ownerOnly: true,
         options: [
             {
                 name: "index",
                 description: "The mode index, e.g 0 for solo / first play button",
                 required: true,
                 type: ApplicationCommandOptionType.Integer,
+            },
+            {
+                name: "mode_type",
+                description: "deathmatch or br",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+                choices: [
+                    { name: "Deathmatch", value: "deathmatch" },
+                    { name: "Battle Royale", value: "br" },
+                ],
             },
             {
                 name: "map_name",

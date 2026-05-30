@@ -46,7 +46,7 @@ import {
     zUpdateRegionBody,
 } from "../../../utils/types";
 import type { Context } from "../..";
-import { server } from "../../apiServer";
+import { server, toBattleRoyaleMapName } from "../../apiServer";
 import {
     databaseEnabledMiddleware,
     privateMiddleware,
@@ -468,31 +468,51 @@ export const PrivateRouter = new Hono<Context>()
     .post("/set_game_mode", validateParams(zSetGameModeBody), (c) => {
         const {
             index,
-            map_name: mapName,
+            mode_type: modeType,
+            map_name: requestedMapName,
             team_mode: teamMode,
             enabled,
         } = c.req.valid("json");
+        const configuredModes = server.getConfiguredModes(modeType);
 
-        if (mapName && !MapDefs[mapName as keyof typeof MapDefs]) {
-            return c.json({ error: "Invalid map name" }, 400);
+        if (!configuredModes[index]) {
+            return c.json({ message: `Invalid ${modeType} mode index ${index}` }, 200);
         }
 
-        if (!server.modes[index]) {
-            return c.json({ error: "Invalid mode index" }, 400);
+        let mapName = requestedMapName ?? configuredModes[index].mapName;
+
+        if (modeType === "br") {
+            mapName = mapName.startsWith("br_") ? mapName.slice(3) : mapName;
+            if (!toBattleRoyaleMapName(mapName)) {
+                return c.json(
+                    { message: `Battle Royale does not have map "${mapName}"` },
+                    200,
+                );
+            }
+        } else if (
+            mapName.startsWith("br_") ||
+            !MapDefs[mapName as keyof typeof MapDefs]
+        ) {
+            return c.json({ message: `Deathmatch does not have map "${mapName}"` }, 200);
         }
 
-        server.setMode(index, {
-            mapName: (mapName ?? server.modes[index].mapName) as keyof typeof MapDefs,
-            teamMode: teamMode ?? server.modes[index].teamMode,
-            enabled: enabled ?? server.modes[index].enabled,
+        server.setMode(index, modeType, {
+            mapName: mapName as keyof typeof MapDefs,
+            teamMode: teamMode ?? configuredModes[index].teamMode,
+            enabled: enabled ?? configuredModes[index].enabled,
         });
 
         saveConfig(serverConfigPath, {
-            modes: server.modes,
+            modes: Config.modes,
+            br_modes: Config.br_modes,
         });
 
         return c.json(
-            { message: `Set mode ${index} to ${JSON.stringify(server.modes[index])}` },
+            {
+                message: `Set ${modeType} mode ${index} to ${JSON.stringify(
+                    server.getConfiguredModes(modeType)[index],
+                )}`,
+            },
             200,
         );
     })
@@ -506,7 +526,6 @@ export const PrivateRouter = new Hono<Context>()
 
             saveConfig(serverConfigPath, {
                 battleRoyaleMode: enabled,
-                modes: server.modes,
             });
 
             return c.json(
