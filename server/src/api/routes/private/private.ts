@@ -399,7 +399,7 @@ function toCoinFlipPlayer(user: CoinFlipUser) {
     };
 }
 
-async function addClanWarCgp(c: any) {
+async function changeClanWarCgp(c: any, operation: "add" | "remove") {
     const {
         clan: clanSearch,
         amount,
@@ -425,35 +425,58 @@ async function addClanWarCgp(c: any) {
         return c.json({ message: `Clan "${clanSearch}" not found` }, 200);
     }
 
-    const latestWar = await db.query.clanWarHistoryTable.findFirst({
-        where: eq(clanWarHistoryTable.clanId, clan.id),
-        orderBy: desc(clanWarHistoryTable.createdAt),
-    });
-    if (latestWar && Date.now() - latestWar.createdAt.getTime() < 24 * 60 * 60 * 1000) {
-        const nextWarAt = new Date(latestWar.createdAt.getTime() + 24 * 60 * 60 * 1000);
-        return c.json(
-            {
-                message: `${clan.name} already received clan war CGP in the last 24 hours. Next available: ${nextWarAt.toLocaleString("en-US")}`,
-            },
-            200,
-        );
+    if (operation === "add") {
+        const latestWar = await db.query.clanWarHistoryTable.findFirst({
+            where: and(
+                eq(clanWarHistoryTable.clanId, clan.id),
+                sql`${clanWarHistoryTable.cgpAwarded} > 0`,
+            ),
+            orderBy: desc(clanWarHistoryTable.createdAt),
+        });
+        if (
+            latestWar &&
+            Date.now() - latestWar.createdAt.getTime() < 24 * 60 * 60 * 1000
+        ) {
+            const nextWarAt = new Date(
+                latestWar.createdAt.getTime() + 24 * 60 * 60 * 1000,
+            );
+            return c.json(
+                {
+                    message: `${clan.name} already received clan war CGP in the last 24 hours. Next available: ${nextWarAt.toLocaleString("en-US")}`,
+                },
+                200,
+            );
+        }
     }
+
+    const cgpAmount = operation === "remove" ? -amount : amount;
 
     await db.insert(clanWarHistoryTable).values({
         clanId: clan.id,
         season: ClanConstants.CurrentSeason,
-        opponentClanName: opponent || "Clan War",
+        opponentClanName:
+            opponent || (operation === "remove" ? "CGP Adjustment" : "Clan War"),
         result,
-        cgpAwarded: amount,
+        cgpAwarded: cgpAmount,
         addedByDiscordId: executorId,
     });
 
+    const action = operation === "remove" ? "Removed" : "Added";
+
     return c.json(
         {
-            message: `Added ${amount} CGP to ${clan.name} for clan war history.`,
+            message: `${action} ${amount} CGP ${operation === "remove" ? "from" : "to"} ${clan.name} for clan war history.`,
         },
         200,
     );
+}
+
+function addClanWarCgp(c: any) {
+    return changeClanWarCgp(c, "add");
+}
+
+function removeClanWarCgp(c: any) {
+    return changeClanWarCgp(c, "remove");
 }
 
 export const PrivateRouter = new Hono<Context>()
@@ -1007,6 +1030,18 @@ export const PrivateRouter = new Hono<Context>()
         databaseEnabledMiddleware,
         validateParams(zAddClanWarCgpBody),
         addClanWarCgp,
+    )
+    .post(
+        "/removecgp",
+        databaseEnabledMiddleware,
+        validateParams(zAddClanWarCgpBody),
+        removeClanWarCgp,
+    )
+    .post(
+        "/remove_cgp",
+        databaseEnabledMiddleware,
+        validateParams(zAddClanWarCgpBody),
+        removeClanWarCgp,
     )
     .post(
         "/clanwar_cgp",

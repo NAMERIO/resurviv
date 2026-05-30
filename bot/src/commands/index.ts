@@ -328,6 +328,39 @@ const commands = {
             },
         ],
     }),
+    [Command.RemoveCgp]: createCommand({
+        name: Command.RemoveCgp,
+        description: "Remove clan war CGP from a clan",
+        optionValidator: zAddClanWarCgpBody,
+        isPrivateRoute: true,
+        ownerOrAdmin: true,
+        options: [
+            {
+                name: "clan",
+                description: "Clan name, slug, or id",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "amount",
+                description: "CGP amount to remove",
+                required: true,
+                type: ApplicationCommandOptionType.Integer,
+            },
+            {
+                name: "opponent",
+                description: "Adjustment note",
+                required: false,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "result",
+                description: "Result: win, loss, or draw",
+                required: false,
+                type: ApplicationCommandOptionType.String,
+            },
+        ],
+    }),
     [Command.ClanWarCgp]: createCommand({
         name: Command.ClanWarCgp,
         description: "Add clan war CGP to a clan",
