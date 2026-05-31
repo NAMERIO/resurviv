@@ -6,6 +6,7 @@ import {
 import {
     zAddClanWarCgpBody,
     zListFeaturedYoutubersBody,
+    zListGameModesBody,
     zRemoveFeaturedYoutuberBody,
     zSetBattleRoyaleModeBody,
     zSetClanCgpValueBody,
@@ -466,6 +467,13 @@ const commands = {
                 type: ApplicationCommandOptionType.Boolean,
             },
         ],
+    }),
+    [Command.ListGameModes]: createCommand({
+        name: Command.ListGameModes,
+        description: "List mode indexes and available map ids",
+        optionValidator: zListGameModesBody,
+        isPrivateRoute: true,
+        options: [],
     }),
     [Command.SetBattleRoyaleMode]: createCommand({
         name: Command.SetBattleRoyaleMode,

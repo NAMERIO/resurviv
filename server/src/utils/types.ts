@@ -35,6 +35,8 @@ export const zSetGameModeBody = z.object({
     enabled: z.boolean().optional(),
 });
 
+export const zListGameModesBody = z.object({});
+
 export const zSetClientThemeBody = z.object({
     theme: z.string(),
 });

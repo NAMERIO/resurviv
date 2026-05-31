@@ -37,6 +37,7 @@ import {
     type SaveGameBody,
     zAddClanWarCgpBody,
     zListFeaturedYoutubersBody,
+    zListGameModesBody,
     zRemoveFeaturedYoutuberBody,
     zSetBattleRoyaleModeBody,
     zSetClanCgpValueBody,
@@ -479,6 +480,35 @@ function removeClanWarCgp(c: any) {
     return changeClanWarCgp(c, "remove");
 }
 
+function getTeamModeLabel(teamMode: TeamMode) {
+    switch (teamMode) {
+        case TeamMode.Solo:
+            return "solo";
+        case TeamMode.Duo:
+            return "duo";
+        case TeamMode.Squad:
+            return "squad";
+        case TeamMode.Ten:
+            return "10";
+        case TeamMode.Fifteen:
+            return "15";
+        default:
+            return String(teamMode);
+    }
+}
+
+function formatConfiguredMode(
+    mode: (typeof Config.modes)[number],
+    index: number,
+    modeType: "deathmatch" | "br",
+) {
+    const mapName =
+        modeType === "br" && mode.mapName.startsWith("br_")
+            ? mode.mapName.slice(3)
+            : mode.mapName;
+    return `${index}: ${mapName} | team=${getTeamModeLabel(mode.teamMode)} (${mode.teamMode}) | ${mode.enabled ? "on" : "off"}`;
+}
+
 export const PrivateRouter = new Hono<Context>()
     .use(privateMiddleware)
     .route("/moderation", ModerationRouter)
@@ -535,6 +565,37 @@ export const PrivateRouter = new Hono<Context>()
                 message: `Set ${modeType} mode ${index} to ${JSON.stringify(
                     server.getConfiguredModes(modeType)[index],
                 )}`,
+            },
+            200,
+        );
+    })
+    .post("/list_game_modes", validateParams(zListGameModesBody), (c) => {
+        const deathmatchMapIds = Object.keys(MapDefs)
+            .filter((mapName) => !mapName.startsWith("br_"))
+            .sort();
+        const battleRoyaleMapIds = Object.keys(MapDefs)
+            .filter((mapName) => mapName.startsWith("br_"))
+            .map((mapName) => mapName.slice(3))
+            .sort();
+
+        return c.json(
+            {
+                message: [
+                    `Battle Royale global: ${Config.battleRoyaleMode ? "on" : "off"}`,
+                    "",
+                    "Deathmatch indexes:",
+                    ...Config.modes.map((mode, index) =>
+                        formatConfiguredMode(mode, index, "deathmatch"),
+                    ),
+                    "",
+                    "Battle Royale indexes:",
+                    ...Config.br_modes.map((mode, index) =>
+                        formatConfiguredMode(mode, index, "br"),
+                    ),
+                    "",
+                    `Available deathmatch map ids: ${deathmatchMapIds.join(", ")}`,
+                    `Available battle royale map ids: ${battleRoyaleMapIds.join(", ")}`,
+                ].join("\n"),
             },
             200,
         );

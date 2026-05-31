@@ -42,6 +42,7 @@ export const enum Command {
     CoinFlip = "coinflip",
     Blackjack = "blackjack",
     Balance = "balance",
+    ListGameModes = "list_game_modes",
     SetGameMode = "set_game_mode",
     SetBattleRoyaleMode = "set_battle_royale_mode",
     SetPauseClanStats = "set_pause_clan_stats",
