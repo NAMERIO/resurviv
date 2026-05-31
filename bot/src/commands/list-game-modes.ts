@@ -1,7 +1,6 @@
 import {
     type ChatInputCommandInteraction,
     EmbedBuilder,
-    escapeMarkdown,
     SlashCommandBuilder,
 } from "discord.js";
 import { botLogger, Command, honoClient, isAdmin } from "../utils";
@@ -26,7 +25,7 @@ type ListGameModesResponse = {
 
 function formatModeSlot(mode: ModeSummary) {
     const status = mode.enabled ? "ON " : "OFF";
-    return `\`${mode.index}\`  **${escapeMarkdown(mode.mapName)}**  ${status}  ${mode.teamModeLabel} (${mode.teamMode})`;
+    return `\`${mode.index}\`  \`${mode.mapName}\`  ${status}  ${mode.teamModeLabel} (${mode.teamMode})`;
 }
 
 function formatModeList(modes: ModeSummary[]) {
@@ -41,7 +40,7 @@ function formatMapIds(mapIds: string[]) {
         return "_None found._";
     }
 
-    const ids = mapIds.map((mapId) => `\`${escapeMarkdown(mapId)}\``);
+    const ids = mapIds.map((mapId) => `\`${mapId}\``);
     const lines: string[] = [];
     let line = "";
 
