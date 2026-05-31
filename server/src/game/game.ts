@@ -439,6 +439,9 @@ export class Game {
         if (isBattleRoyaleMapName(this.mapName) && this.battleRoyaleJoinClosed) {
             return false;
         }
+        if (!isBattleRoyaleMapName(this.mapName) && this.gas.circleIdx >= 1) {
+            return false;
+        }
         if (this.gas.finalCloseStarted) {
             return false;
         }
