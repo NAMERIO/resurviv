@@ -47,12 +47,23 @@ export class ExplosionBarn {
         }
 
         if (explosion.type === "explosion_smoke") {
-            this.game.smokeBarn.addEmitter(explosion.pos, explosion.layer, false);
+            this.game.smokeBarn.addEmitter(explosion.pos, explosion.layer);
+            return;
+        }
+
+        if (explosion.type === "explosion_poison_gas") {
+            this.game.smokeBarn.addEmitter(
+                explosion.pos,
+                explosion.layer,
+                "poison",
+                explosion.damageParams.source,
+                explosion.damageParams.sourceTeamId,
+            );
             return;
         }
 
         if (explosion.type === "explosion_antiFire") {
-            this.game.smokeBarn.addEmitter(explosion.pos, explosion.layer, true);
+            this.game.smokeBarn.addEmitter(explosion.pos, explosion.layer, "foam");
             return;
         }
 

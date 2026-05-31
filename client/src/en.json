@@ -907,6 +907,8 @@
   "game-hud-frag": "Frag",
   "game-smoke": "Smoke Grenade",
   "game-hud-smoke": "Smoke",
+  "game-poison_gas": "Poison Gas Grenade",
+  "game-hud-poison_gas": "Poison Gas",
   "game-flashbang": "Flashbang",
   "game-hud-flashbang": "Flashbang",
   "game-mirv": "MIRV Grenade",

@@ -132,7 +132,7 @@ export const GameConfig = {
     // the protocol we originated from was 78
     // remember to bump this every time a serialization function is changed
     // or a definition item added, removed or moved
-    protocolVersion: 1022,
+    protocolVersion: 1024,
     Input,
     EmoteSlot,
     WeaponSlot,
@@ -175,6 +175,9 @@ export const GameConfig = {
         burnTickRate: 0.5,
         burnDamage: 3,
         burnDuration: 5,
+        poisonTickRate: 0.5,
+        poisonDamage: 4,
+        poisonDuration: 3,
         downedMoveSpeed: 4,
         downedRezMoveSpeed: 2,
         downedDamageBuffer: 0.1, // time buffer after being downed where a player can't take damage
@@ -224,6 +227,7 @@ export const GameConfig = {
                 "45acp": 0,
                 frag: 0,
                 smoke: 0,
+                poison_gas: 0,
                 flashbang: 0,
                 strobe: 0,
                 mirv: 0,
@@ -432,6 +436,7 @@ export const GameConfig = {
         mine: [3, 6, 9, 12],
         frag: [3, 6, 9, 12],
         smoke: [3, 6, 9, 12],
+        poison_gas: [3, 6, 9, 12],
         flashbang: [2, 4, 6, 8],
         strobe: [2, 3, 4, 5],
         mirv: [2, 4, 6, 8],

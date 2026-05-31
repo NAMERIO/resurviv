@@ -1708,6 +1708,13 @@ export class UiManager2 {
                 return `${targetName} ${killTxt}`;
             }
             case DamageType.Gas: {
+                if (sourceType == "poison_gas" && killerName) {
+                    return `${killerName} ${this.localization.translate(
+                        downed ? "game-knocked-out" : "game-killed",
+                    )} ${targetName} ${this.localization.translate(
+                        "game-with",
+                    )} ${this.localization.translate("game-poison_gas")}`;
+                }
                 let killName;
                 let killTxt;
                 if (downed) {

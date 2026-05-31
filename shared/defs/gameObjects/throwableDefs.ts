@@ -360,6 +360,72 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
             deploy: "frag_deploy_01",
         },
     },
+    poison_gas: {
+        name: "Poison Gas Grenade",
+        type: "throwable",
+        quality: 1,
+        explosionType: "explosion_poison_gas",
+        inventoryOrder: 4,
+        cookable: false,
+        explodeOnImpact: false,
+        playerCollision: false,
+        fuseTime: 2.5,
+        aimDistance: 0,
+        rad: 1,
+        throwPhysics: {
+            playerVelMult: 0.6,
+            velZ: 5,
+            speed: 15,
+            spinVel: 10 * Math.PI,
+            spinDrag: 1,
+        },
+        speed: { equip: 0, attack: 0 },
+        lootImg: {
+            sprite: "loot-throwable-smoke.img",
+            tint: 0x63d321,
+            border: "loot-circle-outer-01.img",
+            borderTint: 0,
+            scale: 0.2,
+        },
+        worldImg: {
+            sprite: "proj-smoke-nopin-nolever.img",
+            scale: 0.12,
+            tint: 0x63d321,
+        },
+        handImg: {
+            equip: {
+                right: {
+                    sprite: "proj-smoke-pin.img",
+                    pos: { x: 3, y: 4.2 },
+                    scale: 0.14,
+                },
+                left: { sprite: "none" },
+            },
+            cook: {
+                right: {
+                    sprite: "proj-smoke-nopin.img",
+                    pos: { x: 3, y: 4.2 },
+                    scale: 0.14,
+                },
+                left: {
+                    sprite: "proj-frag-pin-part.img",
+                    pos: { x: 3, y: 4.2 },
+                    scale: 0.14,
+                },
+            },
+            throwing: {
+                right: { sprite: "none" },
+                left: { sprite: "none" },
+            },
+        },
+        useThrowParticles: true,
+        sound: {
+            pullPin: "frag_pin_01",
+            throwing: "frag_throw_01",
+            pickup: "frag_pickup_01",
+            deploy: "frag_deploy_01",
+        },
+    },
     flashbang: {
         name: "Flashbang",
         type: "throwable",

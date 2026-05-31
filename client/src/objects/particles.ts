@@ -3282,6 +3282,31 @@ const ParticleDefs: Record<string, ParticleDef> = {
         },
         ignoreValueAdjust: true,
     },
+    poison_gas: {
+        image: ["foam1.img", "foam2.img", "foam3.img", "foam4.img", "foam5.img"],
+        life: new Range(1.5, 2.25),
+        drag: 4,
+        rotVel: new Range(Math.PI * 0.15, Math.PI * 0.35),
+        scale: {
+            start: new Range(0.035, 0.07),
+            end: new Range(0.025, 0.055),
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 0.42,
+            end: 0,
+            lerp: new Range(0.7, 1),
+        },
+        alphaIn: {
+            start: 0,
+            end: 0.42,
+            lerp: new Range(0, 0.05),
+        },
+        color: function () {
+            return util.rgbToInt(util.hsvToRgb(0.3, 0.9, util.random(0.45, 0.68)));
+        },
+        ignoreValueAdjust: true,
+    },
     water_balloon_impact: {
         image: [
             "map-beach-wet-particle-01.img",
@@ -3871,6 +3896,15 @@ const EmitterDefs: Record<string, EmitterDef> = {
         rate: new Range(0.2, 0.4),
         radius: 1.5,
         speed: new Range(1, 1.5),
+        angle: 0,
+        rot: new Range(0, Math.PI * 2),
+        maxCount: Number.MAX_VALUE,
+    },
+    poison_gas: {
+        particle: "poison_gas",
+        rate: new Range(0.12, 0.22),
+        radius: 1.5,
+        speed: new Range(0.25, 0.65),
         angle: 0,
         rot: new Range(0, Math.PI * 2),
         maxCount: Number.MAX_VALUE,

@@ -316,6 +316,7 @@ export class Player implements AbstractObject {
     hasteEmitter: Emitter | null = null;
     passiveHealEmitter: Emitter | null = null;
     burningEmitter: Emitter | null = null;
+    poisonEmitter: Emitter | null = null;
     outfitMoveEmitter: Emitter | null = null;
     downed = false;
     wasDowned = false;
@@ -384,6 +385,7 @@ export class Player implements AbstractObject {
         m_healEffect: boolean;
         m_burnEffect: boolean;
         m_nitroLaceEffect: boolean;
+        m_poisonEffect: boolean;
         m_frozen: boolean;
         m_frozenOri: number;
         m_hasteType: Exclude<HasteType, HasteType.Count>;
@@ -566,6 +568,7 @@ export class Player implements AbstractObject {
             m_healEffect: false,
             m_burnEffect: false,
             m_nitroLaceEffect: false,
+            m_poisonEffect: false,
             m_frozen: false,
             m_frozenOri: 0,
             m_hasteType: HasteType.None,
@@ -629,6 +632,10 @@ export class Player implements AbstractObject {
             this.burningEmitter.stop();
             this.burningEmitter = null;
         }
+        if (this.poisonEmitter) {
+            this.poisonEmitter.stop();
+            this.poisonEmitter = null;
+        }
         if (this.outfitMoveEmitter) {
             this.outfitMoveEmitter.stop();
             this.outfitMoveEmitter = null;
@@ -672,6 +679,7 @@ export class Player implements AbstractObject {
             this.m_netData.m_healEffect = data.healEffect;
             this.m_netData.m_burnEffect = data.burnEffect;
             this.m_netData.m_nitroLaceEffect = data.nitroLaceEffect;
+            this.m_netData.m_poisonEffect = data.poisonEffect;
             this.m_netData.m_frozen = data.frozen;
             this.m_netData.m_frozenOri = data.frozenOri;
             this.m_netData.m_hasteType = data.hasteType;
@@ -1490,6 +1498,22 @@ export class Player implements AbstractObject {
             this.burningEmitter.pos = v2.add(this.m_pos, v2.create(0, 0.1));
             this.burningEmitter.layer = this.renderLayer;
             this.burningEmitter.zOrd = this.renderZOrd + 1;
+        }
+
+        // Poison effect
+        if (this.m_netData.m_poisonEffect && !this.poisonEmitter) {
+            this.poisonEmitter = particleBarn.addEmitter("poison_gas", {
+                pos: this.m_pos,
+                layer: this.layer,
+            });
+        } else if (!this.m_netData.m_poisonEffect && this.poisonEmitter) {
+            this.poisonEmitter.stop();
+            this.poisonEmitter = null;
+        }
+        if (this.poisonEmitter) {
+            this.poisonEmitter.pos = this.m_pos;
+            this.poisonEmitter.layer = this.renderLayer;
+            this.poisonEmitter.zOrd = this.renderZOrd + 1;
         }
 
         const outfitDef = GameObjectDefs[this.m_netData.m_outfit] as OutfitDef;

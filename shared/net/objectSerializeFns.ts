@@ -92,6 +92,7 @@ export interface ObjectsFullData {
         healEffect: boolean;
         burnEffect: boolean;
         nitroLaceEffect: boolean;
+        poisonEffect: boolean;
 
         frozen: boolean;
         frozenOri: number;
@@ -189,6 +190,7 @@ export interface ObjectsFullData {
         layer: number;
         interior: number;
         isFoam: boolean;
+        isPoison: boolean;
     };
     [ObjectType.Airdrop]: {
         pos: Vec2;
@@ -241,6 +243,7 @@ export const ObjectSerializeFns: {
             s.writeBoolean(data.healEffect);
             s.writeBoolean(data.burnEffect);
             s.writeBoolean(data.nitroLaceEffect);
+            s.writeBoolean(data.poisonEffect);
 
             s.writeBoolean(data.frozen);
             if (data.frozen) {
@@ -320,6 +323,7 @@ export const ObjectSerializeFns: {
             data.healEffect = s.readBoolean();
             data.burnEffect = s.readBoolean();
             data.nitroLaceEffect = s.readBoolean();
+            data.poisonEffect = s.readBoolean();
 
             data.frozen = s.readBoolean();
             data.frozenOri = data.frozen ? s.readBits(2) : 0;
@@ -683,6 +687,7 @@ export const ObjectSerializeFns: {
             s.writeBits(data.layer, 2);
             s.writeBits(data.interior, 6);
             s.writeBoolean(data.isFoam);
+            s.writeBoolean(data.isPoison);
         },
         /* STRIP_FROM_PROD_CLIENT:END */
 
@@ -694,6 +699,7 @@ export const ObjectSerializeFns: {
             data.layer = s.readBits(2);
             data.interior = s.readBits(6);
             data.isFoam = s.readBoolean();
+            data.isPoison = s.readBoolean();
         },
     },
     [ObjectType.Airdrop]: {

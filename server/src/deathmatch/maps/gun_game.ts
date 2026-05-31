@@ -138,6 +138,7 @@ gun_game["lootTable"] = {
     tier_throwables: [
         { name: "frag", count: 2, weight: 1 },
         { name: "smoke", count: 1, weight: 1 },
+        { name: "poison_gas", count: 1, weight: 0.35 },
         { name: "mirv", count: 2, weight: 0.05 },
     ],
     tier_hatchet: [

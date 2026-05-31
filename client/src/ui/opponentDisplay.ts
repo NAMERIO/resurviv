@@ -389,6 +389,7 @@ export class LoadoutDisplay {
             healEffect: false,
             burnEffect: false,
             nitroLaceEffect: false,
+            poisonEffect: false,
             frozen: false,
             frozenOri: 0,
             hasteType: 0,

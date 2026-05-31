@@ -87,6 +87,7 @@ import { BaseGameObject, type DamageParams, type GameObject } from "./gameObject
 import type { Loot } from "./loot";
 import type { MapIndicator } from "./mapIndicator";
 import type { Obstacle } from "./obstacle";
+import type { Smoke } from "./smoke";
 
 function generateTempUsername() {
     return generateUsername("-", 0, net.Constants.PlayerNameMaxLen, "random");
@@ -1564,6 +1565,11 @@ export class Player extends BaseGameObject {
     burnEffect = false;
     burnTicker = 0;
     burnDuration = 0;
+    poisonEffect = false;
+    poisonTicker = 0;
+    poisonDuration = 0;
+    poisonSource?: GameObject;
+    poisonSourceTeamId?: number;
     nitroLaceEffect = false;
     nitroLaceDuration = 0;
     nitroLaceMaxDuration = 10;
@@ -3722,6 +3728,7 @@ export class Player extends BaseGameObject {
         let zoomRegionZoom = lowestZoom;
         let insideNoZoomRegion = true;
         let insideSmoke = false;
+        let poisonSmoke: Smoke | undefined;
         // building player is currently inside of
         let occupiedBuilding: Building | undefined;
 
@@ -3816,6 +3823,10 @@ export class Player extends BaseGameObject {
             } else if (obj.__type === ObjectType.Smoke) {
                 if (!util.sameLayer(this.layer, obj.layer)) continue;
                 if (coldet.testCircleCircle(this.pos, this.rad, obj.pos, obj.rad)) {
+                    if (obj.isPoison) {
+                        poisonSmoke = obj;
+                        continue;
+                    }
                     insideSmoke = true;
                 }
             }
@@ -3830,6 +3841,38 @@ export class Player extends BaseGameObject {
 
         // only dirty if healEffect changed from last tick to current tick (leaving or entering a heal region)
         if (oldHealEffect != this.healEffect) {
+            this.setDirty();
+        }
+
+        if (poisonSmoke) {
+            this.poisonDuration = GameConfig.player.poisonDuration;
+            this.poisonSource = poisonSmoke.source;
+            this.poisonSourceTeamId = poisonSmoke.sourceTeamId;
+        } else {
+            this.poisonDuration = math.max(0, this.poisonDuration - dt);
+        }
+
+        const oldPoisonEffect = this.poisonEffect;
+        this.poisonEffect = this.poisonDuration > 0;
+        if (this.poisonEffect) {
+            this.poisonTicker -= dt;
+            if (this.poisonTicker <= 0) {
+                this.poisonTicker = GameConfig.player.poisonTickRate;
+                this.damage({
+                    amount: GameConfig.player.poisonDamage,
+                    damageType: GameConfig.DamageType.Gas,
+                    dir: this.dir,
+                    gameSourceType: "poison_gas",
+                    source: this.poisonSource,
+                    sourceTeamId: this.poisonSourceTeamId,
+                });
+            }
+        } else {
+            this.poisonTicker = 0;
+            this.poisonSource = undefined;
+            this.poisonSourceTeamId = undefined;
+        }
+        if (oldPoisonEffect !== this.poisonEffect) {
             this.setDirty();
         }
 
@@ -4812,6 +4855,11 @@ export class Player extends BaseGameObject {
         this.animType = GameConfig.Anim.None;
         this.animSeq++;
         this.healEffect = false;
+        this.poisonEffect = false;
+        this.poisonTicker = 0;
+        this.poisonDuration = 0;
+        this.poisonSource = undefined;
+        this.poisonSourceTeamId = undefined;
         this.boostDirty = true;
         this.inventoryDirty = true;
         this.setDirty();
