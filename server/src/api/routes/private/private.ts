@@ -39,6 +39,7 @@ import {
     zListFeaturedYoutubersBody,
     zListGameModesBody,
     zRemoveFeaturedYoutuberBody,
+    zSetBattlePassEndBody,
     zSetBattleRoyaleModeBody,
     zSetClanCgpValueBody,
     zSetClientThemeBody,
@@ -687,6 +688,24 @@ export const PrivateRouter = new Hono<Context>()
         return c.json(
             {
                 message: `Clan stat tracking is now ${enabled ? "paused" : "enabled"}`,
+            },
+            200,
+        );
+    })
+    .post("/battlepass_end", validateParams(zSetBattlePassEndBody), (c) => {
+        const { days } = c.req.valid("json");
+        const endDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+        const endDateIso = endDate.toISOString();
+
+        Config.battlePassEndDate = endDateIso;
+
+        saveConfig(serverConfigPath, {
+            battlePassEndDate: endDateIso,
+        });
+
+        return c.json(
+            {
+                message: `Battle pass season end set to ${endDateIso} (${days} day${days === 1 ? "" : "s"} from now).`,
             },
             200,
         );

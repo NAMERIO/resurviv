@@ -10,6 +10,7 @@ import type { Localization } from "./ui/localization";
 export class SiteInfo {
     info: SiteInfoRes = {} as SiteInfoRes;
     loaded = false;
+    private battlePassTimerInterval: ReturnType<typeof setInterval> | null = null;
 
     constructor(
         public config: ConfigManager,
@@ -125,6 +126,7 @@ export class SiteInfo {
 
     updatePageFromInfo() {
         if (this.loaded) {
+            this.updateBattlePassTimer();
             const getGameModeStyles = this.getGameModeStyles();
             const modeSelector = $("#game-mode-select-main");
             modeSelector.empty();
@@ -263,6 +265,56 @@ export class SiteInfo {
                     bg.style.backgroundImage = `url(${mapDef.desc.backgroundImg})`;
                 }
             }
+        }
+    }
+
+    private formatBattlePassTime(timeRemainingMs: number) {
+        const totalSeconds = Math.max(Math.floor(timeRemainingMs / 1000), 0);
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    private getBattlePassEndTime() {
+        if (this.info.battlePassEndDate) {
+            const endTime = new Date(this.info.battlePassEndDate).getTime();
+            return Number.isFinite(endTime) ? endTime : undefined;
+        }
+        return this.info.battlePassEndTime;
+    }
+
+    private updateBattlePassTimer() {
+        const timerElem = $("#pass-premium-box-timer");
+        if (!timerElem.length) return;
+
+        if (this.battlePassTimerInterval) {
+            clearInterval(this.battlePassTimerInterval);
+            this.battlePassTimerInterval = null;
+        }
+
+        const renderTimer = () => {
+            const endTime = this.getBattlePassEndTime();
+            if (!endTime || endTime <= Date.now()) {
+                timerElem.text("Coming soon");
+                return false;
+            }
+
+            timerElem.text(
+                `Season ends: ${this.formatBattlePassTime(endTime - Date.now())}`,
+            );
+            return true;
+        };
+
+        if (renderTimer()) {
+            this.battlePassTimerInterval = setInterval(() => {
+                if (!renderTimer() && this.battlePassTimerInterval) {
+                    clearInterval(this.battlePassTimerInterval);
+                    this.battlePassTimerInterval = null;
+                }
+            }, 1000);
         }
     }
 }

@@ -232,6 +232,8 @@ export class ApiServer {
             gitRevision: GIT_VERSION,
             captchaEnabled: this.captchaEnabled,
             clientTheme: this.clientTheme,
+            battlePassEndDate: Config.battlePassEndDate,
+            battlePassEndTime: Config.battlePassEndTime,
         };
 
         for (const region in this.regions) {

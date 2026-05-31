@@ -169,6 +169,17 @@ export interface ConfigType {
     }>;
 
     /**
+     * ISO date string for the battle pass season end.
+     * If omitted or expired, the client displays "Coming soon".
+     */
+    battlePassEndDate?: string;
+
+    /**
+     * Deprecated numeric timestamp. Kept so older configs still load.
+     */
+    battlePassEndTime?: number;
+
+    /**
      * The client theme, changes the splash screen background and for some the menu music.
      *
      * NOTE: Required at build time, unlike modes it wont update by fetching from the server!

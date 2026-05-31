@@ -49,6 +49,10 @@ export const zSetPauseClanStatsBody = z.object({
     enabled: z.boolean(),
 });
 
+export const zSetBattlePassEndBody = z.object({
+    days: z.number().int().min(0).max(3650),
+});
+
 export const zAddClanWarCgpBody = z.object({
     clan: z.string().trim().min(1),
     amount: z.number().int().nonnegative(),
