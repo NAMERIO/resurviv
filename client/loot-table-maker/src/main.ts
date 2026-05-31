@@ -16,6 +16,8 @@ interface MakerDoc {
 
 interface TestCrateDef {
     name: string;
+    minRolls: number;
+    maxRolls: number;
 }
 
 interface RollResult {
@@ -110,12 +112,17 @@ root.innerHTML = `
             <div class="card-header">
               <div>
                 <h3>Step 2 - test your crate</h3>
-                <p>This rolls the tier you are editing.</p>
+                <p>This crate uses the tier you are editing.</p>
               </div>
               <button id="run-test" class="primary">Run</button>
             </div>
             <div class="crate-form">
-              <label>Crate name<input id="test-crate-name" class="field" placeholder="loot_crate_custom"></label>
+              <label>Test crate name<input id="test-crate-name" class="field" readonly title="This follows the tier you are editing"></label>
+              <div class="two-fields">
+                <label>Min loot drops<input id="test-crate-min" class="field small-number" type="number" min="0" step="1" title="Lowest number of loot drops this crate can make"><small>Lowest amount of loot this crate can spawn.</small></label>
+                <label>Max loot drops<input id="test-crate-max" class="field small-number" type="number" min="0" step="1" title="Highest number of loot drops this crate can make"><small>Highest amount of loot this crate can spawn.</small></label>
+              </div>
+              <p class="crate-help">Click Run to break the crate once and see what loot comes out.</p>
             </div>
             <details class="spawn-details">
               <summary>Map spawn hints</summary>
@@ -151,6 +158,8 @@ const tierSummary = qs<HTMLParagraphElement>("tier-summary");
 const entryList = qs<HTMLDivElement>("entry-list");
 const lootNameOptions = qs<HTMLDataListElement>("loot-name-options");
 const testCrateName = qs<HTMLInputElement>("test-crate-name");
+const testCrateMin = qs<HTMLInputElement>("test-crate-min");
+const testCrateMax = qs<HTMLInputElement>("test-crate-max");
 const crateSpawns = qs<HTMLDivElement>("crate-spawns");
 const rollOutput = qs<HTMLDivElement>("roll-output");
 
@@ -196,13 +205,21 @@ function normalizeDoc(value: Partial<MakerDoc>): MakerDoc {
 function defaultTestCrate(): TestCrateDef {
     return {
         name: "loot_crate_custom",
+        minRolls: 1,
+        maxRolls: 1,
     };
 }
 
 function normalizeTestCrate(value: Partial<TestCrateDef> | undefined): TestCrateDef {
     const fallback = defaultTestCrate();
+    const oldMin = readNumber((value as { min?: number } | undefined)?.min, fallback.minRolls);
+    const oldMax = readNumber((value as { max?: number } | undefined)?.max, fallback.maxRolls);
+    const minRolls = Math.max(0, Math.floor(readNumber(value?.minRolls, oldMin)));
+    const maxRolls = Math.max(minRolls, Math.floor(readNumber(value?.maxRolls, oldMax)));
     return {
         name: sanitizeKey(value?.name || fallback.name),
+        minRolls,
+        maxRolls,
     };
 }
 
@@ -283,32 +300,44 @@ function setupControls() {
         renderRollOutput();
     });
     qs<HTMLButtonElement>("dialog-close").addEventListener("click", closeDialog);
-    testCrateName.addEventListener("change", () => {
-        syncTestCrate();
-        commit();
-    });
+    for (const input of [testCrateMin, testCrateMax]) {
+        input.addEventListener("change", () => {
+            syncTestCrate();
+            commit();
+        });
+    }
 }
 
 function syncTestCrate() {
+    const minRolls = Math.max(0, Math.floor(readNumber(testCrateMin.value, doc.testCrate.minRolls)));
+    const maxRolls = Math.max(minRolls, Math.floor(readNumber(testCrateMax.value, doc.testCrate.maxRolls)));
     doc.testCrate = {
-        name: sanitizeKey(testCrateName.value || doc.testCrate.name),
+        name: selectedTier || doc.testCrate.name,
+        minRolls,
+        maxRolls,
     };
-    doc.customCrates[doc.testCrate.name] = [{ tier: selectedTier, min: 1, max: 1 }];
+    doc.customCrates[doc.testCrate.name] = [{ tier: selectedTier, min: doc.testCrate.minRolls, max: doc.testCrate.maxRolls }];
     saveWorkingDoc();
 }
 
 function useSelectedTierForTest() {
-    if (selectedTier) doc.customCrates[doc.testCrate.name] = [{ tier: selectedTier, min: 1, max: 1 }];
+    if (selectedTier) doc.customCrates[doc.testCrate.name] = [{ tier: selectedTier, min: doc.testCrate.minRolls, max: doc.testCrate.maxRolls }];
 }
 
 function render() {
     mapSelect.value = doc.mapName;
     if (!getSelectedEntries()) selectedTier = Object.keys(doc.lootTable)[0] || Object.keys(getSourceLootTable())[0] || "";
+    updateDefaultCrateName();
     useSelectedTierForTest();
     renderLootNameOptions();
     renderTierList();
     renderTierEditor();
     renderCratePanel();
+}
+
+function updateDefaultCrateName() {
+    if (!selectedTier) return;
+    doc.testCrate.name = selectedTier;
 }
 
 function renderTierList() {
@@ -424,6 +453,8 @@ function isKnownLootName(name: string): boolean {
 
 function renderCratePanel() {
     testCrateName.value = doc.testCrate.name;
+    testCrateMin.value = String(doc.testCrate.minRolls);
+    testCrateMax.value = String(doc.testCrate.maxRolls);
     crateSpawns.innerHTML = spawnReport(doc.testCrate.name)
         .map((line) => `<div>${escapeHtml(line)}</div>`)
         .join("") || `<div>No existing spawn uses this crate name yet.</div>`;
@@ -512,8 +543,11 @@ function commit() {
 
 function rollTestCrate(): RollResult[] {
     const output: RollResult[] = [];
-    const item = rollTier(selectedTier, 0, new Set<string>());
-    if (item) output.push(item);
+    const rolls = randomInt(doc.testCrate.minRolls, doc.testCrate.maxRolls);
+    for (let i = 0; i < rolls; i++) {
+        const item = rollTier(selectedTier, 0, new Set<string>());
+        if (item) output.push(item);
+    }
     return output;
 }
 
@@ -646,7 +680,7 @@ function openExportDialog() {
 }
 
 function formatCrateLoot(): string {
-    return `[{ tier: "${selectedTier}", min: 1, max: 1 }]`;
+    return `[{ tier: "${selectedTier}", min: ${doc.testCrate.minRolls}, max: ${doc.testCrate.maxRolls} }]`;
 }
 
 function formatLootTable(table: LootTable): string {
@@ -686,6 +720,10 @@ function totalWeight(entries: LootEntry[]): number {
 function readNumber(value: unknown, fallback: number): number {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function randomInt(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function sanitizeKey(value: string): string {

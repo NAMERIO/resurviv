@@ -14,6 +14,7 @@
     "./atlas-builder/**/*.ts",
     "./building-editor/**/*.ts",
     "./building-maker/**/*.ts",
+    "./loot-table-maker/**/*.ts",
     "./global.d.ts"
   ]
 }
