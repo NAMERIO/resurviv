@@ -2,7 +2,6 @@ import {
     type ChatInputCommandInteraction,
     EmbedBuilder,
     escapeMarkdown,
-    MessageFlags,
     SlashCommandBuilder,
 } from "discord.js";
 import { botLogger, Command, honoClient, isAdmin } from "../utils";
@@ -117,7 +116,7 @@ export const listGameModesHandler = {
             return;
         }
 
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        await interaction.deferReply();
 
         try {
             const res = await honoClient.list_game_modes.$post({
