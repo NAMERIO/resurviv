@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, desc, eq, inArray, lt, ne } from "drizzle-orm";
+import { and, desc, eq, inArray, lt, ne, or } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { MapId, TeamModeToString } from "../../../../../shared/defs/types/misc";
@@ -8,6 +8,7 @@ import {
     zBanIpParams,
     zFindDiscordUserSlugParams,
     zGetPlayerIpParams,
+    zSearchIpParams,
     zSetAccountNameParams,
     zSetMatchDataNameParams,
     zUnbanAccountParams,
@@ -362,6 +363,62 @@ export const ModerationRouter = new Hono()
         }));
 
         return c.json(prettyResult, 200);
+    })
+    .post("/search_ip", validateParams(zSearchIpParams), async (c) => {
+        const { ip, is_encoded } = c.req.valid("json");
+        const encodedIp = is_encoded ? ip : hashIp(ip);
+
+        const result = await db
+            .select({
+                slug: usersTable.slug,
+                authId: usersTable.authId,
+                linkedDiscord: usersTable.linkedDiscord,
+                linkedGoogle: usersTable.linkedGoogle,
+                username: ipLogsTable.username,
+                region: ipLogsTable.region,
+                gameId: ipLogsTable.gameId,
+                teamMode: ipLogsTable.teamMode,
+                mapId: ipLogsTable.mapId,
+                createdAt: ipLogsTable.createdAt,
+            })
+            .from(ipLogsTable)
+            .where(
+                is_encoded
+                    ? or(
+                          eq(ipLogsTable.encodedIp, ip),
+                          eq(ipLogsTable.findGameEncodedIp, ip),
+                      )
+                    : or(eq(ipLogsTable.ip, ip), eq(ipLogsTable.findGameIp, ip)),
+            )
+            .leftJoin(usersTable, eq(ipLogsTable.userId, usersTable.id))
+            .orderBy(desc(ipLogsTable.createdAt))
+            .limit(10);
+
+        if (result.length === 0) {
+            return c.json({ message: "No game history found for that IP." }, 200);
+        }
+
+        return c.json(
+            {
+                encodedIp,
+                results: result.map((data) => ({
+                    slug: data.slug,
+                    username: data.username,
+                    region: data.region,
+                    gameId: data.gameId,
+                    teamMode: TeamModeToString[data.teamMode],
+                    mapId: MapId[data.mapId],
+                    createdAt: data.createdAt,
+                    accountSystem: data.linkedDiscord
+                        ? "Discord"
+                        : data.linkedGoogle
+                          ? "Google"
+                          : "Unlinked",
+                    discordId: data.linkedDiscord ? data.authId : null,
+                })),
+            },
+            200,
+        );
     })
     .post("/clear_all_bans", async (c) => {
         await db.delete(bannedIpsTable).execute();

@@ -6,6 +6,11 @@ export const zGetPlayerIpParams = z.object({
     game_id: z.string().optional(),
 });
 
+export const zSearchIpParams = z.object({
+    ip: z.string().min(1),
+    is_encoded: z.boolean().default(true),
+});
+
 export const zBanIpParams = z.object({
     ips: z.union([
         z

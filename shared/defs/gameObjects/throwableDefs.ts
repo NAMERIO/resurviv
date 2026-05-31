@@ -381,21 +381,21 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
         },
         speed: { equip: 0, attack: 0 },
         lootImg: {
-            sprite: "loot-throwable-smoke.img",
-            tint: 0x63d321,
+            sprite: "loot-throwable-poison.img",
+            tint: 0xffffff,
             border: "loot-circle-outer-01.img",
             borderTint: 0,
             scale: 0.2,
         },
         worldImg: {
-            sprite: "proj-smoke-nopin-nolever.img",
+            sprite: "posion-proj-pin.img",
             scale: 0.12,
-            tint: 0x63d321,
+            tint: 0xffffff,
         },
         handImg: {
             equip: {
                 right: {
-                    sprite: "proj-smoke-pin.img",
+                    sprite: "posion-proj-pin.img",
                     pos: { x: 3, y: 4.2 },
                     scale: 0.14,
                 },
@@ -403,12 +403,12 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
             },
             cook: {
                 right: {
-                    sprite: "proj-smoke-nopin.img",
+                    sprite: "pposion-proj-pin.img",
                     pos: { x: 3, y: 4.2 },
                     scale: 0.14,
                 },
                 left: {
-                    sprite: "proj-frag-pin-part.img",
+                    sprite: "posion-proj-pin.img",
                     pos: { x: 3, y: 4.2 },
                     scale: 0.14,
                 },

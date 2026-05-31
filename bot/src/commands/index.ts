@@ -35,6 +35,7 @@ import { coinFlipHandler } from "./coinflip";
 import { gpLeaderboardHandler } from "./gp-leaderboard";
 import { createCommand, createSlashCommand, genericExecute } from "./helpers";
 import { listGameModesHandler } from "./list-game-modes";
+import { searchIpHandler } from "./search-ip";
 import { searchPlayersHandler } from "./search-player";
 
 /**
@@ -553,6 +554,7 @@ const commands = {
     Exclude<
         Command,
         | "search_player"
+        | "search_ip"
         | "coinflip"
         | "blackjack"
         | "balance"
@@ -584,6 +586,7 @@ export const commandHandlers: CommandHandlers = (
     {
         // add non generic commands here
         [Command.SearchPlayer]: searchPlayersHandler.execute,
+        [Command.SearchIp]: searchIpHandler.execute,
         [Command.CoinFlip]: coinFlipHandler.execute,
         [Command.Blackjack]: blackjackHandler.execute,
         [Command.Balance]: balanceHandler.execute,
@@ -596,6 +599,7 @@ export const commandsToRegister: SlashCommandOptionsOnlyBuilder[] = [
     ...Object.values(commands).map(createSlashCommand),
     // add non generic commands here
     searchPlayersHandler.command,
+    searchIpHandler.command,
     coinFlipHandler.command,
     blackjackHandler.command,
     balanceHandler.command,
