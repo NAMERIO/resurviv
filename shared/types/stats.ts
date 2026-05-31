@@ -123,6 +123,7 @@ export type UserStatsResponse = {
     kills: number;
     games: number;
     kpg: string;
+    global_rank: number;
     modes: Mode[];
 };
 

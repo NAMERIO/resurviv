@@ -93,6 +93,7 @@ function getPlayerCardData(
         kills: userData.kills,
         games: userData.games,
         kpg: userData.kpg,
+        globalRank: userData.global_rank ? `#${userData.global_rank}` : "Unranked",
     };
 
     // Gather card data
@@ -110,10 +111,7 @@ function getPlayerCardData(
     for (let i = 0; i < userData.modes.length; i++) {
         const mode = userData.modes[i];
 
-        // Overall rank / rating not available yet
         const mid: { name: string; val: string }[] = [];
-        addStat(mid, "Rating", "-");
-        addStat(mid, "Rank", "-");
 
         const bot: { name: string; val: string }[] = [];
         addStat(bot, "Wins", mode.wins);

@@ -16,6 +16,7 @@ import {
 } from "../../auth/middleware";
 import { db } from "../../db";
 import { matchDataTable, usersTable } from "../../db/schema";
+import { getGlobalRank } from "./global_rank";
 
 export const UserStatsRouter = new Hono<Context>();
 
@@ -50,14 +51,12 @@ UserStatsRouter.post(
 
         const { id: userId } = result;
 
-        const data = await userStatsSqlQuery(
-            userId,
-            mapIdFilter,
-            gameModeFilter,
-            interval,
-        );
+        const [data, globalRank] = await Promise.all([
+            userStatsSqlQuery(userId, mapIdFilter, gameModeFilter, interval),
+            getGlobalRank(userId),
+        ]);
 
-        return c.json<UserStatsResponse>(data, 200);
+        return c.json<UserStatsResponse>({ ...data, global_rank: globalRank }, 200);
     },
 );
 

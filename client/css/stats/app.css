@@ -642,6 +642,19 @@ table.player-stats-overview td {
   background-color: #445c30;
 }
 
+.card-mode-stats-only {
+  min-height: 325px;
+}
+
+.card-mode-stats-only > .card-body {
+  display: flex;
+}
+
+.card-mode-stats-only > .card-body > .row {
+  align-content: space-around;
+  flex: 1;
+}
+
 .card-mode-bg-0 {
   background-color: #3498db;
 }

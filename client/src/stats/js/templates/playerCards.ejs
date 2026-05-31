@@ -30,6 +30,7 @@
                   <th scope="col" data-l10n='stats-kills'>Kills</th>
                   <th scope="col" data-l10n='stats-games'>Games</th>
                   <th scope="col" data-l10n='stats-kg'>K/G</th>
+                  <th scope="col">Global Rank</th>
                 </tr>
               </thead>
               <tbody>
@@ -38,6 +39,7 @@
                   <td><%= env.profile.kills %></td>
                   <td><%= env.profile.games %></td>
                   <td><%= env.profile.kpg %></td>
+                  <td><%= env.profile.globalRank %></td>
                 </tr>
               </tbody>
             </table>
@@ -73,9 +75,6 @@
         <option value="deathmatch">Deathmatch</option>
         <option value="battleroyale">Battle Royale</option>
       </select>
-    </div>
-    <div class='offset-6 col-2 col-rating-help'>
-      <div class='rating-help'>What is Rating?<div class='rating-help-desc'><span class='highlight'>This feature coming soon!</span></br>Rating will be based on placement and kills within an individual game mode.</div></div>
     </div>
   </div>
 </div>
@@ -120,6 +119,7 @@
           <div class='col-12'>No games played.</div>
         </div>
       <% } else { %>
+        <% if (env.teamModes[i].midStats.length > 0) { %>
         <div class="card card-mode card-mode-bg-mid">
           <div class="card-body p-1">
             <div class='row m-1'>
@@ -138,7 +138,8 @@
             </div>
           </div>
         </div>
-        <div class="card card-mode card-mode-bg-bot">
+        <% } %>
+        <div class="card card-mode card-mode-bg-bot <%= env.teamModes[i].midStats.length == 0 ? 'card-mode-stats-only' : '' %>">
           <div class="card-body p-1">
             <div class='row m-1'>
                <% for (var j = 0; j < env.teamModes[i].botStats.length; j++) { %>
