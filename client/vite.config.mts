@@ -21,9 +21,9 @@ function mpaRouteRedirectPlugin(): Plugin {
         const url = req.url || "";
         const [pathname, query] = url.split("?");
 
-        if (pathname === "/building-maker") {
+        if (pathname === "/building-maker" || pathname === "/loot-table-maker") {
             res.statusCode = 302;
-            res.setHeader("Location", `/building-maker/${query ? `?${query}` : ""}`);
+            res.setHeader("Location", `${pathname}/${query ? `?${query}` : ""}`);
             res.end();
             return;
         }
@@ -118,6 +118,10 @@ export default defineConfig(({ mode }) => {
                     "building-maker": resolve(
                         import.meta.dirname,
                         "building-maker/index.html",
+                    ),
+                    "loot-table-maker": resolve(
+                        import.meta.dirname,
+                        "loot-table-maker/index.html",
                     ),
                     ...(isDev
                         ? {

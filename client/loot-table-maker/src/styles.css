@@ -1,0 +1,489 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #050505;
+  --panel: #1f1f1f;
+  --panel-soft: #2b2b2b;
+  --line: #141414;
+  --text: #ffffff;
+  --muted: #bdbdbd;
+  --teal: #50afab;
+  --teal-dark: #377b78;
+  --green: #83af50;
+  --danger: #8a3a3a;
+}
+
+html,
+body,
+#loot-table-maker {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  min-height: 30px;
+  border: 0;
+  border-bottom: 2px solid var(--teal-dark);
+  border-radius: 5px;
+  background: var(--teal);
+  box-shadow: inset 0 -2px var(--teal-dark);
+  color: var(--text);
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+button:hover {
+  filter: brightness(1.08);
+}
+
+button.primary {
+  background: var(--green);
+  border-bottom-color: #5f8338;
+  box-shadow: inset 0 -2px #5f8338;
+}
+
+button.danger {
+  background: var(--danger);
+  border-bottom-color: #5a2222;
+  box-shadow: inset 0 -2px #5a2222;
+}
+
+.maker-shell {
+  display: grid;
+  grid-template-columns: clamp(260px, 22vw, 340px) minmax(0, 1fr);
+  width: 100%;
+  height: 100%;
+  background: #0c0c0c;
+}
+
+.panel {
+  min-width: 0;
+  min-height: 0;
+  background: var(--panel);
+}
+
+.left-panel {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  border-right: 6px solid var(--line);
+}
+
+.panel-header {
+  display: grid;
+  gap: 10px;
+  border-bottom: 4px solid var(--line);
+  background: var(--bg);
+  padding: 12px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 17px;
+  text-shadow: 2px 2px 0 #000000;
+}
+
+h2 {
+  font-size: 20px;
+}
+
+h3 {
+  font-size: 15px;
+}
+
+p,
+small,
+.eyebrow {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.field {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  border: 2px solid var(--line);
+  border-radius: 5px;
+  background: rgb(0 0 0 / 58%);
+  color: var(--text);
+  outline: none;
+  padding: 0 9px;
+}
+
+.field:focus,
+.textarea:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 2px rgb(80 175 171 / 25%);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.search-wrap {
+  padding: 10px;
+}
+
+.tier-columns {
+  display: grid;
+  min-height: 0;
+  grid-template-rows: auto minmax(90px, 0.42fr) auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.tier-section-title {
+  border-top: 2px solid var(--line);
+  border-bottom: 2px solid var(--line);
+  background: #111111;
+  color: var(--muted);
+  font-size: 11px;
+  padding: 7px 10px;
+  text-transform: uppercase;
+}
+
+.tier-list {
+  min-height: 0;
+  overflow: auto;
+  padding: 0 10px 10px;
+}
+
+.edited-tier-list {
+  padding-top: 10px;
+}
+
+.tier-row-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.tier-row,
+.library-row {
+  display: grid;
+  width: 100%;
+  height: auto;
+  min-height: 46px;
+  justify-items: start;
+  gap: 3px;
+  border: 2px solid var(--line);
+  border-radius: 5px;
+  background: var(--panel-soft);
+  box-shadow: none;
+  padding: 7px 9px;
+  text-align: left;
+}
+
+.tier-delete {
+  align-self: stretch;
+  min-height: 46px;
+}
+
+.tier-row.active {
+  border-color: var(--teal);
+  background: #315552;
+}
+
+.workspace {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 6px solid var(--line);
+  background: var(--bg);
+  padding: 14px;
+}
+
+.main-grid {
+  display: grid;
+  min-height: 0;
+  grid-template-columns: minmax(500px, 1.35fr) minmax(320px, 0.75fr);
+  gap: 12px;
+  overflow: auto;
+  padding: 12px;
+}
+
+.side-stack {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.card {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  border: 4px solid var(--line);
+  border-radius: 5px;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.table-card {
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+}
+
+.crate-card {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.crate-card {
+  grid-template-rows: auto auto auto minmax(110px, 1fr);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 2px solid var(--line);
+  background: #090909;
+  padding: 10px;
+}
+
+.entry-list,
+.library-list,
+.roll-output,
+.crate-loot,
+.spawn-report {
+  min-height: 0;
+  overflow: auto;
+  padding: 10px;
+}
+
+.entry-help {
+  display: grid;
+  gap: 4px;
+  border-bottom: 2px solid var(--line);
+  background: #171717;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+  padding: 9px 10px;
+}
+
+.entry-help strong {
+  color: var(--text);
+}
+
+.entry-labels {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) 74px 88px 64px 182px;
+  gap: 6px;
+  border-bottom: 2px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+  padding: 7px 10px;
+  text-transform: uppercase;
+}
+
+.entry-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) 74px 88px 64px auto auto auto;
+  gap: 6px;
+  align-items: center;
+  border-bottom: 2px solid var(--line);
+  padding: 7px 0;
+}
+
+.entry-row:last-child {
+  border-bottom: 0;
+}
+
+.number,
+.small-number {
+  text-align: right;
+}
+
+.chance {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.roll-item,
+.save-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 2px solid var(--line);
+  padding: 8px 0;
+}
+
+.roll-item span {
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+}
+
+.crate-form {
+  display: grid;
+  gap: 8px;
+  border-bottom: 2px solid var(--line);
+  padding: 10px;
+}
+
+.crate-form label,
+.crate-form label {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.crate-form small {
+  color: var(--muted);
+  line-height: 1.3;
+}
+
+.two-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.crate-help {
+  line-height: 1.35;
+}
+
+.spawn-details {
+  border-bottom: 2px solid var(--line);
+}
+
+.spawn-details summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 8px 10px;
+}
+
+.spawn-report {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+  padding-top: 0;
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 10px;
+}
+
+.empty.compact {
+  padding: 4px 0 8px;
+}
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  display: none;
+  place-items: center;
+  background: rgb(0 0 0 / 72%);
+  z-index: 20;
+}
+
+.dialog-backdrop.active {
+  display: grid;
+}
+
+.dialog {
+  display: grid;
+  width: min(980px, calc(100vw - 32px));
+  max-height: min(850px, calc(100vh - 32px));
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  border: 6px solid var(--line);
+  border-radius: 5px;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.dialog-header,
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--bg);
+  padding: 12px;
+}
+
+.dialog-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 320px;
+  border: 2px solid var(--line);
+  border-radius: 5px;
+  background: rgb(0 0 0 / 58%);
+  color: var(--text);
+  font-family: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  outline: none;
+  padding: 10px;
+}
+
+.textarea.short {
+  min-height: 180px;
+  margin-top: 10px;
+}
+
+.save-row small {
+  display: block;
+}
+
+@media (max-width: 1120px) {
+  .maker-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .left-panel {
+    max-height: 40vh;
+    border-right: 0;
+    border-bottom: 6px solid var(--line);
+  }
+
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+}
