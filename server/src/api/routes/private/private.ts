@@ -480,6 +480,23 @@ function removeClanWarCgp(c: any) {
     return changeClanWarCgp(c, "remove");
 }
 
+const AvailableDeathmatchMapIds = [
+    "main",
+    "desert",
+    "april_fools",
+    "faction",
+    "halloween",
+    "gun_game",
+    "snow",
+    "woods",
+    "cobalt",
+    "perks",
+    "valentine",
+    "inferno",
+] as const;
+
+const AvailableDeathmatchMapIdSet = new Set<string>(AvailableDeathmatchMapIds);
+
 function getTeamModeLabel(teamMode: TeamMode) {
     switch (teamMode) {
         case TeamMode.Solo:
@@ -507,6 +524,24 @@ function formatConfiguredMode(
             ? mode.mapName.slice(3)
             : mode.mapName;
     return `${index}: ${mapName} | team=${getTeamModeLabel(mode.teamMode)} (${mode.teamMode}) | ${mode.enabled ? "on" : "off"}`;
+}
+
+function getConfiguredModeSummary(
+    mode: (typeof Config.modes)[number],
+    index: number,
+    modeType: "deathmatch" | "br",
+) {
+    const mapName =
+        modeType === "br" && mode.mapName.startsWith("br_")
+            ? mode.mapName.slice(3)
+            : mode.mapName;
+    return {
+        index,
+        mapName,
+        teamMode: mode.teamMode,
+        teamModeLabel: getTeamModeLabel(mode.teamMode),
+        enabled: mode.enabled,
+    };
 }
 
 export const PrivateRouter = new Hono<Context>()
@@ -542,10 +577,7 @@ export const PrivateRouter = new Hono<Context>()
                     200,
                 );
             }
-        } else if (
-            mapName.startsWith("br_") ||
-            !MapDefs[mapName as keyof typeof MapDefs]
-        ) {
+        } else if (!AvailableDeathmatchMapIdSet.has(mapName)) {
             return c.json({ message: `Deathmatch does not have map "${mapName}"` }, 200);
         }
 
@@ -570,9 +602,7 @@ export const PrivateRouter = new Hono<Context>()
         );
     })
     .post("/list_game_modes", validateParams(zListGameModesBody), (c) => {
-        const deathmatchMapIds = Object.keys(MapDefs)
-            .filter((mapName) => !mapName.startsWith("br_"))
-            .sort();
+        const deathmatchMapIds = [...AvailableDeathmatchMapIds].sort();
         const battleRoyaleMapIds = Object.keys(MapDefs)
             .filter((mapName) => mapName.startsWith("br_"))
             .map((mapName) => mapName.slice(3))
@@ -580,6 +610,16 @@ export const PrivateRouter = new Hono<Context>()
 
         return c.json(
             {
+                ok: true,
+                battleRoyaleEnabled: Config.battleRoyaleMode,
+                deathmatchModes: Config.modes.map((mode, index) =>
+                    getConfiguredModeSummary(mode, index, "deathmatch"),
+                ),
+                battleRoyaleModes: Config.br_modes.map((mode, index) =>
+                    getConfiguredModeSummary(mode, index, "br"),
+                ),
+                availableDeathmatchMapIds: deathmatchMapIds,
+                availableBattleRoyaleMapIds: battleRoyaleMapIds,
                 message: [
                     `Battle Royale global: ${Config.battleRoyaleMode ? "on" : "off"}`,
                     "",

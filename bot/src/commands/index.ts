@@ -6,7 +6,6 @@ import {
 import {
     zAddClanWarCgpBody,
     zListFeaturedYoutubersBody,
-    zListGameModesBody,
     zRemoveFeaturedYoutuberBody,
     zSetBattleRoyaleModeBody,
     zSetClanCgpValueBody,
@@ -34,6 +33,7 @@ import { blackjackHandler } from "./blackjack";
 import { coinFlipHandler } from "./coinflip";
 import { gpLeaderboardHandler } from "./gp-leaderboard";
 import { createCommand, createSlashCommand, genericExecute } from "./helpers";
+import { listGameModesHandler } from "./list-game-modes";
 import { searchPlayersHandler } from "./search-player";
 
 /**
@@ -468,13 +468,6 @@ const commands = {
             },
         ],
     }),
-    [Command.ListGameModes]: createCommand({
-        name: Command.ListGameModes,
-        description: "List mode indexes and available map ids",
-        optionValidator: zListGameModesBody,
-        isPrivateRoute: true,
-        options: [],
-    }),
     [Command.SetBattleRoyaleMode]: createCommand({
         name: Command.SetBattleRoyaleMode,
         description: "Enable or disable Battle Royale mode",
@@ -543,7 +536,12 @@ const commands = {
 } as unknown as Record<
     Exclude<
         Command,
-        "search_player" | "coinflip" | "blackjack" | "balance" | "gp_leaderboard"
+        | "search_player"
+        | "coinflip"
+        | "blackjack"
+        | "balance"
+        | "gp_leaderboard"
+        | "list_game_modes"
     >,
     ReturnType<typeof createCommand>
 >;
@@ -574,6 +572,7 @@ export const commandHandlers: CommandHandlers = (
         [Command.Blackjack]: blackjackHandler.execute,
         [Command.Balance]: balanceHandler.execute,
         [Command.GpLeaderboard]: gpLeaderboardHandler.execute,
+        [Command.ListGameModes]: listGameModesHandler.execute,
     } as CommandHandlers,
 );
 
@@ -585,4 +584,5 @@ export const commandsToRegister: SlashCommandOptionsOnlyBuilder[] = [
     blackjackHandler.command,
     balanceHandler.command,
     gpLeaderboardHandler.command,
+    listGameModesHandler.command,
 ];
