@@ -438,6 +438,10 @@ table.player-stats-overview td {
   text-align: center;
   text-shadow: 2px 2px 2px black;
 }
+table.player-stats-overview th:first-child,
+table.player-stats-overview td:first-child {
+  padding-right: 20px;
+}
 @media (max-width: 823px) {
   table.player-stats-overview td {
     font-size: 18px;
