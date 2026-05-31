@@ -52,7 +52,7 @@ export class MainView {
         this.error = false;
 
         // Supported args so far:
-        //   type:     most_kills, most_damage_dealt, kills, wins, kpg
+        //   type:     rank, most_kills, most_damage_dealt, kills, wins, kpg
         //   interval: daily, weekly, alltime
         //   teamMode: solo, duo, squad
         //   maxCount: 10, 100
@@ -78,6 +78,8 @@ export class MainView {
             gameMode: gameMode,
             mapId: Number(mapId),
         };
+        $("#leaderboard-category").val(type === "rank" ? "rank" : "matches");
+        this.el.find(".leaderboard-filter").toggle(type !== "rank");
 
         $.ajax({
             url: api.resolveUrl("/api/leaderboard"),
@@ -106,7 +108,8 @@ export class MainView {
         this.render();
     }
     onChangedParams() {
-        const type = $("#leaderboard-type").val();
+        const category = $("#leaderboard-category").val();
+        const type = category === "rank" ? "rank" : $("#leaderboard-type").val();
         const time = $("#leaderboard-time").val();
         const teamMode = $("#leaderboard-team-mode").val();
         const gameMode = $("#leaderboard-game-mode").val();
@@ -114,13 +117,16 @@ export class MainView {
         window.history.pushState(
             "",
             "",
-            `?type=${type}&team=${teamMode}&gameMode=${gameMode}&t=${time}&mapId=${mapId}`,
+            type === "rank"
+                ? "?type=rank"
+                : `?type=${type}&team=${teamMode}&gameMode=${gameMode}&t=${time}&mapId=${mapId}`,
         );
         this.load();
     }
     render() {
         // Compute derived values
         const TypeToString = {
+            rank: "stats-rank",
             most_kills: "stats-most-kills",
             most_damage_dealt: "stats-most-damage",
             kills: "stats-total-kills",
@@ -153,8 +159,14 @@ export class MainView {
             $("#leaderboard-team-mode").val(this.data.teamMode!);
             $("#leaderboard-game-mode").val(this.data.gameMode!);
             $("#leaderboard-map-id").val(this.data.mapId!);
-            $("#leaderboard-type").val(this.data.type!);
+            $("#leaderboard-category").val(
+                this.data.type === "rank" ? "rank" : "matches",
+            );
+            if (this.data.type !== "rank") {
+                $("#leaderboard-type").val(this.data.type!);
+            }
             $("#leaderboard-time").val(this.data.interval!);
+            this.el.find(".leaderboard-filter").toggle(this.data.type !== "rank");
 
             // Disable most kills option if 50v50 selected
             const factionMode = Number(this.data.mapId) == 3;

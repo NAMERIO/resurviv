@@ -159,7 +159,7 @@ export const zLeaderboardsRequest = z.object({
             message: "Invalid map ID",
         })
         .transform((mapId) => Number(mapId)),
-    type: z.enum(["most_kills", "most_damage_dealt", "kpg", "kills", "wins"]),
+    type: z.enum(["rank", "most_kills", "most_damage_dealt", "kpg", "kills", "wins"]),
     teamMode: z.enum(["solo", "duo", "squad"]).transform((mode) => teamModeMap[mode]),
     gameMode: z
         .enum([GameModeStatus.Deathmatch, GameModeStatus.BattleRoyale])

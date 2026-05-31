@@ -1,8 +1,9 @@
 import { and, count, eq, ne, sql, sum } from "drizzle-orm";
+import type { LeaderboardResponse } from "../../../../../shared/types/stats";
 import { db } from "../../db";
 import { matchDataTable, usersTable } from "../../db/schema";
 
-export const getGlobalRank = async (userId: string): Promise<number> => {
+const getGlobalRankQuery = () => {
     const playerMatches = db.$with("global_rank_player_matches").as(
         db
             .select({
@@ -39,6 +40,8 @@ export const getGlobalRank = async (userId: string): Promise<number> => {
         db
             .select({
                 userId: accountStats.userId,
+                username: usersTable.username,
+                slug: usersTable.slug,
                 rank: sql<number>`ROW_NUMBER() OVER (
                     ORDER BY ${accountStats.score} DESC, ${accountStats.wins} DESC,
                     ${accountStats.kills} DESC, ${accountStats.games} DESC,
@@ -52,6 +55,11 @@ export const getGlobalRank = async (userId: string): Promise<number> => {
             .where(and(eq(usersTable.banned, false))),
     );
 
+    return { accountStats, playerMatches, rankedAccounts };
+};
+
+export const getGlobalRank = async (userId: string): Promise<number> => {
+    const { accountStats, playerMatches, rankedAccounts } = getGlobalRankQuery();
     const result = await db
         .with(playerMatches, accountStats, rankedAccounts)
         .select({ rank: rankedAccounts.rank })
@@ -60,4 +68,19 @@ export const getGlobalRank = async (userId: string): Promise<number> => {
         .limit(1);
 
     return result[0]?.rank ?? 0;
+};
+
+export const getGlobalRankLeaderboard = async (): Promise<LeaderboardResponse[]> => {
+    const { accountStats, playerMatches, rankedAccounts } = getGlobalRankQuery();
+    return await db
+        .with(playerMatches, accountStats, rankedAccounts)
+        .select({
+            username: rankedAccounts.username,
+            slug: rankedAccounts.slug,
+            val: rankedAccounts.rank,
+            region: sql<string>`''`,
+        })
+        .from(rankedAccounts)
+        .orderBy(rankedAccounts.rank)
+        .limit(100);
 };

@@ -6,11 +6,15 @@
       <!--
       <th class='header-active' scope="col" data-l10n='stats-active' data-caps='true'>ACTIVE</th>
       -->
-      <th class='header-stat' scope="col" data-l10n='<%= env.statName %>' data-caps='true'>STAT</th>
-      <% if (env.type != 'most_kills' && env.type != 'win_streak') { %>
+      <% if (env.type != 'rank') { %>
+        <th class='header-stat' scope="col" data-l10n='<%= env.statName %>' data-caps='true'>STAT</th>
+      <% } %>
+      <% if (env.type != 'rank' && env.type != 'most_kills' && env.type != 'win_streak') { %>
           <th class='header-games' scope="col" data-l10n='stats-games' data-caps='true'>GAMES (><%= env.minGames %>)</th>
       <% } %>
-      <th class='header-region' scope="col" data-l10n='stats-region' data-caps='true'>REGION</th>
+      <% if (env.type != 'rank') { %>
+        <th class='header-region' scope="col" data-l10n='stats-region' data-caps='true'>REGION</th>
+      <% } %>
     </tr>
   </thead>
   <tbody class='leaderboard-values'>
@@ -50,11 +54,15 @@
           <!--
           <td class='<%= data[i].active ? 'active' : 'inactive' %>'></td>
           -->
-          <td><%= data[i].val %></td>
-          <% if (env.type != 'most_kills' && env.type != 'win_streak') { %>
+          <% if (env.type != 'rank') { %>
+            <td><%= data[i].val %></td>
+          <% } %>
+          <% if (env.type != 'rank' && env.type != 'most_kills' && env.type != 'win_streak') { %>
               <td><%= data[i].games %></td>
           <% } %>
-          <td class='data-region'><%= data[i].region ? data[i].region.toUpperCase() : '' %></td>
+          <% if (env.type != 'rank') { %>
+            <td class='data-region'><%= data[i].region ? data[i].region.toUpperCase() : '' %></td>
+          <% } %>
         </tr>
       <% } %>
     <% } %>
