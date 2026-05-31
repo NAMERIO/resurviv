@@ -442,6 +442,13 @@ table.player-stats-overview th:first-child,
 table.player-stats-overview td:first-child {
   padding-right: 20px;
 }
+table.player-stats-overview th:nth-child(2),
+table.player-stats-overview td:nth-child(2),
+table.player-stats-overview th:nth-child(3),
+table.player-stats-overview td:nth-child(3) {
+  position: relative;
+  right: 6px;
+}
 @media (max-width: 823px) {
   table.player-stats-overview td {
     font-size: 18px;
