@@ -144,6 +144,9 @@ export interface Item {
     type: string;
     source: string;
     timeAcquired: number;
+    maker: string;
+    kills: number;
+    wins: number;
     status?: ItemStatus;
     ackd?: ItemStatus.Ackd;
 }
@@ -156,6 +159,9 @@ interface ItemInfo {
     displaySource: string;
     displayLore: string;
     timeAcquired: number;
+    maker: string;
+    kills: number;
+    wins: number;
     idx: number;
     subcat: EmoteCategory;
     outerDiv: JQuery<HTMLElement> | null;
@@ -171,6 +177,9 @@ interface EquippedItem {
     subcat: EmoteCategory;
     displaySource?: string;
     itemKey?: string;
+    maker?: string;
+    kills?: number;
+    wins?: number;
 }
 
 function getItemIdentity(item: Pick<Item, "type" | "id" | "timeAcquired" | "source">) {
@@ -283,6 +292,9 @@ export class LoadoutMenu {
         displayLore?: string;
         subcat?: number;
         itemKey?: string;
+        maker?: string;
+        kills?: number;
+        wins?: number;
     } = {
         selectedElem: null,
         prevSlot: null,
@@ -301,6 +313,10 @@ export class LoadoutMenu {
     modalCustomizeItemName: JQuery<HTMLElement>;
     modalCustomizeItemLore: JQuery<HTMLElement>;
     modalCustomizeItemSource: JQuery<HTMLElement>;
+    modalCustomizeItemStats: JQuery<HTMLElement>;
+    modalCustomizeItemMaker: JQuery<HTMLElement>;
+    modalCustomizeItemKills: JQuery<HTMLElement>;
+    modalCustomizeItemWins: JQuery<HTMLElement>;
 
     picker: any;
 
@@ -342,6 +358,10 @@ export class LoadoutMenu {
         this.modalCustomizeItemName = $("#modal-customize-item-name");
         this.modalCustomizeItemLore = $("#modal-customize-item-lore");
         this.modalCustomizeItemSource = $("#modal-customize-item-source");
+        this.modalCustomizeItemStats = $("#modal-customize-item-stats");
+        this.modalCustomizeItemMaker = $("#modal-customize-item-maker");
+        this.modalCustomizeItemKills = $("#modal-customize-item-kills");
+        this.modalCustomizeItemWins = $("#modal-customize-item-wins");
         this.modal = new MenuModal(this.modalCustomize);
         this.modal.onShow(() => {
             this.onShow();
@@ -1180,6 +1200,9 @@ export class LoadoutMenu {
             loadoutType: selectedItem.loadoutType,
             subcat: selectedItem.subcat,
             itemKey: selectedItem.itemKey,
+            maker: selectedItem.maker,
+            kills: selectedItem.kills,
+            wins: selectedItem.wins,
         };
         this.modalCustomizeItemName.html(this.selectedItem.displayName!);
         const source =
@@ -1216,6 +1239,11 @@ export class LoadoutMenu {
         this.modalCustomizeItemRarity.css({
             color: rarityVisuals.text,
         });
+        const showStats = selectedItem.loadoutType == "outfit";
+        this.modalCustomizeItemStats.toggle(showStats);
+        this.modalCustomizeItemMaker.text(selectedItem.maker || "Unknown");
+        this.modalCustomizeItemKills.text(selectedItem.kills || 0);
+        this.modalCustomizeItemWins.text(selectedItem.wins || 0);
         if (this.selectedItem.loadoutType == "emote") {
             this.highlightedSlots.css({
                 display: "block",
@@ -1335,6 +1363,7 @@ export class LoadoutMenu {
         this.modalCustomizeItemSource.html("");
         this.modalCustomizeItemLore.html("");
         this.modalCustomizeItemRarity.html("");
+        this.modalCustomizeItemStats.hide();
     }
 
     clearWeaponStats() {
@@ -1591,6 +1620,7 @@ export class LoadoutMenu {
         this.modalCustomizeItemSource.html("");
         this.modalCustomizeItemLore.html("");
         this.modalCustomizeItemRarity.html("");
+        this.modalCustomizeItemStats.hide();
 
         const getItemSourceName = function (source: string) {
             const sourceDef = GameObjectDefs[source] as EmoteDef;
@@ -1646,6 +1676,9 @@ export class LoadoutMenu {
                     this.localization.translate(`game-${item.type}-lore`) || objDef.lore!,
                 displaySource: getItemSourceName(item.source),
                 timeAcquired: item.timeAcquired,
+                maker: item.maker,
+                kills: item.kills,
+                wins: item.wins,
                 idx: i,
                 subcat:
                     (GameObjectDefs[item.type] as unknown as EmoteDef)?.category ||

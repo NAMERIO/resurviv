@@ -7819,14 +7819,17 @@ input [type="image"]:focus {
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  padding: 0 12px;
-  padding-top: 30px;
+  padding: 48px 12px 12px;
 }
 
 #modal-customize-item-header {
   background-color: #555555;
-  padding-bottom: 6px;
-  padding-top: 6px;
+  box-sizing: border-box;
+  flex: none;
+  margin-bottom: 12px;
+  min-height: 58px;
+  padding: 12px;
+  position: relative;
   user-select: none;
 }
 
@@ -7848,13 +7851,39 @@ input [type="image"]:focus {
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.75);
 }
 
+#modal-customize-item-stats {
+  color: #fff;
+  display: none;
+  position: absolute;
+  right: 52px;
+  text-align: left;
+  top: 8px;
+}
+
+#modal-customize-item-stats .item-stats-text {
+  color: #fff;
+  font-size: 14px;
+  line-height: 16px;
+}
+
+#modal-customize-item-stats b {
+  color: #ffd700;
+  font-size: 14px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+#modal-customize-item-stats .stats-second-line-container {
+  display: flex;
+  gap: 18px;
+  margin-top: 4px;
+}
+
 #modal-customize-loading-container {
-  bottom: 6px;
-  float: right;
   margin: auto;
   padding: 0;
-  position: relative;
-  right: 0;
+  position: absolute;
+  right: 12px;
+  top: 17px;
 }
 
 #modal-customize-loading {

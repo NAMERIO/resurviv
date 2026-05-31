@@ -1,5 +1,5 @@
 import { randomInt } from "node:crypto";
-import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { saveConfig } from "../../../../../config";
@@ -107,6 +107,34 @@ function getLobbyCgpMultipliers(playerCount: number) {
 
 function toCgpMilli(value: number) {
     return Math.round(value * ClanConstants.CgpScale);
+}
+
+async function updateEquippedOutfitStats(
+    tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+    matchData: SaveGameBody["matchData"],
+) {
+    for (const data of matchData) {
+        if (!data.userId || !data.outfit || data.outfit === "outfitBase") continue;
+
+        const [item] = await tx
+            .select({ id: itemsTable.id })
+            .from(itemsTable)
+            .where(
+                and(eq(itemsTable.userId, data.userId), eq(itemsTable.type, data.outfit)),
+            )
+            .orderBy(asc(itemsTable.timeAcquired), asc(itemsTable.id))
+            .limit(1);
+
+        if (!item) continue;
+
+        await tx
+            .update(itemsTable)
+            .set({
+                kills: sql`${itemsTable.kills} + ${data.kills}`,
+                wins: sql`${itemsTable.wins} + ${data.rank === 1 ? 1 : 0}`,
+            })
+            .where(eq(itemsTable.id, item.id));
+    }
 }
 
 // Helper function to update clan stats for players who are in clans
@@ -803,7 +831,10 @@ export const PrivateRouter = new Hono<Context>()
 
         await leaderboardCache.invalidateCache(matchData);
 
-        await db.insert(matchDataTable).values(matchData);
+        await db.transaction(async (tx) => {
+            await tx.insert(matchDataTable).values(matchData);
+            await updateEquippedOutfitStats(tx, matchData);
+        });
         await logPlayerIPs(matchData);
 
         // Update clan stats for players who are in clans

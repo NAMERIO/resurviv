@@ -409,13 +409,26 @@ async function claimSkinGifts(userId: string) {
     return gifts satisfies SkinGift[];
 }
 
-function getUserItems(userId: string) {
+async function getUserItems(userId: string) {
+    await db
+        .update(itemsTable)
+        .set({
+            maker: sql`COALESCE(
+                (SELECT ${usersTable.username} FROM ${usersTable} WHERE ${usersTable.id} = ${userId}),
+                'Unknown'
+            )`,
+        })
+        .where(and(eq(itemsTable.userId, userId), eq(itemsTable.maker, "Unknown")));
+
     return db
         .select({
             id: itemsTable.id,
             type: itemsTable.type,
             timeAcquired: itemsTable.timeAcquired,
             source: itemsTable.source,
+            maker: itemsTable.maker,
+            kills: itemsTable.kills,
+            wins: itemsTable.wins,
             status: itemsTable.status,
         })
         .from(itemsTable)
@@ -440,6 +453,9 @@ async function expireMarketListings(tx: any, targetUserId?: string) {
             sellerUserId: marketListingTable.sellerUserId,
             itemId: marketListingTable.itemId,
             itemType: marketListingTable.itemType,
+            itemMaker: marketListingTable.itemMaker,
+            itemKills: marketListingTable.itemKills,
+            itemWins: marketListingTable.itemWins,
         });
 
     if (expiredNow.length === 0) {
@@ -454,10 +470,16 @@ async function expireMarketListings(tx: any, targetUserId?: string) {
                     sellerUserId: string;
                     itemId: string;
                     itemType: string;
+                    itemMaker: string;
+                    itemKills: number;
+                    itemWins: number;
                 }) => ({
                     id: listing.itemId,
                     userId: listing.sellerUserId,
                     type: listing.itemType,
+                    maker: listing.itemMaker,
+                    kills: listing.itemKills,
+                    wins: listing.itemWins,
                     source: "Item expired",
                     timeAcquired: Date.now(),
                 }),
@@ -501,6 +523,9 @@ async function expireAuctionListings(tx: any) {
                 id: auction.itemId,
                 userId: auction.highestBidUserId,
                 type: auction.itemType,
+                maker: auction.itemMaker,
+                kills: auction.itemKills,
+                wins: auction.itemWins,
                 source: "auction_win",
                 timeAcquired: Date.now(),
             });
@@ -516,6 +541,9 @@ async function expireAuctionListings(tx: any) {
                 id: auction.itemId,
                 userId: auction.sellerUserId,
                 type: auction.itemType,
+                maker: auction.itemMaker,
+                kills: auction.itemKills,
+                wins: auction.itemWins,
                 source: "auction_expired",
                 timeAcquired: Date.now(),
             });
@@ -595,6 +623,9 @@ async function buildMarketState(userId: string) {
         id: listing.id,
         itemId: listing.itemId,
         itemType: listing.itemType,
+        maker: listing.itemMaker,
+        kills: listing.itemKills,
+        wins: listing.itemWins,
         price: listing.price,
         sellerSlug: slugByUserId.get(listing.sellerUserId) || "unknown",
         createdAt: new Date(listing.createdAt).getTime(),
@@ -612,6 +643,9 @@ async function buildMarketState(userId: string) {
         id: auction.id,
         itemId: auction.itemId,
         itemType: auction.itemType,
+        maker: auction.itemMaker,
+        kills: auction.itemKills,
+        wins: auction.itemWins,
         sellerSlug: slugByUserId.get(auction.sellerUserId) || "unknown",
         startPrice: auction.startPrice,
         highestBid: auction.highestBid,
@@ -1157,6 +1191,9 @@ UserRouter.post(
                         type: itemsTable.type,
                         timeAcquired: itemsTable.timeAcquired,
                         source: itemsTable.source,
+                        maker: itemsTable.maker,
+                        kills: itemsTable.kills,
+                        wins: itemsTable.wins,
                         status: itemsTable.status,
                     })
                     .from(itemsTable)
@@ -1517,6 +1554,9 @@ UserRouter.post(
                     sellerUserId: user.id,
                     itemId,
                     itemType,
+                    itemMaker: ownedItem.maker,
+                    itemKills: ownedItem.kills,
+                    itemWins: ownedItem.wins,
                     price,
                     status: "active",
                 });
@@ -1604,6 +1644,9 @@ UserRouter.post(
                     id: listing.itemId,
                     userId: user.id,
                     type: listing.itemType,
+                    maker: listing.itemMaker,
+                    kills: listing.itemKills,
+                    wins: listing.itemWins,
                     source: "market_buy",
                     timeAcquired: Date.now(),
                 });
@@ -1749,6 +1792,9 @@ UserRouter.post(
                     sellerUserId: user.id,
                     itemId,
                     itemType: ownedItem.type,
+                    itemMaker: ownedItem.maker,
+                    itemKills: ownedItem.kills,
+                    itemWins: ownedItem.wins,
                     startPrice,
                     highestBid: 0,
                     status: "active",
@@ -2097,6 +2143,9 @@ UserRouter.post(
                     .returning({
                         itemId: marketListingTable.itemId,
                         itemType: marketListingTable.itemType,
+                        itemMaker: marketListingTable.itemMaker,
+                        itemKills: marketListingTable.itemKills,
+                        itemWins: marketListingTable.itemWins,
                     });
 
                 if (canceled.length === 0) {
@@ -2107,6 +2156,9 @@ UserRouter.post(
                     id: canceled[0]!.itemId,
                     userId: user.id,
                     type: canceled[0]!.itemType,
+                    maker: canceled[0]!.itemMaker,
+                    kills: canceled[0]!.itemKills,
+                    wins: canceled[0]!.itemWins,
                     source: "market_cancel",
                     timeAcquired: Date.now(),
                 });
@@ -2162,6 +2214,9 @@ UserRouter.post(
                     .returning({
                         itemId: auctionListingTable.itemId,
                         itemType: auctionListingTable.itemType,
+                        itemMaker: auctionListingTable.itemMaker,
+                        itemKills: auctionListingTable.itemKills,
+                        itemWins: auctionListingTable.itemWins,
                         highestBid: auctionListingTable.highestBid,
                         highestBidUserId: auctionListingTable.highestBidUserId,
                     });
@@ -2184,6 +2239,9 @@ UserRouter.post(
                     id: auction.itemId,
                     userId: user.id,
                     type: auction.itemType,
+                    maker: auction.itemMaker,
+                    kills: auction.itemKills,
+                    wins: auction.itemWins,
                     source: "auction_cancel",
                     timeAcquired: Date.now(),
                 });

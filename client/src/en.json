@@ -277,6 +277,8 @@
   "market-seller-label": "Seller",
   "market-listing-owner-label": "Seller",
   "market-sort-makr": "Makr",
+  "market-sort-kills": "Kills",
+  "market-sort-wins": "Wins",
   "market-type-label": "Type",
   "market-timer-expires-in": "EXPIRES IN ",
   "market-timer-expired": "EXPIRED",

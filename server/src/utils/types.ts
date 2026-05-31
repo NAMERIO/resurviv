@@ -72,7 +72,11 @@ export const zRemoveFeaturedYoutuberBody = z.object({
 });
 
 export interface SaveGameBody {
-    matchData: (MatchDataTable & { ip: string; findGameIp: string })[];
+    matchData: (MatchDataTable & {
+        ip: string;
+        findGameIp: string;
+        outfit?: string;
+    })[];
 }
 
 export interface ServerGameConfig {

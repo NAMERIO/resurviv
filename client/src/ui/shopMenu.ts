@@ -34,6 +34,9 @@ type Listing = {
     image: string;
     transform: string;
     price: number;
+    maker: string;
+    kills: number;
+    wins: number;
     owned?: boolean;
     action: "buy" | "sell" | "sell_or_auction" | "cancel" | "auction_live";
     sellerName?: string;
@@ -52,6 +55,9 @@ type AuctionViewListing = {
     startPrice: number;
     highestBid: number;
     bidCount: number;
+    maker: string;
+    kills: number;
+    wins: number;
     sellerName?: string;
     highestBidderName?: string;
     createdAt?: number;
@@ -590,6 +596,9 @@ export class ShopMenu {
                     image: helpers.getSvgFromGameType(listing.itemType),
                     transform: helpers.getCssTransformFromGameType(listing.itemType),
                     price: listing.price,
+                    maker: listing.maker,
+                    kills: listing.kills,
+                    wins: listing.wins,
                     owned: this.account.items.some(
                         (item) => item.type === listing.itemType,
                     ),
@@ -625,6 +634,9 @@ export class ShopMenu {
                     image: helpers.getSvgFromGameType(listing.itemType),
                     transform: helpers.getCssTransformFromGameType(listing.itemType),
                     price: listing.price,
+                    maker: listing.maker,
+                    kills: listing.kills,
+                    wins: listing.wins,
                     owned: true,
                     action: "cancel",
                     sellerName: this.localization.translate("market-you") || "You",
@@ -650,6 +662,9 @@ export class ShopMenu {
                     image: helpers.getSvgFromGameType(auction.itemType),
                     transform: helpers.getCssTransformFromGameType(auction.itemType),
                     price: currentPrice,
+                    maker: auction.maker,
+                    kills: auction.kills,
+                    wins: auction.wins,
                     owned: false,
                     action: "auction_live",
                     sellerName: this.localization.translate("market-you") || "You",
@@ -683,6 +698,9 @@ export class ShopMenu {
                     image: helpers.getSvgFromGameType(item.type),
                     transform: helpers.getCssTransformFromGameType(item.type),
                     price: getBundleMinPrice(item.type) ?? 0,
+                    maker: item.maker,
+                    kills: item.kills,
+                    wins: item.wins,
                     owned: true,
                     action: "sell_or_auction",
                     sellerName: this.localization.translate("market-you") || "You",
@@ -731,6 +749,9 @@ export class ShopMenu {
             startPrice: auction.startPrice,
             highestBid: auction.highestBid,
             bidCount: auction.bidCount,
+            maker: auction.maker,
+            kills: auction.kills,
+            wins: auction.wins,
             sellerName: auction.sellerSlug,
             highestBidderName: auction.highestBidderSlug,
             createdAt: auction.createdAt,
@@ -1003,6 +1024,31 @@ export class ShopMenu {
         });
     }
 
+    buildItemInstanceStats(item: Pick<Listing, "maker" | "kills" | "wins">) {
+        return $("<div/>", { class: "market-item-instance-stats" }).append(
+            $("<div/>", { class: "market-item-stats-text" }).append(
+                $("<span/>", {
+                    text: `${this.localization.translate("market-sort-makr") || "Makr"}: `,
+                }),
+                $("<p/>", { text: item.maker || "Unknown" }),
+            ),
+            $("<div/>", { class: "market-stats-second-line-container" }).append(
+                $("<div/>", { class: "market-item-stats-text" }).append(
+                    $("<span/>", {
+                        text: `${this.localization.translate("market-sort-kills") || "Kills"}: `,
+                    }),
+                    $("<p/>", { text: item.kills }),
+                ),
+                $("<div/>", { class: "market-item-stats-text" }).append(
+                    $("<span/>", {
+                        text: `${this.localization.translate("market-sort-wins") || "Wins"}: `,
+                    }),
+                    $("<p/>", { text: item.wins }),
+                ),
+            ),
+        );
+    }
+
     buildMarketItem(item: Listing) {
         const actionLabel =
             item.action === "cancel"
@@ -1015,11 +1061,7 @@ export class ShopMenu {
                       "Sell item"
                     : "Buy";
         const sellerLabel =
-            item.action === "buy"
-                ? this.localization.translate("market-seller-label") || "Seller"
-                : this.localization.translate("market-sort-makr") ||
-                  this.localization.translate("market-listing-owner-label") ||
-                  "Seller";
+            this.localization.translate("market-seller-label") || "Seller";
         const sellerValue =
             item.sellerName ||
             (item.action === "buy"
@@ -1076,10 +1118,7 @@ export class ShopMenu {
         if (isSellPageCard) {
             info.append(
                 $("<div/>", { class: "market-item-stats-container" }).append(
-                    $("<div/>", { class: "market-item-stats-text" }).append(
-                        $("<span/>", { text: `${sellerLabel}: ` }),
-                        $("<p/>", { text: sellerValue }),
-                    ),
+                    this.buildItemInstanceStats(item),
                     $("<div/>", { class: "market-stats-second-line-container" }).append(
                         $("<div/>", { class: "market-item-stats-text" }).append(
                             $("<span/>", {
@@ -1143,6 +1182,7 @@ export class ShopMenu {
                         $("<span/>", { text: `${sellerLabel}: ` }),
                         $("<p/>", { text: sellerValue }),
                     ),
+                    this.buildItemInstanceStats(item),
                 ),
             );
         }
@@ -1267,6 +1307,9 @@ export class ShopMenu {
             transform: item.transform,
             startPrice: getAuctionPriceBounds(item.type)?.min ?? 1,
             highestBid: 0,
+            maker: item.maker,
+            kills: item.kills,
+            wins: item.wins,
             bidCount: 0,
             sellerName: item.sellerName,
             referenceValue: getMarketReferencePrice(item.type) ?? 0,
@@ -1319,6 +1362,7 @@ export class ShopMenu {
                     }),
                     $("<p/>", { text: this.formatMarketPrice(currentBid) }),
                 ),
+                this.buildItemInstanceStats(item),
             ),
         );
         const action = $("<div/>", {
@@ -2219,6 +2263,9 @@ export class ShopMenu {
                 transform: helpers.getCssTransformFromGameType(sold.itemType),
                 price: sold.price,
                 action: "buy",
+                maker: "Unknown",
+                kills: 0,
+                wins: 0,
             });
             added = true;
         }
@@ -2335,6 +2382,9 @@ export class ShopMenu {
                 transform: helpers.getCssTransformFromGameType(itemType),
                 price: 0,
                 action: "buy",
+                maker: "Unknown",
+                kills: 0,
+                wins: 0,
             });
         }
         this.showNextSoldNotification();

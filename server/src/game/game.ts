@@ -872,6 +872,7 @@ export class Game {
                 region: Config.gameServer.thisRegion,
                 username: player.name,
                 playerId: player.matchDataId,
+                outfit: player.loadout.outfit,
                 gameMode: isBattleRoyaleMapName(this.mapName)
                     ? GameModeStatus.BattleRoyale
                     : GameModeStatus.Deathmatch,
@@ -924,6 +925,7 @@ export class Game {
 
             existing.username = latest.username;
             existing.playerId = latest.playerId;
+            existing.outfit = latest.outfit;
             existing.teamId = latest.teamId;
             existing.rank = latest.rank;
             existing.died = latest.died;

@@ -36,6 +36,9 @@ export type MarketListing = {
     id: string;
     itemId: string;
     itemType: string;
+    maker: string;
+    kills: number;
+    wins: number;
     price: number;
     sellerSlug: string;
     createdAt: number;
@@ -59,6 +62,9 @@ export type AuctionListing = {
     id: string;
     itemId: string;
     itemType: string;
+    maker: string;
+    kills: number;
+    wins: number;
     sellerSlug: string;
     startPrice: number;
     highestBid: number;
