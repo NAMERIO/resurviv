@@ -2351,6 +2351,10 @@ export class GameMap {
     canPlayerSpawn(pos: Vec2) {
         const circle = collider.createCircle(pos, GameConfig.player.radius);
 
+        if (this.game.gas.mode !== GasMode.Inactive && this.game.gas.isInGas(pos)) {
+            return false;
+        }
+
         if (!this.amongUsMode && this.isOnWater(pos, 0)) {
             return false;
         }
