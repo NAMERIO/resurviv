@@ -93,6 +93,7 @@ import {
 } from "../../db/schema";
 import type { Context } from "../../index";
 import {
+    ensureUserAuthIdentities,
     getTimeUntilNextUsernameChange,
     logoutUser,
     sanitizeSlug,
@@ -1341,12 +1342,7 @@ UserRouter.post("/logout", async (c) => {
 UserRouter.post("/unlink_auth", validateParams(zUnlinkAuthRequest), async (c) => {
     const user = c.get("user")!;
     const { provider } = c.req.valid("json");
-    const identities = await db
-        .select({
-            provider: userAuthIdentityTable.provider,
-        })
-        .from(userAuthIdentityTable)
-        .where(eq(userAuthIdentityTable.userId, user.id));
+    const identities = await ensureUserAuthIdentities(user);
 
     if (!identities.some((identity) => identity.provider === provider)) {
         return c.json({ success: false, error: "not_linked" } as const, 200);
