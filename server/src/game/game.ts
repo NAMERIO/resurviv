@@ -46,7 +46,7 @@ import { SmokeBarn } from "./objects/smoke";
 import { PluginManager } from "./pluginManager";
 import { Profiler } from "./profiler";
 
-const mergeWeaponKills = (
+const mergeWeaponStats = (
     left: Record<string, number> = {},
     right: Record<string, number> = {},
 ): Record<string, number> => {
@@ -895,6 +895,9 @@ export class Game {
                 died: player.dead,
                 kills: player.kills,
                 weaponKills: player.weaponKills,
+                weaponDeaths: player.weaponDeaths,
+                weaponDamageDealt: player.weaponDamageDealt,
+                weaponDamageTaken: player.weaponDamageTaken,
                 teamKills: 0,
                 damageDealt: Math.round(player.damageDealt),
                 damageTaken: Math.round(player.damageTaken),
@@ -921,6 +924,9 @@ export class Game {
                     ...data,
                     killedIds: [...data.killedIds],
                     weaponKills: { ...data.weaponKills },
+                    weaponDeaths: { ...data.weaponDeaths },
+                    weaponDamageDealt: { ...data.weaponDamageDealt },
+                    weaponDamageTaken: { ...data.weaponDamageTaken },
                 });
                 continue;
             }
@@ -935,7 +941,19 @@ export class Game {
             const killedIds = Array.from(
                 new Set([...existing.killedIds, ...data.killedIds]),
             );
-            const weaponKills = mergeWeaponKills(existing.weaponKills, data.weaponKills);
+            const weaponKills = mergeWeaponStats(existing.weaponKills, data.weaponKills);
+            const weaponDeaths = mergeWeaponStats(
+                existing.weaponDeaths,
+                data.weaponDeaths,
+            );
+            const weaponDamageDealt = mergeWeaponStats(
+                existing.weaponDamageDealt,
+                data.weaponDamageDealt,
+            );
+            const weaponDamageTaken = mergeWeaponStats(
+                existing.weaponDamageTaken,
+                data.weaponDamageTaken,
+            );
 
             existing.username = latest.username;
             existing.playerId = latest.playerId;
@@ -959,6 +977,9 @@ export class Game {
             existing.damageTaken = damageTaken;
             existing.killedIds = killedIds;
             existing.weaponKills = weaponKills;
+            existing.weaponDeaths = weaponDeaths;
+            existing.weaponDamageDealt = weaponDamageDealt;
+            existing.weaponDamageTaken = weaponDamageTaken;
         }
 
         const values = Array.from(matchDataByParticipant.values());

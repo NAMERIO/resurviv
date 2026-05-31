@@ -60,6 +60,9 @@ export type WeaponHistoryParams = z.infer<typeof zWeaponHistoryRequest>;
 export type WeaponHistoryResponse = {
     type: string;
     kills: number;
+    deaths: number;
+    damage_dealt: number;
+    damage_taken: number;
     last_used: string | Date;
 }[];
 

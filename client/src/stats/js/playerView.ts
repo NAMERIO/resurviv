@@ -1,6 +1,7 @@
 import $ from "jquery";
 import { GameObjectDefs } from "../../../../shared/defs/gameObjectDefs";
 import { EmotesDefs } from "../../../../shared/defs/gameObjects/emoteDefs";
+import type { AmmoDef } from "../../../../shared/defs/gameObjects/gearDefs";
 import type { GunDef } from "../../../../shared/defs/gameObjects/gunDefs";
 import { TeamModeToString } from "../../../../shared/defs/types/misc";
 import type { TeamMode } from "../../../../shared/gameConfig";
@@ -395,13 +396,23 @@ export class PlayerView {
         const args: WeaponHistoryParams = { slug };
         this.weaponHistory.query("/api/weapon_history", args, 0, (_err, data) => {
             this.weaponHistory.data = (data || []).map(
-                (weapon: WeaponHistoryResponse[number]) => ({
-                    ...weapon,
-                    icon: helpers.getSvgFromGameType(weapon.type),
-                    name:
-                        (GameObjectDefs[weapon.type] as GunDef | undefined)?.name ??
-                        weapon.type,
-                }),
+                (weapon: WeaponHistoryResponse[number]) => {
+                    const weaponDef = GameObjectDefs[weapon.type] as GunDef | undefined;
+                    const ammoDef = weaponDef?.ammo
+                        ? (GameObjectDefs[weaponDef.ammo] as AmmoDef | undefined)
+                        : undefined;
+
+                    return {
+                        ...weapon,
+                        icon: helpers.getSvgFromGameType(weapon.type),
+                        category: GameObjectDefs[weapon.type]?.type,
+                        accentColor:
+                            ammoDef?.lootImg.tintDark !== undefined
+                                ? helpers.colorToHexString(ammoDef.lootImg.tintDark)
+                                : "",
+                        name: weaponDef?.name ?? weapon.type,
+                    };
+                },
             );
             this.render();
         });

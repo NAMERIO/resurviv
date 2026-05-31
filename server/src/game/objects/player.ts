@@ -2363,6 +2363,10 @@ export class Player extends BaseGameObject {
         const killCreditSource = this.getInfectedKillCreditSource(params);
         if (!killCreditSource) return undefined;
 
+        this.trackWeaponStat(
+            this.weaponDeaths,
+            params.weaponSourceType ?? params.gameSourceType,
+        );
         killCreditSource.killedIds.push(this.matchDataId);
         killCreditSource.kills++;
         killCreditSource.trackWeaponKill(params.gameSourceType);
@@ -2761,10 +2765,21 @@ export class Player extends BaseGameObject {
 
     kills = 0;
     weaponKills: Record<string, number> = {};
+    weaponDeaths: Record<string, number> = {};
+    weaponDamageDealt: Record<string, number> = {};
+    weaponDamageTaken: Record<string, number> = {};
+
+    private trackWeaponStat(
+        stats: Record<string, number>,
+        weaponType: string | undefined,
+        amount = 1,
+    ): void {
+        if (!weaponType) return;
+        stats[weaponType] = (stats[weaponType] ?? 0) + amount;
+    }
 
     private trackWeaponKill(weaponType?: string): void {
-        if (!weaponType) return;
-        this.weaponKills[weaponType] = (this.weaponKills[weaponType] ?? 0) + 1;
+        this.trackWeaponStat(this.weaponKills, weaponType);
     }
     timeAlive = 0;
     pickedUpLoot = false;
@@ -4681,9 +4696,19 @@ export class Player extends BaseGameObject {
         this.game.pluginManager.emit("playerDamage", { ...params, player: this });
 
         this.damageTaken += finalDamage;
+        this.trackWeaponStat(
+            this.weaponDamageTaken,
+            params.weaponSourceType ?? params.gameSourceType,
+            finalDamage,
+        );
         if (playerSource && params.source !== this) {
             if (playerSource.groupId !== this.groupId) {
                 playerSource.damageDealt += finalDamage;
+                playerSource.trackWeaponStat(
+                    playerSource.weaponDamageDealt,
+                    params.weaponSourceType ?? params.gameSourceType,
+                    finalDamage,
+                );
                 playerSource.streakDirty = true;
                 playerSource.checkDamageStreaks();
                 playerSource.questManager.trackEvent("damage", {
@@ -4853,6 +4878,10 @@ export class Player extends BaseGameObject {
         if (this.handleInfectedFatalDamage(params)) return;
         if (this.downed) this.downed = false;
         this.dead = true;
+        this.trackWeaponStat(
+            this.weaponDeaths,
+            params.weaponSourceType ?? params.gameSourceType,
+        );
         this.killedIndex = this.game.playerBarn.nextKilledNumber++;
         this.boost = 0;
         this.actionType = GameConfig.Action.None;

@@ -382,6 +382,18 @@ export const matchDataTable = pgTable(
             .notNull()
             .default({})
             .$type<Record<string, number>>(),
+        weaponDeaths: json("weapon_deaths")
+            .notNull()
+            .default({})
+            .$type<Record<string, number>>(),
+        weaponDamageDealt: json("weapon_damage_dealt")
+            .notNull()
+            .default({})
+            .$type<Record<string, number>>(),
+        weaponDamageTaken: json("weapon_damage_taken")
+            .notNull()
+            .default({})
+            .$type<Record<string, number>>(),
         teamKills: integer("team_kills").notNull().default(0),
         damageDealt: integer("damage_dealt").notNull(),
         damageTaken: integer("damage_taken").notNull(),

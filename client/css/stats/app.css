@@ -772,10 +772,12 @@ table.player-stats-overview td {
 .weapon-history-row {
   align-items: center;
   background-color: rgba(0, 0, 0, 0.4);
+  border-left: 10px solid rgba(255, 255, 255, 0.7);
   color: white;
-  display: flex;
+  display: grid;
+  grid-template-columns: 76px minmax(180px, 1fr) repeat(4, minmax(100px, 0.75fr));
   margin-top: 8px;
-  min-height: 76px;
+  min-height: 104px;
   padding: 8px 16px;
 }
 
@@ -789,27 +791,36 @@ table.player-stats-overview td {
 }
 
 .weapon-history-name {
-  flex: 1;
   font-size: 22px;
   font-weight: bold;
 }
 
 .weapon-history-name span,
-.weapon-history-kills span {
+.weapon-history-stat span {
   color: #c8c8c8;
   display: block;
   font-size: 12px;
   text-transform: uppercase;
 }
 
-.weapon-history-kills {
-  min-width: 72px;
+.weapon-history-stat {
   text-align: center;
 }
 
-.weapon-history-kills strong {
+.weapon-history-stat strong {
   display: block;
   font-size: 28px;
+  margin-top: 12px;
+}
+
+@media (max-width: 992px) {
+  .weapon-history-list {
+    overflow-x: auto;
+  }
+
+  .weapon-history-row {
+    min-width: 820px;
+  }
 }
 
 .extra-team-mode-filter {

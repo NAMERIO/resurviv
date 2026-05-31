@@ -27,6 +27,9 @@ weaponHistoryRouter.post(
             .select({
                 createdAt: matchDataTable.createdAt,
                 weaponKills: matchDataTable.weaponKills,
+                weaponDeaths: matchDataTable.weaponDeaths,
+                weaponDamageDealt: matchDataTable.weaponDamageDealt,
+                weaponDamageTaken: matchDataTable.weaponDamageTaken,
             })
             .from(matchDataTable)
             .innerJoin(usersTable, eq(usersTable.id, matchDataTable.userId))
@@ -35,24 +38,42 @@ weaponHistoryRouter.post(
 
         const weapons = new Map<string, WeaponHistoryResponse[number]>();
         for (const match of matches) {
-            for (const [type, kills] of Object.entries(match.weaponKills)) {
-                if (!kills || GameObjectDefs[type]?.type !== "gun") continue;
+            const addStats = (
+                stats: Record<string, number>,
+                field: "kills" | "deaths" | "damage_dealt" | "damage_taken",
+            ) => {
+                for (const [weaponType, amount] of Object.entries(stats)) {
+                    const defType = GameObjectDefs[weaponType]?.type;
+                    if (!amount || (defType !== "gun" && defType !== "melee")) continue;
 
-                const existing = weapons.get(type);
-                if (existing) {
-                    existing.kills += kills;
-                } else {
-                    weapons.set(type, {
+                    const type = defType === "melee" ? "fists" : weaponType;
+                    const existing = weapons.get(type) ?? {
                         type,
-                        kills,
+                        kills: 0,
+                        deaths: 0,
+                        damage_dealt: 0,
+                        damage_taken: 0,
                         last_used: match.createdAt,
-                    });
+                    };
+                    existing[field] += amount;
+                    weapons.set(type, existing);
                 }
-            }
+            };
+
+            addStats(match.weaponKills, "kills");
+            addStats(match.weaponDeaths, "deaths");
+            addStats(match.weaponDamageDealt, "damage_dealt");
+            addStats(match.weaponDamageTaken, "damage_taken");
         }
 
         return c.json<WeaponHistoryResponse>(
-            [...weapons.values()].sort((a, b) => b.kills - a.kills),
+            [...weapons.values()]
+                .map((weapon) => ({
+                    ...weapon,
+                    damage_dealt: Math.round(weapon.damage_dealt),
+                    damage_taken: Math.round(weapon.damage_taken),
+                }))
+                .sort((a, b) => b.kills - a.kills),
         );
     },
 );

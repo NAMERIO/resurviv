@@ -1,4 +1,4 @@
-<div class='header-extra header-extra-weapons'>WEAPON HISTORY</div>
+<div class='header-extra'>WEAPON STATS</div>
 <% if (env.error) { %>
   <div class="m-3">Error loading content, please try again.</div>
 <% } else if (env.weapons.length == 0) { %>
@@ -21,15 +21,28 @@
           timeDiff = days == 1 ? '1 day ago' : days + ' days ago';
         }
       %>
-      <div class='weapon-history-row'>
+      <div class='weapon-history-row' <% if (env.weapons[i].accentColor) { %>style='border-left-color: <%= env.weapons[i].accentColor %>'<% } %>>
         <div class='weapon-history-icon' style='background-image: url("/<%= env.weapons[i].icon %>")'></div>
         <div class='weapon-history-name'>
+          <span>Name</span>
           <%= env.weapons[i].name %>
           <span><%= timeDiff %></span>
         </div>
-        <div class='weapon-history-kills'>
-          <strong><%= env.weapons[i].kills %></strong>
+        <div class='weapon-history-stat'>
           <span>Kills</span>
+          <strong><%= env.weapons[i].kills %></strong>
+        </div>
+        <div class='weapon-history-stat'>
+          <span>Deaths</span>
+          <strong><%= env.weapons[i].deaths %></strong>
+        </div>
+        <div class='weapon-history-stat'>
+          <span>Damage Dealt</span>
+          <strong><%= env.weapons[i].damage_dealt %></strong>
+        </div>
+        <div class='weapon-history-stat'>
+          <span>Damage Taken</span>
+          <strong><%= env.weapons[i].damage_taken %></strong>
         </div>
       </div>
     <% } %>
