@@ -2365,6 +2365,7 @@ export class Player extends BaseGameObject {
 
         killCreditSource.killedIds.push(this.matchDataId);
         killCreditSource.kills++;
+        killCreditSource.trackWeaponKill(params.gameSourceType);
         killCreditSource.questManager.trackEvent("kill", {
             weaponType: params.gameSourceType ?? "",
             buildingType: killCreditSource.currentBuildingType,
@@ -2759,6 +2760,12 @@ export class Player extends BaseGameObject {
     killedIndex = Infinity;
 
     kills = 0;
+    weaponKills: Record<string, number> = {};
+
+    private trackWeaponKill(weaponType?: string): void {
+        if (!weaponType) return;
+        this.weaponKills[weaponType] = (this.weaponKills[weaponType] ?? 0) + 1;
+    }
     timeAlive = 0;
     pickedUpLoot = false;
     lostHealth = false;
@@ -4911,6 +4918,7 @@ export class Player extends BaseGameObject {
             if (killCreditSource !== this && killCreditSource.teamId !== this.teamId) {
                 killCreditSource.killedIds.push(this.matchDataId);
                 killCreditSource.kills++;
+                killCreditSource.trackWeaponKill(params.gameSourceType);
                 killCreditSource.questManager.trackEvent("kill", {
                     weaponType: params.gameSourceType ?? "",
                     buildingType: killCreditSource.currentBuildingType,

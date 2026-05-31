@@ -193,8 +193,8 @@
     <div class='row'>
       <!-- Extra Stats Selectors -->
       <div class='col-12 col-md-2'>
-        <div id='selector-extra-matches' class='extra-matches selector-extra col-2 col-md-12 p-0'>Matches<span class='selected-extra'></span></div>
-        <!-- <div id='selector-extra-weapons' class='extra-weapons selector-extra'>Weapons</div> -->
+        <div id='selector-extra-matches' class='extra-matches selector-extra col-2 col-md-12 p-0 btn-darken'>Matches<% if (env.extraView == 'matches') { %><span class='selected-extra'></span><% } %></div>
+        <div id='selector-extra-weapons' class='extra-weapons selector-extra col-2 col-md-12 p-0 btn-darken'>Weapons<% if (env.extraView == 'weapons') { %><span class='selected-extra'></span><% } %></div>
         <!-- <div id='selector-extra-misc' class='extra-misc selector-extra'>Misc</div> -->
       </div>
       <!-- Extra Stats Main -->

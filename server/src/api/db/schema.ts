@@ -378,6 +378,10 @@ export const matchDataTable = pgTable(
         rank: integer("rank").notNull(),
         died: boolean("died").notNull(),
         kills: integer("kills").notNull(),
+        weaponKills: json("weapon_kills")
+            .notNull()
+            .default({})
+            .$type<Record<string, number>>(),
         teamKills: integer("team_kills").notNull().default(0),
         damageDealt: integer("damage_dealt").notNull(),
         damageTaken: integer("damage_taken").notNull(),

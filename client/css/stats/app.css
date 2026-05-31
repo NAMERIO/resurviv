@@ -744,11 +744,13 @@ table.player-stats-overview td {
   background-image: url("/img/ui/history.svg");
 }
 
-/*
 .extra-weapons {
-  background-image: url("/img/ui/gun.svg");
+  background-image: url("/img/loot/loot-weapon-m9.svg");
+  background-position: center 33px;
+  background-size: 50px;
 }
 
+/*
 .extra-misc {
   background-image: url("/img/loot/loot-medical-soda.svg");
 }
@@ -765,6 +767,49 @@ table.player-stats-overview td {
   font-weight: bold;
   height: 36px;
   padding-left: 44px;
+}
+
+.weapon-history-row {
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  display: flex;
+  margin-top: 8px;
+  min-height: 76px;
+  padding: 8px 16px;
+}
+
+.weapon-history-icon {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 56px;
+  margin-right: 16px;
+  width: 76px;
+}
+
+.weapon-history-name {
+  flex: 1;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.weapon-history-name span,
+.weapon-history-kills span {
+  color: #c8c8c8;
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.weapon-history-kills {
+  min-width: 72px;
+  text-align: center;
+}
+
+.weapon-history-kills strong {
+  display: block;
+  font-size: 28px;
 }
 
 .extra-team-mode-filter {

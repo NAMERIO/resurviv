@@ -1,0 +1,37 @@
+<div class='header-extra header-extra-weapons'>WEAPON HISTORY</div>
+<% if (env.error) { %>
+  <div class="m-3">Error loading content, please try again.</div>
+<% } else if (env.weapons.length == 0) { %>
+  <div class="m-3">No weapon kills recorded yet.</div>
+<% } else { %>
+  <div class='weapon-history-list'>
+    <% for (var i = 0; i < env.weapons.length; i++) { %>
+      <%
+        var timeStart = new Date(env.weapons[i].last_used);
+        var secondsPast = (Date.now() - timeStart.getTime()) / 1000;
+        var timeDiff = '';
+        if (secondsPast < 3600) {
+          var minutes = Math.round(secondsPast / 60);
+          timeDiff = minutes < 2 ? '1 minute ago' : minutes + ' minutes ago';
+        } else if (secondsPast <= 86400) {
+          var hours = Math.round(secondsPast / 3600);
+          timeDiff = hours == 1 ? 'an hour ago' : hours + ' hours ago';
+        } else {
+          var days = Math.floor(secondsPast / 86400);
+          timeDiff = days == 1 ? '1 day ago' : days + ' days ago';
+        }
+      %>
+      <div class='weapon-history-row'>
+        <div class='weapon-history-icon' style='background-image: url("/<%= env.weapons[i].icon %>")'></div>
+        <div class='weapon-history-name'>
+          <%= env.weapons[i].name %>
+          <span><%= timeDiff %></span>
+        </div>
+        <div class='weapon-history-kills'>
+          <strong><%= env.weapons[i].kills %></strong>
+          <span>Kills</span>
+        </div>
+      </div>
+    <% } %>
+  </div>
+<% } %>

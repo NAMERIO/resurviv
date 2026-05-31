@@ -50,6 +50,20 @@ export type MatchHistory = {
 export type MatchHistoryResponse = MatchHistory[];
 
 //
+// Weapon History
+//
+export const zWeaponHistoryRequest = z.object({
+    slug: z.string(),
+});
+
+export type WeaponHistoryParams = z.infer<typeof zWeaponHistoryRequest>;
+export type WeaponHistoryResponse = {
+    type: string;
+    kills: number;
+    last_used: string | Date;
+}[];
+
+//
 // Match Data
 //
 export const zMatchDataRequest = z.object({

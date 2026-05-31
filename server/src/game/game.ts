@@ -46,6 +46,17 @@ import { SmokeBarn } from "./objects/smoke";
 import { PluginManager } from "./pluginManager";
 import { Profiler } from "./profiler";
 
+const mergeWeaponKills = (
+    left: Record<string, number> = {},
+    right: Record<string, number> = {},
+): Record<string, number> => {
+    const merged = { ...left };
+    for (const [weaponType, kills] of Object.entries(right)) {
+        merged[weaponType] = (merged[weaponType] ?? 0) + kills;
+    }
+    return merged;
+};
+
 export interface JoinTokenData {
     expiresAt: number;
     userId: string | null;
@@ -883,6 +894,7 @@ export class Game {
                 timeAlive: Math.round(player.timeAlive),
                 died: player.dead,
                 kills: player.kills,
+                weaponKills: player.weaponKills,
                 teamKills: 0,
                 damageDealt: Math.round(player.damageDealt),
                 damageTaken: Math.round(player.damageTaken),
@@ -908,6 +920,7 @@ export class Game {
                 matchDataByParticipant.set(key, {
                     ...data,
                     killedIds: [...data.killedIds],
+                    weaponKills: { ...data.weaponKills },
                 });
                 continue;
             }
@@ -922,6 +935,7 @@ export class Game {
             const killedIds = Array.from(
                 new Set([...existing.killedIds, ...data.killedIds]),
             );
+            const weaponKills = mergeWeaponKills(existing.weaponKills, data.weaponKills);
 
             existing.username = latest.username;
             existing.playerId = latest.playerId;
@@ -944,6 +958,7 @@ export class Game {
             existing.damageDealt = damageDealt;
             existing.damageTaken = damageTaken;
             existing.killedIds = killedIds;
+            existing.weaponKills = weaponKills;
         }
 
         const values = Array.from(matchDataByParticipant.values());
