@@ -1,4 +1,5 @@
 import $ from "jquery";
+import { CurrentPassType } from "../../shared/defs/gameObjects/passDefs";
 import { type MapDef, MapDefs } from "../../shared/defs/mapDefs";
 import { TeamModeToString } from "../../shared/defs/types/misc";
 import type { SiteInfoRes } from "../../shared/types/api";
@@ -286,6 +287,14 @@ export class SiteInfo {
         return this.info.battlePassEndTime;
     }
 
+    private getNextBattlePassSeasonText() {
+        const seasonMatch = CurrentPassType.match(/(\d+)$/);
+        const nextSeason = seasonMatch ? Number(seasonMatch[1]) + 1 : undefined;
+        return nextSeason
+            ? `Season ${nextSeason} Coming soon`
+            : "Next season Coming soon";
+    }
+
     private updateBattlePassTimer() {
         const timerElem = $("#pass-premium-box-timer");
         if (!timerElem.length) return;
@@ -298,7 +307,7 @@ export class SiteInfo {
         const renderTimer = () => {
             const endTime = this.getBattlePassEndTime();
             if (!endTime || endTime <= Date.now()) {
-                timerElem.text("Coming soon");
+                timerElem.text(this.getNextBattlePassSeasonText());
                 return false;
             }
 
