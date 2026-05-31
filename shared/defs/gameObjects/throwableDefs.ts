@@ -403,7 +403,7 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
             },
             cook: {
                 right: {
-                    sprite: "pposion-proj-pin.img",
+                    sprite: "posion-proj-pin.img",
                     pos: { x: 3, y: 4.2 },
                     scale: 0.14,
                 },
