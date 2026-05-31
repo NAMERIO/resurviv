@@ -67,6 +67,7 @@ import {
     itemsTable,
     type MatchDataTable,
     matchDataTable,
+    userAuthIdentityTable,
     userPassTable,
     userQuestTable,
     usersTable,
@@ -409,16 +410,28 @@ type CoinFlipUser = {
     gpBalance: number;
 };
 
-function findDiscordLinkedUser(discordId: string): Promise<CoinFlipUser | undefined> {
-    return db.query.usersTable.findFirst({
-        where: and(eq(usersTable.authId, discordId), eq(usersTable.linkedDiscord, true)),
-        columns: {
-            id: true,
-            slug: true,
-            username: true,
-            gpBalance: true,
-        },
-    });
+async function findDiscordLinkedUser(
+    discordId: string,
+    database: Pick<typeof db, "select"> = db,
+): Promise<CoinFlipUser | undefined> {
+    const [user] = await database
+        .select({
+            id: usersTable.id,
+            slug: usersTable.slug,
+            username: usersTable.username,
+            gpBalance: usersTable.gpBalance,
+        })
+        .from(userAuthIdentityTable)
+        .innerJoin(usersTable, eq(userAuthIdentityTable.userId, usersTable.id))
+        .where(
+            and(
+                eq(userAuthIdentityTable.provider, "discord"),
+                eq(userAuthIdentityTable.authId, discordId),
+            ),
+        )
+        .limit(1);
+
+    return user;
 }
 
 function toCoinFlipPlayer(user: CoinFlipUser) {
@@ -1421,18 +1434,7 @@ export const PrivateRouter = new Hono<Context>()
             }
 
             const result = await db.transaction(async (tx) => {
-                const winner = await tx.query.usersTable.findFirst({
-                    where: and(
-                        eq(usersTable.authId, winnerDiscordId),
-                        eq(usersTable.linkedDiscord, true),
-                    ),
-                    columns: {
-                        id: true,
-                        slug: true,
-                        username: true,
-                        gpBalance: true,
-                    },
-                });
+                const winner = await findDiscordLinkedUser(winnerDiscordId, tx);
 
                 if (!winner) {
                     return {
@@ -1442,18 +1444,7 @@ export const PrivateRouter = new Hono<Context>()
                     };
                 }
 
-                const loser = await tx.query.usersTable.findFirst({
-                    where: and(
-                        eq(usersTable.authId, loserDiscordId),
-                        eq(usersTable.linkedDiscord, true),
-                    ),
-                    columns: {
-                        id: true,
-                        slug: true,
-                        username: true,
-                        gpBalance: true,
-                    },
-                });
+                const loser = await findDiscordLinkedUser(loserDiscordId, tx);
 
                 if (!loser) {
                     return {
@@ -1573,18 +1564,7 @@ export const PrivateRouter = new Hono<Context>()
             }
 
             const result = await db.transaction(async (tx) => {
-                const challenger = await tx.query.usersTable.findFirst({
-                    where: and(
-                        eq(usersTable.authId, challengerDiscordId),
-                        eq(usersTable.linkedDiscord, true),
-                    ),
-                    columns: {
-                        id: true,
-                        slug: true,
-                        username: true,
-                        gpBalance: true,
-                    },
-                });
+                const challenger = await findDiscordLinkedUser(challengerDiscordId, tx);
 
                 if (!challenger) {
                     return {
@@ -1595,18 +1575,7 @@ export const PrivateRouter = new Hono<Context>()
                     };
                 }
 
-                const opponent = await tx.query.usersTable.findFirst({
-                    where: and(
-                        eq(usersTable.authId, opponentDiscordId),
-                        eq(usersTable.linkedDiscord, true),
-                    ),
-                    columns: {
-                        id: true,
-                        slug: true,
-                        username: true,
-                        gpBalance: true,
-                    },
-                });
+                const opponent = await findDiscordLinkedUser(opponentDiscordId, tx);
 
                 if (!opponent) {
                     return {

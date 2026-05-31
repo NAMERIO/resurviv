@@ -45,6 +45,7 @@ import {
     zSendFriendGpRequest,
     zSendFriendSkinGiftRequest,
     zSetItemStatusRequest,
+    zUnlinkAuthRequest,
     zUsernameRequest,
 } from "../../../../../shared/types/user";
 import {
@@ -86,6 +87,7 @@ import {
     matchDataTable,
     rewardClaimsTable,
     skinGiftTable,
+    userAuthIdentityTable,
     userFriendsTable,
     usersTable,
 } from "../../db/schema";
@@ -689,6 +691,8 @@ UserRouter.post("/profile", async (c) => {
         loadout,
         slug,
         linked,
+        linkedDiscord,
+        linkedGoogle,
         username,
         usernameSet,
         lastUsernameChangeTime,
@@ -719,6 +723,8 @@ UserRouter.post("/profile", async (c) => {
             profile: {
                 slug,
                 linked,
+                linkedDiscord,
+                linkedGoogle,
                 username,
                 usernameSet,
                 usernameChangeTime: timeUntilNextChange,
@@ -1330,6 +1336,47 @@ UserRouter.post("/logout", async (c) => {
     await logoutUser(c, session.id);
 
     return c.json({}, 200);
+});
+
+UserRouter.post("/unlink_auth", validateParams(zUnlinkAuthRequest), async (c) => {
+    const user = c.get("user")!;
+    const { provider } = c.req.valid("json");
+    const identities = await db
+        .select({
+            provider: userAuthIdentityTable.provider,
+        })
+        .from(userAuthIdentityTable)
+        .where(eq(userAuthIdentityTable.userId, user.id));
+
+    if (!identities.some((identity) => identity.provider === provider)) {
+        return c.json({ success: false, error: "not_linked" } as const, 200);
+    }
+
+    if (identities.length <= 1) {
+        return c.json({ success: false, error: "last_login_method" } as const, 200);
+    }
+
+    await db.transaction(async (tx) => {
+        await tx
+            .delete(userAuthIdentityTable)
+            .where(
+                and(
+                    eq(userAuthIdentityTable.userId, user.id),
+                    eq(userAuthIdentityTable.provider, provider),
+                ),
+            );
+
+        await tx
+            .update(usersTable)
+            .set(
+                provider === "discord"
+                    ? { linkedDiscord: false }
+                    : { linkedGoogle: false },
+            )
+            .where(eq(usersTable.id, user.id));
+    });
+
+    return c.json({ success: true } as const, 200);
 });
 
 UserRouter.post("/delete", async (c) => {

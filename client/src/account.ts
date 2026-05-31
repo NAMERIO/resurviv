@@ -55,6 +55,8 @@ import type {
     SkinGift,
     SocialGpRewardKey,
     SoldMarketListing,
+    UnlinkAuthRequest,
+    UnlinkAuthResponse,
     UsernameRequest,
     UsernameResponse,
 } from "../../shared/types/user";
@@ -141,6 +143,8 @@ export class Account {
     pendingSkinGifts: SkinGift[] = [];
     profile = {
         linked: false,
+        linkedGoogle: false,
+        linkedDiscord: false,
         usernameSet: false,
         username: "",
         slug: "",
@@ -255,6 +259,30 @@ export class Account {
         this.ajaxRequest("/api/user/logout", () => {
             window.location.reload();
         });
+    }
+
+    unlinkAuth(
+        provider: UnlinkAuthRequest["provider"],
+        callback: (
+            error?: UnlinkAuthResponse extends { error: infer E } ? E : string,
+        ) => void,
+    ) {
+        this.ajaxRequest(
+            "/api/user/unlink_auth",
+            { provider } satisfies UnlinkAuthRequest,
+            (err, response: UnlinkAuthResponse) => {
+                if (err) {
+                    callback("server_error");
+                    return;
+                }
+                if (!response.success) {
+                    callback(response.error);
+                    return;
+                }
+                this.loadProfile();
+                callback();
+            },
+        );
     }
 
     loadProfile() {

@@ -19,6 +19,8 @@ export type ProfileResponse =
               username: string;
               usernameSet: boolean;
               linked: boolean;
+              linkedGoogle: boolean;
+              linkedDiscord: boolean;
               usernameChangeTime: number;
               canUseDeveloper: boolean;
           };
@@ -31,6 +33,14 @@ export type ProfileResponse =
           loadout: Loadout;
           items: Item[];
       };
+
+export const zUnlinkAuthRequest = z.object({
+    provider: z.enum(["google", "discord"]),
+});
+export type UnlinkAuthRequest = z.infer<typeof zUnlinkAuthRequest>;
+export type UnlinkAuthResponse =
+    | { success: true }
+    | { success: false; error: "not_linked" | "last_login_method" };
 
 export type MarketListing = {
     id: string;

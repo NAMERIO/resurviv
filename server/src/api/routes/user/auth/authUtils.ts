@@ -1,15 +1,20 @@
 import { generateRandomString } from "@oslojs/crypto/random";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { Context } from "hono";
-import { deleteCookie, setCookie } from "hono/cookie";
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import slugify from "slugify";
 import { UnlockDefs } from "../../../../../../shared/defs/gameObjects/unlockDefs";
 import { util } from "../../../../../../shared/utils/util";
 import { Config } from "../../../../config";
 import { checkForBadWords } from "../../../../utils/serverHelpers";
-import { createSession, invalidateSession } from "../../../auth";
+import { createSession, invalidateSession, validateSessionToken } from "../../../auth";
 import { db } from "../../../db";
-import { itemsTable, type UsersTableInsert, usersTable } from "../../../db/schema";
+import {
+    itemsTable,
+    type UsersTableInsert,
+    userAuthIdentityTable,
+    usersTable,
+} from "../../../db/schema";
 
 let oauthBaseURL: URL | undefined = undefined;
 if (URL.canParse(Config.oauthBasePath)) {
@@ -78,24 +83,65 @@ export function deleteSessionTokenCookie(c: Context) {
     });
 }
 
-type Provider = "discord" | "google";
+export type AuthProvider = "discord" | "google";
 
-export async function handleAuthUser(c: Context, provider: Provider, authId: string) {
-    const existingUser = await db.query.usersTable.findFirst({
-        where: eq(usersTable.authId, authId),
-        columns: {
-            id: true,
-        },
+export async function handleAuthUser(c: Context, provider: AuthProvider, authId: string) {
+    const existingIdentity = await db.query.userAuthIdentityTable.findFirst({
+        where: and(
+            eq(userAuthIdentityTable.provider, provider),
+            eq(userAuthIdentityTable.authId, authId),
+        ),
     });
+    const sessionToken = getCookie(c, "session");
+    const currentUser = sessionToken
+        ? (await validateSessionToken(sessionToken)).user
+        : null;
 
     setCookie(c, "app-data", "1", {
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
         domain: cookieDomain,
     });
 
-    if (existingUser) {
-        await setSessionTokenCookie(existingUser.id, c);
-        return;
+    if (currentUser) {
+        if (existingIdentity && existingIdentity.userId !== currentUser.id) {
+            return { error: `${provider}_account_in_use` };
+        }
+
+        const currentProviderIdentity = await db.query.userAuthIdentityTable.findFirst({
+            where: and(
+                eq(userAuthIdentityTable.userId, currentUser.id),
+                eq(userAuthIdentityTable.provider, provider),
+            ),
+        });
+
+        if (currentProviderIdentity && currentProviderIdentity.authId !== authId) {
+            return { error: `${provider}_account_in_use` };
+        }
+
+        if (!existingIdentity) {
+            await db.insert(userAuthIdentityTable).values({
+                userId: currentUser.id,
+                provider,
+                authId,
+            });
+        }
+
+        await db
+            .update(usersTable)
+            .set(
+                provider === "discord"
+                    ? { linked: true, linkedDiscord: true }
+                    : { linked: true, linkedGoogle: true },
+            )
+            .where(eq(usersTable.id, currentUser.id));
+
+        await setSessionTokenCookie(currentUser.id, c);
+        return {};
+    }
+
+    if (existingIdentity) {
+        await setSessionTokenCookie(existingIdentity.userId, c);
+        return {};
     }
 
     let generateUsername = true;
@@ -120,21 +166,34 @@ export async function handleAuthUser(c: Context, provider: Provider, authId: str
         provider === "discord" ? { linkedDiscord: true } : { linkedGoogle: true };
 
     const userId = generateId(15);
-    await createNewUser({
-        id: userId,
-        authId,
-        linked: true,
-        username: username,
-        slug,
-        ...linkedProvider,
-    });
+    await createNewUser(
+        {
+            id: userId,
+            authId,
+            linked: true,
+            username: username,
+            slug,
+            ...linkedProvider,
+        },
+        { provider, authId },
+    );
 
     await setSessionTokenCookie(userId, c);
+    return {};
 }
 
-export async function createNewUser(payload: UsersTableInsert) {
+export async function createNewUser(
+    payload: UsersTableInsert,
+    identity?: { provider: AuthProvider; authId: string },
+) {
     await db.transaction(async (tx) => {
         await tx.insert(usersTable).values(payload);
+        if (identity) {
+            await tx.insert(userAuthIdentityTable).values({
+                ...identity,
+                userId: payload.id,
+            });
+        }
 
         const unlockType = "unlock_new_account";
         const itemsToUnlock = UnlockDefs[unlockType].unlocks || [];
@@ -154,7 +213,7 @@ export async function createNewUser(payload: UsersTableInsert) {
     });
 }
 
-export function getRedirectUri(method: Provider) {
+export function getRedirectUri(method: AuthProvider) {
     const isProduction = process.env.NODE_ENV === "production";
 
     if (isProduction && !Config.oauthRedirectURI) {
@@ -162,6 +221,13 @@ export function getRedirectUri(method: Provider) {
     }
 
     return `${Config.oauthRedirectURI}/api/auth/${method}/callback`;
+}
+
+export function getOAuthRedirect(error?: string) {
+    if (!error) return Config.oauthBasePath;
+
+    const separator = Config.oauthBasePath.includes("?") ? "&" : "?";
+    return `${Config.oauthBasePath}${separator}error=${encodeURIComponent(error)}`;
 }
 
 const cooldownPeriod = util.daysToMs(10);

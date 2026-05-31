@@ -35,7 +35,11 @@ function createLoginOptions(
         class: "account-buttons",
     });
     contentsElem.append(buttonParentElem);
-    const addLoginOption = function (method: string, onClick: () => void) {
+    const addLoginOption = function (
+        method: string,
+        onClick: () => void,
+        label?: string,
+    ) {
         const el = $("<div/>", {
             class: `menu-option btn-darken btn-standard btn-login-${method}`,
         });
@@ -45,7 +49,7 @@ function createLoginOptions(
             })
                 .append(
                     $("<span/>", {
-                        html: localization.translate(`index-${method}`),
+                        html: label || localization.translate(`index-${method}`),
                     }),
                 )
                 .append(
@@ -63,15 +67,45 @@ function createLoginOptions(
     };
 
     // Define the available login methods
-    if (proxy.loginSupported("google")) {
-        addLoginOption("google", () => {
-            window.location.href = api.resolveUrl("/api/auth/google");
+    const addProviderOption = (provider: "google" | "discord") => {
+        const linked =
+            provider === "google"
+                ? account.profile.linkedGoogle
+                : account.profile.linkedDiscord;
+        const providerName = localization.translate(`index-${provider}`);
+
+        if (linkAccount && linked) {
+            addLoginOption(
+                provider,
+                () => {
+                    account.unlinkAuth(provider, (error) => {
+                        if (error) {
+                            account.emit("error", error);
+                            return;
+                        }
+                        createLoginOptions(
+                            parentElem,
+                            linkAccount,
+                            account,
+                            localization,
+                        );
+                    });
+                },
+                `Remove ${providerName}`,
+            );
+            return;
+        }
+
+        addLoginOption(provider, () => {
+            window.location.href = api.resolveUrl(`/api/auth/${provider}`);
         });
+    };
+
+    if (proxy.loginSupported("google")) {
+        addProviderOption("google");
     }
     if (proxy.loginSupported("discord")) {
-        addLoginOption("discord", () => {
-            window.location.href = api.resolveUrl("/api/auth/discord");
-        });
+        addProviderOption("discord");
     }
 
     if (proxy.loginSupported("mock")) {
@@ -116,6 +150,14 @@ export class ProfileUi {
         account.addEventListener("skinGift", this.showSkinGiftModal.bind(this));
         this.initUi();
         this.render();
+
+        const authError = helpers.getParameterByName("error");
+        if (authError) {
+            this.onError(authError);
+            const url = new URL(window.location.href);
+            url.searchParams.delete("error");
+            window.history.replaceState({}, "", url);
+        }
     }
 
     initUi() {
@@ -363,11 +405,14 @@ export class ProfileUi {
             facebook_account_in_use:
                 "Failed linking Facebook account.<br/>Account already in use!",
             google_account_in_use:
-                "Failed linking Google account.<br/>Account already in use!",
+                "This Google account is connected to another user account. Delete that account first to link it here.",
             twitch_account_in_use:
                 "Failed linking Twitch account.<br/>Account already in use!",
             discord_account_in_use:
-                "Failed linking Discord account.<br/>Account already in use!",
+                "This Discord account is connected to another user account. Delete that account first to link it here.",
+            last_login_method:
+                "You cannot remove your only login method. Link another account first.",
+            not_linked: "That login method is not linked to this account.",
             account_banned: `Account banned: ${data}`,
             login_failed: "Login failed.",
         };

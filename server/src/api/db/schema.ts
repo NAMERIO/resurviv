@@ -53,6 +53,33 @@ export const usersTable = pgTable("users", {
 export type UsersTableInsert = typeof usersTable.$inferInsert;
 export type UsersTableSelect = typeof usersTable.$inferSelect;
 
+export const userAuthIdentityTable = pgTable(
+    "user_auth_identity",
+    {
+        provider: text("provider").$type<"discord" | "google">().notNull(),
+        authId: text("auth_id").notNull(),
+        userId: text("user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        uniqueIndex("idx_user_auth_identity_provider_auth").on(
+            table.provider,
+            table.authId,
+        ),
+        uniqueIndex("idx_user_auth_identity_user_provider").on(
+            table.userId,
+            table.provider,
+        ),
+    ],
+);
+
+export type UserAuthIdentityTableInsert = typeof userAuthIdentityTable.$inferInsert;
+
 export const userFriendsTable = pgTable(
     "user_friends",
     {

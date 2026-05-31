@@ -2,7 +2,12 @@ import { Discord, generateCodeVerifier, generateState } from "arctic";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { Config } from "../../../../config";
-import { cookieDomain, getRedirectUri, handleAuthUser } from "./authUtils";
+import {
+    cookieDomain,
+    getOAuthRedirect,
+    getRedirectUri,
+    handleAuthUser,
+} from "./authUtils";
 
 export const discord = new Discord(
     Config.secrets.DISCORD_CLIENT_ID!,
@@ -80,7 +85,7 @@ DiscordRouter.get("/callback", async (c) => {
         return c.json({ error: "verified_email_required" }, 400);
     }
 
-    await handleAuthUser(c, "discord", resData.id);
+    const result = await handleAuthUser(c, "discord", resData.id);
 
-    return c.redirect(Config.oauthBasePath);
+    return c.redirect(getOAuthRedirect(result.error));
 });
