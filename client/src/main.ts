@@ -176,6 +176,7 @@ export class Application {
     quickPlayPendingModeIdx = -1;
     findGameAttempts = 0;
     lobbyReturnAdCounter = 0;
+    lobbyReturnAdShowing = false;
     findGameTime = 0;
     pauseTime = 0;
     wasPlayingVideo = false;
@@ -829,8 +830,10 @@ export class Application {
                     this.lobbyReturnAdCounter++;
                     if (this.lobbyReturnAdCounter % 5 === 0) {
                         const teamLobbyHistoryPath = this.getTeamLobbyHistoryPath();
+                        this.lobbyReturnAdShowing = true;
                         googleH5Ads.requestInterstitial("browse", "return-to-lobby", {
                             adBreakDone: () => {
+                                this.lobbyReturnAdShowing = false;
                                 this.restoreTeamLobbyHistoryPath(teamLobbyHistoryPath);
                             },
                         });
@@ -3074,6 +3077,21 @@ export class Application {
     }
 
     onJoinGameError(err: FindGameError) {
+        const isPrivateLobbyJoinFailure =
+            err === "join_game_failed" && this.teamMenu.active && this.teamMenu.joined;
+        if (isPrivateLobbyJoinFailure) {
+            this.teamMenu.onGameComplete();
+            this.setAppActive(true);
+            this.setPlayLockout(false);
+            this.quickPlayPendingModeIdx = -1;
+            this.restoreTeamLobbyHistoryPath(this.getTeamLobbyHistoryPath());
+            if (!this.lobbyReturnAdShowing) {
+                this.showErrorModal(err);
+            }
+            this.refreshUi();
+            return;
+        }
+
         const errMap: Partial<Record<FindGameError, string>> = {
             full: this.localization.translate("index-failed-finding-game"),
             invalid_protocol: this.localization.translate("index-invalid-protocol"),
