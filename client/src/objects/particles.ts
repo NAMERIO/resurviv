@@ -352,8 +352,11 @@ export class ParticleBarn {
             const p = this.particles[i];
             if (p.active && ((p.ticker += dt), p.ticker >= p.delay)) {
                 const t = math.min((p.ticker - p.delay) / p.life, 1);
-                p.vel = v2.mul(p.vel, 1 / (1 + dt * p.drag));
-                p.pos = v2.add(p.pos, v2.mul(p.vel, dt));
+                const drag = 1 / (1 + dt * p.drag);
+                p.vel.x *= drag;
+                p.vel.y *= drag;
+                p.pos.x += p.vel.x * dt;
+                p.pos.y += p.vel.y * dt;
                 p.rotVel *= 1 / (1 + dt * p.rotDrag);
                 p.rot += p.rotVel * dt;
                 if (p.scaleUseExp) {

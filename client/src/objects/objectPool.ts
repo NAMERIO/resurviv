@@ -13,6 +13,7 @@ type C<T extends AbstractObject> = new () => T;
 
 export class Pool<T extends AbstractObject> {
     m_pool: T[] = [];
+    m_freePool: T[] = [];
     m_activeCount = 0;
     m_creator: {
         type: C<T>;
@@ -26,16 +27,21 @@ export class Pool<T extends AbstractObject> {
     }
 
     m_alloc() {
-        let obj: T | null = null;
-        for (let i = 0; i < this.m_pool.length; i++) {
-            if (!this.m_pool[i].active) {
-                obj = this.m_pool[i];
-                break;
-            }
+        let obj = this.m_freePool.pop() ?? null;
+        while (obj?.active) {
+            obj = this.m_freePool.pop() ?? null;
         }
         if (!obj) {
-            obj = new this.m_creator.type();
-            this.m_pool.push(obj);
+            for (let i = 0; i < this.m_pool.length; i++) {
+                if (!this.m_pool[i].active) {
+                    obj = this.m_pool[i];
+                    break;
+                }
+            }
+            if (!obj) {
+                obj = new this.m_creator.type();
+                this.m_pool.push(obj);
+            }
         }
         obj.active = true;
         obj.m_init();
@@ -43,20 +49,11 @@ export class Pool<T extends AbstractObject> {
         return obj;
     }
 
-    m_free(obj: AbstractObject) {
+    m_free(obj: T) {
         obj.m_free();
         obj.active = false;
+        this.m_freePool.push(obj);
         this.m_activeCount--;
-
-        if (this.m_pool.length > 128 && this.m_activeCount < this.m_pool.length / 2) {
-            const compact = [];
-            for (let i = 0; i < this.m_pool.length; i++) {
-                if (this.m_pool[i].active) {
-                    compact.push(this.m_pool[i]);
-                }
-            }
-            this.m_pool = compact;
-        }
     }
 
     m_getPool() {
