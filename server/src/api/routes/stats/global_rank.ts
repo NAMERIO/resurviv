@@ -1,9 +1,19 @@
-import { and, count, eq, ne, sql, sum } from "drizzle-orm";
-import type { LeaderboardResponse } from "../../../../../shared/types/stats";
+import { and, count, eq, gte, ne, sql, sum } from "drizzle-orm";
+import type {
+    LeaderboardParams,
+    LeaderboardResponse,
+} from "../../../../../shared/types/stats";
 import { db } from "../../db";
 import { matchDataTable, usersTable } from "../../db/schema";
 
-const getGlobalRankQuery = () => {
+const intervalFilter = {
+    daily: gte(matchDataTable.createdAt, sql`NOW() - INTERVAL '1 day'`),
+    weekly: gte(matchDataTable.createdAt, sql`NOW() - INTERVAL '7 days'`),
+};
+
+const getGlobalRankQuery = (
+    interval: LeaderboardParams["interval"] = "alltime",
+) => {
     const playerMatches = db.$with("global_rank_player_matches").as(
         db
             .select({
@@ -15,7 +25,12 @@ const getGlobalRankQuery = () => {
                 rank: sql<number>`MIN(${matchDataTable.rank})`.mapWith(Number).as("rank"),
             })
             .from(matchDataTable)
-            .where(ne(matchDataTable.userId, ""))
+            .where(
+                and(
+                    ne(matchDataTable.userId, ""),
+                    interval === "alltime" ? undefined : intervalFilter[interval],
+                ),
+            )
             .groupBy(matchDataTable.userId, matchDataTable.gameId),
     );
 
@@ -70,8 +85,11 @@ export const getGlobalRank = async (userId: string): Promise<number> => {
     return result[0]?.rank ?? 0;
 };
 
-export const getGlobalRankLeaderboard = async (): Promise<LeaderboardResponse[]> => {
-    const { accountStats, playerMatches, rankedAccounts } = getGlobalRankQuery();
+export const getGlobalRankLeaderboard = async (
+    interval: LeaderboardParams["interval"] = "alltime",
+): Promise<LeaderboardResponse[]> => {
+    const { accountStats, playerMatches, rankedAccounts } =
+        getGlobalRankQuery(interval);
     return await db
         .with(playerMatches, accountStats, rankedAccounts)
         .select({

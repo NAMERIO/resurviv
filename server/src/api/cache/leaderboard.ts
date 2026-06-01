@@ -51,7 +51,7 @@ class LeaderBoardCache {
 
     getCacheKey(prefix: Prefix, params: LeaderboardParams) {
         const { gameMode, teamMode, mapId, type, interval } = params;
-        if (type === "rank") return `${prefix}:rank`;
+        if (type === "rank") return `${prefix}:rank:${interval}`;
         const mapName = MapId[mapId].toLowerCase();
         return `${prefix}:${gameMode}:${TeamModeToString[teamMode]}:${mapName}:${type}:${interval}`;
     }

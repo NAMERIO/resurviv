@@ -41,7 +41,7 @@ leaderboardRouter.post(
         const startTime = performance.now();
         const data =
             type === "rank"
-                ? await getGlobalRankLeaderboard()
+                ? await getGlobalRankLeaderboard(params.interval)
                 : type === "most_kills" && teamMode != TeamMode.Solo
                   ? await multiplePlayersQuery(params)
                   : await soloLeaderboardQuery(params);

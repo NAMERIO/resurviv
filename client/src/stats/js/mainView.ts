@@ -47,6 +47,11 @@ export class MainView {
             this.onChangedParams();
         });
     }
+    setFilterVisibility(type: LeaderboardRequest["type"]) {
+        const rankSelected = type === "rank";
+        this.el.find(".leaderboard-filter").toggle(!rankSelected);
+        this.el.find("#leaderboard-time").closest(".leaderboard-filter").toggle(true);
+    }
     load() {
         this.loading = true;
         this.error = false;
@@ -79,7 +84,7 @@ export class MainView {
             mapId: Number(mapId),
         };
         $("#leaderboard-category").val(type === "rank" ? "rank" : "matches");
-        this.el.find(".leaderboard-filter").toggle(type !== "rank");
+        this.setFilterVisibility(type);
 
         $.ajax({
             url: api.resolveUrl("/api/leaderboard"),
@@ -118,7 +123,7 @@ export class MainView {
             "",
             "",
             type === "rank"
-                ? "?type=rank"
+                ? `?type=rank&t=${time}`
                 : `?type=${type}&team=${teamMode}&gameMode=${gameMode}&t=${time}&mapId=${mapId}`,
         );
         this.load();
@@ -166,7 +171,7 @@ export class MainView {
                 $("#leaderboard-type").val(this.data.type!);
             }
             $("#leaderboard-time").val(this.data.interval!);
-            this.el.find(".leaderboard-filter").toggle(this.data.type !== "rank");
+            this.setFilterVisibility(this.data.type as LeaderboardRequest["type"]);
 
             // Disable most kills option if 50v50 selected
             const factionMode = Number(this.data.mapId) == 3;
