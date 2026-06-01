@@ -1742,7 +1742,7 @@ a:active {
   right: 0;
   top: 0;
   user-select: none;
-  z-index: 2;
+  z-index: 130;
 }
 
 @media (max-height: 720px), (max-width: 1150px) {
@@ -2637,10 +2637,16 @@ a:active {
   background-color: rgba(0, 0, 0, 0.5);
   border-radius: 5px;
   box-sizing: border-box;
+  opacity: 0;
+  position: absolute;
   right: 12px;
-  top: 75px;
-  position: relative;
+  top: 64px;
+  transform: translateY(-8px);
+  transition:
+    opacity 140ms ease,
+    transform 180ms ease;
   width: 100%;
+  z-index: 132;
 }
 
 .account-login-buttons {
@@ -2668,6 +2674,12 @@ a:active {
 
 .account-buttons-settings {
   display: none;
+}
+
+.account-buttons-settings[style*="block"],
+.account-buttons-link-account[style*="block"] {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .account-buttons-link-account {
@@ -17087,7 +17099,7 @@ div.roulette {
   right: var(--side-pad);
   top: 64px;
   width: fit-content;
-  z-index: 4;
+  z-index: 134;
 }
 
 .account-actions-toggle {
@@ -17114,7 +17126,7 @@ div.roulette {
     max-height 180ms ease,
     opacity 140ms ease;
   width: 186px;
-  z-index: 3;
+  z-index: 135;
 }
 
 .account-actions-menu.open .account-actions-dropdown {
