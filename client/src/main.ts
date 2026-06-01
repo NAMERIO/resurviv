@@ -832,7 +832,7 @@ export class Application {
                 SDK.gamePlayStop();
                 if (!errMsg) {
                     this.lobbyReturnAdCounter++;
-                    if (this.lobbyReturnAdCounter % 5 === 0) {
+                    if (this.lobbyReturnAdCounter % 3 === 0) {
                         const teamLobbyHistoryPath = this.getTeamLobbyHistoryPath();
                         this.lobbyReturnAdShowing = true;
                         console.info("[H5 Ads] Requesting return-to-lobby ad");
