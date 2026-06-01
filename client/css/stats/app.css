@@ -222,6 +222,7 @@ a.nav-link-bright:hover {
   font-weight: bold;
   text-shadow: 2px 2px 2px black;
 }
+
 @media (max-width: 823px) {
   .leaderboard-title {
     font-size: 32px;
