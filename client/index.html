@@ -60,6 +60,12 @@
       window.adBreak = window.adConfig = function(config) {
         window.adsbygoogle.push(config);
       };
+      if (window.H5_GAMES_ADS_ENABLED) {
+        window.adConfig({
+          preloadAdBreaks: "on",
+          sound: "on",
+        });
+      }
     </script>
   </head>
   <body>

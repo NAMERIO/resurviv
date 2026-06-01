@@ -7,7 +7,26 @@ type GoogleH5AdPlacementType =
     | "reward";
 
 type GoogleH5AdConfig = {
+    preloadAdBreaks?: "on" | "auto";
     sound?: "on" | "off";
+    onReady?: () => void;
+};
+
+export type GoogleH5AdPlacementInfo = {
+    breakType: GoogleH5AdPlacementType;
+    breakName: string;
+    breakFormat: "interstitial" | "reward";
+    breakStatus:
+        | "notReady"
+        | "timeout"
+        | "invalid"
+        | "error"
+        | "noAdPreloaded"
+        | "frequencyCapped"
+        | "ignored"
+        | "other"
+        | "dismissed"
+        | "viewed";
 };
 
 type GoogleH5AdBreakConfig = {
@@ -18,7 +37,7 @@ type GoogleH5AdBreakConfig = {
     beforeReward?: (showAdFn: () => void) => void;
     adDismissed?: () => void;
     adViewed?: () => void;
-    adBreakDone?: () => void;
+    adBreakDone?: (placementInfo?: GoogleH5AdPlacementInfo) => void;
 };
 
 function addCallback<T extends keyof GoogleH5AdBreakConfig>(

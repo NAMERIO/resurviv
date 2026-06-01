@@ -20,7 +20,7 @@ import type {
 } from "../../shared/types/api";
 import { math } from "../../shared/utils/math";
 import { Account } from "./account";
-import { googleH5Ads } from "./ads/googleH5Ads";
+import { googleH5Ads, type GoogleH5AdPlacementInfo } from "./ads/googleH5Ads";
 import { Ambiance } from "./ambiance";
 import { api } from "./api";
 import { AudioManager } from "./audioManager";
@@ -824,15 +824,24 @@ export class Application {
                 if (errMsg) {
                     this.showErrorModal(errMsg);
                 }
-                console.error("Quitting", errMsg);
+                if (errMsg) {
+                    console.warn("Game quit with error", errMsg);
+                } else {
+                    console.log("Game quit");
+                }
                 SDK.gamePlayStop();
                 if (!errMsg) {
                     this.lobbyReturnAdCounter++;
                     if (this.lobbyReturnAdCounter % 5 === 0) {
                         const teamLobbyHistoryPath = this.getTeamLobbyHistoryPath();
                         this.lobbyReturnAdShowing = true;
-                        googleH5Ads.requestInterstitial("browse", "return-to-lobby", {
-                            adBreakDone: () => {
+                        console.info("[H5 Ads] Requesting return-to-lobby ad");
+                        googleH5Ads.requestInterstitial("next", "return-to-lobby", {
+                            adBreakDone: (placementInfo?: GoogleH5AdPlacementInfo) => {
+                                console.info(
+                                    "[H5 Ads] return-to-lobby ad finished",
+                                    placementInfo?.breakStatus ?? "not_requested",
+                                );
                                 this.lobbyReturnAdShowing = false;
                                 this.restoreTeamLobbyHistoryPath(teamLobbyHistoryPath);
                             },
