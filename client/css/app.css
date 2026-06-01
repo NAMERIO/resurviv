@@ -241,6 +241,7 @@ a:active {
 
   #start-menu-wrapper #background {
     pointer-events: none;
+    position: fixed;
   }
 
   #start-main {
@@ -15766,6 +15767,27 @@ div.roulette {
   overflow: hidden;
 }
 
+@media (max-height: 720px) {
+  #start-menu-wrapper {
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #start-menu-wrapper #background {
+    pointer-events: none;
+    position: fixed;
+  }
+
+  #start-main {
+    box-sizing: border-box;
+    margin-bottom: 0;
+    min-height: 0;
+    padding-bottom: 0;
+  }
+}
+
 #background {
   background-position: center;
 }
@@ -17208,6 +17230,7 @@ div.roulette {
   #start-main-center {
     --start-main-height-scale: 0.8;
     --start-main-shift-y: 30px;
+    height: 570px;
   }
 }
 
@@ -17215,6 +17238,7 @@ div.roulette {
   #start-main-center {
     --start-main-height-scale: 0.68;
     --start-main-shift-y: 15px;
+    height: 470px;
   }
 }
 
@@ -17222,6 +17246,7 @@ div.roulette {
   #start-main-center {
     --start-main-height-scale: 0.6;
     --start-main-shift-y: 0px;
+    height: 410px;
   }
 }
 
