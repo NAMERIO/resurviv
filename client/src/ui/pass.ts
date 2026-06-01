@@ -578,7 +578,7 @@ export class Pass {
 
         const amount = state?.amount ?? 50;
         const remaining = state?.remaining ?? 0;
-        const limit = state?.limit ?? 2;
+        const limit = state?.limit ?? 3;
         const disabled = this.rewardedAdGpPending || remaining <= 0;
         button
             .prop("disabled", disabled)
@@ -596,8 +596,7 @@ export class Pass {
                 (remaining > 0
                     ? `${remaining}/${limit} left today`
                     : `Come back in ${humanizeTime(
-                          Math.max(0, (state?.resetAt ?? Date.now()) - Date.now()) /
-                              1000,
+                          Math.max(0, (state?.resetAt ?? Date.now()) - Date.now()) / 1000,
                           true,
                       )}`),
         );

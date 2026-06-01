@@ -16,6 +16,7 @@ import {
     getMarketReferencePrice,
 } from "../../../shared/utils/marketPricing";
 import type { Account } from "../account";
+import { googleH5Ads } from "../ads/googleH5Ads";
 import { helpers } from "../helpers";
 import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
@@ -262,6 +263,13 @@ export class ShopMenu {
                 this.handleLootBoxAction(lootBox);
                 return false;
             });
+            $(`#crate-ad-progress-${selectorSuffix}`).on("click", (e) => {
+                e.preventDefault();
+                const lootBox = this.getOrderedLootBoxes()[index];
+                if (!lootBox) return false;
+                this.handleLootBoxAdAction(lootBox);
+                return false;
+            });
         }
         $("#reward-modal-close").on("click", (e) => {
             e.preventDefault();
@@ -303,20 +311,7 @@ export class ShopMenu {
                 this.confirmSellModal.hide();
                 this.cratesModal.hide();
                 this.crateContainModal.hide();
-                this.account.openLootBox(lootBox.id, (error, reward) => {
-                    this.openingLootBox = false;
-                    if (error) {
-                        this.showMarketError(error);
-                        return;
-                    }
-                    const itemType = reward?.itemType;
-                    if (!itemType) {
-                        this.showMarketError("server_error");
-                        return;
-                    }
-                    this.pendingLootBoxRewardConfirmation = true;
-                    this.startLootBoxSpin(lootBox, itemType);
-                });
+                this.openLootBox(lootBox, "gp");
                 return false;
             }
             if (action === "buy") {
@@ -842,6 +837,7 @@ export class ShopMenu {
             shopButton.addClass("market-refresh-disabled");
             for (const selectorSuffix of ["1", "2", "3"]) {
                 $(`#open-crate-${selectorSuffix}`).addClass("disable");
+                $(`#crate-ad-progress-${selectorSuffix}`).hide().addClass("disable");
                 $(`#crate-price-${selectorSuffix}`).text("0");
             }
             crateTitle.text(
@@ -856,11 +852,27 @@ export class ShopMenu {
             const lootBox = lootBoxes[index];
             if (!lootBox) {
                 $(`#open-crate-${selectorSuffix}`).addClass("disable");
+                $(`#crate-ad-progress-${selectorSuffix}`).hide().addClass("disable");
                 $(`#crate-price-${selectorSuffix}`).text("0");
                 continue;
             }
             $(`#open-crate-${selectorSuffix}`).removeClass("disable");
+            const adState = this.account.lootBoxAdStates[lootBox.id];
+            const required = adState?.required ?? lootBox.adRequirement ?? 0;
+            const watched = Math.min(required, adState?.watched ?? 0);
+            const adButton = $(`#crate-ad-progress-${selectorSuffix}`);
+            const showAds =
+                this.account.loggedIn && googleH5Ads.enabled() && required > 0;
+
+            $(`#open-crate-${selectorSuffix}`).find(".crate-text").text("Buy for");
             $(`#crate-price-${selectorSuffix}`).text(String(lootBox.price));
+            adButton.toggle(showAds);
+            adButton.toggleClass("disable", adState?.opened === true);
+            $(`#crate-ad-count-${selectorSuffix}`).text(
+                adState?.opened
+                    ? this.formatCountdown((adState.resetAt || Date.now()) - Date.now())
+                    : `${watched}/${required}`,
+            );
         }
     }
 
@@ -1744,6 +1756,95 @@ export class ShopMenu {
         this.confirmSellModal.show(true);
     }
 
+    canUseLootBoxAds(lootBox: ShopLootBox) {
+        if (!this.account.loggedIn || !googleH5Ads.enabled()) return false;
+        if (!lootBox.adRequirement || lootBox.adRequirement <= 0) return false;
+        return this.account.lootBoxAdStates[lootBox.id]?.opened !== true;
+    }
+
+    handleLootBoxAdAction(lootBox: ShopLootBox) {
+        if (this.openingLootBox || !this.canUseLootBoxAds(lootBox)) return;
+        this.openingLootBox = true;
+        const state = this.account.lootBoxAdStates[lootBox.id];
+        if (state && state.remaining <= 0) {
+            this.cratesModal.hide();
+            this.crateContainModal.hide();
+            this.openLootBox(lootBox, "ads");
+            return;
+        }
+
+        this.watchLootBoxAd(lootBox, () => {
+            const nextState = this.account.lootBoxAdStates[lootBox.id];
+            this.renderLootBoxes();
+
+            if (nextState && nextState.remaining <= 0) {
+                this.cratesModal.hide();
+                this.crateContainModal.hide();
+                this.openLootBox(lootBox, "ads");
+                return;
+            }
+
+            this.openingLootBox = false;
+        });
+    }
+
+    openLootBox(lootBox: ShopLootBox, payment: "gp" | "ads") {
+        this.account.openLootBox(lootBox.id, payment, (error, reward) => {
+            this.openingLootBox = false;
+            if (error) {
+                this.showMarketError(error);
+                return;
+            }
+            const itemType = reward?.itemType;
+            if (!itemType) {
+                this.showMarketError("server_error");
+                return;
+            }
+            this.pendingLootBoxRewardConfirmation = true;
+            this.startLootBoxSpin(lootBox, itemType);
+        });
+    }
+
+    watchLootBoxAd(lootBox: ShopLootBox, onComplete: () => void) {
+        let rewardViewed = false;
+        let adStarted = false;
+        const timeout = window.setTimeout(() => {
+            if (adStarted) return;
+            this.openingLootBox = false;
+            this.showMarketError("server_error");
+        }, 12000);
+
+        googleH5Ads.requestReward("watch-video-lootbox", {
+            beforeAd: () => {
+                adStarted = true;
+                window.clearTimeout(timeout);
+            },
+            adViewed: () => {
+                rewardViewed = true;
+                window.clearTimeout(timeout);
+                this.account.claimLootBoxAd(lootBox.id, (error) => {
+                    if (error) {
+                        this.openingLootBox = false;
+                        this.showMarketError(error);
+                        return;
+                    }
+                    onComplete();
+                });
+            },
+            adDismissed: () => {
+                window.clearTimeout(timeout);
+                this.openingLootBox = false;
+                this.showMarketError("server_error");
+            },
+            adBreakDone: () => {
+                if (rewardViewed) return;
+                window.clearTimeout(timeout);
+                this.openingLootBox = false;
+                this.showMarketError("server_error");
+            },
+        });
+    }
+
     showLootBoxContents(lootBox: ShopLootBox) {
         const modalContent = $("#modal-crate-contain > .modal-content");
         const odds = $("#modal-crate-odds");
@@ -1954,8 +2055,23 @@ export class ShopMenu {
             timer.text(this.formatListingDuration(Date.now() - createdAt));
         });
         this.updateAuctionBidRelativeTimes();
+        this.updateLootBoxAdTimers();
         this.refreshAuctionBidModalLive();
         this.updateMarketRefreshUi();
+    }
+
+    updateLootBoxAdTimers() {
+        for (const [index, selectorSuffix] of ["1", "2", "3"].entries()) {
+            const lootBox = this.getOrderedLootBoxes()[index];
+            if (!lootBox) continue;
+
+            const adState = this.account.lootBoxAdStates[lootBox.id];
+            if (!adState?.opened) continue;
+
+            $(`#crate-ad-count-${selectorSuffix}`).text(
+                this.formatCountdown((adState.resetAt || Date.now()) - Date.now()),
+            );
+        }
     }
 
     refreshAuctionBidModalLive() {

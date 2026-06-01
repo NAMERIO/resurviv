@@ -9,6 +9,7 @@ import {
     type BuyMarketListingResponse,
     type CancelAuctionListingResponse,
     type CancelMarketListingResponse,
+    type ClaimLootBoxAdResponse,
     type ClaimRewardedAdGpResponse,
     type ClaimSocialGpRewardResponse,
     type CreateAuctionListingResponse,
@@ -34,6 +35,7 @@ import {
     zBuyMarketListingRequest,
     zCancelAuctionListingRequest,
     zCancelMarketListingRequest,
+    zClaimLootBoxAdRequest,
     zClaimRewardedAdGpRequest,
     zClaimSocialGpRewardRequest,
     zCreateAuctionListingRequest,
@@ -117,8 +119,15 @@ const SOCIAL_GP_REWARDS = {
     discord_join: { rewardKey: "social_discord_join", gp: SOCIAL_GP_REWARD_AMOUNT },
 } as const;
 const REWARDED_AD_GP_AMOUNT = 50;
-const REWARDED_AD_GP_DAILY_LIMIT = 2;
+const REWARDED_AD_GP_DAILY_LIMIT = 3;
 const REWARDED_AD_GP_REWARD_KEY_PREFIX = "rewarded_ad_gp";
+const LOOT_BOX_AD_REWARD_KEY_PREFIX = "loot_box_ad";
+const LOOT_BOX_AD_OPEN_REWARD_KEY_PREFIX = "loot_box_ad_open";
+const LOOT_BOX_AD_REQUIREMENTS: Record<string, number> = {
+    loot_box_01: 1,
+    loot_box_02: 3,
+    loot_box_03: 5,
+};
 
 function getShopLootBoxes() {
     return Object.values(lootBoxes).map((box) => ({
@@ -127,6 +136,7 @@ function getShopLootBoxes() {
         price: box.price,
         chances: box.chances,
         itemTypes: getLootBoxItems(box.id),
+        adRequirement: LOOT_BOX_AD_REQUIREMENTS[box.id],
     }));
 }
 
@@ -247,17 +257,70 @@ function getRewardedAdGpDay(now = Date.now()) {
 
 function getRewardedAdGpResetAt(now = Date.now()) {
     const date = new Date(now);
-    return Date.UTC(
-        date.getUTCFullYear(),
-        date.getUTCMonth(),
-        date.getUTCDate() + 1,
-    );
+    return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1);
 }
 
 function getRewardedAdGpRewardKeys(day = getRewardedAdGpDay()) {
     return Array.from(
         { length: REWARDED_AD_GP_DAILY_LIMIT },
         (_value, index) => `${REWARDED_AD_GP_REWARD_KEY_PREFIX}:${day}:${index}`,
+    );
+}
+
+function getLootBoxAdRequirement(boxId: string) {
+    return LOOT_BOX_AD_REQUIREMENTS[boxId] ?? 0;
+}
+
+function getLootBoxAdRewardKeys(boxId: string, day = getRewardedAdGpDay()) {
+    const requirement = getLootBoxAdRequirement(boxId);
+    return Array.from(
+        { length: requirement },
+        (_value, index) => `${LOOT_BOX_AD_REWARD_KEY_PREFIX}:${day}:${boxId}:${index}`,
+    );
+}
+
+function getLootBoxAdOpenRewardKey(boxId: string, day = getRewardedAdGpDay()) {
+    return `${LOOT_BOX_AD_OPEN_REWARD_KEY_PREFIX}:${day}:${boxId}`;
+}
+
+async function getLootBoxAdStates(userId: string) {
+    const trackedBoxIds = Object.keys(LOOT_BOX_AD_REQUIREMENTS);
+    const rewardKeys = trackedBoxIds.flatMap((boxId) => [
+        ...getLootBoxAdRewardKeys(boxId),
+        getLootBoxAdOpenRewardKey(boxId),
+    ]);
+    const rows =
+        rewardKeys.length > 0
+            ? await db
+                  .select({
+                      rewardKey: rewardClaimsTable.rewardKey,
+                  })
+                  .from(rewardClaimsTable)
+                  .where(
+                      and(
+                          eq(rewardClaimsTable.userId, userId),
+                          inArray(rewardClaimsTable.rewardKey, rewardKeys),
+                      ),
+                  )
+            : [];
+    const claimedKeys = new Set(rows.map((row) => row.rewardKey));
+
+    return Object.fromEntries(
+        trackedBoxIds.map((boxId) => {
+            const adKeys = getLootBoxAdRewardKeys(boxId);
+            const watched = adKeys.filter((key) => claimedKeys.has(key)).length;
+            const required = getLootBoxAdRequirement(boxId);
+            return [
+                boxId,
+                {
+                    required,
+                    watched,
+                    remaining: Math.max(0, required - watched),
+                    opened: claimedKeys.has(getLootBoxAdOpenRewardKey(boxId)),
+                    resetAt: getRewardedAdGpResetAt(),
+                },
+            ];
+        }),
     );
 }
 
@@ -1475,6 +1538,7 @@ UserRouter.post("/get_market", async (c) => {
             expiredItemTypes: market.expiredItemTypes,
             featuredBundles: market.featuredBundles,
             lootBoxes: getShopLootBoxes(),
+            lootBoxAdStates: await getLootBoxAdStates(user.id),
             socialGpRewardClaims,
         },
         200,
@@ -1668,6 +1732,115 @@ UserRouter.post(
         } catch (err) {
             server.logger.error("/api/user/claim_rewarded_ad_gp error", err);
             return c.json<ClaimRewardedAdGpResponse>(
+                { success: false, error: "server_error" },
+                500,
+            );
+        }
+    },
+);
+
+UserRouter.post(
+    "/claim_loot_box_ad",
+    validateParams(zClaimLootBoxAdRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { boxId } = c.req.valid("json");
+        const box = getLootBox(boxId);
+        const rewardKeys = getLootBoxAdRewardKeys(boxId);
+
+        if (!box || rewardKeys.length === 0) {
+            return c.json<ClaimLootBoxAdResponse>(
+                {
+                    success: false,
+                    error: "box_not_found",
+                    lootBoxAdStates: await getLootBoxAdStates(user.id),
+                },
+                200,
+            );
+        }
+
+        if (!Config.h5GamesAds.enabled) {
+            return c.json<ClaimLootBoxAdResponse>(
+                {
+                    success: false,
+                    error: "ads_disabled",
+                    lootBoxAdStates: await getLootBoxAdStates(user.id),
+                },
+                200,
+            );
+        }
+
+        const openRewardKey = getLootBoxAdOpenRewardKey(boxId);
+        const ip = getHonoIp(c, Config.apiServer.proxyIPHeader);
+        const encodedIp = ip ? hashRewardIp(ip) : "";
+
+        try {
+            const result = await db.transaction(async (tx) => {
+                const claimedRows = await tx
+                    .select({
+                        rewardKey: rewardClaimsTable.rewardKey,
+                    })
+                    .from(rewardClaimsTable)
+                    .where(
+                        and(
+                            eq(rewardClaimsTable.userId, user.id),
+                            inArray(rewardClaimsTable.rewardKey, [
+                                ...rewardKeys,
+                                openRewardKey,
+                            ]),
+                        ),
+                    );
+                const claimedKeys = new Set(claimedRows.map((row) => row.rewardKey));
+
+                if (claimedKeys.has(openRewardKey)) {
+                    return { ok: false as const, error: "already_opened" as const };
+                }
+
+                const nextRewardKey = rewardKeys.find((key) => !claimedKeys.has(key));
+                if (!nextRewardKey) {
+                    return { ok: false as const, error: "daily_limit" as const };
+                }
+
+                const inserted = await tx
+                    .insert(rewardClaimsTable)
+                    .values({
+                        rewardKey: nextRewardKey,
+                        userId: user.id,
+                        encodedIp,
+                    })
+                    .onConflictDoNothing({
+                        target: [rewardClaimsTable.rewardKey, rewardClaimsTable.userId],
+                    })
+                    .returning({
+                        id: rewardClaimsTable.id,
+                    });
+
+                return inserted.length > 0
+                    ? { ok: true as const }
+                    : { ok: false as const, error: "daily_limit" as const };
+            });
+
+            if (!result.ok) {
+                return c.json<ClaimLootBoxAdResponse>(
+                    {
+                        success: false,
+                        error: result.error,
+                        lootBoxAdStates: await getLootBoxAdStates(user.id),
+                    },
+                    200,
+                );
+            }
+
+            return c.json<ClaimLootBoxAdResponse>(
+                {
+                    success: true,
+                    lootBoxAdStates: await getLootBoxAdStates(user.id),
+                },
+                200,
+            );
+        } catch (err) {
+            server.logger.error("/api/user/claim_loot_box_ad error", err);
+            return c.json<ClaimLootBoxAdResponse>(
                 { success: false, error: "server_error" },
                 500,
             );
@@ -2216,7 +2389,7 @@ UserRouter.post(
 
 UserRouter.post("/open_loot_box", validateParams(zOpenLootBoxRequest), async (c) => {
     const user = c.get("user")!;
-    const { boxId } = c.req.valid("json");
+    const { boxId, payment } = c.req.valid("json");
 
     try {
         const result = await db.transaction(async (tx) => {
@@ -2234,7 +2407,50 @@ UserRouter.post("/open_loot_box", validateParams(zOpenLootBoxRequest), async (c)
                 return { ok: false as const, error: "server_error" as const };
             }
 
-            if (buyer.gpBalance < box.price) {
+            if (payment === "ads") {
+                if (!Config.h5GamesAds.enabled) {
+                    return { ok: false as const, error: "ads_disabled" as const };
+                }
+
+                const rewardKeys = getLootBoxAdRewardKeys(boxId);
+                const openRewardKey = getLootBoxAdOpenRewardKey(boxId);
+                if (rewardKeys.length === 0) {
+                    return { ok: false as const, error: "box_not_found" as const };
+                }
+
+                const claimedRows = await tx
+                    .select({
+                        rewardKey: rewardClaimsTable.rewardKey,
+                    })
+                    .from(rewardClaimsTable)
+                    .where(
+                        and(
+                            eq(rewardClaimsTable.userId, user.id),
+                            inArray(rewardClaimsTable.rewardKey, [
+                                ...rewardKeys,
+                                openRewardKey,
+                            ]),
+                        ),
+                    );
+                const claimedKeys = new Set(claimedRows.map((row) => row.rewardKey));
+
+                if (claimedKeys.has(openRewardKey)) {
+                    return { ok: false as const, error: "daily_limit" as const };
+                }
+
+                if (!rewardKeys.every((key) => claimedKeys.has(key))) {
+                    return {
+                        ok: false as const,
+                        error: "ad_requirement_not_met" as const,
+                    };
+                }
+
+                await tx.insert(rewardClaimsTable).values({
+                    rewardKey: openRewardKey,
+                    userId: user.id,
+                    encodedIp: "",
+                });
+            } else if (buyer.gpBalance < box.price) {
                 return { ok: false as const, error: "not_enough_gp" as const };
             }
 
@@ -2250,23 +2466,32 @@ UserRouter.post("/open_loot_box", validateParams(zOpenLootBoxRequest), async (c)
                 timeAcquired: Date.now(),
             });
 
-            await tx
-                .update(usersTable)
-                .set({
-                    gpBalance: buyer.gpBalance - box.price,
-                })
-                .where(eq(usersTable.id, user.id));
+            const gpBalance =
+                payment === "ads" ? buyer.gpBalance : buyer.gpBalance - box.price;
+
+            if (payment !== "ads") {
+                await tx
+                    .update(usersTable)
+                    .set({
+                        gpBalance,
+                    })
+                    .where(eq(usersTable.id, user.id));
+            }
 
             return {
                 ok: true as const,
-                gpBalance: buyer.gpBalance - box.price,
+                gpBalance,
                 itemType: reward.itemType,
             };
         });
 
         if (!result.ok) {
             return c.json<OpenLootBoxResponse>(
-                { success: false, error: result.error },
+                {
+                    success: false,
+                    error: result.error,
+                    lootBoxAdStates: await getLootBoxAdStates(user.id),
+                },
                 200,
             );
         }
@@ -2276,6 +2501,7 @@ UserRouter.post("/open_loot_box", validateParams(zOpenLootBoxRequest), async (c)
                 success: true,
                 gpBalance: result.gpBalance,
                 itemType: result.itemType,
+                lootBoxAdStates: await getLootBoxAdStates(user.id),
             },
             200,
         );

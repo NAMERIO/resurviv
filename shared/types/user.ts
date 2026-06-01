@@ -277,6 +277,7 @@ export type GetPassResponse = {
 
 export const zOpenLootBoxRequest = z.object({
     boxId: z.string().trim().min(1),
+    payment: z.enum(["gp", "ads"]).optional().default("gp"),
 });
 
 export type OpenLootBoxRequest = z.infer<typeof zOpenLootBoxRequest>;
@@ -285,14 +286,23 @@ export type OpenLootBoxResponse =
           success: true;
           gpBalance: number;
           itemType: string;
+          lootBoxAdStates?: Record<string, LootBoxAdState>;
       }
     | {
           success: false;
-          error: "box_not_found" | "not_enough_gp" | "server_error";
+          error:
+              | "box_not_found"
+              | "not_enough_gp"
+              | "ads_disabled"
+              | "ad_requirement_not_met"
+              | "daily_limit"
+              | "server_error";
+          lootBoxAdStates?: Record<string, LootBoxAdState>;
       };
 
 export type ShopLootBox = Pick<LootBoxDef, "id" | "name" | "price" | "chances"> & {
     itemTypes: string[];
+    adRequirement?: number;
 };
 
 export const zRefreshQuestRequest = z.object({
@@ -312,6 +322,7 @@ export type GetMarketResponse = {
     expiredItemTypes: string[];
     featuredBundles: FeaturedBundleOffer[];
     lootBoxes: ShopLootBox[];
+    lootBoxAdStates: Record<string, LootBoxAdState>;
     socialGpRewardClaims: Partial<Record<SocialGpRewardKey, boolean>>;
 };
 
@@ -334,6 +345,29 @@ export type RewardedAdGpState = {
     claimed: number;
     remaining: number;
     resetAt: number;
+};
+
+export type LootBoxAdState = {
+    required: number;
+    watched: number;
+    remaining: number;
+    opened: boolean;
+    resetAt: number;
+};
+
+export const zClaimLootBoxAdRequest = z.object({
+    boxId: z.string().trim().min(1),
+});
+export type ClaimLootBoxAdRequest = z.infer<typeof zClaimLootBoxAdRequest>;
+export type ClaimLootBoxAdResponse = {
+    success: boolean;
+    error?:
+        | "box_not_found"
+        | "ads_disabled"
+        | "daily_limit"
+        | "already_opened"
+        | "server_error";
+    lootBoxAdStates?: Record<string, LootBoxAdState>;
 };
 
 export const zClaimRewardedAdGpRequest = z.object({});

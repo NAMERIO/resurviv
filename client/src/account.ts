@@ -15,6 +15,8 @@ import type {
     CancelAuctionListingResponse,
     CancelMarketListingRequest,
     CancelMarketListingResponse,
+    ClaimLootBoxAdRequest,
+    ClaimLootBoxAdResponse,
     ClaimRewardedAdGpResponse,
     ClaimSocialGpRewardRequest,
     ClaimSocialGpRewardResponse,
@@ -34,6 +36,7 @@ import type {
     GpGift,
     LoadoutRequest,
     LoadoutResponse,
+    LootBoxAdState,
     MarketListing,
     OpenLootBoxRequest,
     OpenLootBoxResponse,
@@ -141,6 +144,7 @@ export class Account {
     rewardedAdGp: RewardedAdGpState | null = null;
     socialGpRewardClaims: Partial<Record<SocialGpRewardKey, boolean>> = {};
     socialGpRewardClaimsLoaded = false;
+    lootBoxAdStates: Record<string, LootBoxAdState> = {};
     pendingThankYouGift: { amount: number } | null = null;
     pendingGpGifts: GpGift[] = [];
     pendingSkinGifts: SkinGift[] = [];
@@ -297,6 +301,7 @@ export class Account {
             this.profile = {} as this["profile"];
             this.gpBalance = 0;
             this.rewardedAdGp = null;
+            this.lootBoxAdStates = {};
             this.pendingThankYouGift = null;
             this.pendingGpGifts = [];
             this.pendingSkinGifts = [];
@@ -781,6 +786,7 @@ export class Account {
             this.socialGpRewardClaimsLoaded = true;
             this.featuredBundles = res.featuredBundles || [];
             this.lootBoxes = res.lootBoxes || [];
+            this.lootBoxAdStates = res.lootBoxAdStates || {};
             this.marketListings = res.listings || [];
             this.userMarketListings = res.userListings || [];
             this.auctionListings = res.auctions || [];
@@ -838,9 +844,7 @@ export class Account {
         );
     }
 
-    claimRewardedAdGp(
-        callback?: (error?: ClaimRewardedAdGpResponse["error"]) => void,
-    ) {
+    claimRewardedAdGp(callback?: (error?: ClaimRewardedAdGpResponse["error"]) => void) {
         this.ajaxRequest(
             "/api/user/claim_rewarded_ad_gp",
             {},
@@ -863,6 +867,32 @@ export class Account {
                     this.rewardedAdGp = res.rewardedAdGp;
                     this.emit("rewardedAdGp", this.rewardedAdGp);
                 }
+                callback?.();
+            },
+        );
+    }
+
+    claimLootBoxAd(
+        boxId: string,
+        callback?: (error?: ClaimLootBoxAdResponse["error"]) => void,
+    ) {
+        const args: ClaimLootBoxAdRequest = { boxId };
+        this.ajaxRequest(
+            "/api/user/claim_loot_box_ad",
+            args,
+            (err, res: ClaimLootBoxAdResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "claim_loot_box_ad_error");
+                    if (res?.lootBoxAdStates) {
+                        this.lootBoxAdStates = res.lootBoxAdStates;
+                        this.emit("market", this.marketListings, this.userMarketListings);
+                    }
+                    callback?.(res?.error || "server_error");
+                    return;
+                }
+
+                this.lootBoxAdStates = res.lootBoxAdStates || this.lootBoxAdStates;
+                this.emit("market", this.marketListings, this.userMarketListings);
                 callback?.();
             },
         );
@@ -894,15 +924,20 @@ export class Account {
 
     openLootBox(
         boxId: string,
+        payment: OpenLootBoxRequest["payment"],
         callback?: (error?: string, reward?: { itemType: string }) => void,
     ) {
-        const args: OpenLootBoxRequest = { boxId };
+        const args: OpenLootBoxRequest = { boxId, payment };
         this.ajaxRequest(
             "/api/user/open_loot_box",
             args,
             (err, res: OpenLootBoxResponse) => {
                 if (err || !res.success) {
                     errorLogManager.storeGeneric("account", "open_loot_box_error");
+                    if (res?.lootBoxAdStates) {
+                        this.lootBoxAdStates = res.lootBoxAdStates;
+                        this.emit("market", this.marketListings, this.userMarketListings);
+                    }
                     const errorCode =
                         !err && res && "error" in res ? res.error : "server_error";
                     callback?.(errorCode);
@@ -910,6 +945,7 @@ export class Account {
                 }
 
                 this.gpBalance = res.gpBalance;
+                this.lootBoxAdStates = res.lootBoxAdStates || this.lootBoxAdStates;
                 this.emit("gpBalance", this.gpBalance);
                 this.loadProfile();
                 this.loadMarket();
