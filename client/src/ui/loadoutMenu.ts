@@ -1239,7 +1239,8 @@ export class LoadoutMenu {
         this.modalCustomizeItemRarity.css({
             color: rarityVisuals.text,
         });
-        const showStats = selectedItem.loadoutType == "outfit";
+        const showStats =
+            selectedItem.loadoutType == "outfit" || selectedItem.loadoutType == "melee";
         this.modalCustomizeItemStats.toggle(showStats);
         this.modalCustomizeItemMaker.text(selectedItem.maker || "Unknown");
         this.modalCustomizeItemKills.text(selectedItem.kills || 0);
