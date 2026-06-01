@@ -824,7 +824,9 @@ export class Application {
                 }
                 console.error("Quitting", errMsg);
                 SDK.gamePlayStop();
-                googleH5Ads.requestInterstitial("browse", "return-to-lobby");
+                if (!errMsg) {
+                    googleH5Ads.requestInterstitial("browse", "return-to-lobby");
+                }
             };
             this.game = new Game(
                 this.pixi,
