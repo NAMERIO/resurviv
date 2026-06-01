@@ -16,7 +16,9 @@
 } */
 
 .ad-rail {
-  height: 600px;
+  --ad-rail-height: 600px;
+
+  height: var(--ad-rail-height);
   overflow: hidden;
   position: fixed;
   width: 160px;
@@ -30,14 +32,16 @@
 }
 
 #ad-rail-right {
+  --ad-rail-height: 640px;
+
   bottom: 120px;
-  height: 640px;
   right: 0;
   top: auto;
 }
 
 .ad-rail > .adsbygoogle {
-  height: 100% !important;
+  display: block !important;
+  height: var(--ad-rail-height) !important;
   width: 160px !important;
 }
 
@@ -49,27 +53,27 @@
 
 @media (max-height: 1039px) {
   .ad-rail {
-    height: 480px;
+    --ad-rail-height: 480px;
   }
 
   #ad-rail-right {
-    height: 540px;
+    --ad-rail-height: 540px;
   }
 }
 
 @media (max-height: 799px) {
   .ad-rail {
-    height: 360px;
+    --ad-rail-height: 360px;
   }
 
   #ad-rail-right {
-    height: 440px;
+    --ad-rail-height: 440px;
   }
 }
 
 @media (max-height: 679px) {
   .ad-rail {
-    height: 300px;
+    --ad-rail-height: 300px;
   }
 
   #ad-rail-left {
@@ -77,7 +81,7 @@
   }
 
   #ad-rail-right {
-    height: 440px;
+    --ad-rail-height: 440px;
     top: 100px;
   }
 }
