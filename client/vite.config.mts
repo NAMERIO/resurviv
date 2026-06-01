@@ -61,6 +61,7 @@ export default defineConfig(({ mode }) => {
 
     process.env.VITE_SPELLSYNC_PROJECT_ID = Config.secrets.SPELLSYNC_PROJECT_ID;
     process.env.VITE_SPELLSYNC_PUBLIC_TOKEN = Config.secrets.SPELLSYNC_PUBLIC_TOKEN;
+    process.env.VITE_H5_GAMES_ADS_ENABLED = String(Config.h5GamesAds.enabled);
 
     const plugins: Plugin[] = [
         mpaRouteRedirectPlugin(),
@@ -166,6 +167,7 @@ export default defineConfig(({ mode }) => {
             }),
             AD_PREFIX: JSON.stringify(Config.secrets.AD_PREFIX),
             VITE_GAMEMONETIZE_ID: JSON.stringify(Config.secrets.GAMEMONETIZE_ID),
+            H5_GAMES_ADS_ENABLED: Config.h5GamesAds.enabled,
             SPELLSYNC_PROJECT_ID: JSON.stringify(Config.secrets.SPELLSYNC_PROJECT_ID),
             SPELLSYNC_PUBLIC_TOKEN: JSON.stringify(Config.secrets.SPELLSYNC_PUBLIC_TOKEN),
             IS_DEV: isDev,

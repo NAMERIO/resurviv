@@ -159,6 +159,16 @@ export interface ConfigType {
     };
 
     /**
+     * Google H5 Games ads.
+     *
+     * When disabled, the client will not load the Google H5 ad script, no H5
+     * ad placements will run, and rewarded GP ad UI is hidden.
+     */
+    h5GamesAds: {
+        enabled: boolean;
+    };
+
+    /**
      * Featured YouTubers shown on the home screen.
      * The API rotates through this list every 5 minutes.
      */

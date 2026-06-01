@@ -20,6 +20,7 @@ import type {
 } from "../../shared/types/api";
 import { math } from "../../shared/utils/math";
 import { Account } from "./account";
+import { googleH5Ads } from "./ads/googleH5Ads";
 import { Ambiance } from "./ambiance";
 import { api } from "./api";
 import { AudioManager } from "./audioManager";
@@ -1105,6 +1106,7 @@ export class Application {
             this.muteBtns.addClass(muteAudio ? "audio-off-icon" : "audio-on-icon");
             this.audioManager.setMute(muteAudio);
         }
+        googleH5Ads.configureSound(muteAudio);
 
         const masterVolume = this.config.get("masterVolume")!;
         this.masterSliders.val(masterVolume * 100);

@@ -10,6 +10,7 @@ import { QuestDefs } from "../../../shared/defs/gameObjects/questDefs";
 import { math } from "../../../shared/utils/math";
 import { passUtil } from "../../../shared/utils/passUtil";
 import type { Account } from "../account";
+import { googleH5Ads } from "../ads/googleH5Ads";
 import { helpers } from "../helpers";
 import type { LoadoutMenu } from "./loadoutMenu";
 import type { Localization } from "./localization";
@@ -192,6 +193,9 @@ export class Pass {
     passItemsSignature = "";
     premiumPassPurchasePending = false;
     fullPassPurchasePending = false;
+    rewardedAdGpPending = false;
+    rewardedAdGpMessage = "";
+    rewardedAdGpTimeout = 0;
     premiumPassModal = new MenuModal($("#modal-premium-pass-confirm"));
 
     constructor(
@@ -205,6 +209,7 @@ export class Pass {
 
         this.account.addEventListener("request", this.onRequest.bind(this));
         this.account.addEventListener("pass", this.onPass.bind(this));
+        this.account.addEventListener("rewardedAdGp", this.renderRewardedAdGp.bind(this));
         this.loadPlaceholders();
         $("#start-menu .pass-items-container").on("wheel", (event) => {
             const nativeEvent = event.originalEvent as WheelEvent | undefined;
@@ -246,6 +251,9 @@ export class Pass {
         });
         $("#premium-pass-unlock-all-yes").on("click", () => {
             this.buyFullPass();
+        });
+        $("#rewarded-ad-gp-button").on("click", () => {
+            this.requestRewardedAdGp();
         });
     }
 
@@ -551,6 +559,108 @@ export class Pass {
             nextSideQuests.push(quest);
         }
         this.sideQuests = nextSideQuests;
+        this.renderRewardedAdGp();
+    }
+
+    renderRewardedAdGp() {
+        const state = this.account.rewardedAdGp;
+        const section = $("#rewarded-ad-gp-section");
+        const button = $("#rewarded-ad-gp-button");
+        const title = $("#rewarded-ad-gp-title");
+        const amountText = $("#rewarded-ad-gp-amount");
+        const status = $("#rewarded-ad-gp-status");
+
+        section.css(
+            "display",
+            this.account.loggedIn && googleH5Ads.enabled() ? "flex" : "none",
+        );
+        if (!this.account.loggedIn || !googleH5Ads.enabled()) return;
+
+        const amount = state?.amount ?? 50;
+        const remaining = state?.remaining ?? 0;
+        const limit = state?.limit ?? 2;
+        const disabled = this.rewardedAdGpPending || remaining <= 0;
+        button
+            .prop("disabled", disabled)
+            .toggleClass("rewarded-ad-gp-disabled", disabled)
+            .attr(
+                "title",
+                remaining > 0
+                    ? `Watch a full video ad for ${amount} GP`
+                    : "Daily video rewards claimed",
+            );
+        title.text(this.rewardedAdGpPending ? "Loading Video" : "Video Reward");
+        amountText.text(String(amount));
+        status.text(
+            this.rewardedAdGpMessage ||
+                (remaining > 0
+                    ? `${remaining}/${limit} left today`
+                    : `Come back in ${humanizeTime(
+                          Math.max(0, (state?.resetAt ?? Date.now()) - Date.now()) /
+                              1000,
+                          true,
+                      )}`),
+        );
+    }
+
+    requestRewardedAdGp() {
+        const state = this.account.rewardedAdGp;
+        if (
+            this.rewardedAdGpPending ||
+            !this.account.loggedIn ||
+            state?.remaining === 0
+        ) {
+            return;
+        }
+
+        let rewardViewed = false;
+        let adStarted = false;
+        this.rewardedAdGpPending = true;
+        this.rewardedAdGpMessage = "";
+        this.renderRewardedAdGp();
+
+        window.clearTimeout(this.rewardedAdGpTimeout);
+        this.rewardedAdGpTimeout = window.setTimeout(() => {
+            if (!this.rewardedAdGpPending || adStarted) return;
+            this.rewardedAdGpPending = false;
+            this.rewardedAdGpMessage =
+                "No test video loaded. Disable ad blockers and use ?adbreak_test=on.";
+            this.renderRewardedAdGp();
+        }, 12000);
+
+        googleH5Ads.requestReward("watch-video-gp", {
+            beforeAd: () => {
+                adStarted = true;
+                window.clearTimeout(this.rewardedAdGpTimeout);
+            },
+            adViewed: () => {
+                rewardViewed = true;
+                window.clearTimeout(this.rewardedAdGpTimeout);
+                this.account.claimRewardedAdGp((error) => {
+                    this.rewardedAdGpPending = false;
+                    if (error) {
+                        this.rewardedAdGpMessage =
+                            error === "daily_limit"
+                                ? "Daily video reward limit reached"
+                                : "Reward failed. Try again later.";
+                    }
+                    this.renderRewardedAdGp();
+                });
+            },
+            adDismissed: () => {
+                window.clearTimeout(this.rewardedAdGpTimeout);
+                this.rewardedAdGpMessage = "Watch the full video to earn GP.";
+            },
+            adBreakDone: () => {
+                if (rewardViewed) return;
+                window.clearTimeout(this.rewardedAdGpTimeout);
+                this.rewardedAdGpPending = false;
+                if (!this.rewardedAdGpMessage) {
+                    this.rewardedAdGpMessage = "No video ad available right now.";
+                }
+                this.renderRewardedAdGp();
+            },
+        });
     }
 
     getPassItemsSignature(passType: string) {

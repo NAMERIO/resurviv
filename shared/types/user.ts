@@ -30,6 +30,7 @@ export type ProfileResponse =
           };
           gpGifts?: GpGift[];
           skinGifts?: SkinGift[];
+          rewardedAdGp?: RewardedAdGpState;
           loadout: Loadout;
           items: Item[];
       };
@@ -325,6 +326,23 @@ export type ClaimSocialGpRewardResponse = {
     error?: "already_claimed" | "reward_not_found" | "server_error";
     gpBalance?: number;
     socialGpRewardClaims?: Partial<Record<SocialGpRewardKey, boolean>>;
+};
+
+export type RewardedAdGpState = {
+    amount: number;
+    limit: number;
+    claimed: number;
+    remaining: number;
+    resetAt: number;
+};
+
+export const zClaimRewardedAdGpRequest = z.object({});
+export type ClaimRewardedAdGpRequest = z.infer<typeof zClaimRewardedAdGpRequest>;
+export type ClaimRewardedAdGpResponse = {
+    success: boolean;
+    error?: "ads_disabled" | "daily_limit" | "server_error";
+    gpBalance?: number;
+    rewardedAdGp?: RewardedAdGpState;
 };
 
 export const zCreateMarketListingRequest = z.object({

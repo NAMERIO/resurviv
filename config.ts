@@ -44,6 +44,9 @@ export function getConfig(isProduction: boolean, dir: string) {
             killValue: 0.25,
             winValue: 5,
         },
+        h5GamesAds: {
+            enabled: true,
+        },
         featuredYoutubers: [],
         clientTheme: "main",
         gameTps: 100,

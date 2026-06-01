@@ -3,6 +3,9 @@
   <head>
   <!-- ADIN_PLAY_SCRIPT_PLACEHOLDER -->
   %VITE_TURNSTILE_SCRIPT%
+    <script>
+      window.H5_GAMES_ADS_ENABLED = "%VITE_H5_GAMES_ADS_ENABLED%" === "true";
+    </script>
     <!-- Meta Properties -->
     <meta charset='UTF-8'>
     <title>resurviv.io - 2d battle royale game</title>
@@ -35,13 +38,28 @@
 
     <!-- AdSense script -->
     <script>
-      if (location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+      const adbreakTestMode = new URLSearchParams(location.search).get("adbreak_test") === "on";
+      if (window.H5_GAMES_ADS_ENABLED && (location.hostname !== "localhost" && location.hostname !== "127.0.0.1" || adbreakTestMode)) {
         const adsScript = document.createElement("script");
         adsScript.async = true;
+        adsScript.dataset.adClient = "ca-pub-1712213211562891";
+        adsScript.dataset.adFrequencyHint = "30s";
+        if (adbreakTestMode) {
+          adsScript.dataset.adbreakTest = "on";
+        }
         adsScript.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1712213211562891";
         adsScript.crossOrigin = "anonymous";
+        adsScript.onload = function() {
+          window.googleH5AdsScriptLoaded = true;
+        };
         document.head.appendChild(adsScript);
       }
+    </script>
+    <script>
+      window.adsbygoogle = window.adsbygoogle || [];
+      window.adBreak = window.adConfig = function(config) {
+        window.adsbygoogle.push(config);
+      };
     </script>
   </head>
   <body>
@@ -1357,6 +1375,18 @@
                 <div id="side-quest-section" class="menu-block missions-column">
                   <div class="side-quest-header">Side Quests</div>
                   <div id="side-quest-list"></div>
+                </div>
+                <div id="rewarded-ad-gp-section" class="menu-block missions-column">
+                  <button id="rewarded-ad-gp-button" class="btn-darken" type="button">
+                    <span class="rewarded-ad-gp-play"></span>
+                    <span class="rewarded-ad-gp-copy">
+                      <span id="rewarded-ad-gp-title">Video Reward</span>
+                      <span id="rewarded-ad-gp-status">2 left today</span>
+                    </span>
+                    <span class="rewarded-ad-gp-payout">
+                      <span id="rewarded-ad-gp-amount">50</span>
+                    </span>
+                  </button>
                 </div>
                 <div id="free-gp-offer" class="menu-block missions-column">
                   <div class="mobile-social-links">

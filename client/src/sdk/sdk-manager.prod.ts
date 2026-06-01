@@ -1,4 +1,5 @@
 import $ from "jquery";
+import { googleH5Ads } from "../ads/googleH5Ads";
 import type { Application } from "../main";
 import type { SDKManager as BaseSDKManager } from "./sdk-manager";
 
@@ -210,7 +211,9 @@ export class SDKManager implements BaseSDKManager {
                 .then(callback)
                 .catch(callback);
         } else {
-            callback();
+            googleH5Ads.requestInterstitial("next", "restart-game", {
+                adBreakDone: callback,
+            });
         }
     }
 

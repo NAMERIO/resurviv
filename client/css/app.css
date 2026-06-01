@@ -16281,6 +16281,114 @@ div.roulette {
   margin-top: 0;
 }
 
+#rewarded-ad-gp-section {
+  align-items: center;
+  box-sizing: border-box;
+  display: none;
+  justify-content: center;
+  margin-left: 0;
+  margin-top: 10px;
+  min-height: 58px;
+  padding: 8px;
+  width: 300px;
+}
+
+#rewarded-ad-gp-button {
+  align-items: center;
+  background:
+    linear-gradient(180deg, rgba(57, 64, 34, 0.96), rgba(25, 31, 20, 0.96)),
+    #26311f;
+  border: 1px solid rgba(248, 218, 84, 0.35);
+  border-radius: 5px;
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.12),
+    inset 0 -3px rgba(0, 0, 0, 0.3);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  font-family: "Roboto Condensed", Arial, sans-serif;
+  font-weight: 700;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 8px;
+  text-align: left;
+  text-shadow: 1px 1px 0 #000;
+  width: 100%;
+}
+
+#rewarded-ad-gp-button:hover:not(:disabled) {
+  border-color: rgba(255, 225, 88, 0.7);
+}
+
+#rewarded-ad-gp-button.rewarded-ad-gp-disabled,
+#rewarded-ad-gp-button:disabled {
+  cursor: default;
+  filter: grayscale(0.85);
+  opacity: 0.65;
+}
+
+.rewarded-ad-gp-play {
+  background: #83af50;
+  border: 2px solid #263a18;
+  border-radius: 5px;
+  box-shadow: inset 0 -2px rgba(0, 0, 0, 0.28);
+  flex: 0 0 32px;
+  height: 28px;
+  position: relative;
+  width: 32px;
+}
+
+.rewarded-ad-gp-play::after {
+  border-bottom: 7px solid transparent;
+  border-left: 11px solid #fff;
+  border-top: 7px solid transparent;
+  content: "";
+  left: 12px;
+  position: absolute;
+  top: 7px;
+}
+
+.rewarded-ad-gp-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+#rewarded-ad-gp-title {
+  color: #fff;
+  font-size: 15px;
+  line-height: 17px;
+}
+
+#rewarded-ad-gp-status {
+  color: #f4db7c;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 15px;
+  overflow: hidden;
+  text-shadow: 1px 1px 0 #000;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rewarded-ad-gp-payout {
+  align-items: center;
+  background-color: #292501;
+  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-position: 7px center;
+  background-repeat: no-repeat;
+  background-size: 18px;
+  border-radius: 5px;
+  color: gold;
+  display: flex;
+  flex: 0 0 52px;
+  font-size: 15px;
+  height: 30px;
+  justify-content: flex-end;
+  padding-right: 7px;
+}
+
 #modal-premium-pass-confirm .modal-pass-price span {
   background:
     linear-gradient(

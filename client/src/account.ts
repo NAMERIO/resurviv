@@ -15,6 +15,7 @@ import type {
     CancelAuctionListingResponse,
     CancelMarketListingRequest,
     CancelMarketListingResponse,
+    ClaimRewardedAdGpResponse,
     ClaimSocialGpRewardRequest,
     ClaimSocialGpRewardResponse,
     CreateAuctionListingRequest,
@@ -42,6 +43,7 @@ import type {
     RefreshQuestRequest,
     RefreshQuestResponse,
     RemoveFriendResponse,
+    RewardedAdGpState,
     SendFriendGpRequest,
     SendFriendGpResponse,
     SendFriendSkinGiftRequest,
@@ -136,6 +138,7 @@ export class Account {
     loggingIn = false;
     loggedIn = false;
     gpBalance = 0;
+    rewardedAdGp: RewardedAdGpState | null = null;
     socialGpRewardClaims: Partial<Record<SocialGpRewardKey, boolean>> = {};
     socialGpRewardClaimsLoaded = false;
     pendingThankYouGift: { amount: number } | null = null;
@@ -293,6 +296,7 @@ export class Account {
             this.loggedIn = false;
             this.profile = {} as this["profile"];
             this.gpBalance = 0;
+            this.rewardedAdGp = null;
             this.pendingThankYouGift = null;
             this.pendingGpGifts = [];
             this.pendingSkinGifts = [];
@@ -305,6 +309,7 @@ export class Account {
                 this.loggedIn = true;
                 this.profile = data.profile;
                 this.gpBalance = data.gpBalance;
+                this.rewardedAdGp = data.rewardedAdGp || null;
                 this.pendingThankYouGift = data.thankYouGift || null;
                 this.pendingGpGifts = data.gpGifts || [];
                 this.pendingSkinGifts = data.skinGifts || [];
@@ -327,6 +332,7 @@ export class Account {
             this.emit("items", this.items);
             this.emit("loadout", this.loadout);
             this.emit("gpBalance", this.gpBalance);
+            this.emit("rewardedAdGp", this.rewardedAdGp);
             if (this.pendingThankYouGift) {
                 this.emit("thankYouGift", this.pendingThankYouGift);
                 this.pendingThankYouGift = null;
@@ -827,6 +833,36 @@ export class Account {
                 };
                 this.socialGpRewardClaimsLoaded = true;
                 this.emit("socialGpRewardClaims", this.socialGpRewardClaims);
+                callback?.();
+            },
+        );
+    }
+
+    claimRewardedAdGp(
+        callback?: (error?: ClaimRewardedAdGpResponse["error"]) => void,
+    ) {
+        this.ajaxRequest(
+            "/api/user/claim_rewarded_ad_gp",
+            {},
+            (err, res: ClaimRewardedAdGpResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "claim_rewarded_ad_gp_error");
+                    if (res?.rewardedAdGp) {
+                        this.rewardedAdGp = res.rewardedAdGp;
+                        this.emit("rewardedAdGp", this.rewardedAdGp);
+                    }
+                    callback?.(res?.error || "server_error");
+                    return;
+                }
+
+                if (typeof res.gpBalance === "number") {
+                    this.gpBalance = res.gpBalance;
+                    this.emit("gpBalance", this.gpBalance);
+                }
+                if (res.rewardedAdGp) {
+                    this.rewardedAdGp = res.rewardedAdGp;
+                    this.emit("rewardedAdGp", this.rewardedAdGp);
+                }
                 callback?.();
             },
         );

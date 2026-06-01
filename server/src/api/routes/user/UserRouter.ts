@@ -9,6 +9,7 @@ import {
     type BuyMarketListingResponse,
     type CancelAuctionListingResponse,
     type CancelMarketListingResponse,
+    type ClaimRewardedAdGpResponse,
     type ClaimSocialGpRewardResponse,
     type CreateAuctionListingResponse,
     type CreateMarketListingResponse,
@@ -33,6 +34,7 @@ import {
     zBuyMarketListingRequest,
     zCancelAuctionListingRequest,
     zCancelMarketListingRequest,
+    zClaimRewardedAdGpRequest,
     zClaimSocialGpRewardRequest,
     zCreateAuctionListingRequest,
     zCreateMarketListingRequest,
@@ -114,6 +116,9 @@ const SOCIAL_GP_REWARDS = {
     github_star: { rewardKey: "social_github_star", gp: SOCIAL_GP_REWARD_AMOUNT },
     discord_join: { rewardKey: "social_discord_join", gp: SOCIAL_GP_REWARD_AMOUNT },
 } as const;
+const REWARDED_AD_GP_AMOUNT = 50;
+const REWARDED_AD_GP_DAILY_LIMIT = 2;
+const REWARDED_AD_GP_REWARD_KEY_PREFIX = "rewarded_ad_gp";
 
 function getShopLootBoxes() {
     return Object.values(lootBoxes).map((box) => ({
@@ -233,6 +238,50 @@ async function getSocialGpRewardClaims(userId: string) {
     return {
         github_star: claimedRewardKeys.has(SOCIAL_GP_REWARDS.github_star.rewardKey),
         discord_join: claimedRewardKeys.has(SOCIAL_GP_REWARDS.discord_join.rewardKey),
+    };
+}
+
+function getRewardedAdGpDay(now = Date.now()) {
+    return new Date(now).toISOString().slice(0, 10);
+}
+
+function getRewardedAdGpResetAt(now = Date.now()) {
+    const date = new Date(now);
+    return Date.UTC(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate() + 1,
+    );
+}
+
+function getRewardedAdGpRewardKeys(day = getRewardedAdGpDay()) {
+    return Array.from(
+        { length: REWARDED_AD_GP_DAILY_LIMIT },
+        (_value, index) => `${REWARDED_AD_GP_REWARD_KEY_PREFIX}:${day}:${index}`,
+    );
+}
+
+async function getRewardedAdGpState(userId: string) {
+    const rewardKeys = getRewardedAdGpRewardKeys();
+    const rows = await db
+        .select({
+            rewardKey: rewardClaimsTable.rewardKey,
+        })
+        .from(rewardClaimsTable)
+        .where(
+            and(
+                eq(rewardClaimsTable.userId, userId),
+                inArray(rewardClaimsTable.rewardKey, rewardKeys),
+            ),
+        );
+    const claimed = rows.length;
+
+    return {
+        amount: REWARDED_AD_GP_AMOUNT,
+        limit: REWARDED_AD_GP_DAILY_LIMIT,
+        claimed,
+        remaining: Math.max(0, REWARDED_AD_GP_DAILY_LIMIT - claimed),
+        resetAt: getRewardedAdGpResetAt(),
     };
 }
 
@@ -732,6 +781,7 @@ UserRouter.post("/profile", async (c) => {
                 canUseDeveloper: canUseDeveloper(slug),
             },
             gpBalance: claimedThanksReward?.gpBalance ?? user.gpBalance,
+            rewardedAdGp: await getRewardedAdGpState(user.id),
             thankYouGift: claimedThanksReward
                 ? {
                       amount: claimedThanksReward.amount,
@@ -1513,6 +1563,111 @@ UserRouter.post(
         } catch (err) {
             server.logger.error("/api/user/claim_social_gp_reward error", err);
             return c.json<ClaimSocialGpRewardResponse>(
+                { success: false, error: "server_error" },
+                500,
+            );
+        }
+    },
+);
+
+UserRouter.post(
+    "/claim_rewarded_ad_gp",
+    validateParams(zClaimRewardedAdGpRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        if (!Config.h5GamesAds.enabled) {
+            return c.json<ClaimRewardedAdGpResponse>(
+                {
+                    success: false,
+                    error: "ads_disabled",
+                    gpBalance: user.gpBalance,
+                    rewardedAdGp: await getRewardedAdGpState(user.id),
+                },
+                200,
+            );
+        }
+
+        const rewardKeys = getRewardedAdGpRewardKeys();
+        const ip = getHonoIp(c, Config.apiServer.proxyIPHeader);
+        const encodedIp = ip ? hashRewardIp(ip) : "";
+
+        try {
+            const result = await db.transaction(async (tx) => {
+                const claimedRows = await tx
+                    .select({
+                        rewardKey: rewardClaimsTable.rewardKey,
+                    })
+                    .from(rewardClaimsTable)
+                    .where(
+                        and(
+                            eq(rewardClaimsTable.userId, user.id),
+                            inArray(rewardClaimsTable.rewardKey, rewardKeys),
+                        ),
+                    );
+                const claimedKeys = new Set(claimedRows.map((row) => row.rewardKey));
+                const nextRewardKey = rewardKeys.find((key) => !claimedKeys.has(key));
+
+                if (!nextRewardKey) {
+                    return { ok: false as const, error: "daily_limit" as const };
+                }
+
+                const inserted = await tx
+                    .insert(rewardClaimsTable)
+                    .values({
+                        rewardKey: nextRewardKey,
+                        userId: user.id,
+                        encodedIp,
+                        grantedGp: REWARDED_AD_GP_AMOUNT,
+                    })
+                    .onConflictDoNothing({
+                        target: [rewardClaimsTable.rewardKey, rewardClaimsTable.userId],
+                    })
+                    .returning({
+                        id: rewardClaimsTable.id,
+                    });
+
+                if (inserted.length === 0) {
+                    return { ok: false as const, error: "daily_limit" as const };
+                }
+
+                const [updatedUser] = await tx
+                    .update(usersTable)
+                    .set({
+                        gpBalance: sql`${usersTable.gpBalance} + ${REWARDED_AD_GP_AMOUNT}`,
+                    })
+                    .where(eq(usersTable.id, user.id))
+                    .returning({
+                        gpBalance: usersTable.gpBalance,
+                    });
+
+                return updatedUser
+                    ? { ok: true as const, gpBalance: updatedUser.gpBalance }
+                    : { ok: false as const, error: "server_error" as const };
+            });
+
+            if (!result.ok) {
+                return c.json<ClaimRewardedAdGpResponse>(
+                    {
+                        success: false,
+                        error: result.error,
+                        gpBalance: user.gpBalance,
+                        rewardedAdGp: await getRewardedAdGpState(user.id),
+                    },
+                    200,
+                );
+            }
+
+            return c.json<ClaimRewardedAdGpResponse>(
+                {
+                    success: true,
+                    gpBalance: result.gpBalance,
+                    rewardedAdGp: await getRewardedAdGpState(user.id),
+                },
+                200,
+            );
+        } catch (err) {
+            server.logger.error("/api/user/claim_rewarded_ad_gp error", err);
+            return c.json<ClaimRewardedAdGpResponse>(
                 { success: false, error: "server_error" },
                 500,
             );

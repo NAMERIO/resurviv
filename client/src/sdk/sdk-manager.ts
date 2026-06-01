@@ -1,3 +1,4 @@
+import { googleH5Ads } from "../ads/googleH5Ads";
 import type { Application } from "../main";
 
 export class SDKManager {
@@ -28,7 +29,9 @@ export class SDKManager {
     }
 
     requestFullscreenAd(callback: () => void): void {
-        callback();
+        googleH5Ads.requestInterstitial("next", "restart-game", {
+            adBreakDone: callback,
+        });
     }
 
     // biome-ignore lint/suspicious/useAwait: no op
