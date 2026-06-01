@@ -28,6 +28,7 @@ import {
     type UpdateClanResponse,
 } from "../../../shared/types/clan";
 import {
+    ALL_GAME_MODE_STATUS,
     GameModeStatus,
     type GameModeStatus as GameModeStatusType,
 } from "../../../shared/types/stats";
@@ -530,7 +531,7 @@ export class ClanUi {
     showLeaderboard() {
         this.renderSeasonSelects();
         $("#clan-leaderboard-type").val("cgp");
-        $("#clan-leaderboard-game-mode").val(GameModeStatus.Deathmatch);
+        $("#clan-leaderboard-game-mode").val(ALL_GAME_MODE_STATUS);
         $("#clan-leaderboard-season").val(String(ClanConstants.CurrentSeason));
         this.updateLeaderboardModeVisibility();
         this.loadLeaderboard("cgp");
@@ -590,8 +591,11 @@ export class ClanUi {
         return value === "kills" || value === "wins" ? value : "cgp";
     }
 
-    getSelectedLeaderboardGameMode(): GameModeStatusType {
+    getSelectedLeaderboardGameMode(): GameModeStatusType | typeof ALL_GAME_MODE_STATUS {
         const value = $("#clan-leaderboard-game-mode").val();
+        if (value === ALL_GAME_MODE_STATUS) {
+            return ALL_GAME_MODE_STATUS;
+        }
         return value === GameModeStatus.BattleRoyale
             ? GameModeStatus.BattleRoyale
             : GameModeStatus.Deathmatch;

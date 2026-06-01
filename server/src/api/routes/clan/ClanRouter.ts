@@ -51,6 +51,7 @@ import {
     zTransferOwnershipRequest,
     zUpdateClanRequest,
 } from "../../../../../shared/types/clan";
+import { ALL_GAME_MODE_STATUS } from "../../../../../shared/types/stats";
 import { Config } from "../../../config";
 import { checkForBadWords, validateUserName } from "../../../utils/serverHelpers";
 import { server } from "../../apiServer";
@@ -2284,7 +2285,8 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
     const { type, gameMode, page, limit, season } = c.req.valid("json");
 
     const offset = (page - 1) * limit;
-    const statGameMode = type === "cgp" ? undefined : gameMode;
+    const statGameMode =
+        type === "cgp" || gameMode === ALL_GAME_MODE_STATUS ? undefined : gameMode;
     const gameModeFilter = statGameMode
         ? sql`AND clan_member_stats.game_mode = ${statGameMode}`
         : sql``;
@@ -2309,14 +2311,14 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
               ? sql<number>`COALESCE((
                     SELECT SUM(kills) FROM clan_member_stats
                     WHERE clan_member_stats.clan_id = clans.id
-                    AND clan_member_stats.game_mode = ${gameMode}
                     AND clan_member_stats.season = ${season}
+                    ${gameModeFilter}
                 ), 0)`
               : sql<number>`COALESCE((
                     SELECT SUM(wins) FROM clan_member_stats
                     WHERE clan_member_stats.clan_id = clans.id
-                    AND clan_member_stats.game_mode = ${gameMode}
                     AND clan_member_stats.season = ${season}
+                    ${gameModeFilter}
                 ), 0)`;
 
     const clansData = await db

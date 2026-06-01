@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { GameModeStatus } from "./stats";
+import { ALL_GAME_MODE_STATUS, GameModeStatus } from "./stats";
 
 // Clan constants
 export const ClanConstants = {
@@ -83,8 +83,12 @@ export type GetClanRequest = z.infer<typeof zGetClanRequest>;
 export const zClanLeaderboardRequest = z.object({
     type: z.enum(["cgp", "kills", "wins"]).default("cgp"),
     gameMode: z
-        .enum([GameModeStatus.Deathmatch, GameModeStatus.BattleRoyale])
-        .default(GameModeStatus.Deathmatch),
+        .enum([
+            ALL_GAME_MODE_STATUS,
+            GameModeStatus.Deathmatch,
+            GameModeStatus.BattleRoyale,
+        ])
+        .default(ALL_GAME_MODE_STATUS),
     page: z.number().int().min(1).default(1),
     limit: z.number().int().min(1).max(100).default(50),
     season: z
