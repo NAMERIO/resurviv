@@ -5,6 +5,7 @@ import type {
     BuildingDef,
     ObstacleDef,
     StructureDef,
+    SurfaceData,
 } from "../../../shared/defs/mapObjectsTyping";
 import type { MapId } from "../../../shared/defs/types/misc";
 import { GameConfig, GasMode, TeamMode } from "../../../shared/gameConfig";
@@ -2404,8 +2405,8 @@ export class GameMap {
     }
 
     getGroundSurface(pos: Vec2, layer: number) {
-        const groundSurface = (type: string, river?: River) => {
-            return { type, river };
+        const groundSurface = (type: string, data: SurfaceData = {}, river?: River) => {
+            return { type, data, river };
         };
 
         const objs = this.game.grid.intersectPos(pos);
@@ -2422,7 +2423,7 @@ export class GameMap {
                 util.sameLayer(decal.layer, layer) &&
                 collider.intersectCircle(decal.collider!, pos, 0.0001)
             ) {
-                return groundSurface(decal.surface);
+                return groundSurface(decal.surface, decal.surfaceData);
             }
         }
 
@@ -2458,7 +2459,7 @@ export class GameMap {
         }
 
         if (surface) {
-            return groundSurface(surface.type);
+            return groundSurface(surface.type, surface.data);
         }
 
         // Check rivers
@@ -2473,7 +2474,7 @@ export class GameMap {
                 ) {
                     onRiverShore = true;
                     if (math.pointInsidePolygon(pos, river.waterPoly)) {
-                        return groundSurface("water", river);
+                        return groundSurface("water", {}, river);
                     }
                 }
             }
@@ -2490,6 +2491,11 @@ export class GameMap {
             return groundSurface("sand");
         }
         return groundSurface("water");
+    }
+
+    isOnLava(pos: Vec2, layer: number) {
+        const surface = this.getGroundSurface(pos, layer);
+        return surface.type === "water" && !surface.data.noLava;
     }
 
     // like getGroundSurface but optimized for water

@@ -34983,6 +34983,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         surface: {
             type: "water",
             data: {
+                noLava: true,
                 waterColor: 0x4eb2c4,
                 rippleColor: 0x9fe2ef,
             },

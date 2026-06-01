@@ -1,5 +1,5 @@
 import { MapObjectDefs } from "../../../../shared/defs/mapObjectDefs";
-import type { DecalDef } from "../../../../shared/defs/mapObjectsTyping";
+import type { DecalDef, SurfaceData } from "../../../../shared/defs/mapObjectsTyping";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
 import type { AABB, Circle } from "../../../../shared/utils/coldet";
 import { collider } from "../../../../shared/utils/collider";
@@ -64,6 +64,7 @@ export class Decal extends BaseGameObject {
     rot: number;
     collider!: Circle;
     surface?: string;
+    surfaceData?: SurfaceData;
     height: number;
     healthT = 1;
     dead = false;
@@ -102,6 +103,7 @@ export class Decal extends BaseGameObject {
             this.scale,
         ) as Circle;
         this.surface = def.surface?.type;
+        this.surfaceData = def.surface?.data;
 
         this.bounds = collider.toAabb(
             collider.transform(

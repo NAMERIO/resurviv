@@ -3178,11 +3178,11 @@ export class Player extends BaseGameObject {
 
         // Inferno mode: burn when walking on water (lava)
         {
-            const isOnWater = this.game.map.isOnWater(this.pos, this.layer);
             const isInferno = this.game.map.mapId === MapId.Inferno;
+            const isOnLava = isInferno && this.game.map.isOnLava(this.pos, this.layer);
             const hasPhoenix = this.hasPerk("phoenix");
 
-            if (isOnWater && isInferno) {
+            if (isOnLava) {
                 this.burnDuration = GameConfig.player.burnDuration;
             }
 
@@ -3218,7 +3218,7 @@ export class Player extends BaseGameObject {
             } else {
                 this.burnEffect = false;
             }
-            if (hasPhoenix && !this.burnEffect && !(isOnWater && isInferno)) {
+            if (hasPhoenix && !this.burnEffect && !isOnLava) {
                 this.phoenixPassiveTicker -= dt;
                 if (this.phoenixPassiveTicker <= 0) {
                     this.phoenixPassiveTicker = PerkProperties.phoenix.passiveTickRate;
