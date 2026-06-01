@@ -884,6 +884,7 @@ export class Game {
                 username: player.name,
                 playerId: player.matchDataId,
                 outfit: player.loadout.outfit,
+                melee: player.loadout.melee,
                 gameMode: isBattleRoyaleMapName(this.mapName)
                     ? GameModeStatus.BattleRoyale
                     : GameModeStatus.Deathmatch,

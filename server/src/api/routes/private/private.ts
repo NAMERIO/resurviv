@@ -59,6 +59,7 @@ import { getRedisClient } from "../../cache";
 import { leaderboardCache } from "../../cache/leaderboard";
 import { db } from "../../db";
 import {
+    auctionListingTable,
     clanMatchupHistoryTable,
     clanMemberStatsTable,
     clanMembersTable,
@@ -67,6 +68,7 @@ import {
     clanWarHistoryTable,
     itemsTable,
     type MatchDataTable,
+    marketListingTable,
     matchDataTable,
     userAuthIdentityTable,
     userPassTable,
@@ -112,31 +114,141 @@ function toCgpMilli(value: number) {
     return Math.round(value * ClanConstants.CgpScale);
 }
 
-async function updateEquippedOutfitStats(
+async function updateItemStatRecord(
+    tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+    {
+        userId,
+        itemType,
+        kills,
+        wins,
+    }: {
+        userId: string;
+        itemType: string;
+        kills: number;
+        wins: number;
+    },
+) {
+    if (kills <= 0 && wins <= 0) return;
+
+    const [item] = await tx
+        .select({ id: itemsTable.id })
+        .from(itemsTable)
+        .where(and(eq(itemsTable.userId, userId), eq(itemsTable.type, itemType)))
+        .orderBy(asc(itemsTable.timeAcquired), asc(itemsTable.id))
+        .limit(1);
+
+    if (item) {
+        await tx
+            .update(itemsTable)
+            .set({
+                kills: sql`${itemsTable.kills} + ${kills}`,
+                wins: sql`${itemsTable.wins} + ${wins}`,
+            })
+            .where(eq(itemsTable.id, item.id));
+        return;
+    }
+
+    const [listing] = await tx
+        .select({
+            id: marketListingTable.id,
+            itemId: marketListingTable.itemId,
+            buyerUserId: marketListingTable.buyerUserId,
+        })
+        .from(marketListingTable)
+        .where(
+            and(
+                eq(marketListingTable.sellerUserId, userId),
+                eq(marketListingTable.itemType, itemType),
+                inArray(marketListingTable.status, ["active", "sold"]),
+            ),
+        )
+        .orderBy(asc(marketListingTable.createdAt), asc(marketListingTable.id))
+        .limit(1);
+
+    if (listing) {
+        await tx
+            .update(marketListingTable)
+            .set({
+                itemKills: sql`${marketListingTable.itemKills} + ${kills}`,
+                itemWins: sql`${marketListingTable.itemWins} + ${wins}`,
+            })
+            .where(eq(marketListingTable.id, listing.id));
+
+        if (listing.buyerUserId) {
+            await tx
+                .update(itemsTable)
+                .set({
+                    kills: sql`${itemsTable.kills} + ${kills}`,
+                    wins: sql`${itemsTable.wins} + ${wins}`,
+                })
+                .where(eq(itemsTable.id, listing.itemId));
+        }
+        return;
+    }
+
+    const [auction] = await tx
+        .select({
+            id: auctionListingTable.id,
+            itemId: auctionListingTable.itemId,
+            highestBidUserId: auctionListingTable.highestBidUserId,
+        })
+        .from(auctionListingTable)
+        .where(
+            and(
+                eq(auctionListingTable.sellerUserId, userId),
+                eq(auctionListingTable.itemType, itemType),
+                inArray(auctionListingTable.status, ["active", "sold"]),
+            ),
+        )
+        .orderBy(asc(auctionListingTable.createdAt), asc(auctionListingTable.id))
+        .limit(1);
+
+    if (!auction) return;
+
+    await tx
+        .update(auctionListingTable)
+        .set({
+            itemKills: sql`${auctionListingTable.itemKills} + ${kills}`,
+            itemWins: sql`${auctionListingTable.itemWins} + ${wins}`,
+        })
+        .where(eq(auctionListingTable.id, auction.id));
+
+    if (auction.highestBidUserId) {
+        await tx
+            .update(itemsTable)
+            .set({
+                kills: sql`${itemsTable.kills} + ${kills}`,
+                wins: sql`${itemsTable.wins} + ${wins}`,
+            })
+            .where(eq(itemsTable.id, auction.itemId));
+    }
+}
+
+async function updateEquippedItemStats(
     tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
     matchData: SaveGameBody["matchData"],
 ) {
     for (const data of matchData) {
-        if (!data.userId || !data.outfit || data.outfit === "outfitBase") continue;
+        if (!data.userId) continue;
 
-        const [item] = await tx
-            .select({ id: itemsTable.id })
-            .from(itemsTable)
-            .where(
-                and(eq(itemsTable.userId, data.userId), eq(itemsTable.type, data.outfit)),
-            )
-            .orderBy(asc(itemsTable.timeAcquired), asc(itemsTable.id))
-            .limit(1);
+        const wins = data.rank === 1 ? 1 : 0;
+        if (data.outfit && data.outfit !== "outfitBase") {
+            await updateItemStatRecord(tx, {
+                userId: data.userId,
+                itemType: data.outfit,
+                kills: data.kills,
+                wins,
+            });
+        }
 
-        if (!item) continue;
-
-        await tx
-            .update(itemsTable)
-            .set({
-                kills: sql`${itemsTable.kills} + ${data.kills}`,
-                wins: sql`${itemsTable.wins} + ${data.rank === 1 ? 1 : 0}`,
-            })
-            .where(eq(itemsTable.id, item.id));
+        if (data.melee && data.melee !== "fists") {
+            await updateItemStatRecord(tx, {
+                userId: data.userId,
+                itemType: data.melee,
+                kills: Number(data.weaponKills?.[data.melee] ?? 0),
+                wins,
+            });
+        }
     }
 }
 
@@ -848,7 +960,7 @@ export const PrivateRouter = new Hono<Context>()
 
         await db.transaction(async (tx) => {
             await tx.insert(matchDataTable).values(matchData);
-            await updateEquippedOutfitStats(tx, matchData);
+            await updateEquippedItemStats(tx, matchData);
         });
         await logPlayerIPs(matchData);
 

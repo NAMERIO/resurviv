@@ -80,6 +80,7 @@ export interface SaveGameBody {
         ip: string;
         findGameIp: string;
         outfit?: string;
+        melee?: string;
     })[];
 }
 

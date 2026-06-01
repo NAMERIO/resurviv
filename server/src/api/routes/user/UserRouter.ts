@@ -127,6 +127,12 @@ const LOOT_BOX_AD_REQUIREMENTS: Record<string, number> = {
     loot_box_04: 5,
 };
 
+function getItemMakerName(
+    user: Pick<typeof usersTable.$inferSelect, "username" | "slug">,
+) {
+    return user.username || user.slug || "Unknown";
+}
+
 function getShopLootBoxes() {
     return Object.values(lootBoxes).map((box) => ({
         id: box.id,
@@ -1923,7 +1929,10 @@ UserRouter.post(
                     sellerUserId: user.id,
                     itemId,
                     itemType,
-                    itemMaker: ownedItem.maker,
+                    itemMaker:
+                        ownedItem.maker === "Unknown"
+                            ? getItemMakerName(user)
+                            : ownedItem.maker,
                     itemKills: ownedItem.kills,
                     itemWins: ownedItem.wins,
                     price,
@@ -2161,7 +2170,10 @@ UserRouter.post(
                     sellerUserId: user.id,
                     itemId,
                     itemType: ownedItem.type,
-                    itemMaker: ownedItem.maker,
+                    itemMaker:
+                        ownedItem.maker === "Unknown"
+                            ? getItemMakerName(user)
+                            : ownedItem.maker,
                     itemKills: ownedItem.kills,
                     itemWins: ownedItem.wins,
                     startPrice,
@@ -2346,6 +2358,7 @@ UserRouter.post(
                     offer.itemTypes.map((itemType) => ({
                         userId: user.id,
                         type: itemType,
+                        maker: getItemMakerName(user),
                         source: bundleSource,
                         timeAcquired: Date.now(),
                     })),
@@ -2469,6 +2482,7 @@ UserRouter.post("/open_loot_box", validateParams(zOpenLootBoxRequest), async (c)
                 userId: user.id,
                 type: reward.itemType,
                 source: box.source,
+                maker: getItemMakerName(user),
                 timeAcquired: Date.now(),
             });
 
