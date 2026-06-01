@@ -432,7 +432,6 @@ const commands = {
         description: "Sets a game mode in the API",
         optionValidator: zSetGameModeBody,
         isPrivateRoute: true,
-        ownerOnly: true,
         options: [
             {
                 name: "index",
