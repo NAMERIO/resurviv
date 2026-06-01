@@ -248,7 +248,7 @@ export class ShopMenu {
             "discord_join",
             "https://discord.gg/Tm2Rmp9aFR",
         );
-        for (const [index, selectorSuffix] of ["1", "2", "3"].entries()) {
+        for (const [index, selectorSuffix] of ["1", "2", "3", "4"].entries()) {
             $(`#btn-contains-crate-${selectorSuffix}`).on("click", (e) => {
                 e.preventDefault();
                 const lootBox = this.getOrderedLootBoxes()[index];
@@ -835,7 +835,7 @@ export class ShopMenu {
 
         if (lootBoxes.length === 0) {
             shopButton.addClass("market-refresh-disabled");
-            for (const selectorSuffix of ["1", "2", "3"]) {
+            for (const selectorSuffix of ["1", "2", "3", "4"]) {
                 $(`#open-crate-${selectorSuffix}`).addClass("disable");
                 $(`#crate-ad-progress-${selectorSuffix}`).hide().addClass("disable");
                 $(`#crate-price-${selectorSuffix}`).text("0");
@@ -848,7 +848,7 @@ export class ShopMenu {
 
         shopButton.removeClass("market-refresh-disabled");
         crateTitle.text(lootBoxes[0]!.name);
-        for (const [index, selectorSuffix] of ["1", "2", "3"].entries()) {
+        for (const [index, selectorSuffix] of ["1", "2", "3", "4"].entries()) {
             const lootBox = lootBoxes[index];
             if (!lootBox) {
                 $(`#open-crate-${selectorSuffix}`).addClass("disable");
@@ -1850,13 +1850,17 @@ export class ShopMenu {
         const odds = $("#modal-crate-odds");
         const items = $("#modal-crate-items");
         const bodyText = $("#modal-crate-contain .modal-body-text");
-        modalContent.removeClass("crate-theme-green crate-theme-blue crate-theme-red");
+        modalContent.removeClass(
+            "crate-theme-green crate-theme-blue crate-theme-red crate-theme-ad",
+        );
         modalContent.addClass(
-            lootBox.id === "loot_box_02"
-                ? "crate-theme-blue"
-                : lootBox.id === "loot_box_03"
-                  ? "crate-theme-red"
-                  : "crate-theme-green",
+            lootBox.id === "loot_box_04"
+                ? "crate-theme-ad"
+                : lootBox.id === "loot_box_02"
+                  ? "crate-theme-blue"
+                  : lootBox.id === "loot_box_03"
+                    ? "crate-theme-red"
+                    : "crate-theme-green",
         );
         $("#modal-crate-contain-title").text(lootBox.name);
         bodyText.text(`Open a ${lootBox.name} for a chance at classic Surviv cosmetics.`);
@@ -2061,7 +2065,7 @@ export class ShopMenu {
     }
 
     updateLootBoxAdTimers() {
-        for (const [index, selectorSuffix] of ["1", "2", "3"].entries()) {
+        for (const [index, selectorSuffix] of ["1", "2", "3", "4"].entries()) {
             const lootBox = this.getOrderedLootBoxes()[index];
             if (!lootBox) continue;
 
@@ -2215,7 +2219,16 @@ export class ShopMenu {
     }
 
     getOrderedLootBoxes() {
-        return [...(this.account.lootBoxes || [])].sort((a, b) => a.price - b.price);
+        const order = ["loot_box_01", "loot_box_02", "loot_box_03", "loot_box_04"];
+        return [...(this.account.lootBoxes || [])].sort((a, b) => {
+            const aIndex = order.indexOf(a.id);
+            const bIndex = order.indexOf(b.id);
+            return (
+                (aIndex === -1 ? Number.MAX_SAFE_INTEGER : aIndex) -
+                    (bIndex === -1 ? Number.MAX_SAFE_INTEGER : bIndex) ||
+                a.price - b.price
+            );
+        });
     }
 
     getPendingSellPrice() {

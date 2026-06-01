@@ -13895,7 +13895,7 @@ input [type="image"]:focus {
   top: 50%;
   left: 50%;
   width: 1120px;
-  padding: 34px 0 42px;
+  padding: 34px 0 48px;
   background: #141414;
   transform: translate(-50%, -50%);
 }
@@ -13925,13 +13925,19 @@ input [type="image"]:focus {
 }
 
 #crates-modal .crates-container {
-  display: flex;
-  justify-content: space-around;
+  display: grid;
+  grid-template-columns: repeat(3, 237px);
+  gap: 26px 82px;
+  justify-content: center;
   margin: 0 9%;
 }
 
 #crates-modal .crate-display {
   position: relative;
+}
+
+#crates-modal .ad-crate-display {
+  grid-column: 2;
 }
 
 #crates-modal .crate-img {
@@ -13963,6 +13969,10 @@ input [type="image"]:focus {
 
 #crates-modal .crate-img.red {
   background-image: url(../img/gui/loot-crate-03.svg);
+}
+
+#crates-modal .crate-img.ad {
+  background-image: url(../img/gui/loot-crate-04.svg);
 }
 
 #crates-modal .crate-btn {
@@ -13999,12 +14009,11 @@ input [type="image"]:focus {
 }
 
 #crates-modal .crate-ad-progress {
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 34px;
-  margin-top: 8px;
+  min-height: 38px;
   color: #d8f0dc;
   background: #314d35;
   border-bottom: 2px solid #1f3324;
@@ -14083,6 +14092,10 @@ input [type="image"]:focus {
 
 #modal-crate-contain > .modal-content.crate-theme-red > .modal-header {
   background: #ea333d;
+}
+
+#modal-crate-contain > .modal-content.crate-theme-ad > .modal-header {
+  background: #e0a12a;
 }
 
 #modal-crate-contain > .modal-content > .modal-body {
@@ -14171,6 +14184,10 @@ input [type="image"]:focus {
 
 #modal-crate-contain > .modal-content.crate-theme-red > .modal-footer {
   background: #ea333d;
+}
+
+#modal-crate-contain > .modal-content.crate-theme-ad > .modal-footer {
+  background: #e0a12a;
 }
 
 #modal-crate-contain > .modal-content > .modal-footer > .close-footer {

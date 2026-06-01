@@ -124,9 +124,7 @@ const REWARDED_AD_GP_REWARD_KEY_PREFIX = "rewarded_ad_gp";
 const LOOT_BOX_AD_REWARD_KEY_PREFIX = "loot_box_ad";
 const LOOT_BOX_AD_OPEN_REWARD_KEY_PREFIX = "loot_box_ad_open";
 const LOOT_BOX_AD_REQUIREMENTS: Record<string, number> = {
-    loot_box_01: 1,
-    loot_box_02: 3,
-    loot_box_03: 5,
+    loot_box_04: 5,
 };
 
 function getShopLootBoxes() {
@@ -2405,6 +2403,14 @@ UserRouter.post("/open_loot_box", validateParams(zOpenLootBoxRequest), async (c)
 
             if (!buyer) {
                 return { ok: false as const, error: "server_error" as const };
+            }
+
+            const adRequirement = getLootBoxAdRequirement(boxId);
+            if (adRequirement > 0 && payment !== "ads") {
+                return {
+                    ok: false as const,
+                    error: "ad_requirement_not_met" as const,
+                };
             }
 
             if (payment === "ads") {
