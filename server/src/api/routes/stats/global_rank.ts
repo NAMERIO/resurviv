@@ -11,9 +11,7 @@ const intervalFilter = {
     weekly: gte(matchDataTable.createdAt, sql`NOW() - INTERVAL '7 days'`),
 };
 
-const getGlobalRankQuery = (
-    interval: LeaderboardParams["interval"] = "alltime",
-) => {
+const getGlobalRankQuery = (interval: LeaderboardParams["interval"] = "alltime") => {
     const playerMatches = db.$with("global_rank_player_matches").as(
         db
             .select({
@@ -88,8 +86,7 @@ export const getGlobalRank = async (userId: string): Promise<number> => {
 export const getGlobalRankLeaderboard = async (
     interval: LeaderboardParams["interval"] = "alltime",
 ): Promise<LeaderboardResponse[]> => {
-    const { accountStats, playerMatches, rankedAccounts } =
-        getGlobalRankQuery(interval);
+    const { accountStats, playerMatches, rankedAccounts } = getGlobalRankQuery(interval);
     return await db
         .with(playerMatches, accountStats, rankedAccounts)
         .select({

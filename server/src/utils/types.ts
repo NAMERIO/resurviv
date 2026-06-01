@@ -37,6 +37,10 @@ export const zSetGameModeBody = z.object({
 
 export const zListGameModesBody = z.object({});
 
+export const zTopRankPlayersBody = z.object({
+    interval: z.enum(["daily", "weekly", "alltime"]).default("daily"),
+});
+
 export const zSetClientThemeBody = z.object({
     theme: z.string(),
 });

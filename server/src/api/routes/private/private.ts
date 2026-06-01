@@ -45,6 +45,7 @@ import {
     zSetClientThemeBody,
     zSetGameModeBody,
     zSetPauseClanStatsBody,
+    zTopRankPlayersBody,
     zUpdateRegionBody,
 } from "../../../utils/types";
 import type { Context } from "../..";
@@ -72,6 +73,7 @@ import {
     userQuestTable,
     usersTable,
 } from "../../db/schema";
+import { getGlobalRankLeaderboard } from "../stats/global_rank";
 import { MOCK_USER_ID } from "../user/auth/mock";
 import { passType, premiumPassUnlockType } from "../user/PassRouter";
 import { isBanned, logPlayerIPs, ModerationRouter } from "./ModerationRouter";
@@ -1177,6 +1179,17 @@ export const PrivateRouter = new Hono<Context>()
 
         return c.json({ ok: true, players }, 200);
     })
+    .post(
+        "/top_rank_players",
+        databaseEnabledMiddleware,
+        validateParams(zTopRankPlayersBody),
+        async (c) => {
+            const { interval } = c.req.valid("json");
+            const players = (await getGlobalRankLeaderboard(interval)).slice(0, 10);
+
+            return c.json({ ok: true, interval, players }, 200);
+        },
+    )
     .post(
         "/addcgp",
         databaseEnabledMiddleware,

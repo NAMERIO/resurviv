@@ -37,6 +37,7 @@ import { createCommand, createSlashCommand, genericExecute } from "./helpers";
 import { listGameModesHandler } from "./list-game-modes";
 import { searchIpHandler } from "./search-ip";
 import { searchPlayersHandler } from "./search-player";
+import { topRankPlayersHandler } from "./top-rank-players";
 
 /**
  * for generic commands that only makes an api call and return it's meessage
@@ -558,6 +559,7 @@ const commands = {
         | "blackjack"
         | "balance"
         | "gp_leaderboard"
+        | "top_rank_players"
         | "list_game_modes"
     >,
     ReturnType<typeof createCommand>
@@ -590,6 +592,7 @@ export const commandHandlers: CommandHandlers = (
         [Command.Blackjack]: blackjackHandler.execute,
         [Command.Balance]: balanceHandler.execute,
         [Command.GpLeaderboard]: gpLeaderboardHandler.execute,
+        [Command.TopRankPlayers]: topRankPlayersHandler.execute,
         [Command.ListGameModes]: listGameModesHandler.execute,
     } as CommandHandlers,
 );
@@ -603,5 +606,6 @@ export const commandsToRegister: SlashCommandOptionsOnlyBuilder[] = [
     blackjackHandler.command,
     balanceHandler.command,
     gpLeaderboardHandler.command,
+    topRankPlayersHandler.command,
     listGameModesHandler.command,
 ];

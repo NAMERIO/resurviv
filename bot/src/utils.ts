@@ -40,6 +40,7 @@ export const enum Command {
     SetKillCgp = "setkillcgp",
     SetWinCgp = "setwincgp",
     GpLeaderboard = "gp_leaderboard",
+    TopRankPlayers = "top_rank_players",
     CoinFlip = "coinflip",
     Blackjack = "blackjack",
     Balance = "balance",
