@@ -1,4 +1,19 @@
 /* Fuse Ad Debug Placeholders - Only for development */
+/* .ad-rail {
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 2px dashed rgba(255, 255, 255, 0.7);
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+}
+
+.ad-rail::before {
+  color: rgba(255, 255, 255, 0.85);
+  content: "AD";
+  font: bold 16px Arial, sans-serif;
+} */
+
 /* [data-fuse] {
   position: relative;
   background-color: rgba(255, 0, 0, 0.1);

@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>resurviv.io Legacy Players</title>
 <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,700" rel="stylesheet">
+<script>
+  if (location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+    const adsScript = document.createElement("script");
+    adsScript.async = true;
+    adsScript.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1712213211562891";
+    adsScript.crossOrigin = "anonymous";
+    document.head.appendChild(adsScript);
+  }
+</script>
 <style>
 html {
     min-height: 100%;
@@ -85,9 +94,76 @@ td a {
 td a:hover {
     text-decoration: underline;
 }
+.ad-rail {
+    height: 300px;
+    overflow: hidden;
+    position: fixed;
+    width: 160px;
+}
+.ad-rail-left {
+    bottom: auto;
+    left: 0;
+    top: 55%;
+    transform: translateY(-50%);
+}
+.ad-rail-right {
+    bottom: 75px;
+    height: 300px;
+    right: 0;
+    top: auto;
+}
+.ad-rail-left > .adsbygoogle {
+    height: 300px !important;
+}
+.ad-rail-right > .adsbygoogle {
+    height: 300px !important;
+}
+.local-ad-placeholder {
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.12);
+    border: 2px dashed rgba(255, 255, 255, 0.7);
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+}
+.local-ad-placeholder::before {
+    color: rgba(255, 255, 255, 0.85);
+    content: "AD";
+    font: bold 16px Arial, sans-serif;
+}
+@media (max-width: 1400px), (max-height: 600px) {
+    .ad-rail {
+        display: none;
+    }
+}
 </style>
 </head>
 <body>
+<div class="ad-rail ad-rail-left">
+  <ins class="adsbygoogle"
+       style="display:inline-block;width:160px;height:300px"
+       data-ad-client="ca-pub-1712213211562891"
+       data-ad-slot="7549696539"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+<div class="ad-rail ad-rail-right" style="height:300px;max-height:300px;overflow:hidden;">
+  <ins class="adsbygoogle"
+       style="display:inline-block;width:160px;height:300px"
+       data-ad-client="ca-pub-1712213211562891"
+       data-ad-slot="1591617255"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
+<script>
+  if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+    document.querySelectorAll(".ad-rail").forEach(function (rail) {
+      rail.classList.add("local-ad-placeholder");
+    });
+  }
+</script>
 <a class="back" href="/stats/">Back to leaderboards</a>
 <h1><span>resurviv.biz Legacy Players</span></h1>
 <h2>These top 100 ranked players are preserved as a permanent snapshot of resurviv.biz history.</h2>

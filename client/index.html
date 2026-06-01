@@ -31,26 +31,39 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,700" rel="stylesheet">
     <link href="css/app.css" rel="stylesheet">
     <link href="css/game.css" rel="stylesheet">
+    %VITE_DEBUG_CSS_LINK%
 
     <!-- AdSense script -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1712213211562891" crossorigin="anonymous"></script>
+    <script>
+      if (location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+        const adsScript = document.createElement("script");
+        adsScript.async = true;
+        adsScript.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1712213211562891";
+        adsScript.crossOrigin = "anonymous";
+        document.head.appendChild(adsScript);
+      }
+    </script>
   </head>
   <body>
     <!-- Side Rail Ads (skyscrapers) -->
     <div id="ad-rail-left" class="ad-rail hide-on-mobile">
       <ins class="adsbygoogle"
-           style="display:inline-block;width:160px;height:600px"
+           style="display:block;width:160px;height:100%"
            data-ad-client="ca-pub-1712213211562891"
-           data-ad-slot="7549696539"></ins>
+           data-ad-slot="7549696539"
+           data-ad-format="vertical"
+           data-full-width-responsive="false"></ins>
       <script>
         (adsbygoogle = window.adsbygoogle || []).push({});
       </script>
     </div>
     <div id="ad-rail-right" class="ad-rail hide-on-mobile">
       <ins class="adsbygoogle"
-           style="display:inline-block;width:160px;height:400px"
+           style="display:block;width:160px;height:100%"
            data-ad-client="ca-pub-1712213211562891"
-           data-ad-slot="1591617255"></ins>
+           data-ad-slot="1591617255"
+           data-ad-format="vertical"
+           data-full-width-responsive="false"></ins>
       <script>
         (adsbygoogle = window.adsbygoogle || []).push({});
       </script>
