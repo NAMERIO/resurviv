@@ -28,7 +28,7 @@
 #ad-rail-left {
   bottom: auto;
   left: 0;
-  top: 230px;
+  top: 210px;
 }
 
 #ad-rail-right {
@@ -77,7 +77,7 @@
   }
 
   #ad-rail-left {
-    top: 190px;
+    top: 170px;
   }
 
   #ad-rail-right {
