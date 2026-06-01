@@ -16278,7 +16278,7 @@ div.roulette {
 
 .side-quest-timer {
   margin-bottom: 4px;
-  margin-top: 0;
+  margin-top: 10;
 }
 
 #rewarded-ad-gp-section {
@@ -16287,37 +16287,36 @@ div.roulette {
   display: none;
   justify-content: center;
   margin-left: 0;
-  margin-top: 10px;
-  min-height: 58px;
-  padding: 8px;
+  margin-top: 8px;
+  min-height: 50px;
+  padding: 6px;
   width: 300px;
 }
 
 #rewarded-ad-gp-button {
   align-items: center;
-  background:
-    linear-gradient(180deg, rgba(57, 64, 34, 0.96), rgba(25, 31, 20, 0.96)),
-    #26311f;
-  border: 1px solid rgba(248, 218, 84, 0.35);
+  background: rgba(0, 0, 0, 0.28);
+  border: 0;
   border-radius: 5px;
+  box-sizing: border-box;
   box-shadow:
-    inset 0 1px rgba(255, 255, 255, 0.12),
-    inset 0 -3px rgba(0, 0, 0, 0.3);
+    inset 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 -2px rgba(0, 0, 0, 0.35);
   color: #fff;
   cursor: pointer;
   display: flex;
   font-family: "Roboto Condensed", Arial, sans-serif;
   font-weight: 700;
-  gap: 8px;
-  min-height: 44px;
-  padding: 6px 8px;
+  gap: 7px;
+  min-height: 38px;
+  padding: 5px 6px;
   text-align: left;
   text-shadow: 1px 1px 0 #000;
   width: 100%;
 }
 
 #rewarded-ad-gp-button:hover:not(:disabled) {
-  border-color: rgba(255, 225, 88, 0.7);
+  background: rgba(0, 0, 0, 0.4);
 }
 
 #rewarded-ad-gp-button.rewarded-ad-gp-disabled,
@@ -16328,22 +16327,22 @@ div.roulette {
 }
 
 .rewarded-ad-gp-play {
-  background: #83af50;
-  border: 2px solid #263a18;
+  background: #4a8f2d;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 5px;
   box-shadow: inset 0 -2px rgba(0, 0, 0, 0.28);
-  flex: 0 0 32px;
-  height: 28px;
+  flex: 0 0 28px;
+  height: 26px;
   position: relative;
-  width: 32px;
+  width: 28px;
 }
 
 .rewarded-ad-gp-play::after {
-  border-bottom: 7px solid transparent;
-  border-left: 11px solid #fff;
-  border-top: 7px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 10px solid #fff;
+  border-top: 6px solid transparent;
   content: "";
-  left: 12px;
+  left: 11px;
   position: absolute;
   top: 7px;
 }
@@ -16357,15 +16356,15 @@ div.roulette {
 
 #rewarded-ad-gp-title {
   color: #fff;
-  font-size: 15px;
-  line-height: 17px;
+  font-size: 14px;
+  line-height: 16px;
 }
 
 #rewarded-ad-gp-status {
   color: #f4db7c;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  line-height: 15px;
+  line-height: 14px;
   overflow: hidden;
   text-shadow: 1px 1px 0 #000;
   text-overflow: ellipsis;
@@ -16374,19 +16373,19 @@ div.roulette {
 
 .rewarded-ad-gp-payout {
   align-items: center;
-  background-color: #292501;
+  background-color: rgba(0, 0, 0, 0.32);
   background-image: url(../img/gui/currency-golde-potato.svg);
-  background-position: 7px center;
+  background-position: 6px center;
   background-repeat: no-repeat;
-  background-size: 18px;
+  background-size: 16px;
   border-radius: 5px;
   color: gold;
   display: flex;
-  flex: 0 0 52px;
-  font-size: 15px;
-  height: 30px;
+  flex: 0 0 48px;
+  font-size: 14px;
+  height: 26px;
   justify-content: flex-end;
-  padding-right: 7px;
+  padding-right: 6px;
 }
 
 #modal-premium-pass-confirm .modal-pass-price span {
