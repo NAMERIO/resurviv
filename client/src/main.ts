@@ -175,6 +175,7 @@ export class Application {
     errorMessage = "";
     quickPlayPendingModeIdx = -1;
     findGameAttempts = 0;
+    lobbyReturnAdCounter = 0;
     findGameTime = 0;
     pauseTime = 0;
     wasPlayingVideo = false;
@@ -825,7 +826,15 @@ export class Application {
                 console.error("Quitting", errMsg);
                 SDK.gamePlayStop();
                 if (!errMsg) {
-                    googleH5Ads.requestInterstitial("browse", "return-to-lobby");
+                    this.lobbyReturnAdCounter++;
+                    if (this.lobbyReturnAdCounter % 5 === 0) {
+                        const teamLobbyHistoryPath = this.getTeamLobbyHistoryPath();
+                        googleH5Ads.requestInterstitial("browse", "return-to-lobby", {
+                            adBreakDone: () => {
+                                this.restoreTeamLobbyHistoryPath(teamLobbyHistoryPath);
+                            },
+                        });
+                    }
                 }
             };
             this.game = new Game(
@@ -1012,6 +1021,29 @@ export class Application {
         this.errorMessage = errTxt;
         this.setDOMFromConfig();
         this.refreshUi();
+    }
+
+    isGoogleFullscreenAdHash(hash = window.location.hash) {
+        return hash === "#goog_fullscreen_ad";
+    }
+
+    getTeamLobbyHistoryPath() {
+        if (!(this.teamMenu.active && this.teamMenu.joined)) return "";
+        if (!this.teamMenu.roomData.roomUrl) return "";
+        return this.teamMenu.arena
+            ? `/?arena${this.teamMenu.roomData.roomUrl}`
+            : this.teamMenu.roomData.roomUrl;
+    }
+
+    restoreTeamLobbyHistoryPath(historyPath: string) {
+        if (!historyPath || !window.history) return;
+
+        const nextUrl = new URL(historyPath, window.location.href);
+        const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        const nextPath = `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`;
+        if (currentPath !== nextPath) {
+            window.history.replaceState("", "", historyPath);
+        }
     }
 
     // Config
@@ -3187,6 +3219,7 @@ window.addEventListener("orientationchange", () => {
     App.onResize();
 });
 window.addEventListener("hashchange", () => {
+    if (App.isGoogleFullscreenAdHash()) return;
     App.tryJoinTeam(false);
 });
 window.addEventListener("beforeunload", (e) => {
