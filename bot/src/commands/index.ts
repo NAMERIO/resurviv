@@ -559,7 +559,7 @@ const commands = {
         | "blackjack"
         | "balance"
         | "gp_leaderboard"
-        | "top_rank_players"
+        | "rank_leadrboard"
         | "list_game_modes"
     >,
     ReturnType<typeof createCommand>

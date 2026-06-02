@@ -24,30 +24,64 @@ const intervalLabels: Record<RankInterval, string> = {
     alltime: "All Time",
 };
 
+const rankLabels = ["#1", "#2", "#3"] as const;
+
 function displayAccountName(player: { username: string; slug: string }) {
     return escapeMarkdown(player.username || player.slug);
 }
 
+function formatRank(value: number) {
+    return value.toLocaleString("en-US");
+}
+
+function getRankLabel(index: number) {
+    return rankLabels[index] ?? `#${index + 1}`;
+}
+
 function buildTopRankPlayersEmbed(result: TopRankPlayersResponse) {
-    return new EmbedBuilder()
-        .setTitle(`Top 10 Ranked Players - ${intervalLabels[result.interval]}`)
-        .setColor(0x5fb3ff)
+    const leader = result.players[0];
+    const otherPlayers = result.players.slice(1);
+    const totalPlayers = result.players.length;
+
+    const embed = new EmbedBuilder()
+        .setTitle("Rank Leaderboard")
+        .setColor(0x2f80ed)
         .setDescription(
-            result.players
-                .map(
-                    (player, index) =>
-                        `**#${index + 1}** ${displayAccountName(player)} - rank \`#${player.val}\``,
-                )
-                .join("\n"),
+            [
+                `**${intervalLabels[result.interval]} Top ${totalPlayers}**`,
+                "",
+                `**#1  ${displayAccountName(leader)}**`,
+                `Global rank: \`#${formatRank(leader.val)}\``,
+            ].join("\n"),
         )
-        .setFooter({ text: "Sorted by global rank score" })
+        .setFooter({ text: "Ranks are sorted by global rank score" })
+        .setTimestamp();
+
+    if (otherPlayers.length) {
+        embed.addFields(
+            otherPlayers.map((player, index) => ({
+                name: `${getRankLabel(index + 1)}  ${displayAccountName(player)}`,
+                value: `Global rank: \`#${formatRank(player.val)}\``,
+                inline: true,
+            })),
+        );
+    }
+
+    return embed;
+}
+
+function buildEmptyRankEmbed(interval: RankInterval) {
+    return new EmbedBuilder()
+        .setTitle("Rank Leaderboard")
+        .setColor(0x2f80ed)
+        .setDescription(`No ranked player data found for ${intervalLabels[interval]}.`)
         .setTimestamp();
 }
 
 export const topRankPlayersHandler = {
     command: new SlashCommandBuilder()
         .setName(Command.TopRankPlayers)
-        .setDescription("Show the top 10 ranked players")
+        .setDescription("Show the top ranked players")
         .addStringOption((option) =>
             option
                 .setName("time")
@@ -64,7 +98,7 @@ export const topRankPlayersHandler = {
         await interaction.deferReply();
 
         const interval =
-            (interaction.options.getString("time") as RankInterval | null) ?? "daily";
+            (interaction.options.getString("time") as RankInterval | null) ?? "alltime";
 
         try {
             const res = await honoClient.top_rank_players.$post({
@@ -73,9 +107,9 @@ export const topRankPlayersHandler = {
             const result = (await res.json()) as TopRankPlayersResponse;
 
             if (!result.players.length) {
-                await interaction.editReply(
-                    `No ranked player data found for ${intervalLabels[interval]}.`,
-                );
+                await interaction.editReply({
+                    embeds: [buildEmptyRankEmbed(interval)],
+                });
                 return;
             }
 
