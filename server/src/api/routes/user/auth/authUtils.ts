@@ -86,6 +86,13 @@ export function deleteSessionTokenCookie(c: Context) {
 
 export type AuthProvider = "discord" | "google";
 
+export type UserAuthState = {
+    identities: Array<typeof userAuthIdentityTable.$inferSelect>;
+    linked: boolean;
+    linkedDiscord: boolean;
+    linkedGoogle: boolean;
+};
+
 async function findLegacyIdentityOwner(provider: AuthProvider, authId: string) {
     const user = await db.query.usersTable.findFirst({
         where: and(
@@ -168,8 +175,11 @@ async function findIdentityOwner(provider: AuthProvider, authId: string) {
 }
 
 export async function ensureUserAuthIdentities(
-    user: Pick<UsersTableSelect, "id" | "authId" | "linkedDiscord" | "linkedGoogle">,
-) {
+    user: Pick<
+        UsersTableSelect,
+        "id" | "authId" | "linked" | "linkedDiscord" | "linkedGoogle"
+    >,
+): Promise<UserAuthState> {
     let identities = await db
         .select()
         .from(userAuthIdentityTable)
@@ -192,16 +202,36 @@ export async function ensureUserAuthIdentities(
             ? missingProviders[0]
             : undefined;
 
-    if (!providerToRepair) return identities;
+    if (providerToRepair) {
+        await findLegacyIdentityOwner(providerToRepair, user.authId);
 
-    await findLegacyIdentityOwner(providerToRepair, user.authId);
+        identities = await db
+            .select()
+            .from(userAuthIdentityTable)
+            .where(eq(userAuthIdentityTable.userId, user.id));
+    }
 
-    identities = await db
-        .select()
-        .from(userAuthIdentityTable)
-        .where(eq(userAuthIdentityTable.userId, user.id));
+    const hasIdentityRows = identities.length > 0;
+    const linkedDiscord = hasIdentityRows
+        ? identities.some((identity) => identity.provider === "discord")
+        : user.linkedDiscord;
+    const linkedGoogle = hasIdentityRows
+        ? identities.some((identity) => identity.provider === "google")
+        : user.linkedGoogle;
+    const linked = linkedDiscord || linkedGoogle;
 
-    return identities;
+    if (
+        user.linked !== linked ||
+        user.linkedDiscord !== linkedDiscord ||
+        user.linkedGoogle !== linkedGoogle
+    ) {
+        await db
+            .update(usersTable)
+            .set({ linked, linkedDiscord, linkedGoogle })
+            .where(eq(usersTable.id, user.id));
+    }
+
+    return { identities, linked, linkedDiscord, linkedGoogle };
 }
 
 export async function handleAuthUser(c: Context, provider: AuthProvider, authId: string) {

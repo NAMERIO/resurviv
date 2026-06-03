@@ -807,9 +807,6 @@ UserRouter.post("/profile", async (c) => {
     const {
         loadout,
         slug,
-        linked,
-        linkedDiscord,
-        linkedGoogle,
         username,
         usernameSet,
         lastUsernameChangeTime,
@@ -828,6 +825,7 @@ UserRouter.post("/profile", async (c) => {
     }
 
     const timeUntilNextChange = getTimeUntilNextUsernameChange(lastUsernameChangeTime);
+    const authState = await ensureUserAuthIdentities(user);
     const claimedThanksReward = await tryClaimAprilThanksReward(c, user.id);
     const gpGifts = await claimGpGifts(user.id);
     const skinGifts = await claimSkinGifts(user.id);
@@ -839,9 +837,9 @@ UserRouter.post("/profile", async (c) => {
             success: true,
             profile: {
                 slug,
-                linked,
-                linkedDiscord,
-                linkedGoogle,
+                linked: authState.linked,
+                linkedDiscord: authState.linkedDiscord,
+                linkedGoogle: authState.linkedGoogle,
                 username,
                 usernameSet,
                 usernameChangeTime: timeUntilNextChange,
@@ -1459,13 +1457,13 @@ UserRouter.post("/logout", async (c) => {
 UserRouter.post("/unlink_auth", validateParams(zUnlinkAuthRequest), async (c) => {
     const user = c.get("user")!;
     const { provider } = c.req.valid("json");
-    const identities = await ensureUserAuthIdentities(user);
+    const authState = await ensureUserAuthIdentities(user);
 
-    if (!identities.some((identity) => identity.provider === provider)) {
+    if (!authState.identities.some((identity) => identity.provider === provider)) {
         return c.json({ success: false, error: "not_linked" } as const, 200);
     }
 
-    if (identities.length <= 1) {
+    if (authState.identities.length <= 1) {
         return c.json({ success: false, error: "last_login_method" } as const, 200);
     }
 
