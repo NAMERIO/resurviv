@@ -234,7 +234,12 @@ export async function ensureUserAuthIdentities(
     return { identities, linked, linkedDiscord, linkedGoogle };
 }
 
-export async function handleAuthUser(c: Context, provider: AuthProvider, authId: string) {
+export async function handleAuthUser(
+    c: Context,
+    provider: AuthProvider,
+    authId: string,
+    options?: { linkAccount?: boolean },
+) {
     const existingIdentity = await findIdentityOwner(provider, authId);
     const sessionToken = getCookie(c, "session");
     const currentUser = sessionToken
@@ -245,6 +250,10 @@ export async function handleAuthUser(c: Context, provider: AuthProvider, authId:
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
         domain: cookieDomain,
     });
+
+    if (options?.linkAccount && !currentUser) {
+        return { error: "link_login_required" };
+    }
 
     if (currentUser) {
         await ensureUserAuthIdentities(currentUser);

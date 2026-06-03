@@ -97,8 +97,9 @@ function createLoginOptions(
         }
 
         addLoginOption(provider, () => {
-            window.location.href = api.resolveUrl(`/api/auth/${provider}`);
-        });
+            const linkQuery = linkAccount ? "?link=1" : "";
+            window.location.href = api.resolveUrl(`/api/auth/${provider}${linkQuery}`);
+        }, linkAccount ? `Link ${providerName}` : undefined);
     };
 
     if (proxy.loginSupported("google")) {
@@ -410,6 +411,8 @@ export class ProfileUi {
                 "Failed linking Twitch account.<br/>Account already in use!",
             discord_account_in_use:
                 "This Discord account is connected to another user account. Delete that account first to link it here.",
+            link_login_required:
+                "You need to stay logged in while linking another login method. Log in again and try linking from Account Settings.",
             last_login_method:
                 "You cannot remove your only login method. Link another account first.",
             not_linked: "That login method is not linked to this account.",

@@ -1,6 +1,6 @@
 import { Discord, generateCodeVerifier, generateState } from "arctic";
 import { Hono } from "hono";
-import { getCookie, setCookie } from "hono/cookie";
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { Config } from "../../../../config";
 import {
     cookieDomain,
@@ -17,6 +17,7 @@ export const discord = new Discord(
 
 const stateCookieName = "discord_oauth_state";
 const codeVerifierCookieName = "discord_code_verifier";
+const linkAccountCookieName = "discord_oauth_link_account";
 
 export const DiscordRouter = new Hono();
 
@@ -30,6 +31,7 @@ DiscordRouter.use(async (c, next) => {
 DiscordRouter.get("/", (c) => {
     const state = generateState();
     const codeVerifier = generateCodeVerifier();
+    const linkAccount = c.req.query("link") === "1";
 
     const url = discord.createAuthorizationURL(state, codeVerifier, [
         "identify",
@@ -54,6 +56,22 @@ DiscordRouter.get("/", (c) => {
         domain: cookieDomain,
     });
 
+    if (linkAccount) {
+        setCookie(c, linkAccountCookieName, "1", {
+            secure: process.env.NODE_ENV === "production",
+            path: "/",
+            httpOnly: true,
+            maxAge: 60 * 10,
+            sameSite: "Lax",
+            domain: cookieDomain,
+        });
+    } else {
+        deleteCookie(c, linkAccountCookieName, {
+            path: "/",
+            domain: cookieDomain,
+        });
+    }
+
     url.searchParams.append("prompt", "none");
     return c.redirect(url);
 });
@@ -63,6 +81,11 @@ DiscordRouter.get("/callback", async (c) => {
     const state = c.req.query("state")?.toString() ?? null;
     const storedState = getCookie(c)[stateCookieName] ?? null;
     const storedCodeVerifier = getCookie(c)[codeVerifierCookieName] ?? null;
+    const linkAccount = getCookie(c)[linkAccountCookieName] === "1";
+    deleteCookie(c, linkAccountCookieName, {
+        path: "/",
+        domain: cookieDomain,
+    });
 
     if (!code || !state || !storedCodeVerifier || !storedState || state !== storedState) {
         return c.json({}, 400);
@@ -85,7 +108,7 @@ DiscordRouter.get("/callback", async (c) => {
         return c.json({ error: "verified_email_required" }, 400);
     }
 
-    const result = await handleAuthUser(c, "discord", resData.id);
+    const result = await handleAuthUser(c, "discord", resData.id, { linkAccount });
 
     return c.redirect(getOAuthRedirect(result.error));
 });

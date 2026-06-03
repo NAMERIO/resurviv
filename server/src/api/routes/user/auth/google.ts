@@ -1,6 +1,6 @@
 import { Google, generateCodeVerifier, generateState } from "arctic";
 import { Hono } from "hono";
-import { getCookie, setCookie } from "hono/cookie";
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { Config } from "../../../../config";
 import {
     cookieDomain,
@@ -17,6 +17,7 @@ const google = new Google(
 
 const stateCookieName = "google_oauth_state";
 const codeVerifierCookieName = "google_code_verifier";
+const linkAccountCookieName = "google_oauth_link_account";
 
 export const GoogleRouter = new Hono();
 
@@ -30,6 +31,7 @@ GoogleRouter.use(async (c, next) => {
 GoogleRouter.get("/", (c) => {
     const state = generateState();
     const codeVerifier = generateCodeVerifier();
+    const linkAccount = c.req.query("link") === "1";
 
     const url = google.createAuthorizationURL(state, codeVerifier, ["openid", "email"]);
 
@@ -51,6 +53,22 @@ GoogleRouter.get("/", (c) => {
         domain: cookieDomain,
     });
 
+    if (linkAccount) {
+        setCookie(c, linkAccountCookieName, "1", {
+            secure: process.env.NODE_ENV === "production",
+            path: "/",
+            httpOnly: true,
+            maxAge: 60 * 10,
+            sameSite: "Lax",
+            domain: cookieDomain,
+        });
+    } else {
+        deleteCookie(c, linkAccountCookieName, {
+            path: "/",
+            domain: cookieDomain,
+        });
+    }
+
     return c.redirect(url);
 });
 
@@ -60,6 +78,11 @@ GoogleRouter.get("/callback", async (c) => {
 
     const storedState = getCookie(c)[stateCookieName] ?? null;
     const storedCodeVerifier = getCookie(c)[codeVerifierCookieName];
+    const linkAccount = getCookie(c)[linkAccountCookieName] === "1";
+    deleteCookie(c, linkAccountCookieName, {
+        path: "/",
+        domain: cookieDomain,
+    });
 
     if (!code || !state || !storedCodeVerifier || !storedState || state !== storedState) {
         return c.json({}, 400);
@@ -81,7 +104,7 @@ GoogleRouter.get("/callback", async (c) => {
         return c.json({ error: "verified_email_required" }, 400);
     }
 
-    const result = await handleAuthUser(c, "google", resData.sub);
+    const result = await handleAuthUser(c, "google", resData.sub, { linkAccount });
 
     return c.redirect(getOAuthRedirect(result.error));
 });
