@@ -832,13 +832,11 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
             path: "audio/guns/bugle_01.mp3",
             volume: 1.5,
             maxInstances: 3,
-            preload: false,
         },
         bugle_02: {
             path: "audio/guns/bugle_02.mp3",
             volume: 1.5,
             maxInstances: 3,
-            preload: false,
         },
         bugle_03: {
             path: "audio/guns/bugle_03.mp3",

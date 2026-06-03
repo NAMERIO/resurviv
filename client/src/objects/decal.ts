@@ -37,15 +37,24 @@ class Decal implements AbstractObject {
     scale!: number;
     layer!: number;
     goreKills!: number;
+    dead = false;
+    isSkin = false;
+    skinPlayerId = 0;
+    isPropDisguise = false;
     collider!: Collider;
     surface!: DecalDef["surface"] | null;
 
     m_init() {
         this.isNew = false;
         this.goreT = 0;
+        this.dead = false;
+        this.isSkin = false;
+        this.skinPlayerId = 0;
+        this.isPropDisguise = false;
     }
 
     m_free() {
+        this.dead = true;
         if (this.decalRender) {
             this.decalRender.free();
             this.decalRender = null;
@@ -58,24 +67,22 @@ class Decal implements AbstractObject {
         isNew: boolean,
         ctx: Ctx,
     ) {
+        this.pos = v2.copy(data.pos);
+        this.rot = math.oriToRad(data.ori);
+        this.scale = data.scale;
+
         if (fullUpdate) {
             const def = MapObjectDefs[data.type] as DecalDef;
 
             // Copy data
             this.type = data.type;
-            this.pos = v2.copy(data.pos);
-            this.rot = math.oriToRad(data.ori);
-            this.scale = data.scale;
             this.layer = data.layer;
             this.goreKills = data.goreKills;
-            this.collider = collider.transform(
-                def.collision,
-                this.pos,
-                this.rot,
-                this.scale,
-            );
             this.surface = def.surface ? util.cloneDeep(def.surface) : null;
             this.hasGore = def.gore !== undefined;
+            this.isSkin = !!data.isSkin;
+            this.skinPlayerId = data.skinPlayerId ?? 0;
+            this.isPropDisguise = !!data.isPropDisguise;
 
             // Setup render
             // The separate DecalRender object lets decals fade out
@@ -85,6 +92,15 @@ class Decal implements AbstractObject {
                 this.decalRender = ctx.decalBarn.allocDecalRender();
                 this.decalRender.init(this, ctx.map);
             }
+        }
+
+        const def = MapObjectDefs[this.type] as DecalDef;
+        this.collider = collider.transform(def.collision, this.pos, this.rot, this.scale);
+        if (this.decalRender) {
+            this.decalRender.pos = v2.copy(this.pos);
+            this.decalRender.rot = this.rot;
+            this.decalRender.scale = this.scale;
+            this.decalRender.layer = this.layer;
         }
     }
 

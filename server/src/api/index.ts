@@ -90,9 +90,7 @@ app.get("/api/events", authMiddleware, (c) => {
     const stream = new ReadableStream({
         start(controller) {
             const send = (event: string, data = "") => {
-                controller.enqueue(
-                    encoder.encode(`event: ${event}\ndata: ${data}\n\n`),
-                );
+                controller.enqueue(encoder.encode(`event: ${event}\ndata: ${data}\n\n`));
             };
 
             send("connected");

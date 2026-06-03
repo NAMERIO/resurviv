@@ -2,7 +2,7 @@ import * as PIXI from "pixi.js-legacy";
 import type { ObjectData, ObjectType } from "../../../shared/net/objectSerializeFns";
 import { collider } from "../../../shared/utils/collider";
 import { util } from "../../../shared/utils/util";
-import { v2 } from "../../../shared/utils/v2";
+import { type Vec2, v2 } from "../../../shared/utils/v2";
 import type { Camera } from "../camera";
 import { device } from "../device";
 import type { Ctx } from "../game";
@@ -10,6 +10,8 @@ import type { Map } from "../map";
 import type { Renderer } from "../renderer";
 import { Pool } from "./objectPool";
 import type { AbstractObject, Player, PlayerBarn } from "./player";
+
+export const amongUsDeadBodyReportRad = 3.25;
 
 function createDeadBodyText() {
     const nameStyle: Partial<PIXI.TextStyle> = {
@@ -32,7 +34,7 @@ function createDeadBodyText() {
     return nameText;
 }
 
-class DeadBody implements AbstractObject {
+export class DeadBody implements AbstractObject {
     __id!: number;
     __type!: ObjectType.DeadBody;
     active = false;
@@ -133,5 +135,25 @@ export class DeadBodyBarn {
             }
         }
         return null;
+    }
+
+    getReportableDeadBody(pos: Vec2, rad: number, layer: number) {
+        const deadBodies = this.deadBodyPool.m_getPool();
+        let closestBody: DeadBody | null = null;
+        let closestDistSq = Number.MAX_VALUE;
+        const reportRad = rad + amongUsDeadBodyReportRad;
+
+        for (let i = 0; i < deadBodies.length; i++) {
+            const deadBody = deadBodies[i];
+            if (!deadBody.active || !util.sameLayer(deadBody.layer, layer)) continue;
+
+            const distSq = v2.lengthSqr(v2.sub(pos, deadBody.pos));
+            if (distSq <= reportRad * reportRad && distSq < closestDistSq) {
+                closestBody = deadBody;
+                closestDistSq = distSq;
+            }
+        }
+
+        return closestBody;
     }
 }

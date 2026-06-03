@@ -38,13 +38,19 @@
 <div class='container mt-3'>
   <div class="row">
     <div class='col-lg-2 col-3 pr-lg-3 pr-1'>
+      <select id="leaderboard-category" class="leaderboard-opt custom-select">
+        <option value="matches">Matches</option>
+        <option value="rank">Rank</option>
+      </select>
+    </div>
+    <div class='leaderboard-filter col-lg-2 col-3 pr-lg-3 pr-1'>
       <select id="leaderboard-team-mode" class="leaderboard-opt custom-select">
         <option value="solo" data-l10n='stats-solo'>Solo</option>
         <option value="duo" data-l10n='stats-duo'>Duo</option>
         <option value="squad" data-l10n='stats-squad'>Squad</option>
       </select>
     </div>
-    <div class='col-lg-2 col-3 pl-lg-0 pr-lg-3 pl-0 pr-1'>
+    <div class='leaderboard-filter col-lg-2 col-3 pl-lg-0 pr-lg-3 pl-0 pr-1'>
       <select id="leaderboard-type" class="leaderboard-opt custom-select">
         <option value="most_kills" data-l10n='stats-most-kills'>Most kills</option>
         <option value="most_damage_dealt" data-l10n='stats-most-damage'>Most damage</option>
@@ -53,20 +59,20 @@
         <option value="wins" data-l10n='stats-total-wins'>Total wins</option>
       </select>
     </div>
-    <div class='col-lg-2 col-3 pl-lg-0 pr-lg-3 pl-0 pr-1'>
+    <div class='leaderboard-filter col-lg-2 col-3 pl-lg-0 pr-lg-3 pl-0 pr-1'>
       <select id="leaderboard-game-mode" class="leaderboard-opt custom-select">
         <option value="deathmatch">Deathmatch</option>
         <option value="battleroyale">Battle Royale</option>
       </select>
     </div>
-    <div class='col-lg-2 col-3 pl-lg-0 pr-lg-3 pl-0 pr-1'>
+    <div class='leaderboard-filter col-lg-2 col-3 pl-lg-0 pr-lg-3 pl-0 pr-1'>
       <select id="leaderboard-time" class="leaderboard-opt custom-select">
         <option value="daily" data-l10n='stats-today'>Today</option>
         <option value="weekly" data-l10n='stats-this-week'>This week</option>
         <option value="alltime" data-l10n='stats-all-time'>All time</option>
       </select>
     </div>
-    <div class='col-lg-2 col-3 pl-0'>
+    <div class='leaderboard-filter col-lg-2 col-3 pl-0'>
       <select id="leaderboard-map-id" class="leaderboard-opt custom-select">
         <% for (var i = 0; i < env.gameModes.length; i++) { %>
           <option value="<%= env.gameModes[i].mapId %>"><%= env.gameModes[i].desc.name%></option>

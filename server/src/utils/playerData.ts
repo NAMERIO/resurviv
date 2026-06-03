@@ -1,4 +1,5 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
+import { SideQuestSlotIndexes } from "../../../shared/defs/gameObjects/sideQuestDefs";
 import { db } from "../api/db";
 import {
     clanMembersTable,
@@ -12,12 +13,13 @@ import type { FindGamePrivateBody } from "./types";
 export async function getFindGamePlayerData(
     players: Pick<
         FindGamePrivateBody["playerData"][number],
-        "token" | "userId" | "ip" | "roomId" | "spectator"
+        "token" | "userId" | "ip" | "roomId" | "spectator" | "arenaTeam"
     >[],
 ): Promise<FindGamePrivateBody["playerData"]> {
     const userIds = [
         ...new Set(players.map((p) => p.userId).filter((id) => id !== null)),
     ];
+    const activeQuestSlots = [0, 1, ...SideQuestSlotIndexes];
 
     const accountData =
         userIds.length > 0
@@ -37,7 +39,10 @@ export async function getFindGamePlayerData(
                           .from(usersTable)
                           .leftJoin(
                               userQuestTable,
-                              and(eq(userQuestTable.userId, usersTable.id)),
+                              and(
+                                  eq(userQuestTable.userId, usersTable.id),
+                                  inArray(userQuestTable.idx, activeQuestSlots),
+                              ),
                           )
                           .leftJoin(
                               clanMembersTable,
@@ -53,9 +58,10 @@ export async function getFindGamePlayerData(
               )
             : {};
 
-    return players.map(({ token, userId, ip, roomId, spectator }) => ({
+    return players.map(({ token, userId, ip, roomId, spectator, arenaTeam }) => ({
         roomId,
         spectator,
+        arenaTeam,
         token,
         userId,
         ip,

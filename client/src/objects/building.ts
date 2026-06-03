@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js-legacy";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import type { BuildingDef } from "../../../shared/defs/mapObjectsTyping";
-import type { FloorImage } from "../../../shared/defs/types/building";
+import type { FloorImage, SurfaceData } from "../../../shared/defs/types/building";
 import type { ObjectData, ObjectType } from "../../../shared/net/objectSerializeFns";
 import type { Collider } from "../../../shared/utils/coldet";
 import { collider } from "../../../shared/utils/collider";
@@ -109,7 +109,7 @@ export class Building implements AbstractObject {
 
     surfaces!: Array<{
         type: string;
-        data: Record<string, unknown>;
+        data: SurfaceData;
         colliders: Collider[];
     }>;
 

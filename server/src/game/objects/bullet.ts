@@ -32,6 +32,7 @@ interface BulletCollision {
     dist: number;
     player?: Player;
     layer?: number;
+    propSkin?: boolean;
 }
 
 export interface BulletParams {
@@ -64,6 +65,7 @@ export interface BulletParams {
     hasModifier?: boolean;
     speedMult?: number;
     distanceMult?: number;
+    soundTargetArenaTeam?: "A" | "B";
 }
 
 export class BulletBarn {
@@ -169,6 +171,7 @@ export class Bullet {
     damageSelf!: boolean;
     damage!: number;
     damageMult!: number;
+    soundTargetArenaTeam?: "A" | "B";
     hasModifier!: boolean;
     speedMult!: number;
     distanceMult!: number;
@@ -269,6 +272,7 @@ export class Bullet {
         this.endPos = v2.add(params.pos, v2.mul(this.dir, this.distance));
         this.clientEndPos = v2.copy(this.endPos);
         this.damage = bulletDef.damage * this.damageMult;
+        this.soundTargetArenaTeam = params.soundTargetArenaTeam;
         this.skipCollision = !!bulletDef.skipCollision;
         this.isShrapnel = bulletDef.shrapnel;
 
@@ -436,6 +440,29 @@ export class Bullet {
 
                 const res = collider.intersectSegment(obj.collider, posOld, this.pos);
                 if (res) {
+                    if (obj.isPropDisguise && obj.skinPlayerId) {
+                        const skinPlayer = this.bulletManager.game.objectRegister.getById(
+                            obj.skinPlayerId,
+                        );
+                        if (
+                            skinPlayer?.__type === ObjectType.Player &&
+                            !skinPlayer.dead &&
+                            (skinPlayer.__id !== this.playerId || this.damageSelf)
+                        ) {
+                            collisions.push({
+                                type: "player",
+                                player: skinPlayer,
+                                point: res.point,
+                                normal: res.normal,
+                                layer: skinPlayer.layer,
+                                collidable: true,
+                                dist: v2.lengthSqr(v2.sub(res.point, this.startPos)),
+                                propSkin: true,
+                            });
+                            continue;
+                        }
+                    }
+
                     collisions.push({
                         type: "obstacle",
                         obj: obj,
@@ -467,9 +494,10 @@ export class Bullet {
                     obj.giveHaste(GameConfig.HasteType.Windwalk, 3);
                 }
 
+                const propDisguise = obj.propDisguise;
                 let panCollision = null;
                 let lasrCollision: { point: Vec2; normal: Vec2 } | null = null;
-                if (obj.hasActivePan()) {
+                if (!propDisguise && obj.hasActivePan()) {
                     const p = obj;
                     const panSeg = p.getPanSegment()!;
                     const oldSegment = math.transformSegment(
@@ -512,6 +540,7 @@ export class Bullet {
                     }
                 }
                 if (
+                    !propDisguise &&
                     obj.activeWeapon?.startsWith("lasr_swrd") &&
                     obj.animType !== GameConfig.Anim.Melee
                 ) {
@@ -529,12 +558,21 @@ export class Bullet {
                         };
                     }
                 }
-                const collision = coldet.intersectSegmentCircle(
-                    posOld,
-                    this.pos,
-                    obj.pos,
-                    obj.rad,
-                );
+                const collision =
+                    propDisguise && propDisguise.height >= GameConfig.bullet.height
+                        ? collider.intersectSegment(
+                              propDisguise.collider,
+                              posOld,
+                              this.pos,
+                          )
+                        : !propDisguise
+                          ? coldet.intersectSegmentCircle(
+                                posOld,
+                                this.pos,
+                                obj.pos,
+                                obj.rad,
+                            )
+                          : null;
                 if (
                     collision &&
                     (!panCollision ||
@@ -549,6 +587,7 @@ export class Bullet {
                         layer: obj.layer,
                         collidable: true,
                         dist: v2.lengthSqr(v2.sub(collision.point, this.startPos)),
+                        propSkin: !!propDisguise,
                     });
                     if (obj.hasPerk("steelskin")) {
                         const point = v2.add(
@@ -619,6 +658,7 @@ export class Bullet {
 
             if (col.type == "obstacle") {
                 const mapDef = MapObjectDefs[col.obstacleType!] as ObstacleDef;
+                this.player?.punishHideAndSeekWrongPropHit();
 
                 const def = GameObjectDefs[this.bulletType] as BulletDef;
                 const reflectOnHit =
@@ -693,6 +733,12 @@ export class Bullet {
                     }
                 }
                 hit = col.collidable;
+                if (hit && col.propSkin) {
+                    this.clipDistance = true;
+                    this.distance = v2.length(v2.sub(col.point, this.startPos));
+                    this.maxDistance = this.distance;
+                    this.clientEndPos = col.point;
+                }
             } else if (col.type == "pan") {
                 hit = col.collidable;
                 this.reflect(col.point, col.normal, col.obj?.__id ?? 0);

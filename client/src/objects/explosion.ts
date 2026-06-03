@@ -210,16 +210,18 @@ class Explosion {
                 volume = def.burst.sound.volume;
             }
 
-            this.soundInstance = audioManager.playSound(sound, {
-                channel: "sfx",
-                soundPos: this.pos,
-                layer: this.layer,
-                filter: "muffled",
-                rangeMult: 2,
-                ignoreMinAllowable: true,
-                detune,
-                volumeScale: volume,
-            });
+            if (sound) {
+                this.soundInstance = audioManager.playSound(sound, {
+                    channel: "sfx",
+                    soundPos: this.pos,
+                    layer: this.layer,
+                    filter: "muffled",
+                    rangeMult: 2,
+                    ignoreMinAllowable: true,
+                    detune,
+                    volumeScale: volume,
+                });
+            }
 
             // Create ripples if in water
             if (surface.type == "water") {
@@ -387,6 +389,34 @@ const ExplosionEffectDefs: Record<string, ExplotionDef> = {
         shakeStr: 0,
         shakeDur: 0,
         lifetime: 6,
+    },
+    poison_gas: {
+        burst: {
+            particle: "explosionBurst",
+            scale: 0,
+            sound: {
+                grass: "explosion_smoke_01",
+                water: "explosion_smoke_01",
+            },
+        },
+        rippleCount: 10,
+        shakeStr: 0,
+        shakeDur: 0,
+        lifetime: 6,
+    },
+    flashbang: {
+        burst: {
+            particle: "",
+            scale: 0,
+            sound: {
+                grass: "",
+                water: "",
+            },
+        },
+        rippleCount: 0,
+        shakeStr: 0,
+        shakeDur: 0,
+        lifetime: 0.1,
     },
     strobe: {
         burst: {

@@ -3,6 +3,7 @@ import type {
     BuildingDef,
     ObstacleDef,
     StructureDef,
+    SurfaceData,
 } from "../../../../shared/defs/mapObjectsTyping";
 import { Puzzles } from "../../../../shared/defs/puzzles";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
@@ -47,6 +48,7 @@ export class Building extends BaseGameObject {
 
     surfaces: Array<{
         type: string;
+        data: SurfaceData;
         colliders: Collider[];
     }> = [];
 
@@ -131,6 +133,7 @@ export class Building extends BaseGameObject {
             const surfaceDef = def.floor.surfaces[i];
             const surface = {
                 type: surfaceDef.type,
+                data: surfaceDef.data ?? {},
                 colliders: [] as Collider[],
             };
             for (let i = 0; i < surfaceDef.collision.length; i++) {

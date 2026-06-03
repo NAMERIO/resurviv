@@ -1,9 +1,15 @@
 import { randomUUID } from "crypto";
-import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 import type { UpgradeWebSocket, WSContext } from "hono/ws";
 import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
+import { MapDefs } from "../../shared/defs/mapDefs";
+import {
+    DefaultAmongUsImpostorCount,
+    DefaultPrivateLobbyMiniGame,
+    isPrivateLobbyMiniGame,
+    normalizeAmongUsImpostorCount,
+} from "../../shared/defs/miniGame";
 import { GameConfig } from "../../shared/gameConfig";
 import type { FindGameError } from "../../shared/types/api";
 import {
@@ -22,6 +28,11 @@ import type { ApiServer } from "./api/apiServer";
 import { validateSessionToken } from "./api/auth";
 import { hashIp, isBanned } from "./api/routes/private/ModerationRouter";
 import { Config } from "./config";
+import {
+    getPrivateLobbyMiniGameMapName,
+    isBattleRoyaleMiniGame,
+    isSingleTeamMiniGame,
+} from "./game/privateLobbyMiniGames";
 import { ServerLogger } from "./utils/logger";
 import { getFindGamePlayerData } from "./utils/playerData";
 import {
@@ -45,6 +56,7 @@ class Player {
 
     name = "Player";
     outfit = "outfitBase";
+    playerIcon = "emote_surviv";
     clanName = "";
     clanTagColor = "";
 
@@ -66,12 +78,14 @@ class Player {
             isLeader: this.isLeader,
             playerId: this.playerId,
             outfit: this.outfit,
+            playerIcon: this.playerIcon,
             clanName: this.clanName,
             clanTagColor: this.clanTagColor,
         };
     }
 
     lastMsgTime = Date.now();
+    lastServerKeepAliveTime = 0;
 
     disconnectTimeout: ReturnType<typeof setTimeout>;
 
@@ -101,6 +115,13 @@ class Player {
             outfit && GameObjectDefs[outfit]?.type === "outfit" ? outfit : "outfitBase";
     }
 
+    setPlayerIcon(playerIcon?: string) {
+        this.playerIcon =
+            playerIcon && GameObjectDefs[playerIcon]?.type === "emote"
+                ? playerIcon
+                : "emote_surviv";
+    }
+
     send<T extends ServerToClientTeamMsg["type"]>(
         type: T,
         data: (ServerToClientTeamMsg & { type: T })["data"],
@@ -115,10 +136,12 @@ class Player {
 }
 
 class Room {
-    static readonly MaxArenaSpectators = 80;
+    static readonly MaxArenaSpectators = Number.MAX_SAFE_INTEGER;
     players: Player[] = [];
     arenaTeams = new Map<Player, "A" | "B">();
     arenaSpectators = new Set<Player>();
+    battleRoyaleArenaReachedMaxPlayers = false;
+    currentArenaGameId = "";
 
     data: RoomData = {
         roomUrl: "",
@@ -132,6 +155,10 @@ class Room {
         captchaEnabled: false,
         arena: false,
         teamsLocked: false,
+        miniGame: DefaultPrivateLobbyMiniGame,
+        amongUsImpostorCount: DefaultAmongUsImpostorCount,
+        disableAirstrikes: false,
+        disablePerks: false,
     };
 
     arenaOwnerKey?: string;
@@ -163,23 +190,47 @@ class Room {
             return { ok: false, error: "join_full" };
         }
 
-        if (this.data.arena) {
+        if (this.data.arena && this.isBattleRoyaleArena()) {
+            if (opts?.spectator) {
+                this.arenaSpectators.add(player);
+            } else if (this.getBattleRoyaleArenaPlayerCount() >= this.data.maxPlayers) {
+                return { ok: false, error: "join_full" };
+            } else if (
+                this.getBattleRoyaleArenaPlayerCount() + 1 >=
+                this.data.maxPlayers
+            ) {
+                this.battleRoyaleArenaReachedMaxPlayers = true;
+            }
+        } else if (this.data.arena) {
             const cap = this.getArenaTeamCapacity();
-            const teamA = this.getArenaTeamCount("A");
-            const teamB = this.getArenaTeamCount("B");
             const spectatorsFull =
                 this.getArenaSpectatorCount() >= Room.MaxArenaSpectators;
 
-            if (opts?.spectator || this.data.teamsLocked || !opts?.preferredTeam) {
+            if (this.isSingleTeamArena()) {
+                if (opts?.spectator) {
+                    if (spectatorsFull) {
+                        return { ok: false, error: "spectator_full" };
+                    }
+                    this.arenaSpectators.add(player);
+                } else if (this.getArenaTeamCount("A") >= cap) {
+                    this.arenaSpectators.add(player);
+                } else {
+                    this.arenaTeams.set(player, "A");
+                }
+            } else if (opts?.spectator || this.data.teamsLocked || !opts?.preferredTeam) {
                 if (spectatorsFull) {
                     return { ok: false, error: "spectator_full" };
                 }
                 this.arenaSpectators.add(player);
             } else if (opts?.preferredTeam) {
                 if (this.getArenaTeamCount(opts.preferredTeam) >= cap) {
-                    return { ok: false, error: "team_full" };
+                    if (spectatorsFull) {
+                        return { ok: false, error: "spectator_full" };
+                    }
+                    this.arenaSpectators.add(player);
+                } else {
+                    this.arenaTeams.set(player, opts.preferredTeam);
                 }
-                this.arenaTeams.set(player, opts.preferredTeam);
             } else {
                 const team = this.getNextArenaTeam();
                 if (!team) {
@@ -213,7 +264,12 @@ class Room {
             }
             case "changeOutfit": {
                 player.setOutfit(msg.data.outfit);
+                player.setPlayerIcon(msg.data.playerIcon);
                 this.sendState();
+                break;
+            }
+            case "lobbyChat": {
+                this.sendLobbyChat(player, msg.data.message);
                 break;
             }
             case "keepAlive": {
@@ -225,6 +281,18 @@ class Room {
                 this.data.findingGame = false;
                 this.data.lastError = "";
                 if (this.data.arena) {
+                    if (this.isBattleRoyaleArena() && player.isLeader) {
+                        for (const roomPlayer of [...this.players]) {
+                            if (roomPlayer !== player) {
+                                this.removePlayerWithError(
+                                    roomPlayer,
+                                    "arena_round_finished",
+                                );
+                            }
+                        }
+                        this.endArenaRound();
+                        break;
+                    }
                     if (this.players.some((p) => p.inGame)) {
                         this.sendState();
                         break;
@@ -252,7 +320,11 @@ class Room {
                 const targetPlayer = this.players[msg.data.playerId];
                 if (!targetPlayer) break;
                 if (targetPlayer !== player && !player.isLeader) break;
-                if (targetPlayer === player && this.data.teamsLocked && !player.isLeader) {
+                if (
+                    targetPlayer === player &&
+                    this.data.teamsLocked &&
+                    !player.isLeader
+                ) {
                     break;
                 }
 
@@ -270,16 +342,22 @@ class Room {
                     break;
                 }
 
+                const targetTeam = this.isSingleTeamArena() ? "A" : msg.data.team;
+
+                if (msg.data.team === "B" && this.isSingleTeamArena()) {
+                    break;
+                }
+
                 if (
-                    this.getPlayerTeam(targetPlayer) !== msg.data.team &&
-                    this.getArenaTeamCount(msg.data.team) >= this.getArenaTeamCapacity()
+                    this.getPlayerTeam(targetPlayer) !== targetTeam &&
+                    this.getArenaTeamCount(targetTeam) >= this.getArenaTeamCapacity()
                 ) {
                     player.send("error", { type: "team_full" });
                     break;
                 }
 
                 this.arenaSpectators.delete(targetPlayer);
-                this.arenaTeams.set(targetPlayer, msg.data.team);
+                this.arenaTeams.set(targetPlayer, targetTeam);
                 this.sendState();
                 break;
             }
@@ -312,14 +390,44 @@ class Room {
 
         this.data.gameModeIdx = gameModeIdx;
 
+        this.data.miniGame =
+            this.data.arena && isPrivateLobbyMiniGame(props.miniGame)
+                ? props.miniGame
+                : DefaultPrivateLobbyMiniGame;
+        if (this.data.arena) {
+            const wantsBattleRoyale = isBattleRoyaleMiniGame(this.data.miniGame);
+            const selectedModeIsBattleRoyale =
+                !!modes[gameModeIdx]?.mapName.startsWith("br_");
+            if (wantsBattleRoyale !== selectedModeIsBattleRoyale) {
+                const fallbackModeIdx = this.data.enabledGameModeIdxs.find((idx) => {
+                    const mode = modes[idx];
+                    return !!mode && mode.mapName.startsWith("br_") === wantsBattleRoyale;
+                });
+                if (fallbackModeIdx !== undefined) {
+                    gameModeIdx = fallbackModeIdx;
+                    this.data.gameModeIdx = gameModeIdx;
+                }
+            }
+        }
+        this.data.amongUsImpostorCount = normalizeAmongUsImpostorCount(
+            props.amongUsImpostorCount,
+        );
         this.data.maxPlayers = this.data.arena
-            ? this.getArenaTeamCapacity() * 2
+            ? this.isBattleRoyaleArena()
+                ? 80
+                : this.getArenaTeamCapacity() * (this.isSingleTeamArena() ? 1 : 2)
             : modes[gameModeIdx].teamMode;
         this.data.autoFill = this.data.arena ? false : props.autoFill;
         this.data.teamsLocked = this.data.arena ? !!props.teamsLocked : false;
+        this.data.disableAirstrikes = this.data.arena ? !!props.disableAirstrikes : false;
+        this.data.disablePerks = this.data.arena ? !!props.disablePerks : false;
 
         // kick players that don't fit on the new max players
         if (!this.data.arena) {
+            while (this.players.length > this.data.maxPlayers) {
+                this.kick(this.players.length - 1);
+            }
+        } else if (this.isBattleRoyaleArena()) {
             while (this.players.length > this.data.maxPlayers) {
                 this.kick(this.players.length - 1);
             }
@@ -342,11 +450,38 @@ class Room {
         this.sendState();
     }
 
+    sendLobbyChat(player: Player, message: string) {
+        if (!this.data.arena) {
+            return;
+        }
+
+        const text = message.trim();
+        if (!text) {
+            return;
+        }
+
+        const data = {
+            playerId: player.playerId,
+            name: player.name,
+            playerIcon: player.playerIcon,
+            clanName: player.clanName.trim() || undefined,
+            clanTagColor: player.clanTagColor,
+            message: text,
+            timestamp: Date.now(),
+        };
+
+        for (const target of this.players) {
+            target.send("lobbyChat", data);
+        }
+    }
+
     queueArenaWarmup() {
         if (!this.data.arena) return;
         const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
         if (!mode) return;
-        const warmupKey = `${this.data.region}:${mode.mapName}:${mode.teamMode}`;
+        const mapName =
+            getPrivateLobbyMiniGameMapName(this.data.miniGame) ?? mode.mapName;
+        const warmupKey = `${this.data.region}:${mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.amongUsImpostorCount}:${this.data.disableAirstrikes}:${this.data.disablePerks}`;
         if (this.arenaWarmupKey === warmupKey) return;
         this.arenaWarmupKey = warmupKey;
         void this.teamMenu.server
@@ -354,9 +489,16 @@ class Room {
                 region: this.data.region,
                 version: GameConfig.protocolVersion,
                 autoFill: false,
-                mapName: mode.mapName,
+                mapName,
                 teamMode: mode.teamMode,
                 arenaPrivate: true,
+                miniGame: this.data.miniGame,
+                amongUsImpostorCount:
+                    this.data.miniGame === "among_us"
+                        ? this.data.amongUsImpostorCount
+                        : undefined,
+                disableAirstrikes: this.data.disableAirstrikes,
+                disablePerks: this.data.disablePerks,
                 groupHash: this.id,
                 playerData: [],
             } satisfies FindGamePrivateBody)
@@ -380,6 +522,11 @@ class Room {
 
         player.send("kicked", {});
 
+        this.removePlayer(player);
+    }
+
+    removePlayerWithError(player: Player, error: TeamMenuErrorType) {
+        player.send("error", { type: error });
         this.removePlayer(player);
     }
 
@@ -414,6 +561,8 @@ class Room {
         // Keep private arena lobbies alive between rounds.
         this.data.findingGame = false;
         this.data.lastError = "";
+        this.currentArenaGameId = "";
+        this.battleRoyaleArenaReachedMaxPlayers = false;
         for (const player of this.players) {
             player.inGame = false;
         }
@@ -424,12 +573,24 @@ class Room {
 
     getArenaTeamCapacity() {
         const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
-        const cap = mode?.teamMode ?? 2;
-        return Math.max(1, cap);
+        const cap = Math.max(1, mode?.teamMode ?? 2);
+        const miniGameMapName = getPrivateLobbyMiniGameMapName(this.data.miniGame);
+        if (this.isSingleTeamArena() && miniGameMapName && miniGameMapName in MapDefs) {
+            return Math.min(cap, MapDefs[miniGameMapName].gameMode.maxPlayers);
+        }
+        return cap;
+    }
+
+    getAmongUsRequiredPlayerCount() {
+        return this.data.amongUsImpostorCount * 2 + 1;
     }
 
     getPlayerTeam(player: Player): "A" | "B" | undefined {
         return this.arenaTeams.get(player);
+    }
+
+    isSingleTeamArena() {
+        return this.data.arena && isSingleTeamMiniGame(this.data.miniGame);
     }
 
     isArenaSpectator(player: Player) {
@@ -444,6 +605,21 @@ class Room {
         return count;
     }
 
+    getBattleRoyaleArenaPlayerCount() {
+        let count = 0;
+        for (const p of this.players) {
+            if (!this.arenaSpectators.has(p)) count++;
+        }
+        return count;
+    }
+
+    canBattleRoyaleArenaJoinInProgressAsPlayer() {
+        if (!this.isBattleRoyaleArena()) return false;
+        if (this.battleRoyaleArenaReachedMaxPlayers) return false;
+        if (this.getBattleRoyaleArenaPlayerCount() >= this.data.maxPlayers) return false;
+        return true;
+    }
+
     getArenaTeamCount(team: "A" | "B") {
         let count = 0;
         for (const p of this.players) {
@@ -455,6 +631,9 @@ class Room {
     getNextArenaTeam(): "A" | "B" | undefined {
         const cap = this.getArenaTeamCapacity();
         const a = this.getArenaTeamCount("A");
+        if (this.isSingleTeamArena()) {
+            return a < cap ? "A" : undefined;
+        }
         const b = this.getArenaTeamCount("B");
         if (a >= cap && b >= cap) return undefined;
         if (a < b && a < cap) return "A";
@@ -468,13 +647,44 @@ class Room {
         return !!mode?.mapName.startsWith("br_");
     }
 
+    isBattleRoyaleArena() {
+        return this.data.arena && isBattleRoyaleMiniGame(this.data.miniGame);
+    }
+
     rebalanceArenaTeams() {
         if (!this.data.arena) {
             this.arenaTeams.clear();
             this.arenaSpectators.clear();
             return;
         }
+        if (this.isBattleRoyaleArena()) {
+            this.arenaTeams.clear();
+            if (
+                !this.currentArenaGameId &&
+                !this.data.findingGame &&
+                !this.players.some((p) => p.inGame)
+            ) {
+                this.arenaSpectators.clear();
+            }
+            return;
+        }
         const cap = this.getArenaTeamCapacity();
+        if (this.isSingleTeamArena()) {
+            for (const p of this.players) {
+                if (this.arenaSpectators.has(p)) {
+                    this.arenaTeams.delete(p);
+                    continue;
+                }
+                this.arenaTeams.set(p, "A");
+            }
+            for (const p of this.players
+                .filter((p) => this.arenaTeams.get(p) === "A")
+                .slice(cap)) {
+                this.arenaTeams.delete(p);
+                this.arenaSpectators.add(p);
+            }
+            return;
+        }
         for (const p of this.players) {
             if (this.arenaSpectators.has(p)) {
                 this.arenaTeams.delete(p);
@@ -523,11 +733,21 @@ class Room {
             return;
         }
 
-        if (this.data.arena) {
+        if (this.data.arena && !this.isBattleRoyaleArena()) {
             const teamACount = this.getArenaTeamCount("A");
             const teamBCount = this.getArenaTeamCount("B");
-            if (teamACount < 1 || teamBCount < 1) {
+            if (teamACount < 1 || (!this.isSingleTeamArena() && teamBCount < 1)) {
                 this.data.lastError = "arena_need_teams";
+                this.data.findingGame = false;
+                this.sendState();
+                return;
+            }
+
+            if (
+                this.data.miniGame === "among_us" &&
+                teamACount < this.getAmongUsRequiredPlayerCount()
+            ) {
+                this.data.lastError = "waiting_for_players";
                 this.data.findingGame = false;
                 this.sendState();
                 return;
@@ -553,15 +773,24 @@ class Room {
             queuedPlayers.map((player) => {
                 const token = randomUUID();
                 tokenMap.set(player, token);
-                const arenaSpectator = this.data.arena && this.isArenaSpectator(player);
+                const arenaSpectator =
+                    this.data.arena &&
+                    !this.isBattleRoyaleArena() &&
+                    this.isArenaSpectator(player);
                 return {
                     roomId:
                         this.data.arena && arenaSpectator
                             ? `${this.id}-S-${player.playerId}`
-                            : this.data.arena && this.getPlayerTeam(player)
+                            : this.data.arena &&
+                                !this.isBattleRoyaleArena() &&
+                                this.getPlayerTeam(player)
                               ? `${this.id}-${this.getPlayerTeam(player)}`
                               : this.id,
                     spectator: arenaSpectator,
+                    arenaTeam:
+                        this.data.arena && !this.isBattleRoyaleArena()
+                            ? this.getPlayerTeam(player)
+                            : undefined,
                     token,
                     userId: player.userId,
                     ip: player.ip,
@@ -609,13 +838,25 @@ class Room {
             }
         }
 
+        const mapName =
+            this.data.arena && this.data.miniGame
+                ? (getPrivateLobbyMiniGameMapName(this.data.miniGame) ?? mode.mapName)
+                : mode.mapName;
+
         const res = await this.teamMenu.server.findGame({
-            mapName: mode.mapName,
+            mapName,
             teamMode: mode.teamMode,
             autoFill: this.data.arena ? false : this.data.autoFill,
             region: region,
             version: data.version,
             arenaPrivate: this.data.arena,
+            miniGame: this.data.arena ? this.data.miniGame : DefaultPrivateLobbyMiniGame,
+            amongUsImpostorCount:
+                this.data.arena && this.data.miniGame === "among_us"
+                    ? this.data.amongUsImpostorCount
+                    : undefined,
+            disableAirstrikes: this.data.arena ? this.data.disableAirstrikes : false,
+            disablePerks: this.data.arena ? this.data.disablePerks : false,
             groupHash: this.data.arena ? this.id : undefined,
             playerData,
         });
@@ -650,10 +891,16 @@ class Room {
 
         if (this.data.arena || isBattleRoyaleMode) {
             this.data.lastError = "";
+            if (this.data.arena) {
+                this.currentArenaGameId = res.gameId;
+            }
         }
 
         for (const roomPlayer of queuedPlayers) {
             roomPlayer.inGame = true;
+            if (this.isBattleRoyaleArena()) {
+                this.arenaSpectators.delete(roomPlayer);
+            }
             const token = tokenMap.get(roomPlayer);
 
             if (!token) {
@@ -674,11 +921,106 @@ class Room {
         this.sendState();
     }
 
+    async joinArenaPlayersToCurrentGame(players: Player[], spectator: boolean) {
+        if (!this.data.arena || !this.currentArenaGameId) return;
+
+        const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
+        if (!mode) return;
+
+        const mapName =
+            this.data.arena && this.data.miniGame
+                ? (getPrivateLobbyMiniGameMapName(this.data.miniGame) ?? mode.mapName)
+                : mode.mapName;
+
+        const tokenMap = new Map<Player, string>();
+        const playerData = await getFindGamePlayerData(
+            players.map((player) => {
+                const token = randomUUID();
+                tokenMap.set(player, token);
+                const arenaSpectator = spectator || this.isArenaSpectator(player);
+                return {
+                    roomId:
+                        arenaSpectator && !this.isBattleRoyaleArena()
+                            ? `${this.id}-S-${player.playerId}`
+                            : this.data.arena &&
+                                !this.isBattleRoyaleArena() &&
+                                this.getPlayerTeam(player)
+                              ? `${this.id}-${this.getPlayerTeam(player)}`
+                              : this.id,
+                    spectator: arenaSpectator,
+                    arenaTeam:
+                        this.data.arena && !this.isBattleRoyaleArena()
+                            ? this.getPlayerTeam(player)
+                            : undefined,
+                    token,
+                    userId: player.userId,
+                    ip: player.ip,
+                } satisfies FindGamePrivateBody["playerData"][0];
+            }),
+        );
+
+        const res = await this.teamMenu.server.findGame({
+            mapName,
+            teamMode: mode.teamMode,
+            autoFill: false,
+            region: this.data.region,
+            version: GameConfig.protocolVersion,
+            arenaPrivate: true,
+            miniGame: this.data.miniGame,
+            amongUsImpostorCount:
+                this.data.miniGame === "among_us"
+                    ? this.data.amongUsImpostorCount
+                    : undefined,
+            disableAirstrikes: this.data.disableAirstrikes,
+            disablePerks: this.data.disablePerks,
+            groupHash: this.id,
+            targetGameId: this.currentArenaGameId,
+            playerData,
+        });
+
+        if ("error" in res) {
+            if (!spectator && this.isBattleRoyaleArena()) {
+                await this.joinArenaPlayersToCurrentGame(players, true);
+                return;
+            }
+            for (const roomPlayer of players) {
+                this.removePlayerWithError(roomPlayer, "join_game_failed");
+            }
+            return;
+        }
+
+        for (const roomPlayer of players) {
+            const token = tokenMap.get(roomPlayer);
+            if (!token) continue;
+
+            roomPlayer.inGame = true;
+            if (spectator || res.forcedSpectator) {
+                this.arenaSpectators.add(roomPlayer);
+            }
+            roomPlayer.send("joinGame", {
+                zone: "",
+                data: token,
+                gameId: res.gameId,
+                addrs: res.addrs,
+                hosts: res.hosts,
+                useHttps: res.useHttps,
+            });
+        }
+
+        this.sendState();
+    }
+
     sendState() {
         const players = this.players.map((p) => ({
             ...p.data,
-            team: this.data.arena ? this.getPlayerTeam(p) : undefined,
-            spectator: this.data.arena ? this.isArenaSpectator(p) : undefined,
+            team:
+                this.data.arena && !this.isBattleRoyaleArena()
+                    ? this.getPlayerTeam(p)
+                    : undefined,
+            spectator:
+                this.data.arena && !this.isBattleRoyaleArena()
+                    ? this.isArenaSpectator(p)
+                    : undefined,
         }));
         // all players must be logged in to disable it
         this.data.captchaEnabled =
@@ -731,6 +1073,10 @@ export class TeamMenu {
                 // kick players that haven't sent a keep alive msg in over a minute
                 // client sends it every 45 seconds
                 for (const player of room.players) {
+                    if (player.lastServerKeepAliveTime < Date.now() - 15 * 1000) {
+                        player.send("keepAlive", {});
+                        player.lastServerKeepAliveTime = Date.now();
+                    }
                     if (player.lastMsgTime < Date.now() - 8 * 60 * 1000) {
                         player.send("error", { type: "lost_conn" });
                         room.removePlayer(player);
@@ -783,6 +1129,7 @@ export class TeamMenu {
             gameModeIdx: room.data.gameModeIdx,
             mapName: mode.mapName,
             teamMode: mode.teamMode,
+            miniGame: room.data.miniGame,
             findingGame: room.data.findingGame,
             teamACount: room.getArenaTeamCount("A"),
             teamBCount: room.getArenaTeamCount("B"),
@@ -913,6 +1260,7 @@ export class TeamMenu {
             ]).then(([playerData]) => {
                 player.clanName = playerData?.clanName ?? "";
                 player.clanTagColor = playerData?.clanTagColor ?? "";
+                player.setPlayerIcon(playerData?.loadout?.player_icon);
                 if (player.room) {
                     player.room.sendState();
                 }
@@ -970,6 +1318,7 @@ export class TeamMenu {
 
                     player.setName(msg.data.playerData.name);
                     player.setOutfit(msg.data.playerData.outfit);
+                    player.setPlayerIcon(msg.data.playerData.playerIcon);
 
                     const room = this.createRoom({
                         ...msg.data.roomData,
@@ -980,7 +1329,9 @@ export class TeamMenu {
                     }
                     const createJoinRes = room.addPlayer(
                         player,
-                        arena ? { spectator: true } : undefined,
+                        arena && !room.isBattleRoyaleArena()
+                            ? { spectator: true }
+                            : undefined,
                     );
                     if (!createJoinRes.ok) {
                         player.send("error", { type: createJoinRes.error });
@@ -1007,9 +1358,13 @@ export class TeamMenu {
                         break;
                     }
 
-                    const roomParticipantCount = room.data.arena
-                        ? room.players.filter((p) => !room.isArenaSpectator(p)).length
-                        : room.players.length;
+                    const roomParticipantCount =
+                        room.data.arena && room.isBattleRoyaleArena()
+                            ? room.getBattleRoyaleArenaPlayerCount()
+                            : room.data.arena
+                              ? room.players.filter((p) => !room.isArenaSpectator(p))
+                                    .length
+                              : room.players.length;
                     const roomParticipantsFull =
                         roomParticipantCount >= room.data.maxPlayers;
                     if (roomParticipantsFull && !room.data.arena) {
@@ -1022,28 +1377,35 @@ export class TeamMenu {
 
                     const gameInProgress =
                         room.data.findingGame || room.players.some((p) => p.inGame);
-                    const wantsSpectator = !!msg.data.spectator;
-                    if (room.data.arena && gameInProgress && !wantsSpectator) {
-                        this.logger.debug(
-                            `Join rejected: game already started (${room.id})`,
-                        );
-                        player.send("error", { type: "game_in_progress" });
-                        break;
-                    }
+                    const battleRoyaleLatePlayer =
+                        room.isBattleRoyaleArena() &&
+                        gameInProgress &&
+                        room.canBattleRoyaleArenaJoinInProgressAsPlayer();
+                    const wantsSpectator = room.isBattleRoyaleArena()
+                        ? gameInProgress && !battleRoyaleLatePlayer
+                        : !!msg.data.spectator || (room.data.arena && gameInProgress);
 
                     player.setName(msg.data.playerData.name);
                     player.setOutfit(msg.data.playerData.outfit);
+                    player.setPlayerIcon(msg.data.playerData.playerIcon);
                     const joinRes = room.addPlayer(player, {
-                        preferredTeam: msg.data.preferredTeam,
+                        preferredTeam: wantsSpectator
+                            ? undefined
+                            : msg.data.preferredTeam,
                         spectator:
-                            wantsSpectator ||
-                            (room.data.arena &&
-                                roomParticipantsFull &&
-                                !msg.data.preferredTeam),
+                            wantsSpectator || (room.data.arena && roomParticipantsFull),
                     });
                     if (!joinRes.ok) {
                         player.send("error", { type: joinRes.error });
                         break;
+                    }
+
+                    if (
+                        room.isBattleRoyaleArena() &&
+                        gameInProgress &&
+                        room.currentArenaGameId
+                    ) {
+                        void room.joinArenaPlayersToCurrentGame([player], wantsSpectator);
                     }
                 }
             }

@@ -4,6 +4,11 @@ import { util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import { BattleRoyaleGasStages, isBattleRoyaleMapName } from "../../battleroyale/helpers";
 import type { Game } from "../game";
+import {
+    getHideAndSeekSettings,
+    getInfectedSettings,
+    isInfectedZombie,
+} from "../privateLobbyMiniGames";
 
 interface StageData {
     mode: GasMode;
@@ -29,7 +34,19 @@ const GasStages: StageData[] = [
     },
     {
         mode: GasMode.Moving,
-        duration: 60,
+        duration: 53,
+        rad: 0.086625,
+        damage: 55,
+    },
+    {
+        mode: GasMode.Waiting,
+        duration: 20,
+        rad: 0.086625,
+        damage: 55,
+    },
+    {
+        mode: GasMode.Moving,
+        duration: 7,
         rad: 0,
         damage: 55,
     },
@@ -131,11 +148,13 @@ export class Gas {
     private _running = false;
 
     doDamage = false;
+    disabled = false;
 
     mapSize: number;
 
     constructor(readonly game: Game) {
         const map = game.map;
+        this.disabled = !!map.mapDef.gameMode.disableGas;
         this.mapSize = (map.width + map.height) / 2;
         this.posOld = v2.create(map.width / 2, map.height / 2);
         this.posNew = v2.copy(this.posOld);
@@ -146,9 +165,26 @@ export class Gas {
         this.radNew = this.currentRad = stage.rad * this.mapSize;
         this.duration = stage.duration;
         this.damage = stage.damage;
+
+        if (this.disabled) {
+            this.mode = GasMode.Inactive;
+            this.stage = 0;
+            this.circleIdx = -1;
+            this.radOld = this.radNew = this.currentRad = this.mapSize * 2;
+            this.duration = 0;
+            this.damage = 0;
+            this.gasT = 0;
+        }
     }
 
     update(dt: number) {
+        if (this.disabled) {
+            this.doDamage = false;
+            this.dirty = false;
+            this.timeDirty = false;
+            return;
+        }
+
         this._gasTicker += dt;
 
         if (this._running) {
@@ -175,6 +211,15 @@ export class Gas {
     }
 
     advanceGasStage() {
+        if (this.disabled) {
+            this.mode = GasMode.Inactive;
+            this._running = false;
+            this.doDamage = false;
+            this.dirty = true;
+            this.timeDirty = true;
+            return;
+        }
+
         this.stage++;
         this._running = true;
 
@@ -237,6 +282,39 @@ export class Gas {
             }
         }
 
+        const infectedSettings = getInfectedSettings(this.game.miniGame);
+        const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
+        if (
+            infectedSettings &&
+            this.mode === GasMode.Moving &&
+            stage.rad <= 0 &&
+            !this.game.infectedHumansWon
+        ) {
+            this.game.infectedHumansWon = true;
+            for (const player of [...this.game.playerBarn.players]) {
+                if (
+                    !player.dead &&
+                    isInfectedZombie(this.game.miniGame, player.arenaTeam)
+                ) {
+                    player.kill({
+                        amount: player.health,
+                        damageType: GameConfig.DamageType.Gas,
+                        dir: player.dir,
+                    });
+                }
+            }
+            this.game.checkGameOver();
+        }
+        if (
+            hideAndSeekSettings &&
+            this.mode === GasMode.Moving &&
+            stage.rad <= 0 &&
+            !this.game.hideAndSeekHidersWon
+        ) {
+            this.game.hideAndSeekHidersWon = true;
+            this.game.checkGameOver();
+        }
+
         this._gasTicker = 0;
         this.gasT = 0;
         this.dirty = true;
@@ -255,11 +333,26 @@ export class Gas {
             : GasStages;
     }
 
+    get finalCloseStarted() {
+        const stages = this._getStages();
+        return (
+            !isBattleRoyaleMapName(this.game.mapName) &&
+            this.stage >= stages.length - 1 &&
+            this.mode === GasMode.Moving
+        );
+    }
+
+    getTimeUntilNextStage() {
+        return Math.max(0, this.duration - this._gasTicker);
+    }
+
     isInGas(pos: Vec2) {
+        if (this.disabled) return false;
         return v2.distance(pos, this.currentPos) >= this.currentRad;
     }
 
     isOutSideSafeZone(pos: Vec2) {
+        if (this.disabled) return false;
         return v2.distance(pos, this.posNew) >= this.radNew;
     }
 

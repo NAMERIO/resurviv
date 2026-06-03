@@ -12,7 +12,8 @@ import type { FindGamePrivateBody, FindGamePrivateRes } from "../utils/types";
 export type SocialEventType =
     | "friends_changed"
     | "clan_messages_changed"
-    | "clan_mentions_changed";
+    | "clan_mentions_changed"
+    | "clan_join_requests_changed";
 
 export interface SocialEvent {
     type: SocialEventType;
@@ -87,7 +88,7 @@ export class ApiServer {
 
     regions: Record<string, Region> = {};
 
-    modes = expandConfiguredModes(Config.modes, Config.battleRoyaleMode);
+    modes = expandConfiguredModes(Config.modes, Config.br_modes, Config.battleRoyaleMode);
     privateLobbyMaps = new Set<(typeof Config.modes)[number]["mapName"]>();
     clientTheme = Config.clientTheme;
 
@@ -114,6 +115,15 @@ export class ApiServer {
         for (const mapName of forcedPrivateMaps) {
             this.privateLobbyMaps.add(mapName);
         }
+        if (Config.battleRoyaleMode) {
+            for (const mapName of Object.keys(MapDefs)) {
+                if (mapName.startsWith("br_")) {
+                    this.privateLobbyMaps.add(
+                        mapName as (typeof Config.modes)[number]["mapName"],
+                    );
+                }
+            }
+        }
 
         this.ensurePrivateLobbyModes();
 
@@ -123,13 +133,27 @@ export class ApiServer {
     }
 
     private ensurePrivateLobbyModes() {
-        const privateTeamModes = [TeamMode.Solo, TeamMode.Duo, TeamMode.Squad] as const;
+        const privateDeathmatchTeamModes = [
+            TeamMode.Solo,
+            TeamMode.Duo,
+            TeamMode.Squad,
+            TeamMode.Ten,
+            TeamMode.Fifteen,
+        ] as const;
+        const privateBattleRoyaleTeamModes = [
+            TeamMode.Solo,
+            TeamMode.Duo,
+            TeamMode.Squad,
+        ] as const;
         const hasMode = (
             mapName: (typeof Config.modes)[number]["mapName"],
             teamMode: (typeof Config.modes)[number]["teamMode"],
         ) => this.modes.some((m) => m.mapName === mapName && m.teamMode === teamMode);
 
         for (const mapName of this.privateLobbyMaps) {
+            const privateTeamModes = mapName.startsWith("br_")
+                ? privateBattleRoyaleTeamModes
+                : privateDeathmatchTeamModes;
             for (const teamMode of privateTeamModes) {
                 if (hasMode(mapName, teamMode)) continue;
                 this.modes.push({
@@ -141,11 +165,26 @@ export class ApiServer {
         }
     }
 
-    setMode(index: number, mode: (typeof Config.modes)[number]) {
-        this.modes[index] = mode;
-        this.modes = expandConfiguredModes(this.modes, this.battleRoyaleMode);
+    getConfiguredModes(modeType: "deathmatch" | "br") {
+        return modeType === "br" ? Config.br_modes : Config.modes;
+    }
+
+    setMode(
+        index: number,
+        modeType: "deathmatch" | "br",
+        mode: (typeof Config.modes)[number],
+    ) {
+        this.getConfiguredModes(modeType)[index] = mode;
+        this.rebuildModes();
+    }
+
+    private rebuildModes() {
+        this.modes = expandConfiguredModes(
+            Config.modes,
+            Config.br_modes,
+            this.battleRoyaleMode,
+        );
         this.ensurePrivateLobbyModes();
-        Config.modes = this.modes;
     }
 
     init(app: Hono<any>, upgradeWebSocket: UpgradeWebSocket) {
@@ -187,12 +226,14 @@ export class ApiServer {
         const data: SiteInfoRes = {
             modes: this.modes,
             pops: {},
-            youtube: { name: "", link: "" },
+            youtube: this.getFeaturedYoutuber(),
             twitch: [],
             country: "US",
             gitRevision: GIT_VERSION,
             captchaEnabled: this.captchaEnabled,
             clientTheme: this.clientTheme,
+            battlePassEndDate: Config.battlePassEndDate,
+            battlePassEndTime: Config.battlePassEndTime,
         };
 
         for (const region in this.regions) {
@@ -202,6 +243,33 @@ export class ApiServer {
             };
         }
         return data;
+    }
+
+    private getFeaturedYoutuber() {
+        const youtubers = Config.featuredYoutubers.filter(
+            (youtuber) => youtuber.name.trim() && youtuber.link.trim(),
+        );
+        if (youtubers.length === 0) {
+            return null;
+        }
+
+        const youtuber = youtubers[Math.floor(Math.random() * youtubers.length)];
+        return {
+            ...youtuber,
+            img: youtuber.img || this.getYouTubeAvatarUrl(youtuber.link),
+        };
+    }
+
+    private getYouTubeAvatarUrl(link: string) {
+        try {
+            const url = new URL(link);
+            const handle = url.pathname.match(/\/@([^/?#]+)/)?.[1];
+            if (handle) {
+                return `https://unavatar.io/youtube/${encodeURIComponent(handle)}`;
+            }
+        } catch {}
+
+        return "/img/yt_icon_rgb.png";
     }
 
     updateRegion(regionId: string, regionData: RegionData) {
@@ -217,9 +285,7 @@ export class ApiServer {
     async setBattleRoyaleMode(enabled: boolean) {
         this.battleRoyaleMode = enabled;
         Config.battleRoyaleMode = enabled;
-        this.modes = expandConfiguredModes(this.modes, enabled);
-        this.ensurePrivateLobbyModes();
-        Config.modes = this.modes;
+        this.rebuildModes();
 
         const results = await Promise.allSettled(
             Object.values(this.regions).map((region) =>
@@ -247,7 +313,11 @@ export class ApiServer {
     }
 }
 
-function expandConfiguredModes(modes: typeof Config.modes, battleRoyaleMode: boolean) {
+function expandConfiguredModes(
+    modes: typeof Config.modes,
+    battleRoyaleModes: typeof Config.br_modes,
+    battleRoyaleMode: boolean,
+) {
     const expandedModes: typeof Config.modes = [];
     const addedModes = new Map<string, number>();
 
@@ -265,20 +335,32 @@ function expandConfiguredModes(modes: typeof Config.modes, battleRoyaleMode: boo
     };
 
     for (const mode of modes) {
-        if (!battleRoyaleMode && mode.mapName.startsWith("br_")) continue;
-
+        if (mode.mapName.startsWith("br_")) continue;
         addMode(mode);
+    }
 
-        if (mode.mapName.startsWith("br_") || !battleRoyaleMode) continue;
+    if (!battleRoyaleMode) {
+        return expandedModes;
+    }
 
-        const battleRoyaleMapName = `br_${mode.mapName}` as keyof typeof MapDefs;
+    for (const mode of battleRoyaleModes) {
+        const battleRoyaleMapName = toBattleRoyaleMapName(mode.mapName);
+        if (!battleRoyaleMapName) continue;
+
         addMode({
             ...mode,
-            mapName: MapDefs[battleRoyaleMapName] ? battleRoyaleMapName : "br_main",
+            mapName: battleRoyaleMapName,
         });
     }
 
     return expandedModes;
+}
+
+export function toBattleRoyaleMapName(mapName: string) {
+    const battleRoyaleMapName = (
+        mapName.startsWith("br_") ? mapName : `br_${mapName}`
+    ) as keyof typeof MapDefs;
+    return MapDefs[battleRoyaleMapName] ? battleRoyaleMapName : undefined;
 }
 
 export const server = new ApiServer();

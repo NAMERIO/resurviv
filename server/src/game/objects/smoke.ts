@@ -6,16 +6,18 @@ import { math } from "../../../../shared/utils/math";
 import { util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import type { Game } from "../game";
-import { BaseGameObject } from "./gameObject";
+import { BaseGameObject, type GameObject } from "./gameObject";
 
 // max smokes an emitter can spawn
 const MAX_SMOKES = 10;
 // delay between smokes the emitter spawns
 const SPAWN_DELAY = 0.1;
 const LIFE_TIME = 15;
+const POISON_LIFE_TIME = 9;
 // min and max radius a smoke can reach
 const RAD_MIN = 5;
 const RAD_MAX = 6.5;
+const POISON_RAD_MAX = 9;
 // speed which the radius increases (in radius/second)
 const RAD_SPEED = 10;
 // speed drag
@@ -25,6 +27,8 @@ const SPEED_MIN = 0.1;
 // min / max spawn speed
 const SPAWN_MIN_SPEED = 3;
 const SPAWN_MAX_SPEED = 5;
+
+type SmokeType = "normal" | "foam" | "poison";
 
 class SmokeEmitter {
     active = true;
@@ -37,17 +41,29 @@ class SmokeEmitter {
         public pos: Vec2,
         public layer: number,
         public interior: number,
-        public isFoam: boolean,
+        public smokeType: SmokeType,
+        public source?: GameObject,
+        public sourceTeamId?: number,
     ) {}
 
     update(dt: number) {
         this.spawnTicker += dt;
         if (this.spawnTicker > SPAWN_DELAY) {
-            this.smokeBarn.addSmoke(this.pos, this.layer, this.interior, this.isFoam);
+            this.smokeBarn.addSmoke(
+                this.pos,
+                this.layer,
+                this.interior,
+                this.smokeType,
+                this.source,
+                this.sourceTeamId,
+            );
             this.smokesSpawned++;
             this.spawnTicker = 0;
         }
-        if (this.smokesSpawned > MAX_SMOKES) {
+        if (
+            (this.smokeType === "poison" && this.smokesSpawned >= 1) ||
+            this.smokesSpawned > MAX_SMOKES
+        ) {
             this.active = false;
         }
     }
@@ -107,7 +123,13 @@ export class SmokeBarn {
         }
     }
 
-    addEmitter(pos: Vec2, layer: number, isFoam: boolean = false) {
+    addEmitter(
+        pos: Vec2,
+        layer: number,
+        smokeType: SmokeType = "normal",
+        source?: GameObject,
+        sourceTeamId?: number,
+    ) {
         let interior = 0;
         const coll = collider.createCircle(pos, 1);
         const objs = this.game.grid.intersectCollider(coll);
@@ -124,13 +146,36 @@ export class SmokeBarn {
             }
         }
 
-        const emitter = new SmokeEmitter(this, pos, layer, interior, isFoam);
+        const emitter = new SmokeEmitter(
+            this,
+            pos,
+            layer,
+            interior,
+            smokeType,
+            source,
+            sourceTeamId,
+        );
 
         this.emitters.push(emitter);
     }
 
-    addSmoke(pos: Vec2, layer: number, interior: number, isFoam: boolean = false) {
-        const smoke = new Smoke(this.game, pos, layer, interior, isFoam);
+    addSmoke(
+        pos: Vec2,
+        layer: number,
+        interior: number,
+        smokeType: SmokeType = "normal",
+        source?: GameObject,
+        sourceTeamId?: number,
+    ) {
+        const smoke = new Smoke(
+            this.game,
+            pos,
+            layer,
+            interior,
+            smokeType,
+            source,
+            sourceTeamId,
+        );
         this.game.objectRegister.register(smoke);
         this.smokes.push(smoke);
     }
@@ -146,22 +191,33 @@ export class Smoke extends BaseGameObject {
     rad = util.random(0.5, 1);
     interior: number;
     isFoam: boolean;
+    isPoison: boolean;
+    source?: GameObject;
+    sourceTeamId?: number;
 
-    maxSize = util.random(RAD_MIN, RAD_MAX);
+    maxSize: number;
     dir = v2.randomUnit();
-    speed = util.random(SPAWN_MIN_SPEED, SPAWN_MAX_SPEED);
+    speed: number;
 
     constructor(
         game: Game,
         pos: Vec2,
         layer: number,
         interior: number,
-        isFoam: boolean = false,
+        smokeType: SmokeType = "normal",
+        source?: GameObject,
+        sourceTeamId?: number,
     ) {
         super(game, pos);
         this.layer = layer;
         this.interior = interior;
-        this.isFoam = isFoam;
+        this.isFoam = smokeType === "foam";
+        this.isPoison = smokeType === "poison";
+        this.source = source;
+        this.sourceTeamId = sourceTeamId;
+        this.life = this.isPoison ? POISON_LIFE_TIME : LIFE_TIME;
+        this.maxSize = this.isPoison ? POISON_RAD_MAX : util.random(RAD_MIN, RAD_MAX);
+        this.speed = this.isPoison ? 0 : util.random(SPAWN_MIN_SPEED, SPAWN_MAX_SPEED);
         this.bounds = collider.createAabbExtents(
             v2.create(0, 0),
             v2.create(this.rad, this.rad),
@@ -175,10 +231,12 @@ export class Smoke extends BaseGameObject {
         this.rad += RAD_SPEED * dt;
         this.rad = math.clamp(this.rad, 0, this.maxSize);
 
-        this.speed -= SPEED_DRAG * dt;
-        this.speed = math.max(this.speed, SPEED_MIN);
         const posOld = v2.copy(this.pos);
-        v2.set(this.pos, v2.add(this.pos, v2.mul(this.dir, this.speed * dt)));
+        if (!this.isPoison) {
+            this.speed -= SPEED_DRAG * dt;
+            this.speed = math.max(this.speed, SPEED_MIN);
+            v2.set(this.pos, v2.add(this.pos, v2.mul(this.dir, this.speed * dt)));
+        }
 
         if (!v2.eq(posOld, this.pos) || !math.eqAbs(radOld, this.rad)) {
             this.setPartDirty();

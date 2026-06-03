@@ -72,6 +72,21 @@ function serializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
         s.writeFloat(data.nitroLacePercentage, 0, 100, 8);
     }
 
+    s.writeBoolean(data.hideAndSeekBlindDirty);
+    if (data.hideAndSeekBlindDirty) {
+        s.writeFloat(data.hideAndSeekBlindTime, 0, 10, 8);
+    }
+
+    s.writeFloat(data.hideAndSeekHunterReleaseTime, 0, 60, 8);
+    s.writeBoolean(data.hideAndSeekHunterReleaseSeeker);
+    s.writeFloat(data.infectedRespawnTime, 0, 10, 8);
+    s.writeFloat(data.miniGameWinCountdownTime, 0, 5, 8);
+    s.writeBoolean(data.miniGameWinCountdownProps);
+    s.writeFloat(data.amongUsKillCooldownTime, 0, 20, 8);
+    s.writeFloat(data.amongUsEmergencyCallCooldownTime, 0, 15, 8);
+    s.writeUint8(data.amongUsEmergencyCallsRemaining);
+    s.writeUint8(data.amongUsEmergencyMeetingSeq);
+
     s.writeAlignToNextByte();
 }
 
@@ -140,6 +155,19 @@ function deserializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     if (data.nitroLaceDirty) {
         data.nitroLacePercentage = s.readFloat(0, 100, 8);
     }
+    data.hideAndSeekBlindDirty = s.readBoolean();
+    if (data.hideAndSeekBlindDirty) {
+        data.hideAndSeekBlindTime = s.readFloat(0, 10, 8);
+    }
+    data.hideAndSeekHunterReleaseTime = s.readFloat(0, 60, 8);
+    data.hideAndSeekHunterReleaseSeeker = s.readBoolean();
+    data.infectedRespawnTime = s.readFloat(0, 10, 8);
+    data.miniGameWinCountdownTime = s.readFloat(0, 5, 8);
+    data.miniGameWinCountdownProps = s.readBoolean();
+    data.amongUsKillCooldownTime = s.readFloat(0, 20, 8);
+    data.amongUsEmergencyCallCooldownTime = s.readFloat(0, 15, 8);
+    data.amongUsEmergencyCallsRemaining = s.readUint8();
+    data.amongUsEmergencyMeetingSeq = s.readUint8();
     s.readAlignToNextByte();
 }
 
@@ -149,6 +177,10 @@ function serializePlayerStatus(s: BitStream, players: PlayerStatus[]) {
 
         if (info.hasData) {
             s.writeMapPos(info.pos, 11);
+            s.writeBoolean(Boolean(info.dir));
+            if (info.dir) {
+                s.writeUnitVec(info.dir, 7);
+            }
             s.writeBoolean(info.visible);
             s.writeBoolean(info.dead);
             s.writeBoolean(info.downed);
@@ -156,6 +188,11 @@ function serializePlayerStatus(s: BitStream, players: PlayerStatus[]) {
             s.writeBoolean(info.role !== "");
             if (info.role !== "") {
                 s.writeGameType(info.role);
+            }
+
+            s.writeBoolean(Boolean(info.outfit));
+            if (info.outfit) {
+                s.writeGameType(info.outfit);
             }
         }
     });
@@ -171,6 +208,7 @@ function deserializePlayerStatus(s: BitStream): PlayerStatus[] {
 
         if (p.hasData) {
             p.pos = s.readMapPos(11);
+            p.dir = s.readBoolean() ? s.readUnitVec(7) : undefined;
             p.visible = s.readBoolean();
             p.dead = s.readBoolean();
             p.downed = s.readBoolean();
@@ -178,6 +216,7 @@ function deserializePlayerStatus(s: BitStream): PlayerStatus[] {
             if (s.readBoolean()) {
                 p.role = s.readGameType();
             }
+            p.outfit = s.readBoolean() ? s.readGameType() : "";
         }
         return p;
     });
@@ -210,8 +249,10 @@ export interface PlayerInfo {
     name: string;
     clanName: string;
     clanTagColor: string;
+    amongUsRole?: string;
 
     loadout: {
+        outfit: string;
         heal: string;
         boost: string;
         death_effect: string;
@@ -231,7 +272,12 @@ function serializePlayerInfo(s: BitStream, data: PlayerInfo) {
     if (data.clanTagColor) {
         s.writeString(data.clanTagColor);
     }
+    s.writeBoolean(Boolean(data.amongUsRole));
+    if (data.amongUsRole) {
+        s.writeString(data.amongUsRole);
+    }
 
+    s.writeGameType(data.loadout.outfit);
     s.writeGameType(data.loadout.heal);
     s.writeGameType(data.loadout.boost);
     s.writeGameType(data.loadout.death_effect);
@@ -246,7 +292,9 @@ function deserializePlayerInfo(s: BitStream, data: PlayerInfo) {
     data.name = s.readString();
     data.clanName = s.readBoolean() ? s.readString() : "";
     data.clanTagColor = s.readBoolean() ? s.readString() : "";
+    data.amongUsRole = s.readBoolean() ? s.readString() : "";
     data.loadout = {} as PlayerInfo["loadout"];
+    data.loadout.outfit = s.readGameType();
     data.loadout.heal = s.readGameType();
     data.loadout.boost = s.readGameType();
     data.loadout.death_effect = s.readGameType();
@@ -773,7 +821,10 @@ export class UpdateMsg implements AbstractMsg {
     }
 }
 
-export function getPlayerStatusUpdateRate(factionMode: boolean) {
+export function getPlayerStatusUpdateRate(factionMode: boolean, amongUsMode = false) {
+    if (amongUsMode) {
+        return 1 / 12;
+    }
     if (factionMode) {
         return 0.5;
     }
@@ -894,6 +945,17 @@ export interface LocalDataWithDirty extends LocalData {
     activeStreakTimeLeft: number;
     nitroLaceDirty: boolean;
     nitroLacePercentage: number;
+    hideAndSeekBlindDirty: boolean;
+    hideAndSeekBlindTime: number;
+    hideAndSeekHunterReleaseTime: number;
+    hideAndSeekHunterReleaseSeeker: boolean;
+    infectedRespawnTime: number;
+    miniGameWinCountdownTime: number;
+    miniGameWinCountdownProps: boolean;
+    amongUsKillCooldownTime: number;
+    amongUsEmergencyCallCooldownTime: number;
+    amongUsEmergencyCallsRemaining: number;
+    amongUsEmergencyMeetingSeq: number;
 }
 
 // the non-optional properties are used by both server and client
@@ -901,6 +963,7 @@ export interface PlayerStatus {
     playerId?: number;
     pos: Vec2;
     posTarget?: Vec2;
+    dir?: Vec2;
     posDelta?: number;
     health?: number;
     posInterp?: number;
@@ -909,6 +972,7 @@ export interface PlayerStatus {
     downed: boolean;
     disconnected?: boolean;
     role: string;
+    outfit?: string;
     timeSinceUpdate?: number;
     timeSinceVisible?: number;
     minimapAlpha?: number;

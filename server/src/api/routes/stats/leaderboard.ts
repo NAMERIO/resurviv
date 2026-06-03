@@ -1,4 +1,4 @@
-import { and, count, eq, gte, inArray, ne, type SQL, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, ne, type SQL, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { MinGames } from "../../../../../shared/constants";
 import { TeamMode } from "../../../../../shared/gameConfig";
@@ -17,6 +17,7 @@ import {
 import { leaderboardCache } from "../../cache/leaderboard";
 import { db } from "../../db";
 import { matchDataTable, usersTable } from "../../db/schema";
+import { getGlobalRankLeaderboard } from "./global_rank";
 
 export const leaderboardRouter = new Hono<Context>();
 
@@ -39,9 +40,11 @@ leaderboardRouter.post(
 
         const startTime = performance.now();
         const data =
-            type === "most_kills" && teamMode != TeamMode.Solo
-                ? await multiplePlayersQuery(params)
-                : await soloLeaderboardQuery(params);
+            type === "rank"
+                ? await getGlobalRankLeaderboard(params.interval)
+                : type === "most_kills" && teamMode != TeamMode.Solo
+                  ? await multiplePlayersQuery(params)
+                  : await soloLeaderboardQuery(params);
         logQueryPerformance(startTime, params);
 
         // TODO: decide if we should cache empty results;
@@ -56,14 +59,6 @@ leaderboardRouter.post(
 // we don't use the one sent by the client lol.
 const MAX_RESULT_COUNT = 100;
 
-const typeToQuery: Record<LeaderboardParams["type"], string> = {
-    kills: "SUM(match_data.kills)",
-    most_damage_dealt: "MAX(match_data.damage_dealt)",
-    kpg: "ROUND(SUM(match_data.kills) * 1.0 / COUNT(*), 1)",
-    most_kills: "match_data.kills",
-    wins: "COUNT(CASE WHEN match_data.rank = 1 THEN 1 END)",
-};
-
 const intervalFilter = {
     daily: gte(matchDataTable.createdAt, sql`NOW() - INTERVAL '1 day'`),
     weekly: gte(matchDataTable.createdAt, sql`NOW() - INTERVAL '7 days'`),
@@ -71,6 +66,7 @@ const intervalFilter = {
 
 async function soloLeaderboardQuery(params: LeaderboardParams) {
     const { gameMode, interval, mapId, teamMode, type } = params;
+    if (type === "rank") throw new Error("Rank leaderboard must use the global query");
     const minGames = type === "kpg" ? MinGames[type][interval] : 1;
 
     const aggregatedMatches = db.$with("player_matches").as(

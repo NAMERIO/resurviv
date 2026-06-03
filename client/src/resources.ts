@@ -74,7 +74,9 @@ function selectTextureRes(renderer: PIXI.IRenderer, config: ConfigManager) {
     }
     if (renderer.type == PIXI.RENDERER_TYPE.WEBGL) {
         const s = (renderer as PIXI.Renderer).gl;
-        if (s.getParameter(s.MAX_TEXTURE_SIZE) < 4096) {
+        // The high-res loadout atlas can grow beyond 4096px when new items are
+        // added, so devices capped at 4096 need the low-res atlas.
+        if (s.getParameter(s.MAX_TEXTURE_SIZE) <= 4096) {
             textureRes = "low";
         }
     }

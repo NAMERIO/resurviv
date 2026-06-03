@@ -1,14 +1,22 @@
 import { randomInt } from "node:crypto";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { saveConfig } from "../../../../../config";
 import { GameObjectDefs } from "../../../../../shared/defs/gameObjectDefs";
 import { PassDefs } from "../../../../../shared/defs/gameObjects/passDefs";
 import { QuestDefs } from "../../../../../shared/defs/gameObjects/questDefs";
+import {
+    isSideQuestType,
+    SideQuestDefs,
+    SideQuestRefreshCooldownMs,
+} from "../../../../../shared/defs/gameObjects/sideQuestDefs";
 import { MapDefs } from "../../../../../shared/defs/mapDefs";
 import { TeamMode } from "../../../../../shared/gameConfig";
+import { ClanConstants } from "../../../../../shared/types/clan";
 import {
+    zBlackjackCheckParams,
+    zBlackjackResolveParams,
     zCoinFlipCheckParams,
     zCoinFlipResolveParams,
     zDiscordBalanceParams,
@@ -23,17 +31,25 @@ import {
     type GameModeStatus as GameModeStatusType,
 } from "../../../../../shared/types/stats";
 import { passUtil } from "../../../../../shared/utils/passUtil";
-import { serverConfigPath } from "../../../config";
+import { Config, serverConfigPath } from "../../../config";
 import { isBehindProxy } from "../../../utils/serverHelpers";
 import {
     type SaveGameBody,
+    zAddClanWarCgpBody,
+    zListFeaturedYoutubersBody,
+    zListGameModesBody,
+    zRemoveFeaturedYoutuberBody,
+    zSetBattlePassEndBody,
     zSetBattleRoyaleModeBody,
+    zSetClanCgpValueBody,
     zSetClientThemeBody,
     zSetGameModeBody,
+    zSetPauseClanStatsBody,
+    zTopRankPlayersBody,
     zUpdateRegionBody,
 } from "../../../utils/types";
 import type { Context } from "../..";
-import { server } from "../../apiServer";
+import { server, toBattleRoyaleMapName } from "../../apiServer";
 import {
     databaseEnabledMiddleware,
     privateMiddleware,
@@ -43,34 +59,232 @@ import { getRedisClient } from "../../cache";
 import { leaderboardCache } from "../../cache/leaderboard";
 import { db } from "../../db";
 import {
+    auctionListingTable,
+    clanMatchupHistoryTable,
     clanMemberStatsTable,
     clanMembersTable,
+    clanSeasonMembersTable,
+    clansTable,
+    clanWarHistoryTable,
     itemsTable,
     type MatchDataTable,
+    marketListingTable,
     matchDataTable,
+    userAuthIdentityTable,
     userPassTable,
     userQuestTable,
     usersTable,
 } from "../../db/schema";
+import { getGlobalRankLeaderboard } from "../stats/global_rank";
 import { MOCK_USER_ID } from "../user/auth/mock";
 import { passType, premiumPassUnlockType } from "../user/PassRouter";
 import { isBanned, logPlayerIPs, ModerationRouter } from "./ModerationRouter";
 
+function getSurvivalKillCgpMultiplier(timeAlive: number) {
+    if (timeAlive >= 5 * 60) return 1.25;
+    if (timeAlive >= 3 * 60) return 1.15;
+    if (timeAlive >= 2 * 60) return 1.1;
+    return 1;
+}
+
+function getRepeatedMatchupMultiplier(matchNumber: number) {
+    if (matchNumber <= 5) return 1;
+    if (matchNumber <= 10) return 0.75;
+    if (matchNumber <= 15) return 0.5;
+    return 0.1;
+}
+
+function getLobbyCgpMultipliers(playerCount: number) {
+    if (playerCount <= 3) {
+        return { kills: 0.25, wins: 0.1 };
+    }
+    if (playerCount <= 6) {
+        return { kills: 0.5, wins: 0.35 };
+    }
+    if (playerCount <= 9) {
+        return { kills: 1, wins: 1 };
+    }
+    if (playerCount <= 12) {
+        return { kills: 1.1, wins: 1.1 };
+    }
+    return { kills: 1.2, wins: 1.2 };
+}
+
+function toCgpMilli(value: number) {
+    return Math.round(value * ClanConstants.CgpScale);
+}
+
+async function updateItemStatRecord(
+    tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+    {
+        userId,
+        itemType,
+        kills,
+        wins,
+    }: {
+        userId: string;
+        itemType: string;
+        kills: number;
+        wins: number;
+    },
+) {
+    if (kills <= 0 && wins <= 0) return;
+
+    const [item] = await tx
+        .select({ id: itemsTable.id })
+        .from(itemsTable)
+        .where(and(eq(itemsTable.userId, userId), eq(itemsTable.type, itemType)))
+        .orderBy(asc(itemsTable.timeAcquired), asc(itemsTable.id))
+        .limit(1);
+
+    if (item) {
+        await tx
+            .update(itemsTable)
+            .set({
+                kills: sql`${itemsTable.kills} + ${kills}`,
+                wins: sql`${itemsTable.wins} + ${wins}`,
+            })
+            .where(eq(itemsTable.id, item.id));
+        return;
+    }
+
+    const [listing] = await tx
+        .select({
+            id: marketListingTable.id,
+            itemId: marketListingTable.itemId,
+            buyerUserId: marketListingTable.buyerUserId,
+        })
+        .from(marketListingTable)
+        .where(
+            and(
+                eq(marketListingTable.sellerUserId, userId),
+                eq(marketListingTable.itemType, itemType),
+                inArray(marketListingTable.status, ["active", "sold"]),
+            ),
+        )
+        .orderBy(asc(marketListingTable.createdAt), asc(marketListingTable.id))
+        .limit(1);
+
+    if (listing) {
+        await tx
+            .update(marketListingTable)
+            .set({
+                itemKills: sql`${marketListingTable.itemKills} + ${kills}`,
+                itemWins: sql`${marketListingTable.itemWins} + ${wins}`,
+            })
+            .where(eq(marketListingTable.id, listing.id));
+
+        if (listing.buyerUserId) {
+            await tx
+                .update(itemsTable)
+                .set({
+                    kills: sql`${itemsTable.kills} + ${kills}`,
+                    wins: sql`${itemsTable.wins} + ${wins}`,
+                })
+                .where(eq(itemsTable.id, listing.itemId));
+        }
+        return;
+    }
+
+    const [auction] = await tx
+        .select({
+            id: auctionListingTable.id,
+            itemId: auctionListingTable.itemId,
+            highestBidUserId: auctionListingTable.highestBidUserId,
+        })
+        .from(auctionListingTable)
+        .where(
+            and(
+                eq(auctionListingTable.sellerUserId, userId),
+                eq(auctionListingTable.itemType, itemType),
+                inArray(auctionListingTable.status, ["active", "sold"]),
+            ),
+        )
+        .orderBy(asc(auctionListingTable.createdAt), asc(auctionListingTable.id))
+        .limit(1);
+
+    if (!auction) return;
+
+    await tx
+        .update(auctionListingTable)
+        .set({
+            itemKills: sql`${auctionListingTable.itemKills} + ${kills}`,
+            itemWins: sql`${auctionListingTable.itemWins} + ${wins}`,
+        })
+        .where(eq(auctionListingTable.id, auction.id));
+
+    if (auction.highestBidUserId) {
+        await tx
+            .update(itemsTable)
+            .set({
+                kills: sql`${itemsTable.kills} + ${kills}`,
+                wins: sql`${itemsTable.wins} + ${wins}`,
+            })
+            .where(eq(itemsTable.id, auction.itemId));
+    }
+}
+
+async function updateEquippedItemStats(
+    tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+    matchData: SaveGameBody["matchData"],
+) {
+    for (const data of matchData) {
+        if (!data.userId) continue;
+
+        const wins = data.rank === 1 ? 1 : 0;
+        if (data.outfit && data.outfit !== "outfitBase") {
+            await updateItemStatRecord(tx, {
+                userId: data.userId,
+                itemType: data.outfit,
+                kills: data.kills,
+                wins,
+            });
+        }
+
+        if (data.melee && data.melee !== "fists") {
+            await updateItemStatRecord(tx, {
+                userId: data.userId,
+                itemType: data.melee,
+                kills: Number(data.weaponKills?.[data.melee] ?? 0),
+                wins,
+            });
+        }
+    }
+}
+
 // Helper function to update clan stats for players who are in clans
 async function updateClanStats(matchData: MatchDataTable[]) {
+    if (Config.pauseClanStats) {
+        server.logger.info("Clan stats are paused; skipping clan kill/win updates");
+        return;
+    }
+
     try {
         const aggregatedMatchData = new Map<
             string,
             {
                 userId: string;
+                gameId: string;
+                teamId: number;
                 createdAt: Date | string | undefined;
                 gameMode: GameModeStatusType;
                 kills: number;
                 rank: number;
+                timeAlive: number;
+                playerCount: number;
             }
         >();
+        const gamePlayerIds = new Map<string, Set<number>>();
 
         for (const data of matchData) {
+            const gameId = String(data.gameId);
+            let playerIds = gamePlayerIds.get(gameId);
+            if (!playerIds) {
+                playerIds = new Set();
+                gamePlayerIds.set(gameId, playerIds);
+            }
+            playerIds.add(data.playerId);
+
             if (!data.userId) continue;
 
             const gameMode = data.gameMode ?? GameModeStatus.Deathmatch;
@@ -80,6 +294,11 @@ async function updateClanStats(matchData: MatchDataTable[]) {
             if (existing) {
                 existing.kills += data.kills || 0;
                 existing.rank = Math.min(existing.rank, data.rank || Infinity);
+                existing.timeAlive = Math.max(existing.timeAlive, data.timeAlive || 0);
+                existing.playerCount = Math.max(
+                    existing.playerCount,
+                    gamePlayerIds.get(gameId)?.size || 0,
+                );
                 if (
                     data.createdAt &&
                     (!existing.createdAt ||
@@ -93,20 +312,47 @@ async function updateClanStats(matchData: MatchDataTable[]) {
 
             aggregatedMatchData.set(key, {
                 userId: data.userId,
+                gameId,
+                teamId: data.teamId,
                 createdAt: data.createdAt,
                 gameMode,
                 kills: data.kills || 0,
                 rank: data.rank || Infinity,
+                timeAlive: data.timeAlive || 0,
+                playerCount: gamePlayerIds.get(gameId)?.size || 0,
             });
         }
 
         for (const data of aggregatedMatchData.values()) {
-            if (!data.userId) continue;
+            data.playerCount = gamePlayerIds.get(data.gameId)?.size || data.playerCount;
+        }
 
-            // Check if the player is in a clan
-            const membership = await db.query.clanMembersTable.findFirst({
-                where: eq(clanMembersTable.userId, data.userId),
-            });
+        const userIds = [
+            ...new Set([...aggregatedMatchData.values()].map((d) => d.userId)),
+        ];
+        const memberships =
+            userIds.length > 0
+                ? await db
+                      .select({
+                          clanId: clanMembersTable.clanId,
+                          userId: clanMembersTable.userId,
+                          joinedAt: clanMembersTable.joinedAt,
+                      })
+                      .from(clanMembersTable)
+                      .where(inArray(clanMembersTable.userId, userIds))
+                : [];
+        const membershipsByUserId = new Map(
+            memberships.map((membership) => [membership.userId, membership]),
+        );
+        const gameTeamClans = new Map<string, Map<number, Set<string>>>();
+        const validEntries: Array<{
+            data: typeof aggregatedMatchData extends Map<string, infer T> ? T : never;
+            membership: (typeof memberships)[number];
+            matchTime: Date;
+        }> = [];
+
+        for (const data of aggregatedMatchData.values()) {
+            const membership = membershipsByUserId.get(data.userId);
 
             if (!membership) continue;
 
@@ -117,43 +363,154 @@ async function updateClanStats(matchData: MatchDataTable[]) {
                     : new Date(data.createdAt!);
             if (matchTime < membership.joinedAt) continue;
 
+            validEntries.push({ data, membership, matchTime });
+            let teamClans = gameTeamClans.get(data.gameId);
+            if (!teamClans) {
+                teamClans = new Map();
+                gameTeamClans.set(data.gameId, teamClans);
+            }
+            let clans = teamClans.get(data.teamId);
+            if (!clans) {
+                clans = new Set();
+                teamClans.set(data.teamId, clans);
+            }
+            clans.add(membership.clanId);
+        }
+
+        const matchupMultiplierCache = new Map<string, number>();
+        const getMatchupMultiplier = async (clanId: string, opponentClanId: string) => {
+            const cacheKey = `${clanId}:${opponentClanId}`;
+            const cached = matchupMultiplierCache.get(cacheKey);
+            if (cached !== undefined) return cached;
+
+            const [result] = await db
+                .select({ count: count() })
+                .from(clanMatchupHistoryTable)
+                .where(
+                    and(
+                        eq(clanMatchupHistoryTable.clanId, clanId),
+                        eq(clanMatchupHistoryTable.opponentClanId, opponentClanId),
+                        eq(clanMatchupHistoryTable.season, ClanConstants.CurrentSeason),
+                    ),
+                );
+            const multiplier = getRepeatedMatchupMultiplier((result?.count || 0) + 1);
+            matchupMultiplierCache.set(cacheKey, multiplier);
+            return multiplier;
+        };
+
+        for (const { data, membership } of validEntries) {
+            await db
+                .insert(clanSeasonMembersTable)
+                .values({
+                    clanId: membership.clanId,
+                    userId: data.userId,
+                    season: ClanConstants.CurrentSeason,
+                })
+                .onConflictDoUpdate({
+                    target: [
+                        clanSeasonMembersTable.clanId,
+                        clanSeasonMembersTable.userId,
+                        clanSeasonMembersTable.season,
+                    ],
+                    set: {
+                        leftAt: null,
+                    },
+                });
+
             // Update the clan member's stats
             const kills = data.kills || 0;
             const wins = data.rank === 1 ? 1 : 0;
-
-            // Check if stats record exists
-            const existingStats = await db.query.clanMemberStatsTable.findFirst({
-                where: and(
-                    eq(clanMemberStatsTable.clanId, membership.clanId),
-                    eq(clanMemberStatsTable.userId, data.userId),
-                    eq(clanMemberStatsTable.gameMode, data.gameMode),
+            const opponentClanIds = new Set<string>();
+            const teamClans = gameTeamClans.get(data.gameId);
+            if (teamClans) {
+                for (const [teamId, clans] of teamClans) {
+                    if (teamId === data.teamId) continue;
+                    for (const clanId of clans) {
+                        if (clanId !== membership.clanId) {
+                            opponentClanIds.add(clanId);
+                        }
+                    }
+                }
+            }
+            const matchupMultipliers = await Promise.all(
+                [...opponentClanIds].map((opponentClanId) =>
+                    getMatchupMultiplier(membership.clanId, opponentClanId),
                 ),
-            });
+            );
+            const matchupMultiplier =
+                matchupMultipliers.length > 0 ? Math.min(...matchupMultipliers) : 1;
+            const lobbyMultipliers = getLobbyCgpMultipliers(data.playerCount);
+            const killCgpMilli = toCgpMilli(
+                kills *
+                    Config.clanCgp.killValue *
+                    getSurvivalKillCgpMultiplier(data.timeAlive) *
+                    matchupMultiplier *
+                    lobbyMultipliers.kills,
+            );
+            const winCgpMilli = toCgpMilli(
+                wins * Config.clanCgp.winValue * lobbyMultipliers.wins,
+            );
 
-            if (existingStats) {
-                await db
-                    .update(clanMemberStatsTable)
-                    .set({
-                        kills: sql`${clanMemberStatsTable.kills} + ${kills}`,
-                        wins: sql`${clanMemberStatsTable.wins} + ${wins}`,
-                    })
-                    .where(
-                        and(
-                            eq(clanMemberStatsTable.clanId, membership.clanId),
-                            eq(clanMemberStatsTable.userId, data.userId),
-                            eq(clanMemberStatsTable.gameMode, data.gameMode),
-                        ),
-                    );
-            } else {
-                // Create new stats record
-                await db.insert(clanMemberStatsTable).values({
+            await db
+                .insert(clanMemberStatsTable)
+                .values({
                     clanId: membership.clanId,
                     userId: data.userId,
                     gameMode: data.gameMode,
+                    season: ClanConstants.CurrentSeason,
                     kills,
                     wins,
+                    killCgpMilli,
+                    winCgpMilli,
+                })
+                .onConflictDoUpdate({
+                    target: [
+                        clanMemberStatsTable.clanId,
+                        clanMemberStatsTable.userId,
+                        clanMemberStatsTable.gameMode,
+                        clanMemberStatsTable.season,
+                    ],
+                    set: {
+                        kills: sql`${clanMemberStatsTable.kills} + ${kills}`,
+                        wins: sql`${clanMemberStatsTable.wins} + ${wins}`,
+                        killCgpMilli: sql`${clanMemberStatsTable.killCgpMilli} + ${killCgpMilli}`,
+                        winCgpMilli: sql`${clanMemberStatsTable.winCgpMilli} + ${winCgpMilli}`,
+                    },
                 });
+        }
+
+        const matchupRows = new Map<
+            string,
+            {
+                clanId: string;
+                opponentClanId: string;
+                gameId: string;
+                season: number;
             }
+        >();
+        for (const [gameId, teamClans] of gameTeamClans) {
+            for (const [teamId, clans] of teamClans) {
+                for (const [opponentTeamId, opponentClans] of teamClans) {
+                    if (teamId === opponentTeamId) continue;
+                    for (const clanId of clans) {
+                        for (const opponentClanId of opponentClans) {
+                            if (clanId === opponentClanId) continue;
+                            matchupRows.set(`${gameId}:${clanId}:${opponentClanId}`, {
+                                clanId,
+                                opponentClanId,
+                                gameId,
+                                season: ClanConstants.CurrentSeason,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        if (matchupRows.size > 0) {
+            await db
+                .insert(clanMatchupHistoryTable)
+                .values([...matchupRows.values()])
+                .onConflictDoNothing();
         }
     } catch (err) {
         server.logger.error("Error updating clan stats:", err);
@@ -167,16 +524,28 @@ type CoinFlipUser = {
     gpBalance: number;
 };
 
-function findDiscordLinkedUser(discordId: string): Promise<CoinFlipUser | undefined> {
-    return db.query.usersTable.findFirst({
-        where: and(eq(usersTable.authId, discordId), eq(usersTable.linkedDiscord, true)),
-        columns: {
-            id: true,
-            slug: true,
-            username: true,
-            gpBalance: true,
-        },
-    });
+async function findDiscordLinkedUser(
+    discordId: string,
+    database: Pick<typeof db, "select"> = db,
+): Promise<CoinFlipUser | undefined> {
+    const [user] = await database
+        .select({
+            id: usersTable.id,
+            slug: usersTable.slug,
+            username: usersTable.username,
+            gpBalance: usersTable.gpBalance,
+        })
+        .from(userAuthIdentityTable)
+        .innerJoin(usersTable, eq(userAuthIdentityTable.userId, usersTable.id))
+        .where(
+            and(
+                eq(userAuthIdentityTable.provider, "discord"),
+                eq(userAuthIdentityTable.authId, discordId),
+            ),
+        )
+        .limit(1);
+
+    return user;
 }
 
 function toCoinFlipPlayer(user: CoinFlipUser) {
@@ -184,6 +553,150 @@ function toCoinFlipPlayer(user: CoinFlipUser) {
         slug: user.slug,
         username: user.username,
         gpBalance: user.gpBalance,
+    };
+}
+
+async function changeClanWarCgp(c: any, operation: "add" | "remove") {
+    const {
+        clan: clanSearch,
+        amount,
+        opponent,
+        result,
+        executor_id: executorId,
+    } = c.req.valid("json") as z.infer<typeof zAddClanWarCgpBody>;
+
+    const [clan] = await db
+        .select({
+            id: clansTable.id,
+            name: clansTable.name,
+        })
+        .from(clansTable)
+        .where(
+            sql`${clansTable.id}::text = ${clanSearch}
+                OR ${clansTable.slug} ILIKE ${clanSearch}
+                OR ${clansTable.name} ILIKE ${clanSearch}`,
+        )
+        .limit(1);
+
+    if (!clan) {
+        return c.json({ message: `Clan "${clanSearch}" not found` }, 200);
+    }
+
+    if (operation === "add") {
+        const latestWar = await db.query.clanWarHistoryTable.findFirst({
+            where: and(
+                eq(clanWarHistoryTable.clanId, clan.id),
+                sql`${clanWarHistoryTable.cgpAwarded} > 0`,
+            ),
+            orderBy: desc(clanWarHistoryTable.createdAt),
+        });
+        if (
+            latestWar &&
+            Date.now() - latestWar.createdAt.getTime() < 24 * 60 * 60 * 1000
+        ) {
+            const nextWarAt = new Date(
+                latestWar.createdAt.getTime() + 24 * 60 * 60 * 1000,
+            );
+            return c.json(
+                {
+                    message: `${clan.name} already received clan war CGP in the last 24 hours. Next available: ${nextWarAt.toLocaleString("en-US")}`,
+                },
+                200,
+            );
+        }
+    }
+
+    const cgpAmount = operation === "remove" ? -amount : amount;
+
+    await db.insert(clanWarHistoryTable).values({
+        clanId: clan.id,
+        season: ClanConstants.CurrentSeason,
+        opponentClanName:
+            opponent || (operation === "remove" ? "CGP Adjustment" : "Clan War"),
+        result,
+        cgpAwarded: cgpAmount,
+        addedByDiscordId: executorId,
+    });
+
+    const action = operation === "remove" ? "Removed" : "Added";
+
+    return c.json(
+        {
+            message: `${action} ${amount} CGP ${operation === "remove" ? "from" : "to"} ${clan.name} for clan war history.`,
+        },
+        200,
+    );
+}
+
+function addClanWarCgp(c: any) {
+    return changeClanWarCgp(c, "add");
+}
+
+function removeClanWarCgp(c: any) {
+    return changeClanWarCgp(c, "remove");
+}
+
+const AvailableDeathmatchMapIds = [
+    "main",
+    "desert",
+    "april_fools",
+    "faction",
+    "halloween",
+    "gun_game",
+    "snow",
+    "woods",
+    "cobalt",
+    "perks",
+    "valentine",
+    "inferno",
+] as const;
+
+const AvailableDeathmatchMapIdSet = new Set<string>(AvailableDeathmatchMapIds);
+
+function getTeamModeLabel(teamMode: TeamMode) {
+    switch (teamMode) {
+        case TeamMode.Solo:
+            return "solo";
+        case TeamMode.Duo:
+            return "duo";
+        case TeamMode.Squad:
+            return "squad";
+        case TeamMode.Ten:
+            return "10";
+        case TeamMode.Fifteen:
+            return "15";
+        default:
+            return String(teamMode);
+    }
+}
+
+function formatConfiguredMode(
+    mode: (typeof Config.modes)[number],
+    index: number,
+    modeType: "deathmatch" | "br",
+) {
+    const mapName =
+        modeType === "br" && mode.mapName.startsWith("br_")
+            ? mode.mapName.slice(3)
+            : mode.mapName;
+    return `${index}: ${mapName} | team=${getTeamModeLabel(mode.teamMode)} (${mode.teamMode}) | ${mode.enabled ? "on" : "off"}`;
+}
+
+function getConfiguredModeSummary(
+    mode: (typeof Config.modes)[number],
+    index: number,
+    modeType: "deathmatch" | "br",
+) {
+    const mapName =
+        modeType === "br" && mode.mapName.startsWith("br_")
+            ? mode.mapName.slice(3)
+            : mode.mapName;
+    return {
+        index,
+        mapName,
+        teamMode: mode.teamMode,
+        teamModeLabel: getTeamModeLabel(mode.teamMode),
+        enabled: mode.enabled,
     };
 }
 
@@ -199,31 +712,87 @@ export const PrivateRouter = new Hono<Context>()
     .post("/set_game_mode", validateParams(zSetGameModeBody), (c) => {
         const {
             index,
-            map_name: mapName,
+            mode_type: modeType,
+            map_name: requestedMapName,
             team_mode: teamMode,
             enabled,
         } = c.req.valid("json");
+        const configuredModes = server.getConfiguredModes(modeType);
 
-        if (mapName && !MapDefs[mapName as keyof typeof MapDefs]) {
-            return c.json({ error: "Invalid map name" }, 400);
+        if (!configuredModes[index]) {
+            return c.json({ message: `Invalid ${modeType} mode index ${index}` }, 200);
         }
 
-        if (!server.modes[index]) {
-            return c.json({ error: "Invalid mode index" }, 400);
+        let mapName = requestedMapName ?? configuredModes[index].mapName;
+
+        if (modeType === "br") {
+            mapName = mapName.startsWith("br_") ? mapName.slice(3) : mapName;
+            if (!toBattleRoyaleMapName(mapName)) {
+                return c.json(
+                    { message: `Battle Royale does not have map "${mapName}"` },
+                    200,
+                );
+            }
+        } else if (!AvailableDeathmatchMapIdSet.has(mapName)) {
+            return c.json({ message: `Deathmatch does not have map "${mapName}"` }, 200);
         }
 
-        server.setMode(index, {
-            mapName: (mapName ?? server.modes[index].mapName) as keyof typeof MapDefs,
-            teamMode: teamMode ?? server.modes[index].teamMode,
-            enabled: enabled ?? server.modes[index].enabled,
+        server.setMode(index, modeType, {
+            mapName: mapName as keyof typeof MapDefs,
+            teamMode: teamMode ?? configuredModes[index].teamMode,
+            enabled: enabled ?? configuredModes[index].enabled,
         });
 
         saveConfig(serverConfigPath, {
-            modes: server.modes,
+            modes: Config.modes,
+            br_modes: Config.br_modes,
         });
 
         return c.json(
-            { message: `Set mode ${index} to ${JSON.stringify(server.modes[index])}` },
+            {
+                message: `Set ${modeType} mode ${index} to ${JSON.stringify(
+                    server.getConfiguredModes(modeType)[index],
+                )}`,
+            },
+            200,
+        );
+    })
+    .post("/list_game_modes", validateParams(zListGameModesBody), (c) => {
+        const deathmatchMapIds = [...AvailableDeathmatchMapIds].sort();
+        const battleRoyaleMapIds = Object.keys(MapDefs)
+            .filter((mapName) => mapName.startsWith("br_"))
+            .map((mapName) => mapName.slice(3))
+            .sort();
+
+        return c.json(
+            {
+                ok: true,
+                battleRoyaleEnabled: Config.battleRoyaleMode,
+                deathmatchModes: Config.modes.map((mode, index) =>
+                    getConfiguredModeSummary(mode, index, "deathmatch"),
+                ),
+                battleRoyaleModes: Config.br_modes.map((mode, index) =>
+                    getConfiguredModeSummary(mode, index, "br"),
+                ),
+                availableDeathmatchMapIds: deathmatchMapIds,
+                availableBattleRoyaleMapIds: battleRoyaleMapIds,
+                message: [
+                    `Battle Royale global: ${Config.battleRoyaleMode ? "on" : "off"}`,
+                    "",
+                    "Deathmatch indexes:",
+                    ...Config.modes.map((mode, index) =>
+                        formatConfiguredMode(mode, index, "deathmatch"),
+                    ),
+                    "",
+                    "Battle Royale indexes:",
+                    ...Config.br_modes.map((mode, index) =>
+                        formatConfiguredMode(mode, index, "br"),
+                    ),
+                    "",
+                    `Available deathmatch map ids: ${deathmatchMapIds.join(", ")}`,
+                    `Available battle royale map ids: ${battleRoyaleMapIds.join(", ")}`,
+                ].join("\n"),
+            },
             200,
         );
     })
@@ -237,7 +806,6 @@ export const PrivateRouter = new Hono<Context>()
 
             saveConfig(serverConfigPath, {
                 battleRoyaleMode: enabled,
-                modes: server.modes,
             });
 
             return c.json(
@@ -263,6 +831,83 @@ export const PrivateRouter = new Hono<Context>()
 
         return c.json({ message: `Set client theme to ${theme}` }, 200);
     })
+    .post("/set_pause_clan_stats", validateParams(zSetPauseClanStatsBody), (c) => {
+        const { enabled } = c.req.valid("json");
+
+        Config.pauseClanStats = enabled;
+
+        saveConfig(serverConfigPath, {
+            pauseClanStats: enabled,
+        });
+
+        return c.json(
+            {
+                message: `Clan stat tracking is now ${enabled ? "paused" : "enabled"}`,
+            },
+            200,
+        );
+    })
+    .post("/battlepass_end", validateParams(zSetBattlePassEndBody), (c) => {
+        const { days } = c.req.valid("json");
+        const endDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+        const endDateIso = endDate.toISOString();
+
+        Config.battlePassEndDate = endDateIso;
+
+        saveConfig(serverConfigPath, {
+            battlePassEndDate: endDateIso,
+        });
+
+        return c.json(
+            {
+                message: `Battle pass season end set to ${endDateIso} (${days} day${days === 1 ? "" : "s"} from now).`,
+            },
+            200,
+        );
+    })
+    .post("/futured-youtubers", validateParams(zListFeaturedYoutubersBody), (c) => {
+        const youtubers = Config.featuredYoutubers;
+        if (youtubers.length === 0) {
+            return c.json({ message: "No featured YouTubers are configured." }, 200);
+        }
+
+        return c.json(
+            {
+                message: youtubers
+                    .map(
+                        (youtuber, index) =>
+                            `${index + 1}. ${youtuber.name} - ${youtuber.link}`,
+                    )
+                    .join("\n"),
+            },
+            200,
+        );
+    })
+    .post(
+        "/remove-futured-youtubers",
+        validateParams(zRemoveFeaturedYoutuberBody),
+        (c) => {
+            const { name } = c.req.valid("json");
+            const normalizedName = name.toLowerCase();
+            const previousLength = Config.featuredYoutubers.length;
+            Config.featuredYoutubers = Config.featuredYoutubers.filter(
+                (youtuber) => youtuber.name.toLowerCase() !== normalizedName,
+            );
+
+            if (Config.featuredYoutubers.length === previousLength) {
+                return c.json(
+                    { message: `No featured YouTuber found named "${name}".` },
+                    200,
+                );
+            }
+
+            saveConfig(serverConfigPath, {
+                featuredYoutubers: Config.featuredYoutubers,
+            });
+
+            return c.json({ message: `Removed featured YouTuber "${name}".` }, 200);
+        },
+    )
     .post(
         "/toggle_captcha",
         validateParams(
@@ -313,7 +958,10 @@ export const PrivateRouter = new Hono<Context>()
 
         await leaderboardCache.invalidateCache(matchData);
 
-        await db.insert(matchDataTable).values(matchData);
+        await db.transaction(async (tx) => {
+            await tx.insert(matchDataTable).values(matchData);
+            await updateEquippedItemStats(tx, matchData);
+        });
         await logPlayerIPs(matchData);
 
         // Update clan stats for players who are in clans
@@ -332,7 +980,8 @@ export const PrivateRouter = new Hono<Context>()
                     .array(
                         z.object({
                             id: z.string(),
-                            delta: z.number().finite().positive(),
+                            delta: z.number().finite().min(0),
+                            reset: z.boolean().optional(),
                         }),
                     )
                     .refine(
@@ -350,8 +999,12 @@ export const PrivateRouter = new Hono<Context>()
             }
 
             const validEntries = progress
-                .map((e) => ({ id: e.id, delta: Math.round(e.delta) }))
-                .filter((e) => QuestDefs[e.id] && e.delta > 0);
+                .map((e) => ({
+                    id: e.id,
+                    delta: Math.round(e.delta),
+                    reset: !!e.reset,
+                }))
+                .filter((e) => QuestDefs[e.id] && (e.delta > 0 || e.reset));
 
             if (validEntries.length === 0) {
                 return c.json({ success: true }, 200);
@@ -372,8 +1025,9 @@ export const PrivateRouter = new Hono<Context>()
             }
 
             let xpGain = 0;
+            let sideQuestGpGain = 0;
 
-            const deltaById = new Map(validEntries.map((e) => [e.id, e.delta]));
+            const entryById = new Map(validEntries.map((e) => [e.id, e]));
             const passDef = PassDefs[passType];
             const now = Date.now();
 
@@ -388,7 +1042,21 @@ export const PrivateRouter = new Hono<Context>()
                 if (!pass) return;
 
                 for (const quest of userQuests) {
-                    const delta = deltaById.get(quest.questType) ?? 0;
+                    const entry = entryById.get(quest.questType);
+                    if (!entry) continue;
+
+                    if (entry.reset && !quest.complete && quest.progress > 0) {
+                        await tx
+                            .update(userQuestTable)
+                            .set({
+                                progress: 0,
+                                complete: false,
+                            })
+                            .where(eq(userQuestTable.id, quest.id));
+                        continue;
+                    }
+
+                    const delta = entry.delta;
                     if (delta <= 0) continue;
 
                     const def = QuestDefs[quest.questType];
@@ -397,8 +1065,15 @@ export const PrivateRouter = new Hono<Context>()
                     const wasComplete = quest.complete;
                     const nowComplete = nextProgress >= quest.target;
 
-                    if (!wasComplete && nowComplete) {
+                    if (
+                        !wasComplete &&
+                        nowComplete &&
+                        !isSideQuestType(quest.questType)
+                    ) {
                         xpGain += def.xp;
+                    }
+                    if (!wasComplete && nowComplete && isSideQuestType(quest.questType)) {
+                        sideQuestGpGain += SideQuestDefs[quest.questType].gp;
                     }
 
                     if (nextProgress === quest.progress && wasComplete === nowComplete) {
@@ -410,8 +1085,23 @@ export const PrivateRouter = new Hono<Context>()
                         .set({
                             progress: nextProgress,
                             complete: nowComplete,
+                            nextRefreshAt:
+                                !wasComplete &&
+                                nowComplete &&
+                                isSideQuestType(quest.questType)
+                                    ? now + SideQuestRefreshCooldownMs
+                                    : quest.nextRefreshAt,
                         })
                         .where(eq(userQuestTable.id, quest.id));
+                }
+
+                if (sideQuestGpGain > 0) {
+                    await tx
+                        .update(usersTable)
+                        .set({
+                            gpBalance: sql`${usersTable.gpBalance} + ${sideQuestGpGain}`,
+                        })
+                        .where(eq(usersTable.id, userId));
                 }
 
                 if (xpGain <= 0) return;
@@ -587,6 +1277,87 @@ export const PrivateRouter = new Hono<Context>()
             return c.json({ message: `${slug} has ${user.gpBalance} GP` }, 200);
         },
     )
+    .post("/gp_leaderboard", databaseEnabledMiddleware, async (c) => {
+        const players = await db
+            .select({
+                slug: usersTable.slug,
+                username: usersTable.username,
+                gpBalance: usersTable.gpBalance,
+            })
+            .from(usersTable)
+            .where(sql`${usersTable.gpBalance} > 0`)
+            .orderBy(desc(usersTable.gpBalance), usersTable.slug)
+            .limit(10);
+
+        return c.json({ ok: true, players }, 200);
+    })
+    .post(
+        "/top_rank_players",
+        databaseEnabledMiddleware,
+        validateParams(zTopRankPlayersBody),
+        async (c) => {
+            const { interval } = c.req.valid("json");
+            const players = (await getGlobalRankLeaderboard(interval)).slice(0, 10);
+
+            return c.json({ ok: true, interval, players }, 200);
+        },
+    )
+    .post(
+        "/addcgp",
+        databaseEnabledMiddleware,
+        validateParams(zAddClanWarCgpBody),
+        addClanWarCgp,
+    )
+    .post(
+        "/clanwarcgp",
+        databaseEnabledMiddleware,
+        validateParams(zAddClanWarCgpBody),
+        addClanWarCgp,
+    )
+    .post(
+        "/add_cgp",
+        databaseEnabledMiddleware,
+        validateParams(zAddClanWarCgpBody),
+        addClanWarCgp,
+    )
+    .post(
+        "/removecgp",
+        databaseEnabledMiddleware,
+        validateParams(zAddClanWarCgpBody),
+        removeClanWarCgp,
+    )
+    .post(
+        "/remove_cgp",
+        databaseEnabledMiddleware,
+        validateParams(zAddClanWarCgpBody),
+        removeClanWarCgp,
+    )
+    .post(
+        "/clanwar_cgp",
+        databaseEnabledMiddleware,
+        validateParams(zAddClanWarCgpBody),
+        addClanWarCgp,
+    )
+    .post("/setkillcgp", validateParams(zSetClanCgpValueBody), (c) => {
+        const { value } = c.req.valid("json");
+        Config.clanCgp.killValue = value;
+        saveConfig(serverConfigPath, {
+            clanCgp: {
+                killValue: value,
+            },
+        });
+        return c.json({ message: `Kill CGP value set to ${value}` }, 200);
+    })
+    .post("/setwincgp", validateParams(zSetClanCgpValueBody), (c) => {
+        const { value } = c.req.valid("json");
+        Config.clanCgp.winValue = value;
+        saveConfig(serverConfigPath, {
+            clanCgp: {
+                winValue: value,
+            },
+        });
+        return c.json({ message: `Win CGP value set to ${value}` }, 200);
+    })
     .post(
         "/coinflip_check",
         databaseEnabledMiddleware,
@@ -668,6 +1439,205 @@ export const PrivateRouter = new Hono<Context>()
         },
     )
     .post(
+        "/blackjack_check",
+        databaseEnabledMiddleware,
+        validateParams(zBlackjackCheckParams),
+        async (c) => {
+            const {
+                challenger_discord_id: challengerDiscordId,
+                opponent_discord_id: opponentDiscordId,
+                bet,
+            } = c.req.valid("json");
+
+            if (challengerDiscordId === opponentDiscordId) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "same_user",
+                        message: "You cannot play blackjack against yourself.",
+                    },
+                    200,
+                );
+            }
+
+            const challenger = await findDiscordLinkedUser(challengerDiscordId);
+            if (!challenger) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "challenger_not_connected",
+                        message:
+                            "You do not have a game account connected to this Discord.",
+                    },
+                    200,
+                );
+            }
+
+            if (challenger.gpBalance < bet) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "challenger_not_enough_gp",
+                        message: "You do not have enough GP.",
+                    },
+                    200,
+                );
+            }
+
+            const opponent = await findDiscordLinkedUser(opponentDiscordId);
+            if (!opponent) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "opponent_not_connected",
+                        message:
+                            "User does not have a game account connected to this Discord.",
+                    },
+                    200,
+                );
+            }
+
+            if (opponent.gpBalance < bet) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "opponent_not_enough_gp",
+                        message: "User does not have enough GP.",
+                    },
+                    200,
+                );
+            }
+
+            return c.json(
+                {
+                    ok: true,
+                    challenger: toCoinFlipPlayer(challenger),
+                    opponent: toCoinFlipPlayer(opponent),
+                },
+                200,
+            );
+        },
+    )
+    .post(
+        "/blackjack_resolve",
+        databaseEnabledMiddleware,
+        validateParams(zBlackjackResolveParams),
+        async (c) => {
+            const {
+                challenger_discord_id: challengerDiscordId,
+                opponent_discord_id: opponentDiscordId,
+                winner_discord_id: winnerDiscordId,
+                loser_discord_id: loserDiscordId,
+                bet,
+            } = c.req.valid("json");
+
+            if (challengerDiscordId === opponentDiscordId) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "same_user",
+                        message: "You cannot play blackjack against yourself.",
+                    },
+                    200,
+                );
+            }
+
+            const expectedPlayers = new Set([challengerDiscordId, opponentDiscordId]);
+            if (
+                !expectedPlayers.has(winnerDiscordId) ||
+                !expectedPlayers.has(loserDiscordId) ||
+                winnerDiscordId === loserDiscordId
+            ) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "invalid_winner",
+                        message: "Invalid blackjack winner.",
+                    },
+                    200,
+                );
+            }
+
+            const result = await db.transaction(async (tx) => {
+                const winner = await findDiscordLinkedUser(winnerDiscordId, tx);
+
+                if (!winner) {
+                    return {
+                        ok: false,
+                        reason: "winner_not_connected",
+                        message: "Winner does not have a connected game account.",
+                    };
+                }
+
+                const loser = await findDiscordLinkedUser(loserDiscordId, tx);
+
+                if (!loser) {
+                    return {
+                        ok: false,
+                        reason: "loser_not_connected",
+                        message: "Loser does not have a connected game account.",
+                    };
+                }
+
+                if (winner.gpBalance < bet || loser.gpBalance < bet) {
+                    return {
+                        ok: false,
+                        reason: "not_enough_gp",
+                        message: "One player does not have enough GP.",
+                    };
+                }
+
+                const [updatedLoser] = await tx
+                    .update(usersTable)
+                    .set({
+                        gpBalance: sql`${usersTable.gpBalance} - ${bet}`,
+                    })
+                    .where(
+                        and(
+                            eq(usersTable.id, loser.id),
+                            sql`${usersTable.gpBalance} >= ${bet}`,
+                        ),
+                    )
+                    .returning({
+                        gpBalance: usersTable.gpBalance,
+                    });
+
+                if (!updatedLoser) {
+                    return {
+                        ok: false,
+                        reason: "loser_not_enough_gp",
+                        message: "Loser does not have enough GP.",
+                    };
+                }
+
+                const [updatedWinner] = await tx
+                    .update(usersTable)
+                    .set({
+                        gpBalance: sql`${usersTable.gpBalance} + ${bet}`,
+                    })
+                    .where(eq(usersTable.id, winner.id))
+                    .returning({
+                        gpBalance: usersTable.gpBalance,
+                    });
+
+                return {
+                    ok: true,
+                    bet,
+                    winner: {
+                        ...toCoinFlipPlayer(winner),
+                        gpBalance: updatedWinner?.gpBalance ?? winner.gpBalance + bet,
+                    },
+                    loser: {
+                        ...toCoinFlipPlayer(loser),
+                        gpBalance: updatedLoser.gpBalance,
+                    },
+                };
+            });
+
+            return c.json(result, 200);
+        },
+    )
+    .post(
         "/discord_balance",
         databaseEnabledMiddleware,
         validateParams(zDiscordBalanceParams),
@@ -719,18 +1689,7 @@ export const PrivateRouter = new Hono<Context>()
             }
 
             const result = await db.transaction(async (tx) => {
-                const challenger = await tx.query.usersTable.findFirst({
-                    where: and(
-                        eq(usersTable.authId, challengerDiscordId),
-                        eq(usersTable.linkedDiscord, true),
-                    ),
-                    columns: {
-                        id: true,
-                        slug: true,
-                        username: true,
-                        gpBalance: true,
-                    },
-                });
+                const challenger = await findDiscordLinkedUser(challengerDiscordId, tx);
 
                 if (!challenger) {
                     return {
@@ -741,18 +1700,7 @@ export const PrivateRouter = new Hono<Context>()
                     };
                 }
 
-                const opponent = await tx.query.usersTable.findFirst({
-                    where: and(
-                        eq(usersTable.authId, opponentDiscordId),
-                        eq(usersTable.linkedDiscord, true),
-                    ),
-                    columns: {
-                        id: true,
-                        slug: true,
-                        username: true,
-                        gpBalance: true,
-                    },
-                });
+                const opponent = await findDiscordLinkedUser(opponentDiscordId, tx);
 
                 if (!opponent) {
                     return {

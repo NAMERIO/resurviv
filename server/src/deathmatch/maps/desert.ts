@@ -61,7 +61,7 @@ export const DeatchmatchDesert: MapDef = util.mergeDeep(structuredClone(Desert),
                   [] as Record<string, number>[],
               )
             : {},
-         fixedSpawns: [
+        fixedSpawns: [
             {
                 cache_01: 1,
                 cache_02: 1, // mosin tree
@@ -83,13 +83,13 @@ export const DeatchmatchDesert: MapDef = util.mergeDeep(structuredClone(Desert),
                 house_red_02: 1,
             },
         ],
-       randomSpawns: [
+        randomSpawns: [
             {
                 spawns: ["club_complex_01", "bank_01", "desert_town_02"],
                 choose: 2,
             },
             {
-                spawns: ["mansion_structure_01", ],
+                spawns: ["mansion_structure_01"],
                 choose: 1,
             },
             {
@@ -123,7 +123,6 @@ export const DeatchmatchDesert: MapDef = util.mergeDeep(structuredClone(Desert),
                 stone_03: "stone_03b",
             },
         ],
-    
     },
 });
 
@@ -172,6 +171,7 @@ DeatchmatchDesert.lootTable = {
     tier_throwables: [
         { name: "frag", count: 2, weight: 1 },
         { name: "smoke", count: 1, weight: 1 },
+        { name: "poison_gas", count: 1, weight: 0.35 },
         { name: "strobe", count: 1, weight: 0.2 },
         { name: "mirv", count: 2, weight: 0.05 },
     ],

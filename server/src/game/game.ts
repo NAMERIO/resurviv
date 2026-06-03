@@ -1,7 +1,14 @@
 import fs from "node:fs";
 import path from "node:path";
+import type { AmongUsRole } from "../../../shared/defs/amongUsRoleDefs";
 import { WeaponTypeToDefs } from "../../../shared/defs/gameObjectDefs";
 import type { MapDefs } from "../../../shared/defs/mapDefs";
+import {
+    type AmongUsImpostorCount,
+    DefaultAmongUsImpostorCount,
+    DefaultPrivateLobbyMiniGame,
+    normalizeAmongUsImpostorCount,
+} from "../../../shared/defs/miniGame";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import { GameModeStatus } from "../../../shared/types/stats";
@@ -39,6 +46,17 @@ import { SmokeBarn } from "./objects/smoke";
 import { PluginManager } from "./pluginManager";
 import { Profiler } from "./profiler";
 
+const mergeWeaponStats = (
+    left: Record<string, number> = {},
+    right: Record<string, number> = {},
+): Record<string, number> => {
+    const merged = { ...left };
+    for (const [weaponType, kills] of Object.entries(right)) {
+        merged[weaponType] = (merged[weaponType] ?? 0) + kills;
+    }
+    return merged;
+};
+
 export interface JoinTokenData {
     expiresAt: number;
     userId: string | null;
@@ -48,6 +66,7 @@ export interface JoinTokenData {
     findGameIp: string;
     spectator?: boolean;
     loadout?: Loadout;
+    arenaTeam?: "A" | "B";
     quests?: string[];
     groupData: {
         autoFill: boolean;
@@ -70,6 +89,13 @@ export class Game {
     isTeamMode: boolean;
     config: ServerGameConfig;
     arenaPrivate: boolean;
+    miniGame: ServerGameConfig["miniGame"];
+    amongUsImpostorCount: AmongUsImpostorCount;
+    disableAirstrikes: boolean;
+    disablePerks: boolean;
+    infectedHumansWon = false;
+    hideAndSeekHidersWon = false;
+    amongUsWinningRole?: AmongUsRole;
     arenaStartLockTimer = 0;
     arenaLastCountdownSecond = -1;
     arenaGoBroadcasted = false;
@@ -154,6 +180,13 @@ export class Game {
 
         this.config = config;
         this.arenaPrivate = !!config.arenaPrivate;
+        this.miniGame = config.miniGame ?? DefaultPrivateLobbyMiniGame;
+        this.amongUsImpostorCount =
+            this.miniGame === "among_us"
+                ? normalizeAmongUsImpostorCount(config.amongUsImpostorCount)
+                : DefaultAmongUsImpostorCount;
+        this.disableAirstrikes = !!config.disableAirstrikes;
+        this.disablePerks = !!config.disablePerks;
 
         this.teamMode = config.teamMode;
         this.mapName = config.mapName;
@@ -417,6 +450,12 @@ export class Game {
         if (isBattleRoyaleMapName(this.mapName) && this.battleRoyaleJoinClosed) {
             return false;
         }
+        if (!isBattleRoyaleMapName(this.mapName) && this.gas.circleIdx >= 1) {
+            return false;
+        }
+        if (this.gas.finalCloseStarted) {
+            return false;
+        }
         return !this.over;
         return (
             this.aliveCount < this.map.mapDef.gameMode.maxPlayers &&
@@ -442,6 +481,8 @@ export class Game {
             | net.DropItemMsg
             | net.SpectateMsg
             | net.PerkModeRoleSelectMsg
+            | net.AmongUsMeetingVoteMsg
+            | net.AmongUsMeetingChatSendMsg
             | net.EditMsg
             | undefined = undefined;
 
@@ -487,6 +528,14 @@ export class Game {
                 break;
             case net.MsgType.PerkModeRoleSelect:
                 msg = new net.PerkModeRoleSelectMsg();
+                msg.deserialize(stream);
+                break;
+            case net.MsgType.AmongUsMeetingVote:
+                msg = new net.AmongUsMeetingVoteMsg();
+                msg.deserialize(stream);
+                break;
+            case net.MsgType.AmongUsMeetingChatSend:
+                msg = new net.AmongUsMeetingChatSendMsg();
                 msg.deserialize(stream);
                 break;
             case net.MsgType.Edit:
@@ -584,6 +633,20 @@ export class Game {
                 player.roleSelect((msg as net.PerkModeRoleSelectMsg).role);
                 break;
             }
+            case net.MsgType.AmongUsMeetingVote: {
+                this.playerBarn.voteInAmongUsMeeting(
+                    player,
+                    (msg as net.AmongUsMeetingVoteMsg).targetId,
+                );
+                break;
+            }
+            case net.MsgType.AmongUsMeetingChatSend: {
+                this.playerBarn.chatInAmongUsMeeting(
+                    player,
+                    (msg as net.AmongUsMeetingChatSendMsg).message,
+                );
+                break;
+            }
             case net.MsgType.Edit: {
                 player.processEditMsg(msg as net.EditMsg);
                 break;
@@ -601,6 +664,29 @@ export class Game {
         player.spectating = undefined;
         player.dirNew = v2.create(1, 0);
         player.setPartDirty();
+        if (this.map.amongUsMode) {
+            if (!player.dead) {
+                if (
+                    player.health < GameConfig.player.reviveHealth &&
+                    player.lastDamagedBy
+                ) {
+                    player.lastDamagedBy.health += GameConfig.player.reviveHealth;
+                }
+                player.kill({
+                    damageType: GameConfig.DamageType.Bleeding,
+                    dir: player.dir,
+                    source: player.downedBy,
+                });
+            } else {
+                this.playerBarn.refreshAmongUsMeetingAfterParticipantChange();
+            }
+
+            if (this.playerBarn.players.every((p) => p.disconnected)) {
+                this.stop();
+            }
+            return;
+        }
+
         const battleRoyaleMode = isBattleRoyaleMapName(this.mapName);
         const battleRoyaleBodyEligible =
             player.timeAlive >= 5 || player.pickedUpLoot || player.lostHealth;
@@ -635,7 +721,10 @@ export class Game {
         this.msgsToSend.serializeMsg(type, msg);
     }
 
-    sendQuestProgress(userId: string, progress: Array<{ id: string; delta: number }>) {
+    sendQuestProgress(
+        userId: string,
+        progress: Array<{ id: string; delta: number; reset?: boolean }>,
+    ) {
         if (this.arenaPrivate) {
             return;
         }
@@ -691,6 +780,7 @@ export class Game {
                 findGameIp: token.ip,
                 spectator: token.spectator,
                 loadout: token.loadout,
+                arenaTeam: token.arenaTeam,
                 quests: token.quests,
             });
         }
@@ -749,6 +839,10 @@ export class Game {
             teamMode: this.teamMode,
             mapName: this.mapName,
             arenaPrivate: this.arenaPrivate,
+            miniGame: this.miniGame,
+            amongUsImpostorCount: this.amongUsImpostorCount,
+            disableAirstrikes: this.disableAirstrikes,
+            disablePerks: this.disablePerks,
             canJoin: this.canJoin,
             aliveCount: this.aliveCount,
             startedTime: this.startedTime,
@@ -782,35 +876,30 @@ export class Game {
          *
          * it also seems to be unused by the client so we could also remove it?
          */
-        const teamTotal = new Set(players.map(({ player }) => player.teamId)).size;
-
-        const teamKills = players.reduce(
-            (acc, curr) => {
-                acc[curr.player.teamId] =
-                    (acc[curr.player.teamId] ?? 0) + curr.player.kills;
-                return acc;
-            },
-            {} as Record<string, number>,
-        );
-
-        const values: SaveGameBody["matchData"] = players.map(({ player, rank }) => {
+        const rawValues: SaveGameBody["matchData"] = players.map(({ player, rank }) => {
             return {
                 // *NOTE: userId is optional; we save the game stats for non logged users too
                 userId: player.userId,
                 region: Config.gameServer.thisRegion,
                 username: player.name,
                 playerId: player.matchDataId,
+                outfit: player.loadout.outfit,
+                melee: player.loadout.melee,
                 gameMode: isBattleRoyaleMapName(this.mapName)
                     ? GameModeStatus.BattleRoyale
                     : GameModeStatus.Deathmatch,
                 teamMode: this.teamMode,
-                teamCount: player.group?.players.length ?? 1,
-                teamTotal: teamTotal,
+                teamCount: 1,
+                teamTotal: 1,
                 teamId: player.teamId,
                 timeAlive: Math.round(player.timeAlive),
                 died: player.dead,
                 kills: player.kills,
-                team_kills: teamKills[player.groupId] ?? 0,
+                weaponKills: player.weaponKills,
+                weaponDeaths: player.weaponDeaths,
+                weaponDamageDealt: player.weaponDamageDealt,
+                weaponDamageTaken: player.weaponDamageTaken,
+                teamKills: 0,
                 damageDealt: Math.round(player.damageDealt),
                 damageTaken: Math.round(player.damageTaken),
                 killerId: player.killedBy?.matchDataId || 0,
@@ -823,6 +912,98 @@ export class Game {
                 findGameIp: player.findGameIp,
             };
         });
+
+        const matchDataByParticipant = new Map<
+            string,
+            SaveGameBody["matchData"][number]
+        >();
+        for (const data of rawValues) {
+            const key = data.userId ? `user:${data.userId}` : `ip:${data.findGameIp}`;
+            const existing = matchDataByParticipant.get(key);
+            if (!existing) {
+                matchDataByParticipant.set(key, {
+                    ...data,
+                    killedIds: [...data.killedIds],
+                    weaponKills: { ...data.weaponKills },
+                    weaponDeaths: { ...data.weaponDeaths },
+                    weaponDamageDealt: { ...data.weaponDamageDealt },
+                    weaponDamageTaken: { ...data.weaponDamageTaken },
+                });
+                continue;
+            }
+
+            const latest = data.playerId > existing.playerId ? data : existing;
+            const kills = isBattleRoyaleMapName(this.mapName)
+                ? existing.kills + data.kills
+                : Math.max(existing.kills, data.kills);
+            const timeAlive = existing.timeAlive + data.timeAlive;
+            const damageDealt = existing.damageDealt + data.damageDealt;
+            const damageTaken = existing.damageTaken + data.damageTaken;
+            const killedIds = Array.from(
+                new Set([...existing.killedIds, ...data.killedIds]),
+            );
+            const weaponKills = mergeWeaponStats(existing.weaponKills, data.weaponKills);
+            const weaponDeaths = mergeWeaponStats(
+                existing.weaponDeaths,
+                data.weaponDeaths,
+            );
+            const weaponDamageDealt = mergeWeaponStats(
+                existing.weaponDamageDealt,
+                data.weaponDamageDealt,
+            );
+            const weaponDamageTaken = mergeWeaponStats(
+                existing.weaponDamageTaken,
+                data.weaponDamageTaken,
+            );
+
+            existing.username = latest.username;
+            existing.playerId = latest.playerId;
+            existing.outfit = latest.outfit;
+            existing.teamId = latest.teamId;
+            existing.rank = latest.rank;
+            existing.died = latest.died;
+            existing.killerId = latest.killerId;
+            existing.ip = latest.ip;
+            existing.findGameIp = latest.findGameIp;
+            existing.teamMode = latest.teamMode;
+            existing.gameMode = latest.gameMode;
+            existing.mapId = latest.mapId;
+            existing.mapSeed = latest.mapSeed;
+            existing.region = latest.region;
+            existing.gameId = latest.gameId;
+            existing.userId = latest.userId;
+            existing.kills = kills;
+            existing.timeAlive = timeAlive;
+            existing.damageDealt = damageDealt;
+            existing.damageTaken = damageTaken;
+            existing.killedIds = killedIds;
+            existing.weaponKills = weaponKills;
+            existing.weaponDeaths = weaponDeaths;
+            existing.weaponDamageDealt = weaponDamageDealt;
+            existing.weaponDamageTaken = weaponDamageTaken;
+        }
+
+        const values = Array.from(matchDataByParticipant.values());
+        const teamTotal = new Set(values.map((data) => data.teamId)).size;
+        const teamKills = values.reduce(
+            (acc, data) => {
+                acc[data.teamId] = (acc[data.teamId] ?? 0) + data.kills;
+                return acc;
+            },
+            {} as Record<string, number>,
+        );
+        const teamCounts = values.reduce(
+            (acc, data) => {
+                acc[data.teamId] = (acc[data.teamId] ?? 0) + 1;
+                return acc;
+            },
+            {} as Record<string, number>,
+        );
+        for (const data of values) {
+            data.teamTotal = teamTotal;
+            data.teamKills = teamKills[data.teamId] ?? 0;
+            data.teamCount = Math.min(teamCounts[data.teamId] ?? 1, this.teamMode);
+        }
 
         // only save the game if it has more than 2 players lol
         if (values.length < 2) return;

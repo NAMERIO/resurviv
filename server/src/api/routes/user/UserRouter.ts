@@ -9,6 +9,8 @@ import {
     type BuyMarketListingResponse,
     type CancelAuctionListingResponse,
     type CancelMarketListingResponse,
+    type ClaimLootBoxAdResponse,
+    type ClaimRewardedAdGpResponse,
     type ClaimSocialGpRewardResponse,
     type CreateAuctionListingResponse,
     type CreateMarketListingResponse,
@@ -33,6 +35,8 @@ import {
     zBuyMarketListingRequest,
     zCancelAuctionListingRequest,
     zCancelMarketListingRequest,
+    zClaimLootBoxAdRequest,
+    zClaimRewardedAdGpRequest,
     zClaimSocialGpRewardRequest,
     zCreateAuctionListingRequest,
     zCreateMarketListingRequest,
@@ -45,6 +49,7 @@ import {
     zSendFriendGpRequest,
     zSendFriendSkinGiftRequest,
     zSetItemStatusRequest,
+    zUnlinkAuthRequest,
     zUsernameRequest,
 } from "../../../../../shared/types/user";
 import {
@@ -86,11 +91,13 @@ import {
     matchDataTable,
     rewardClaimsTable,
     skinGiftTable,
+    userAuthIdentityTable,
     userFriendsTable,
     usersTable,
 } from "../../db/schema";
 import type { Context } from "../../index";
 import {
+    ensureUserAuthIdentities,
     getTimeUntilNextUsernameChange,
     logoutUser,
     sanitizeSlug,
@@ -111,6 +118,20 @@ const SOCIAL_GP_REWARDS = {
     github_star: { rewardKey: "social_github_star", gp: SOCIAL_GP_REWARD_AMOUNT },
     discord_join: { rewardKey: "social_discord_join", gp: SOCIAL_GP_REWARD_AMOUNT },
 } as const;
+const REWARDED_AD_GP_AMOUNT = 50;
+const REWARDED_AD_GP_DAILY_LIMIT = 3;
+const REWARDED_AD_GP_REWARD_KEY_PREFIX = "rewarded_ad_gp";
+const LOOT_BOX_AD_REWARD_KEY_PREFIX = "loot_box_ad";
+const LOOT_BOX_AD_OPEN_REWARD_KEY_PREFIX = "loot_box_ad_open";
+const LOOT_BOX_AD_REQUIREMENTS: Record<string, number> = {
+    loot_box_04: 5,
+};
+
+function getItemMakerName(
+    user: Pick<typeof usersTable.$inferSelect, "username" | "slug">,
+) {
+    return user.username || user.slug || "Unknown";
+}
 
 function getShopLootBoxes() {
     return Object.values(lootBoxes).map((box) => ({
@@ -119,6 +140,7 @@ function getShopLootBoxes() {
         price: box.price,
         chances: box.chances,
         itemTypes: getLootBoxItems(box.id),
+        adRequirement: LOOT_BOX_AD_REQUIREMENTS[box.id],
     }));
 }
 
@@ -230,6 +252,103 @@ async function getSocialGpRewardClaims(userId: string) {
     return {
         github_star: claimedRewardKeys.has(SOCIAL_GP_REWARDS.github_star.rewardKey),
         discord_join: claimedRewardKeys.has(SOCIAL_GP_REWARDS.discord_join.rewardKey),
+    };
+}
+
+function getRewardedAdGpDay(now = Date.now()) {
+    return new Date(now).toISOString().slice(0, 10);
+}
+
+function getRewardedAdGpResetAt(now = Date.now()) {
+    const date = new Date(now);
+    return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1);
+}
+
+function getRewardedAdGpRewardKeys(day = getRewardedAdGpDay()) {
+    return Array.from(
+        { length: REWARDED_AD_GP_DAILY_LIMIT },
+        (_value, index) => `${REWARDED_AD_GP_REWARD_KEY_PREFIX}:${day}:${index}`,
+    );
+}
+
+function getLootBoxAdRequirement(boxId: string) {
+    return LOOT_BOX_AD_REQUIREMENTS[boxId] ?? 0;
+}
+
+function getLootBoxAdRewardKeys(boxId: string, day = getRewardedAdGpDay()) {
+    const requirement = getLootBoxAdRequirement(boxId);
+    return Array.from(
+        { length: requirement },
+        (_value, index) => `${LOOT_BOX_AD_REWARD_KEY_PREFIX}:${day}:${boxId}:${index}`,
+    );
+}
+
+function getLootBoxAdOpenRewardKey(boxId: string, day = getRewardedAdGpDay()) {
+    return `${LOOT_BOX_AD_OPEN_REWARD_KEY_PREFIX}:${day}:${boxId}`;
+}
+
+async function getLootBoxAdStates(userId: string) {
+    const trackedBoxIds = Object.keys(LOOT_BOX_AD_REQUIREMENTS);
+    const rewardKeys = trackedBoxIds.flatMap((boxId) => [
+        ...getLootBoxAdRewardKeys(boxId),
+        getLootBoxAdOpenRewardKey(boxId),
+    ]);
+    const rows =
+        rewardKeys.length > 0
+            ? await db
+                  .select({
+                      rewardKey: rewardClaimsTable.rewardKey,
+                  })
+                  .from(rewardClaimsTable)
+                  .where(
+                      and(
+                          eq(rewardClaimsTable.userId, userId),
+                          inArray(rewardClaimsTable.rewardKey, rewardKeys),
+                      ),
+                  )
+            : [];
+    const claimedKeys = new Set(rows.map((row) => row.rewardKey));
+
+    return Object.fromEntries(
+        trackedBoxIds.map((boxId) => {
+            const adKeys = getLootBoxAdRewardKeys(boxId);
+            const watched = adKeys.filter((key) => claimedKeys.has(key)).length;
+            const required = getLootBoxAdRequirement(boxId);
+            return [
+                boxId,
+                {
+                    required,
+                    watched,
+                    remaining: Math.max(0, required - watched),
+                    opened: claimedKeys.has(getLootBoxAdOpenRewardKey(boxId)),
+                    resetAt: getRewardedAdGpResetAt(),
+                },
+            ];
+        }),
+    );
+}
+
+async function getRewardedAdGpState(userId: string) {
+    const rewardKeys = getRewardedAdGpRewardKeys();
+    const rows = await db
+        .select({
+            rewardKey: rewardClaimsTable.rewardKey,
+        })
+        .from(rewardClaimsTable)
+        .where(
+            and(
+                eq(rewardClaimsTable.userId, userId),
+                inArray(rewardClaimsTable.rewardKey, rewardKeys),
+            ),
+        );
+    const claimed = rows.length;
+
+    return {
+        amount: REWARDED_AD_GP_AMOUNT,
+        limit: REWARDED_AD_GP_DAILY_LIMIT,
+        claimed,
+        remaining: Math.max(0, REWARDED_AD_GP_DAILY_LIMIT - claimed),
+        resetAt: getRewardedAdGpResetAt(),
     };
 }
 
@@ -409,13 +528,26 @@ async function claimSkinGifts(userId: string) {
     return gifts satisfies SkinGift[];
 }
 
-function getUserItems(userId: string) {
+async function getUserItems(userId: string) {
+    await db
+        .update(itemsTable)
+        .set({
+            maker: sql`COALESCE(
+                (SELECT ${usersTable.username} FROM ${usersTable} WHERE ${usersTable.id} = ${userId}),
+                'Unknown'
+            )`,
+        })
+        .where(and(eq(itemsTable.userId, userId), eq(itemsTable.maker, "Unknown")));
+
     return db
         .select({
             id: itemsTable.id,
             type: itemsTable.type,
             timeAcquired: itemsTable.timeAcquired,
             source: itemsTable.source,
+            maker: itemsTable.maker,
+            kills: itemsTable.kills,
+            wins: itemsTable.wins,
             status: itemsTable.status,
         })
         .from(itemsTable)
@@ -440,6 +572,9 @@ async function expireMarketListings(tx: any, targetUserId?: string) {
             sellerUserId: marketListingTable.sellerUserId,
             itemId: marketListingTable.itemId,
             itemType: marketListingTable.itemType,
+            itemMaker: marketListingTable.itemMaker,
+            itemKills: marketListingTable.itemKills,
+            itemWins: marketListingTable.itemWins,
         });
 
     if (expiredNow.length === 0) {
@@ -454,10 +589,16 @@ async function expireMarketListings(tx: any, targetUserId?: string) {
                     sellerUserId: string;
                     itemId: string;
                     itemType: string;
+                    itemMaker: string;
+                    itemKills: number;
+                    itemWins: number;
                 }) => ({
                     id: listing.itemId,
                     userId: listing.sellerUserId,
                     type: listing.itemType,
+                    maker: listing.itemMaker,
+                    kills: listing.itemKills,
+                    wins: listing.itemWins,
                     source: "Item expired",
                     timeAcquired: Date.now(),
                 }),
@@ -501,6 +642,9 @@ async function expireAuctionListings(tx: any) {
                 id: auction.itemId,
                 userId: auction.highestBidUserId,
                 type: auction.itemType,
+                maker: auction.itemMaker,
+                kills: auction.itemKills,
+                wins: auction.itemWins,
                 source: "auction_win",
                 timeAcquired: Date.now(),
             });
@@ -516,6 +660,9 @@ async function expireAuctionListings(tx: any) {
                 id: auction.itemId,
                 userId: auction.sellerUserId,
                 type: auction.itemType,
+                maker: auction.itemMaker,
+                kills: auction.itemKills,
+                wins: auction.itemWins,
                 source: "auction_expired",
                 timeAcquired: Date.now(),
             });
@@ -595,6 +742,9 @@ async function buildMarketState(userId: string) {
         id: listing.id,
         itemId: listing.itemId,
         itemType: listing.itemType,
+        maker: listing.itemMaker,
+        kills: listing.itemKills,
+        wins: listing.itemWins,
         price: listing.price,
         sellerSlug: slugByUserId.get(listing.sellerUserId) || "unknown",
         createdAt: new Date(listing.createdAt).getTime(),
@@ -612,6 +762,9 @@ async function buildMarketState(userId: string) {
         id: auction.id,
         itemId: auction.itemId,
         itemType: auction.itemType,
+        maker: auction.itemMaker,
+        kills: auction.itemKills,
+        wins: auction.itemWins,
         sellerSlug: slugByUserId.get(auction.sellerUserId) || "unknown",
         startPrice: auction.startPrice,
         highestBid: auction.highestBid,
@@ -655,6 +808,8 @@ UserRouter.post("/profile", async (c) => {
         loadout,
         slug,
         linked,
+        linkedDiscord,
+        linkedGoogle,
         username,
         usernameSet,
         lastUsernameChangeTime,
@@ -685,12 +840,15 @@ UserRouter.post("/profile", async (c) => {
             profile: {
                 slug,
                 linked,
+                linkedDiscord,
+                linkedGoogle,
                 username,
                 usernameSet,
                 usernameChangeTime: timeUntilNextChange,
                 canUseDeveloper: canUseDeveloper(slug),
             },
             gpBalance: claimedThanksReward?.gpBalance ?? user.gpBalance,
+            rewardedAdGp: await getRewardedAdGpState(user.id),
             thankYouGift: claimedThanksReward
                 ? {
                       amount: claimedThanksReward.amount,
@@ -1157,6 +1315,9 @@ UserRouter.post(
                         type: itemsTable.type,
                         timeAcquired: itemsTable.timeAcquired,
                         source: itemsTable.source,
+                        maker: itemsTable.maker,
+                        kills: itemsTable.kills,
+                        wins: itemsTable.wins,
                         status: itemsTable.status,
                     })
                     .from(itemsTable)
@@ -1295,6 +1456,42 @@ UserRouter.post("/logout", async (c) => {
     return c.json({}, 200);
 });
 
+UserRouter.post("/unlink_auth", validateParams(zUnlinkAuthRequest), async (c) => {
+    const user = c.get("user")!;
+    const { provider } = c.req.valid("json");
+    const identities = await ensureUserAuthIdentities(user);
+
+    if (!identities.some((identity) => identity.provider === provider)) {
+        return c.json({ success: false, error: "not_linked" } as const, 200);
+    }
+
+    if (identities.length <= 1) {
+        return c.json({ success: false, error: "last_login_method" } as const, 200);
+    }
+
+    await db.transaction(async (tx) => {
+        await tx
+            .delete(userAuthIdentityTable)
+            .where(
+                and(
+                    eq(userAuthIdentityTable.userId, user.id),
+                    eq(userAuthIdentityTable.provider, provider),
+                ),
+            );
+
+        await tx
+            .update(usersTable)
+            .set(
+                provider === "discord"
+                    ? { linkedDiscord: false }
+                    : { linkedGoogle: false },
+            )
+            .where(eq(usersTable.id, user.id));
+    });
+
+    return c.json({ success: true } as const, 200);
+});
+
 UserRouter.post("/delete", async (c) => {
     const user = c.get("user")!;
     const session = c.get("session")!;
@@ -1345,6 +1542,7 @@ UserRouter.post("/get_market", async (c) => {
             expiredItemTypes: market.expiredItemTypes,
             featuredBundles: market.featuredBundles,
             lootBoxes: getShopLootBoxes(),
+            lootBoxAdStates: await getLootBoxAdStates(user.id),
             socialGpRewardClaims,
         },
         200,
@@ -1441,6 +1639,220 @@ UserRouter.post(
 );
 
 UserRouter.post(
+    "/claim_rewarded_ad_gp",
+    validateParams(zClaimRewardedAdGpRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        if (!Config.h5GamesAds.enabled) {
+            return c.json<ClaimRewardedAdGpResponse>(
+                {
+                    success: false,
+                    error: "ads_disabled",
+                    gpBalance: user.gpBalance,
+                    rewardedAdGp: await getRewardedAdGpState(user.id),
+                },
+                200,
+            );
+        }
+
+        const rewardKeys = getRewardedAdGpRewardKeys();
+        const ip = getHonoIp(c, Config.apiServer.proxyIPHeader);
+        const encodedIp = ip ? hashRewardIp(ip) : "";
+
+        try {
+            const result = await db.transaction(async (tx) => {
+                const claimedRows = await tx
+                    .select({
+                        rewardKey: rewardClaimsTable.rewardKey,
+                    })
+                    .from(rewardClaimsTable)
+                    .where(
+                        and(
+                            eq(rewardClaimsTable.userId, user.id),
+                            inArray(rewardClaimsTable.rewardKey, rewardKeys),
+                        ),
+                    );
+                const claimedKeys = new Set(claimedRows.map((row) => row.rewardKey));
+                const nextRewardKey = rewardKeys.find((key) => !claimedKeys.has(key));
+
+                if (!nextRewardKey) {
+                    return { ok: false as const, error: "daily_limit" as const };
+                }
+
+                const inserted = await tx
+                    .insert(rewardClaimsTable)
+                    .values({
+                        rewardKey: nextRewardKey,
+                        userId: user.id,
+                        encodedIp,
+                        grantedGp: REWARDED_AD_GP_AMOUNT,
+                    })
+                    .onConflictDoNothing({
+                        target: [rewardClaimsTable.rewardKey, rewardClaimsTable.userId],
+                    })
+                    .returning({
+                        id: rewardClaimsTable.id,
+                    });
+
+                if (inserted.length === 0) {
+                    return { ok: false as const, error: "daily_limit" as const };
+                }
+
+                const [updatedUser] = await tx
+                    .update(usersTable)
+                    .set({
+                        gpBalance: sql`${usersTable.gpBalance} + ${REWARDED_AD_GP_AMOUNT}`,
+                    })
+                    .where(eq(usersTable.id, user.id))
+                    .returning({
+                        gpBalance: usersTable.gpBalance,
+                    });
+
+                return updatedUser
+                    ? { ok: true as const, gpBalance: updatedUser.gpBalance }
+                    : { ok: false as const, error: "server_error" as const };
+            });
+
+            if (!result.ok) {
+                return c.json<ClaimRewardedAdGpResponse>(
+                    {
+                        success: false,
+                        error: result.error,
+                        gpBalance: user.gpBalance,
+                        rewardedAdGp: await getRewardedAdGpState(user.id),
+                    },
+                    200,
+                );
+            }
+
+            return c.json<ClaimRewardedAdGpResponse>(
+                {
+                    success: true,
+                    gpBalance: result.gpBalance,
+                    rewardedAdGp: await getRewardedAdGpState(user.id),
+                },
+                200,
+            );
+        } catch (err) {
+            server.logger.error("/api/user/claim_rewarded_ad_gp error", err);
+            return c.json<ClaimRewardedAdGpResponse>(
+                { success: false, error: "server_error" },
+                500,
+            );
+        }
+    },
+);
+
+UserRouter.post(
+    "/claim_loot_box_ad",
+    validateParams(zClaimLootBoxAdRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { boxId } = c.req.valid("json");
+        const box = getLootBox(boxId);
+        const rewardKeys = getLootBoxAdRewardKeys(boxId);
+
+        if (!box || rewardKeys.length === 0) {
+            return c.json<ClaimLootBoxAdResponse>(
+                {
+                    success: false,
+                    error: "box_not_found",
+                    lootBoxAdStates: await getLootBoxAdStates(user.id),
+                },
+                200,
+            );
+        }
+
+        if (!Config.h5GamesAds.enabled) {
+            return c.json<ClaimLootBoxAdResponse>(
+                {
+                    success: false,
+                    error: "ads_disabled",
+                    lootBoxAdStates: await getLootBoxAdStates(user.id),
+                },
+                200,
+            );
+        }
+
+        const openRewardKey = getLootBoxAdOpenRewardKey(boxId);
+        const ip = getHonoIp(c, Config.apiServer.proxyIPHeader);
+        const encodedIp = ip ? hashRewardIp(ip) : "";
+
+        try {
+            const result = await db.transaction(async (tx) => {
+                const claimedRows = await tx
+                    .select({
+                        rewardKey: rewardClaimsTable.rewardKey,
+                    })
+                    .from(rewardClaimsTable)
+                    .where(
+                        and(
+                            eq(rewardClaimsTable.userId, user.id),
+                            inArray(rewardClaimsTable.rewardKey, [
+                                ...rewardKeys,
+                                openRewardKey,
+                            ]),
+                        ),
+                    );
+                const claimedKeys = new Set(claimedRows.map((row) => row.rewardKey));
+
+                if (claimedKeys.has(openRewardKey)) {
+                    return { ok: false as const, error: "already_opened" as const };
+                }
+
+                const nextRewardKey = rewardKeys.find((key) => !claimedKeys.has(key));
+                if (!nextRewardKey) {
+                    return { ok: false as const, error: "daily_limit" as const };
+                }
+
+                const inserted = await tx
+                    .insert(rewardClaimsTable)
+                    .values({
+                        rewardKey: nextRewardKey,
+                        userId: user.id,
+                        encodedIp,
+                    })
+                    .onConflictDoNothing({
+                        target: [rewardClaimsTable.rewardKey, rewardClaimsTable.userId],
+                    })
+                    .returning({
+                        id: rewardClaimsTable.id,
+                    });
+
+                return inserted.length > 0
+                    ? { ok: true as const }
+                    : { ok: false as const, error: "daily_limit" as const };
+            });
+
+            if (!result.ok) {
+                return c.json<ClaimLootBoxAdResponse>(
+                    {
+                        success: false,
+                        error: result.error,
+                        lootBoxAdStates: await getLootBoxAdStates(user.id),
+                    },
+                    200,
+                );
+            }
+
+            return c.json<ClaimLootBoxAdResponse>(
+                {
+                    success: true,
+                    lootBoxAdStates: await getLootBoxAdStates(user.id),
+                },
+                200,
+            );
+        } catch (err) {
+            server.logger.error("/api/user/claim_loot_box_ad error", err);
+            return c.json<ClaimLootBoxAdResponse>(
+                { success: false, error: "server_error" },
+                500,
+            );
+        }
+    },
+);
+
+UserRouter.post(
     "/create_market_listing",
     validateParams(zCreateMarketListingRequest),
     async (c) => {
@@ -1517,6 +1929,12 @@ UserRouter.post(
                     sellerUserId: user.id,
                     itemId,
                     itemType,
+                    itemMaker:
+                        ownedItem.maker === "Unknown"
+                            ? getItemMakerName(user)
+                            : ownedItem.maker,
+                    itemKills: ownedItem.kills,
+                    itemWins: ownedItem.wins,
                     price,
                     status: "active",
                 });
@@ -1604,6 +2022,9 @@ UserRouter.post(
                     id: listing.itemId,
                     userId: user.id,
                     type: listing.itemType,
+                    maker: listing.itemMaker,
+                    kills: listing.itemKills,
+                    wins: listing.itemWins,
                     source: "market_buy",
                     timeAcquired: Date.now(),
                 });
@@ -1749,6 +2170,12 @@ UserRouter.post(
                     sellerUserId: user.id,
                     itemId,
                     itemType: ownedItem.type,
+                    itemMaker:
+                        ownedItem.maker === "Unknown"
+                            ? getItemMakerName(user)
+                            : ownedItem.maker,
+                    itemKills: ownedItem.kills,
+                    itemWins: ownedItem.wins,
                     startPrice,
                     highestBid: 0,
                     status: "active",
@@ -1931,6 +2358,7 @@ UserRouter.post(
                     offer.itemTypes.map((itemType) => ({
                         userId: user.id,
                         type: itemType,
+                        maker: getItemMakerName(user),
                         source: bundleSource,
                         timeAcquired: Date.now(),
                     })),
@@ -1972,7 +2400,7 @@ UserRouter.post(
 
 UserRouter.post("/open_loot_box", validateParams(zOpenLootBoxRequest), async (c) => {
     const user = c.get("user")!;
-    const { boxId } = c.req.valid("json");
+    const { boxId, payment } = c.req.valid("json");
 
     try {
         const result = await db.transaction(async (tx) => {
@@ -1990,7 +2418,58 @@ UserRouter.post("/open_loot_box", validateParams(zOpenLootBoxRequest), async (c)
                 return { ok: false as const, error: "server_error" as const };
             }
 
-            if (buyer.gpBalance < box.price) {
+            const adRequirement = getLootBoxAdRequirement(boxId);
+            if (adRequirement > 0 && payment !== "ads") {
+                return {
+                    ok: false as const,
+                    error: "ad_requirement_not_met" as const,
+                };
+            }
+
+            if (payment === "ads") {
+                if (!Config.h5GamesAds.enabled) {
+                    return { ok: false as const, error: "ads_disabled" as const };
+                }
+
+                const rewardKeys = getLootBoxAdRewardKeys(boxId);
+                const openRewardKey = getLootBoxAdOpenRewardKey(boxId);
+                if (rewardKeys.length === 0) {
+                    return { ok: false as const, error: "box_not_found" as const };
+                }
+
+                const claimedRows = await tx
+                    .select({
+                        rewardKey: rewardClaimsTable.rewardKey,
+                    })
+                    .from(rewardClaimsTable)
+                    .where(
+                        and(
+                            eq(rewardClaimsTable.userId, user.id),
+                            inArray(rewardClaimsTable.rewardKey, [
+                                ...rewardKeys,
+                                openRewardKey,
+                            ]),
+                        ),
+                    );
+                const claimedKeys = new Set(claimedRows.map((row) => row.rewardKey));
+
+                if (claimedKeys.has(openRewardKey)) {
+                    return { ok: false as const, error: "daily_limit" as const };
+                }
+
+                if (!rewardKeys.every((key) => claimedKeys.has(key))) {
+                    return {
+                        ok: false as const,
+                        error: "ad_requirement_not_met" as const,
+                    };
+                }
+
+                await tx.insert(rewardClaimsTable).values({
+                    rewardKey: openRewardKey,
+                    userId: user.id,
+                    encodedIp: "",
+                });
+            } else if (buyer.gpBalance < box.price) {
                 return { ok: false as const, error: "not_enough_gp" as const };
             }
 
@@ -2003,26 +2482,36 @@ UserRouter.post("/open_loot_box", validateParams(zOpenLootBoxRequest), async (c)
                 userId: user.id,
                 type: reward.itemType,
                 source: box.source,
+                maker: getItemMakerName(user),
                 timeAcquired: Date.now(),
             });
 
-            await tx
-                .update(usersTable)
-                .set({
-                    gpBalance: buyer.gpBalance - box.price,
-                })
-                .where(eq(usersTable.id, user.id));
+            const gpBalance =
+                payment === "ads" ? buyer.gpBalance : buyer.gpBalance - box.price;
+
+            if (payment !== "ads") {
+                await tx
+                    .update(usersTable)
+                    .set({
+                        gpBalance,
+                    })
+                    .where(eq(usersTable.id, user.id));
+            }
 
             return {
                 ok: true as const,
-                gpBalance: buyer.gpBalance - box.price,
+                gpBalance,
                 itemType: reward.itemType,
             };
         });
 
         if (!result.ok) {
             return c.json<OpenLootBoxResponse>(
-                { success: false, error: result.error },
+                {
+                    success: false,
+                    error: result.error,
+                    lootBoxAdStates: await getLootBoxAdStates(user.id),
+                },
                 200,
             );
         }
@@ -2032,6 +2521,7 @@ UserRouter.post("/open_loot_box", validateParams(zOpenLootBoxRequest), async (c)
                 success: true,
                 gpBalance: result.gpBalance,
                 itemType: result.itemType,
+                lootBoxAdStates: await getLootBoxAdStates(user.id),
             },
             200,
         );
@@ -2097,6 +2587,9 @@ UserRouter.post(
                     .returning({
                         itemId: marketListingTable.itemId,
                         itemType: marketListingTable.itemType,
+                        itemMaker: marketListingTable.itemMaker,
+                        itemKills: marketListingTable.itemKills,
+                        itemWins: marketListingTable.itemWins,
                     });
 
                 if (canceled.length === 0) {
@@ -2107,6 +2600,9 @@ UserRouter.post(
                     id: canceled[0]!.itemId,
                     userId: user.id,
                     type: canceled[0]!.itemType,
+                    maker: canceled[0]!.itemMaker,
+                    kills: canceled[0]!.itemKills,
+                    wins: canceled[0]!.itemWins,
                     source: "market_cancel",
                     timeAcquired: Date.now(),
                 });
@@ -2162,6 +2658,9 @@ UserRouter.post(
                     .returning({
                         itemId: auctionListingTable.itemId,
                         itemType: auctionListingTable.itemType,
+                        itemMaker: auctionListingTable.itemMaker,
+                        itemKills: auctionListingTable.itemKills,
+                        itemWins: auctionListingTable.itemWins,
                         highestBid: auctionListingTable.highestBid,
                         highestBidUserId: auctionListingTable.highestBidUserId,
                     });
@@ -2184,6 +2683,9 @@ UserRouter.post(
                     id: auction.itemId,
                     userId: user.id,
                     type: auction.itemType,
+                    maker: auction.itemMaker,
+                    kills: auction.itemKills,
+                    wins: auction.itemWins,
                     source: "auction_cancel",
                     timeAcquired: Date.now(),
                 });

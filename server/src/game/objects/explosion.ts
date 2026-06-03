@@ -8,6 +8,7 @@ import { math } from "../../../../shared/utils/math";
 import { assert, util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import type { Game } from "../game";
+import { isHideAndSeekHider, isHideAndSeekSeeker } from "../privateLobbyMiniGames";
 import type { DamageParams, GameObject } from "./gameObject";
 import { EXPLOSION_LOOT_PUSH_FORCE } from "./loot";
 import type { Player } from "./player";
@@ -46,12 +47,23 @@ export class ExplosionBarn {
         }
 
         if (explosion.type === "explosion_smoke") {
-            this.game.smokeBarn.addEmitter(explosion.pos, explosion.layer, false);
+            this.game.smokeBarn.addEmitter(explosion.pos, explosion.layer);
+            return;
+        }
+
+        if (explosion.type === "explosion_poison_gas") {
+            this.game.smokeBarn.addEmitter(
+                explosion.pos,
+                explosion.layer,
+                "poison",
+                explosion.damageParams.source,
+                explosion.damageParams.sourceTeamId,
+            );
             return;
         }
 
         if (explosion.type === "explosion_antiFire") {
-            this.game.smokeBarn.addEmitter(explosion.pos, explosion.layer, true);
+            this.game.smokeBarn.addEmitter(explosion.pos, explosion.layer, "foam");
             return;
         }
 
@@ -156,6 +168,13 @@ export class ExplosionBarn {
         const obj = collision.obj;
         const def = GameObjectDefs[explosion.type] as ExplosionDef;
 
+        if (
+            explosion.type === "explosion_flashbang" &&
+            obj.__type !== ObjectType.Player
+        ) {
+            return;
+        }
+
         if (obj.__type === ObjectType.Loot) {
             obj.push(
                 v2.normalize(v2.sub(obj.pos, explosion.pos)),
@@ -175,6 +194,25 @@ export class ExplosionBarn {
         }
 
         if (obj.__type == ObjectType.Player) {
+            if (explosion.type === "explosion_flashbang") {
+                const src = explosion.damageParams.source;
+                const sourcePlayer =
+                    src?.__type === ObjectType.Player ? (src as Player) : undefined;
+                const isSourceTeammate =
+                    explosion.damageParams.sourceTeamId !== undefined
+                        ? explosion.damageParams.sourceTeamId === obj.teamId
+                        : sourcePlayer?.teamId === obj.teamId;
+                const isSourceArenaTeammate =
+                    this.game.arenaPrivate &&
+                    sourcePlayer?.arenaTeam !== undefined &&
+                    sourcePlayer.arenaTeam === obj.arenaTeam;
+
+                if (!isSourceTeammate && !isSourceArenaTeammate) {
+                    obj.applyHideAndSeekBlind(def.blindDuration ?? 4);
+                }
+                return;
+            }
+
             const isSourceTeammate =
                 explosion.damageParams.sourceTeamId !== undefined
                     ? explosion.damageParams.sourceTeamId == obj.teamId
@@ -183,6 +221,19 @@ export class ExplosionBarn {
                           explosion.damageParams.source.__type == ObjectType.Player &&
                           explosion.damageParams.source.teamId == obj.teamId
                       );
+            const sourcePlayer =
+                explosion.damageParams.source?.__type === ObjectType.Player
+                    ? (explosion.damageParams.source as Player)
+                    : undefined;
+            const isHiderEffectOnSeeker =
+                !!sourcePlayer &&
+                sourcePlayer !== obj &&
+                isHideAndSeekHider(this.game.miniGame, sourcePlayer.arenaTeam) &&
+                isHideAndSeekSeeker(this.game.miniGame, obj.arenaTeam);
+
+            if (isHiderEffectOnSeeker) {
+                return;
+            }
 
             if (def.healTeam && isSourceTeammate) {
                 const healAmount = def.healAmount ?? 5; // default to 5 if healValue is not defined
@@ -285,6 +336,20 @@ export class ExplosionBarn {
         };
         this.explosions.push(explosion);
         this.newExplosions.push(explosion);
+    }
+
+    addVisualExplosion(type: string, pos: Vec2, layer: number) {
+        const def = GameObjectDefs[type];
+        assert(def.type === "explosion", `Invalid explosion with type ${type}`);
+        this.newExplosions.push({
+            rad: def.rad.max,
+            type,
+            pos,
+            layer,
+            damageParams: {
+                damageType: GameConfig.DamageType.Player,
+            },
+        });
     }
 }
 

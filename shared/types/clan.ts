@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { GameModeStatus } from "./stats";
+import { ALL_GAME_MODE_STATUS, GameModeStatus } from "./stats";
 
 // Clan constants
 export const ClanConstants = {
@@ -8,6 +8,11 @@ export const ClanConstants = {
     NameMaxLen: 16,
     MessageMaxLen: 300,
     RejoinCooldownMs: 0, // none cooldown for now
+    CurrentSeason: 2,
+    CgpPerKill: 0.25,
+    CgpPerWin: 5,
+    CgpScale: 10000,
+    PlayoffClanCount: 4,
 } as const;
 
 export const ClanTagColorRegex = /^(|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|[a-zA-Z]+)$/;
@@ -23,6 +28,22 @@ export const zJoinClanRequest = z.object({
     clanId: z.string().uuid(),
 });
 export type JoinClanRequest = z.infer<typeof zJoinClanRequest>;
+
+export const zRequestJoinClanRequest = z.object({
+    clanId: z.string().uuid(),
+});
+export type RequestJoinClanRequest = z.infer<typeof zRequestJoinClanRequest>;
+
+export const zCancelClanJoinRequest = z.object({
+    clanId: z.string().uuid(),
+});
+export type CancelClanJoinRequest = z.infer<typeof zCancelClanJoinRequest>;
+
+export const zRespondClanJoinRequest = z.object({
+    requestId: z.string().uuid(),
+    action: z.enum(["accept", "decline"]),
+});
+export type RespondClanJoinRequest = z.infer<typeof zRespondClanJoinRequest>;
 
 export const zLeaveClanRequest = z.object({});
 export type LeaveClanRequest = z.infer<typeof zLeaveClanRequest>;
@@ -46,6 +67,7 @@ export const zUpdateClanRequest = z.object({
         .optional(),
     icon: z.string().min(1).optional(),
     tagColor: z.string().trim().regex(ClanTagColorRegex).optional(),
+    isLocked: z.boolean().optional(),
 });
 export type UpdateClanRequest = z.infer<typeof zUpdateClanRequest>;
 
@@ -54,18 +76,31 @@ export type DeleteClanRequest = z.infer<typeof zDeleteClanRequest>;
 
 export const zGetClanRequest = z.object({
     clanId: z.string().uuid(),
+    season: z.number().int().min(1).max(ClanConstants.CurrentSeason).optional(),
 });
 export type GetClanRequest = z.infer<typeof zGetClanRequest>;
 
 export const zClanLeaderboardRequest = z.object({
-    type: z.enum(["kills", "wins"]),
+    type: z.enum(["cgp", "kills", "wins"]).default("cgp"),
     gameMode: z
-        .enum([GameModeStatus.Deathmatch, GameModeStatus.BattleRoyale])
-        .default(GameModeStatus.Deathmatch),
+        .enum([
+            ALL_GAME_MODE_STATUS,
+            GameModeStatus.Deathmatch,
+            GameModeStatus.BattleRoyale,
+        ])
+        .default(ALL_GAME_MODE_STATUS),
     page: z.number().int().min(1).default(1),
     limit: z.number().int().min(1).max(100).default(50),
+    season: z
+        .number()
+        .int()
+        .min(1)
+        .max(ClanConstants.CurrentSeason)
+        .default(ClanConstants.CurrentSeason),
 });
 export type ClanLeaderboardRequest = z.infer<typeof zClanLeaderboardRequest>;
+
+export type ClanLeaderboardType = ClanLeaderboardRequest["type"];
 
 export const zGetClanMessagesRequest = z.object({
     clanId: z.string().uuid(),
@@ -101,6 +136,11 @@ export const zResolveKlipyGifRequest = z.object({
 });
 export type ResolveKlipyGifRequest = z.infer<typeof zResolveKlipyGifRequest>;
 
+export const zResolveLobbyKlipyGifRequest = z.object({
+    url: z.string().trim().url().max(300),
+});
+export type ResolveLobbyKlipyGifRequest = z.infer<typeof zResolveLobbyKlipyGifRequest>;
+
 export const zSearchKlipyGifsRequest = z.object({
     clanId: z.string().uuid(),
     query: z.string().trim().max(50).optional(),
@@ -110,6 +150,15 @@ export const zSearchKlipyGifsRequest = z.object({
     adMaxHeight: z.number().int().min(50).max(400).optional(),
 });
 export type SearchKlipyGifsRequest = z.infer<typeof zSearchKlipyGifsRequest>;
+
+export const zSearchLobbyKlipyGifsRequest = z.object({
+    query: z.string().trim().max(50).optional(),
+    section: z.string().trim().max(30).optional(),
+    limit: z.number().int().min(8).max(32).default(24),
+    adMaxWidth: z.number().int().min(50).max(1200).optional(),
+    adMaxHeight: z.number().int().min(50).max(400).optional(),
+});
+export type SearchLobbyKlipyGifsRequest = z.infer<typeof zSearchLobbyKlipyGifsRequest>;
 
 export const zListClansRequest = z.object({
     page: z.number().int().min(1).default(1),
@@ -131,6 +180,25 @@ export type ClanMember = {
     };
 };
 
+export type ClanWarResult = "win" | "loss" | "draw";
+
+export type ClanWarHistoryEntry = {
+    id: string;
+    opponentClanName: string;
+    result: ClanWarResult;
+    cgpAwarded: number;
+    createdAt: number;
+};
+
+export type ClanJoinRequest = {
+    id: string;
+    odUserId: string;
+    username: string;
+    slug: string;
+    playerIcon: string;
+    requestedAt: number;
+};
+
 export type ClanInfo = {
     id: string;
     name: string;
@@ -140,12 +208,22 @@ export type ClanInfo = {
     memberCount: number;
     maxMembers: number;
     createdAt: number;
+    totalCgp: number;
     totalKills: number;
     totalWins: number;
+    clanWarCgp: number;
+    clanWarsPlayed: number;
+    season: number;
+    isCurrentSeason: boolean;
+    playoffQualified: boolean;
+    isLocked: boolean;
+    requestPending: boolean;
 };
 
 export type ClanDetail = ClanInfo & {
     members: ClanMember[];
+    clanWarHistory: ClanWarHistoryEntry[];
+    joinRequests?: ClanJoinRequest[];
 };
 
 export type ClanMessage = {
@@ -180,10 +258,41 @@ export type JoinClanResponse =
           error:
               | "clan_not_found"
               | "clan_full"
+              | "clan_locked"
               | "already_in_clan"
               | "cooldown_active"
               | "server_error";
           cooldownRemaining?: number;
+      };
+
+export type RequestJoinClanResponse =
+    | { success: true; requestPending: true }
+    | {
+          success: false;
+          error:
+              | "clan_not_found"
+              | "clan_full"
+              | "already_in_clan"
+              | "already_requested"
+              | "cooldown_active"
+              | "server_error";
+          cooldownRemaining?: number;
+      };
+
+export type CancelClanJoinRequestResponse =
+    | { success: true }
+    | { success: false; error: "request_not_found" | "server_error" };
+
+export type RespondClanJoinRequestResponse =
+    | { success: true }
+    | {
+          success: false;
+          error:
+              | "not_owner"
+              | "request_not_found"
+              | "clan_full"
+              | "already_in_clan"
+              | "server_error";
       };
 
 export type LeaveClanResponse =

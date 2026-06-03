@@ -1,15 +1,21 @@
 import { generateRandomString } from "@oslojs/crypto/random";
-import { eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import type { Context } from "hono";
-import { deleteCookie, setCookie } from "hono/cookie";
+import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import slugify from "slugify";
 import { UnlockDefs } from "../../../../../../shared/defs/gameObjects/unlockDefs";
 import { util } from "../../../../../../shared/utils/util";
 import { Config } from "../../../../config";
 import { checkForBadWords } from "../../../../utils/serverHelpers";
-import { createSession, invalidateSession } from "../../../auth";
+import { createSession, invalidateSession, validateSessionToken } from "../../../auth";
 import { db } from "../../../db";
-import { itemsTable, type UsersTableInsert, usersTable } from "../../../db/schema";
+import {
+    itemsTable,
+    type UsersTableInsert,
+    type UsersTableSelect,
+    userAuthIdentityTable,
+    usersTable,
+} from "../../../db/schema";
 
 let oauthBaseURL: URL | undefined = undefined;
 if (URL.canParse(Config.oauthBasePath)) {
@@ -78,24 +84,180 @@ export function deleteSessionTokenCookie(c: Context) {
     });
 }
 
-type Provider = "discord" | "google";
+export type AuthProvider = "discord" | "google";
 
-export async function handleAuthUser(c: Context, provider: Provider, authId: string) {
-    const existingUser = await db.query.usersTable.findFirst({
-        where: eq(usersTable.authId, authId),
-        columns: {
-            id: true,
-        },
+async function findLegacyIdentityOwner(provider: AuthProvider, authId: string) {
+    const user = await db.query.usersTable.findFirst({
+        where: and(
+            eq(usersTable.authId, authId),
+            provider === "discord"
+                ? eq(usersTable.linkedDiscord, true)
+                : eq(usersTable.linkedGoogle, true),
+        ),
+        columns: { id: true },
     });
+
+    if (!user) return undefined;
+
+    const existingIdentity = await db.query.userAuthIdentityTable.findFirst({
+        where: and(
+            eq(userAuthIdentityTable.provider, provider),
+            eq(userAuthIdentityTable.authId, authId),
+        ),
+    });
+
+    await db.transaction(async (tx) => {
+        await tx
+            .delete(userAuthIdentityTable)
+            .where(
+                and(
+                    eq(userAuthIdentityTable.provider, provider),
+                    eq(userAuthIdentityTable.authId, authId),
+                    ne(userAuthIdentityTable.userId, user.id),
+                ),
+            );
+
+        await tx
+            .insert(userAuthIdentityTable)
+            .values({
+                provider,
+                authId,
+                userId: user.id,
+            })
+            .onConflictDoNothing();
+
+        if (existingIdentity && existingIdentity.userId !== user.id) {
+            await tx
+                .update(usersTable)
+                .set(
+                    provider === "discord"
+                        ? { linkedDiscord: false }
+                        : { linkedGoogle: false },
+                )
+                .where(eq(usersTable.id, existingIdentity.userId));
+        }
+
+        await tx
+            .update(usersTable)
+            .set(
+                provider === "discord"
+                    ? { linked: true, linkedDiscord: true }
+                    : { linked: true, linkedGoogle: true },
+            )
+            .where(eq(usersTable.id, user.id));
+    });
+
+    return db.query.userAuthIdentityTable.findFirst({
+        where: and(
+            eq(userAuthIdentityTable.provider, provider),
+            eq(userAuthIdentityTable.authId, authId),
+        ),
+    });
+}
+
+async function findIdentityOwner(provider: AuthProvider, authId: string) {
+    return (
+        (await findLegacyIdentityOwner(provider, authId)) ??
+        (await db.query.userAuthIdentityTable.findFirst({
+            where: and(
+                eq(userAuthIdentityTable.provider, provider),
+                eq(userAuthIdentityTable.authId, authId),
+            ),
+        }))
+    );
+}
+
+export async function ensureUserAuthIdentities(
+    user: Pick<UsersTableSelect, "id" | "authId" | "linkedDiscord" | "linkedGoogle">,
+) {
+    let identities = await db
+        .select()
+        .from(userAuthIdentityTable)
+        .where(eq(userAuthIdentityTable.userId, user.id));
+
+    const legacyProviders = [
+        ...(user.linkedDiscord ? (["discord"] as const) : []),
+        ...(user.linkedGoogle ? (["google"] as const) : []),
+    ];
+    const missingProviders = legacyProviders.filter(
+        (provider) => !identities.some((identity) => identity.provider === provider),
+    );
+    const hasLegacyAuthIdentity = identities.some(
+        (identity) => identity.authId === user.authId,
+    );
+
+    const providerToRepair =
+        missingProviders.length === 1 &&
+        (identities.length === 0 || !hasLegacyAuthIdentity)
+            ? missingProviders[0]
+            : undefined;
+
+    if (!providerToRepair) return identities;
+
+    await findLegacyIdentityOwner(providerToRepair, user.authId);
+
+    identities = await db
+        .select()
+        .from(userAuthIdentityTable)
+        .where(eq(userAuthIdentityTable.userId, user.id));
+
+    return identities;
+}
+
+export async function handleAuthUser(c: Context, provider: AuthProvider, authId: string) {
+    const existingIdentity = await findIdentityOwner(provider, authId);
+    const sessionToken = getCookie(c, "session");
+    const currentUser = sessionToken
+        ? (await validateSessionToken(sessionToken)).user
+        : null;
 
     setCookie(c, "app-data", "1", {
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
         domain: cookieDomain,
     });
 
-    if (existingUser) {
-        await setSessionTokenCookie(existingUser.id, c);
-        return;
+    if (currentUser) {
+        await ensureUserAuthIdentities(currentUser);
+
+        if (existingIdentity && existingIdentity.userId !== currentUser.id) {
+            return { error: `${provider}_account_in_use` };
+        }
+
+        const currentProviderIdentity = await db.query.userAuthIdentityTable.findFirst({
+            where: and(
+                eq(userAuthIdentityTable.userId, currentUser.id),
+                eq(userAuthIdentityTable.provider, provider),
+            ),
+        });
+
+        if (currentProviderIdentity && currentProviderIdentity.authId !== authId) {
+            return { error: `${provider}_account_in_use` };
+        }
+
+        if (!existingIdentity) {
+            await db.insert(userAuthIdentityTable).values({
+                userId: currentUser.id,
+                provider,
+                authId,
+            });
+        }
+
+        await db
+            .update(usersTable)
+            .set(
+                provider === "discord"
+                    ? { linked: true, linkedDiscord: true }
+                    : { linked: true, linkedGoogle: true },
+            )
+            .where(eq(usersTable.id, currentUser.id));
+
+        await setSessionTokenCookie(currentUser.id, c);
+        return {};
+    }
+
+    if (existingIdentity) {
+        await setSessionTokenCookie(existingIdentity.userId, c);
+        return {};
     }
 
     let generateUsername = true;
@@ -120,21 +282,34 @@ export async function handleAuthUser(c: Context, provider: Provider, authId: str
         provider === "discord" ? { linkedDiscord: true } : { linkedGoogle: true };
 
     const userId = generateId(15);
-    await createNewUser({
-        id: userId,
-        authId,
-        linked: true,
-        username: username,
-        slug,
-        ...linkedProvider,
-    });
+    await createNewUser(
+        {
+            id: userId,
+            authId,
+            linked: true,
+            username: username,
+            slug,
+            ...linkedProvider,
+        },
+        { provider, authId },
+    );
 
     await setSessionTokenCookie(userId, c);
+    return {};
 }
 
-export async function createNewUser(payload: UsersTableInsert) {
+export async function createNewUser(
+    payload: UsersTableInsert,
+    identity?: { provider: AuthProvider; authId: string },
+) {
     await db.transaction(async (tx) => {
         await tx.insert(usersTable).values(payload);
+        if (identity) {
+            await tx.insert(userAuthIdentityTable).values({
+                ...identity,
+                userId: payload.id,
+            });
+        }
 
         const unlockType = "unlock_new_account";
         const itemsToUnlock = UnlockDefs[unlockType].unlocks || [];
@@ -154,7 +329,7 @@ export async function createNewUser(payload: UsersTableInsert) {
     });
 }
 
-export function getRedirectUri(method: Provider) {
+export function getRedirectUri(method: AuthProvider) {
     const isProduction = process.env.NODE_ENV === "production";
 
     if (isProduction && !Config.oauthRedirectURI) {
@@ -162,6 +337,13 @@ export function getRedirectUri(method: Provider) {
     }
 
     return `${Config.oauthRedirectURI}/api/auth/${method}/callback`;
+}
+
+export function getOAuthRedirect(error?: string) {
+    if (!error) return Config.oauthBasePath;
+
+    const separator = Config.oauthBasePath.includes("?") ? "&" : "?";
+    return `${Config.oauthBasePath}${separator}error=${encodeURIComponent(error)}`;
 }
 
 const cooldownPeriod = util.daysToMs(10);

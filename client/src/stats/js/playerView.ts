@@ -1,5 +1,8 @@
 import $ from "jquery";
+import { GameObjectDefs } from "../../../../shared/defs/gameObjectDefs";
 import { EmotesDefs } from "../../../../shared/defs/gameObjects/emoteDefs";
+import type { AmmoDef } from "../../../../shared/defs/gameObjects/gearDefs";
+import type { GunDef } from "../../../../shared/defs/gameObjects/gunDefs";
 import { TeamModeToString } from "../../../../shared/defs/types/misc";
 import type { TeamMode } from "../../../../shared/gameConfig";
 import {
@@ -16,6 +19,8 @@ import {
     type MatchHistoryResponse,
     type UserStatsRequest,
     type UserStatsResponse,
+    type WeaponHistoryParams,
+    type WeaponHistoryResponse,
 } from "../../../../shared/types/stats";
 import { api } from "../../api";
 import { device } from "../../device";
@@ -26,6 +31,7 @@ import matchData from "./templates/matchData.ejs";
 import matchHistory from "./templates/matchHistory.ejs";
 import player from "./templates/player.ejs";
 import playerCards from "./templates/playerCards.ejs";
+import weaponHistory from "./templates/weaponHistory.ejs";
 
 const templates = {
     loading,
@@ -33,7 +39,10 @@ const templates = {
     matchHistory,
     player,
     playerCards,
+    weaponHistory,
 };
+
+const STATS_TEAM_MODES: TeamMode[] = [1, 2, 4] as TeamMode[];
 
 export interface TeamModes {
     teamMode: TeamMode;
@@ -52,6 +61,7 @@ function getPlayerCardData(
     error: boolean,
     teamModeFilter: number,
     gameModeFilter: UserStatsRequest["gameModeFilter"],
+    extraView: "matches" | "weapons",
 ) {
     // get_user_stats currently returns data rows for all teamModes;
     // transform the data a bit for the player card.
@@ -83,6 +93,7 @@ function getPlayerCardData(
         kills: userData.kills,
         games: userData.games,
         kpg: userData.kpg,
+        globalRank: userData.global_rank ? `#${userData.global_rank}` : "Unranked",
     };
 
     // Gather card data
@@ -100,10 +111,7 @@ function getPlayerCardData(
     for (let i = 0; i < userData.modes.length; i++) {
         const mode = userData.modes[i];
 
-        // Overall rank / rating not available yet
         const mid: { name: string; val: string }[] = [];
-        addStat(mid, "Rating", "-");
-        addStat(mid, "Rank", "-");
 
         const bot: { name: string; val: string }[] = [];
         addStat(bot, "Wins", mode.wins);
@@ -125,15 +133,14 @@ function getPlayerCardData(
     }
 
     // Insert blank cards for all teammodes
-    const keys = Object.keys(TeamModeToString) as unknown as TeamMode[];
     const gameModes =
         gameModeFilter === ALL_GAME_MODE_STATUS
             ? (["deathmatch", "battleroyale"] as GameModeStatus[])
             : ([gameModeFilter] as GameModeStatus[]);
 
     for (const gameMode of gameModes) {
-        for (let i = 0; i < keys.length; i++) {
-            const teamMode = keys[i];
+        for (let i = 0; i < STATS_TEAM_MODES.length; i++) {
+            const teamMode = STATS_TEAM_MODES[i];
             if (
                 !teamModes.find((x) => x.teamMode == teamMode && x.gameMode == gameMode)
             ) {
@@ -169,6 +176,7 @@ function getPlayerCardData(
         teamModes: teamModes,
         teamModeFilter: teamModeFilter,
         gameModes: helpers.getGameModes(),
+        extraView,
     };
 }
 
@@ -237,6 +245,8 @@ export class PlayerView {
     matchHistory = new Query<MatchHistoryResponse>();
     matchHistoryCache = {} as Record<number, typeof this.games>;
     matchData = new Query<MatchDataResponse>();
+    weaponHistory = new Query<WeaponHistoryResponse>();
+    extraView: "matches" | "weapons" = "matches";
     el = $(
         templates.player({
             phoneDetected: device.mobile && !device.tablet,
@@ -380,6 +390,31 @@ export class PlayerView {
             },
         );
     }
+    loadWeaponHistory(slug: string) {
+        const args: WeaponHistoryParams = { slug };
+        this.weaponHistory.query("/api/weapon_history", args, 0, (_err, data) => {
+            this.weaponHistory.data = (data || []).map(
+                (weapon: WeaponHistoryResponse[number]) => {
+                    const weaponDef = GameObjectDefs[weapon.type] as GunDef | undefined;
+                    const ammoDef = weaponDef?.ammo
+                        ? (GameObjectDefs[weaponDef.ammo] as AmmoDef | undefined)
+                        : undefined;
+
+                    return {
+                        ...weapon,
+                        icon: helpers.getSvgFromGameType(weapon.type),
+                        category: GameObjectDefs[weapon.type]?.type,
+                        accentColor:
+                            ammoDef?.lootImg.tintDark !== undefined
+                                ? helpers.colorToHexString(ammoDef.lootImg.tintDark)
+                                : "",
+                        name: weaponDef?.name ?? weapon.type,
+                    };
+                },
+            );
+            this.render();
+        });
+    }
     toggleMatchData(gameId: string) {
         const game = this.getGameByGameId(gameId);
         if (!game) {
@@ -446,6 +481,7 @@ export class PlayerView {
                 this.userStats.error,
                 this.teamModeFilter,
                 params.gameMode as UserStatsRequest["gameModeFilter"],
+                this.extraView,
             );
             content = templates.playerCards(cardData);
         }
@@ -477,7 +513,16 @@ export class PlayerView {
 
         // Match history
         let historyContent = "";
-        if (this.games.length == 0 && this.matchHistory.inProgress) {
+        if (this.extraView === "weapons" && this.weaponHistory.inProgress) {
+            historyContent = templates.loading({
+                type: "match_history",
+            });
+        } else if (this.extraView === "weapons") {
+            historyContent = templates.weaponHistory({
+                weapons: this.weaponHistory.data || [],
+                error: this.weaponHistory.error,
+            });
+        } else if (this.games.length == 0 && this.matchHistory.inProgress) {
             historyContent = templates.loading({
                 type: "match_history",
             });
@@ -494,6 +539,19 @@ export class PlayerView {
         const historySelector = this.el.find("#match-history");
         if (historySelector) {
             historySelector.html(historyContent);
+
+            $("#selector-extra-matches").on("click", () => {
+                this.extraView = "matches";
+                this.render();
+            });
+
+            $("#selector-extra-weapons").on("click", () => {
+                this.extraView = "weapons";
+                if (!this.weaponHistory.dataValid && !this.weaponHistory.inProgress) {
+                    this.loadWeaponHistory(params.slug);
+                }
+                this.render();
+            });
 
             $(".js-match-data").on("click", (e) => {
                 if (!$(e.target).is("a")) {

@@ -2,7 +2,12 @@ import { Google, generateCodeVerifier, generateState } from "arctic";
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { Config } from "../../../../config";
-import { cookieDomain, getRedirectUri, handleAuthUser } from "./authUtils";
+import {
+    cookieDomain,
+    getOAuthRedirect,
+    getRedirectUri,
+    handleAuthUser,
+} from "./authUtils";
 
 const google = new Google(
     Config.secrets.GOOGLE_CLIENT_ID!,
@@ -76,7 +81,7 @@ GoogleRouter.get("/callback", async (c) => {
         return c.json({ error: "verified_email_required" }, 400);
     }
 
-    await handleAuthUser(c, "google", resData.sub);
+    const result = await handleAuthUser(c, "google", resData.sub);
 
-    return c.redirect(Config.oauthBasePath);
+    return c.redirect(getOAuthRedirect(result.error));
 });

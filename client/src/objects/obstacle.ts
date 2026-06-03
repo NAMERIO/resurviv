@@ -32,6 +32,8 @@ export class Obstacle implements AbstractObject {
     active!: boolean;
 
     sprite = new PIXI.Sprite() as ObstacleSprite;
+    amongUsTaskGlow = new PIXI.Graphics();
+    amongUsTaskGlowEnabled = false;
 
     isNew!: boolean;
     smokeEmitter!: Emitter | null;
@@ -42,6 +44,7 @@ export class Obstacle implements AbstractObject {
     healthT!: number;
     dead!: boolean;
     isSkin!: boolean;
+    isPropDisguise!: boolean;
 
     rot!: number;
     scale!: number;
@@ -109,6 +112,8 @@ export class Obstacle implements AbstractObject {
         this.isNew = false;
         this.smokeEmitter = null;
         this.sprite.visible = false;
+        this.amongUsTaskGlow.visible = false;
+        this.amongUsTaskGlowEnabled = false;
         this.img = "";
         this.visualPosOld = v2.create(0, 0);
     }
@@ -116,6 +121,9 @@ export class Obstacle implements AbstractObject {
     m_free() {
         this.sprite.visible = false;
         this.sprite.parent?.removeChild(this.sprite);
+        this.amongUsTaskGlow.clear();
+        this.amongUsTaskGlow.visible = false;
+        this.amongUsTaskGlow.parent?.removeChild(this.amongUsTaskGlow);
         if (this.door?.casingSprite) {
             this.door.casingSprite.destroy();
             this.door.casingSprite = null;
@@ -138,6 +146,7 @@ export class Obstacle implements AbstractObject {
             this.healthT = data.healthT;
             this.dead = data.dead;
             this.isSkin = data.isSkin;
+            this.isPropDisguise = data.isPropDisguise;
             if (this.isSkin) {
                 this.skinPlayerId = data.skinPlayerId!;
             }
@@ -184,7 +193,9 @@ export class Obstacle implements AbstractObject {
                     locked: data.door?.locked!,
                     casingSprite: null,
                 };
-                const casingImgDef = def.door?.casingImg;
+                const casingImgDef = this.isPropDisguise
+                    ? undefined
+                    : def.door?.casingImg;
                 if (casingImgDef !== undefined) {
                     let posOffset = casingImgDef.pos || v2.create(0, 0);
                     posOffset = v2.rotate(posOffset, this.rot + Math.PI * 0.5);
@@ -262,6 +273,9 @@ export class Obstacle implements AbstractObject {
             let f = v2.create(0.5, 0.5);
             if (this.isDoor) {
                 f = def.door?.spriteAnchor!;
+                if (this.isPropDisguise) {
+                    f = v2.create(0.5, 0.5);
+                }
             }
             const _ = w !== undefined;
             if (!_) {
@@ -343,6 +357,17 @@ export class Obstacle implements AbstractObject {
                 }
             }
             button.seqOld = button.seq;
+        }
+        if (this.type === "among_us_security_camera" && this.isButton && !this.dead) {
+            const img = this.button.onOff
+                ? Math.floor(performance.now() / 350) % 2 === 0
+                    ? "map-switch-01.img"
+                    : "map-switch-03.img"
+                : "map-switch-03.img";
+            if (img !== this.img) {
+                this.sprite.texture = PIXI.Texture.from(img);
+                this.img = img;
+            }
         }
 
         // Door
@@ -448,19 +473,21 @@ export class Obstacle implements AbstractObject {
                 layer |= 2;
             }
 
-            if (!this.dead && this.isSkin) {
+            if (!this.dead && this.isSkin && !this.isPropDisguise) {
                 const skinPlayer = playerBarn.getPlayerById(this.skinPlayerId);
                 if (skinPlayer) {
                     zOrd = math.max(math.max(zOrd, skinPlayer.renderZOrd), 21);
-                    if (skinPlayer.renderLayer != 0) {
-                        layer = skinPlayer.renderLayer;
-                        zOrd = skinPlayer.renderZOrd;
+                    if (zOrd === skinPlayer.renderZOrd) {
+                        zIdx = skinPlayer.renderZIdx + 262144;
                     }
-                    zIdx = skinPlayer.renderZIdx + 262144;
                 }
             }
 
             renderer.addPIXIObj(this.sprite, layer, zOrd, zIdx);
+
+            if (this.amongUsTaskGlowEnabled && !this.dead) {
+                renderer.addPIXIObj(this.amongUsTaskGlow, layer, zOrd + 2, zIdx + 1);
+            }
 
             if (this.isDoor && this.door.casingSprite) {
                 renderer.addPIXIObj(this.door.casingSprite, layer, zOrd + 1, zIdx);
@@ -470,7 +497,7 @@ export class Obstacle implements AbstractObject {
     }
 
     render(dt: number, camera: Camera, debug: DebugRenderOpts, layer: number) {
-        let pos = this.isDoor ? this.door.interpPos : this.pos;
+        let pos = this.isDoor && !this.isPropDisguise ? this.door.interpPos : this.pos;
 
         if (this.isSkin && camera.m_interpEnabled) {
             this.posInterpTicker += dt;
@@ -478,7 +505,7 @@ export class Obstacle implements AbstractObject {
             pos = v2.lerp(posT, this.visualPosOld, this.pos);
         }
 
-        const rot = this.isDoor ? this.door.interpRot : this.rot;
+        const rot = this.isDoor && !this.isPropDisguise ? this.door.interpRot : this.rot;
         const scale = this.scale;
 
         const screenPos = camera.m_pointToScreen(pos);
@@ -503,6 +530,27 @@ export class Obstacle implements AbstractObject {
             this.door.casingSprite.scale.set(casingScale, casingScale);
             this.door.casingSprite.rotation = -rot;
             this.door.casingSprite.visible = !this.dead;
+        }
+
+        if (this.amongUsTaskGlowEnabled && !this.dead && this.sprite.visible) {
+            const aabb = collider.toAabb(this.collider);
+            const min = camera.m_pointToScreen(aabb.min);
+            const max = camera.m_pointToScreen(aabb.max);
+            const x = Math.min(min.x, max.x) - 6;
+            const y = Math.min(min.y, max.y) - 6;
+            const width = Math.abs(max.x - min.x) + 12;
+            const height = Math.abs(max.y - min.y) + 12;
+            const pulse = 0.55 + Math.sin(performance.now() / 220) * 0.2;
+
+            this.amongUsTaskGlow.clear();
+            this.amongUsTaskGlow.visible = true;
+            this.amongUsTaskGlow.lineStyle(8, 0xfff06a, 0.22 * pulse);
+            this.amongUsTaskGlow.drawRoundedRect(x, y, width, height, 8);
+            this.amongUsTaskGlow.lineStyle(2, 0xfff06a, 0.85);
+            this.amongUsTaskGlow.drawRoundedRect(x, y, width, height, 8);
+        } else if (this.amongUsTaskGlow.visible) {
+            this.amongUsTaskGlow.clear();
+            this.amongUsTaskGlow.visible = false;
         }
 
         if (IS_DEV && debug.obstacles && util.sameLayer(layer, this.layer)) {

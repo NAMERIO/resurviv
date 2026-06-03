@@ -8,6 +8,40 @@ import { atlasBuilderPlugin } from "./atlas-builder/vitePlugin";
 import { codefendPlugin } from "./vite-plugins/codefendPlugin";
 import { ejsPlugin } from "./vite-plugins/ejsPlugin";
 
+function mpaRouteRedirectPlugin(): Plugin {
+    const redirectExtensionlessRoute = (
+        req: { url?: string },
+        res: {
+            statusCode: number;
+            setHeader(name: string, value: string): void;
+            end(): void;
+        },
+        next: () => void,
+    ) => {
+        const url = req.url || "";
+        const [pathname, query] = url.split("?");
+
+        if (pathname === "/building-maker" || pathname === "/loot-table-maker") {
+            res.statusCode = 302;
+            res.setHeader("Location", `${pathname}/${query ? `?${query}` : ""}`);
+            res.end();
+            return;
+        }
+
+        next();
+    };
+
+    return {
+        name: "resurviv-mpa-route-redirects",
+        configureServer(server) {
+            server.middlewares.use(redirectExtensionlessRoute);
+        },
+        configurePreviewServer(server) {
+            server.middlewares.use(redirectExtensionlessRoute);
+        },
+    };
+}
+
 export default defineConfig(({ mode }) => {
     const viteEnv = loadEnv(mode, process.cwd(), "VITE_");
     const isDev = mode === "development";
@@ -27,8 +61,13 @@ export default defineConfig(({ mode }) => {
 
     process.env.VITE_SPELLSYNC_PROJECT_ID = Config.secrets.SPELLSYNC_PROJECT_ID;
     process.env.VITE_SPELLSYNC_PUBLIC_TOKEN = Config.secrets.SPELLSYNC_PUBLIC_TOKEN;
+    process.env.VITE_H5_GAMES_ADS_ENABLED = String(Config.h5GamesAds.enabled);
 
-    const plugins: Plugin[] = [ejsPlugin(), ...atlasBuilderPlugin()];
+    const plugins: Plugin[] = [
+        mpaRouteRedirectPlugin(),
+        ejsPlugin(),
+        ...atlasBuilderPlugin(),
+    ];
 
     if (!isDev) {
         plugins.push(codefendPlugin());
@@ -77,6 +116,14 @@ export default defineConfig(({ mode }) => {
                 input: {
                     main: resolve(import.meta.dirname, "index.html"),
                     stats: resolve(import.meta.dirname, "stats/index.html"),
+                    "building-maker": resolve(
+                        import.meta.dirname,
+                        "building-maker/index.html",
+                    ),
+                    "loot-table-maker": resolve(
+                        import.meta.dirname,
+                        "loot-table-maker/index.html",
+                    ),
                     ...(isDev
                         ? {
                               "building-editor": resolve(
@@ -120,6 +167,7 @@ export default defineConfig(({ mode }) => {
             }),
             AD_PREFIX: JSON.stringify(Config.secrets.AD_PREFIX),
             VITE_GAMEMONETIZE_ID: JSON.stringify(Config.secrets.GAMEMONETIZE_ID),
+            H5_GAMES_ADS_ENABLED: Config.h5GamesAds.enabled,
             SPELLSYNC_PROJECT_ID: JSON.stringify(Config.secrets.SPELLSYNC_PROJECT_ID),
             SPELLSYNC_PUBLIC_TOKEN: JSON.stringify(Config.secrets.SPELLSYNC_PUBLIC_TOKEN),
             IS_DEV: isDev,

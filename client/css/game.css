@@ -1919,6 +1919,1272 @@ img {
   width: 100vw;
 }
 
+#ui-among-us-meeting {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  gap: 34px;
+  box-sizing: border-box;
+  padding: 0 46px;
+  background-color: #000;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.86), rgba(0, 0, 0, 0.86)), url(/img/main_splash.png);
+  background-position: center;
+  background-size: cover;
+  pointer-events: auto;
+  font-family: "Roboto Condensed", Arial, sans-serif;
+  color: #fff;
+  cursor: default;
+}
+
+#ui-among-us-task {
+  position: absolute;
+  inset: 0;
+  z-index: 92;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.7);
+  pointer-events: auto;
+  color: #fff;
+  font-family: "Roboto Condensed", Arial, sans-serif;
+}
+
+#ui-among-us-cameras {
+  position: absolute;
+  inset: 0;
+  z-index: 93;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.86);
+  pointer-events: auto;
+  color: #fff;
+  font-family: "Roboto Condensed", Arial, sans-serif;
+}
+
+#among-us-cameras-panel {
+  position: relative;
+  width: min(900px, calc(100vw - 32px), calc(100vh - 32px));
+  height: min(900px, calc(100vw - 32px), calc(100vh - 32px));
+  min-height: 430px;
+  box-sizing: border-box;
+  padding: 62px 16px 16px;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+  background: #101413;
+  box-shadow:
+    0 0 0 4px rgba(0, 0, 0, 0.55),
+    0 12px 32px rgba(0, 0, 0, 0.75);
+}
+
+#among-us-cameras-close {
+  position: absolute;
+  top: 11px;
+  right: 13px;
+  z-index: 2;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 3px;
+  background: rgba(120, 28, 28, 0.9) url(/img/gui/close.svg) center / 22px no-repeat;
+  cursor: pointer;
+}
+
+#among-us-cameras-close:hover {
+  filter: brightness(80%);
+}
+
+#among-us-cameras-header {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 51px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding: 0 64px 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: #303b39;
+  color: #f5f7f2;
+  font-size: 27px;
+  font-weight: bold;
+  text-shadow: 1px 1px 1px #000;
+}
+
+#among-us-cameras-live {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f0c45c;
+  font-size: 20px;
+}
+
+#among-us-cameras-live span {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ef4141;
+  box-shadow: 0 0 10px #ef4141;
+  animation: among-us-camera-live 920ms steps(2, end) infinite;
+}
+
+@keyframes among-us-camera-live {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+#among-us-camera-grid {
+  display: grid;
+  height: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.among-us-camera-feed {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  border: 2px solid #263531;
+  border-radius: 3px;
+  background: #030404;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.among-us-camera-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.among-us-camera-label {
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  max-width: calc(100% - 20px);
+  padding: 3px 7px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.62);
+  color: #d7f0dc;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1.1;
+  text-shadow: 1px 1px #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 700px), (max-height: 560px) {
+  #ui-among-us-cameras {
+    padding: 8px;
+  }
+
+  #among-us-cameras-panel {
+    width: min(calc(100vw - 16px), calc(100vh - 16px));
+    height: min(calc(100vw - 16px), calc(100vh - 16px));
+    min-height: 0;
+    padding: 54px 8px 8px;
+  }
+
+  #among-us-cameras-header {
+    height: 46px;
+    padding: 0 54px 0 12px;
+    font-size: 22px;
+  }
+
+  #among-us-cameras-live {
+    font-size: 16px;
+  }
+
+  #among-us-camera-grid {
+    gap: 7px;
+  }
+
+  .among-us-camera-label {
+    left: 6px;
+    bottom: 5px;
+    font-size: 12px;
+  }
+}
+
+#among-us-task-panel {
+  position: relative;
+  width: min(760px, calc(100vw - 32px));
+  min-height: 430px;
+  box-sizing: border-box;
+  padding: 62px 26px 28px;
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  border-radius: 4px;
+  background: rgba(20, 20, 20, 0.96);
+  box-shadow:
+    0 0 0 4px rgba(0, 0, 0, 0.45),
+    0 12px 32px rgba(0, 0, 0, 0.75);
+}
+
+#among-us-task-close {
+  position: absolute;
+  top: 11px;
+  right: 13px;
+  z-index: 1;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 3px;
+  background: rgba(120, 28, 28, 0.9) url(/img/gui/close.svg) center / 22px no-repeat;
+  cursor: pointer;
+}
+
+#among-us-task-close:hover {
+  filter: brightness(80%);
+}
+
+.among-us-task-header {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 51px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding: 0 64px 0 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: #474747;
+  font-size: 27px;
+  font-weight: bold;
+  text-shadow: 1px 1px 1px #000;
+}
+
+#among-us-task-progress {
+  color: #9fcf63;
+  font-size: 22px;
+}
+
+#among-us-task-instruction {
+  text-align: center;
+  margin: 7px 0 16px;
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.86);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+}
+
+.among-us-task-content {
+  position: relative;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 22px;
+  min-height: 264px;
+  align-items: center;
+}
+
+.among-us-task-weapon-stage {
+  position: relative;
+  display: flex;
+  height: 210px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  background: #242424;
+}
+
+#among-us-task-panel.drag-to-station .among-us-task-content {
+  grid-template-columns: 190px 1fr;
+}
+
+#among-us-task-panel.drag-to-station #among-us-task-bottles {
+  order: -1;
+}
+
+#among-us-task-weapon {
+  width: 138px;
+  transform: rotate(-9deg);
+  transform-origin: 18% 50%;
+  filter: drop-shadow(2px 3px 2px #101010);
+}
+
+#among-us-task-panel.drag-to-station #among-us-task-weapon {
+  width: 178px;
+  transform: none;
+}
+
+#among-us-task-weapon.firing {
+  animation: among-us-task-recoil 150ms ease-out;
+}
+
+.among-us-task-flash {
+  position: absolute;
+  top: 14px;
+  right: 15px;
+  width: 35px;
+  height: 35px;
+  opacity: 0;
+  background: #ffda54;
+  clip-path: polygon(
+    0 42%,
+    42% 42%,
+    58% 0,
+    64% 40%,
+    100% 26%,
+    75% 56%,
+    95% 90%,
+    53% 70%,
+    24% 100%,
+    30% 60%
+  );
+}
+
+#among-us-task-weapon.firing + .among-us-task-flash {
+  animation: among-us-task-flash 120ms ease-out;
+}
+
+.among-us-task-water-stream {
+  position: absolute;
+  left: calc(50% + 46px);
+  top: 38px;
+  z-index: 2;
+  display: none;
+  width: 136px;
+  height: 10px;
+  border-radius: 10px;
+  opacity: 0;
+  transform: rotate(-7deg);
+  transform-origin: left center;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(104, 205, 255, 0.92) 0 13px,
+    rgba(190, 239, 255, 0.85) 13px 19px,
+    transparent 19px 25px
+  );
+  pointer-events: none;
+}
+
+#among-us-task-panel.water-plant #among-us-task-weapon {
+  width: 150px;
+  transform: rotate(-5deg);
+}
+
+#among-us-task-panel.water-plant .among-us-task-flash {
+  display: none;
+}
+
+#among-us-task-panel.water-plant
+  #among-us-task-weapon.firing
+  ~ .among-us-task-water-stream {
+  display: block;
+  animation: among-us-task-water-stream 210ms ease-out;
+}
+
+#among-us-task-drop-zone {
+  display: none;
+}
+
+#among-us-task-panel.drag-to-station #among-us-task-drop-zone {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 146px;
+  height: 146px;
+  display: block;
+  border-radius: 3px;
+  transform: translate(-50%, -50%);
+}
+
+.among-us-task-crate-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@keyframes among-us-task-recoil {
+  0% {
+    transform: rotate(-9deg) translateX(0);
+  }
+  35% {
+    transform: rotate(-16deg) translateX(-12px);
+  }
+  100% {
+    transform: rotate(-9deg) translateX(0);
+  }
+}
+
+@keyframes among-us-task-flash {
+  0% {
+    opacity: 1;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
+@keyframes among-us-task-water-stream {
+  0% {
+    opacity: 1;
+    transform: rotate(-7deg) scaleX(0.1);
+  }
+  40% {
+    opacity: 1;
+    transform: rotate(-7deg) scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(-7deg) scaleX(1);
+  }
+}
+
+#among-us-task-bottles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 17px 18px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  background: #242424;
+}
+
+#among-us-task-panel.drag-to-station #among-us-task-bottles {
+  position: relative;
+  display: block;
+  min-height: 210px;
+}
+
+#among-us-task-panel.water-plant #among-us-task-bottles {
+  display: flex;
+  min-height: 226px;
+  align-items: center;
+  justify-content: center;
+}
+
+.among-us-task-plant {
+  --water-progress: 0%;
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 226px;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 45px 10px 12px;
+  border: 0;
+  border-radius: 3px;
+  background: #333;
+  cursor: crosshair;
+}
+
+.among-us-task-plant:hover:not(:disabled) {
+  background: #3f4b3f;
+}
+
+.among-us-task-plant img {
+  height: 162px;
+  filter: drop-shadow(2px 3px 2px #121212);
+  transition: filter 180ms ease;
+}
+
+.among-us-task-water-meter {
+  position: absolute;
+  top: 17px;
+  left: 22px;
+  right: 22px;
+  height: 18px;
+  box-sizing: border-box;
+  padding: 3px;
+  border: 2px solid #101010;
+  border-radius: 3px;
+  background: #1d1d1d;
+  overflow: hidden;
+}
+
+.among-us-task-water-fill {
+  display: block;
+  width: var(--water-progress);
+  height: 100%;
+  border-radius: 1px;
+  background: linear-gradient(90deg, #2786bc, #75d6ef);
+  transition: width 140ms ease-out;
+}
+
+.among-us-task-water-splash {
+  position: absolute;
+  left: 43%;
+  top: 77px;
+  width: 64px;
+  height: 42px;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 12px 30px, #74d5f5 0 4px, transparent 5px),
+    radial-gradient(circle at 34px 16px, #a9e9ff 0 5px, transparent 6px),
+    radial-gradient(circle at 51px 34px, #5bc7ef 0 4px, transparent 5px);
+  pointer-events: none;
+}
+
+.among-us-task-plant.watering .among-us-task-water-splash {
+  animation: among-us-task-water-splash 250ms ease-out;
+}
+
+.among-us-task-plant.full .among-us-task-water-fill {
+  background: linear-gradient(90deg, #5aaa39, #9fcf63);
+}
+
+.among-us-task-plant.full img {
+  filter: drop-shadow(0 0 8px rgba(159, 207, 99, 0.55));
+}
+
+.among-us-task-bottle {
+  position: relative;
+  height: 106px;
+  border: 0;
+  border-radius: 3px;
+  background: #333;
+  cursor: crosshair;
+}
+
+.among-us-task-bottle:hover:not(:disabled) {
+  background: #3f4b3f;
+}
+
+.among-us-task-bottle img {
+  height: 88px;
+  transition:
+    transform 100ms ease,
+    opacity 100ms ease;
+  filter: drop-shadow(2px 3px 1px #121212);
+}
+
+.among-us-task-drag-item {
+  position: relative;
+  height: 64px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+}
+
+.among-us-task-drag-item:hover:not(:disabled) {
+  filter: brightness(115%);
+}
+
+.among-us-task-drag-item img {
+  height: 52px;
+  filter: drop-shadow(2px 4px 2px #111);
+  pointer-events: none;
+}
+
+#among-us-task-panel.drag-to-station .among-us-task-drag-item {
+  position: absolute;
+  width: 132px;
+}
+
+#among-us-task-panel.drag-to-station .among-us-task-drag-item:nth-child(1) {
+  left: 12%;
+  top: 17%;
+  transform: rotate(-11deg);
+}
+
+#among-us-task-panel.drag-to-station .among-us-task-drag-item:nth-child(2) {
+  left: 46%;
+  top: 27%;
+  transform: rotate(8deg);
+}
+
+#among-us-task-panel.drag-to-station .among-us-task-drag-item:nth-child(3) {
+  left: 20%;
+  top: 58%;
+  transform: rotate(6deg);
+}
+
+#among-us-task-panel.drag-to-station .among-us-task-drag-item:nth-child(4) {
+  left: 58%;
+  top: 64%;
+  transform: rotate(-7deg);
+}
+
+.among-us-task-drag-item.dragging {
+  position: fixed;
+  z-index: 100;
+  width: 178px;
+  height: 78px;
+  transform: translate(-50%, -50%);
+  cursor: grabbing;
+  pointer-events: none;
+}
+
+#among-us-task-panel.drag-to-station .among-us-task-drag-item.dragging {
+  position: fixed;
+  transform: translate(-50%, -50%);
+}
+
+#among-us-task-panel.drag-to-station .among-us-task-drag-item.loose {
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, -50%) rotate(var(--placed-rot, -4deg));
+}
+
+.among-us-task-drag-item.placed {
+  width: 74px;
+  height: 50px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+.among-us-task-drag-item.placed:disabled {
+  opacity: 1;
+}
+
+#among-us-task-panel.drag-to-station .among-us-task-drag-item.placed {
+  position: absolute;
+  transform: translate(-50%, -50%) rotate(var(--placed-rot, -4deg));
+}
+
+.among-us-task-drag-item.placed img {
+  height: 42px;
+}
+
+.among-us-task-bottle.broken img {
+  animation: among-us-bottle-break 260ms forwards;
+}
+
+.among-us-task-shard {
+  position: absolute;
+  left: 50%;
+  top: 53%;
+  width: 11px;
+  height: 16px;
+  opacity: 0;
+  background: #ebeded;
+  clip-path: polygon(45% 0, 100% 26%, 65% 100%, 0 68%);
+}
+
+.among-us-task-bottle.broken .among-us-task-shard {
+  animation: among-us-bottle-shard 420ms ease-out forwards;
+}
+
+.among-us-task-bottle.broken .shard-b {
+  animation-delay: 12ms;
+  --shard-x: 35px;
+  --shard-y: -24px;
+}
+
+.among-us-task-bottle.broken .shard-a {
+  --shard-x: -34px;
+  --shard-y: -18px;
+}
+
+.among-us-task-bottle.broken .shard-c {
+  animation-delay: 22ms;
+  --shard-x: 8px;
+  --shard-y: 34px;
+}
+
+@keyframes among-us-bottle-break {
+  to {
+    opacity: 0;
+    transform: scale(0.35) rotate(12deg);
+  }
+}
+
+@keyframes among-us-bottle-shard {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--shard-x), var(--shard-y)) rotate(75deg);
+  }
+}
+
+@keyframes among-us-task-water-splash {
+  0% {
+    opacity: 1;
+    transform: translateY(8px) scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-13px) scale(1.25);
+  }
+}
+
+#among-us-task-status {
+  min-height: 30px;
+  margin-top: 12px;
+  text-align: center;
+  color: #9fcf63;
+  font-size: 28px;
+  font-weight: bold;
+  text-shadow: 2px 2px #111;
+}
+
+#among-us-task-panel.completed {
+  box-shadow:
+    0 0 0 4px rgba(159, 207, 99, 0.4),
+    0 12px 32px rgba(0, 0, 0, 0.75);
+}
+
+#among-us-task-panel.closing {
+  animation: among-us-task-slide-down 390ms ease-in forwards;
+}
+
+@keyframes among-us-task-slide-down {
+  to {
+    opacity: 0;
+    transform: translateY(calc(100vh + 40px));
+  }
+}
+
+@media (max-width: 650px), (max-height: 560px) {
+  #among-us-task-panel {
+    min-height: 0;
+    padding: 58px 12px 10px;
+  }
+
+  .among-us-task-header {
+    font-size: 21px;
+    padding-left: 12px;
+  }
+
+  #among-us-task-progress {
+    font-size: 18px;
+  }
+
+  #among-us-task-instruction {
+    font-size: 16px;
+    margin: 4px 0 9px;
+  }
+
+  .among-us-task-content {
+    grid-template-columns: 102px 1fr;
+    gap: 9px;
+    min-height: 0;
+  }
+
+  .among-us-task-weapon-stage {
+    height: 150px;
+  }
+
+  #among-us-task-weapon {
+    width: 92px;
+  }
+
+  #among-us-task-panel.drag-to-station #among-us-task-weapon {
+    width: 118px;
+  }
+
+  #among-us-task-panel.water-plant #among-us-task-weapon {
+    width: 94px;
+  }
+
+  .among-us-task-flash {
+    top: 43px;
+    right: 2px;
+  }
+
+  .among-us-task-water-stream {
+    left: calc(50% + 27px);
+    top: 71px;
+    width: 72px;
+    height: 7px;
+  }
+
+  #among-us-task-panel.drag-to-station #among-us-task-drop-zone {
+    width: 96px;
+    height: 96px;
+  }
+
+  #among-us-task-bottles {
+    gap: 6px;
+    padding: 7px;
+  }
+
+  .among-us-task-bottle {
+    height: 72px;
+  }
+
+  .among-us-task-bottle img {
+    height: 61px;
+  }
+
+  #among-us-task-panel.water-plant #among-us-task-bottles {
+    min-height: 150px;
+  }
+
+  .among-us-task-plant {
+    height: 150px;
+    padding: 35px 6px 7px;
+  }
+
+  .among-us-task-plant img {
+    height: 105px;
+  }
+
+  .among-us-task-water-meter {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    height: 15px;
+  }
+
+  .among-us-task-water-splash {
+    top: 54px;
+    transform: scale(0.8);
+  }
+
+  .among-us-task-drag-item {
+    height: 46px;
+  }
+
+  .among-us-task-drag-item img {
+    height: 38px;
+  }
+}
+
+.among-us-meeting-panel {
+  position: relative;
+  box-sizing: border-box;
+  width: clamp(620px, calc(100vw - 540px), 780px);
+  height: min(590px, calc(100vh - 42px));
+  min-height: 420px;
+  padding: 76px 18px 18px;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.78);
+  box-shadow:
+    0 0 0 4px rgba(0, 0, 0, 0.55),
+    0 12px 32px rgba(0, 0, 0, 0.75);
+}
+
+.among-us-meeting-header {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 58px;
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  align-items: center;
+  padding: 0 18px;
+  color: #fff;
+  background: rgba(131, 175, 80, 0.92);
+  box-shadow: inset 0 -3px #5b7a38;
+}
+
+#among-us-chat-send {
+  height: 36px;
+  border: 0;
+  border-bottom: 2px solid #563619;
+  border-radius: 4px;
+  background: #8f5827;
+  box-shadow: inset 0 -2px #563619;
+  color: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: bold;
+  text-shadow: 1px 1px #000;
+  cursor: pointer;
+}
+
+#among-us-chat-send:hover {
+  filter: brightness(80%);
+}
+
+#among-us-meeting-title {
+  text-align: center;
+  font-size: 32px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-shadow: 3px 3px #000;
+}
+
+#among-us-meeting-timer {
+  text-align: right;
+  font-size: 20px;
+  font-weight: bold;
+  text-shadow: 3px 3px #000;
+  white-space: nowrap;
+}
+
+#among-us-meeting-cards {
+  position: absolute;
+  top: 76px;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  box-sizing: border-box;
+  padding-bottom: 74px;
+  overflow-y: auto;
+  display: grid;
+  align-content: start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.among-us-player-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 62px;
+  padding: 6px 12px;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.11);
+  box-shadow: inset 0 -2px rgba(0, 0, 0, 0.35);
+  text-shadow: 1px 1px #000;
+  cursor: default;
+  overflow: hidden;
+}
+
+.among-us-player-card.selectable {
+  cursor: pointer;
+}
+
+.among-us-player-card.selectable:hover {
+  background: rgba(131, 175, 80, 0.32);
+}
+
+.among-us-player-card.selected {
+  border-color: #83af50;
+  background: rgba(131, 175, 80, 0.38);
+}
+
+.among-us-player-card.ejected {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+.among-us-player-card.dead {
+  opacity: 0.62;
+  cursor: default;
+}
+
+.among-us-player-card.dead:hover {
+  background: rgba(255, 255, 255, 0.11);
+}
+
+.among-us-outfit {
+  position: relative;
+  height: 48px;
+  width: 48px;
+  margin-right: 10px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.among-us-player-card.dead .among-us-outfit {
+  filter: grayscale(0.9) brightness(0.62);
+}
+
+.among-us-player-card.dead .among-us-outfit::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 24px;
+  height: 24px;
+  background: url(/img/gui/skull.svg) center / contain no-repeat;
+  filter: drop-shadow(1px 1px 0 #000);
+}
+
+.among-us-player-name {
+  max-width: calc(100% - 68px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.among-us-player-card.impostor .among-us-player-name {
+  color: #ff3333;
+}
+
+.among-us-caller-label {
+  position: absolute;
+  right: 8px;
+  bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: #ff4d4d;
+  text-shadow: 1px 1px #000;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.among-us-player-card.selected .among-us-player-name {
+  max-width: calc(100% - 146px);
+}
+
+.among-us-card-votes {
+  position: absolute;
+  display: flex;
+  gap: 3px;
+  left: 70px;
+  bottom: 3px;
+}
+
+.among-us-vote-outfit {
+  height: 20px;
+  width: 20px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: translateX(100px);
+  animation: among-us-vote-slide 360ms forwards;
+}
+
+@keyframes among-us-vote-slide {
+  to {
+    transform: translateX(0);
+  }
+}
+
+.among-us-card-actions {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  display: flex;
+  gap: 8px;
+  transform: translateY(-50%);
+}
+
+.among-us-card-actions button {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  border: 2px solid;
+  background-position: center;
+  background-size: 22px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.among-us-vote-cancel {
+  border-color: #ef4141 !important;
+  background-color: rgba(80, 0, 0, 0.62);
+  background-image: url(/img/gui/close.svg);
+}
+
+.among-us-vote-confirm {
+  border-color: #46e154 !important;
+  background-color: rgba(0, 80, 14, 0.62);
+  background-image: url(/img/gui/checked.svg);
+}
+
+#among-us-meeting-chat {
+  position: relative;
+  display: flex;
+  box-sizing: border-box;
+  width: 420px;
+  height: min(590px, calc(100vh - 42px));
+  min-height: 420px;
+  flex-direction: column;
+  padding: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.92);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.65);
+  color: #fff;
+  text-shadow: 1px 1px #000;
+}
+
+.among-us-chat-title {
+  color: #83af50;
+  font-size: 21px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+#among-us-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  border: 2px solid #1c252d;
+  border-radius: 4px;
+  background: rgba(13, 17, 22, 0.7);
+}
+
+.among-us-chat-message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 7px 0;
+  font-size: 17px;
+  word-break: break-word;
+}
+
+.among-us-chat-message.own {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.among-us-chat-message strong {
+  color: #83af50;
+}
+
+.among-us-chat-message.own strong {
+  color: #c7c7c7;
+}
+
+.among-us-chat-message span {
+  display: inline-block;
+  max-width: 82%;
+  padding: 5px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.among-us-chat-message.own span {
+  background: rgba(150, 150, 150, 0.28);
+}
+
+.among-us-chat-compose {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+#among-us-chat-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0 8px;
+  border: 2px solid #1c252d;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #111;
+  font-family: inherit;
+  font-size: 16px;
+}
+
+@media (max-width: 1150px) {
+  #ui-among-us-meeting {
+    gap: 24px;
+    padding: 0 28px;
+  }
+
+  .among-us-meeting-panel {
+    width: max(520px, calc(100vw - 430px));
+  }
+
+  #among-us-meeting-chat {
+    width: 360px;
+  }
+}
+
+@media (max-width: 850px), (max-height: 620px) {
+  #ui-among-us-meeting {
+    gap: 10px;
+    padding: 0 10px;
+  }
+
+  .among-us-meeting-panel {
+    width: max(260px, calc(100vw - 330px));
+    height: calc(100vh - 20px);
+    min-height: 0;
+    padding: 65px 10px 10px;
+    border-width: 5px;
+  }
+
+  .among-us-meeting-header {
+    height: 54px;
+    grid-template-columns: 1fr 148px;
+    padding: 0 8px;
+  }
+
+  #among-us-chat-send {
+    height: 34px;
+    font-size: 14px;
+  }
+
+  #among-us-meeting-title {
+    font-size: 25px;
+  }
+
+  #among-us-meeting-timer {
+    font-size: 13px;
+  }
+
+  #among-us-meeting-cards {
+    top: 65px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    gap: 8px;
+    grid-template-columns: 1fr;
+    padding-bottom: 0;
+  }
+
+  .among-us-player-card {
+    min-height: 68px;
+    padding: 5px 8px;
+  }
+
+  .among-us-outfit {
+    height: 52px;
+    width: 52px;
+    margin-right: 8px;
+  }
+
+  .among-us-player-name {
+    font-size: 21px;
+  }
+
+  #among-us-meeting-chat {
+    width: 300px;
+    height: calc(100vh - 20px);
+    min-height: 0;
+  }
+}
+
+.among-us-skip-card {
+  position: absolute;
+  left: 1px;
+  bottom: 1px;
+  z-index: 2;
+  width: 200px;
+  background: rgba(99, 99, 99, 0.42);
+}
+
+.among-us-skip-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  width: 42px;
+  margin-right: 12px;
+  border-radius: 50%;
+  background: #494949;
+  background-image: url(/img/gui/return-arrow.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 24px;
+  box-shadow: inset 0 -px #000000;
+}
+
+@media (max-width: 850px), (max-height: 620px) {
+  .among-us-skip-card {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    width: auto;
+    z-index: auto;
+  }
+}
+
 /**
  * ui-lower-center
  */
@@ -2966,6 +4232,15 @@ img {
   font-size: 48px;
   margin: 20px;
   color: gold;
+}
+
+.ui-stats-header-title-among-us-win,
+.ui-stats-header-title-among-us-crewmate {
+  color: #1f8fff;
+}
+
+.ui-stats-header-title-among-us-impostor {
+  color: #ff3333;
 }
 
 .ui-stats-header-reason {
@@ -5657,6 +6932,35 @@ span.ui-stats-header-value {
   opacity: 1;
   pointer-events: none;
   border-color: #00d4ff;
+}
+
+.ui-streak-icon.among-us-kill-cooldown {
+  opacity: 1;
+  border-color: #ff3b3b;
+  box-shadow: 0 0 14px rgba(255, 0, 0, 0.45);
+}
+
+.ui-streak-icon.among-us-kill-cooldown .ui-streak-label {
+  color: #ff6969;
+}
+
+.ui-streak-icon.among-us-kill-cooldown .ui-streak-timer-fill {
+  background: rgba(255, 40, 40, 0.45);
+}
+
+.ui-streak-icon.among-us-kill-ready {
+  opacity: 1;
+  pointer-events: none;
+  border-color: #39ff72;
+  box-shadow: 0 0 14px rgba(57, 255, 114, 0.5);
+}
+
+.ui-streak-icon.among-us-kill-ready .ui-streak-label {
+  color: #39ff72;
+}
+
+.ui-streak-icon.among-us-kill-ready .ui-streak-progress-fill {
+  background: rgba(57, 255, 114, 0.32);
 }
 
 .ui-streak-icon.streak-used {

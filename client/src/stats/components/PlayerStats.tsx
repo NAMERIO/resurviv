@@ -4,7 +4,7 @@ import { EmotesDefs } from "../../../../shared/defs/gameObjects/emoteDefs";
 import { TeamModeToString } from "../../../../shared/defs/types/misc";
 import type { TeamMode } from "../../../../shared/gameConfig";
 import type { UserStatsRequest, UserStatsResponse } from "../../../../shared/types/stats";
-import { ALL_MAPS } from "../../../../shared/types/stats";
+import { ALL_GAME_MODE_STATUS, ALL_MAPS } from "../../../../shared/types/stats";
 import { api } from "../../api";
 import { helpers } from "../../helpers";
 
@@ -15,6 +15,8 @@ export interface TeamModeCard {
     midStats: { name: string; val: string }[];
     botStats: { name: string; val: string }[];
 }
+
+const STATS_TEAM_MODES: TeamMode[] = [1, 2, 4] as TeamMode[];
 
 export interface PlayerStatsProps {
     phoneDetected: boolean;
@@ -29,14 +31,8 @@ export function useUserStats(
 ) {
     const cache = new Map<string, { data: UserStatsResponse; error: boolean }>();
 
-    const fetchUserStats = async () => {
-        const args: UserStatsRequest = {
-            slug: slug(),
-            interval: interval(),
-            mapIdFilter: mapIdFilter(),
-        };
-
-        const cacheKey = `${interval()}${mapIdFilter()}`;
+    const fetchUserStats = async (args: UserStatsRequest) => {
+        const cacheKey = `${args.interval}${args.mapIdFilter}${args.gameModeFilter}`;
         const cached = cache.get(cacheKey);
 
         if (cached) {
@@ -66,11 +62,13 @@ export function useUserStats(
     };
 
     return createResource<UserStatsResponse | null, UserStatsRequest>(
-        () => ({
-            slug: slug(),
-            interval: interval(),
-            mapIdFilter: mapIdFilter(),
-        }),
+        () =>
+            ({
+                slug: slug(),
+                interval: interval(),
+                mapIdFilter: mapIdFilter(),
+                gameModeFilter: ALL_GAME_MODE_STATUS,
+            }) satisfies UserStatsRequest,
         fetchUserStats,
     );
 }
@@ -152,9 +150,8 @@ export const PlayerStats: Component<PlayerStatsProps> = (props) => {
         }
 
         // Insert blank cards for all team modes
-        const teamModeKeys = Object.keys(TeamModeToString) as unknown as TeamMode[];
-        for (let i = 0; i < teamModeKeys.length; i++) {
-            const teamMode = teamModeKeys[i];
+        for (let i = 0; i < STATS_TEAM_MODES.length; i++) {
+            const teamMode = STATS_TEAM_MODES[i];
             if (!modes.find((x) => x.teamMode == teamMode)) {
                 modes.push({
                     teamMode,

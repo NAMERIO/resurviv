@@ -25,7 +25,10 @@ export const debugToolsConfig = {
     invisible: false,
     infiniteThrowables: false,
     throwFast: false,
+    shootFast: false,
+    punchFast: false,
     moveObjs: false,
+    explosionDecalBrush: false,
 };
 
 export const debugRenderConfig = {
@@ -99,6 +102,7 @@ const defaultConfig = {
     region: "na",
     gameModeIdx: 2,
     teamAutoFill: true,
+    teamInviteHidden: false,
     language: "en" as Locale,
     prerollGamesPlayed: 0,
     totalGamesPlayed: 0,

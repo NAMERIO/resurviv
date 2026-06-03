@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { generateUsername } from "unique-username-generator";
+import type { AmongUsRole } from "../../../../shared/defs/amongUsRoleDefs";
 import {
     GameObjectDefs,
     type LootDef,
@@ -26,23 +27,27 @@ import type { MeleeDef } from "../../../../shared/defs/gameObjects/meleeDefs";
 import type { OutfitDef } from "../../../../shared/defs/gameObjects/outfitDefs";
 import { PerkProperties } from "../../../../shared/defs/gameObjects/perkDefs";
 import type { RoleDef } from "../../../../shared/defs/gameObjects/roleDefs";
-import type { ThrowableDef } from "../../../../shared/defs/gameObjects/throwableDefs";
+import {
+    type ThrowableDef,
+    ThrowableDefs,
+} from "../../../../shared/defs/gameObjects/throwableDefs";
 import { UnlockDefs } from "../../../../shared/defs/gameObjects/unlockDefs";
 import { MapObjectDefs } from "../../../../shared/defs/mapObjectDefs";
-import type { StructureDef } from "../../../../shared/defs/mapObjectsTyping";
+import type { ObstacleDef, StructureDef } from "../../../../shared/defs/mapObjectsTyping";
 import { MapId } from "../../../../shared/defs/types/misc";
 import {
     type Action,
     type Anim,
     EmoteSlot,
     GameConfig,
+    GasMode,
     type HasteType,
     type Input,
     type InventoryItem,
 } from "../../../../shared/gameConfig";
 import * as net from "../../../../shared/net/net";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
-import type { GroupStatus } from "../../../../shared/net/updateMsg";
+import type { GroupStatus, PlayerInfo } from "../../../../shared/net/updateMsg";
 import { type Circle, coldet } from "../../../../shared/utils/coldet";
 import { collider } from "../../../../shared/utils/collider";
 import type { Loadout } from "../../../../shared/utils/loadout";
@@ -63,13 +68,26 @@ import { validateUserName } from "../../utils/serverHelpers";
 import type { Game, JoinTokenData } from "../game";
 import { Group, Team } from "../group";
 import { InventoryManager } from "../inventoryManager";
+import {
+    getHideAndSeekSettings,
+    getInfectedSettings,
+    getPrivateLobbyMiniGameWeaponOverride,
+    isAmongUsMiniGame,
+    isHideAndSeekHider,
+    isHideAndSeekSeeker,
+    isInfectedHuman,
+    isInfectedZombie,
+} from "../privateLobbyMiniGames";
 import { QuestManager } from "../questManager";
 import { WeaponManager } from "../weaponManager";
 import type { Building } from "./building";
+import type { DeadBody } from "./deadBody";
+import type { Decal } from "./decal";
 import { BaseGameObject, type DamageParams, type GameObject } from "./gameObject";
 import type { Loot } from "./loot";
 import type { MapIndicator } from "./mapIndicator";
 import type { Obstacle } from "./obstacle";
+import type { Smoke } from "./smoke";
 
 function generateTempUsername() {
     return generateUsername("-", 0, net.Constants.PlayerNameMaxLen, "random");
@@ -87,6 +105,8 @@ interface Emote {
     pos: Vec2;
     type: string;
     isPing: boolean;
+    targetArenaTeam?: "A" | "B";
+    targetArenaTeams?: Array<"A" | "B">;
     /**
      * if type is "emote_loot", typestring of item goes here
      * "m870", "mosin", "1xscope", "762mm", etc
@@ -95,6 +115,8 @@ interface Emote {
 }
 
 const boostHeals: Array<{ maxBoost: number; heal: number }> = [];
+const amongUsInitialKillCooldown = 20;
+const amongUsEmergencyCallCooldown = 15;
 {
     const boostBreakPoints = GameConfig.player.boostBreakpoints;
     const max = GameConfig.player.boostBreakpoints.reduce((a, b) => a + b, 0);
@@ -110,8 +132,10 @@ const boostHeals: Array<{ maxBoost: number; heal: number }> = [];
 
 export class PlayerBarn {
     players: Player[] = [];
+    matchPlayers: Player[] = [];
     livingPlayers: Player[] = [];
     newPlayers: Player[] = [];
+    dirtyPlayerInfos: Player[] = [];
     deletedPlayers: number[] = [];
     killedPlayers: Player[] = [];
     groupIdAllocator = new IDAllocator(8);
@@ -130,6 +154,22 @@ export class PlayerBarn {
         role: string;
         time: number;
     }> = [];
+
+    amongUsRolesAssigned = false;
+    amongUsEmergencyMeetingSeq = 0;
+    amongUsMeeting?: {
+        sequence: number;
+        phase: net.AmongUsMeetingPhase;
+        timeLeft: number;
+        reason: net.AmongUsMeetingReason;
+        callerId: number;
+        participantIds: number[];
+        votes: Map<number, number>;
+        ejectedId: number;
+        ejectedWasImpostor: boolean;
+        ejectionExploded: boolean;
+        emergencyButton?: Obstacle;
+    };
 
     sendWinEmoteTicker = 0;
     sentWinEmotes = false;
@@ -160,7 +200,10 @@ export class PlayerBarn {
             this.game.map.mapDef.gameConfig.bagSizes,
         );
 
-        this.playerStatusRate = net.getPlayerStatusUpdateRate(this.game.map.factionMode);
+        this.playerStatusRate = net.getPlayerStatusUpdateRate(
+            this.game.map.factionMode,
+            this.game.map.amongUsMode,
+        );
     }
 
     randomPlayer(player?: Player) {
@@ -250,6 +293,7 @@ export class PlayerBarn {
             joinData.clanTagColor,
             joinData.canUseDeveloper,
             joinData.loadout,
+            joinData.arenaTeam,
             joinData.quests,
         );
 
@@ -307,6 +351,7 @@ export class PlayerBarn {
         this.newPlayers.push(player);
         this.game.objectRegister.register(player);
         this.players.push(player);
+        this.matchPlayers.push(player);
         this.livingPlayers.push(player);
         if (this.game.arenaPrivate && this.players.length === 1) {
             this.game.arenaStartLockTimer = 0;
@@ -315,6 +360,10 @@ export class PlayerBarn {
         }
         if (!this.game.modeManager.isSolo) {
             this.livingPlayers.sort((a, b) => a.teamId - b.teamId);
+        }
+        if (this.game.map.amongUsMode && this.amongUsRolesAssigned) {
+            player.amongUsRole = "crewmate";
+            player.markPlayerInfoDirty();
         }
         this.aliveCountDirty = true;
         // this.game.pluginManager.emit("playerJoin", player);
@@ -326,7 +375,9 @@ export class PlayerBarn {
             name: player.name,
             kills: 0,
         };
-        player.kills = data.kills;
+        if (!isBattleRoyaleMapName(this.game.mapName)) {
+            player.kills = data.kills;
+        }
         this.game.leaderboard.set(leaderboardKey, { ...data, name: player.name });
 
         this.game.updateData();
@@ -372,6 +423,9 @@ export class PlayerBarn {
     }
 
     update(dt: number) {
+        this.assignAmongUsRoles();
+        this.updateAmongUsMeeting(dt);
+
         let sendWinEmotes = false;
         if (this.game.over && !this.sentWinEmotes) {
             this.sendWinEmoteTicker -= dt;
@@ -393,6 +447,7 @@ export class PlayerBarn {
                 player.emoteFromSlot(EmoteSlot.Win);
             }
         }
+        this.updateAmongUsSecurityCameraState();
 
         // doing this after updates ensures that gameover msgs sent are always accurate
         // if this was done in netsync, players could die while waiting for the next netsync call
@@ -426,6 +481,406 @@ export class PlayerBarn {
         }
     }
 
+    updateAmongUsSecurityCameraState() {
+        if (!this.game.map.amongUsMode) return;
+
+        const active = this.players.some(
+            (player) => player.amongUsCamerasOpen && !player.dead && !player.disconnected,
+        );
+
+        for (const building of this.game.map.buildings) {
+            if (building.type !== "cafetria_01") continue;
+
+            for (const obj of building.childObjects) {
+                if (
+                    obj.__type !== ObjectType.Obstacle ||
+                    obj.type !== "among_us_security_camera" ||
+                    !obj.isButton ||
+                    obj.button.onOff === active
+                ) {
+                    continue;
+                }
+
+                obj.button.onOff = active;
+                obj.button.seq++;
+                obj.setDirty();
+            }
+        }
+    }
+
+    assignAmongUsRoles() {
+        if (this.amongUsRolesAssigned) return;
+        if (!this.game.map.amongUsMode) return;
+
+        const players = this.livingPlayers.filter(
+            (p) => !p.disconnected && !p.dead && !p.spectatorOnly,
+        );
+        if (players.length < 3) return;
+        const impostorCount = math.min(
+            this.game.amongUsImpostorCount,
+            players.length - 1,
+        );
+        if (players.length < impostorCount * 2 + 1) return;
+
+        util.shuffleArray(players);
+        const impostors = new Set(players.slice(0, impostorCount));
+        for (const player of players) {
+            player.amongUsRole = impostors.has(player) ? "impostor" : "crewmate";
+            if (player.amongUsRole === "impostor") {
+                player.resetAmongUsKillCooldown();
+            }
+            player.markPlayerInfoDirty();
+        }
+        this.amongUsRolesAssigned = true;
+    }
+
+    callAmongUsEmergencyMeeting(caller: Player, emergencyButton?: Obstacle): boolean {
+        if (
+            caller.amongUsEmergencyCallCooldownTime > 0 ||
+            caller.amongUsEmergencyCallsRemaining <= 0
+        ) {
+            return false;
+        }
+
+        return this.startAmongUsMeeting(caller, {
+            emergencyButton,
+            consumeEmergencyCall: true,
+        });
+    }
+
+    reportAmongUsDeadBody(caller: Player, deadBody: DeadBody): boolean {
+        if (!deadBody || deadBody.destroyed) return false;
+        return this.startAmongUsMeeting(caller);
+    }
+
+    private startAmongUsMeeting(
+        caller: Player,
+        opts: {
+            emergencyButton?: Obstacle;
+            consumeEmergencyCall?: boolean;
+        } = {},
+    ): boolean {
+        if (
+            !this.game.map.amongUsMode ||
+            caller.dead ||
+            caller.downed ||
+            caller.disconnected ||
+            caller.spectatorOnly ||
+            this.game.over ||
+            this.amongUsMeeting
+        ) {
+            return false;
+        }
+
+        const spawnOffsets = this.game.map.mapDef.gameMode.amongUsSpawnOffsets;
+        if (!spawnOffsets?.length) return false;
+
+        const attendees = this.livingPlayers.filter(
+            (player) => !player.dead && !player.disconnected && !player.spectatorOnly,
+        );
+        if (attendees.length === 0) return false;
+        for (let i = 0; i < attendees.length; i++) {
+            attendees[i].moveToAmongUsMeeting(
+                v2.add(this.game.map.center, spawnOffsets[i % spawnOffsets.length]),
+            );
+        }
+
+        if (opts.consumeEmergencyCall) {
+            caller.amongUsEmergencyCallsUsed++;
+        }
+        this.amongUsEmergencyMeetingSeq++;
+        const reason =
+            opts.emergencyButton || opts.consumeEmergencyCall
+                ? net.AmongUsMeetingReason.Emergency
+                : net.AmongUsMeetingReason.Report;
+        this.amongUsMeeting = {
+            sequence: this.amongUsEmergencyMeetingSeq,
+            phase: net.AmongUsMeetingPhase.Discussion,
+            timeLeft: 20,
+            reason,
+            callerId: caller.playerId,
+            participantIds: this.getAmongUsMeetingParticipantIds(),
+            votes: new Map<number, number>(),
+            ejectedId: 0,
+            ejectedWasImpostor: false,
+            ejectionExploded: false,
+            emergencyButton: opts.emergencyButton,
+        };
+        this.broadcastAmongUsMeetingState();
+        this.game.updateData();
+        return true;
+    }
+
+    get isAmongUsMeetingLocked(): boolean {
+        return this.amongUsMeeting !== undefined;
+    }
+
+    private getAmongUsMeetingParticipantIds(): number[] {
+        return this.players
+            .filter((player) => !player.spectatorOnly)
+            .map((player) => player.playerId);
+    }
+
+    private getAmongUsDeadParticipantIds(): number[] {
+        const meeting = this.amongUsMeeting;
+        if (!meeting) return [];
+
+        return meeting.participantIds.filter((id) => {
+            const player = this.players.find((candidate) => candidate.playerId === id);
+            return !player || player.dead || player.disconnected;
+        });
+    }
+
+    private getAmongUsEligibleVoterIds(): number[] {
+        const meeting = this.amongUsMeeting;
+        if (!meeting) return [];
+
+        return meeting.participantIds.filter((id) => {
+            const player = this.players.find((candidate) => candidate.playerId === id);
+            return (
+                player && !player.dead && !player.disconnected && !player.spectatorOnly
+            );
+        });
+    }
+
+    refreshAmongUsMeetingAfterParticipantChange(): void {
+        const meeting = this.amongUsMeeting;
+        if (!meeting) return;
+
+        if (
+            meeting.phase === net.AmongUsMeetingPhase.Voting &&
+            meeting.votes.size >= this.getAmongUsEligibleVoterIds().length
+        ) {
+            this.finishAmongUsVoting();
+            return;
+        }
+
+        this.broadcastAmongUsMeetingState(
+            meeting.phase !== net.AmongUsMeetingPhase.Voting,
+        );
+    }
+
+    voteInAmongUsMeeting(voter: Player, targetId: number): void {
+        const meeting = this.amongUsMeeting;
+        if (
+            !meeting ||
+            meeting.phase !== net.AmongUsMeetingPhase.Voting ||
+            voter.dead ||
+            voter.disconnected ||
+            !meeting.participantIds.includes(voter.playerId) ||
+            meeting.votes.has(voter.playerId)
+        ) {
+            return;
+        }
+
+        if (targetId !== 0) {
+            const target = this.players.find((player) => player.playerId === targetId);
+            if (
+                !target ||
+                target.dead ||
+                target.disconnected ||
+                !meeting.participantIds.includes(targetId)
+            ) {
+                return;
+            }
+        }
+
+        meeting.votes.set(voter.playerId, targetId);
+        this.broadcastAmongUsMeetingState();
+
+        const eligibleVoters = this.getAmongUsEligibleVoterIds();
+        if (meeting.votes.size >= eligibleVoters.length) {
+            this.finishAmongUsVoting();
+        }
+    }
+
+    chatInAmongUsMeeting(player: Player, text: string): void {
+        const meeting = this.amongUsMeeting;
+        if (
+            !meeting ||
+            (meeting.phase !== net.AmongUsMeetingPhase.Discussion &&
+                meeting.phase !== net.AmongUsMeetingPhase.Voting) ||
+            player.dead ||
+            player.disconnected ||
+            !meeting.participantIds.includes(player.playerId)
+        ) {
+            return;
+        }
+
+        const message = text.trim().slice(0, 120);
+        if (!message) return;
+
+        const chatMsg = new net.AmongUsMeetingChatMsg();
+        chatMsg.playerId = player.playerId;
+        chatMsg.message = message;
+        this.game.broadcastMsg(net.MsgType.AmongUsMeetingChat, chatMsg);
+    }
+
+    private updateAmongUsMeeting(dt: number): void {
+        const meeting = this.amongUsMeeting;
+        if (!meeting) return;
+        if (this.game.over) {
+            this.closeAmongUsMeeting();
+            return;
+        }
+
+        meeting.timeLeft -= dt;
+        if (meeting.timeLeft > 0) return;
+
+        switch (meeting.phase) {
+            case net.AmongUsMeetingPhase.Discussion:
+                meeting.phase = net.AmongUsMeetingPhase.Voting;
+                meeting.timeLeft = 60;
+                this.broadcastAmongUsMeetingState();
+                break;
+            case net.AmongUsMeetingPhase.Voting:
+                this.finishAmongUsVoting();
+                break;
+            case net.AmongUsMeetingPhase.Reveal:
+                if (meeting.ejectedId !== 0) {
+                    this.startAmongUsEjection();
+                } else {
+                    this.closeAmongUsMeeting();
+                }
+                break;
+            case net.AmongUsMeetingPhase.Ejection:
+                if (meeting.ejectionExploded) {
+                    this.closeAmongUsMeeting();
+                } else {
+                    this.explodeAmongUsEjectedPlayer();
+                    meeting.ejectionExploded = true;
+                    meeting.timeLeft = 1;
+                }
+                break;
+        }
+    }
+
+    private startAmongUsEjection(): void {
+        const meeting = this.amongUsMeeting;
+        if (!meeting) return;
+
+        const ejected = this.players.find(
+            (player) => player.playerId === meeting.ejectedId,
+        );
+        if (!ejected || ejected.dead) {
+            this.closeAmongUsMeeting();
+            return;
+        }
+
+        meeting.phase = net.AmongUsMeetingPhase.Ejection;
+        meeting.timeLeft = 2;
+        this.broadcastAmongUsMeetingState(true);
+    }
+
+    private explodeAmongUsEjectedPlayer(): void {
+        const meeting = this.amongUsMeeting;
+        if (!meeting) return;
+
+        const ejected = this.players.find(
+            (player) => player.playerId === meeting.ejectedId,
+        );
+        if (!ejected || ejected.dead) return;
+
+        this.game.explosionBarn.addVisualExplosion(
+            "explosion_among_us_eject",
+            ejected.pos,
+            ejected.layer,
+        );
+        ejected.kill({
+            damageType: GameConfig.DamageType.Player,
+            gameSourceType: "explosion_among_us_eject",
+            dir: v2.create(0, 0),
+        });
+    }
+
+    private finishAmongUsVoting(): void {
+        const meeting = this.amongUsMeeting;
+        if (!meeting || meeting.phase !== net.AmongUsMeetingPhase.Voting) return;
+
+        const totals = new Map<number, number>();
+        for (const targetId of meeting.votes.values()) {
+            if (targetId !== 0) {
+                const target = this.players.find(
+                    (player) => player.playerId === targetId,
+                );
+                if (!target || target.dead || target.disconnected) continue;
+            }
+            totals.set(targetId, (totals.get(targetId) ?? 0) + 1);
+        }
+
+        let maxVotes = 0;
+        let ejectedId = 0;
+        let tied = false;
+        for (const [targetId, votes] of totals) {
+            if (votes > maxVotes) {
+                maxVotes = votes;
+                ejectedId = targetId;
+                tied = false;
+            } else if (votes === maxVotes) {
+                tied = true;
+            }
+        }
+
+        meeting.ejectedId = tied || ejectedId === 0 ? 0 : ejectedId;
+        meeting.ejectedWasImpostor =
+            this.players.find((player) => player.playerId === meeting.ejectedId)
+                ?.amongUsRole === "impostor";
+        meeting.ejectionExploded = false;
+        meeting.phase = net.AmongUsMeetingPhase.Reveal;
+        meeting.timeLeft = meeting.ejectedId !== 0 ? 3 : 4;
+        this.broadcastAmongUsMeetingState(true);
+    }
+
+    private closeAmongUsMeeting(): void {
+        const meeting = this.amongUsMeeting;
+        if (!meeting) return;
+        this.resetAmongUsEmergencyButton(meeting.emergencyButton);
+        meeting.phase = net.AmongUsMeetingPhase.None;
+        meeting.timeLeft = 0;
+        this.broadcastAmongUsMeetingState(true);
+        this.amongUsMeeting = undefined;
+        this.game.deadBodyBarn.clear();
+        for (const player of this.livingPlayers) {
+            if (
+                player.amongUsRole === "impostor" &&
+                !player.dead &&
+                !player.disconnected
+            ) {
+                player.resetAmongUsKillCooldown();
+            }
+        }
+    }
+
+    private resetAmongUsEmergencyButton(button?: Obstacle): void {
+        if (!button?.isButton) return;
+        if (!button.button.onOff && button.button.canUse) return;
+        button.button.onOff = false;
+        button.button.canUse = true;
+        button.button.seq++;
+        button.setDirty();
+    }
+
+    private broadcastAmongUsMeetingState(showVotes = false): void {
+        const meeting = this.amongUsMeeting;
+        if (!meeting) return;
+
+        const msg = new net.AmongUsMeetingStateMsg();
+        msg.sequence = meeting.sequence;
+        msg.phase = meeting.phase;
+        msg.seconds = Math.max(0, Math.ceil(meeting.timeLeft));
+        msg.reason = meeting.reason;
+        msg.callerId = meeting.callerId;
+        msg.ejectedId = meeting.ejectedId;
+        msg.ejectedWasImpostor = meeting.ejectedWasImpostor;
+        msg.participantIds = meeting.participantIds;
+        msg.deadParticipantIds = this.getAmongUsDeadParticipantIds();
+        msg.submittedVoterIds = [...meeting.votes.keys()];
+        msg.votes = showVotes
+            ? [...meeting.votes].map(([voterId, targetId]) => ({ voterId, targetId }))
+            : [];
+        this.game.broadcastMsg(net.MsgType.AmongUsMeetingState, msg);
+    }
+
     removePlayer(player: Player) {
         util.removeFrom(this.players, player);
 
@@ -451,6 +906,7 @@ export class PlayerBarn {
         }
 
         player.obstacleOutfit?.destroy();
+        player.propDisguise?.destroy();
 
         this.game.checkGameOver();
         this.game.updateData();
@@ -466,6 +922,7 @@ export class PlayerBarn {
 
     flush() {
         this.newPlayers.length = 0;
+        this.dirtyPlayerInfos.length = 0;
         this.deletedPlayers.length = 0;
         this.emotes.length = 0;
         this.aliveCountDirty = false;
@@ -487,6 +944,7 @@ export class PlayerBarn {
             player.spectatorCountDirty = false;
             player.streakDirty = false;
             player.nitroLaceDirty = false;
+            player.hideAndSeekBlindDirty = false;
             player.activeIdDirty = false;
             player.groupStatusDirty = false;
             if (flushPlayerStatus) {
@@ -641,6 +1099,9 @@ export class PlayerBarn {
     getTrackedKills(
         player: Pick<Player, "kills"> & { getLeaderboardKey(): string },
     ): number {
+        if (isBattleRoyaleMapName(this.game.mapName)) {
+            return player.kills;
+        }
         return (
             this.game.leaderboard.get(player.getLeaderboardKey())?.kills ?? player.kills
         );
@@ -656,13 +1117,26 @@ export class PlayerBarn {
         });
     }
 
-    addMapPing(type: string, pos: Vec2, playerId = 0) {
+    addMapPing(
+        type: string,
+        pos: Vec2,
+        playerId = 0,
+        targetArenaTeam?: "A" | "B" | Array<"A" | "B">,
+    ) {
+        const targetArenaTeams = Array.isArray(targetArenaTeam)
+            ? targetArenaTeam
+            : undefined;
+        const targetArenaTeamSingle = Array.isArray(targetArenaTeam)
+            ? undefined
+            : targetArenaTeam;
         this.emotes.push({
             isPing: true,
             type,
             pos,
             playerId,
             itemType: "",
+            targetArenaTeam: targetArenaTeamSingle,
+            targetArenaTeams,
         });
     }
 }
@@ -761,6 +1235,14 @@ export class Player extends BaseGameObject {
                 this.obstacleOutfit.setDirty();
             }
         }
+        if (this.propDisguise) {
+            const healthT = math.clamp(this._health / 100, 0, 1);
+
+            if (!math.eqAbs(this.propDisguise.healthT, healthT, 0.01)) {
+                this.propDisguise.healthT = healthT;
+                this.propDisguise.setDirty();
+            }
+        }
     }
 
     minBoost = 0;
@@ -813,6 +1295,7 @@ export class Player extends BaseGameObject {
     scopeZoomRadius: Record<string, number>;
 
     scope = "1xscope";
+    amongUsCamerasOpen = false;
 
     get inventory() {
         return this.invManager.items;
@@ -948,14 +1431,85 @@ export class Player extends BaseGameObject {
     setOutfit(outfit: string) {
         if (this.outfit === outfit) return;
         this.outfit = outfit;
-        const def = GameObjectDefs[outfit] as OutfitDef;
         this.obstacleOutfit?.destroy();
         this.obstacleOutfit = undefined;
 
+        if (!this.propDisguise) {
+            this.createObstacleOutfit();
+        }
+        this.setDirty();
+    }
+
+    private createObstacleOutfit() {
+        const def = GameObjectDefs[this.outfit] as OutfitDef;
         if (def.obstacleType) {
             this.obstacleOutfit = this.game.map.genOutfitObstacle(def.obstacleType, this);
         }
-        this.setDirty();
+    }
+
+    private canUseLootAsProp(type: string): boolean {
+        const def = GameObjectDefs[type];
+        return (
+            !!def &&
+            "lootImg" in def &&
+            !!def.lootImg.sprite &&
+            def.lootImg.sprite !== "none"
+        );
+    }
+
+    setPropDisguise(type?: string, ori = 0, scale?: number) {
+        this.propDisguise?.destroy();
+        this.propDisguise = undefined;
+
+        if (!type) {
+            if (!this.obstacleOutfit) {
+                this.createObstacleOutfit();
+            }
+            return;
+        }
+
+        const def = MapObjectDefs[type];
+        if (
+            (def?.type === "obstacle" &&
+                (!(def as ObstacleDef).img.sprite ||
+                    (def as ObstacleDef).img.sprite === "none")) ||
+            (def?.type !== "obstacle" &&
+                def?.type !== "decal" &&
+                !this.canUseLootAsProp(type))
+        ) {
+            if (!this.obstacleOutfit) {
+                this.createObstacleOutfit();
+            }
+            return;
+        }
+
+        this.obstacleOutfit?.destroy();
+        this.obstacleOutfit = undefined;
+        this.propDisguise =
+            def?.type === "obstacle"
+                ? this.game.map.genOutfitObstacle(type, this, ori, scale, true)
+                : def?.type === "decal"
+                  ? this.game.map.genOutfitDecal(type, this, ori, scale)
+                  : this.game.map.genOutfitLoot(type, this);
+    }
+
+    getBodyCollider() {
+        return this.propDisguise?.collider ?? this.collider;
+    }
+
+    getMovementBlockCircle() {
+        if (!this.propDisguise) {
+            return { pos: this.pos, rad: this.rad };
+        }
+
+        const aabb = collider.toAabb(this.propDisguise.collider);
+        const center = v2.add(aabb.min, v2.mul(v2.sub(aabb.max, aabb.min), 0.5));
+        const halfSize = v2.sub(aabb.max, center);
+        const radius =
+            this.propDisguise.collider.type === collider.Type.Circle
+                ? this.propDisguise.collider.rad
+                : Math.sqrt(halfSize.x * halfSize.y);
+        return { pos: center, rad: radius };
     }
 
     /** "backpack00" is no backpack, "backpack03" is the max level backpack */
@@ -976,6 +1530,7 @@ export class Player extends BaseGameObject {
     layer: number;
     aimLayer = 0;
     dead = false;
+    infectedRespawnTicker = 0;
     downed = false;
 
     downedCount = 0;
@@ -1010,6 +1565,11 @@ export class Player extends BaseGameObject {
     burnEffect = false;
     burnTicker = 0;
     burnDuration = 0;
+    poisonEffect = false;
+    poisonTicker = 0;
+    poisonDuration = 0;
+    poisonSource?: GameObject;
+    poisonSourceTeamId?: number;
     nitroLaceEffect = false;
     nitroLaceDuration = 0;
     nitroLaceMaxDuration = 10;
@@ -1333,6 +1893,8 @@ export class Player extends BaseGameObject {
         replaceOnDeath?: string,
         isFromRole?: boolean,
     ) {
+        if (this.game.disablePerks && type !== "endless_ammo") return;
+
         this._perks.push({
             type,
             droppable,
@@ -1412,6 +1974,7 @@ export class Player extends BaseGameObject {
 
     checkDamageStreaks(): void {
         if (isBattleRoyaleMapName(this.game.mapName)) return;
+        if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
         // If already ready or active, nothing to check
         if (this.streakReady || this.streakActive) return;
         const threshold = this.streakNextThreshold;
@@ -1502,6 +2065,493 @@ export class Player extends BaseGameObject {
         }
     }
 
+    updateHideAndSeek(dt: number): void {
+        if (this.hideAndSeekBlindTicker > 0) {
+            this.hideAndSeekBlindTicker = Math.max(0, this.hideAndSeekBlindTicker - dt);
+        }
+        if (this.hideAndSeekWrongPropDamageCooldown > 0) {
+            this.hideAndSeekWrongPropDamageCooldown = Math.max(
+                0,
+                this.hideAndSeekWrongPropDamageCooldown - dt,
+            );
+        }
+
+        const settings = getHideAndSeekSettings(this.game.miniGame);
+        if (!settings || this.arenaTeam !== settings.hiderTeam) return;
+
+        if (this.hideAndSeekNoiseTicker <= 0) {
+            this.hideAndSeekNoiseTicker = settings.hiderNoiseInterval;
+        }
+
+        this.hideAndSeekNoiseTicker -= dt;
+        if (this.hideAndSeekNoiseTicker <= 0) {
+            this.emitHideAndSeekNoise(settings);
+            this.hideAndSeekNoiseTicker = settings.hiderNoiseInterval;
+        }
+    }
+
+    updateInfected(dt: number): void {
+        const settings = getInfectedSettings(this.game.miniGame);
+        if (!settings || this.arenaTeam !== settings.humanTeam) return;
+
+        if (this.infectedHumanNoiseTicker <= 0) {
+            this.infectedHumanNoiseTicker = settings.humanNoiseInterval;
+        }
+
+        this.infectedHumanNoiseTicker -= dt;
+        if (this.infectedHumanNoiseTicker <= 0) {
+            this.emitArenaNoisePing({
+                weapon: settings.humanNoiseWeapon,
+                ping: settings.humanNoisePing,
+                pingOffsetRadius: settings.humanNoisePingOffsetRadius,
+                shotAlt: settings.humanNoiseShotAlt,
+                targetArenaTeams: [settings.humanTeam, settings.zombieTeam],
+            });
+            this.infectedHumanNoiseTicker = settings.humanNoiseInterval;
+        }
+    }
+
+    applyHideAndSeekBlind(duration: number): void {
+        this.hideAndSeekBlindTicker = Math.max(this.hideAndSeekBlindTicker, duration);
+        this.hideAndSeekBlindDirty = true;
+    }
+
+    emitHideAndSeekNoise(settings: ReturnType<typeof getHideAndSeekSettings>): void {
+        if (!settings) return;
+
+        this.emitArenaNoisePing({
+            weapon: settings.hiderNoiseWeapon,
+            ping: settings.hiderNoisePing,
+            pingOffsetRadius: settings.hiderNoisePingOffsetRadius,
+            shotAlt: settings.hiderNoiseShotAlt,
+            targetArenaTeams: [settings.hiderTeam, settings.seekerTeam],
+        });
+    }
+
+    emitArenaNoisePing(settings: {
+        weapon: string;
+        ping: string;
+        pingOffsetRadius: number;
+        shotAlt: boolean;
+        targetArenaTeams: Array<"A" | "B">;
+    }): void {
+        const weaponDef = GameObjectDefs[settings.weapon] as GunDef;
+        const pingOffsetAngle = util.random(0, Math.PI * 2);
+        const pingOffsetDistance = util.random(
+            settings.pingOffsetRadius * 0.5,
+            settings.pingOffsetRadius,
+        );
+        const pingPos = v2.add(
+            this.pos,
+            v2.mul(
+                v2.create(Math.cos(pingOffsetAngle), Math.sin(pingOffsetAngle)),
+                pingOffsetDistance,
+            ),
+        );
+        this.game.map.clampToMapBounds(pingPos);
+        this.game.playerBarn.addMapPing(
+            settings.ping,
+            pingPos,
+            this.__id,
+            settings.targetArenaTeams,
+        );
+        this.game.bulletBarn.fireBullet({
+            dir: this.dir,
+            pos: this.pos,
+            bulletType: weaponDef.bulletType,
+            gameSourceType: settings.weapon,
+            layer: this.layer,
+            damageMult: 0,
+            damageType: GameConfig.DamageType.Player,
+            playerId: this.__id,
+            shotAlt: settings.shotAlt,
+            shotFx: false,
+        });
+    }
+
+    canUseHideAndSeekPropSwitch(): boolean {
+        if (!isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return true;
+        return this.hideAndSeekPropSwitchesLeft > 0;
+    }
+
+    syncHideAndSeekPropSwitchAmmo(): void {
+        if (!isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
+
+        const primary = this.weapons[GameConfig.WeaponSlot.Primary];
+        if (primary.type === "prop_o_matic") {
+            primary.ammo = this.hideAndSeekPropSwitchesLeft > 0 ? 1 : 0;
+            this.weapsDirty = true;
+        }
+
+        this.invManager.set(
+            "9mm_cursed",
+            Math.max(0, this.hideAndSeekPropSwitchesLeft - 1),
+        );
+    }
+
+    consumeHideAndSeekPropSwitch(): void {
+        if (!isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
+        this.hideAndSeekPropSwitchesLeft = Math.max(
+            0,
+            this.hideAndSeekPropSwitchesLeft - 1,
+        );
+
+        const primary = this.weapons[GameConfig.WeaponSlot.Primary];
+        if (primary.type === "prop_o_matic") {
+            primary.ammo = 0;
+            this.weapsDirty = true;
+            this.weaponManager.scheduledReload = this.hideAndSeekPropSwitchesLeft > 0;
+        }
+
+        this.invManager.set("9mm_cursed", this.hideAndSeekPropSwitchesLeft);
+    }
+
+    private getInfectedZombieGroup(): Group | undefined {
+        return this.game.playerBarn.groups.find((group) =>
+            group.players.some((p) => isInfectedZombie(this.game.miniGame, p.arenaTeam)),
+        );
+    }
+
+    private applyInfectedLoadout(): void {
+        const settings = getInfectedSettings(this.game.miniGame);
+        if (!settings) return;
+
+        for (let i = 0; i < GameConfig.WeaponSlot.Count; i++) {
+            const type = i === GameConfig.WeaponSlot.Melee ? "fists" : "";
+            this.weaponManager.setWeapon(i, type, 0);
+            this.setDisplayWeaponType(i, type);
+        }
+
+        if (this.arenaTeam === settings.humanTeam) {
+            const gunDef = GameObjectDefs[settings.humanPrimaryWeapon] as GunDef;
+            this.weaponManager.setWeapon(
+                GameConfig.WeaponSlot.Primary,
+                settings.humanPrimaryWeapon,
+                gunDef.maxClip,
+            );
+            this.setDisplayWeaponType(
+                GameConfig.WeaponSlot.Primary,
+                settings.humanPrimaryWeapon,
+            );
+        }
+
+        this.invManager.wipeInventory();
+        this.invManager.set("1xscope", 1);
+        this.scope = "1xscope";
+        this.zoom = this.scopeZoomRadius[this.scope];
+        this.chest = "chest01";
+        this.helmet = "helmet01";
+        this.backpack = "backpack01";
+        this.setOutfit(
+            this.arenaTeam === settings.zombieTeam
+                ? settings.zombieOutfit
+                : settings.humanOutfit,
+        );
+        this.infectedHumanNoiseTicker =
+            this.arenaTeam === settings.humanTeam ? settings.humanNoiseInterval : 0;
+
+        for (const perk of [...this.perks]) {
+            this.removePerk(perk.type);
+        }
+        if (this.arenaTeam === settings.humanTeam) {
+            this.addPerk("endless_ammo", false);
+        }
+
+        this.weaponManager.setCurWeapIndex(
+            this.arenaTeam === settings.humanTeam
+                ? GameConfig.WeaponSlot.Primary
+                : GameConfig.WeaponSlot.Melee,
+        );
+        this.weaponManager.showNextThrowable();
+        this.recalculateScale();
+        this.recalculateMinBoost();
+        this.inventoryDirty = true;
+        this.weapsDirty = true;
+    }
+
+    private applyAmongUsLoadout(): void {
+        if (!isAmongUsMiniGame(this.game.miniGame) && !this.game.map.amongUsMode) {
+            return;
+        }
+
+        const amongUsMelee = "karambit";
+        this.loadout.melee = amongUsMelee;
+        this.meleeSkin = amongUsMelee;
+
+        for (let i = 0; i < GameConfig.WeaponSlot.Count; i++) {
+            const type = i === GameConfig.WeaponSlot.Melee ? amongUsMelee : "";
+            this.weaponManager.setWeapon(i, type, 0);
+            this.setDisplayWeaponType(i, type);
+        }
+
+        this.invManager.emptyAll();
+        this.invManager.set("1xscope", 1);
+        this.scope = "1xscope";
+        this.zoom = this.scopeZoomRadius[this.scope];
+
+        for (const perk of [...this.perks]) {
+            this.removePerk(perk.type);
+        }
+
+        this.streakReady = false;
+        this.streakActive = false;
+        this.streakDirty = true;
+        this.weaponManager.setCurWeapIndex(GameConfig.WeaponSlot.Melee);
+        this.weaponManager.showNextThrowable();
+        this.recalculateScale();
+        this.recalculateMinBoost();
+        this.inventoryDirty = true;
+        this.weapsDirty = true;
+    }
+
+    moveToAmongUsMeeting(pos: Vec2): void {
+        this.cancelAction();
+        this.shootHold = false;
+        this.shootStart = false;
+        this.layer = 0;
+        v2.set(this.pos, pos);
+        this.collider.pos = this.pos;
+        this.game.grid.updateObject(this);
+        this.setDirty();
+    }
+
+    getPlayerInfoFor(viewer: Player): PlayerInfo {
+        const amongUsMode =
+            isAmongUsMiniGame(this.game.miniGame) || this.game.map.amongUsMode;
+        const canSeeAmongUsRole =
+            amongUsMode &&
+            (this === viewer ||
+                (viewer.amongUsRole === "impostor" && this.amongUsRole === "impostor"));
+
+        return {
+            playerId: this.playerId,
+            teamId: this.teamId,
+            groupId: this.groupId,
+            name: this.name,
+            clanName: this.clanName,
+            clanTagColor: this.clanTagColor,
+            amongUsRole: canSeeAmongUsRole ? this.amongUsRole : "",
+            loadout: {
+                outfit: this.loadout.outfit,
+                heal: this.loadout.heal,
+                boost: this.loadout.boost,
+                death_effect: this.loadout.death_effect,
+            },
+        };
+    }
+
+    markPlayerInfoDirty(): void {
+        if (!this.game.playerBarn.dirtyPlayerInfos.includes(this)) {
+            this.game.playerBarn.dirtyPlayerInfos.push(this);
+        }
+    }
+
+    private getInfectedKillCreditSource(params: DamageParams): Player | undefined {
+        const killCreditSource =
+            params.killCreditSource?.__type === ObjectType.Player
+                ? (params.killCreditSource as Player)
+                : params.source?.__type === ObjectType.Player
+                  ? (params.source as Player)
+                  : undefined;
+
+        return killCreditSource && killCreditSource !== this
+            ? killCreditSource
+            : undefined;
+    }
+
+    private creditInfectedKill(params: DamageParams): Player | undefined {
+        const killCreditSource = this.getInfectedKillCreditSource(params);
+        if (!killCreditSource) return undefined;
+
+        this.trackWeaponStat(
+            this.weaponDeaths,
+            params.weaponSourceType ?? params.gameSourceType,
+        );
+        killCreditSource.killedIds.push(this.matchDataId);
+        killCreditSource.kills++;
+        killCreditSource.trackWeaponKill(params.gameSourceType);
+        killCreditSource.questManager.trackEvent("kill", {
+            weaponType: params.gameSourceType ?? "",
+            buildingType: killCreditSource.currentBuildingType,
+        });
+
+        const leaderboardKey = killCreditSource.getLeaderboardKey();
+        const original = this.game.leaderboard.get(leaderboardKey) ?? {
+            name: killCreditSource.name,
+            kills: killCreditSource.kills - 1,
+        };
+        this.game.leaderboard.set(leaderboardKey, {
+            ...original,
+            kills: original.kills + 1,
+        });
+
+        if (!isBattleRoyaleMapName(this.game.mapName)) {
+            this.game.broadcastMsg(
+                net.MsgType.Leaderboard,
+                this.getKillsLeaderboardMsg(),
+            );
+        }
+
+        return killCreditSource;
+    }
+
+    private broadcastInfectedKill(params: DamageParams, killCreditSource?: Player): void {
+        const killMsg = new net.KillMsg();
+        killMsg.damageType = params.damageType;
+        killMsg.itemSourceType = params.gameSourceType ?? "";
+        killMsg.mapSourceType = params.mapSourceType ?? "";
+        killMsg.targetId = this.__id;
+        killMsg.killed = true;
+        if (params.source?.__type === ObjectType.Player) {
+            killMsg.killerId = params.source.__id;
+        }
+        if (killCreditSource) {
+            killMsg.killCreditId = killCreditSource.__id;
+            killMsg.killerKills = killCreditSource.kills;
+            this.killedBy = killCreditSource;
+        }
+        this.game.broadcastMsg(net.MsgType.Kill, killMsg);
+    }
+
+    private infectHuman(params: DamageParams): void {
+        const settings = getInfectedSettings(this.game.miniGame);
+        if (!settings) return;
+
+        const killCreditSource = this.creditInfectedKill(params);
+        this.broadcastInfectedKill(params, killCreditSource);
+
+        const zombieGroup = this.getInfectedZombieGroup();
+        this.arenaTeam = settings.zombieTeam;
+        if (zombieGroup && this.group !== zombieGroup) {
+            this.group?.removePlayer(this);
+            zombieGroup.addPlayer(this);
+        } else if (killCreditSource) {
+            this.groupId = killCreditSource.groupId;
+            this.teamId = killCreditSource.teamId;
+        }
+
+        this.health = GameConfig.player.health;
+        this.boost = 0;
+        this.downed = false;
+        this.downedBy = undefined;
+        this.cancelAction();
+        this.applyInfectedLoadout();
+        this.setDirty();
+        this.setGroupStatuses();
+        this.markPlayerInfoDirty();
+        this.game.playerBarn.aliveCountDirty = true;
+        this.game.updateData();
+        this.game.checkGameOver();
+    }
+
+    private killZombieForRespawn(params: DamageParams): void {
+        const settings = getInfectedSettings(this.game.miniGame);
+        if (!settings) return;
+
+        const killCreditSource = this.creditInfectedKill(params);
+        this.broadcastInfectedKill(params, killCreditSource);
+
+        this.dead = true;
+        this.infectedRespawnTicker = settings.zombieRespawnCooldown;
+        this.killedIndex = this.game.playerBarn.nextKilledNumber++;
+        this.health = 0;
+        this.boost = 0;
+        this.cancelAction();
+        this.shootHold = false;
+        this.shootStart = false;
+        this.spectating = undefined;
+        this.mapIndicator?.kill();
+        this.mapIndicator = undefined;
+        util.removeFrom(this.game.playerBarn.livingPlayers, this);
+        this.group?.checkPlayers();
+        this.team?.checkPlayers();
+        this.game.playerBarn.aliveCountDirty = true;
+        this.game.modeManager.assignNewSpectate(this);
+        this.game.deadBodyBarn.addDeadBody(this.pos, this.__id, this.layer, params.dir);
+        this.obstacleOutfit?.kill(params);
+        this.propDisguise?.kill(params);
+        this.obstacleOutfit = undefined;
+        this.propDisguise = undefined;
+        this.setDirty();
+        this.setGroupStatuses();
+        this.game.updateData();
+        this.game.checkGameOver();
+    }
+
+    private handleInfectedFatalDamage(params: DamageParams): boolean {
+        if (!getInfectedSettings(this.game.miniGame)) return false;
+        const playerSource = this.getInfectedKillCreditSource(params);
+
+        if (
+            isInfectedHuman(this.game.miniGame, this.arenaTeam) &&
+            isInfectedZombie(this.game.miniGame, playerSource?.arenaTeam)
+        ) {
+            this.infectHuman(params);
+            return true;
+        }
+
+        if (
+            isInfectedZombie(this.game.miniGame, this.arenaTeam) &&
+            isInfectedHuman(this.game.miniGame, playerSource?.arenaTeam)
+        ) {
+            this.killZombieForRespawn(params);
+            return true;
+        }
+
+        return false;
+    }
+
+    respawnInfectedZombie(): void {
+        if (!isInfectedZombie(this.game.miniGame, this.arenaTeam)) return;
+
+        this.dead = false;
+        this.infectedRespawnTicker = 0;
+        this.health = GameConfig.player.health;
+        this.boost = 0;
+        this.spectating = undefined;
+        this.sentDeathEmote = false;
+        this.sendDeathEmoteTicker = 0;
+        this.layer = 0;
+        v2.set(this.pos, this.game.map.getSpawnPos());
+        this.collider.pos = this.pos;
+        this.applyInfectedLoadout();
+        this.createObstacleOutfit();
+
+        this.game.playerBarn.livingPlayers.push(this);
+        if (this.group && !this.group.livingPlayers.includes(this)) {
+            this.group.livingPlayers.push(this);
+            this.group.allDeadOrDisconnected = false;
+        }
+        if (this.team && !this.team.livingPlayers.includes(this)) {
+            this.team.livingPlayers.push(this);
+            this.team.allDeadOrDisconnected = false;
+        }
+        if (!this.game.modeManager.isSolo) {
+            this.game.playerBarn.livingPlayers.sort((a, b) => a.teamId - b.teamId);
+        }
+
+        this.game.grid.updateObject(this);
+        this.game.playerBarn.aliveCountDirty = true;
+        this.setDirty();
+        this.setGroupStatuses();
+        this.game.updateData();
+    }
+
+    punishHideAndSeekWrongPropHit(): void {
+        const settings = getHideAndSeekSettings(this.game.miniGame);
+        if (!settings || this.arenaTeam !== settings.seekerTeam) return;
+        if (this.hideAndSeekWrongPropDamageCooldown > 0) return;
+
+        this.hideAndSeekWrongPropDamageCooldown = settings.seekerWrongPropDamageCooldown;
+        this.damage({
+            amount: settings.seekerWrongPropDamage,
+            damageType: GameConfig.DamageType.Player,
+            gameSourceType: "prop_o_matic",
+            weaponSourceType: "prop_o_matic",
+            dir: v2.create(0, 0),
+        });
+    }
+
     hasActivePan() {
         return (
             this.wearingPan ||
@@ -1571,6 +2621,8 @@ export class Player extends BaseGameObject {
         godMode: false,
         infiniteThrowables: false,
         throwFast: false,
+        shootFast: false,
+        punchFast: false,
 
         /** drag and drop loot, obstacles, and buildings */
         moveObjMode: <MoveObjsMode>{
@@ -1617,6 +2669,78 @@ export class Player extends BaseGameObject {
     streakSavedWeapon: { slot: number; type: string; ammo: number } | null = null;
     streakGunSlot: number = -1;
     streakDirty = true;
+    hideAndSeekBlindTicker = 0;
+    hideAndSeekBlindDirty = false;
+    hideAndSeekWrongPropDamageCooldown = 0;
+    hideAndSeekPropSwitchesLeft = 0;
+    hideAndSeekNoiseTicker = 0;
+    infectedHumanNoiseTicker = 0;
+    get hideAndSeekBlindTime(): number {
+        return this.hideAndSeekBlindTicker;
+    }
+    get hideAndSeekHunterReleaseTime(): number {
+        const settings = getHideAndSeekSettings(this.game.miniGame);
+        if (!settings || !this.game.started) return 0;
+        return Math.max(0, settings.hunterReleaseDelay - this.game.startedTime);
+    }
+    get hideAndSeekHunterReleaseSeeker(): boolean {
+        return isHideAndSeekSeeker(this.game.miniGame, this.arenaTeam);
+    }
+    get hideAndSeekHunterReleaseLocked(): boolean {
+        return (
+            this.hideAndSeekHunterReleaseSeeker && this.hideAndSeekHunterReleaseTime > 0
+        );
+    }
+    get infectedRespawnTime(): number {
+        return this.infectedRespawnTicker;
+    }
+    get miniGameWinCountdownTime(): number {
+        if (
+            !this.game.started ||
+            this.game.over ||
+            this.game.gas.mode !== GasMode.Waiting
+        ) {
+            return 0;
+        }
+        if (
+            !getInfectedSettings(this.game.miniGame) &&
+            !getHideAndSeekSettings(this.game.miniGame)
+        ) {
+            return 0;
+        }
+
+        const timeLeft = this.game.gas.getTimeUntilNextStage();
+        return timeLeft > 0 && timeLeft <= 5 ? timeLeft : 0;
+    }
+    get miniGameWinCountdownProps(): boolean {
+        return !!getHideAndSeekSettings(this.game.miniGame);
+    }
+    get amongUsKillCooldownTime(): number {
+        if (
+            !this.game.map.amongUsMode ||
+            this.amongUsRole !== "impostor" ||
+            this.dead ||
+            this.disconnected
+        ) {
+            return 0;
+        }
+        return this.amongUsKillCooldownTicker;
+    }
+    get amongUsEmergencyMeetingSeq(): number {
+        return this.game.playerBarn.amongUsEmergencyMeetingSeq;
+    }
+    get amongUsEmergencyCallCooldownTime(): number {
+        if (!this.game.map.amongUsMode || this.dead || this.disconnected) {
+            return 0;
+        }
+        return math.max(0, amongUsEmergencyCallCooldown - this.game.startedTime);
+    }
+    get amongUsEmergencyCallsRemaining(): number {
+        if (!this.game.map.amongUsMode || this.dead || this.disconnected) {
+            return 0;
+        }
+        return math.max(0, 1 - this.amongUsEmergencyCallsUsed);
+    }
     get streakNextThreshold(): number {
         return StreakThresholds.get(this.streakActivationCount);
     }
@@ -1630,17 +2754,42 @@ export class Player extends BaseGameObject {
         return this.streakActiveTimer;
     }
 
+    resetAmongUsKillCooldown() {
+        this.amongUsKillCooldownTicker = amongUsInitialKillCooldown;
+    }
+
     // infinity since we aren't dead yet ;)
     // this is used for sorting and getting player ranks
     // first player to die is 0, second is 1 etc
     killedIndex = Infinity;
 
     kills = 0;
+    weaponKills: Record<string, number> = {};
+    weaponDeaths: Record<string, number> = {};
+    weaponDamageDealt: Record<string, number> = {};
+    weaponDamageTaken: Record<string, number> = {};
+
+    private trackWeaponStat(
+        stats: Record<string, number>,
+        weaponType: string | undefined,
+        amount = 1,
+    ): void {
+        if (!weaponType) return;
+        stats[weaponType] = (stats[weaponType] ?? 0) + amount;
+    }
+
+    private trackWeaponKill(weaponType?: string): void {
+        this.trackWeaponStat(this.weaponKills, weaponType);
+    }
     timeAlive = 0;
     pickedUpLoot = false;
     lostHealth = false;
 
     msgsToSend: Array<{ type: number; msg: net.Msg }> = [];
+
+    amongUsRole: AmongUsRole | "" = "";
+    amongUsKillCooldownTicker = 0;
+    amongUsEmergencyCallsUsed = 0;
 
     weaponManager = new WeaponManager(this);
     recoilTicker = 0;
@@ -1649,6 +2798,7 @@ export class Player extends BaseGameObject {
     mobileDropTicker = 0;
 
     obstacleOutfit?: Obstacle;
+    propDisguise?: Obstacle | Decal | Loot;
 
     /**
      * Only used for match data saving!
@@ -1686,6 +2836,7 @@ export class Player extends BaseGameObject {
         clanTagColor: string | null | undefined,
         canUseDeveloper = false,
         loadout?: Loadout,
+        public arenaTeam?: "A" | "B",
         questIds?: string[],
     ) {
         super(game, pos);
@@ -1775,6 +2926,11 @@ export class Player extends BaseGameObject {
         }
 
         this.setLoadout(loadout ? loadout : joinMsg.loadout, !loadout);
+        if (getInfectedSettings(this.game.miniGame)) {
+            this.applyInfectedLoadout();
+        } else if (isAmongUsMiniGame(this.game.miniGame) || this.game.map.amongUsMode) {
+            this.applyAmongUsLoadout();
+        }
 
         if (this.game.map.sniperMode) {
             this.invManager.give("2xscope", 1);
@@ -1790,6 +2946,13 @@ export class Player extends BaseGameObject {
     update(dt: number): void {
         if (this.dead) {
             this.spectateCooldown -= dt;
+            if (this.infectedRespawnTicker > 0) {
+                this.infectedRespawnTicker = Math.max(0, this.infectedRespawnTicker - dt);
+                if (this.infectedRespawnTicker <= 0) {
+                    this.respawnInfectedZombie();
+                    return;
+                }
+            }
 
             if (this.spectateMsgCount > 0) {
                 this.spectateMsgTicker += dt;
@@ -1811,7 +2974,20 @@ export class Player extends BaseGameObject {
 
         this.timeAlive += dt;
 
+        if (
+            this.game.map.amongUsMode &&
+            this.amongUsRole === "impostor" &&
+            !this.game.playerBarn.isAmongUsMeetingLocked
+        ) {
+            this.amongUsKillCooldownTicker = math.max(
+                0,
+                this.amongUsKillCooldownTicker - dt,
+            );
+        }
+
         this.updateStreaks(dt);
+        this.updateHideAndSeek(dt);
+        this.updateInfected(dt);
 
         if (this.game.map.factionMode && this.timeUntilHidden > 0) {
             this.timeUntilHidden -= dt;
@@ -1875,7 +3051,14 @@ export class Player extends BaseGameObject {
                     return this.boost >= prev && this.boost <= b.maxBoost;
                 });
 
-                this.health += healAmount!.heal * dt;
+                const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
+                const canHealFromAdrenaline =
+                    !hideAndSeekSettings ||
+                    this.arenaTeam !== hideAndSeekSettings.seekerTeam ||
+                    hideAndSeekSettings.seekerAdrenalineHeals;
+                if (canHealFromAdrenaline) {
+                    this.health += healAmount!.heal * dt;
+                }
 
                 if (this.boost > this.minBoost) {
                     this.boost -= GameConfig.player.boostDecay * dt;
@@ -1995,11 +3178,11 @@ export class Player extends BaseGameObject {
 
         // Inferno mode: burn when walking on water (lava)
         {
-            const isOnWater = this.game.map.isOnWater(this.pos, this.layer);
             const isInferno = this.game.map.mapId === MapId.Inferno;
+            const isOnLava = isInferno && this.game.map.isOnLava(this.pos, this.layer);
             const hasPhoenix = this.hasPerk("phoenix");
 
-            if (isOnWater && isInferno) {
+            if (isOnLava) {
                 this.burnDuration = GameConfig.player.burnDuration;
             }
 
@@ -2035,7 +3218,7 @@ export class Player extends BaseGameObject {
             } else {
                 this.burnEffect = false;
             }
-            if (hasPhoenix && !this.burnEffect && !(isOnWater && isInferno)) {
+            if (hasPhoenix && !this.burnEffect && !isOnLava) {
                 this.phoenixPassiveTicker -= dt;
                 if (this.phoenixPassiveTicker <= 0) {
                     this.phoenixPassiveTicker = PerkProperties.phoenix.passiveTickRate;
@@ -2330,34 +3513,113 @@ export class Player extends BaseGameObject {
 
         const speedToAdd = (this.speed / steps) * dt;
 
+        const broadphaseRadius = math.max(
+            GameConfig.player.maxVisualRadius * this.scale,
+            this.getMovementBlockCircle().rad,
+        );
         const circle = collider.createCircle(
             this.pos,
-            GameConfig.player.maxVisualRadius * this.scale + this.speed * dt,
+            broadphaseRadius + this.speed * dt,
         );
 
         const objs = this.game.grid.intersectCollider(circle);
+        const syncSkinObstacles = () => {
+            if (this.obstacleOutfit) {
+                this.obstacleOutfit.pos = v2.copy(this.pos);
+                this.obstacleOutfit.updateCollider();
+            }
+            if (this.propDisguise) {
+                this.propDisguise.pos = v2.copy(this.pos);
+                this.propDisguise.updateCollider();
+            }
+        };
 
         for (let i = 0; i < steps; i++) {
             v2.set(this.pos, v2.add(this.pos, v2.mul(movement, speedToAdd)));
+            syncSkinObstacles();
 
             for (let j = 0; j < objs.length && !this.debug.noClip; j++) {
                 const obj = objs[j];
-                if (obj.__type !== ObjectType.Obstacle) continue;
-                if (!obj.collidable) continue;
-                if (obj.dead) continue;
-                if (!util.sameLayer(obj.layer, this.layer)) continue;
-                if (obj.isTree && hasTreeClimbing) continue;
+                let collision:
+                    | ReturnType<typeof coldet.intersectCircleCircle>
+                    | ReturnType<typeof collider.intersectCircle> = null;
 
-                const collision = collider.intersectCircle(
-                    obj.collider,
-                    this.pos,
-                    this.rad,
-                );
+                if (obj.__type === ObjectType.Obstacle) {
+                    if (!obj.collidable) continue;
+                    if (obj.dead) continue;
+                    if (!util.sameLayer(obj.layer, this.layer)) continue;
+                    if (obj.isTree && hasTreeClimbing) continue;
+                    if (obj.isSkin) continue;
+
+                    collision = collider.intersectCircle(
+                        obj.collider,
+                        this.pos,
+                        this.rad,
+                    );
+                } else {
+                    continue;
+                }
+
                 if (collision) {
                     v2.set(
                         this.pos,
                         v2.add(this.pos, v2.mul(collision.dir, collision.pen + 0.001)),
                     );
+                    syncSkinObstacles();
+                }
+            }
+
+            for (
+                let j = 0;
+                j < this.game.playerBarn.livingPlayers.length && !this.debug.noClip;
+                j++
+            ) {
+                const obj = this.game.playerBarn.livingPlayers[j];
+                if (obj === this) continue;
+                if (obj.dead || obj.downed) continue;
+                if (!util.sameLayer(obj.layer, this.layer)) continue;
+
+                let collision:
+                    | ReturnType<typeof coldet.intersectCircleCircle>
+                    | ReturnType<typeof collider.intersectCircle> = null;
+                let collisionDirMult = 1;
+
+                if (this.propDisguise && obj.propDisguise) {
+                    continue;
+                }
+                if (this.propDisguise) {
+                    if (movement.x === 0 && movement.y === 0) continue;
+
+                    collision = collider.intersectCircle(
+                        this.propDisguise.collider,
+                        obj.pos,
+                        obj.rad,
+                    );
+                    collisionDirMult = -1;
+                } else if (obj.propDisguise) {
+                    if (movement.x === 0 && movement.y === 0) continue;
+
+                    collision = collider.intersectCircle(
+                        obj.propDisguise.collider,
+                        this.pos,
+                        this.rad,
+                    );
+                } else {
+                    continue;
+                }
+
+                if (collision) {
+                    v2.set(
+                        this.pos,
+                        v2.add(
+                            this.pos,
+                            v2.mul(
+                                collision.dir,
+                                collisionDirMult * (collision.pen + 0.001),
+                            ),
+                        ),
+                    );
+                    syncSkinObstacles();
                 }
             }
         }
@@ -2488,6 +3750,7 @@ export class Player extends BaseGameObject {
         let zoomRegionZoom = lowestZoom;
         let insideNoZoomRegion = true;
         let insideSmoke = false;
+        let poisonSmoke: Smoke | undefined;
         // building player is currently inside of
         let occupiedBuilding: Building | undefined;
 
@@ -2582,6 +3845,10 @@ export class Player extends BaseGameObject {
             } else if (obj.__type === ObjectType.Smoke) {
                 if (!util.sameLayer(this.layer, obj.layer)) continue;
                 if (coldet.testCircleCircle(this.pos, this.rad, obj.pos, obj.rad)) {
+                    if (obj.isPoison) {
+                        poisonSmoke = obj;
+                        continue;
+                    }
                     insideSmoke = true;
                 }
             }
@@ -2599,13 +3866,44 @@ export class Player extends BaseGameObject {
             this.setDirty();
         }
 
+        if (poisonSmoke) {
+            this.poisonDuration = GameConfig.player.poisonDuration;
+            this.poisonSource = poisonSmoke.source;
+            this.poisonSourceTeamId = poisonSmoke.sourceTeamId;
+        } else {
+            this.poisonDuration = math.max(0, this.poisonDuration - dt);
+        }
+
+        const oldPoisonEffect = this.poisonEffect;
+        this.poisonEffect = this.poisonDuration > 0;
+        if (this.poisonEffect) {
+            this.poisonTicker -= dt;
+            if (this.poisonTicker <= 0) {
+                this.poisonTicker = GameConfig.player.poisonTickRate;
+                this.damage({
+                    amount: GameConfig.player.poisonDamage,
+                    damageType: GameConfig.DamageType.Gas,
+                    dir: this.dir,
+                    gameSourceType: "poison_gas",
+                    source: this.poisonSource,
+                    sourceTeamId: this.poisonSourceTeamId,
+                });
+            }
+        } else {
+            this.poisonTicker = 0;
+            this.poisonSource = undefined;
+            this.poisonSourceTeamId = undefined;
+        }
+        if (oldPoisonEffect !== this.poisonEffect) {
+            this.setDirty();
+        }
+
         if (this.insideZoomRegion) {
             finalZoom = zoomRegionZoom;
         }
         if (insideSmoke || this.downed) {
             finalZoom = lowestZoom;
         }
-
         if (this.debug.zoomEnabled) {
             this.zoom = this.debug.zoom;
         } else {
@@ -2654,6 +3952,10 @@ export class Player extends BaseGameObject {
                 this.obstacleOutfit.layer = this.layer;
                 this.obstacleOutfit.setDirty();
             }
+            if (this.propDisguise) {
+                this.propDisguise.layer = this.layer;
+                this.propDisguise.setDirty();
+            }
         }
 
         //
@@ -2672,6 +3974,11 @@ export class Player extends BaseGameObject {
                 this.obstacleOutfit.pos = v2.copy(this.pos);
                 this.obstacleOutfit.updateCollider();
                 this.obstacleOutfit.setPartDirty();
+            }
+            if (this.propDisguise) {
+                this.propDisguise.pos = v2.copy(this.pos);
+                this.propDisguise.updateCollider();
+                this.propDisguise.setPartDirty();
             }
         }
 
@@ -2872,6 +4179,9 @@ export class Player extends BaseGameObject {
                 newVisibleObjects.delete(obj);
             }
         }
+        if (game.map.amongUsMode) {
+            this.addAmongUsCameraObjects(newVisibleObjects);
+        }
         // client crashes if active player is not visible
         // so make sure its always added to visible objects
         newVisibleObjects.add(this);
@@ -2927,6 +4237,17 @@ export class Player extends BaseGameObject {
                 activeStreakTimeLeft: player.streakActiveTimer,
                 nitroLaceDirty: true,
                 nitroLacePercentage: player.nitroLacePercentage,
+                hideAndSeekBlindDirty: true,
+                hideAndSeekBlindTime: player.hideAndSeekBlindTicker,
+                hideAndSeekHunterReleaseTime: player.hideAndSeekHunterReleaseTime,
+                hideAndSeekHunterReleaseSeeker: player.hideAndSeekHunterReleaseSeeker,
+                infectedRespawnTime: player.infectedRespawnTime,
+                miniGameWinCountdownTime: player.miniGameWinCountdownTime,
+                miniGameWinCountdownProps: player.miniGameWinCountdownProps,
+                amongUsKillCooldownTime: player.amongUsKillCooldownTime,
+                amongUsEmergencyCallCooldownTime: player.amongUsEmergencyCallCooldownTime,
+                amongUsEmergencyCallsRemaining: player.amongUsEmergencyCallsRemaining,
+                amongUsEmergencyMeetingSeq: player.amongUsEmergencyMeetingSeq,
             };
             this.startedSpectating = false;
         } else {
@@ -2934,9 +4255,16 @@ export class Player extends BaseGameObject {
             updateMsg.activePlayerData = player;
         }
 
-        updateMsg.playerInfos = this._firstUpdate
-            ? playerBarn.players
-            : playerBarn.newPlayers;
+        updateMsg.playerInfos = (
+            this._firstUpdate
+                ? playerBarn.players
+                : [
+                      ...playerBarn.newPlayers,
+                      ...playerBarn.dirtyPlayerInfos.filter(
+                          (p) => !playerBarn.newPlayers.includes(p),
+                      ),
+                  ]
+        ).map((p) => p.getPlayerInfoFor(player));
 
         updateMsg.deletedPlayerIds = playerBarn.deletedPlayers;
 
@@ -2966,6 +4294,25 @@ export class Player extends BaseGameObject {
                 | undefined;
 
             const emoteDef = GameObjectDefs[emote.type];
+
+            if (
+                game.map.amongUsMode &&
+                emote.isPing &&
+                emoteDef.type === "ping" &&
+                !emoteDef.mapEvent
+            ) {
+                return player.__id === emote.playerId;
+            }
+
+            if (emote.targetArenaTeam && player.arenaTeam !== emote.targetArenaTeam) {
+                return false;
+            }
+            if (
+                emote.targetArenaTeams &&
+                (!player.arenaTeam || !emote.targetArenaTeams.includes(player.arenaTeam))
+            ) {
+                return false;
+            }
 
             if (emotePlayer) {
                 if (!emote.isPing && !player.visibleObjects.has(emotePlayer)) {
@@ -3018,6 +4365,8 @@ export class Player extends BaseGameObject {
         for (let i = 0; i < bullets.length; i++) {
             const bullet = bullets[i];
             if (
+                (bullet.soundTargetArenaTeam !== undefined &&
+                    bullet.soundTargetArenaTeam === player.arenaTeam) ||
                 v2.lengthSqr(v2.sub(bullet.pos, player.pos)) < radiusSquared ||
                 v2.lengthSqr(v2.sub(bullet.clientEndPos, player.pos)) < radiusSquared ||
                 coldet.intersectSegmentCircle(
@@ -3091,6 +4440,27 @@ export class Player extends BaseGameObject {
 
         this.sendData(msgStream.getBuffer());
         this._firstUpdate = false;
+    }
+
+    addAmongUsCameraObjects(visibleObjects: Set<GameObject>) {
+        const addBuildingTree = (building: Building) => {
+            if (!building.__id) return;
+            visibleObjects.add(building);
+
+            for (const child of building.childObjects) {
+                if (!child.__id) continue;
+                visibleObjects.add(child);
+                if (child.__type === ObjectType.Building) {
+                    addBuildingTree(child as Building);
+                }
+            }
+        };
+
+        for (const building of this.game.map.buildings) {
+            if (building.type === "cafetria_01") {
+                addBuildingTree(building);
+            }
+        }
     }
 
     spectate(spectateMsg: net.SpectateMsg): void {
@@ -3188,11 +4558,41 @@ export class Player extends BaseGameObject {
                 ? (params.source as Player)
                 : undefined;
         const sourceTeamId = playerSource?.teamId ?? params.sourceTeamId;
+        const infectedSettings = getInfectedSettings(this.game.miniGame);
+
+        if (
+            playerSource &&
+            playerSource !== this &&
+            isHideAndSeekHider(this.game.miniGame, playerSource.arenaTeam) &&
+            isHideAndSeekSeeker(this.game.miniGame, this.arenaTeam)
+        ) {
+            return;
+        }
 
         const preHealth = this._health;
 
         if (params.source !== this && sourceTeamId !== undefined) {
-            if (sourceTeamId === this.teamId && !this.disconnected) {
+            const amongUsImpostorAttack =
+                (isAmongUsMiniGame(this.game.miniGame) || this.game.map.amongUsMode) &&
+                playerSource?.amongUsRole === "impostor" &&
+                params.gameSourceType === "karambit";
+            if (amongUsImpostorAttack && playerSource.amongUsKillCooldownTime > 0) {
+                return;
+            }
+            if (amongUsImpostorAttack && this.amongUsRole === "impostor") {
+                return;
+            }
+            const infectedFriendlyFire =
+                !!infectedSettings &&
+                (playerSource?.arenaTeam
+                    ? playerSource.arenaTeam === this.arenaTeam
+                    : sourceTeamId === this.teamId);
+            const regularFriendlyFire = !infectedSettings && sourceTeamId === this.teamId;
+            if (
+                (infectedFriendlyFire || regularFriendlyFire) &&
+                !amongUsImpostorAttack &&
+                !this.disconnected
+            ) {
                 return;
             }
         }
@@ -3274,6 +4674,10 @@ export class Player extends BaseGameObject {
             }
         }
 
+        if (infectedSettings && this.arenaTeam === infectedSettings.zombieTeam) {
+            reduceDamage(infectedSettings.zombieDamageReduction);
+        }
+
         if (
             this.hasPerk("first_hit") &&
             this._health === GameConfig.player.health &&
@@ -3292,9 +4696,19 @@ export class Player extends BaseGameObject {
         this.game.pluginManager.emit("playerDamage", { ...params, player: this });
 
         this.damageTaken += finalDamage;
+        this.trackWeaponStat(
+            this.weaponDamageTaken,
+            params.weaponSourceType ?? params.gameSourceType,
+            finalDamage,
+        );
         if (playerSource && params.source !== this) {
             if (playerSource.groupId !== this.groupId) {
                 playerSource.damageDealt += finalDamage;
+                playerSource.trackWeaponStat(
+                    playerSource.weaponDamageDealt,
+                    params.weaponSourceType ?? params.gameSourceType,
+                    finalDamage,
+                );
                 playerSource.streakDirty = true;
                 playerSource.checkDamageStreaks();
                 playerSource.questManager.trackEvent("damage", {
@@ -3324,6 +4738,10 @@ export class Player extends BaseGameObject {
         }
 
         if (this._health === 0) {
+            if (this.handleInfectedFatalDamage(params)) {
+                return;
+            }
+
             if (false || (!this.downed && this.hasPerk("self_revive"))) {
                 this.kill(params);
             } else {
@@ -3335,13 +4753,18 @@ export class Player extends BaseGameObject {
     /**
      * adds gameover message to "this.msgsToSend" for the player and all their spectators
      */
-    addGameOverMsg(winningTeamId: number = 0): void {
+    addGameOverMsg(winningTeamId: number = 0, opts: { gameOver?: boolean } = {}): void {
         this.questManager.flushProgress(winningTeamId);
 
+        const gameOver = opts.gameOver || !!winningTeamId;
         const aliveCount = this.game.modeManager.aliveCount();
         const teamRank = winningTeamId == this.teamId ? 1 : aliveCount + 1;
 
-        if (this.game.modeManager.showStatsMsg(this)) {
+        if (
+            !gameOver &&
+            ((this.game.map.amongUsMode && winningTeamId === 0) ||
+                this.game.modeManager.showStatsMsg(this))
+        ) {
             const statsMsg = new net.PlayerStatsMsg();
             statsMsg.playerStats = this.getPlayerStatsSnapshot(this);
             this.msgsToSend.push({ type: net.MsgType.PlayerStats, msg: statsMsg });
@@ -3355,7 +4778,7 @@ export class Player extends BaseGameObject {
             gameOverMsg.teamRank = teamRank; // gameover msg sent after alive count updated
             gameOverMsg.teamId = this.teamId;
             gameOverMsg.winningTeamId = winningTeamId;
-            gameOverMsg.gameOver = !!winningTeamId;
+            gameOverMsg.gameOver = gameOver;
             this.msgsToSend.push({ type: net.MsgType.GameOver, msg: gameOverMsg });
 
             for (const spectator of this.spectators) {
@@ -3452,8 +4875,13 @@ export class Player extends BaseGameObject {
 
     kill(params: DamageParams): void {
         if (this.dead) return;
+        if (this.handleInfectedFatalDamage(params)) return;
         if (this.downed) this.downed = false;
         this.dead = true;
+        this.trackWeaponStat(
+            this.weaponDeaths,
+            params.weaponSourceType ?? params.gameSourceType,
+        );
         this.killedIndex = this.game.playerBarn.nextKilledNumber++;
         this.boost = 0;
         this.actionType = GameConfig.Action.None;
@@ -3463,6 +4891,11 @@ export class Player extends BaseGameObject {
         this.animType = GameConfig.Anim.None;
         this.animSeq++;
         this.healEffect = false;
+        this.poisonEffect = false;
+        this.poisonTicker = 0;
+        this.poisonDuration = 0;
+        this.poisonSource = undefined;
+        this.poisonSourceTeamId = undefined;
         this.boostDirty = true;
         this.inventoryDirty = true;
         this.setDirty();
@@ -3502,10 +4935,19 @@ export class Player extends BaseGameObject {
             : params.source;
         if (killCreditSource?.__type === ObjectType.Player) {
             this.killedBy = killCreditSource;
+            if (
+                (isAmongUsMiniGame(this.game.miniGame) || this.game.map.amongUsMode) &&
+                killCreditSource !== this &&
+                killCreditSource.amongUsRole === "impostor" &&
+                params.gameSourceType === "karambit"
+            ) {
+                killCreditSource.resetAmongUsKillCooldown();
+            }
 
             if (killCreditSource !== this && killCreditSource.teamId !== this.teamId) {
                 killCreditSource.killedIds.push(this.matchDataId);
                 killCreditSource.kills++;
+                killCreditSource.trackWeaponKill(params.gameSourceType);
                 killCreditSource.questManager.trackEvent("kill", {
                     weaponType: params.gameSourceType ?? "",
                     buildingType: killCreditSource.currentBuildingType,
@@ -3703,13 +5145,34 @@ export class Player extends BaseGameObject {
 
         this.game.modeManager.assignNewSpectate(this);
 
+        if (this.game.map.amongUsMode) {
+            const aliveKiller = this.getAliveKiller();
+            const spectateTargets = this.game.playerBarn.livingPlayers.filter(
+                (player) => player !== this && !player.dead && !player.disconnected,
+            );
+            const spectateTarget =
+                aliveKiller && !aliveKiller.dead && !aliveKiller.disconnected
+                    ? aliveKiller
+                    : spectateTargets.length > 0
+                      ? util.randomItem(spectateTargets)
+                      : undefined;
+            if (spectateTarget) {
+                this.spectating = spectateTarget;
+                this.spectateCooldown = 0;
+            }
+        }
+
         this.game.deadBodyBarn.addDeadBody(this.pos, this.__id, this.layer, params.dir);
+        this.game.playerBarn.refreshAmongUsMeetingAfterParticipantChange();
 
         //
         // Kill outfit obstacle
         //
         if (this.obstacleOutfit) {
             this.obstacleOutfit.kill(params);
+        }
+        if (this.propDisguise) {
+            this.propDisguise.kill(params);
         }
 
         //
@@ -3732,13 +5195,22 @@ export class Player extends BaseGameObject {
             this.deactivateStreak();
         }
 
+        const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
+        const isHideAndSeekHiderDeath =
+            !!hideAndSeekSettings && this.arenaTeam === hideAndSeekSettings.hiderTeam;
+
         for (let i = 0; i < GameConfig.WeaponSlot.Count; i++) {
             const weap = this.weapons[i];
             if (!weap.type) continue;
             const def = GameObjectDefs[weap.type];
             switch (def.type) {
                 case "gun":
-                    this.weaponManager.dropGun(i);
+                    if (
+                        !isHideAndSeekHiderDeath ||
+                        weap.type !== hideAndSeekSettings.hiderPrimaryWeapon
+                    ) {
+                        this.weaponManager.dropGun(i);
+                    }
                     weap.type = "";
                     break;
                 case "melee":
@@ -3780,15 +5252,21 @@ export class Player extends BaseGameObject {
             }
         }
 
-        for (let i = this.perks.length - 1; i >= 0; i--) {
-            const perk = this.perks[i];
-            if (perk.droppable || perk.replaceOnDeath) {
-                this.game.lootBarn.addLoot(
-                    perk.replaceOnDeath || perk.type,
-                    this.pos,
-                    this.layer,
-                    1,
-                );
+        if (
+            !this.game.disablePerks &&
+            !isAmongUsMiniGame(this.game.miniGame) &&
+            !this.game.map.amongUsMode
+        ) {
+            for (let i = this.perks.length - 1; i >= 0; i--) {
+                const perk = this.perks[i];
+                if (perk.droppable || perk.replaceOnDeath) {
+                    this.game.lootBarn.addLoot(
+                        perk.replaceOnDeath || perk.type,
+                        this.pos,
+                        this.layer,
+                        1,
+                    );
+                }
             }
         }
         this._perks.length = 0;
@@ -4149,9 +5627,23 @@ export class Player extends BaseGameObject {
 
     handleInput(msg: net.InputMsg): void {
         this.ack = msg.seq;
+        this.amongUsCamerasOpen =
+            this.game.map.amongUsMode && Boolean(msg.amongUsCamerasOpen);
 
         if (this.dead) return;
         if (this.game.map.perkMode && !this.role) return;
+        if (this.game.playerBarn.isAmongUsMeetingLocked) {
+            this.moveLeft = false;
+            this.moveRight = false;
+            this.moveUp = false;
+            this.moveDown = false;
+            this.touchMoveActive = false;
+            this.touchMoveDir = v2.create(0, 0);
+            this.touchMoveLen = 0;
+            this.shootHold = false;
+            this.shootStart = false;
+            return;
+        }
         if (this.game.arenaPrivate && this.game.arenaStartLockTimer > 0) {
             this.moveLeft = false;
             this.moveRight = false;
@@ -4171,6 +5663,12 @@ export class Player extends BaseGameObject {
         this.moveRight = msg.moveRight;
         this.moveUp = msg.moveUp;
         this.moveDown = msg.moveDown;
+        if (this.hideAndSeekHunterReleaseLocked) {
+            this.moveLeft = false;
+            this.moveRight = false;
+            this.moveUp = false;
+            this.moveDown = false;
+        }
 
         // same logic for `_cullingZoom`, see comment on `set zoom`
         if (this.portrait != msg.portrait) {
@@ -4180,6 +5678,11 @@ export class Player extends BaseGameObject {
         this.touchMoveActive = msg.touchMoveActive;
         this.touchMoveDir = v2.normalizeSafe(msg.touchMoveDir);
         this.touchMoveLen = msg.touchMoveLen;
+        if (this.hideAndSeekHunterReleaseLocked) {
+            this.touchMoveActive = false;
+            this.touchMoveDir = v2.create(0, 0);
+            this.touchMoveLen = 0;
+        }
         this.toMouseLen = msg.toMouseLen;
 
         this.shootHold = msg.shootHold;
@@ -4258,6 +5761,14 @@ export class Player extends BaseGameObject {
                     }
                     break;
                 case GameConfig.Input.Interact: {
+                    const deadBody = this.getReportableDeadBody();
+                    if (
+                        deadBody &&
+                        this.game.playerBarn.reportAmongUsDeadBody(this, deadBody)
+                    ) {
+                        break;
+                    }
+
                     const loot = this.getClosestLoot();
                     const obstacles = this.getInteractableObstacles();
                     const playerToRevive = this.getPlayerToRevive();
@@ -4301,6 +5812,14 @@ export class Player extends BaseGameObject {
                     break;
                 }
                 case GameConfig.Input.Use: {
+                    const deadBody = this.getReportableDeadBody();
+                    if (
+                        deadBody &&
+                        this.game.playerBarn.reportAmongUsDeadBody(this, deadBody)
+                    ) {
+                        break;
+                    }
+
                     const obstacles = this.getInteractableObstacles();
                     for (let i = 0; i < obstacles.length; i++) {
                         obstacles[i].interact(this);
@@ -4389,6 +5908,7 @@ export class Player extends BaseGameObject {
             const loot = objs[i];
             if (loot.__type !== ObjectType.Loot) continue;
             if (loot.destroyed) continue;
+            if (loot.isSkin) continue;
             if (
                 util.sameLayer(loot.layer, this.layer) &&
                 (loot.ownerId == 0 || loot.ownerId == this.__id)
@@ -4407,6 +5927,25 @@ export class Player extends BaseGameObject {
         }
 
         return closestLoot;
+    }
+
+    getReportableDeadBody(): DeadBody | undefined {
+        if (
+            !this.game.map.amongUsMode ||
+            this.dead ||
+            this.downed ||
+            this.disconnected ||
+            this.spectatorOnly ||
+            this.game.playerBarn.isAmongUsMeetingLocked
+        ) {
+            return undefined;
+        }
+
+        return this.game.deadBodyBarn.getReportableDeadBody(
+            this.pos,
+            this.rad,
+            this.layer,
+        );
     }
 
     getInteractableObstacles(): Obstacle[] {
@@ -4450,15 +5989,42 @@ export class Player extends BaseGameObject {
     }
 
     getPlayerStatus() {
-        const players: Player[] = this.game.modeManager.getPlayerStatusPlayers(this)!;
+        const players: Player[] = this.game.map.amongUsMode
+            ? this.game.playerBarn.players
+            : this.game.modeManager.getPlayerStatusPlayers(this)!;
+        const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
         return players.map((p) => {
+            if (isAmongUsMiniGame(this.game.miniGame) || this.game.map.amongUsMode) {
+                return {
+                    hasData: true,
+                    pos: p.pos,
+                    dir: p.dir,
+                    visible: p === this,
+                    dead: p.dead,
+                    downed: p.downed,
+                    disconnected: p.disconnected,
+                    role: p.role,
+                    outfit: p.outfit,
+                };
+            }
+
             const hiddenByDebug = p.isInvisibleTo(this);
-            const visible = this.game.arenaPrivate
-                ? true
-                : !hiddenByDebug && (p.teamId === this.teamId || p.timeUntilHidden > 0);
+            const hideAndSeekVisible =
+                hideAndSeekSettings && this.arenaTeam
+                    ? this.arenaTeam === hideAndSeekSettings.hiderTeam ||
+                      p.arenaTeam === this.arenaTeam
+                    : false;
+            const arenaShowsAllPlayers =
+                this.game.arenaPrivate && !isBattleRoyaleMapName(this.game.mapName);
+            const visible =
+                this.game.arenaPrivate && hideAndSeekSettings && this.arenaTeam
+                    ? hideAndSeekVisible
+                    : arenaShowsAllPlayers ||
+                      (!hiddenByDebug &&
+                          (p.teamId === this.teamId || p.timeUntilHidden > 0));
             return {
                 hasData:
-                    (this.game.arenaPrivate && visible) ||
+                    (arenaShowsAllPlayers && visible) ||
                     (!hiddenByDebug && visible) ||
                     (!hiddenByDebug && p.playerStatusDirty) ||
                     (hiddenByDebug && p.teamId === this.teamId),
@@ -4524,6 +6090,15 @@ export class Player extends BaseGameObject {
         if (obj.destroyed) return;
 
         const def = GameObjectDefs[obj.type];
+        if (
+            def.type === "gun" &&
+            isHideAndSeekHider(this.game.miniGame, this.arenaTeam)
+        ) {
+            return;
+        }
+        if (this.game.disableAirstrikes && obj.type === "strobe") return;
+        if (this.game.disablePerks && def.type === "perk") return;
+
         if (
             (this.actionType == GameConfig.Action.UseItem && def.type != "gun") ||
             this.actionType == GameConfig.Action.Revive
@@ -4829,6 +6404,8 @@ export class Player extends BaseGameObject {
 
     // in original game, only called on snowball or potato collision
     dropRandomLoot(): void {
+        if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
+
         // all possible droppable loot held by the player
         // 4 categories: inventory, weapons, armor, perks
         const playerLootTypes: string[] = [];
@@ -5029,6 +6606,8 @@ export class Player extends BaseGameObject {
     }
 
     customDropItem(dropMsg: net.DropItemMsg): void {
+        if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
+
         const itemDef = GameObjectDefs[dropMsg.item] as LootDef;
         switch (itemDef.type) {
             case "gun":
@@ -5050,6 +6629,8 @@ export class Player extends BaseGameObject {
     }
     dropItem(dropMsg: net.DropItemMsg): void {
         if (this.dead) return;
+        if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
+
         const battleRoyaleMode = isBattleRoyaleMapName(this.game.mapName);
         if (this.game.map.perkMode && !this.role && !battleRoyaleMode) return;
 
@@ -5162,6 +6743,7 @@ export class Player extends BaseGameObject {
             isItemInLoadout(loadout.outfit, "outfit") &&
             loadout.outfit !== "outfitBase"
         ) {
+            this.loadout.outfit = loadout.outfit;
             this.setOutfit(loadout.outfit);
         }
 
@@ -5265,6 +6847,73 @@ export class Player extends BaseGameObject {
         ) {
             this.addPerk("inspiration", false);
         }
+
+        const weaponOverride = getPrivateLobbyMiniGameWeaponOverride(
+            this.game.miniGame,
+            this.arenaTeam,
+        );
+        if (weaponOverride) {
+            const slot = GameConfig.WeaponSlot.Primary;
+            if (weaponOverride.primary !== undefined) {
+                this.weapons[slot].type = weaponOverride.primary;
+                this.weapons[slot].ammo = weaponOverride.primary
+                    ? (GameObjectDefs[weaponOverride.primary] as GunDef).maxClip
+                    : 0;
+                this.weapons[slot].cooldown = 0;
+                this.setDisplayWeaponType(slot, weaponOverride.primary);
+                this.loadout.primary = weaponOverride.primary;
+            }
+
+            if (weaponOverride.secondary !== undefined) {
+                const secondary = this.weapons[GameConfig.WeaponSlot.Secondary];
+                secondary.type = weaponOverride.secondary;
+                secondary.ammo = weaponOverride.secondary
+                    ? (GameObjectDefs[weaponOverride.secondary] as GunDef).maxClip
+                    : 0;
+                secondary.cooldown = 0;
+                this.setDisplayWeaponType(
+                    GameConfig.WeaponSlot.Secondary,
+                    weaponOverride.secondary,
+                );
+                this.loadout.secondary = weaponOverride.secondary;
+            }
+        }
+
+        const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
+        if (hideAndSeekSettings && this.arenaTeam === hideAndSeekSettings.hiderTeam) {
+            this.hideAndSeekPropSwitchesLeft = hideAndSeekSettings.propSwitchLimit;
+            this.syncHideAndSeekPropSwitchAmmo();
+            for (const throwableType of Object.keys(ThrowableDefs)) {
+                this.invManager.set(throwableType as InventoryItem, 0);
+            }
+            this.invManager.set(
+                hideAndSeekSettings.hiderBlindThrowable as InventoryItem,
+                hideAndSeekSettings.hiderBlindThrowableCount,
+            );
+            this.weaponManager.showNextThrowable();
+            this.hideAndSeekNoiseTicker = hideAndSeekSettings.hiderNoiseInterval;
+            this.streakReady = false;
+            this.streakDirty = true;
+        } else if (
+            hideAndSeekSettings &&
+            this.arenaTeam === hideAndSeekSettings.seekerTeam
+        ) {
+            for (const item of hideAndSeekSettings.seekerRemovedSpawnItems) {
+                this.invManager.set(item, 0);
+            }
+            for (const [item, amount] of Object.entries(
+                hideAndSeekSettings.seekerSpawnItems,
+            )) {
+                this.invManager.set(item as InventoryItem, amount);
+            }
+        }
+
+        if (this.game.disableAirstrikes) {
+            this.invManager.set("strobe", 0);
+            if (this.weapons[GameConfig.WeaponSlot.Throwable].type === "strobe") {
+                this.weaponManager.showNextThrowable();
+            }
+        }
     }
 
     emoteFromMsg(msg: net.EmoteMsg) {
@@ -5344,12 +6993,23 @@ export class Player extends BaseGameObject {
         this.debug.godMode = msg.godMode;
         this.debug.infiniteThrowables = msg.infiniteThrowables;
         this.debug.throwFast = msg.throwFast;
+        this.debug.shootFast = msg.shootFast;
+        this.debug.punchFast = msg.punchFast;
 
         if (invisibleChanged) {
             this.playerStatusDirty = true;
         }
 
         this.debug.moveObjMode.enabled = msg.moveObjs;
+
+        if (msg.drawExplosionDecal) {
+            this.game.decalBarn.addDecal(
+                "decal_frag_explosion",
+                msg.explosionDecalPos,
+                this.layer,
+                util.randomInt(0, 255),
+            );
+        }
 
         if (msg.spawnLootType) {
             const def = GameObjectDefs[msg.spawnLootType];
@@ -5682,6 +7342,16 @@ export class Player extends BaseGameObject {
         if (this.lowHpSurgeTicker > 0 && this.hasPerk("low_hp_surge")) {
             const mult = (PerkProperties.low_hp_surge as any)?.speedMult ?? 1.3;
             if (mult && mult > 0) this.speed *= mult;
+        }
+
+        const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
+        if (hideAndSeekSettings && this.arenaTeam === hideAndSeekSettings.seekerTeam) {
+            this.speed *= hideAndSeekSettings.seekerSpeedMultiplier;
+        }
+
+        const infectedSettings = getInfectedSettings(this.game.miniGame);
+        if (infectedSettings && this.arenaTeam === infectedSettings.zombieTeam) {
+            this.speed *= infectedSettings.zombieSpeedMultiplier;
         }
 
         this.speed = math.clamp(this.speed, 1, 10000);

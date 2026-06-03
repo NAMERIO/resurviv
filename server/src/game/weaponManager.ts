@@ -1,3 +1,4 @@
+import { AmongUsRoleDefs } from "../../../shared/defs/amongUsRoleDefs";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { DamageStreakProperties } from "../../../shared/defs/gameObjects/damageStreakDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
@@ -7,6 +8,8 @@ import {
     type ThrowableDef,
     ThrowableDefs,
 } from "../../../shared/defs/gameObjects/throwableDefs";
+import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
+import type { ObstacleDef } from "../../../shared/defs/mapObjectsTyping";
 import { GameConfig, type InventoryItem, WeaponSlot } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import { ObjectType } from "../../../shared/net/objectSerializeFns";
@@ -19,7 +22,9 @@ import { type Vec2, v2 } from "../../../shared/utils/v2";
 import type { BulletParams } from "../game/objects/bullet";
 import type { GameObject } from "../game/objects/gameObject";
 import type { Player } from "../game/objects/player";
+import type { Obstacle } from "./objects/obstacle";
 import type { Projectile } from "./objects/projectile";
+import { isAmongUsMiniGame, isHideAndSeekHider } from "./privateLobbyMiniGames";
 
 /**
  * List of throwables to cycle based on the definition `inventoryOrder`
@@ -30,6 +35,10 @@ export const throwableList = Object.keys(ThrowableDefs).filter((a) => {
     // so filter them out
     return "handImg" in def && "equip" in def.handImg!;
 });
+
+function isRenderablePropObstacle(def: ObstacleDef): boolean {
+    return !!def.img.sprite && def.img.sprite !== "none";
+}
 
 throwableList.sort((a, b) => {
     const aDef = ThrowableDefs[a];
@@ -67,6 +76,8 @@ export class WeaponManager {
 
     cookingThrowable = false;
     autoThrowFast = false;
+    autoShootFast = false;
+    autoPunchFast = false;
     cookTicker = 0;
 
     get activeWeapon(): string {
@@ -323,12 +334,20 @@ export class WeaponManager {
         }
 
         // if (this.weapons[this.curWeapIdx].cooldown <= 0 && this.scheduledReload) {
-        if (this.scheduledReload) {
+        if (this.scheduledReload && !player.debug.shootFast) {
             this.scheduledReload = false;
             this.tryReload();
+        } else if (player.debug.shootFast) {
+            this.scheduledReload = false;
         }
 
         const itemDef = GameObjectDefs[this.activeWeapon];
+        if (!player.debug.shootFast || itemDef.type !== "gun") {
+            this.autoShootFast = false;
+        }
+        if (!player.debug.punchFast || itemDef.type !== "melee") {
+            this.autoPunchFast = false;
+        }
         if (!player.debug.throwFast || itemDef.type !== "throwable") {
             this.autoThrowFast = false;
         }
@@ -385,6 +404,26 @@ export class WeaponManager {
         const oldGunLoaded =
             itemDef.fireMode === "blaster" &&
             this.loadingBlasterCharge >= (itemDef.loadTime ?? 1.5);
+
+        if (player.debug.shootFast) {
+            this.loadingBlasterCharge = 0;
+            this.wasHolding = false;
+            this.bursts.length = 0;
+
+            if (player.shootStart) {
+                this.autoShootFast = true;
+            }
+
+            if (!player.shootHold) {
+                this.autoShootFast = false;
+            }
+
+            if ((player.shootStart || this.autoShootFast) && weapon.cooldown <= 0) {
+                this.fireWeapon(this.offHand);
+                this.offHand = !this.offHand;
+            }
+            return;
+        }
 
         switch (itemDef.fireMode) {
             case "auto":
@@ -471,7 +510,22 @@ export class WeaponManager {
         const attack = itemDef.attack;
         const weapon = this.weapons[this.curWeapIdx];
 
-        if (
+        if (player.debug.punchFast) {
+            if (player.shootStart) {
+                this.autoPunchFast = true;
+            }
+
+            if (!player.shootHold) {
+                this.autoPunchFast = false;
+            }
+
+            if ((player.shootStart || this.autoPunchFast) && weapon.cooldown <= 0) {
+                this.player.cancelAction();
+                this.player.playAnim(GameConfig.Anim.Melee, 0.05);
+                weapon.cooldown = 0.02;
+                this.meleeAttacks = [0];
+            }
+        } else if (
             player.animType !== GameConfig.Anim.Melee &&
             (player.shootStart || (player.shootHold && itemDef.autoAttack)) &&
             weapon.cooldown < 0
@@ -790,16 +844,61 @@ export class WeaponManager {
         const itemDef = GameObjectDefs[this.activeWeapon] as GunDef;
 
         const weapon = this.weapons[this.curWeapIdx];
-        this.scheduledReload = weapon.ammo <= 1;
+        const shootFast = this.player.debug.shootFast;
+        const hideAndSeekPropOMatic =
+            this.activeWeapon === "prop_o_matic" &&
+            isHideAndSeekHider(this.player.game.miniGame, this.player.arenaTeam);
+        this.scheduledReload = !hideAndSeekPropOMatic && !shootFast && weapon.ammo <= 1;
 
-        if (weapon.ammo <= 0) return;
+        if (
+            this.activeWeapon === "prop_o_matic" &&
+            !hideAndSeekPropOMatic &&
+            weapon.ammo <= 0
+        ) {
+            weapon.ammo = 1;
+            this.player.weapsDirty = true;
+        }
+
+        if (this.activeWeapon === "prop_o_matic") {
+            if (itemDef.outsideOnly && this.player.indoors && !forceFire) {
+                const msg = new net.PickupMsg();
+                msg.type = net.PickupMsgType.GunCannotFire;
+                this.player.msgsToSend.push({ type: net.MsgType.Pickup, msg });
+                return;
+            }
+
+            if (!this.firePropOMatic(this.player.aimLayer)) {
+                return;
+            }
+
+            weapon.cooldown = shootFast ? 0 : itemDef.fireDelay;
+            weapon.recoilTime = itemDef.recoilTime;
+
+            if (!shootFast && this.player.hasPerk("streak_rapid_fire_effect")) {
+                weapon.cooldown *=
+                    DamageStreakProperties.streak_rapid_fire_effect.fireDelayMult;
+            }
+
+            this.player.shotSlowdownTimer = itemDef.fireDelay;
+            if (!hideAndSeekPropOMatic) {
+                this.scheduledReload = false;
+            }
+            return;
+        }
+
+        if (weapon.ammo <= 0) {
+            if (!shootFast) return;
+
+            weapon.ammo = this.getAmmoStats(itemDef).maxClip;
+            this.player.weapsDirty = true;
+        }
 
         const firstShotAccuracy = weapon.recoilTime <= 0;
 
-        weapon.cooldown = itemDef.fireDelay;
+        weapon.cooldown = shootFast ? 0 : itemDef.fireDelay;
         weapon.recoilTime = itemDef.recoilTime;
 
-        if (this.player.hasPerk("streak_rapid_fire_effect")) {
+        if (!shootFast && this.player.hasPerk("streak_rapid_fire_effect")) {
             weapon.cooldown *=
                 DamageStreakProperties.streak_rapid_fire_effect.fireDelayMult;
         }
@@ -819,11 +918,13 @@ export class WeaponManager {
 
         this.player.cancelAction();
 
-        weapon.ammo--;
-        this.player.weapsDirty = true;
-
         const collisionLayer = util.toGroundLayer(this.player.layer);
         const bulletLayer = this.player.aimLayer;
+
+        if (!shootFast) {
+            weapon.ammo--;
+            this.player.weapsDirty = true;
+        }
 
         const gunOff = itemDef.isDual
             ? itemDef.dualOffset! * (offHand ? 1.0 : -1.0)
@@ -1009,7 +1110,7 @@ export class WeaponManager {
                 apRounds: hasApRounds,
                 highVelocity: hasHighVelocity,
                 lastShot: weapon.ammo <= 0,
-                reflectObjId: this.player.obstacleOutfit?.__id,
+                reflectObjId: this.player.propDisguise?.__id,
                 onHitFx: hasExplosive ? "explosion_rounds" : undefined,
             };
 
@@ -1094,6 +1195,74 @@ export class WeaponManager {
         ) {
             this.player.timeUntilHidden = 1;
         }
+    }
+
+    private firePropOMatic(layer: number): boolean {
+        const targetPos = v2.add(
+            this.player.pos,
+            v2.mul(this.player.dir, this.player.toMouseLen),
+        );
+        const targetCollider = collider.createCircle(targetPos, 0.35);
+        const objs = this.player.game.grid.intersectCollider(targetCollider);
+
+        let bestProp: Obstacle | undefined;
+        let bestDistance = Number.MAX_VALUE;
+
+        for (const obj of objs) {
+            if (obj.__type === ObjectType.Obstacle) {
+                if (
+                    obj.dead ||
+                    obj.isSkin ||
+                    obj.isButton ||
+                    !util.sameLayer(obj.layer, layer)
+                ) {
+                    continue;
+                }
+
+                const def = MapObjectDefs[obj.type];
+                if (def?.type !== "obstacle") continue;
+                if (!isRenderablePropObstacle(def)) continue;
+                if (!collider.intersectCircle(obj.collider, targetPos, 0.35)) continue;
+
+                const distance = v2.distance(obj.pos, targetPos);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    bestProp = obj;
+                }
+            }
+        }
+
+        if (!bestProp) {
+            this.player.setPropDisguise();
+            return true;
+        }
+
+        const propDisguise = this.player.propDisguise;
+        const changesProp =
+            !propDisguise ||
+            propDisguise.__type !== bestProp.__type ||
+            propDisguise.type !== bestProp.type ||
+            propDisguise.ori !== bestProp.ori ||
+            !math.eqAbs(propDisguise.scale, bestProp.scale, 0.001);
+
+        if (!changesProp) {
+            return false;
+        }
+
+        if (
+            isHideAndSeekHider(this.player.game.miniGame, this.player.arenaTeam) &&
+            this.weapons[this.curWeapIdx].ammo <= 0
+        ) {
+            return false;
+        }
+
+        if (!this.player.canUseHideAndSeekPropSwitch()) {
+            return false;
+        }
+
+        this.player.setPropDisguise(bestProp.type, bestProp.ori, bestProp.scale);
+        this.player.consumeHideAndSeekPropSwitch();
+        return true;
     }
 
     getMeleeCollider() {
@@ -1181,16 +1350,27 @@ export class WeaponManager {
                     !player.dead &&
                     util.sameLayer(player.layer, this.player.layer)
                 ) {
+                    const propDisguise = player.propDisguise;
                     const normalized = v2.normalizeSafe(
-                        v2.sub(player.pos, this.player.pos),
+                        v2.sub((propDisguise ?? player).pos, this.player.pos),
                         v2.create(1, 0),
                     );
-                    const collision = coldet.intersectCircleCircle(
-                        coll.pos,
-                        coll.rad,
-                        player.pos,
-                        player.rad,
-                    );
+                    const collision =
+                        propDisguise &&
+                        propDisguise.height >= GameConfig.player.meleeHeight
+                            ? collider.intersectCircle(
+                                  propDisguise.collider,
+                                  coll.pos,
+                                  coll.rad,
+                              )
+                            : !propDisguise
+                              ? coldet.intersectCircleCircle(
+                                    coll.pos,
+                                    coll.rad,
+                                    player.pos,
+                                    player.rad,
+                                )
+                              : null;
                     if (
                         collision &&
                         math.eqAbs(
@@ -1210,7 +1390,15 @@ export class WeaponManager {
                             obj: player,
                             pen: collision.pen,
                             prio: player.teamId === this.player.teamId ? 2 : 0,
-                            pos: v2.copy(player.pos),
+                            pos: propDisguise
+                                ? v2.add(
+                                      coll.pos,
+                                      v2.mul(
+                                          v2.neg(collision.dir),
+                                          coll.rad - collision.pen,
+                                      ),
+                                  )
+                                : v2.copy(player.pos),
                             dir: collision.dir,
                         });
                     }
@@ -1230,6 +1418,7 @@ export class WeaponManager {
             const obj = hit.obj;
 
             if (obj.__type === ObjectType.Obstacle) {
+                this.player.punishHideAndSeekWrongPropHit();
                 obj.damage({
                     amount: meleeDef.damage * meleeDef.obstacleDamage,
                     gameSourceType: this.activeWeapon,
@@ -1240,9 +1429,15 @@ export class WeaponManager {
                 });
                 if (obj.interactable) obj.interact(this.player);
             } else if (obj.__type === ObjectType.Player) {
+                const meleeDamage =
+                    isAmongUsMiniGame(this.player.game.miniGame) &&
+                    this.player.amongUsRole === "impostor" &&
+                    this.activeWeapon === "karambit"
+                        ? AmongUsRoleDefs.impostor.karambitDamage
+                        : meleeDef.damage;
                 obj.damage({
                     amount:
-                        meleeDef.damage *
+                        meleeDamage *
                         (this.player.hasPerk("melee_striker")
                             ? ((PerkProperties.melee_striker
                                   ?.meleeDamageMult as number) ?? 1)
@@ -1290,6 +1485,12 @@ export class WeaponManager {
         }
 
         const oldThrowableType = this.weapons[GameConfig.WeaponSlot.Throwable].type;
+        if (this.player.game.disableAirstrikes && oldThrowableType === "strobe") {
+            this.player.cancelAnim();
+            this.autoThrowFast = false;
+            return;
+        }
+
         const amount = this.player.invManager.get(oldThrowableType as InventoryItem);
         if (amount <= 0) {
             this.autoThrowFast = false;

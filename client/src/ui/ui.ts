@@ -1,9 +1,11 @@
 import $ from "jquery";
 import * as PIXI from "pixi.js-legacy";
+import type { AmongUsTaskId } from "../../../shared/defs/amongUsTaskDefs";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { PingDefs } from "../../../shared/defs/gameObjects/pingDefs";
 import { type RoleDef, RoleDefs } from "../../../shared/defs/gameObjects/roleDefs";
 import type { MapDef } from "../../../shared/defs/mapDefs";
+import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import { Action, GameConfig, GasMode, TeamMode } from "../../../shared/gameConfig";
 import type { LeaderboardMsg } from "../../../shared/net/leaderboardMsg";
 import type { PlayerStatsMsg } from "../../../shared/net/playerStatsMsg";
@@ -123,6 +125,7 @@ export class UiManager {
     playersAliveBlueCounter = 0;
     playerKills = $(".js-ui-player-kills");
     announcement = $("#ui-announcement");
+    announcementFadeTimeout = 0;
     killLeaderName = $("#ui-kill-leader-name");
     killLeaderCount = $("#ui-kill-leader-count");
     mapContainer = $("#ui-map-container");
@@ -212,6 +215,7 @@ export class UiManager {
     mapIndicatorBarn!: MapIndicatorBarn;
     playerMapSprites: MapSprite[] = [];
     playerPingSprites = {} as Record<number, MapSprite[]>;
+    amongUsTaskMapMarkers = new globalThis.Map<string, MapSprite>();
     container = new PIXI.Container() as ContainerWithMask;
 
     resetWeapSlotStyling!: () => void;
@@ -240,6 +244,7 @@ export class UiManager {
 
     displayingStats = false;
     teamMemberHealthBarWidth!: number;
+    hideTeamStatus = false;
 
     teamMemberHeight = 48;
     groupPlayerCount = 0;
@@ -565,6 +570,7 @@ export class UiManager {
 
     m_free() {
         this.gasRenderer.free();
+        this.clearAmongUsTaskMapMarkers();
 
         this.clearUI();
 
@@ -639,7 +645,13 @@ export class UiManager {
     }
 
     onMapLoad(map: Map, camera: Camera) {
+        this.clearAmongUsTaskMapMarkers();
         this.resize(map, camera);
+        if (this.hideTeamStatus) {
+            $("#ui-team, #ui-team-indicators").css("display", "");
+        }
+        this.hideTeamStatus = !!map.getMapDef().gameMode.amongUsMode;
+        this.applyTeamStatusVisibility();
         const displayLeader = map.getMapDef().gameMode.killLeaderEnabled;
         const displayLeaderboard = !map.mapName.startsWith("br_");
 
@@ -655,6 +667,12 @@ export class UiManager {
         }
     }
 
+    applyTeamStatusVisibility() {
+        if (!this.hideTeamStatus) return;
+
+        $("#ui-team, #ui-team-indicators").css("display", "none");
+    }
+
     m_update(
         dt: number,
         player: Player,
@@ -664,6 +682,7 @@ export class UiManager {
         camera: Camera,
         teamMode: TeamMode,
         factionMode: boolean,
+        completedAmongUsTasks: ReadonlySet<AmongUsTaskId>,
     ) {
         const localPlayer = player;
 
@@ -705,6 +724,8 @@ export class UiManager {
         if (player.m_netData.m_dead && !this.dead) {
             this.dead = true;
             this.m_pieTimer.stop();
+        } else if (!player.m_netData.m_dead && this.dead) {
+            this.dead = false;
         }
 
         if (localPlayer.downed || this.dead) {
@@ -813,7 +834,10 @@ export class UiManager {
 
         const layoutSm = device.uiLayout == device.UiLayout.Sm;
         const groupPlayerIds = groupInfo ? groupInfo.playerIds : [];
-        const groupPlayerCount = groupPlayerIds.length;
+        const groupPlayerCount = math.min(
+            groupPlayerIds.length,
+            this.teamSelectors.length,
+        );
 
         for (let i = 0; i < groupPlayerCount; i++) {
             const teamElems = this.teamSelectors[i];
@@ -953,6 +977,7 @@ export class UiManager {
             });
         }
         this.updatePlayerMapSprites(player, playerBarn, map);
+        this.updateAmongUsTaskMapMarkers(map, completedAmongUsTasks);
         this.mapSpriteBarn.update(dt, this, map);
         this.m_pieTimer.update(dt, camera);
 
@@ -1133,6 +1158,75 @@ export class UiManager {
         $("#ui-kill-leaderboard").empty();
     }
 
+    clearAmongUsTaskMapMarkers() {
+        for (const marker of this.amongUsTaskMapMarkers.values()) {
+            marker.free();
+        }
+        this.amongUsTaskMapMarkers.clear();
+    }
+
+    updateAmongUsTaskMapMarkers(map: Map, completedTasks: ReadonlySet<AmongUsTaskId>) {
+        if (!map.getMapDef().gameMode.amongUsMode) {
+            if (this.amongUsTaskMapMarkers.size > 0) {
+                this.clearAmongUsTaskMapMarkers();
+            }
+            return;
+        }
+
+        const activeStationIds = new Set<string>();
+        for (let objectIdx = 0; objectIdx < map.mapData.objects.length; objectIdx++) {
+            const object = map.mapData.objects[objectIdx];
+            const buildingDef = MapObjectDefs[object.type];
+            if (!buildingDef || buildingDef.type !== "building") continue;
+
+            const rotation = math.oriToRad(object.ori);
+            for (
+                let stationIdx = 0;
+                stationIdx < buildingDef.mapObjects.length;
+                stationIdx++
+            ) {
+                const station = buildingDef.mapObjects[stationIdx];
+                if (typeof station.type !== "string") continue;
+
+                const stationDef = MapObjectDefs[station.type];
+                if (
+                    !stationDef ||
+                    stationDef.type !== "obstacle" ||
+                    !stationDef.amongUsTask ||
+                    completedTasks.has(stationDef.amongUsTask)
+                ) {
+                    continue;
+                }
+
+                const stationId = `${objectIdx}:${stationIdx}`;
+                activeStationIds.add(stationId);
+                let marker = this.amongUsTaskMapMarkers.get(stationId);
+                if (!marker) {
+                    marker = this.mapSpriteBarn.addSprite();
+                    marker.scale = device.uiLayout == device.UiLayout.Sm ? 0.18 : 0.24;
+                    marker.zOrder = 100;
+                    marker.sprite.texture = PIXI.Texture.from(
+                        PingDefs.ping_danger.mapTexture!,
+                    );
+                    marker.sprite.tint = 0xe3262e;
+                    this.amongUsTaskMapMarkers.set(stationId, marker);
+                }
+                marker.pos = v2.add(
+                    object.pos,
+                    v2.rotate(v2.mul(station.pos, object.scale), rotation),
+                );
+                marker.visible = true;
+            }
+        }
+
+        for (const [stationId, marker] of this.amongUsTaskMapMarkers) {
+            if (!activeStationIds.has(stationId)) {
+                marker.free();
+                this.amongUsTaskMapMarkers.delete(stationId);
+            }
+        }
+    }
+
     createPing(
         pingType: string,
         pos: Vec2,
@@ -1167,10 +1261,14 @@ export class UiManager {
             if (pingDef.mapEvent) {
                 // Map-event pings free themselves after they are finished;
                 // there's no limit to the number that an occur simultaneously.
-                const scale = (device.uiLayout == device.UiLayout.Sm ? 0.15 : 0.2) * 1.5;
+                const scale =
+                    pingDef.mapScale ??
+                    (device.uiLayout == device.UiLayout.Sm ? 0.15 : 0.2) * 1.5;
                 createPingSprite(scale, pingDef.tint!).release();
 
-                createPulseSprite(pingDef.tint!).release();
+                if (pingDef.pingLife) {
+                    createPulseSprite(pingDef.tint!).release();
+                }
             } else {
                 //
                 // Player pings
@@ -1367,6 +1465,8 @@ export class UiManager {
             [TeamMode.Solo]: "game-solo-rank",
             [TeamMode.Duo]: "game-duo-rank",
             [TeamMode.Squad]: "game-squad-rank",
+            [TeamMode.Ten]: "game-squad-rank",
+            [TeamMode.Fifteen]: "game-squad-rank",
         };
         const val = l10nMap[teamMode] || l10nMap.unknown;
         return this.localization.translate(val);
@@ -1397,6 +1497,36 @@ export class UiManager {
         return `${this.localization.translate(
             "game-You",
         )} ${this.localization.translate("game-you-died")}.`;
+    }
+
+    getAmongUsTitleText(localRole: string, victory: boolean) {
+        if (victory) {
+            return this.localization.translate("game-among-us-you-won") || "You won";
+        }
+        if (localRole === "crewmate") {
+            return (
+                this.localization.translate("game-among-us-impostor-won") ||
+                "IMPOSTOR won"
+            );
+        }
+        if (localRole === "impostor") {
+            return (
+                this.localization.translate("game-among-us-crewmates-won") ||
+                "CREWMATES won"
+            );
+        }
+        return this.localization.translate("game-team-eliminated");
+    }
+
+    getAmongUsTitleClass(localRole: string, victory: boolean) {
+        if (victory) return "ui-stats-header-title-among-us-win";
+        if (localRole === "crewmate") {
+            return "ui-stats-header-title-among-us-impostor";
+        }
+        if (localRole === "impostor") {
+            return "ui-stats-header-title-among-us-crewmate";
+        }
+        return "";
     }
 
     getOverviewElems(
@@ -1442,6 +1572,16 @@ export class UiManager {
         map: Map,
         ui2: UiManager2,
     ) {
+        const localStats = playerStats.find(
+            (stats) => stats.playerId === this.game.m_localId,
+        );
+        const amongUsMode = Boolean(map.getMapDef().gameMode.amongUsMode);
+        if (amongUsMode && !gameOver && localStats?.dead) {
+            this.beginSpectating();
+            this.clearStatsElems();
+            this.hideStats();
+            return;
+        }
         // If we're spectating a team that's not our own, and the game isn't over yet,
         // don't display the stats screen again.
         if (!spectating || teamId == localTeamId || gameOver) {
@@ -1468,15 +1608,20 @@ export class UiManager {
 
             this.setBannerAd(statsDelay, ui2);
 
+            const gameMode = map.getMapDef().gameMode;
             const isLocalTeamWinner =
                 localTeamId == winningTeamId || (spectating && winningTeamId == teamId);
             const spectatingAnotherTeam = spectating && localTeamId != teamId;
-            const S = isLocalTeamWinner
-                ? this.getTitleVictoryText(
-                      spectatingAnotherTeam,
-                      map.getMapDef().gameMode,
-                  )
-                : this.getTitleDefeatText(teamMode, spectatingAnotherTeam);
+            const localRole =
+                playerBarn.getPlayerInfo(this.game.m_localId).amongUsRole || "";
+            const titleClass = amongUsMode
+                ? this.getAmongUsTitleClass(localRole, isLocalTeamWinner)
+                : "";
+            const S = amongUsMode
+                ? this.getAmongUsTitleText(localRole, isLocalTeamWinner)
+                : isLocalTeamWinner
+                  ? this.getTitleVictoryText(spectatingAnotherTeam, gameMode)
+                  : this.getTitleDefeatText(teamMode, spectatingAnotherTeam);
             let teamKills = 0;
             for (let i = 0; i < playerStats.length; i++) {
                 teamKills += playerStats[i].kills;
@@ -1490,7 +1635,7 @@ export class UiManager {
             const I = $("<div/>")
                 .append(
                     $("<div/>", {
-                        class: "ui-stats-header-title",
+                        class: `ui-stats-header-title${titleClass ? ` ${titleClass}` : ""}`,
                         html: S,
                     }),
                 )
@@ -1697,6 +1842,14 @@ export class UiManager {
     }
 
     showTeamAd(playerStats: PlayerStatsMsg["playerStats"], _ui2Manager: unknown) {
+        const amongUsMode = Boolean(this.game.m_map.getMapDef().gameMode.amongUsMode);
+        if (amongUsMode && playerStats.dead) {
+            this.beginSpectating();
+            this.setSpectating(true, this.game.teamMode);
+            this.clearStatsElems();
+            this.hideStats();
+            return;
+        }
         this.toggleEscMenu(true);
         this.displayMapLarge(true);
         this.clearStatsElems();
@@ -1923,6 +2076,7 @@ export class UiManager {
             this.bigmapDisplayed ? "none" : "block",
         );
         $(".js-ui-map-show").css("display", this.bigmapDisplayed ? "block" : "none");
+        this.applyTeamStatusVisibility();
         this.updateSpectatorCountDisplay(true);
         this.redraw(this.game.m_camera);
     }
@@ -2006,15 +2160,17 @@ export class UiManager {
         }
     }
 
-    displayAnnouncement(message: string) {
-        if (message) {
-            this.announcement.html(message);
-            this.announcement.fadeIn(400, () => {
-                setTimeout(() => {
-                    this.announcement.fadeOut(800);
-                }, 3000);
-            });
-        }
+    displayAnnouncement(message: string, holdTime = 3000) {
+        if (!message) return;
+
+        window.clearTimeout(this.announcementFadeTimeout);
+        this.announcement.stop(true, true);
+        this.announcement.html(message);
+        this.announcement.fadeIn(400, () => {
+            this.announcementFadeTimeout = window.setTimeout(() => {
+                this.announcement.fadeOut(800);
+            }, holdTime);
+        });
     }
 
     displayGasAnnouncement(type: GasMode, timeLeft: number) {
@@ -2249,14 +2405,19 @@ export class UiManager {
         const thisMinimapSize = this.getMinimapSize();
         const thisMinimapBorderWidth = this.getMinimapBorderWidth();
         const layoutSm = device.uiLayout == device.UiLayout.Sm;
+        const mapAspect =
+            this.mapSprite.texture.height > 0
+                ? this.mapSprite.texture.width / this.mapSprite.texture.height
+                : 1;
 
         this.display.border.clear();
         this.container.mask?.clear();
 
         if (this.bigmapDisplayed) {
-            const smallestDim = math.min(screenWidth, screenHeight);
-            this.mapSprite.width = smallestDim;
-            this.mapSprite.height = smallestDim;
+            const mapWidth = math.min(screenWidth, screenHeight * mapAspect);
+            const mapHeight = mapWidth / mapAspect;
+            this.mapSprite.width = mapWidth;
+            this.mapSprite.height = mapHeight;
             this.mapSprite.x = screenWidth / 2;
             this.mapSprite.y = screenHeight / 2;
             this.mapSprite.alpha = 1;
@@ -2278,8 +2439,8 @@ export class UiManager {
             const minimapScale = (this.screenScaleFactor * 1600) / 1.2;
             const minimapSize = thisMinimapSize * this.screenScaleFactor;
 
-            this.mapSprite.width = minimapScale;
             this.mapSprite.height = minimapScale;
+            this.mapSprite.width = minimapScale * mapAspect;
             this.mapSprite.alpha = 0.8;
 
             // Start with a fall back

@@ -16,6 +16,7 @@ import {
     getMarketReferencePrice,
 } from "../../../shared/utils/marketPricing";
 import type { Account } from "../account";
+import { googleH5Ads } from "../ads/googleH5Ads";
 import { helpers } from "../helpers";
 import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
@@ -34,6 +35,9 @@ type Listing = {
     image: string;
     transform: string;
     price: number;
+    maker: string;
+    kills: number;
+    wins: number;
     owned?: boolean;
     action: "buy" | "sell" | "sell_or_auction" | "cancel" | "auction_live";
     sellerName?: string;
@@ -52,6 +56,9 @@ type AuctionViewListing = {
     startPrice: number;
     highestBid: number;
     bidCount: number;
+    maker: string;
+    kills: number;
+    wins: number;
     sellerName?: string;
     highestBidderName?: string;
     createdAt?: number;
@@ -241,7 +248,7 @@ export class ShopMenu {
             "discord_join",
             "https://discord.gg/Tm2Rmp9aFR",
         );
-        for (const [index, selectorSuffix] of ["1", "2", "3"].entries()) {
+        for (const [index, selectorSuffix] of ["1", "2", "3", "4"].entries()) {
             $(`#btn-contains-crate-${selectorSuffix}`).on("click", (e) => {
                 e.preventDefault();
                 const lootBox = this.getOrderedLootBoxes()[index];
@@ -254,6 +261,13 @@ export class ShopMenu {
                 const lootBox = this.getOrderedLootBoxes()[index];
                 if (!lootBox) return false;
                 this.handleLootBoxAction(lootBox);
+                return false;
+            });
+            $(`#crate-ad-progress-${selectorSuffix}`).on("click", (e) => {
+                e.preventDefault();
+                const lootBox = this.getOrderedLootBoxes()[index];
+                if (!lootBox) return false;
+                this.handleLootBoxAdAction(lootBox);
                 return false;
             });
         }
@@ -297,20 +311,7 @@ export class ShopMenu {
                 this.confirmSellModal.hide();
                 this.cratesModal.hide();
                 this.crateContainModal.hide();
-                this.account.openLootBox(lootBox.id, (error, reward) => {
-                    this.openingLootBox = false;
-                    if (error) {
-                        this.showMarketError(error);
-                        return;
-                    }
-                    const itemType = reward?.itemType;
-                    if (!itemType) {
-                        this.showMarketError("server_error");
-                        return;
-                    }
-                    this.pendingLootBoxRewardConfirmation = true;
-                    this.startLootBoxSpin(lootBox, itemType);
-                });
+                this.openLootBox(lootBox, "gp");
                 return false;
             }
             if (action === "buy") {
@@ -590,6 +591,9 @@ export class ShopMenu {
                     image: helpers.getSvgFromGameType(listing.itemType),
                     transform: helpers.getCssTransformFromGameType(listing.itemType),
                     price: listing.price,
+                    maker: listing.maker,
+                    kills: listing.kills,
+                    wins: listing.wins,
                     owned: this.account.items.some(
                         (item) => item.type === listing.itemType,
                     ),
@@ -625,6 +629,9 @@ export class ShopMenu {
                     image: helpers.getSvgFromGameType(listing.itemType),
                     transform: helpers.getCssTransformFromGameType(listing.itemType),
                     price: listing.price,
+                    maker: listing.maker,
+                    kills: listing.kills,
+                    wins: listing.wins,
                     owned: true,
                     action: "cancel",
                     sellerName: this.localization.translate("market-you") || "You",
@@ -650,6 +657,9 @@ export class ShopMenu {
                     image: helpers.getSvgFromGameType(auction.itemType),
                     transform: helpers.getCssTransformFromGameType(auction.itemType),
                     price: currentPrice,
+                    maker: auction.maker,
+                    kills: auction.kills,
+                    wins: auction.wins,
                     owned: false,
                     action: "auction_live",
                     sellerName: this.localization.translate("market-you") || "You",
@@ -683,6 +693,9 @@ export class ShopMenu {
                     image: helpers.getSvgFromGameType(item.type),
                     transform: helpers.getCssTransformFromGameType(item.type),
                     price: getBundleMinPrice(item.type) ?? 0,
+                    maker: item.maker,
+                    kills: item.kills,
+                    wins: item.wins,
                     owned: true,
                     action: "sell_or_auction",
                     sellerName: this.localization.translate("market-you") || "You",
@@ -731,6 +744,9 @@ export class ShopMenu {
             startPrice: auction.startPrice,
             highestBid: auction.highestBid,
             bidCount: auction.bidCount,
+            maker: auction.maker,
+            kills: auction.kills,
+            wins: auction.wins,
             sellerName: auction.sellerSlug,
             highestBidderName: auction.highestBidderSlug,
             createdAt: auction.createdAt,
@@ -819,8 +835,9 @@ export class ShopMenu {
 
         if (lootBoxes.length === 0) {
             shopButton.addClass("market-refresh-disabled");
-            for (const selectorSuffix of ["1", "2", "3"]) {
+            for (const selectorSuffix of ["1", "2", "3", "4"]) {
                 $(`#open-crate-${selectorSuffix}`).addClass("disable");
+                $(`#crate-ad-progress-${selectorSuffix}`).hide().addClass("disable");
                 $(`#crate-price-${selectorSuffix}`).text("0");
             }
             crateTitle.text(
@@ -831,15 +848,31 @@ export class ShopMenu {
 
         shopButton.removeClass("market-refresh-disabled");
         crateTitle.text(lootBoxes[0]!.name);
-        for (const [index, selectorSuffix] of ["1", "2", "3"].entries()) {
+        for (const [index, selectorSuffix] of ["1", "2", "3", "4"].entries()) {
             const lootBox = lootBoxes[index];
             if (!lootBox) {
                 $(`#open-crate-${selectorSuffix}`).addClass("disable");
+                $(`#crate-ad-progress-${selectorSuffix}`).hide().addClass("disable");
                 $(`#crate-price-${selectorSuffix}`).text("0");
                 continue;
             }
             $(`#open-crate-${selectorSuffix}`).removeClass("disable");
+            const adState = this.account.lootBoxAdStates[lootBox.id];
+            const required = adState?.required ?? lootBox.adRequirement ?? 0;
+            const watched = Math.min(required, adState?.watched ?? 0);
+            const adButton = $(`#crate-ad-progress-${selectorSuffix}`);
+            const showAds =
+                this.account.loggedIn && googleH5Ads.enabled() && required > 0;
+
+            $(`#open-crate-${selectorSuffix}`).find(".crate-text").text("Buy for");
             $(`#crate-price-${selectorSuffix}`).text(String(lootBox.price));
+            adButton.toggle(showAds);
+            adButton.toggleClass("disable", adState?.opened === true);
+            $(`#crate-ad-count-${selectorSuffix}`).text(
+                adState?.opened
+                    ? this.formatCountdown((adState.resetAt || Date.now()) - Date.now())
+                    : `${watched}/${required}`,
+            );
         }
     }
 
@@ -1003,6 +1036,31 @@ export class ShopMenu {
         });
     }
 
+    buildItemInstanceStats(item: Pick<Listing, "maker" | "kills" | "wins">) {
+        return $("<div/>", { class: "market-item-instance-stats" }).append(
+            $("<div/>", { class: "market-item-stats-text" }).append(
+                $("<span/>", {
+                    text: `${this.localization.translate("market-sort-makr") || "Makr"}: `,
+                }),
+                $("<p/>", { text: item.maker || "Unknown" }),
+            ),
+            $("<div/>", { class: "market-stats-second-line-container" }).append(
+                $("<div/>", { class: "market-item-stats-text" }).append(
+                    $("<span/>", {
+                        text: `${this.localization.translate("market-sort-kills") || "Kills"}: `,
+                    }),
+                    $("<p/>", { text: item.kills }),
+                ),
+                $("<div/>", { class: "market-item-stats-text" }).append(
+                    $("<span/>", {
+                        text: `${this.localization.translate("market-sort-wins") || "Wins"}: `,
+                    }),
+                    $("<p/>", { text: item.wins }),
+                ),
+            ),
+        );
+    }
+
     buildMarketItem(item: Listing) {
         const actionLabel =
             item.action === "cancel"
@@ -1015,11 +1073,7 @@ export class ShopMenu {
                       "Sell item"
                     : "Buy";
         const sellerLabel =
-            item.action === "buy"
-                ? this.localization.translate("market-seller-label") || "Seller"
-                : this.localization.translate("market-sort-makr") ||
-                  this.localization.translate("market-listing-owner-label") ||
-                  "Seller";
+            this.localization.translate("market-seller-label") || "Seller";
         const sellerValue =
             item.sellerName ||
             (item.action === "buy"
@@ -1076,10 +1130,7 @@ export class ShopMenu {
         if (isSellPageCard) {
             info.append(
                 $("<div/>", { class: "market-item-stats-container" }).append(
-                    $("<div/>", { class: "market-item-stats-text" }).append(
-                        $("<span/>", { text: `${sellerLabel}: ` }),
-                        $("<p/>", { text: sellerValue }),
-                    ),
+                    this.buildItemInstanceStats(item),
                     $("<div/>", { class: "market-stats-second-line-container" }).append(
                         $("<div/>", { class: "market-item-stats-text" }).append(
                             $("<span/>", {
@@ -1143,6 +1194,7 @@ export class ShopMenu {
                         $("<span/>", { text: `${sellerLabel}: ` }),
                         $("<p/>", { text: sellerValue }),
                     ),
+                    this.buildItemInstanceStats(item),
                 ),
             );
         }
@@ -1267,6 +1319,9 @@ export class ShopMenu {
             transform: item.transform,
             startPrice: getAuctionPriceBounds(item.type)?.min ?? 1,
             highestBid: 0,
+            maker: item.maker,
+            kills: item.kills,
+            wins: item.wins,
             bidCount: 0,
             sellerName: item.sellerName,
             referenceValue: getMarketReferencePrice(item.type) ?? 0,
@@ -1319,6 +1374,7 @@ export class ShopMenu {
                     }),
                     $("<p/>", { text: this.formatMarketPrice(currentBid) }),
                 ),
+                this.buildItemInstanceStats(item),
             ),
         );
         const action = $("<div/>", {
@@ -1700,18 +1756,111 @@ export class ShopMenu {
         this.confirmSellModal.show(true);
     }
 
+    canUseLootBoxAds(lootBox: ShopLootBox) {
+        if (!this.account.loggedIn || !googleH5Ads.enabled()) return false;
+        if (!lootBox.adRequirement || lootBox.adRequirement <= 0) return false;
+        return this.account.lootBoxAdStates[lootBox.id]?.opened !== true;
+    }
+
+    handleLootBoxAdAction(lootBox: ShopLootBox) {
+        if (this.openingLootBox || !this.canUseLootBoxAds(lootBox)) return;
+        this.openingLootBox = true;
+        const state = this.account.lootBoxAdStates[lootBox.id];
+        if (state && state.remaining <= 0) {
+            this.cratesModal.hide();
+            this.crateContainModal.hide();
+            this.openLootBox(lootBox, "ads");
+            return;
+        }
+
+        this.watchLootBoxAd(lootBox, () => {
+            const nextState = this.account.lootBoxAdStates[lootBox.id];
+            this.renderLootBoxes();
+
+            if (nextState && nextState.remaining <= 0) {
+                this.cratesModal.hide();
+                this.crateContainModal.hide();
+                this.openLootBox(lootBox, "ads");
+                return;
+            }
+
+            this.openingLootBox = false;
+        });
+    }
+
+    openLootBox(lootBox: ShopLootBox, payment: "gp" | "ads") {
+        this.account.openLootBox(lootBox.id, payment, (error, reward) => {
+            this.openingLootBox = false;
+            if (error) {
+                this.showMarketError(error);
+                return;
+            }
+            const itemType = reward?.itemType;
+            if (!itemType) {
+                this.showMarketError("server_error");
+                return;
+            }
+            this.pendingLootBoxRewardConfirmation = true;
+            this.startLootBoxSpin(lootBox, itemType);
+        });
+    }
+
+    watchLootBoxAd(lootBox: ShopLootBox, onComplete: () => void) {
+        let rewardViewed = false;
+        let adStarted = false;
+        const timeout = window.setTimeout(() => {
+            if (adStarted) return;
+            this.openingLootBox = false;
+            this.showMarketError("server_error");
+        }, 12000);
+
+        googleH5Ads.requestReward("watch-video-lootbox", {
+            beforeAd: () => {
+                adStarted = true;
+                window.clearTimeout(timeout);
+            },
+            adViewed: () => {
+                rewardViewed = true;
+                window.clearTimeout(timeout);
+                this.account.claimLootBoxAd(lootBox.id, (error) => {
+                    if (error) {
+                        this.openingLootBox = false;
+                        this.showMarketError(error);
+                        return;
+                    }
+                    onComplete();
+                });
+            },
+            adDismissed: () => {
+                window.clearTimeout(timeout);
+                this.openingLootBox = false;
+                this.showMarketError("server_error");
+            },
+            adBreakDone: () => {
+                if (rewardViewed) return;
+                window.clearTimeout(timeout);
+                this.openingLootBox = false;
+                this.showMarketError("server_error");
+            },
+        });
+    }
+
     showLootBoxContents(lootBox: ShopLootBox) {
         const modalContent = $("#modal-crate-contain > .modal-content");
         const odds = $("#modal-crate-odds");
         const items = $("#modal-crate-items");
         const bodyText = $("#modal-crate-contain .modal-body-text");
-        modalContent.removeClass("crate-theme-green crate-theme-blue crate-theme-red");
+        modalContent.removeClass(
+            "crate-theme-green crate-theme-blue crate-theme-red crate-theme-ad",
+        );
         modalContent.addClass(
-            lootBox.id === "loot_box_02"
-                ? "crate-theme-blue"
-                : lootBox.id === "loot_box_03"
-                  ? "crate-theme-red"
-                  : "crate-theme-green",
+            lootBox.id === "loot_box_04"
+                ? "crate-theme-ad"
+                : lootBox.id === "loot_box_02"
+                  ? "crate-theme-blue"
+                  : lootBox.id === "loot_box_03"
+                    ? "crate-theme-red"
+                    : "crate-theme-green",
         );
         $("#modal-crate-contain-title").text(lootBox.name);
         bodyText.text(`Open a ${lootBox.name} for a chance at classic Surviv cosmetics.`);
@@ -1910,8 +2059,23 @@ export class ShopMenu {
             timer.text(this.formatListingDuration(Date.now() - createdAt));
         });
         this.updateAuctionBidRelativeTimes();
+        this.updateLootBoxAdTimers();
         this.refreshAuctionBidModalLive();
         this.updateMarketRefreshUi();
+    }
+
+    updateLootBoxAdTimers() {
+        for (const [index, selectorSuffix] of ["1", "2", "3", "4"].entries()) {
+            const lootBox = this.getOrderedLootBoxes()[index];
+            if (!lootBox) continue;
+
+            const adState = this.account.lootBoxAdStates[lootBox.id];
+            if (!adState?.opened) continue;
+
+            $(`#crate-ad-count-${selectorSuffix}`).text(
+                this.formatCountdown((adState.resetAt || Date.now()) - Date.now()),
+            );
+        }
     }
 
     refreshAuctionBidModalLive() {
@@ -2055,7 +2219,16 @@ export class ShopMenu {
     }
 
     getOrderedLootBoxes() {
-        return [...(this.account.lootBoxes || [])].sort((a, b) => a.price - b.price);
+        const order = ["loot_box_01", "loot_box_02", "loot_box_03", "loot_box_04"];
+        return [...(this.account.lootBoxes || [])].sort((a, b) => {
+            const aIndex = order.indexOf(a.id);
+            const bIndex = order.indexOf(b.id);
+            return (
+                (aIndex === -1 ? Number.MAX_SAFE_INTEGER : aIndex) -
+                    (bIndex === -1 ? Number.MAX_SAFE_INTEGER : bIndex) ||
+                a.price - b.price
+            );
+        });
     }
 
     getPendingSellPrice() {
@@ -2219,6 +2392,9 @@ export class ShopMenu {
                 transform: helpers.getCssTransformFromGameType(sold.itemType),
                 price: sold.price,
                 action: "buy",
+                maker: "Unknown",
+                kills: 0,
+                wins: 0,
             });
             added = true;
         }
@@ -2335,6 +2511,9 @@ export class ShopMenu {
                 transform: helpers.getCssTransformFromGameType(itemType),
                 price: 0,
                 action: "buy",
+                maker: "Unknown",
+                kills: 0,
+                wins: 0,
             });
         }
         this.showNextSoldNotification();

@@ -1,8 +1,11 @@
 <!doctype html>
 <html lang="en">
   <head>
-  <!-- ADIN_PLAY_SCRIPT_PLACEHOLDER
-  %VITE_TURNSTILE_SCRIPT% -->
+  <!-- ADIN_PLAY_SCRIPT_PLACEHOLDER -->
+  %VITE_TURNSTILE_SCRIPT%
+    <script>
+      window.H5_GAMES_ADS_ENABLED = "%VITE_H5_GAMES_ADS_ENABLED%" === "true";
+    </script>
     <!-- Meta Properties -->
     <meta charset='UTF-8'>
     <title>resurviv.io - 2d battle royale game</title>
@@ -31,26 +34,60 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,700" rel="stylesheet">
     <link href="css/app.css" rel="stylesheet">
     <link href="css/game.css" rel="stylesheet">
+    %VITE_DEBUG_CSS_LINK%
 
     <!-- AdSense script -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1712213211562891" crossorigin="anonymous"></script>
+    <script>
+      const adbreakTestMode = new URLSearchParams(location.search).get("adbreak_test") === "on";
+      if (window.H5_GAMES_ADS_ENABLED && (location.hostname !== "localhost" && location.hostname !== "127.0.0.1" || adbreakTestMode)) {
+        const adsScript = document.createElement("script");
+        adsScript.async = true;
+        adsScript.dataset.adClient = "ca-pub-1712213211562891";
+        adsScript.dataset.adFrequencyHint = "30s";
+        if (adbreakTestMode) {
+          adsScript.dataset.adbreakTest = "on";
+        }
+        adsScript.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1712213211562891";
+        adsScript.crossOrigin = "anonymous";
+        adsScript.onload = function() {
+          window.googleH5AdsScriptLoaded = true;
+        };
+        document.head.appendChild(adsScript);
+      }
+    </script>
+    <script>
+      window.adsbygoogle = window.adsbygoogle || [];
+      window.adBreak = window.adConfig = function(config) {
+        window.adsbygoogle.push(config);
+      };
+      if (window.H5_GAMES_ADS_ENABLED) {
+        window.adConfig({
+          preloadAdBreaks: "on",
+          sound: "on",
+        });
+      }
+    </script>
   </head>
   <body>
     <!-- Side Rail Ads (skyscrapers) -->
     <div id="ad-rail-left" class="ad-rail hide-on-mobile">
       <ins class="adsbygoogle"
-           style="display:inline-block;width:160px;height:600px"
+           style="display:block;width:160px"
            data-ad-client="ca-pub-1712213211562891"
-           data-ad-slot="7549696539"></ins>
+           data-ad-slot="7549696539"
+           data-ad-format="vertical"
+           data-full-width-responsive="false"></ins>
       <script>
         (adsbygoogle = window.adsbygoogle || []).push({});
       </script>
     </div>
     <div id="ad-rail-right" class="ad-rail hide-on-mobile">
       <ins class="adsbygoogle"
-           style="display:inline-block;width:160px;height:400px"
+           style="display:block;width:160px"
            data-ad-client="ca-pub-1712213211562891"
-           data-ad-slot="1591617255"></ins>
+           data-ad-slot="1591617255"
+           data-ad-format="vertical"
+           data-full-width-responsive="false"></ins>
       <script>
         (adsbygoogle = window.adsbygoogle || []).push({});
       </script>
@@ -495,6 +532,70 @@
         <div id="ui-upper-center" class="click-through">
           <div id="ui-announcement"></div>
         </div>
+        <div id="ui-among-us-meeting">
+          <div class="among-us-meeting-panel">
+            <div class="among-us-meeting-header">
+              <div id="among-us-meeting-title">DISCUSSION</div>
+              <div id="among-us-meeting-timer">60</div>
+            </div>
+            <div id="among-us-meeting-cards"></div>
+          </div>
+          <div id="among-us-meeting-chat">
+            <div class="among-us-chat-title">LOCAL CHAT</div>
+            <div id="among-us-chat-messages"></div>
+            <div class="among-us-chat-compose">
+              <input id="among-us-chat-input" type="text" maxlength="120" placeholder="Message the meeting..." />
+              <button id="among-us-chat-send" type="button">Send</button>
+            </div>
+          </div>
+        </div>
+        <div id="ui-among-us-task">
+          <div id="among-us-task-panel">
+            <button id="among-us-task-close" type="button" aria-label="Close task"></button>
+            <div class="among-us-task-header">
+              <div id="among-us-task-title">BREAK THE BOTTLES</div>
+              <div id="among-us-task-progress">0 / 6</div>
+            </div>
+            <div id="among-us-task-instruction">Click every bottle to clear the task.</div>
+            <div class="among-us-task-content">
+              <div class="among-us-task-weapon-stage">
+                <img id="among-us-task-weapon" src="/img/loot/loot-weapon-m9.svg" alt="M9" />
+                <div class="among-us-task-flash"></div>
+                <div class="among-us-task-water-stream"></div>
+                <div id="among-us-task-drop-zone"></div>
+              </div>
+              <div id="among-us-task-bottles"></div>
+            </div>
+            <div id="among-us-task-status"></div>
+          </div>
+        </div>
+        <div id="ui-among-us-cameras">
+          <div id="among-us-cameras-panel">
+            <button id="among-us-cameras-close" type="button" aria-label="Close cameras"></button>
+            <div id="among-us-cameras-header">
+              <div>SECURITY</div>
+              <div id="among-us-cameras-live"><span></span>LIVE</div>
+            </div>
+            <div id="among-us-camera-grid">
+              <div class="among-us-camera-feed">
+                <canvas class="among-us-camera-canvas"></canvas>
+                <div class="among-us-camera-label">WEST HALL</div>
+              </div>
+              <div class="among-us-camera-feed">
+                <canvas class="among-us-camera-canvas"></canvas>
+                <div class="among-us-camera-label">CAFETERIA</div>
+              </div>
+              <div class="among-us-camera-feed">
+                <canvas class="among-us-camera-canvas"></canvas>
+                <div class="among-us-camera-label">LOWER HALL</div>
+              </div>
+              <div class="among-us-camera-feed">
+                <canvas class="among-us-camera-canvas"></canvas>
+                <div class="among-us-camera-label">EAST HALL</div>
+              </div>
+            </div>
+          </div>
+        </div>
         <div id="ui-lower-center" class="js-ui-map-hidden js-ui-hud-show click-through">
           <div id="ui-interaction">
             <div id="ui-interaction-press"></div>
@@ -733,12 +834,6 @@
                 <a href="" target="_blank" class="btn-streamer btn-darken"></a>
               </div>
             </div>
-            <div id="featured-youtuber">
-              <div class="youtube-header">
-                <div id="youtube-header-title" data-l10n="index-featured-youtuber">Featured YouTuber</div>
-              </div>
-              <a href="" target="_blank" class="btn-youtuber btn-darken"></a>
-            </div>
           </div>
         </div>
         <div class="ad-block-header hide-on-mobile">
@@ -815,7 +910,7 @@
               <div class="account-buttons-settings account-buttons-wrapper account-block-arrow modal-close">
                 <div class="account-buttons">
                   <div class="account-stats-link btn-player-stats-link menu-option btn-darken btn-standard " data-l10n="index-my-stats">My Stats</div>
-                  <!-- <div class="btn-account-link btn-account-turq menu-option btn-darken btn-standard" data-l10n="index-link-account">Link Account</div> -->
+                  <div class="btn-account-link btn-account-turq menu-option btn-darken btn-standard" data-l10n="index-link-account">Link Account</div>
                   <div class="btn-account-change-name btn-account-turq menu-option btn-darken btn-standard" data-l10n="index-change-account-name">Change Account Name</div>
                   <div class="btn-account-reset-stats btn-account-turq menu-option btn-darken btn-standard" data-l10n="index-reset-stats">Reset Stats</div>
                   <div class="btn-account-delete btn-account-turq menu-option btn-darken btn-standard" data-l10n="index-delete-account">Delete Account</div>
@@ -852,6 +947,12 @@
             <div class="spin-overview" id="open-arena-button">
               <a id="btn-prestige-arena" class="btn-green btn-darken menu-option btn-open-arena" data-l10n="modal-open-arena">Private Lobby</a>
             </div>
+          </div>
+          <div id="featured-youtuber">
+            <div class="youtube-header">
+              <div id="youtube-header-title" data-l10n="index-featured-youtuber">Featured YouTuber</div>
+            </div>
+            <a href="" target="_blank" class="btn-youtuber btn-darken"></a>
           </div>
         </div>
 
@@ -897,7 +998,7 @@
             </div>
             <div class="account-buttons-settings account-buttons-wrapper account-block-arrow modal-close hide-on-mobile">
               <div class="account-buttons">
-                <!-- <div class="btn-account-link btn-account-turq menu-option btn-darken btn-standard" data-l10n="index-link-account">Link Account</div> -->
+                <div class="btn-account-link btn-account-turq menu-option btn-darken btn-standard" data-l10n="index-link-account">Link Account</div>
                 <div class="btn-account-change-name btn-account-turq menu-option btn-darken btn-standard" data-l10n="index-change-account-name">Change Account Name</div>
                 <div class="btn-account-reset-stats btn-account-turq menu-option btn-darken btn-standard" data-l10n="index-reset-stats">Reset Stats</div>
                 <div class="btn-account-delete btn-account-turq menu-option btn-darken btn-standard" data-l10n="index-delete-account">Delete Account</div>
@@ -943,6 +1044,7 @@
               <div id="friends-tab-friends" class="friends-tab-panel active">
                 <div class="friends-panel-box">
                   <div class="friends-list-header friends-list-header-friends">FRIENDS</div>
+                  <input id="friends-list-search-input" class="menu-option" type="text" maxlength="32" placeholder="Search your friends" />
                   <div id="friends-list"></div>
                 </div>
               </div>
@@ -1046,6 +1148,9 @@
                     <div class="pass-premium-icon"></div>
                     <div class="pass-btn-text">UNLOCK PASS</div>
                     <div class="pass-premium-icon"></div>
+                  </div>
+                  <div class="pass-premium-box-timer">
+                    <div id="pass-premium-box-timer">Coming soon</div>
                   </div>
                 </div>
               </div>
@@ -1273,6 +1378,22 @@
                     </div>
                   </div>
                 </div>
+                <div id="side-quest-section" class="menu-block missions-column">
+                  <div class="side-quest-header">Side Quests</div>
+                  <div id="side-quest-list"></div>
+                </div>
+                <div id="rewarded-ad-gp-section" class="menu-block missions-column">
+                  <button id="rewarded-ad-gp-button" class="btn-darken" type="button">
+                    <span class="rewarded-ad-gp-play"></span>
+                    <span class="rewarded-ad-gp-copy">
+                      <span id="rewarded-ad-gp-title">Video Reward</span>
+                      <span id="rewarded-ad-gp-status">2 left today</span>
+                    </span>
+                    <span class="rewarded-ad-gp-payout">
+                      <span id="rewarded-ad-gp-amount">50</span>
+                    </span>
+                  </button>
+                </div>
                 <div id="free-gp-offer" class="menu-block missions-column">
                   <div class="mobile-social-links">
                     <a href="https://discord.gg/Tm2Rmp9aFR" target="_blank" class="btn-social btn-darken btn-discord"></a>
@@ -1406,6 +1527,7 @@
         <a href="changelog.html" target="_blank" class="footer-after">ver 0.8.82</a>
         -->
         <a href="privacy.html" class="footer-after" target="_blank">Privacy Policy</a>
+        <a href="legacy-players.html" class="footer-after" target="_blank">HOF</a>
         <a href="proxy.txt" target="_blank" data-l10n="index-proxy-sites">Proxy Sites</a>
       </div>
 
@@ -1424,10 +1546,16 @@
       <div id="modal-prestige-arena" class="modal">
         <div id="modal-prestige-wrapper">
           <div id="modal-prestige-header">
-            <div id="prestige-game-summary-button" data-l10n="prestige-game-summary-button"></div>
-            <div id="prestige-battle-button" data-l10n="prestige-battle-button"></div>
-            <div id="prestige-create-button" data-l10n="prestige-create-button"></div>
-            <div id="prestige-spectate-button" data-l10n="prestige-spectate-button"></div>
+            <div id="arena-modal-title">
+              <div class="arena-modal-title-main">Private Arena</div>
+              <div class="arena-modal-title-sub">Custom lobby</div>
+            </div>
+            <div class="arena-modal-tabs">
+              <div id="prestige-game-summary-button" data-l10n="prestige-game-summary-button"></div>
+              <div id="prestige-battle-button" data-l10n="prestige-battle-button"></div>
+              <div id="prestige-create-button" data-l10n="prestige-create-button"></div>
+              <div id="prestige-spectate-button" data-l10n="prestige-spectate-button"></div>
+            </div>
           </div>
           <div id="modal-prestige-body">
             <div id="modal-prestige-close">
@@ -1448,55 +1576,104 @@
                   <input class="battle-link-entry" maxlength="16" autocomplete="off" spellcheck="false" role="combobox" placeholder="ENTER INVITE CODE" aria-live="polite" />
                   <div id="battle-search-button" class="btn-darken"></div>
                 </div>
-                <div id="battle-player-counter">
-                  <div id="battle-total">0</div>
-                  <div>/</div>
-                  <div id="battle-max">80</div>
-                  <div class="counter-text">joined</div>
-                </div>
-                <div id="battle-code-row">
-                  <div id="battle-code-label" data-l10n="index-invite-code">Invite code</div>
-                  <div id="battle-room-code"></div>
-                  <button id="battle-copy-code" class="btn-darken" type="button" aria-label="Copy invite code"></button>
-                </div>
-                <!-- <div id="battle-spectator-code-note" class="hide" data-l10n="index-arena-spectator-code-note">Spectator code (use normal code)</div> -->
-                <div class="battle-mode active">
-                  <div class="battle-game-mode" data-l10n="spectate-game-mode"></div>
-                  <div id="battle-link-mode"></div>
-                </div>
-                <div class="battle-type active">
-                  <div class="battle-game-type" data-l10n="spectate-game-type"></div>
-                  <div id="battle-link-type"></div>
-                </div>
-                <div id="arena-teams-board" class="hide">
-                  <div class="arena-team-column arena-team-a">
-                    <div id="arena-team-a-title" class="arena-team-title">Team A</div>
-                    <div id="arena-team-a-list" class="arena-team-list"></div>
+                <div class="battle-left-panel">
+                  <div id="battle-player-counter">
+                    <div id="battle-total">0</div>
+                    <div>/</div>
+                    <div id="battle-max">80</div>
+                    <div class="counter-text">joined</div>
                   </div>
-                  <div class="arena-team-column arena-team-b">
-                    <div id="arena-team-b-title" class="arena-team-title">Team B</div>
-                    <div id="arena-team-b-list" class="arena-team-list"></div>
+                  <div id="battle-code-row">
+                    <div id="battle-code-label" data-l10n="index-invite-code">Invite code</div>
+                    <div id="battle-room-code"></div>
+                    <button id="battle-copy-code" class="btn-darken" type="button" aria-label="Copy invite code"></button>
+                  </div>
+                  <!-- <div id="battle-spectator-code-note" class="hide" data-l10n="index-arena-spectator-code-note">Spectator code (use normal code)</div> -->
+                  <div class="battle-mode active">
+                    <div class="battle-game-mode" data-l10n="spectate-game-mode"></div>
+                    <div id="battle-link-mode"></div>
+                  </div>
+                  <div class="battle-type active">
+                    <div class="battle-game-type" data-l10n="spectate-game-type"></div>
+                    <div id="battle-link-type"></div>
+                  </div>
+                  <div class="battle-minigame active">
+                    <div class="battle-game-minigame">Games</div>
+                    <div id="battle-link-minigame">Deathmatch</div>
+                  </div>
+                  <div class="battle-impostors active hide">
+                    <div class="battle-game-impostors">Impostors</div>
+                    <div id="battle-link-impostors">1 Impostor</div>
+                  </div>
+                  <div id="battle-mode-selection" class="battle-option-selection"></div>
+                  <div id="battle-type-selection" class="battle-option-selection"></div>
+                  <div id="battle-minigame-selection" class="battle-option-selection"></div>
+                  <div id="battle-impostors-selection" class="battle-option-selection"></div>
+                  <div id="battle-private-options" class="private-option-buttons hide">
+                    <button id="battle-disable-airstrikes" class="btn-darken private-option-toggle" type="button">No Airstrikes</button>
+                    <button id="battle-disable-perks" class="btn-darken private-option-toggle" type="button">No Perks</button>
+                  </div>
+                  <div class="button-group">
+                    <div class="battle-timer hide">
+                      <div class="battle-timer-text" data-l10n="battle-timer-text"></div>:
+                      <div class="timer-group">
+                        <div id="battle-timer-hour">00</div>:
+                        <div id="battle-timer-min">00</div>:
+                        <div id="battle-timer-sec">00</div>
+                      </div>
+                    </div>
+                    <button id="battle-loadout-button" class="btn-darken" type="button" data-l10n="index-loadout">Loadout</button>
+                    <div id="game-status">
+                      <div id="game-status-to-start" data-l10n="game-status-to-start"></div>
+                      <div id="game-status-started" class="hide" data-l10n="game-status-started"></div>
+                    </div>
+                    <div id="battle-button" class="btn-darken" data-l10n="index-join-team"></div>
                   </div>
                 </div>
-                <div id="arena-spectators-board" class="hide">
-                  <div id="arena-spectators-title" class="arena-spectators-title">Spectators</div>
-                  <div id="arena-spectator-list" class="arena-spectator-list"></div>
-                </div>
-                <div class="button-group">
-                  <div class="battle-timer hide">
-                    <div class="battle-timer-text" data-l10n="battle-timer-text"></div>:
-                    <div class="timer-group">
-                      <div id="battle-timer-hour">00</div>:
-                      <div id="battle-timer-min">00</div>:
-                      <div id="battle-timer-sec">00</div>
+                <div class="battle-right-panel">
+                  <div id="arena-teams-board" class="hide">
+                    <div class="arena-team-column arena-team-a">
+                      <div id="arena-team-a-title" class="arena-team-title">Team A</div>
+                      <div id="arena-team-a-list" class="arena-team-list"></div>
+                    </div>
+                    <div class="arena-team-column arena-team-b">
+                      <div id="arena-team-b-title" class="arena-team-title">Team B</div>
+                      <div id="arena-team-b-list" class="arena-team-list"></div>
                     </div>
                   </div>
-                  <button id="battle-loadout-button" class="btn-darken" type="button" data-l10n="index-loadout">Loadout</button>
-                  <div id="game-status">
-                    <div id="game-status-to-start" data-l10n="game-status-to-start"></div>
-                    <div id="game-status-started" class="hide" data-l10n="game-status-started"></div>
+                  <div id="arena-spectators-board" class="hide">
+                    <div id="arena-spectators-title" class="arena-spectators-title">Spectators</div>
+                    <div id="arena-spectator-list" class="arena-spectator-list"></div>
                   </div>
-                  <div id="battle-button" class="btn-darken" data-l10n="index-join-team"></div>
+                  <div id="arena-mobile-panel-tabs">
+                    <button id="arena-mobile-spectators-tab" class="selected" type="button">Spectators</button>
+                    <button id="arena-mobile-chat-tab" type="button">Lobby Chat</button>
+                  </div>
+                  <div id="team-clan-chat">
+                    <div id="team-clan-chat-title">Lobby Chat</div>
+                    <div id="team-clan-chat-messages"></div>
+                    <div id="team-clan-chat-status"></div>
+                    <div id="team-clan-chat-gif-picker" class="clan-chat-gif-picker" style="display: none;">
+                      <div class="clan-chat-gif-search-row">
+                        <input type="text" id="team-clan-chat-gif-search" class="clan-chat-gif-search" placeholder="Search KLIPY" maxlength="50" />
+                      </div>
+                      <div id="team-clan-chat-gif-sections" class="clan-chat-gif-sections">
+                        <button class="clan-chat-gif-section active" type="button" data-section="">Trending</button>
+                        <button class="clan-chat-gif-section" type="button" data-section="happy">Happy</button>
+                        <button class="clan-chat-gif-section" type="button" data-section="love">Love</button>
+                        <button class="clan-chat-gif-section" type="button" data-section="wow">Wow</button>
+                        <button class="clan-chat-gif-section" type="button" data-section="gg">GG</button>
+                        <button class="clan-chat-gif-section" type="button" data-section="fail">Fail</button>
+                      </div>
+                      <div id="team-clan-chat-gif-grid" class="clan-chat-gif-grid"></div>
+                      <div id="team-clan-chat-gif-status" class="clan-chat-gif-status"></div>
+                    </div>
+                    <div id="team-clan-chat-input-row">
+                      <button id="btn-team-clan-chat-gif" class="clan-chat-gif-btn" type="button" title="GIFs">GIF</button>
+                      <input id="team-clan-chat-input" type="text" maxlength="300" placeholder="Message this lobby..." />
+                      <button id="btn-team-clan-chat-send" type="button" class="btn-darken">Send</button>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div id="modal-create-window" class="hide">
@@ -1533,6 +1710,26 @@
                     <div class="create-link-arrow"></div>
                   </div>
                   <div id="create-type-selection"></div>
+                </div>
+                <div class="create-minigame-group">
+                  <div id="create-minigame" class="btn-darken">
+                    <div class="create-game-minigame">Games</div>
+                    <div id="create-link-minigame">Deathmatch</div>
+                    <div class="create-link-arrow"></div>
+                  </div>
+                  <div id="create-minigame-selection"></div>
+                </div>
+                <div id="create-impostors-group" class="create-impostors-group hide">
+                  <div id="create-impostors" class="btn-darken">
+                    <div class="create-game-impostors">Impostors</div>
+                    <div id="create-link-impostors">1 Impostor</div>
+                    <div class="create-link-arrow"></div>
+                  </div>
+                  <div id="create-impostors-selection"></div>
+                </div>
+                <div class="private-option-buttons">
+                  <button id="create-disable-airstrikes" class="btn-darken private-option-toggle" type="button">No Airstrikes</button>
+                  <button id="create-disable-perks" class="btn-darken private-option-toggle" type="button">No Perks</button>
                 </div>
                 <div class="option-buttons">
                   <div id="create-button" class="btn-darken" data-l10n="prestige-create-battle"></div>
@@ -1945,6 +2142,14 @@
               <div id="modal-customize-item-header">
                 <div id="modal-customize-item-name"></div>
                 <div id="modal-customize-item-rarity"></div>
+                <div id="modal-customize-item-stats" class="item-stats-container">
+                  <span class="item-stats-text">Makr <b id="modal-customize-item-maker">Unknown</b></span>
+                  <div class="stats-second-line-container">
+                    <span class="item-stats-text">Kills <b id="modal-customize-item-kills">0</b></span>
+                    <span class="item-stats-text">Levels <b>0</b></span>
+                    <span class="item-stats-text">Wins <b id="modal-customize-item-wins">0</b></span>
+                  </div>
+                </div>
                 <div id="modal-customize-loading-container">
                   <div id="modal-customize-loading"></div>
                 </div>
@@ -2305,7 +2510,7 @@
           <div class="modal-clans-header">
             <div class="modal-clans-tab active" data-tab="hub">
               <div class="tab-icon" style="background-image: url(img/gui/player-gui.svg);"></div>
-              Clans Hub
+              Clan HQ
             </div>
             <div class="modal-clans-tab" id="btn-clan-my-clan">
               <div class="tab-icon" style="background-image: url(img/gui/crown.svg);"></div>
@@ -2317,21 +2522,24 @@
             </div>
             <div class="modal-clans-close close"></div>
           </div>
-          <div class="modal-clans-body">
+          <div class="modal-clans-body clan-hub-body">
             <div class="clan-column">
               <div id="clan-create-card">
-                <div class="clan-column-header">Create New Clan</div>
+                <div class="clan-column-header">Create Clan</div>
                 <div class="clan-create-section">
                   <div class="clan-logo-section">
-                    <div>
-                      <div id="clan-create-icon-preview" class="clan-logo-preview" style="background-image: url(img/gui/player-gui.svg);"></div>
+                    <div id="clan-create-icon-preview" class="clan-logo-preview" style="background-image: url(img/gui/player-gui.svg);"></div>
+                    <div class="clan-properties-section">
+                      <input type="text" id="clan-create-name-input" class="clan-name-input" placeholder="Clan Name" maxlength="16" />
+                      <div class="clan-create-color-row">
+                        <span>Tag Color</span>
+                        <input type="color" id="clan-create-tag-color-input" class="clan-tag-color-inline" value="#ffffff" title="Tag Color" />
+                      </div>
+                      <div id="btn-clan-create-submit" class="clan-btn clan-btn-green">Create Clan</div>
                       <div class="clan-logo-buttons">
                         <div id="btn-clan-icon-reset" class="clan-btn-reset"></div>
                         <div id="btn-clan-icon-edit" class="clan-btn-edit"></div>
                       </div>
-                    </div>
-                    <div class="clan-properties-section">
-                      <input type="text" id="clan-create-name-input" class="clan-name-input" placeholder="Clan Name" maxlength="16" />
                       <div id="clan-create-warning" class="clan-warning" style="display: none;"></div>
                     </div>
                   </div>
@@ -2343,11 +2551,19 @@
                   <div class="clan-my-header">
                     <div id="clan-my-icon" class="clan-logo-preview" style="background-image: url(img/gui/player-gui.svg);"></div>
                     <div class="clan-my-details">
-                      <div id="clan-my-name" class="clan-my-name">Clan Name</div>
+                      <div class="clan-my-name-row">
+                        <div id="clan-my-name" class="clan-my-name">Clan Name</div>
+                        <input type="color" id="clan-main-tag-color-input" class="clan-tag-color-inline clan-main-tag-color" value="#ffffff" style="display: none;" title="Tag Color" />
+                      </div>
                       <div id="clan-my-members" class="clan-my-meta">0 / 20 Members</div>
                     </div>
                   </div>
                   <div class="clan-my-stats">
+                    <div class="clan-my-stat clan-my-stat-main">
+                      <span class="clan-my-stat-label">CGP:</span>
+                      <span id="clan-my-cgp" class="clan-my-stat-value">0</span>
+                      <span id="clan-my-war-cgp" class="clan-my-stat-subvalue">+0 CGP from clan wars</span>
+                    </div>
                     <div class="clan-my-stat">
                       <span class="clan-my-stat-label">Kills:</span>
                       <span id="clan-my-kills" class="clan-my-stat-value">0</span>
@@ -2376,9 +2592,6 @@
               </div>
             </div>
           </div>
-          <div class="modal-clans-footer">
-            <div id="btn-clan-create-submit" class="clan-btn clan-btn-green">Create Clan</div>
-          </div>
         </div>
       </div>
       <div id="modal-clan-icons" class="modal">
@@ -2398,18 +2611,35 @@
       <div id="modal-clan-page" class="modal">
         <div class="modal-content">
           <div class="modal-clans-header">
-            <div class="modal-clans-tab active" id="btn-clan-back-to-hub">
+            <div class="modal-clans-tab" id="btn-clan-back-to-hub">
               <div class="tab-icon" style="background-image: url(img/gui/return-arrow.svg);"></div>
               Back
             </div>
-            <div class="modal-clans-tab">
+            <div class="modal-clans-tab active" id="btn-clan-page-details-tab">
               <div class="tab-icon" style="background-image: url(img/gui/crown.svg);"></div>
               Clan Details
+            </div>
+            <div class="modal-clans-tab" id="btn-clan-page-requests-tab" style="display: none;">
+              <div class="tab-icon" style="background-image: url(img/gui/player-gui.svg);"></div>
+              Requests
             </div>
             <div class="modal-clans-close close"></div>
           </div>
           <div class="modal-clans-body">
+            <div id="clan-war-column" class="clan-column clan-war-column">
+              <div class="clan-war-section">
+                <div class="clan-members-header">
+                  <div class="clan-members-title">Recent Clan Wars</div>
+                  <div class="clan-members-count">History</div>
+                </div>
+                <div id="clan-war-history-list" class="clan-war-history-list"></div>
+              </div>
+            </div>
             <div id="clan-page-detail" class="clan-column" style="flex: 1;">
+              <div class="clan-season-bar">
+                <div id="clan-detail-season-label" class="clan-season-label">Current Season</div>
+                <select id="clan-detail-season" class="clan-season-select"></select>
+              </div>
               <div class="clan-detail-header">
                 <div class="clan-detail-icon-wrapper">
                   <div id="clan-detail-icon" class="clan-detail-icon" style="background-image: url(img/gui/player-gui.svg);"></div>
@@ -2428,29 +2658,31 @@
                   </div>
                   <div id="clan-detail-members-count" class="clan-detail-meta">0 / 20 Members</div>
                   <div id="clan-detail-owner" class="clan-detail-meta">Owner: Unknown</div>
+                  <div id="clan-detail-lock-status" class="clan-detail-meta">Open</div>
                   <div id="clan-detail-created" class="clan-detail-meta">Created: N/A</div>
+                  <label id="clan-lock-control" class="clan-lock-control" style="display: none;">
+                    <input id="clan-lock-toggle" type="checkbox" />
+                    <span>Lock Clan</span>
+                  </label>
                 </div>
-              </div>
-              <div class="clan-detail-stats">
-                <div class="clan-stat-box games">
-                  <div class="clan-stat-label">Games</div>
-                  <div id="clan-detail-games" class="clan-stat-value">0</div>
-                </div>
-                <div class="clan-stat-box wins">
-                  <div class="clan-stat-label">Wins</div>
-                  <div id="clan-detail-wins" class="clan-stat-value">0</div>
-                </div>
-                <div class="clan-stat-box kills">
-                  <div class="clan-stat-label">Kills</div>
-                  <div id="clan-detail-kills" class="clan-stat-value">0</div>
-                </div>
-                <div class="clan-stat-box kill-placement">
-                  <div class="clan-stat-label">Kill Placement</div>
-                  <div id="clan-detail-kill-placement" class="clan-stat-value">N/A</div>
-                </div>
-                <div class="clan-stat-box win-placement">
-                  <div class="clan-stat-label">Win Placement</div>
-                  <div id="clan-detail-win-placement" class="clan-stat-value">N/A</div>
+                <div class="clan-detail-stats">
+                  <div class="clan-stat-box cgp">
+                    <div class="clan-stat-label">Total CGP</div>
+                    <div id="clan-detail-cgp" class="clan-stat-value">0</div>
+                    <div id="clan-detail-war-cgp" class="clan-stat-subvalue">+0 from clan wars</div>
+                  </div>
+                  <div class="clan-stat-box wins">
+                    <div class="clan-stat-label">Wins</div>
+                    <div id="clan-detail-wins" class="clan-stat-value">0</div>
+                  </div>
+                  <div class="clan-stat-box kills">
+                    <div class="clan-stat-label">Kills</div>
+                    <div id="clan-detail-kills" class="clan-stat-value">0</div>
+                  </div>
+                  <div class="clan-stat-box wars">
+                    <div class="clan-stat-label">Clan Wars</div>
+                    <div id="clan-detail-wars" class="clan-stat-value">0</div>
+                  </div>
                 </div>
               </div>
               <div class="clan-members-section">
@@ -2463,6 +2695,15 @@
               <div id="clan-member-actions" class="clan-actions" style="display: none;">
                 <div id="btn-clan-leave" class="clan-btn clan-btn-red">Leave Clan</div>
                 <div id="btn-clan-delete" class="clan-btn clan-btn-red" style="display: none;">Delete Clan</div>
+              </div>
+            </div>
+            <div id="clan-requests-section" class="clan-column" style="flex: 1; display: none;">
+              <div class="clan-members-section">
+                <div class="clan-members-header">
+                  <div class="clan-members-title">Join Requests</div>
+                  <div class="clan-members-count" id="clan-requests-count">0 pending</div>
+                </div>
+                <div id="clan-requests-list" class="clan-members-list"></div>
               </div>
             </div>
             <div id="clan-chat-section" class="clan-column clan-chat-section" style="display: none;">
@@ -2518,14 +2759,41 @@
             </div>
             <div class="modal-clans-close close"></div>
           </div>
-          <div class="modal-clans-body" style="flex-direction: column;">
-            <select id="clan-leaderboard-game-mode" class="clan-leaderboard-game-mode">
-              <option value="deathmatch">Deathmatch</option>
-              <option value="battleroyale">Battle Royale</option>
-            </select>
-            <div class="clan-leaderboard-tabs">
-              <div class="clan-leaderboard-tab active" data-type="kills">Most Kills</div>
-              <div class="clan-leaderboard-tab" data-type="wins">Most Wins</div>
+          <div class="modal-clans-body clan-leaderboard-body">
+            <div class="clan-leaderboard-toolbar">
+              <div class="clan-leaderboard-title-block">
+                <div class="clan-leaderboard-title">Clan Leaderboard</div>
+                <div class="clan-leaderboard-subtitle">Current and past season standings</div>
+              </div>
+              <div class="clan-leaderboard-controls">
+                <select id="clan-leaderboard-type" class="clan-leaderboard-select">
+                  <option value="cgp">Total CGP</option>
+                  <option value="kills">Most Kills</option>
+                  <option value="wins">Most Wins</option>
+                </select>
+                <select id="clan-leaderboard-season" class="clan-leaderboard-select"></select>
+                <select id="clan-leaderboard-game-mode" class="clan-leaderboard-select">
+                  <option value="all">All Modes</option>
+                  <option value="deathmatch">Deathmatch</option>
+                  <option value="battleroyale">Battle Royale</option>
+                </select>
+              </div>
+              <div id="clan-leaderboard-ad" class="clan-leaderboard-ad hide-on-mobile">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-1712213211562891"
+                     data-ad-slot="5283105478"
+                     data-ad-format="rectangle"
+                     data-full-width-responsive="false"></ins>
+              </div>
+              <div id="clan-leaderboard-ad-secondary" class="clan-leaderboard-ad hide-on-mobile">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-1712213211562891"
+                     data-ad-slot="5283105478"
+                     data-ad-format="rectangle"
+                     data-full-width-responsive="false"></ins>
+              </div>
             </div>
             <div id="clan-leaderboard-list" class="clan-leaderboard-list"></div>
           </div>
@@ -2586,6 +2854,15 @@
                 <div class="crate-text" data-l10n="shop-lootbox-buy-for">Buy for</div>
                 <div id="crate-price-3" class="crate-price">700</div>
                 <div class="crate-gp-icon"></div>
+              </div>
+            </div>
+            <div class="crate-display ad-crate-display">
+              <div id="btn-contains-crate-4" class="crate-img ad">
+                <div class="crate-info"></div>
+              </div>
+              <div id="crate-ad-progress-4" class="crate-ad-progress menu-option btn-darken">
+                <span class="crate-ad-icon">AD</span>
+                <span id="crate-ad-count-4" class="crate-ad-count">0/5</span>
               </div>
             </div>
           </div>

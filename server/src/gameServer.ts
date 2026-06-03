@@ -6,6 +6,7 @@ import { Cron } from "croner";
 import { randomUUID } from "crypto";
 import z from "zod";
 import { version } from "../../package.json";
+import { normalizeAmongUsImpostorCount } from "../../shared/defs/miniGame";
 import { GameConfig } from "../../shared/gameConfig";
 import * as net from "../../shared/net/net";
 import { isBattleRoyaleMapName } from "./battleroyale/helpers";
@@ -76,22 +77,30 @@ class GameServer {
             };
         }
 
-        const gameId = await this.manager.findGame({
+        const findGameRes = await this.manager.findGame({
             region: data.region,
             version: data.version,
             autoFill: data.autoFill,
             mapName: data.mapName,
             teamMode: data.teamMode,
             arenaPrivate: !!data.arenaPrivate,
+            miniGame: data.miniGame,
+            amongUsImpostorCount: normalizeAmongUsImpostorCount(
+                data.amongUsImpostorCount,
+            ),
+            disableAirstrikes: !!data.disableAirstrikes,
+            disablePerks: !!data.disablePerks,
             playerData: data.playerData,
             groupHash: data.groupHash,
+            targetGameId: data.targetGameId,
         });
 
         return {
-            gameId,
+            gameId: findGameRes.gameId,
             useHttps: this.region.https,
             hosts: [this.region.address],
             addrs: [this.region.address],
+            forcedSpectator: findGameRes.forcedSpectator,
         };
     }
 
@@ -306,9 +315,6 @@ app.post("/api/find_game", (res, req) => {
                     return;
                 }
 
-                console.log({
-                    findGameParseBody: parsed.data,
-                });
                 returnJson(res, await server.findGame(parsed.data));
             } catch (error) {
                 server.logger.warn("API find_game error: ", error);
@@ -370,7 +376,9 @@ app.ws<GameSocketData>("/play", {
             return;
         }
 
-        if (!gameData.canJoin) {
+        const canJoinClosedBattleRoyalePrivateGame =
+            gameData.arenaPrivate && isBattleRoyaleMapName(gameData.mapName);
+        if (!gameData.canJoin && !canJoinClosedBattleRoyalePrivateGame) {
             server.logger.warn("game_started");
             forbidden(res);
             return;

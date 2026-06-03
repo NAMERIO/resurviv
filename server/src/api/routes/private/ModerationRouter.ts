@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
-import { and, desc, eq, inArray, lt, ne } from "drizzle-orm";
+import { and, desc, eq, inArray, lt, ne, or } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { Hono } from "hono";
 import { z } from "zod";
 import { MapId, TeamModeToString } from "../../../../../shared/defs/types/misc";
@@ -8,6 +9,7 @@ import {
     zBanIpParams,
     zFindDiscordUserSlugParams,
     zGetPlayerIpParams,
+    zSearchIpParams,
     zSetAccountNameParams,
     zSetMatchDataNameParams,
     zUnbanAccountParams,
@@ -20,7 +22,13 @@ import type { SaveGameBody } from "../../../utils/types";
 import { server } from "../../apiServer";
 import { databaseEnabledMiddleware, validateParams } from "../../auth/middleware";
 import { db } from "../../db";
-import { bannedIpsTable, ipLogsTable, matchDataTable, usersTable } from "../../db/schema";
+import {
+    bannedIpsTable,
+    ipLogsTable,
+    matchDataTable,
+    userAuthIdentityTable,
+    usersTable,
+} from "../../db/schema";
 import { sanitizeSlug } from "../user/auth/authUtils";
 
 async function disconnectBannedIp(encodedIp: string) {
@@ -320,10 +328,11 @@ export const ModerationRouter = new Hono()
             userId = user.id;
         }
 
+        const discordIdentity = alias(userAuthIdentityTable, "discord_identity");
         const result = await db
             .select({
                 slug: usersTable.slug,
-                authId: usersTable.authId,
+                authId: discordIdentity.authId,
                 linkedDiscord: usersTable.linkedDiscord,
                 ip: ipLogsTable.encodedIp,
                 findGameIp: ipLogsTable.findGameEncodedIp,
@@ -343,6 +352,13 @@ export const ModerationRouter = new Hono()
                 ),
             )
             .leftJoin(usersTable, eq(ipLogsTable.userId, usersTable.id))
+            .leftJoin(
+                discordIdentity,
+                and(
+                    eq(discordIdentity.userId, usersTable.id),
+                    eq(discordIdentity.provider, "discord"),
+                ),
+            )
             .orderBy(desc(ipLogsTable.createdAt))
             .limit(10);
 
@@ -362,6 +378,73 @@ export const ModerationRouter = new Hono()
         }));
 
         return c.json(prettyResult, 200);
+    })
+    .post("/search_ip", validateParams(zSearchIpParams), async (c) => {
+        const { ip, is_encoded } = c.req.valid("json");
+        const encodedIp = is_encoded ? ip : hashIp(ip);
+
+        const discordIdentity = alias(userAuthIdentityTable, "discord_identity");
+        const result = await db
+            .select({
+                slug: usersTable.slug,
+                authId: discordIdentity.authId,
+                linkedDiscord: usersTable.linkedDiscord,
+                linkedGoogle: usersTable.linkedGoogle,
+                username: ipLogsTable.username,
+                region: ipLogsTable.region,
+                gameId: ipLogsTable.gameId,
+                teamMode: ipLogsTable.teamMode,
+                mapId: ipLogsTable.mapId,
+                createdAt: ipLogsTable.createdAt,
+            })
+            .from(ipLogsTable)
+            .where(
+                is_encoded
+                    ? or(
+                          eq(ipLogsTable.encodedIp, ip),
+                          eq(ipLogsTable.findGameEncodedIp, ip),
+                      )
+                    : or(eq(ipLogsTable.ip, ip), eq(ipLogsTable.findGameIp, ip)),
+            )
+            .leftJoin(usersTable, eq(ipLogsTable.userId, usersTable.id))
+            .leftJoin(
+                discordIdentity,
+                and(
+                    eq(discordIdentity.userId, usersTable.id),
+                    eq(discordIdentity.provider, "discord"),
+                ),
+            )
+            .orderBy(desc(ipLogsTable.createdAt))
+            .limit(10);
+
+        if (result.length === 0) {
+            return c.json({ message: "No game history found for that IP." }, 200);
+        }
+
+        return c.json(
+            {
+                encodedIp,
+                results: result.map((data) => ({
+                    slug: data.slug,
+                    username: data.username,
+                    region: data.region,
+                    gameId: data.gameId,
+                    teamMode: TeamModeToString[data.teamMode],
+                    mapId: MapId[data.mapId],
+                    createdAt: data.createdAt,
+                    accountSystem:
+                        data.linkedDiscord && data.linkedGoogle
+                            ? "Discord + Google"
+                            : data.linkedDiscord
+                              ? "Discord"
+                              : data.linkedGoogle
+                                ? "Google"
+                                : "Unlinked",
+                    discordId: data.linkedDiscord ? data.authId : null,
+                })),
+            },
+            200,
+        );
     })
     .post("/clear_all_bans", async (c) => {
         await db.delete(bannedIpsTable).execute();
@@ -436,13 +519,19 @@ export const ModerationRouter = new Hono()
             const { discord_user } = c.req.valid("json");
 
             const user = await db.query.usersTable.findFirst({
-                where: and(
-                    eq(usersTable.linkedDiscord, true),
-                    eq(usersTable.authId, discord_user),
+                where: eq(
+                    usersTable.id,
+                    db
+                        .select({ userId: userAuthIdentityTable.userId })
+                        .from(userAuthIdentityTable)
+                        .where(
+                            and(
+                                eq(userAuthIdentityTable.provider, "discord"),
+                                eq(userAuthIdentityTable.authId, discord_user),
+                            ),
+                        ),
                 ),
-                columns: {
-                    slug: true,
-                },
+                columns: { slug: true },
             });
 
             if (!user?.slug) {

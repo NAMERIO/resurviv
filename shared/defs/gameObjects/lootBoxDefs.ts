@@ -239,4 +239,41 @@ export const lootBoxDefs = {
             ],
         },
     },
+    loot_box_04: {
+        id: "loot_box_04",
+        name: "Ad Crate",
+        price: 0,
+        source: "Ad Crate",
+        chances: [
+            { rarity: Rarity.Common, weight: 40 },
+            { rarity: Rarity.Uncommon, weight: 30 },
+            { rarity: Rarity.Rare, weight: 18 },
+            { rarity: Rarity.Epic, weight: 9 },
+            { rarity: Rarity.Mythic, weight: 3 },
+        ],
+        itemPools: {
+            [Rarity.Common]: [
+                "outfitWhite",
+                "outfitWoodland",
+                "outfitCamo",
+                "outfitDesertCamo",
+                "outfitCobaltShell",
+            ],
+            [Rarity.Uncommon]: [
+                "outfitRed",
+                "outfitSnow",
+                "outfitCarbonFiber",
+                "outfitMango",
+                "outfitUrbanCamo",
+            ],
+            [Rarity.Rare]: [
+                "outfitThePro",
+                "outfitBeachCamo",
+                "outfitTiki",
+                "outfitInfernoCamo",
+            ],
+            [Rarity.Epic]: ["outfitAstronaut", "outfitKingGalaxy"],
+            [Rarity.Mythic]: ["outfitChromesis", "outfitDiamondy", "outfitPolice"],
+        },
+    },
 } satisfies Record<string, LootBoxDef>;

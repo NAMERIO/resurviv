@@ -1,4 +1,6 @@
-import type { AbstractMsg, BitStream } from "./net";
+import { math } from "../utils/math";
+import { v2 } from "../utils/v2";
+import { type AbstractMsg, type BitStream, Constants } from "./net";
 
 export class EditMsg implements AbstractMsg {
     zoomEnabled = false;
@@ -22,7 +24,12 @@ export class EditMsg implements AbstractMsg {
     godMode = false;
     infiniteThrowables = false;
     throwFast = false;
+    shootFast = false;
+    punchFast = false;
     moveObjs = false;
+
+    drawExplosionDecal = false;
+    explosionDecalPos = v2.create(0, 0);
 
     serialize(s: BitStream) {
         s.writeBoolean(this.zoomEnabled);
@@ -53,7 +60,17 @@ export class EditMsg implements AbstractMsg {
         s.writeBoolean(this.godMode);
         s.writeBoolean(this.infiniteThrowables);
         s.writeBoolean(this.throwFast);
+        s.writeBoolean(this.shootFast);
+        s.writeBoolean(this.punchFast);
         s.writeBoolean(this.moveObjs);
+
+        s.writeBoolean(this.drawExplosionDecal);
+        if (this.drawExplosionDecal) {
+            s.writeMapPos({
+                x: math.clamp(this.explosionDecalPos.x, 0, Constants.MaxPosition),
+                y: math.clamp(this.explosionDecalPos.y, 0, Constants.MaxPosition),
+            });
+        }
     }
 
     deserialize(s: BitStream) {
@@ -85,6 +102,13 @@ export class EditMsg implements AbstractMsg {
         this.godMode = s.readBoolean();
         this.infiniteThrowables = s.readBoolean();
         this.throwFast = s.readBoolean();
+        this.shootFast = s.readBoolean();
+        this.punchFast = s.readBoolean();
         this.moveObjs = s.readBoolean();
+
+        this.drawExplosionDecal = s.readBoolean();
+        if (this.drawExplosionDecal) {
+            this.explosionDecalPos = s.readMapPos();
+        }
     }
 }

@@ -42,6 +42,10 @@ export class Loot implements AbstractObject {
     count!: number;
     isPreloadedGun!: boolean;
     ownerId!: number;
+    dead = false;
+    isSkin = false;
+    skinPlayerId = 0;
+    isPropDisguise = false;
     rad!: number;
     imgScale!: number;
 
@@ -56,9 +60,14 @@ export class Loot implements AbstractObject {
     m_init() {
         this.updatedData = false;
         this.visualPosOld = v2.create(0, 0);
+        this.dead = false;
+        this.isSkin = false;
+        this.skinPlayerId = 0;
+        this.isPropDisguise = false;
     }
 
     m_free() {
+        this.dead = true;
         this.container.visible = false;
         if (this.emitter) {
             this.emitter.stop();
@@ -91,6 +100,9 @@ export class Loot implements AbstractObject {
             this.isOld = data.isOld;
             this.isPreloadedGun = data.isPreloadedGun;
             this.ownerId = data.hasOwner ? data.ownerId : 0;
+            this.isSkin = !!data.isSkin;
+            this.skinPlayerId = data.skinPlayerId ?? 0;
+            this.isPropDisguise = !!data.isPropDisguise;
         }
 
         if (isNew) {
@@ -180,6 +192,7 @@ export class LootBarn {
             if (loot.active) {
                 if (
                     util.sameLayer(loot.layer, activePlayer.layer) &&
+                    !loot.isSkin &&
                     !activePlayer.m_netData.m_dead &&
                     (loot.ownerId == 0 || loot.ownerId == activePlayer.__id)
                 ) {

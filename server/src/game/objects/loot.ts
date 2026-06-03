@@ -47,6 +47,8 @@ export class LootBarn {
             this.loots,
             (a, b) => {
                 return (
+                    !a.isSkin &&
+                    !b.isSkin &&
                     (util.sameLayer(a.layer, b.layer) as boolean) &&
                     coldet.testCircleCircle(a.pos, a.lootRad, b.pos, b.lootRad)
                 );
@@ -114,6 +116,15 @@ export class LootBarn {
 
         const loot = new Loot(this.game, type, pos, layer, count, pushSpeed, dir);
         this._addLoot(loot);
+    }
+
+    addSkinLoot(type: string, player: Player, count: number) {
+        const loot = new Loot(this.game, type, player.pos, player.layer, count, 0);
+        loot.isSkin = true;
+        loot.isPropDisguise = true;
+        loot.skinPlayerId = player.__id;
+        this._addLoot(loot);
+        return loot;
     }
 
     addLoot(
@@ -245,6 +256,14 @@ export class Loot extends BaseGameObject {
     layer: number;
     type: string;
     count: number;
+    ori = 0;
+    scale = 1;
+    healthT = 1;
+    height = 1;
+    dead = false;
+    isSkin = false;
+    skinPlayerId?: number;
+    isPropDisguise = false;
 
     vel = v2.create(0, 0);
     oldPos = v2.create(0, 0);
@@ -318,6 +337,10 @@ export class Loot extends BaseGameObject {
             Math.abs(this.vel.x) > 0.001 ||
             Math.abs(this.vel.y) > 0.001 ||
             !v2.eq(this.oldPos, this.pos);
+
+        if (this.isSkin) {
+            return;
+        }
 
         if (!shouldUpdate) {
             // force a loot update few ms to make sure if e.g an obstacle spawned on top of the loot (airdrop, potato respawning etc)
@@ -480,7 +503,21 @@ export class Loot extends BaseGameObject {
         this.vel = v2.add(this.vel, v2.mul(dir, velocity));
     }
 
+    updateCollider() {
+        this.collider.pos = this.pos;
+        this.game.grid.updateObject(this);
+    }
+
+    kill() {
+        this.healthT = 0;
+        this.dead = true;
+        this.destroy();
+    }
+
     override destroy() {
+        if (this.isSkin) {
+            util.removeFrom(this.game.lootBarn.loots, this);
+        }
         super.destroy();
         this.mapIndicator?.kill();
     }

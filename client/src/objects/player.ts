@@ -1,4 +1,5 @@
 import * as PIXI from "pixi.js-legacy";
+import { AmongUsRoleDefs } from "../../../shared/defs/amongUsRoleDefs";
 import { GameObjectDefs, type LootDef } from "../../../shared/defs/gameObjectDefs";
 import type { DeathEffectDef } from "../../../shared/defs/gameObjects/deathEffectDefs";
 import type {
@@ -54,6 +55,7 @@ import type { SoundHandle } from "../lib/createJS";
 import type { Map } from "../map";
 import type { Renderer } from "../renderer";
 import type { UiManager2 } from "../ui/ui2";
+import type { LootBarn } from "./loot";
 import { Pool } from "./objectPool";
 import type { Obstacle } from "./obstacle";
 import type { Emitter, ParticleBarn } from "./particles";
@@ -110,6 +112,7 @@ function createSprite() {
 
 const desktopZoomRads = Object.values(GameConfig.scopeZoomRadius.desktop);
 const mobileZoomRads = Object.values(GameConfig.scopeZoomRadius.mobile);
+const amongUsVisionFadeDistance = 8;
 
 class Gun {
     gunBarrel = createSprite();
@@ -313,6 +316,7 @@ export class Player implements AbstractObject {
     hasteEmitter: Emitter | null = null;
     passiveHealEmitter: Emitter | null = null;
     burningEmitter: Emitter | null = null;
+    poisonEmitter: Emitter | null = null;
     outfitMoveEmitter: Emitter | null = null;
     downed = false;
     wasDowned = false;
@@ -346,6 +350,7 @@ export class Player implements AbstractObject {
     renderZOrd = 18;
     renderZIdx = 0;
     localInvisiblePreview = false;
+    propDisguiseActive = false;
 
     m_action!: {
         type: Action;
@@ -380,6 +385,7 @@ export class Player implements AbstractObject {
         m_healEffect: boolean;
         m_burnEffect: boolean;
         m_nitroLaceEffect: boolean;
+        m_poisonEffect: boolean;
         m_frozen: boolean;
         m_frozenOri: number;
         m_hasteType: Exclude<HasteType, HasteType.Count>;
@@ -415,6 +421,16 @@ export class Player implements AbstractObject {
         m_streakNextThreshold: number;
         m_nitroLaceActive: boolean;
         m_nitroLacePercentage: number;
+        m_hideAndSeekBlindTime: number;
+        m_hideAndSeekHunterReleaseTime: number;
+        m_hideAndSeekHunterReleaseSeeker: boolean;
+        m_infectedRespawnTime: number;
+        m_miniGameWinCountdownTime: number;
+        m_miniGameWinCountdownProps: boolean;
+        m_amongUsKillCooldownTime: number;
+        m_amongUsEmergencyCallCooldownTime: number;
+        m_amongUsEmergencyCallsRemaining: number;
+        m_amongUsEmergencyMeetingSeq: number;
     };
 
     throwableStatePrev!: string;
@@ -552,6 +568,7 @@ export class Player implements AbstractObject {
             m_healEffect: false,
             m_burnEffect: false,
             m_nitroLaceEffect: false,
+            m_poisonEffect: false,
             m_frozen: false,
             m_frozenOri: 0,
             m_hasteType: HasteType.None,
@@ -581,6 +598,16 @@ export class Player implements AbstractObject {
             m_streakNextThreshold: 300,
             m_nitroLaceActive: false,
             m_nitroLacePercentage: 0,
+            m_hideAndSeekBlindTime: 0,
+            m_hideAndSeekHunterReleaseTime: 0,
+            m_hideAndSeekHunterReleaseSeeker: false,
+            m_infectedRespawnTime: 0,
+            m_miniGameWinCountdownTime: 0,
+            m_miniGameWinCountdownProps: false,
+            m_amongUsKillCooldownTime: 0,
+            m_amongUsEmergencyCallCooldownTime: 0,
+            m_amongUsEmergencyCallsRemaining: 1,
+            m_amongUsEmergencyMeetingSeq: 0,
         };
 
         this.playAnim(Anim.None, -1);
@@ -604,6 +631,10 @@ export class Player implements AbstractObject {
         if (this.burningEmitter) {
             this.burningEmitter.stop();
             this.burningEmitter = null;
+        }
+        if (this.poisonEmitter) {
+            this.poisonEmitter.stop();
+            this.poisonEmitter = null;
         }
         if (this.outfitMoveEmitter) {
             this.outfitMoveEmitter.stop();
@@ -648,6 +679,7 @@ export class Player implements AbstractObject {
             this.m_netData.m_healEffect = data.healEffect;
             this.m_netData.m_burnEffect = data.burnEffect;
             this.m_netData.m_nitroLaceEffect = data.nitroLaceEffect;
+            this.m_netData.m_poisonEffect = data.poisonEffect;
             this.m_netData.m_frozen = data.frozen;
             this.m_netData.m_frozenOri = data.frozenOri;
             this.m_netData.m_hasteType = data.hasteType;
@@ -740,6 +772,28 @@ export class Player implements AbstractObject {
             this.m_localData.m_nitroLaceActive = (data.nitroLacePercentage ?? 0) > 0;
             this.m_localData.m_nitroLacePercentage = data.nitroLacePercentage ?? 0;
         }
+
+        if (data.hideAndSeekBlindDirty) {
+            this.m_localData.m_hideAndSeekBlindTime =
+                data.hideAndSeekBlindTime && data.hideAndSeekBlindTime > 0
+                    ? data.hideAndSeekBlindTime + 1
+                    : 0;
+        }
+        this.m_localData.m_hideAndSeekHunterReleaseTime =
+            data.hideAndSeekHunterReleaseTime ?? 0;
+        this.m_localData.m_hideAndSeekHunterReleaseSeeker =
+            data.hideAndSeekHunterReleaseSeeker ?? false;
+        this.m_localData.m_infectedRespawnTime = data.infectedRespawnTime ?? 0;
+        this.m_localData.m_miniGameWinCountdownTime = data.miniGameWinCountdownTime ?? 0;
+        this.m_localData.m_miniGameWinCountdownProps =
+            data.miniGameWinCountdownProps ?? false;
+        this.m_localData.m_amongUsKillCooldownTime = data.amongUsKillCooldownTime ?? 0;
+        this.m_localData.m_amongUsEmergencyCallCooldownTime =
+            data.amongUsEmergencyCallCooldownTime ?? 0;
+        this.m_localData.m_amongUsEmergencyCallsRemaining =
+            data.amongUsEmergencyCallsRemaining ?? 1;
+        this.m_localData.m_amongUsEmergencyMeetingSeq =
+            data.amongUsEmergencyMeetingSeq ?? 0;
 
         // Zoom more quickly when changing scopes
         if (this.m_localData.m_scope != scopeOld) {
@@ -963,12 +1017,7 @@ export class Player implements AbstractObject {
             this.m_netData.m_actionType === Action.Reload ||
             this.m_netData.m_actionType === Action.ReloadAlt;
         const fireHeld = inputBinds.isBindDown(Input.Fire) || touchShootHold;
-        if (
-            isActivePlayer &&
-            isBlaster &&
-            !isReloading &&
-            fireHeld
-        ) {
+        if (isActivePlayer && isBlaster && !isReloading && fireHeld) {
             this.m_netData.m_loadingBlaster += dt;
             const loadTime = (curWeapDef as GunDef).loadTime ?? 1.5;
 
@@ -1093,8 +1142,13 @@ export class Player implements AbstractObject {
         const activeGroupId = playerBarn.getPlayerInfo(activeId).groupId;
         const playerInfo = playerBarn.getPlayerInfo(this.__id);
         const inSameGroup = playerInfo.groupId == activeGroupId;
+        const isKnownImpostor = playerInfo.amongUsRole === "impostor";
         this.nameText.text = playerBarn.getPlayerName(this.__id, activeId, false);
-        this.nameText.visible = !isActivePlayer && inSameGroup;
+        this.nameText.style.fill = isKnownImpostor
+            ? AmongUsRoleDefs.impostor.color
+            : 0x00ffff;
+        this.nameText.tint = 0xffffff;
+        this.nameText.visible = (!isActivePlayer && inSameGroup) || isKnownImpostor;
 
         // Locate nearby obstacles that may play interaction effects
         let insideObstacle: Obstacle | null = null;
@@ -1446,6 +1500,22 @@ export class Player implements AbstractObject {
             this.burningEmitter.zOrd = this.renderZOrd + 1;
         }
 
+        // Poison effect
+        if (this.m_netData.m_poisonEffect && !this.poisonEmitter) {
+            this.poisonEmitter = particleBarn.addEmitter("poison_gas", {
+                pos: this.m_pos,
+                layer: this.layer,
+            });
+        } else if (!this.m_netData.m_poisonEffect && this.poisonEmitter) {
+            this.poisonEmitter.stop();
+            this.poisonEmitter = null;
+        }
+        if (this.poisonEmitter) {
+            this.poisonEmitter.pos = this.m_pos;
+            this.poisonEmitter.layer = this.renderLayer;
+            this.poisonEmitter.zOrd = this.renderZOrd + 1;
+        }
+
         const outfitDef = GameObjectDefs[this.m_netData.m_outfit] as OutfitDef;
         const moveEmitterType = outfitDef.moveEmitter;
         const moveDelta = v2.sub(this.m_posOld, this.m_pos);
@@ -1673,15 +1743,18 @@ export class Player implements AbstractObject {
         }
     }
 
-    render(camera: Camera, debug: DebugRenderOpts) {
+    render(camera: Camera, debug: DebugRenderOpts, visionAlpha = 1) {
         const screenPos = camera.m_pointToScreen(this.m_visualPos);
         const screenScale = camera.m_pixels(1);
         this.container.position.set(screenPos.x, screenPos.y);
         this.container.scale.set(screenScale, screenScale);
         this.container.visible = !this.m_netData.m_dead;
-        this.container.alpha = this.localInvisiblePreview ? 0.45 : 1;
+        this.bodyContainer.visible = !this.propDisguiseActive;
+        this.container.alpha = (this.localInvisiblePreview ? 0.45 : 1) * visionAlpha;
         this.auraContainer.position.set(screenPos.x, screenPos.y);
         this.auraContainer.scale.set(screenScale, screenScale);
+        this.auraContainer.alpha = visionAlpha;
+        this.deathEffectContainer.alpha = visionAlpha;
 
         if (IS_DEV && debug.players) {
             debugLines.addCircle(this.m_pos, this.m_rad, 0xff0000, 0);
@@ -3052,6 +3125,7 @@ export class PlayerBarn {
         particleBarn: ParticleBarn,
         camera: Camera,
         map: Map,
+        lootBarn: LootBarn,
         arenaPrivate: boolean,
         inputBinds: InputBinds,
         touchShootHold: boolean,
@@ -3064,11 +3138,40 @@ export class PlayerBarn {
     ) {
         // Update players
         const players = this.playerPool.m_getPool();
+        const propDisguisePlayerIds = new Set<number>();
+        const obstacles = map.m_obstaclePool.m_getPool();
+        for (let i = 0; i < obstacles.length; i++) {
+            const obstacle = obstacles[i];
+            if (
+                obstacle.active &&
+                !obstacle.dead &&
+                obstacle.isSkin &&
+                obstacle.isPropDisguise
+            ) {
+                propDisguisePlayerIds.add(obstacle.skinPlayerId);
+            }
+        }
+        const decals = map.decalBarn.decalPool.m_getPool();
+        for (let i = 0; i < decals.length; i++) {
+            const decal = decals[i];
+            if (decal.active && !decal.dead && decal.isSkin && decal.isPropDisguise) {
+                propDisguisePlayerIds.add(decal.skinPlayerId);
+            }
+        }
+        const loots = lootBarn.lootPool.m_getPool();
+        for (let i = 0; i < loots.length; i++) {
+            const loot = loots[i];
+            if (loot.active && !loot.dead && loot.isSkin && loot.isPropDisguise) {
+                propDisguisePlayerIds.add(loot.skinPlayerId);
+            }
+        }
+
         for (let i = 0; i < players.length; i++) {
             const p = players[i];
             if (p.active) {
                 p.localInvisiblePreview =
                     Boolean(localInvisible) && !isSpectating && p.__id === activeId;
+                p.propDisguiseActive = propDisguisePlayerIds.has(p.__id);
                 p.m_update(
                     dt,
                     this,
@@ -3104,12 +3207,17 @@ export class PlayerBarn {
             disconnected: false,
             dead: activePlayer.m_netData.m_dead,
             downed: activePlayer.m_netData.m_downed,
+            dir: activePlayer.m_netData.m_dir,
             role: activePlayer.m_netData.m_role,
+            outfit: activePlayer.m_netData.m_outfit,
             visible: true,
         });
 
         const fullStatusMode = map.factionMode || arenaPrivate;
-        const statusUpdateRate = getPlayerStatusUpdateRate(fullStatusMode);
+        const statusUpdateRate = getPlayerStatusUpdateRate(
+            fullStatusMode,
+            !!map.getMapDef().gameMode.amongUsMode,
+        );
         const keys = Object.keys(this.playerStatus);
         for (let i = 0; i < keys.length; i++) {
             const status = this.playerStatus[keys[i] as unknown as number];
@@ -3148,9 +3256,10 @@ export class PlayerBarn {
                     ? 0
                     : 0.6;
 
-            status.minimapAlpha =
-                math.smoothstep(status.timeSinceVisible!, 0, 0.1) *
-                math.lerp(math.smoothstep(status.timeSinceUpdate!, 2, 2.5), 1, fade);
+            status.minimapAlpha = status.visible
+                ? math.smoothstep(status.timeSinceVisible!, 0, 0.1) *
+                  math.lerp(math.smoothstep(status.timeSinceUpdate!, 2, 2.5), 1, fade)
+                : 0;
 
             // @HACK: Fix issue in non-faction mode when spectating and swapping
             // between teams. We don't want the old player indicators to fade out
@@ -3162,12 +3271,29 @@ export class PlayerBarn {
         }
     }
 
-    m_render(camera: Camera, debug: DebugRenderOpts) {
+    m_render(
+        camera: Camera,
+        debug: DebugRenderOpts,
+        activePlayer?: Player,
+        limitedVisionRadius?: number,
+    ) {
         const players = this.playerPool.m_getPool();
         for (let i = 0; i < players.length; i++) {
             const p = players[i];
             if (p.active) {
-                p.render(camera, debug);
+                let visionAlpha = 1;
+                if (limitedVisionRadius && activePlayer && p !== activePlayer) {
+                    const dx = p.m_visualPos.x - activePlayer.m_visualPos.x;
+                    const dy = p.m_visualPos.y - activePlayer.m_visualPos.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy) - p.m_rad;
+                    visionAlpha = math.clamp(
+                        (limitedVisionRadius + amongUsVisionFadeDistance - dist) /
+                            amongUsVisionFadeDistance,
+                        0,
+                        1,
+                    );
+                }
+                p.render(camera, debug, visionAlpha);
             }
         }
     }
@@ -3184,6 +3310,7 @@ export class PlayerBarn {
     }
 
     setPlayerInfo(info: PlayerInfo) {
+        const existingInfo = this.playerInfo[info.playerId];
         this.playerInfo[info.playerId] = {
             playerId: info.playerId,
             teamId: info.teamId,
@@ -3191,6 +3318,7 @@ export class PlayerBarn {
             name: info.name,
             clanName: info.clanName || "",
             clanTagColor: info.clanTagColor || "",
+            amongUsRole: info.amongUsRole || "",
             nameTruncated: helpers.truncateString(
                 info.name || "",
                 "bold 16px arial",
@@ -3199,10 +3327,12 @@ export class PlayerBarn {
             anonName: `Player${info.playerId - 2750}`,
             loadout: util.cloneDeep(info.loadout),
         };
-        this.playerIds.push(info.playerId);
-        this.playerIds.sort((a, b) => {
-            return a - b;
-        });
+        if (!existingInfo) {
+            this.playerIds.push(info.playerId);
+            this.playerIds.sort((a, b) => {
+                return a - b;
+            });
+        }
     }
 
     deletePlayerInfo(id: number) {
@@ -3223,6 +3353,7 @@ export class PlayerBarn {
                 name: "",
                 clanName: "",
                 clanTagColor: "",
+                amongUsRole: "",
                 nameTruncated: "",
                 anonName: "",
                 loadout: {},
@@ -3314,8 +3445,10 @@ export class PlayerBarn {
             visible: false,
             dead: false,
             downed: false,
+            dir: newStatus.dir ? v2.copy(newStatus.dir) : v2.create(1, 0),
             disconnected: false,
             role: "",
+            outfit: newStatus.outfit || "",
             timeSinceUpdate: 0,
             timeSinceVisible: 0,
             minimapAlpha: 0,
@@ -3338,7 +3471,13 @@ export class PlayerBarn {
         status.posDelta = v2.length(v2.sub(newStatus.pos!, status.pos));
         status.dead = newStatus.dead!;
         status.downed = newStatus.downed!;
+        if (newStatus.dir) {
+            status.dir = v2.copy(newStatus.dir);
+        }
         status.role = newStatus.role!;
+        if (newStatus.outfit !== undefined) {
+            status.outfit = newStatus.outfit;
+        }
         if (newStatus.health !== undefined) {
             status.health = newStatus.health;
         }

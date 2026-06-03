@@ -15,6 +15,9 @@ import type {
     CancelAuctionListingResponse,
     CancelMarketListingRequest,
     CancelMarketListingResponse,
+    ClaimLootBoxAdRequest,
+    ClaimLootBoxAdResponse,
+    ClaimRewardedAdGpResponse,
     ClaimSocialGpRewardRequest,
     ClaimSocialGpRewardResponse,
     CreateAuctionListingRequest,
@@ -33,6 +36,7 @@ import type {
     GpGift,
     LoadoutRequest,
     LoadoutResponse,
+    LootBoxAdState,
     MarketListing,
     OpenLootBoxRequest,
     OpenLootBoxResponse,
@@ -42,6 +46,7 @@ import type {
     RefreshQuestRequest,
     RefreshQuestResponse,
     RemoveFriendResponse,
+    RewardedAdGpState,
     SendFriendGpRequest,
     SendFriendGpResponse,
     SendFriendSkinGiftRequest,
@@ -51,9 +56,12 @@ import type {
     SetPassUnlockResponse,
     SetQuestRequest,
     ShopLootBox,
+    SideQuestState,
     SkinGift,
     SocialGpRewardKey,
     SoldMarketListing,
+    UnlinkAuthRequest,
+    UnlinkAuthResponse,
     UsernameRequest,
     UsernameResponse,
 } from "../../shared/types/user";
@@ -133,13 +141,17 @@ export class Account {
     loggingIn = false;
     loggedIn = false;
     gpBalance = 0;
+    rewardedAdGp: RewardedAdGpState | null = null;
     socialGpRewardClaims: Partial<Record<SocialGpRewardKey, boolean>> = {};
     socialGpRewardClaimsLoaded = false;
+    lootBoxAdStates: Record<string, LootBoxAdState> = {};
     pendingThankYouGift: { amount: number } | null = null;
     pendingGpGifts: GpGift[] = [];
     pendingSkinGifts: SkinGift[] = [];
     profile = {
         linked: false,
+        linkedGoogle: false,
+        linkedDiscord: false,
         usernameSet: false,
         username: "",
         slug: "",
@@ -157,6 +169,7 @@ export class Account {
     userAuctionListings: AuctionListing[] = [];
     soldMarketListings: SoldMarketListing[] = [];
     quests: Quest[] = [];
+    sideQuests: SideQuestState[] = [];
     questPriv = "";
     pass: Record<string, PassType> = {};
     friends: FriendUser[] = [];
@@ -255,6 +268,30 @@ export class Account {
         });
     }
 
+    unlinkAuth(
+        provider: UnlinkAuthRequest["provider"],
+        callback: (
+            error?: UnlinkAuthResponse extends { error: infer E } ? E : string,
+        ) => void,
+    ) {
+        this.ajaxRequest(
+            "/api/user/unlink_auth",
+            { provider } satisfies UnlinkAuthRequest,
+            (err, response: UnlinkAuthResponse) => {
+                if (err) {
+                    callback("server_error");
+                    return;
+                }
+                if (!response.success) {
+                    callback(response.error);
+                    return;
+                }
+                this.loadProfile();
+                callback();
+            },
+        );
+    }
+
     loadProfile() {
         this.loggingIn = !this.loggedIn;
         this.ajaxRequest("/api/user/profile", (err, data: ProfileResponse) => {
@@ -263,6 +300,8 @@ export class Account {
             this.loggedIn = false;
             this.profile = {} as this["profile"];
             this.gpBalance = 0;
+            this.rewardedAdGp = null;
+            this.lootBoxAdStates = {};
             this.pendingThankYouGift = null;
             this.pendingGpGifts = [];
             this.pendingSkinGifts = [];
@@ -275,6 +314,7 @@ export class Account {
                 this.loggedIn = true;
                 this.profile = data.profile;
                 this.gpBalance = data.gpBalance;
+                this.rewardedAdGp = data.rewardedAdGp || null;
                 this.pendingThankYouGift = data.thankYouGift || null;
                 this.pendingGpGifts = data.gpGifts || [];
                 this.pendingSkinGifts = data.skinGifts || [];
@@ -297,6 +337,7 @@ export class Account {
             this.emit("items", this.items);
             this.emit("loadout", this.loadout);
             this.emit("gpBalance", this.gpBalance);
+            this.emit("rewardedAdGp", this.rewardedAdGp);
             if (this.pendingThankYouGift) {
                 this.emit("thankYouGift", this.pendingThankYouGift);
                 this.pendingThankYouGift = null;
@@ -627,14 +668,19 @@ export class Account {
         this.ajaxRequest("/api/user/get_pass", args, (err, res) => {
             this.pass = {};
             this.quests = [];
+            this.sideQuests = [];
             this.questPriv = "";
             if (err || !res.success) {
                 errorLogManager.storeGeneric("account", "get_pass_error");
             } else {
                 this.pass = res.pass || {};
                 this.quests = res.quests || [];
+                this.sideQuests = res.sideQuests || [];
                 this.questPriv = res.questPriv || "";
                 this.quests.sort((a, b) => {
+                    return a.idx - b.idx;
+                });
+                this.sideQuests.sort((a, b) => {
                     return a.idx - b.idx;
                 });
                 this.emit("pass", this.pass, this.quests, true);
@@ -740,6 +786,7 @@ export class Account {
             this.socialGpRewardClaimsLoaded = true;
             this.featuredBundles = res.featuredBundles || [];
             this.lootBoxes = res.lootBoxes || [];
+            this.lootBoxAdStates = res.lootBoxAdStates || {};
             this.marketListings = res.listings || [];
             this.userMarketListings = res.userListings || [];
             this.auctionListings = res.auctions || [];
@@ -797,6 +844,60 @@ export class Account {
         );
     }
 
+    claimRewardedAdGp(callback?: (error?: ClaimRewardedAdGpResponse["error"]) => void) {
+        this.ajaxRequest(
+            "/api/user/claim_rewarded_ad_gp",
+            {},
+            (err, res: ClaimRewardedAdGpResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "claim_rewarded_ad_gp_error");
+                    if (res?.rewardedAdGp) {
+                        this.rewardedAdGp = res.rewardedAdGp;
+                        this.emit("rewardedAdGp", this.rewardedAdGp);
+                    }
+                    callback?.(res?.error || "server_error");
+                    return;
+                }
+
+                if (typeof res.gpBalance === "number") {
+                    this.gpBalance = res.gpBalance;
+                    this.emit("gpBalance", this.gpBalance);
+                }
+                if (res.rewardedAdGp) {
+                    this.rewardedAdGp = res.rewardedAdGp;
+                    this.emit("rewardedAdGp", this.rewardedAdGp);
+                }
+                callback?.();
+            },
+        );
+    }
+
+    claimLootBoxAd(
+        boxId: string,
+        callback?: (error?: ClaimLootBoxAdResponse["error"]) => void,
+    ) {
+        const args: ClaimLootBoxAdRequest = { boxId };
+        this.ajaxRequest(
+            "/api/user/claim_loot_box_ad",
+            args,
+            (err, res: ClaimLootBoxAdResponse) => {
+                if (err || !res.success) {
+                    errorLogManager.storeGeneric("account", "claim_loot_box_ad_error");
+                    if (res?.lootBoxAdStates) {
+                        this.lootBoxAdStates = res.lootBoxAdStates;
+                        this.emit("market", this.marketListings, this.userMarketListings);
+                    }
+                    callback?.(res?.error || "server_error");
+                    return;
+                }
+
+                this.lootBoxAdStates = res.lootBoxAdStates || this.lootBoxAdStates;
+                this.emit("market", this.marketListings, this.userMarketListings);
+                callback?.();
+            },
+        );
+    }
+
     buyFeaturedBundle(bundleId: string, callback?: (error?: string) => void) {
         const args: BuyFeaturedBundleRequest = { bundleId };
         this.ajaxRequest(
@@ -823,15 +924,20 @@ export class Account {
 
     openLootBox(
         boxId: string,
+        payment: OpenLootBoxRequest["payment"],
         callback?: (error?: string, reward?: { itemType: string }) => void,
     ) {
-        const args: OpenLootBoxRequest = { boxId };
+        const args: OpenLootBoxRequest = { boxId, payment };
         this.ajaxRequest(
             "/api/user/open_loot_box",
             args,
             (err, res: OpenLootBoxResponse) => {
                 if (err || !res.success) {
                     errorLogManager.storeGeneric("account", "open_loot_box_error");
+                    if (res?.lootBoxAdStates) {
+                        this.lootBoxAdStates = res.lootBoxAdStates;
+                        this.emit("market", this.marketListings, this.userMarketListings);
+                    }
                     const errorCode =
                         !err && res && "error" in res ? res.error : "server_error";
                     callback?.(errorCode);
@@ -839,6 +945,7 @@ export class Account {
                 }
 
                 this.gpBalance = res.gpBalance;
+                this.lootBoxAdStates = res.lootBoxAdStates || this.lootBoxAdStates;
                 this.emit("gpBalance", this.gpBalance);
                 this.loadProfile();
                 this.loadMarket();

@@ -16,6 +16,7 @@ export interface ExplosionDef {
     dropRandomLoot?: number;
     healTeam?: boolean;
     healAmount?: number;
+    blindDuration?: number;
 }
 
 export const ExplosionDefs: Record<string, ExplosionDef> = {
@@ -29,6 +30,16 @@ export const ExplosionDefs: Record<string, ExplosionDef> = {
         explosionEffectType: "frag",
         decalType: "decal_frag_explosion",
     },
+    explosion_among_us_eject: {
+        type: "explosion",
+        damage: 0,
+        obstacleDamage: 0,
+        rad: { min: 5, max: 12 },
+        shrapnelCount: 0,
+        shrapnelType: "",
+        explosionEffectType: "frag",
+        decalType: "",
+    },
     explosion_smoke: {
         type: "explosion",
         damage: 0,
@@ -38,6 +49,27 @@ export const ExplosionDefs: Record<string, ExplosionDef> = {
         shrapnelType: "shrapnel_frag",
         explosionEffectType: "smoke",
         decalType: "decal_smoke_explosion",
+    },
+    explosion_poison_gas: {
+        type: "explosion",
+        damage: 0,
+        obstacleDamage: 1,
+        rad: { min: 5, max: 12 },
+        shrapnelCount: 0,
+        shrapnelType: "shrapnel_frag",
+        explosionEffectType: "poison_gas",
+        decalType: "decal_smoke_explosion",
+    },
+    explosion_flashbang: {
+        type: "explosion",
+        damage: 0,
+        obstacleDamage: 0,
+        rad: { min: 5, max: 12 },
+        shrapnelCount: 0,
+        shrapnelType: "shrapnel_frag",
+        explosionEffectType: "flashbang",
+        decalType: "decal_smoke_explosion",
+        blindDuration: 2,
     },
     explosion_strobe: {
         type: "explosion",

@@ -6,6 +6,11 @@ export const zGetPlayerIpParams = z.object({
     game_id: z.string().optional(),
 });
 
+export const zSearchIpParams = z.object({
+    ip: z.string().min(1),
+    is_encoded: z.boolean().default(true),
+});
+
 export const zBanIpParams = z.object({
     ips: z.union([
         z
@@ -95,6 +100,13 @@ export const zCoinFlipCheckParams = z.object({
 
 export const zCoinFlipResolveParams = zCoinFlipCheckParams.extend({
     opponent_pick: z.enum(["heads", "tails"]),
+});
+
+export const zBlackjackCheckParams = zCoinFlipCheckParams;
+
+export const zBlackjackResolveParams = zCoinFlipCheckParams.extend({
+    winner_discord_id: z.string(),
+    loser_discord_id: z.string(),
 });
 
 export const zDiscordBalanceParams = z.object({

@@ -64,6 +64,8 @@ export interface SiteInfoRes {
     country: string;
     gitRevision: string;
     captchaEnabled: boolean;
+    battlePassEndDate?: string;
+    battlePassEndTime?: number;
     modes: Array<{
         mapName: string;
         teamMode: TeamMode;
@@ -80,7 +82,8 @@ export interface SiteInfoRes {
     youtube: {
         name: string;
         link: string;
-    };
+        img?: string;
+    } | null;
     twitch: Array<{
         name: string;
         viewers: number;

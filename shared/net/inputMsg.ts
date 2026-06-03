@@ -19,6 +19,7 @@ export class InputMsg implements AbstractMsg {
     inputs: Input[] = [];
     useItem = "";
     streakIdx = -1;
+    amongUsCamerasOpen = false;
 
     addInput(input: Input) {
         if (this.inputs.length < 7 && !this.inputs.includes(input)) {
@@ -51,6 +52,7 @@ export class InputMsg implements AbstractMsg {
 
         s.writeGameType(this.useItem);
         s.writeInt8(this.streakIdx);
+        s.writeBoolean(this.amongUsCamerasOpen);
     }
 
     deserialize(s: BitStream) {
@@ -78,5 +80,6 @@ export class InputMsg implements AbstractMsg {
 
         this.useItem = s.readGameType();
         this.streakIdx = s.readInt8();
+        this.amongUsCamerasOpen = s.readBoolean();
     }
 }

@@ -19,15 +19,18 @@ export function createCommand<T extends z.ZodSchema = z.ZodSchema>(config: {
     optionValidator: T;
     isPrivateRoute?: boolean;
     ownerOnly?: boolean;
+    ownerOrAdmin?: boolean;
     options: {
         name: keyof z.input<T>;
         description: string;
         required: boolean;
         type:
             | ApplicationCommandOptionType.String
+            | ApplicationCommandOptionType.Number
             | ApplicationCommandOptionType.Integer
             | ApplicationCommandOptionType.Boolean
             | ApplicationCommandOptionType.User;
+        choices?: { name: string; value: string | number }[];
     }[];
 }) {
     return config;
@@ -39,6 +42,7 @@ export async function genericExecute<N extends Exclude<Command, "search_player">
     validator: z.ZodTypeAny,
     isPrivateRoute = false,
     ownerOnly = false,
+    ownerOrAdmin = false,
 ) {
     await interaction.deferReply();
 
@@ -65,7 +69,7 @@ export async function genericExecute<N extends Exclude<Command, "search_player">
     }
 
     if (isPrivateRoute) {
-        await handlePrivateRoute(interaction, name, args.data, ownerOnly);
+        await handlePrivateRoute(interaction, name, args.data, ownerOnly, ownerOrAdmin);
         return;
     }
 
@@ -82,9 +86,15 @@ async function handlePrivateRoute(
     name: any,
     payload: any,
     ownerOnly = false,
+    ownerOrAdmin = false,
 ) {
     if (ownerOnly) {
         if (!hasOwnerPermission(interaction)) {
+            await sendNoPermissionMessage(interaction);
+            return;
+        }
+    } else if (ownerOrAdmin) {
+        if (!isAdmin(interaction) && !hasOwnerPermission(interaction)) {
             await sendNoPermissionMessage(interaction);
             return;
         }
@@ -106,11 +116,16 @@ export function createSlashCommand(config: ReturnType<typeof createCommand>) {
         .setName(config.name)
         .setDescription(config.description);
 
-    const configureBuilderOption = (opt: any, option: any) =>
-        opt
+    const configureBuilderOption = (opt: any, option: any) => {
+        const configured = opt
             .setName(option.name as string)
             .setDescription(option.description)
             .setRequired(option.required);
+        if (option.choices) {
+            configured.addChoices(...option.choices);
+        }
+        return configured;
+    };
 
     for (const option of config.options) {
         switch (option.type) {
@@ -119,6 +134,9 @@ export function createSlashCommand(config: ReturnType<typeof createCommand>) {
                 break;
             case ApplicationCommandOptionType.Integer:
                 builder.addIntegerOption((opt) => configureBuilderOption(opt, option));
+                break;
+            case ApplicationCommandOptionType.Number:
+                builder.addNumberOption((opt) => configureBuilderOption(opt, option));
                 break;
             case ApplicationCommandOptionType.Boolean:
                 builder.addBooleanOption((opt) => configureBuilderOption(opt, option));

@@ -107,6 +107,10 @@ export class FriendsUi {
             }
         });
 
+        $("#friends-list-search-input").on("input", () => {
+            this.renderFriends();
+        });
+
         $(".friend-action-cancel").on("click", () => {
             this.hideActionModal();
             return false;
@@ -157,6 +161,10 @@ export class FriendsUi {
 
         if (tab === "add") {
             window.setTimeout(() => $("#friends-search-input").trigger("focus"), 80);
+        }
+
+        if (tab === "friends") {
+            window.setTimeout(() => $("#friends-list-search-input").trigger("focus"), 80);
         }
 
         if (tab === "requests") {
@@ -289,9 +297,32 @@ export class FriendsUi {
             return;
         }
 
-        for (const friend of this.account.friends) {
+        const query = String($("#friends-list-search-input").val() || "")
+            .trim()
+            .toLowerCase();
+        const friends = query
+            ? this.account.friends.filter((friend) =>
+                  this.friendMatchesQuery(friend, query),
+              )
+            : this.account.friends;
+
+        if (friends.length === 0) {
+            list.append(
+                $("<div/>", { class: "friends-empty", text: "No friends found." }),
+            );
+            return;
+        }
+
+        for (const friend of friends) {
             list.append(this.createUserRow(friend, "friend"));
         }
+    }
+
+    private friendMatchesQuery(friend: FriendUser, query: string) {
+        return (
+            (friend.username || "").toLowerCase().includes(query) ||
+            friend.slug.toLowerCase().includes(query)
+        );
     }
 
     private renderRequests() {
@@ -319,7 +350,11 @@ export class FriendsUi {
         );
     }
 
-    private renderRequestHeader(header: JQuery<HTMLElement>, label: string, count: number) {
+    private renderRequestHeader(
+        header: JQuery<HTMLElement>,
+        label: string,
+        count: number,
+    ) {
         header.empty().append(document.createTextNode(label));
         if (this.account.loggedIn) {
             header.append($("<span/>", { class: "friends-list-count", text: count }));

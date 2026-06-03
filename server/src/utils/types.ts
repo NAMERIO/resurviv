@@ -1,5 +1,10 @@
 import { z } from "zod";
 import type { MapDefs } from "../../../shared/defs/mapDefs";
+import {
+    type AmongUsImpostorCount,
+    type PrivateLobbyMiniGame,
+    PrivateLobbyMiniGameIds,
+} from "../../../shared/defs/miniGame";
 import { TeamMode } from "../../../shared/gameConfig";
 import type { FindGameError } from "../../../shared/types/api";
 import { loadoutSchema } from "../../../shared/utils/loadout";
@@ -24,9 +29,16 @@ export type UpdateRegionBody = z.infer<typeof zUpdateRegionBody>;
 
 export const zSetGameModeBody = z.object({
     index: z.number(),
+    mode_type: z.enum(["deathmatch", "br"]).default("deathmatch"),
     team_mode: z.nativeEnum(TeamMode).optional(),
     map_name: z.string().optional(),
     enabled: z.boolean().optional(),
+});
+
+export const zListGameModesBody = z.object({});
+
+export const zTopRankPlayersBody = z.object({
+    interval: z.enum(["daily", "weekly", "alltime"]).default("alltime"),
 });
 
 export const zSetClientThemeBody = z.object({
@@ -37,14 +49,49 @@ export const zSetBattleRoyaleModeBody = z.object({
     enabled: z.boolean(),
 });
 
+export const zSetPauseClanStatsBody = z.object({
+    enabled: z.boolean(),
+});
+
+export const zSetBattlePassEndBody = z.object({
+    days: z.number().int().min(0).max(3650),
+});
+
+export const zAddClanWarCgpBody = z.object({
+    clan: z.string().trim().min(1),
+    amount: z.number().int().nonnegative(),
+    opponent: z.string().trim().max(32).optional().default("Clan War"),
+    result: z.enum(["win", "loss", "draw"]).optional().default("win"),
+    executor_id: z.string().default("admin"),
+});
+
+export const zSetClanCgpValueBody = z.object({
+    value: z.number().min(0).max(100),
+});
+
+export const zListFeaturedYoutubersBody = z.object({});
+
+export const zRemoveFeaturedYoutuberBody = z.object({
+    name: z.string().trim().min(1),
+});
+
 export interface SaveGameBody {
-    matchData: (MatchDataTable & { ip: string; findGameIp: string })[];
+    matchData: (MatchDataTable & {
+        ip: string;
+        findGameIp: string;
+        outfit?: string;
+        melee?: string;
+    })[];
 }
 
 export interface ServerGameConfig {
     readonly mapName: keyof typeof MapDefs;
     readonly teamMode: TeamMode;
     readonly arenaPrivate?: boolean;
+    readonly miniGame?: PrivateLobbyMiniGame;
+    readonly amongUsImpostorCount?: AmongUsImpostorCount;
+    readonly disableAirstrikes?: boolean;
+    readonly disablePerks?: boolean;
 }
 
 export interface GameData {
@@ -52,6 +99,10 @@ export interface GameData {
     teamMode: TeamMode;
     mapName: string;
     arenaPrivate?: boolean;
+    miniGame?: PrivateLobbyMiniGame;
+    amongUsImpostorCount?: AmongUsImpostorCount;
+    disableAirstrikes?: boolean;
+    disablePerks?: boolean;
     canJoin: boolean;
     aliveCount: number;
     startedTime: number;
@@ -65,7 +116,12 @@ export const zFindGamePrivateBody = z.object({
     mapName: z.string(),
     teamMode: z.number(),
     arenaPrivate: z.boolean().optional(),
+    miniGame: z.enum(PrivateLobbyMiniGameIds).optional(),
+    amongUsImpostorCount: z.number().int().min(1).max(3).optional(),
+    disableAirstrikes: z.boolean().optional(),
+    disablePerks: z.boolean().optional(),
     groupHash: z.string().optional(),
+    targetGameId: z.string().optional(),
     playerData: z.array(
         z.object({
             roomId: z.string().optional(),
@@ -77,6 +133,7 @@ export const zFindGamePrivateBody = z.object({
             clanTagColor: z.string().nullable().optional(),
             canUseDeveloper: z.boolean().optional(),
             loadout: loadoutSchema.optional(),
+            arenaTeam: z.enum(["A", "B"]).optional(),
             quests: z.array(z.string()).optional(),
         }),
     ),
@@ -90,6 +147,7 @@ export type FindGamePrivateRes =
           useHttps: boolean;
           hosts: string[];
           addrs: string[];
+          forcedSpectator?: boolean;
       }
     | { error: FindGameError };
 

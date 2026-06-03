@@ -104,6 +104,23 @@ export class InputHandler {
         this.captureNextInputCb = cb;
     }
 
+    isGameplayInputBlocked(target?: EventTarget | null) {
+        const element = target instanceof HTMLElement ? target : null;
+        if (
+            element?.closest(
+                "input, textarea, select, [contenteditable='true'], #ui-among-us-meeting, #ui-among-us-task, #ui-among-us-cameras",
+            )
+        ) {
+            return true;
+        }
+
+        return (
+            document.body.classList.contains("among-us-meeting-active") ||
+            document.body.classList.contains("among-us-task-active") ||
+            document.body.classList.contains("among-us-cameras-active")
+        );
+    }
+
     checkCaptureInput(
         event: KeyboardEvent | MouseEvent | globalThis.TouchEvent,
         inputType: InputType,
@@ -158,6 +175,10 @@ export class InputHandler {
     // Keyboard
     onKeyDown(event: KeyboardEvent) {
         const keyCode = event.keyCode;
+        if (this.isGameplayInputBlocked(event.target)) {
+            this.keys[keyCode] = false;
+            return;
+        }
         // Prevent tab behavior
         if (keyCode == 9) {
             event.preventDefault();
@@ -192,6 +213,10 @@ export class InputHandler {
 
     onMouseDown(event: MouseEvent) {
         const button = event.button;
+        if (this.isGameplayInputBlocked(event.target)) {
+            this.mouseButtons[button] = false;
+            return;
+        }
         if (this.checkCaptureInput(event, InputType.MouseButton, button)) {
             return;
         }
@@ -211,6 +236,10 @@ export class InputHandler {
     }
 
     onMouseWheel(event: WheelEvent) {
+        if (this.isGameplayInputBlocked(event.target)) {
+            this.mouseWheelState = 0;
+            return;
+        }
         const wheel = event.deltaY < 0 ? MouseWheel.Up : MouseWheel.Down;
 
         if (this.checkCaptureInput(event, InputType.MouseWheel, wheel)) {

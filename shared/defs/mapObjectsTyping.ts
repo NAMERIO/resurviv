@@ -1,5 +1,5 @@
 import type { Vec2 } from "../utils/v2";
-import type { BuildingDef } from "./types/building";
+import type { BuildingDef, SurfaceData } from "./types/building";
 import type { DecalDef } from "./types/decal";
 import type { ObstacleDef } from "./types/obstacle";
 import type { StructureDef } from "./types/structure";
@@ -44,7 +44,14 @@ export interface LootSpawnerDef {
     terrain?: TerrainSpawnDef;
 }
 
-export type { BuildingDef, DecalDef, ObstacleDef, StructureDef, TerrainSpawnDef };
+export type {
+    BuildingDef,
+    DecalDef,
+    ObstacleDef,
+    StructureDef,
+    SurfaceData,
+    TerrainSpawnDef,
+};
 
 export type MapObjectDef =
     | ObstacleDef

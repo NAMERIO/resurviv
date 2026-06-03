@@ -19,6 +19,7 @@ import type { Game } from "../game";
 import type { InputBinds } from "../inputBinds";
 import { Map } from "../map";
 import { DecalBarn } from "../objects/decal";
+import { LootBarn } from "../objects/loot";
 import { Creator } from "../objects/objectPool";
 import { ParticleBarn } from "../objects/particles";
 import { type Player, PlayerBarn } from "../objects/player";
@@ -36,6 +37,7 @@ export class LoadoutDisplay {
     renderer!: Renderer;
     particleBarn!: ParticleBarn;
     decalBarn!: DecalBarn;
+    lootBarn!: LootBarn;
     map!: Map;
     playerBarn!: PlayerBarn;
     smokeBarn!: SmokeBarn;
@@ -73,6 +75,7 @@ export class LoadoutDisplay {
         this.renderer = new Renderer(this as unknown as Game, this.canvasMode);
         this.particleBarn = new ParticleBarn(this.renderer);
         this.decalBarn = new DecalBarn();
+        this.lootBarn = new LootBarn();
         this.map = new Map(this.decalBarn);
         this.playerBarn = new PlayerBarn();
         this.smokeBarn = new SmokeBarn();
@@ -84,6 +87,7 @@ export class LoadoutDisplay {
             [ObjectType.Building]: this.map.m_buildingPool,
             [ObjectType.Structure]: this.map.m_structurePool,
             [ObjectType.Decal]: this.decalBarn.decalPool,
+            [ObjectType.Loot]: this.lootBarn.lootPool,
             [ObjectType.Smoke]: this.smokeBarn.m_smokePool,
         };
 
@@ -191,6 +195,17 @@ export class LoadoutDisplay {
             activeStreakTimeLeft: 0,
             nitroLaceDirty: false,
             nitroLacePercentage: 0,
+            hideAndSeekBlindDirty: false,
+            hideAndSeekBlindTime: 0,
+            hideAndSeekHunterReleaseTime: 0,
+            hideAndSeekHunterReleaseSeeker: false,
+            infectedRespawnTime: 0,
+            miniGameWinCountdownTime: 0,
+            miniGameWinCountdownProps: false,
+            amongUsKillCooldownTime: 0,
+            amongUsEmergencyCallCooldownTime: 0,
+            amongUsEmergencyCallsRemaining: 1,
+            amongUsEmergencyMeetingSeq: 0,
         });
 
         this.activePlayer.layer = this.activePlayer.m_netData.m_layer;
@@ -374,6 +389,7 @@ export class LoadoutDisplay {
             healEffect: false,
             burnEffect: false,
             nitroLaceEffect: false,
+            poisonEffect: false,
             frozen: false,
             frozenOri: 0,
             hasteType: 0,
@@ -398,6 +414,7 @@ export class LoadoutDisplay {
             clanName: "",
             clanTagColor: "",
             loadout: {
+                outfit: this.loadout.outfit,
                 heal: this.loadout.heal,
                 boost: this.loadout.boost,
                 death_effect: this.loadout.death_effect,
@@ -434,6 +451,17 @@ export class LoadoutDisplay {
                 activeStreakTimeLeft: 0,
                 nitroLaceDirty: false,
                 nitroLacePercentage: 0,
+                hideAndSeekBlindDirty: false,
+                hideAndSeekBlindTime: 0,
+                hideAndSeekHunterReleaseTime: 0,
+                hideAndSeekHunterReleaseSeeker: false,
+                infectedRespawnTime: 0,
+                miniGameWinCountdownTime: 0,
+                miniGameWinCountdownProps: false,
+                amongUsKillCooldownTime: 0,
+                amongUsEmergencyCallCooldownTime: 0,
+                amongUsEmergencyCallsRemaining: 1,
+                amongUsEmergencyMeetingSeq: 0,
             });
         }
     }
@@ -574,6 +602,7 @@ export class LoadoutDisplay {
             this.particleBarn,
             this.camera,
             this.map,
+            this.lootBarn,
             false,
             this.inputBinds,
             false,

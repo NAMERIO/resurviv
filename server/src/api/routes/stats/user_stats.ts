@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import {
     ALL_GAME_MODE_STATUS,
     ALL_MAPS,
+    type Mode,
     type UserStatsRequest,
     type UserStatsResponse,
     zUserStatsRequest,
@@ -15,6 +16,7 @@ import {
 } from "../../auth/middleware";
 import { db } from "../../db";
 import { matchDataTable, usersTable } from "../../db/schema";
+import { getGlobalRank } from "./global_rank";
 
 export const UserStatsRouter = new Hono<Context>();
 
@@ -49,14 +51,12 @@ UserStatsRouter.post(
 
         const { id: userId } = result;
 
-        const data = await userStatsSqlQuery(
-            userId,
-            mapIdFilter,
-            gameModeFilter,
-            interval,
-        );
+        const [data, globalRank] = await Promise.all([
+            userStatsSqlQuery(userId, mapIdFilter, gameModeFilter, interval),
+            getGlobalRank(userId),
+        ]);
 
-        return c.json<UserStatsResponse>(data, 200);
+        return c.json<UserStatsResponse>({ ...data, global_rank: globalRank }, 200);
     },
 );
 
@@ -181,7 +181,42 @@ async function userStatsSqlQuery(
     const formatedData: UserStatsResponse = {
         ...userStats,
         // sql fuckery, it returns [null] where no result
-        modes: modes[0] === null ? [] : modes,
+        modes: modes[0] === null ? [] : normalizeStatsModes(modes),
     };
     return formatedData;
+}
+
+function normalizeStatsModes(modes: Mode[]): Mode[] {
+    const modesByKey = new Map<string, Mode>();
+
+    for (const mode of modes) {
+        const teamMode = mode.teamMode > 4 ? 4 : mode.teamMode;
+        const key = `${mode.gameMode}:${teamMode}`;
+        const existing = modesByKey.get(key);
+
+        if (!existing) {
+            modesByKey.set(key, { ...mode, teamMode });
+            continue;
+        }
+
+        const games = existing.games + mode.games;
+        const wins = existing.wins + mode.wins;
+        const kills = existing.kills + mode.kills;
+        const totalDamage =
+            existing.avgDamage * existing.games + mode.avgDamage * mode.games;
+        const totalTimeAlive =
+            existing.avgTimeAlive * existing.games + mode.avgTimeAlive * mode.games;
+
+        existing.games = games;
+        existing.wins = wins;
+        existing.kills = kills;
+        existing.winPct = games > 0 ? ((wins * 100) / games).toFixed(1) : "0";
+        existing.mostKills = Math.max(existing.mostKills, mode.mostKills);
+        existing.mostDamage = Math.max(existing.mostDamage, mode.mostDamage);
+        existing.kpg = games > 0 ? (kills / games).toFixed(1) : "0";
+        existing.avgDamage = games > 0 ? Math.round(totalDamage / games) : 0;
+        existing.avgTimeAlive = games > 0 ? Math.round(totalTimeAlive / games) : 0;
+    }
+
+    return Array.from(modesByKey.values());
 }

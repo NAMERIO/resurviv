@@ -1,0 +1,50 @@
+<div class='header-extra'>WEAPON STATS</div>
+<% if (env.error) { %>
+  <div class="m-3">Error loading content, please try again.</div>
+<% } else if (env.weapons.length == 0) { %>
+  <div class="m-3">No weapon kills recorded yet.</div>
+<% } else { %>
+  <div class='weapon-history-list'>
+    <% for (var i = 0; i < env.weapons.length; i++) { %>
+      <%
+        var timeStart = new Date(env.weapons[i].last_used);
+        var secondsPast = (Date.now() - timeStart.getTime()) / 1000;
+        var timeDiff = '';
+        if (secondsPast < 3600) {
+          var minutes = Math.round(secondsPast / 60);
+          timeDiff = minutes < 2 ? '1 minute ago' : minutes + ' minutes ago';
+        } else if (secondsPast <= 86400) {
+          var hours = Math.round(secondsPast / 3600);
+          timeDiff = hours == 1 ? 'an hour ago' : hours + ' hours ago';
+        } else {
+          var days = Math.floor(secondsPast / 86400);
+          timeDiff = days == 1 ? '1 day ago' : days + ' days ago';
+        }
+      %>
+      <div class='weapon-history-row' <% if (env.weapons[i].accentColor) { %>style='border-left-color: <%= env.weapons[i].accentColor %>'<% } %>>
+        <div class='weapon-history-icon' style='background-image: url("/<%= env.weapons[i].icon %>")'></div>
+        <div class='weapon-history-name'>
+          <span>Name</span>
+          <%= env.weapons[i].name %>
+          <span><%= timeDiff %></span>
+        </div>
+        <div class='weapon-history-stat'>
+          <span>Kills</span>
+          <strong><%= env.weapons[i].kills %></strong>
+        </div>
+        <div class='weapon-history-stat'>
+          <span>Deaths</span>
+          <strong><%= env.weapons[i].deaths %></strong>
+        </div>
+        <div class='weapon-history-stat'>
+          <span>Damage Dealt</span>
+          <strong><%= env.weapons[i].damage_dealt %></strong>
+        </div>
+        <div class='weapon-history-stat'>
+          <span>Damage Taken</span>
+          <strong><%= env.weapons[i].damage_taken %></strong>
+        </div>
+      </div>
+    <% } %>
+  </div>
+<% } %>

@@ -73,6 +73,7 @@ declare global {
 
     const IS_DEV: boolean;
     const VITE_ENABLE_SURVEV_ADS: boolean;
+    const H5_GAMES_ADS_ENABLED: boolean;
 
     const GIT_VERSION: string | undefined;
 

@@ -1,3 +1,4 @@
+import type { AmongUsRole } from "../../../shared/defs/amongUsRoleDefs";
 import { TeamColor } from "../../../shared/defs/maps/factionDefs";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
 import { ObjectType } from "../../../shared/net/objectSerializeFns";
@@ -9,6 +10,14 @@ import { isBattleRoyaleMapName } from "../battleroyale/helpers";
 import type { Game } from "./game";
 import type { DamageParams } from "./objects/gameObject";
 import type { Player } from "./objects/player";
+import {
+    getHideAndSeekSettings,
+    getInfectedSettings,
+    isHideAndSeekHider,
+    isHideAndSeekSeeker,
+    isInfectedHuman,
+    isInfectedZombie,
+} from "./privateLobbyMiniGames";
 
 enum GameMode {
     /** default solos, any map besides factions */
@@ -70,7 +79,22 @@ export class GameModeManager {
 
     // used when saving the game match data
     getPlayersSortedByRank(): Array<{ player: Player; rank: number }> {
-        const players = [...this.game.playerBarn.players];
+        const players = [...this.game.playerBarn.matchPlayers];
+
+        if (this.game.map.amongUsMode && this.game.amongUsWinningRole) {
+            const winningRole = this.game.amongUsWinningRole;
+            return players
+                .sort((a, b) => {
+                    const aRank = this.getAmongUsRank(a, winningRole);
+                    const bRank = this.getAmongUsRank(b, winningRole);
+                    if (aRank !== bRank) return aRank - bRank;
+                    return b.killedIndex - a.killedIndex;
+                })
+                .map((player) => ({
+                    player,
+                    rank: this.getAmongUsRank(player, winningRole),
+                }));
+        }
 
         switch (this.mode) {
             case GameMode.Solo: {
@@ -90,19 +114,33 @@ export class GameModeManager {
                 // the logic is basically the exact same for both
                 // just uses team instead of group on faction...
 
-                const key = this.mode === GameMode.Faction ? "teams" : "groups";
+                const getRankKey = (player: Player) =>
+                    this.mode === GameMode.Faction ? player.teamId : player.groupId;
+                const groupsByRankKey = new Map<number, Player[]>();
+
+                for (const player of players) {
+                    const rankKey = getRankKey(player);
+                    const groupPlayers = groupsByRankKey.get(rankKey);
+                    if (groupPlayers) {
+                        groupPlayers.push(player);
+                    } else {
+                        groupsByRankKey.set(rankKey, [player]);
+                    }
+                }
 
                 // calculate each group killed index
                 // by basing it on the last player to die killed index
-                const groups = this.game.playerBarn[key].map((group) => {
-                    return {
-                        killedIndex:
-                            group.players.sort((a, b) => {
-                                return b.killedIndex - a.killedIndex;
-                            })[0].killedIndex ?? Infinity,
-                        players: group.players,
-                    };
-                });
+                const groups = Array.from(groupsByRankKey.values()).map(
+                    (groupPlayers) => {
+                        return {
+                            killedIndex:
+                                groupPlayers.sort((a, b) => {
+                                    return b.killedIndex - a.killedIndex;
+                                })[0].killedIndex ?? Infinity,
+                            players: groupPlayers,
+                        };
+                    },
+                );
 
                 groups.sort((a, b) => b.killedIndex - a.killedIndex);
 
@@ -124,6 +162,104 @@ export class GameModeManager {
 
     /** true if game needs to end */
     handleGameEnd(): boolean {
+        const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
+        if (hideAndSeekSettings) {
+            if (!this.game.started) return false;
+
+            const hiders = this.game.playerBarn.players.filter(
+                (p) =>
+                    !p.dead &&
+                    !p.disconnected &&
+                    isHideAndSeekHider(this.game.miniGame, p.arenaTeam),
+            );
+            const seekers = this.game.playerBarn.players.filter(
+                (p) =>
+                    !p.dead &&
+                    !p.disconnected &&
+                    isHideAndSeekSeeker(this.game.miniGame, p.arenaTeam),
+            );
+
+            if (hiders.length === 0 && seekers.length > 0) {
+                for (const player of seekers) {
+                    player.addGameOverMsg(seekers[0].teamId);
+                }
+                return true;
+            }
+
+            if (seekers.length === 0 && hiders.length > 0) {
+                for (const player of this.game.playerBarn.players) {
+                    player.addGameOverMsg(hiders[0].teamId);
+                }
+                return true;
+            }
+
+            if (this.game.hideAndSeekHidersWon && hiders.length > 0) {
+                for (const player of this.game.playerBarn.players) {
+                    player.addGameOverMsg(hiders[0].teamId);
+                }
+                return true;
+            }
+
+            return false;
+        }
+
+        const infectedSettings = getInfectedSettings(this.game.miniGame);
+        if (infectedSettings) {
+            if (!this.game.started) return false;
+
+            const humans = this.game.playerBarn.players.filter(
+                (p) =>
+                    !p.dead &&
+                    !p.disconnected &&
+                    isInfectedHuman(this.game.miniGame, p.arenaTeam),
+            );
+            const zombies = this.game.playerBarn.players.filter(
+                (p) =>
+                    !p.disconnected && isInfectedZombie(this.game.miniGame, p.arenaTeam),
+            );
+
+            if (humans.length === 0 && zombies.length > 0) {
+                for (const player of zombies) {
+                    player.addGameOverMsg(zombies[0].teamId);
+                }
+                return true;
+            }
+
+            if (this.game.infectedHumansWon && humans.length > 0) {
+                for (const player of this.game.playerBarn.players) {
+                    player.addGameOverMsg(humans[0].teamId);
+                }
+                return true;
+            }
+
+            return false;
+        }
+
+        if (this.game.map.amongUsMode) {
+            if (!this.game.started) return false;
+            if (!this.game.playerBarn.amongUsRolesAssigned) return false;
+
+            const living = this.game.playerBarn.players.filter(
+                (player) => !player.dead && !player.disconnected,
+            );
+            const impostors = living.filter(
+                (player) => player.amongUsRole === "impostor",
+            );
+            const crewmates = living.filter(
+                (player) => player.amongUsRole !== "impostor",
+            );
+
+            if (impostors.length === 0 && crewmates.length > 0) {
+                return this.endAmongUsGame("crewmate");
+            }
+
+            if (impostors.length > 0 && crewmates.length <= impostors.length) {
+                return this.endAmongUsGame("impostor");
+            }
+
+            return false;
+        }
+
         if (!this.game.started || this.aliveCount() > 1) return false;
         switch (this.mode) {
             case GameMode.Solo: {
@@ -148,9 +284,31 @@ export class GameModeManager {
         }
     }
 
+    private endAmongUsGame(winningRole: AmongUsRole): true {
+        this.game.amongUsWinningRole = winningRole;
+        for (const player of this.game.playerBarn.players) {
+            const won = this.getAmongUsRank(player, winningRole) === 1;
+            player.addGameOverMsg(won ? player.teamId : 0, { gameOver: true });
+        }
+        return true;
+    }
+
+    private getAmongUsRank(player: Player, winningRole: AmongUsRole): 1 | 2 {
+        return (
+            winningRole === "crewmate"
+                ? player.amongUsRole !== "impostor"
+                : player.amongUsRole === winningRole
+        )
+            ? 1
+            : 2;
+    }
+
     isGameStarted(): boolean {
         if (this.game.arenaPrivate && this.game.arenaStartLockTimer > 0) {
             return false;
+        }
+        if (this.game.map.amongUsMode) {
+            return this.game.trueAliveCount >= this.game.amongUsImpostorCount * 2 + 1;
         }
         if (this.game.arenaPrivate) {
             return this.aliveCount() > 1;

@@ -1,3 +1,5 @@
+import { SideQuestDefs } from "./sideQuestDefs";
+
 type QuestEvent =
     | "kill"
     | "damage"
@@ -241,4 +243,5 @@ export const QuestDefs: Record<string, QuestDef> = {
             buildingType: "club",
         },
     },
+    ...SideQuestDefs,
 };

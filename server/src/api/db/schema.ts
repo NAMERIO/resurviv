@@ -53,6 +53,33 @@ export const usersTable = pgTable("users", {
 export type UsersTableInsert = typeof usersTable.$inferInsert;
 export type UsersTableSelect = typeof usersTable.$inferSelect;
 
+export const userAuthIdentityTable = pgTable(
+    "user_auth_identity",
+    {
+        provider: text("provider").$type<"discord" | "google">().notNull(),
+        authId: text("auth_id").notNull(),
+        userId: text("user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        uniqueIndex("idx_user_auth_identity_provider_auth").on(
+            table.provider,
+            table.authId,
+        ),
+        uniqueIndex("idx_user_auth_identity_user_provider").on(
+            table.userId,
+            table.provider,
+        ),
+    ],
+);
+
+export type UserAuthIdentityTableInsert = typeof userAuthIdentityTable.$inferInsert;
+
 export const userFriendsTable = pgTable(
     "user_friends",
     {
@@ -157,6 +184,9 @@ export const itemsTable = pgTable(
         type: text("type").notNull(),
         timeAcquired: bigint("time_acquired", { mode: "number" }).notNull(),
         source: text("source").notNull().default("unlock_new_account"),
+        maker: text("maker").notNull().default("Unknown"),
+        kills: integer("kills").notNull().default(0),
+        wins: integer("wins").notNull().default(0),
         status: integer("status").notNull().default(ItemStatus.New),
     },
     (table) => [index("idx_items_user_type").on(table.userId, table.type)],
@@ -243,6 +273,9 @@ export const marketListingTable = pgTable(
         }),
         itemId: uuid("item_id").notNull(),
         itemType: text("item_type").notNull(),
+        itemMaker: text("item_maker").notNull().default("Unknown"),
+        itemKills: integer("item_kills").notNull().default(0),
+        itemWins: integer("item_wins").notNull().default(0),
         price: integer("price").notNull(),
         status: text("status").notNull().default("active"),
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -275,6 +308,9 @@ export const auctionListingTable = pgTable(
         }),
         itemId: uuid("item_id").notNull(),
         itemType: text("item_type").notNull(),
+        itemMaker: text("item_maker").notNull().default("Unknown"),
+        itemKills: integer("item_kills").notNull().default(0),
+        itemWins: integer("item_wins").notNull().default(0),
         startPrice: integer("start_price").notNull(),
         highestBid: integer("highest_bid").notNull().default(0),
         status: text("status").notNull().default("active"),
@@ -342,6 +378,22 @@ export const matchDataTable = pgTable(
         rank: integer("rank").notNull(),
         died: boolean("died").notNull(),
         kills: integer("kills").notNull(),
+        weaponKills: json("weapon_kills")
+            .notNull()
+            .default({})
+            .$type<Record<string, number>>(),
+        weaponDeaths: json("weapon_deaths")
+            .notNull()
+            .default({})
+            .$type<Record<string, number>>(),
+        weaponDamageDealt: json("weapon_damage_dealt")
+            .notNull()
+            .default({})
+            .$type<Record<string, number>>(),
+        weaponDamageTaken: json("weapon_damage_taken")
+            .notNull()
+            .default({})
+            .$type<Record<string, number>>(),
         teamKills: integer("team_kills").notNull().default(0),
         damageDealt: integer("damage_dealt").notNull(),
         damageTaken: integer("damage_taken").notNull(),
@@ -421,6 +473,7 @@ export const clansTable = pgTable("clans", {
     slug: text("slug").notNull().unique(),
     icon: text("icon").notNull(), // Emote type for clan icon
     tagColor: text("tag_color").notNull().default(""),
+    isLocked: boolean("is_locked").notNull().default(false),
     ownerId: text("owner_id")
         .notNull()
         .references(() => usersTable.id, {
@@ -460,6 +513,34 @@ export const clanMembersTable = pgTable(
 export type ClanMembersTableInsert = typeof clanMembersTable.$inferInsert;
 export type ClanMembersTableSelect = typeof clanMembersTable.$inferSelect;
 
+export const clanJoinRequestsTable = pgTable(
+    "clan_join_requests",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        clanId: uuid("clan_id")
+            .notNull()
+            .references(() => clansTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        userId: text("user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        index("idx_clan_join_requests_clan").on(table.clanId),
+        index("idx_clan_join_requests_user").on(table.userId),
+        uniqueIndex("idx_clan_join_requests_unique").on(table.clanId, table.userId),
+    ],
+);
+
+export type ClanJoinRequestsTableInsert = typeof clanJoinRequestsTable.$inferInsert;
+export type ClanJoinRequestsTableSelect = typeof clanJoinRequestsTable.$inferSelect;
+
 // Track stats earned by members while in a clan
 export const clanMemberStatsTable = pgTable(
     "clan_member_stats",
@@ -480,23 +561,126 @@ export const clanMemberStatsTable = pgTable(
             .$type<GameModeStatus>()
             .notNull()
             .default(GameModeStatus.Deathmatch),
+        season: integer("season").notNull().default(1),
         kills: integer("kills").notNull().default(0),
         wins: integer("wins").notNull().default(0),
+        killCgpMilli: integer("kill_cgp_milli").notNull().default(0),
+        winCgpMilli: integer("win_cgp_milli").notNull().default(0),
     },
     (table) => [
         index("idx_clan_member_stats_clan").on(table.clanId),
         index("idx_clan_member_stats_user").on(table.userId),
         index("idx_clan_member_stats_game_mode").on(table.gameMode),
+        index("idx_clan_member_stats_season").on(table.season),
         uniqueIndex("idx_clan_member_stats_unique").on(
             table.clanId,
             table.userId,
             table.gameMode,
+            table.season,
         ),
     ],
 );
 
 export type ClanMemberStatsTableInsert = typeof clanMemberStatsTable.$inferInsert;
 export type ClanMemberStatsTableSelect = typeof clanMemberStatsTable.$inferSelect;
+
+export const clanMatchupHistoryTable = pgTable(
+    "clan_matchup_history",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        clanId: uuid("clan_id")
+            .notNull()
+            .references(() => clansTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        opponentClanId: uuid("opponent_clan_id")
+            .notNull()
+            .references(() => clansTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        gameId: uuid("game_id").notNull(),
+        season: integer("season").notNull().default(1),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        index("idx_clan_matchup_history_clan_opponent").on(
+            table.clanId,
+            table.opponentClanId,
+            table.season,
+        ),
+        uniqueIndex("idx_clan_matchup_history_unique").on(
+            table.clanId,
+            table.opponentClanId,
+            table.gameId,
+            table.season,
+        ),
+    ],
+);
+
+export type ClanMatchupHistoryTableInsert = typeof clanMatchupHistoryTable.$inferInsert;
+export type ClanMatchupHistoryTableSelect = typeof clanMatchupHistoryTable.$inferSelect;
+
+export const clanWarHistoryTable = pgTable(
+    "clan_war_history",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        clanId: uuid("clan_id")
+            .notNull()
+            .references(() => clansTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        season: integer("season").notNull().default(1),
+        opponentClanName: text("opponent_clan_name").notNull().default(""),
+        result: text("result").$type<"win" | "loss" | "draw">().notNull().default("win"),
+        cgpAwarded: integer("cgp_awarded").notNull(),
+        addedByDiscordId: text("added_by_discord_id").notNull().default(""),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        index("idx_clan_war_history_clan_created").on(table.clanId, table.createdAt),
+        index("idx_clan_war_history_season").on(table.season),
+    ],
+);
+
+export type ClanWarHistoryTableInsert = typeof clanWarHistoryTable.$inferInsert;
+export type ClanWarHistoryTableSelect = typeof clanWarHistoryTable.$inferSelect;
+
+export const clanSeasonMembersTable = pgTable(
+    "clan_season_members",
+    {
+        clanId: uuid("clan_id")
+            .notNull()
+            .references(() => clansTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        userId: text("user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        season: integer("season").notNull(),
+        joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
+        leftAt: timestamp("left_at", { withTimezone: true }),
+    },
+    (table) => [
+        index("idx_clan_season_members_clan").on(table.clanId),
+        index("idx_clan_season_members_user").on(table.userId),
+        index("idx_clan_season_members_season").on(table.season),
+        uniqueIndex("idx_clan_season_members_unique").on(
+            table.clanId,
+            table.userId,
+            table.season,
+        ),
+    ],
+);
+
+export type ClanSeasonMembersTableInsert = typeof clanSeasonMembersTable.$inferInsert;
+export type ClanSeasonMembersTableSelect = typeof clanSeasonMembersTable.$inferSelect;
 
 // Track when users leave clans (for cooldown)
 export const clanLeaveHistoryTable = pgTable(
@@ -553,7 +737,11 @@ export const clansRelations = relations(clansTable, ({ one, many }) => ({
         references: [usersTable.id],
     }),
     members: many(clanMembersTable),
+    joinRequests: many(clanJoinRequestsTable),
     memberStats: many(clanMemberStatsTable),
+    matchupHistory: many(clanMatchupHistoryTable),
+    clanWarHistory: many(clanWarHistoryTable),
+    seasonMembers: many(clanSeasonMembersTable),
     messages: many(clanMessagesTable),
 }));
 
@@ -568,6 +756,17 @@ export const clanMembersRelations = relations(clanMembersTable, ({ one }) => ({
     }),
 }));
 
+export const clanJoinRequestsRelations = relations(clanJoinRequestsTable, ({ one }) => ({
+    clan: one(clansTable, {
+        fields: [clanJoinRequestsTable.clanId],
+        references: [clansTable.id],
+    }),
+    user: one(usersTable, {
+        fields: [clanJoinRequestsTable.userId],
+        references: [usersTable.id],
+    }),
+}));
+
 export const clanMemberStatsRelations = relations(clanMemberStatsTable, ({ one }) => ({
     clan: one(clansTable, {
         fields: [clanMemberStatsTable.clanId],
@@ -578,6 +777,41 @@ export const clanMemberStatsRelations = relations(clanMemberStatsTable, ({ one }
         references: [usersTable.id],
     }),
 }));
+
+export const clanMatchupHistoryRelations = relations(
+    clanMatchupHistoryTable,
+    ({ one }) => ({
+        clan: one(clansTable, {
+            fields: [clanMatchupHistoryTable.clanId],
+            references: [clansTable.id],
+        }),
+        opponentClan: one(clansTable, {
+            fields: [clanMatchupHistoryTable.opponentClanId],
+            references: [clansTable.id],
+        }),
+    }),
+);
+
+export const clanWarHistoryRelations = relations(clanWarHistoryTable, ({ one }) => ({
+    clan: one(clansTable, {
+        fields: [clanWarHistoryTable.clanId],
+        references: [clansTable.id],
+    }),
+}));
+
+export const clanSeasonMembersRelations = relations(
+    clanSeasonMembersTable,
+    ({ one }) => ({
+        clan: one(clansTable, {
+            fields: [clanSeasonMembersTable.clanId],
+            references: [clansTable.id],
+        }),
+        user: one(usersTable, {
+            fields: [clanSeasonMembersTable.userId],
+            references: [usersTable.id],
+        }),
+    }),
+);
 
 export const clanLeaveHistoryRelations = relations(clanLeaveHistoryTable, ({ one }) => ({
     user: one(usersTable, {

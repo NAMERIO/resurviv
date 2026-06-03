@@ -22,6 +22,7 @@ class Smoke implements AbstractObject {
     m_layer!: number;
     m_interior!: number;
     m_isFoam!: boolean;
+    m_isPoison!: boolean;
 
     m_init() {}
     m_free() {
@@ -42,6 +43,7 @@ class Smoke implements AbstractObject {
             this.m_layer = data.layer;
             this.m_interior = data.interior;
             this.m_isFoam = data.isFoam;
+            this.m_isPoison = data.isPoison;
         }
 
         if (isNew) {
@@ -52,6 +54,7 @@ class Smoke implements AbstractObject {
                 this.m_layer,
                 this.m_interior,
                 this.m_isFoam,
+                this.m_isPoison,
             );
         }
         this.m_particle!.posTarget = v2.copy(this.m_pos);
@@ -95,6 +98,15 @@ export class SmokeParticle {
     layer!: number;
     interior!: number;
     isFoam!: boolean;
+    isPoison!: boolean;
+    poisonDots: Array<{
+        sprite: PIXI.Sprite;
+        offset: Vec2;
+        ticker: number;
+        life: number;
+        rise: number;
+        scale: number;
+    }> = [];
 
     constructor() {
         this.sprite.anchor = new PIXI.Point(0.5, 0.5) as PIXI.ObservablePoint;
@@ -107,6 +119,7 @@ export class SmokeParticle {
         layer: number,
         interior: number,
         isFoam: boolean = false,
+        isPoison: boolean = false,
     ) {
         this.pos = v2.copy(pos);
         this.posTarget = v2.copy(this.pos);
@@ -118,11 +131,34 @@ export class SmokeParticle {
         this.fadeTicker = 0;
         this.fadeDuration = util.random(0.5, 0.75);
         this.isFoam = isFoam;
+        this.isPoison = isPoison;
+        for (const dot of this.poisonDots) {
+            dot.sprite.visible = false;
+        }
         if (isFoam) {
             const foamImg =
                 foamParticles[Math.floor(Math.random() * foamParticles.length)];
             this.sprite.texture = PIXI.Texture.from(foamImg);
             this.tint = 0x00ffffff;
+        } else if (isPoison) {
+            const foamImg =
+                foamParticles[Math.floor(Math.random() * foamParticles.length)];
+            this.sprite.texture = PIXI.Texture.from(foamImg);
+            this.tint = util.rgbToInt(util.hsvToRgb(0.3, 0.9, util.random(0.45, 0.68)));
+            if (this.poisonDots.length === 0) {
+                for (let i = 0; i < 120; i++) {
+                    const sprite = PIXI.Sprite.from("foam1.img");
+                    sprite.anchor.set(0.5, 0.5);
+                    this.poisonDots.push({
+                        sprite,
+                        offset: util.randomPointInCircle(1),
+                        ticker: util.random(0, 1.6),
+                        life: util.random(1.1, 1.6),
+                        rise: util.random(0.35, 0.8),
+                        scale: util.random(0.035, 0.07),
+                    });
+                }
+            }
         } else {
             const smokeImg =
                 smokeParticles[Math.floor(Math.random() * smokeParticles.length)];
@@ -182,9 +218,9 @@ export class SmokeBarn {
                 p.fadeTicker += p.fade ? dt : 0;
                 p.active = p.fadeTicker < p.fadeDuration;
 
-                const kDefaultAlpha = p.isFoam ? 0.4 : 0.9;
-                const alpha =
-                    math.clamp(1 - p.fadeTicker / p.fadeDuration, 0, 1) * kDefaultAlpha;
+                const kDefaultAlpha = p.isFoam ? 0.4 : p.isPoison ? 0.38 : 0.9;
+                const fadeAlpha = math.clamp(1 - p.fadeTicker / p.fadeDuration, 0, 1);
+                const alpha = fadeAlpha * kDefaultAlpha;
 
                 // Always add to the top layer if visible and not occluded by
                 // the layer mask (fixes issue of smokes spawning on the ground
@@ -199,8 +235,9 @@ export class SmokeBarn {
                 ) {
                     layer |= 2;
                 }
-                const zOrd = p.interior ? 500 : 1000;
+                const zOrd = p.isPoison ? 10 : p.interior ? 500 : 1000;
                 renderer.addPIXIObj(p.sprite, layer, zOrd, p.zIdx);
+                const dotLayer = p.isPoison ? p.layer : layer;
 
                 const screenPos = camera.m_pointToScreen(p.pos);
                 const screenScale = camera.m_pixels((p.rad * 2) / camera.m_ppu);
@@ -210,7 +247,41 @@ export class SmokeBarn {
                 p.sprite.rotation = p.rot;
                 p.sprite.tint = p.tint;
                 p.sprite.alpha = alpha;
-                p.sprite.visible = p.active;
+                p.sprite.visible = p.active && !p.isPoison;
+
+                for (const dot of p.poisonDots) {
+                    if (!p.isPoison || !p.active) {
+                        dot.sprite.visible = false;
+                        continue;
+                    }
+                    dot.ticker += dt;
+                    if (dot.ticker >= dot.life) {
+                        dot.offset = util.randomPointInCircle(1);
+                        dot.ticker = 0;
+                        dot.life = util.random(1.1, 1.6);
+                        dot.rise = util.random(0.35, 0.8);
+                        dot.scale = util.random(0.035, 0.07);
+                    }
+                    const dotT = dot.ticker / dot.life;
+                    const dotPos = v2.add(
+                        p.pos,
+                        v2.add(
+                            v2.mul(dot.offset, p.rad * 0.88),
+                            v2.create(0, dot.rise * dotT),
+                        ),
+                    );
+                    const dotScreenPos = camera.m_pointToScreen(dotPos);
+                    const popT = math.min(dotT / 0.18, 1);
+                    const dotScale = camera.m_pixels(
+                        dot.scale * math.lerp(popT, 0.35, 1),
+                    );
+                    renderer.addPIXIObj(dot.sprite, dotLayer, 10, p.zIdx);
+                    dot.sprite.position.set(dotScreenPos.x, dotScreenPos.y);
+                    dot.sprite.scale.set(dotScale, dotScale);
+                    dot.sprite.tint = p.tint;
+                    dot.sprite.alpha = Math.sin(dotT * Math.PI) * 0.5 * fadeAlpha;
+                    dot.sprite.visible = true;
+                }
             }
         }
     }

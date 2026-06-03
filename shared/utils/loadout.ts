@@ -14,6 +14,9 @@ export type Item = {
     type: string;
     timeAcquired: number;
     source: string;
+    maker: string;
+    kills: number;
+    wins: number;
     status?: ItemStatus;
     ackd?: ItemStatus.Ackd;
 };
@@ -186,6 +189,9 @@ export const loadout = {
                 type: unlock,
                 source: "unlock_default",
                 timeAcquired: 0,
+                maker: "Stock",
+                kills: 0,
+                wins: 0,
                 ackd: loadout.ItemStatus.Ackd,
             });
         }
@@ -193,6 +199,9 @@ export const loadout = {
             type: "crosshair_custom_image",
             source: "custom",
             timeAcquired: 0,
+            maker: "Stock",
+            kills: 0,
+            wins: 0,
             ackd: loadout.ItemStatus.Ackd,
         });
         for (let i = 0; i < heroItems.length; i++) {

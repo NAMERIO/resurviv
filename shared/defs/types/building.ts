@@ -2,6 +2,13 @@ import type { AABB, Collider } from "../../utils/coldet";
 import type { Vec2 } from "../../utils/v2";
 import type { TerrainSpawnDef } from "../mapObjectsTyping";
 
+export interface SurfaceData {
+    isBright?: boolean;
+    noLava?: boolean;
+    waterColor?: number;
+    rippleColor?: number;
+}
+
 export interface BuildingDef {
     readonly type: "building";
     map?: {
@@ -21,9 +28,7 @@ export interface BuildingDef {
         surfaces: Array<{
             type: string;
             collision: AABB[];
-            data?: {
-                isBright: boolean;
-            };
+            data?: SurfaceData;
         }>;
         imgs: FloorImage[];
     };

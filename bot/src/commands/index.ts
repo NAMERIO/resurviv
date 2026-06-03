@@ -4,9 +4,15 @@ import {
     type SlashCommandOptionsOnlyBuilder,
 } from "discord.js";
 import {
+    zAddClanWarCgpBody,
+    zListFeaturedYoutubersBody,
+    zRemoveFeaturedYoutuberBody,
+    zSetBattlePassEndBody,
     zSetBattleRoyaleModeBody,
+    zSetClanCgpValueBody,
     zSetClientThemeBody,
     zSetGameModeBody,
+    zSetPauseClanStatsBody,
 } from "../../../server/src/utils/types";
 import {
     zBanAccountParams,
@@ -24,9 +30,14 @@ import {
 } from "../../../shared/types/moderation";
 import { Command } from "../utils";
 import { balanceHandler } from "./balance";
+import { blackjackHandler } from "./blackjack";
 import { coinFlipHandler } from "./coinflip";
+import { gpLeaderboardHandler } from "./gp-leaderboard";
 import { createCommand, createSlashCommand, genericExecute } from "./helpers";
+import { listGameModesHandler } from "./list-game-modes";
+import { searchIpHandler } from "./search-ip";
 import { searchPlayersHandler } from "./search-player";
+import { topRankPlayersHandler } from "./top-rank-players";
 
 /**
  * for generic commands that only makes an api call and return it's meessage
@@ -288,6 +299,135 @@ const commands = {
             },
         ],
     }),
+    [Command.AddCgp]: createCommand({
+        name: Command.AddCgp,
+        description: "Add clan war CGP to a clan",
+        optionValidator: zAddClanWarCgpBody,
+        isPrivateRoute: true,
+        ownerOrAdmin: true,
+        options: [
+            {
+                name: "clan",
+                description: "Clan name, slug, or id",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "amount",
+                description: "CGP amount to award",
+                required: true,
+                type: ApplicationCommandOptionType.Integer,
+            },
+            {
+                name: "opponent",
+                description: "Opponent clan name",
+                required: false,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "result",
+                description: "Result: win, loss, or draw",
+                required: false,
+                type: ApplicationCommandOptionType.String,
+            },
+        ],
+    }),
+    [Command.RemoveCgp]: createCommand({
+        name: Command.RemoveCgp,
+        description: "Remove clan war CGP from a clan",
+        optionValidator: zAddClanWarCgpBody,
+        isPrivateRoute: true,
+        ownerOrAdmin: true,
+        options: [
+            {
+                name: "clan",
+                description: "Clan name, slug, or id",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "amount",
+                description: "CGP amount to remove",
+                required: true,
+                type: ApplicationCommandOptionType.Integer,
+            },
+            {
+                name: "opponent",
+                description: "Adjustment note",
+                required: false,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "result",
+                description: "Result: win, loss, or draw",
+                required: false,
+                type: ApplicationCommandOptionType.String,
+            },
+        ],
+    }),
+    [Command.ClanWarCgp]: createCommand({
+        name: Command.ClanWarCgp,
+        description: "Add clan war CGP to a clan",
+        optionValidator: zAddClanWarCgpBody,
+        isPrivateRoute: true,
+        ownerOrAdmin: true,
+        options: [
+            {
+                name: "clan",
+                description: "Clan name, slug, or id",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "amount",
+                description: "CGP amount to award",
+                required: true,
+                type: ApplicationCommandOptionType.Integer,
+            },
+            {
+                name: "opponent",
+                description: "Opponent clan name",
+                required: false,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "result",
+                description: "Result: win, loss, or draw",
+                required: false,
+                type: ApplicationCommandOptionType.String,
+            },
+        ],
+    }),
+    [Command.SetKillCgp]: createCommand({
+        name: Command.SetKillCgp,
+        description: "Set CGP earned per kill",
+        optionValidator: zSetClanCgpValueBody,
+        isPrivateRoute: true,
+        ownerOnly: true,
+        options: [
+            {
+                name: "value",
+                description: "CGP per kill before multipliers",
+                required: true,
+                type: ApplicationCommandOptionType.Number,
+            },
+        ],
+    }),
+    [Command.SetWinCgp]: createCommand({
+        name: Command.SetWinCgp,
+        description: "Set CGP earned per win",
+        optionValidator: zSetClanCgpValueBody,
+        isPrivateRoute: true,
+        ownerOnly: true,
+        options: [
+            {
+                name: "value",
+                description: "CGP per win",
+                required: true,
+                type: ApplicationCommandOptionType.Number,
+            },
+        ],
+    }),
     [Command.SetGameMode]: createCommand({
         name: Command.SetGameMode,
         description: "Sets a game mode in the API",
@@ -299,6 +439,16 @@ const commands = {
                 description: "The mode index, e.g 0 for solo / first play button",
                 required: true,
                 type: ApplicationCommandOptionType.Integer,
+            },
+            {
+                name: "mode_type",
+                description: "deathmatch or br",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+                choices: [
+                    { name: "Deathmatch", value: "deathmatch" },
+                    { name: "Battle Royale", value: "br" },
+                ],
             },
             {
                 name: "map_name",
@@ -334,6 +484,35 @@ const commands = {
             },
         ],
     }),
+    [Command.SetPauseClanStats]: createCommand({
+        name: Command.SetPauseClanStats,
+        description: "Pause or resume clan kill and win tracking",
+        optionValidator: zSetPauseClanStatsBody,
+        isPrivateRoute: true,
+        options: [
+            {
+                name: "enabled",
+                description: "If clan stat tracking is paused",
+                required: true,
+                type: ApplicationCommandOptionType.Boolean,
+            },
+        ],
+    }),
+    [Command.BattlePassEnd]: createCommand({
+        name: Command.BattlePassEnd,
+        description: "Set the battle pass season end countdown",
+        optionValidator: zSetBattlePassEndBody,
+        isPrivateRoute: true,
+        ownerOnly: true,
+        options: [
+            {
+                name: "days",
+                description: "Days from now until the season ends",
+                required: true,
+                type: ApplicationCommandOptionType.Integer,
+            },
+        ],
+    }),
     [Command.SetClientTheme]: createCommand({
         name: Command.SetClientTheme,
         description: "Sets the client theme in the API",
@@ -348,8 +527,41 @@ const commands = {
             },
         ],
     }),
+    [Command.FuturedYoutubers]: createCommand({
+        name: Command.FuturedYoutubers,
+        description: "List featured YouTubers",
+        optionValidator: zListFeaturedYoutubersBody,
+        isPrivateRoute: true,
+        ownerOnly: true,
+        options: [],
+    }),
+    [Command.RemoveFuturedYoutubers]: createCommand({
+        name: Command.RemoveFuturedYoutubers,
+        description: "Remove a featured YouTuber by name",
+        optionValidator: zRemoveFeaturedYoutuberBody,
+        isPrivateRoute: true,
+        ownerOnly: true,
+        options: [
+            {
+                name: "name",
+                description: "Featured YouTuber name to remove",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+            },
+        ],
+    }),
 } as unknown as Record<
-    Exclude<Command, "search_player" | "coinflip" | "balance">,
+    Exclude<
+        Command,
+        | "search_player"
+        | "search_ip"
+        | "coinflip"
+        | "blackjack"
+        | "balance"
+        | "gp_leaderboard"
+        | "rank_leadrboard"
+        | "list_game_modes"
+    >,
     ReturnType<typeof createCommand>
 >;
 
@@ -368,14 +580,20 @@ export const commandHandlers: CommandHandlers = (
                 commands[key].optionValidator,
                 commands[key].isPrivateRoute,
                 commands[key].ownerOnly,
+                commands[key].ownerOrAdmin,
             );
         return obj;
     },
     {
         // add non generic commands here
         [Command.SearchPlayer]: searchPlayersHandler.execute,
+        [Command.SearchIp]: searchIpHandler.execute,
         [Command.CoinFlip]: coinFlipHandler.execute,
+        [Command.Blackjack]: blackjackHandler.execute,
         [Command.Balance]: balanceHandler.execute,
+        [Command.GpLeaderboard]: gpLeaderboardHandler.execute,
+        [Command.TopRankPlayers]: topRankPlayersHandler.execute,
+        [Command.ListGameModes]: listGameModesHandler.execute,
     } as CommandHandlers,
 );
 
@@ -383,6 +601,11 @@ export const commandsToRegister: SlashCommandOptionsOnlyBuilder[] = [
     ...Object.values(commands).map(createSlashCommand),
     // add non generic commands here
     searchPlayersHandler.command,
+    searchIpHandler.command,
     coinFlipHandler.command,
+    blackjackHandler.command,
     balanceHandler.command,
+    gpLeaderboardHandler.command,
+    topRankPlayersHandler.command,
+    listGameModesHandler.command,
 ];

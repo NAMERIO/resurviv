@@ -222,6 +222,7 @@ a.nav-link-bright:hover {
   font-weight: bold;
   text-shadow: 2px 2px 2px black;
 }
+
 @media (max-width: 823px) {
   .leaderboard-title {
     font-size: 32px;
@@ -438,6 +439,17 @@ table.player-stats-overview td {
   text-align: center;
   text-shadow: 2px 2px 2px black;
 }
+table.player-stats-overview th:first-child,
+table.player-stats-overview td:first-child {
+  padding-right: 20px;
+}
+table.player-stats-overview th:nth-child(2),
+table.player-stats-overview td:nth-child(2),
+table.player-stats-overview th:nth-child(3),
+table.player-stats-overview td:nth-child(3) {
+  position: relative;
+  right: 6px;
+}
 @media (max-width: 823px) {
   table.player-stats-overview td {
     font-size: 18px;
@@ -642,6 +654,19 @@ table.player-stats-overview td {
   background-color: #445c30;
 }
 
+.card-mode-stats-only {
+  min-height: 325px;
+}
+
+.card-mode-stats-only > .card-body {
+  display: flex;
+}
+
+.card-mode-stats-only > .card-body > .row {
+  align-content: space-around;
+  flex: 1;
+}
+
 .card-mode-bg-0 {
   background-color: #3498db;
 }
@@ -744,11 +769,13 @@ table.player-stats-overview td {
   background-image: url("/img/ui/history.svg");
 }
 
-/*
 .extra-weapons {
-  background-image: url("/img/ui/gun.svg");
+  background-image: url("/img/loot/loot-weapon-m9.svg");
+  background-position: center 33px;
+  background-size: 50px;
 }
 
+/*
 .extra-misc {
   background-image: url("/img/loot/loot-medical-soda.svg");
 }
@@ -765,6 +792,60 @@ table.player-stats-overview td {
   font-weight: bold;
   height: 36px;
   padding-left: 44px;
+}
+
+.weapon-history-row {
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-left: 10px solid rgba(255, 255, 255, 0.7);
+  color: white;
+  display: grid;
+  grid-template-columns: 76px minmax(180px, 1fr) repeat(4, minmax(100px, 0.75fr));
+  margin-top: 8px;
+  min-height: 104px;
+  padding: 8px 16px;
+}
+
+.weapon-history-icon {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 56px;
+  margin-right: 16px;
+  width: 76px;
+}
+
+.weapon-history-name {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.weapon-history-name span,
+.weapon-history-stat span {
+  color: #c8c8c8;
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.weapon-history-stat {
+  text-align: center;
+}
+
+.weapon-history-stat strong {
+  display: block;
+  font-size: 28px;
+  margin-top: 12px;
+}
+
+@media (max-width: 992px) {
+  .weapon-history-list {
+    overflow-x: auto;
+  }
+
+  .weapon-history-row {
+    min-width: 820px;
+  }
 }
 
 .extra-team-mode-filter {

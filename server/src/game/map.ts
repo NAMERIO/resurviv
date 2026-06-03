@@ -5,6 +5,7 @@ import type {
     BuildingDef,
     ObstacleDef,
     StructureDef,
+    SurfaceData,
 } from "../../../shared/defs/mapObjectsTyping";
 import type { MapId } from "../../../shared/defs/types/misc";
 import { GameConfig, GasMode, TeamMode } from "../../../shared/gameConfig";
@@ -209,6 +210,7 @@ export class GameMap {
     desertMode: boolean;
     potatoMode: boolean;
     sniperMode: boolean;
+    amongUsMode: boolean;
 
     mapStream = new MsgStream(new ArrayBuffer(1 << 16));
 
@@ -302,6 +304,7 @@ export class GameMap {
         this.desertMode = !!this.mapDef.gameMode.desertMode;
         this.potatoMode = !!this.mapDef.gameMode.potatoMode;
         this.sniperMode = !!this.mapDef.gameMode.sniperMode;
+        this.amongUsMode = !!this.mapDef.gameMode.amongUsMode;
 
         this.center = v2.create(this.width / 2, this.height / 2);
         this.grassInset = mapConfig.grassInset;
@@ -1117,10 +1120,7 @@ export class GameMap {
                 this.genOnWaterEdge(type);
             } else if (def.terrain?.river) {
                 // this.genOnRiver(type);
-            } else if (
-                def.terrain?.bridge ||
-                this.getBattleRoyaleBridgeSpawn(type)
-            ) {
+            } else if (def.terrain?.bridge || this.getBattleRoyaleBridgeSpawn(type)) {
                 this.genBridge(type);
             } else if (def.terrain?.grass) {
                 try {
@@ -1317,10 +1317,7 @@ export class GameMap {
                     v2.mul(dir, dims.length * 1.5),
                     v2.mul(v2.perp(dir), dims.width * nearbyWidthMult),
                 );
-                const col = collider.createAabbExtents(
-                    v2.create(0, 0),
-                    v2.mul(ext, 0.5),
-                );
+                const col = collider.createAabbExtents(v2.create(0, 0), v2.mul(ext, 0.5));
                 return collider.transform(col, bridgePos, bridgeRot, 1) as AABB;
             };
 
@@ -1972,7 +1969,13 @@ export class GameMap {
         return obstacle;
     }
 
-    genOutfitObstacle(type: string, player: Player) {
+    genOutfitObstacle(
+        type: string,
+        player: Player,
+        ori = 0,
+        scale?: number,
+        isPropDisguise = false,
+    ) {
         const def = MapObjectDefs[type] as ObstacleDef;
 
         const obstacle = new Obstacle(
@@ -1980,11 +1983,12 @@ export class GameMap {
             player.pos,
             type,
             player.layer,
-            0,
-            def.scale.createMax,
+            ori,
+            scale ?? def.scale.createMax,
             undefined,
             undefined,
             true,
+            isPropDisguise,
         );
         obstacle.skinPlayerId = player.__id;
         this.game.objectRegister.register(obstacle);
@@ -1993,6 +1997,24 @@ export class GameMap {
             this.dynamicObstacles.push(obstacle);
         }
         return obstacle;
+    }
+
+    genOutfitDecal(type: string, player: Player, ori = 0, scale?: number) {
+        const decal = this.game.decalBarn.addDecal(
+            type,
+            player.pos,
+            player.layer,
+            ori,
+            scale,
+            true,
+            true,
+        );
+        decal.skinPlayerId = player.__id;
+        return decal;
+    }
+
+    genOutfitLoot(type: string, player: Player, count = 1) {
+        return this.game.lootBarn.addSkinLoot(type, player, count);
     }
 
     perkModeTwinsBunker?: Building;
@@ -2196,13 +2218,26 @@ export class GameMap {
     }
 
     getSpawnPos(group?: Group, team?: Team): Vec2 {
-        if (Config.debug.spawnMode === "fixed") {
+        if (Config.debug.spawnMode === "fixed" && !this.amongUsMode) {
             return v2.copy(Config.debug.spawnPos ?? this.center);
         }
 
         let getPos: () => Vec2;
 
-        if (this.game.gas.mode == GasMode.Moving) {
+        const amongUsSpawnOffsets = this.mapDef.gameMode.amongUsSpawnOffsets;
+        if (this.amongUsMode && amongUsSpawnOffsets?.length) {
+            getPos = () => {
+                const offset =
+                    amongUsSpawnOffsets[
+                        util.randomInt(0, amongUsSpawnOffsets.length - 1)
+                    ];
+                return v2.add(this.center, offset);
+            };
+        } else if (this.amongUsMode) {
+            getPos = () => {
+                return v2.add(this.center, util.randomPointInCircle(24));
+            };
+        } else if (this.game.gas.mode == GasMode.Moving) {
             getPos = () => {
                 return v2.add(
                     this.game.gas.currentPos,
@@ -2246,10 +2281,20 @@ export class GameMap {
                 return v2.add(pos, util.randomPointInCircle(rad));
             };
         }
-        return this.getRandomSpawnPos(getPos, group, team);
+        return this.getRandomSpawnPos(
+            getPos,
+            group,
+            team,
+            amongUsSpawnOffsets?.length ? GameConfig.player.radius * 2 : undefined,
+        );
     }
 
-    getRandomSpawnPos(getPos: () => Vec2, group?: Group, team?: Team): Vec2 {
+    getRandomSpawnPos(
+        getPos: () => Vec2,
+        group?: Group,
+        team?: Team,
+        minPlayerSpawnRad?: number,
+    ): Vec2 {
         let pos = getPos();
 
         this.trySpawn(
@@ -2266,7 +2311,10 @@ export class GameMap {
                     if (group && player.groupId === group.id) continue;
                     if (team && player.teamId === team.id) continue;
 
-                    if (v2.distance(player.pos, pos) < GameConfig.player.minSpawnRad) {
+                    const minSpawnRad =
+                        minPlayerSpawnRad ??
+                        (this.amongUsMode ? 6 : GameConfig.player.minSpawnRad);
+                    if (v2.distance(player.pos, pos) < minSpawnRad) {
                         return false;
                     }
                 }
@@ -2304,7 +2352,11 @@ export class GameMap {
     canPlayerSpawn(pos: Vec2) {
         const circle = collider.createCircle(pos, GameConfig.player.radius);
 
-        if (this.isOnWater(pos, 0)) {
+        if (this.game.gas.mode !== GasMode.Inactive && this.game.gas.isInGas(pos)) {
+            return false;
+        }
+
+        if (!this.amongUsMode && this.isOnWater(pos, 0)) {
             return false;
         }
 
@@ -2318,6 +2370,8 @@ export class GameMap {
                     return false;
                 }
             } else if (obj.__type === ObjectType.Building) {
+                if (this.amongUsMode) continue;
+
                 for (let j = 0; j < obj.surfaces.length; j++) {
                     const surface = obj.surfaces[j];
                     for (let k = 0; k < surface.colliders.length; k++) {
@@ -2351,8 +2405,8 @@ export class GameMap {
     }
 
     getGroundSurface(pos: Vec2, layer: number) {
-        const groundSurface = (type: string, river?: River) => {
-            return { type, river };
+        const groundSurface = (type: string, data: SurfaceData = {}, river?: River) => {
+            return { type, data, river };
         };
 
         const objs = this.game.grid.intersectPos(pos);
@@ -2369,7 +2423,7 @@ export class GameMap {
                 util.sameLayer(decal.layer, layer) &&
                 collider.intersectCircle(decal.collider!, pos, 0.0001)
             ) {
-                return groundSurface(decal.surface);
+                return groundSurface(decal.surface, decal.surfaceData);
             }
         }
 
@@ -2405,7 +2459,7 @@ export class GameMap {
         }
 
         if (surface) {
-            return groundSurface(surface.type);
+            return groundSurface(surface.type, surface.data);
         }
 
         // Check rivers
@@ -2420,7 +2474,7 @@ export class GameMap {
                 ) {
                     onRiverShore = true;
                     if (math.pointInsidePolygon(pos, river.waterPoly)) {
-                        return groundSurface("water", river);
+                        return groundSurface("water", {}, river);
                     }
                 }
             }
@@ -2439,8 +2493,17 @@ export class GameMap {
         return groundSurface("water");
     }
 
+    isOnLava(pos: Vec2, layer: number) {
+        const surface = this.getGroundSurface(pos, layer);
+        return surface.type === "water" && !surface.data.noLava;
+    }
+
     // like getGroundSurface but optimized for water
     isOnWater(pos: Vec2, layer: number) {
+        if (this.amongUsMode) {
+            return false;
+        }
+
         const objs = this.game.grid.intersectPos(pos);
 
         // Check decals

@@ -2,13 +2,16 @@ import { and, asc, count, desc, eq, gt, lt, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import slugify from "slugify";
 import {
+    type CancelClanJoinRequestResponse,
     ClanConstants,
     type ClanDetail,
     type ClanInfo,
+    type ClanJoinRequest,
     type ClanLeaderboardResponse,
     type ClanMember,
     type ClanMessage,
     ClanTagColorRegex,
+    type ClanWarHistoryEntry,
     type CreateClanResponse,
     type DeleteClanMessageResponse,
     type DeleteClanResponse,
@@ -21,11 +24,14 @@ import {
     type KlipyGifPickerItem,
     type LeaveClanResponse,
     type ListClansResponse,
+    type RequestJoinClanResponse,
     type ResolveKlipyGifResponse,
+    type RespondClanJoinRequestResponse,
     type SearchKlipyGifsResponse,
     type SendClanMessageResponse,
     type TransferOwnershipResponse,
     type UpdateClanResponse,
+    zCancelClanJoinRequest,
     zClanLeaderboardRequest,
     zCreateClanRequest,
     zDeleteClanMessageRequest,
@@ -35,12 +41,17 @@ import {
     zJoinClanRequest,
     zKickMemberRequest,
     zListClansRequest,
+    zRequestJoinClanRequest,
     zResolveKlipyGifRequest,
+    zResolveLobbyKlipyGifRequest,
+    zRespondClanJoinRequest,
     zSearchKlipyGifsRequest,
+    zSearchLobbyKlipyGifsRequest,
     zSendClanMessageRequest,
     zTransferOwnershipRequest,
     zUpdateClanRequest,
 } from "../../../../../shared/types/clan";
+import { ALL_GAME_MODE_STATUS } from "../../../../../shared/types/stats";
 import { Config } from "../../../config";
 import { checkForBadWords, validateUserName } from "../../../utils/serverHelpers";
 import { server } from "../../apiServer";
@@ -52,11 +63,14 @@ import {
 } from "../../auth/middleware";
 import { db } from "../../db";
 import {
+    clanJoinRequestsTable,
     clanLeaveHistoryTable,
     clanMemberStatsTable,
     clanMembersTable,
     clanMessagesTable,
+    clanSeasonMembersTable,
     clansTable,
+    clanWarHistoryTable,
     usersTable,
 } from "../../db/schema";
 import type { Context } from "../../index";
@@ -70,6 +84,54 @@ ClanRouter.use(authMiddleware);
 const CLAN_SYSTEM_AUTHOR_NAME = "Big Brother";
 const CLAN_SYSTEM_AUTHOR_SLUG = "big-brother";
 const CLAN_SYSTEM_AUTHOR_ICON = "emote_police";
+
+const getRequestedSeason = (season?: number): number =>
+    season ?? ClanConstants.CurrentSeason;
+
+function calculateTotalCgp(cgpMilli: number, clanWarCgp: number) {
+    const earnedCgp = (Number(cgpMilli) || 0) / ClanConstants.CgpScale;
+    const warCgp = Number(clanWarCgp) || 0;
+
+    return Number((earnedCgp + warCgp).toFixed(2));
+}
+
+function toStatNumber(value: unknown) {
+    return Number(value) || 0;
+}
+
+function cgpScoreSql(season: number, gameMode?: string) {
+    const gameModeFilter = gameMode
+        ? sql`AND clan_member_stats.game_mode = ${gameMode}`
+        : sql``;
+
+    return sql<number>`(
+        COALESCE((
+            SELECT SUM(kill_cgp_milli + win_cgp_milli) FROM clan_member_stats
+            WHERE clan_member_stats.clan_id = clans.id
+            AND clan_member_stats.season = ${season}
+            ${gameModeFilter}
+        ), 0)
+        + COALESCE((
+            SELECT SUM(cgp_awarded) FROM clan_war_history
+            WHERE clan_war_history.clan_id = clans.id
+            AND clan_war_history.season = ${season}
+        ), 0) * ${ClanConstants.CgpScale}
+    )`;
+}
+
+function clanRankOrder(scoreSql: ReturnType<typeof cgpScoreSql>) {
+    return [desc(scoreSql), asc(clansTable.createdAt), asc(clansTable.id)] as const;
+}
+
+async function getPlayoffClanIds(season: number) {
+    const rows = await db
+        .select({ id: clansTable.id })
+        .from(clansTable)
+        .orderBy(...clanRankOrder(cgpScoreSql(season)))
+        .limit(ClanConstants.PlayoffClanCount);
+
+    return new Set(rows.map((row) => row.id));
+}
 
 function sanitizeClanSlug(name: string): string {
     let slug = slugify(
@@ -145,6 +207,19 @@ async function getClanMemberUserIds(clanId: string) {
         .where(eq(clanMembersTable.clanId, clanId));
 
     return rows.map((row) => row.userId);
+}
+
+async function userHasPendingClanRequest(clanId: string, userId?: string | null) {
+    if (!userId) return false;
+
+    const request = await db.query.clanJoinRequestsTable.findFirst({
+        where: and(
+            eq(clanJoinRequestsTable.clanId, clanId),
+            eq(clanJoinRequestsTable.userId, userId),
+        ),
+    });
+
+    return !!request;
 }
 
 type KlipyGifResult = {
@@ -429,7 +504,13 @@ function toKlipyAdResult(result: KlipyApiGifObject): KlipyAdResult | null {
         getStringValue(ad, ["iframe_url", "iframeUrl", "iframe", "ad_url"]),
     );
     const imageUrl = normalizeKlipyExternalUrl(
-        getStringValue(ad, ["image_url", "imageUrl", "image", "thumbnail", "thumbnail_url"]),
+        getStringValue(ad, [
+            "image_url",
+            "imageUrl",
+            "image",
+            "thumbnail",
+            "thumbnail_url",
+        ]),
     );
     const clickUrl = normalizeKlipyExternalUrl(
         getStringValue(ad, ["click_url", "clickUrl", "target_url", "targetUrl", "url"]),
@@ -564,9 +645,7 @@ async function fetchKlipyGifPickerItems(options: {
 
         return (results || [])
             .map(toPickerItem)
-            .filter(
-                (item): item is KlipyGifPickerContentResult => item?.type === "gif",
-            );
+            .filter((item): item is KlipyGifPickerContentResult => item?.type === "gif");
     };
 
     const fetchAdItem = async () => {
@@ -582,7 +661,10 @@ async function fetchKlipyGifPickerItems(options: {
         }
     };
 
-    const [contentItems, adItem] = await Promise.all([fetchContentItems(), fetchAdItem()]);
+    const [contentItems, adItem] = await Promise.all([
+        fetchContentItems(),
+        fetchAdItem(),
+    ]);
     const pickerItems: KlipyGifPickerItem[] = [...contentItems];
     if (adItem && pickerItems.length >= 3) {
         pickerItems.splice(3, 0, adItem);
@@ -717,25 +799,129 @@ async function getClanMessageById(messageId: string) {
     return rows[0] ? toClanMessage(rows[0]) : null;
 }
 
-async function getClanInfo(clanId: string): Promise<ClanInfo | null> {
+async function trackClanSeasonMember(clanId: string, userId: string) {
+    await db
+        .insert(clanSeasonMembersTable)
+        .values({
+            clanId,
+            userId,
+            season: ClanConstants.CurrentSeason,
+        })
+        .onConflictDoUpdate({
+            target: [
+                clanSeasonMembersTable.clanId,
+                clanSeasonMembersTable.userId,
+                clanSeasonMembersTable.season,
+            ],
+            set: {
+                leftAt: null,
+            },
+        });
+}
+
+async function addClanMember(clanId: string, userId: string, username: string) {
+    await db.insert(clanMembersTable).values({
+        clanId,
+        userId,
+    });
+
+    await trackClanSeasonMember(clanId, userId);
+
+    await db
+        .insert(clanMemberStatsTable)
+        .values({
+            clanId,
+            userId,
+            season: ClanConstants.CurrentSeason,
+            kills: 0,
+            wins: 0,
+            killCgpMilli: 0,
+            winCgpMilli: 0,
+        })
+        .onConflictDoNothing();
+
+    await db
+        .delete(clanJoinRequestsTable)
+        .where(eq(clanJoinRequestsTable.userId, userId));
+
+    await createClanSystemMessage(
+        clanId,
+        userId,
+        "member_join",
+        `${username} joined the clan.`,
+    );
+}
+
+async function closeClanSeasonMember(clanId: string, userId: string) {
+    await db
+        .update(clanSeasonMembersTable)
+        .set({ leftAt: new Date() })
+        .where(
+            and(
+                eq(clanSeasonMembersTable.clanId, clanId),
+                eq(clanSeasonMembersTable.userId, userId),
+                eq(clanSeasonMembersTable.season, ClanConstants.CurrentSeason),
+            ),
+        );
+}
+
+async function getClanInfo(
+    clanId: string,
+    season: number = ClanConstants.CurrentSeason,
+    viewerUserId?: string | null,
+): Promise<ClanInfo | null> {
     const clan = await db.query.clansTable.findFirst({
         where: eq(clansTable.id, clanId),
     });
 
     if (!clan) return null;
 
-    const memberCountResult = await db
-        .select({ count: count() })
-        .from(clanMembersTable)
-        .where(eq(clanMembersTable.clanId, clanId));
+    const isCurrentSeason = season === ClanConstants.CurrentSeason;
+    const memberCountResult = isCurrentSeason
+        ? await db
+              .select({ count: count() })
+              .from(clanMembersTable)
+              .where(eq(clanMembersTable.clanId, clanId))
+        : await db
+              .select({ count: count() })
+              .from(clanSeasonMembersTable)
+              .where(
+                  and(
+                      eq(clanSeasonMembersTable.clanId, clanId),
+                      eq(clanSeasonMembersTable.season, season),
+                  ),
+              );
 
     const statsResult = await db
         .select({
             totalKills: sql<number>`COALESCE(SUM(${clanMemberStatsTable.kills}), 0)`,
             totalWins: sql<number>`COALESCE(SUM(${clanMemberStatsTable.wins}), 0)`,
+            totalCgpMilli: sql<number>`COALESCE(SUM(${clanMemberStatsTable.killCgpMilli} + ${clanMemberStatsTable.winCgpMilli}), 0)`,
         })
         .from(clanMemberStatsTable)
-        .where(eq(clanMemberStatsTable.clanId, clanId));
+        .where(
+            and(
+                eq(clanMemberStatsTable.clanId, clanId),
+                eq(clanMemberStatsTable.season, season),
+            ),
+        );
+    const clanWarStatsResult = await db
+        .select({
+            clanWarCgp: sql<number>`COALESCE(SUM(${clanWarHistoryTable.cgpAwarded}), 0)`,
+            clanWarsPlayed: count(),
+        })
+        .from(clanWarHistoryTable)
+        .where(
+            and(
+                eq(clanWarHistoryTable.clanId, clanId),
+                eq(clanWarHistoryTable.season, season),
+            ),
+        );
+    const playoffClanIds = await getPlayoffClanIds(season);
+    const totalKills = toStatNumber(statsResult[0]?.totalKills);
+    const totalWins = toStatNumber(statsResult[0]?.totalWins);
+    const totalCgpMilli = toStatNumber(statsResult[0]?.totalCgpMilli);
+    const clanWarCgp = toStatNumber(clanWarStatsResult[0]?.clanWarCgp);
 
     return {
         id: clan.id,
@@ -746,36 +932,79 @@ async function getClanInfo(clanId: string): Promise<ClanInfo | null> {
         memberCount: memberCountResult[0]?.count || 0,
         maxMembers: ClanConstants.MaxMembers,
         createdAt: clan.createdAt.getTime(),
-        totalKills: statsResult[0]?.totalKills || 0,
-        totalWins: statsResult[0]?.totalWins || 0,
+        totalCgp: calculateTotalCgp(totalCgpMilli, clanWarCgp),
+        totalKills,
+        totalWins,
+        clanWarCgp,
+        clanWarsPlayed: toStatNumber(clanWarStatsResult[0]?.clanWarsPlayed),
+        season,
+        isCurrentSeason,
+        playoffQualified: playoffClanIds.has(clan.id),
+        isLocked: clan.isLocked,
+        requestPending: await userHasPendingClanRequest(clan.id, viewerUserId),
     };
 }
 
-async function getClanDetail(clanId: string): Promise<ClanDetail | null> {
-    const clanInfo = await getClanInfo(clanId);
+async function getClanDetail(
+    clanId: string,
+    season: number = ClanConstants.CurrentSeason,
+    viewerUserId?: string | null,
+): Promise<ClanDetail | null> {
+    const clanInfo = await getClanInfo(clanId, season, viewerUserId);
     if (!clanInfo) return null;
 
-    const membersData = await db
-        .select({
-            odUserId: usersTable.id,
-            username: usersTable.username,
-            slug: usersTable.slug,
-            playerIcon: sql<string>`${usersTable.loadout}->>'player_icon'`,
-            joinedAt: clanMembersTable.joinedAt,
-            kills: sql<number>`COALESCE((
+    const membersData = clanInfo.isCurrentSeason
+        ? await db
+              .select({
+                  odUserId: usersTable.id,
+                  username: usersTable.username,
+                  slug: usersTable.slug,
+                  playerIcon: sql<string>`${usersTable.loadout}->>'player_icon'`,
+                  joinedAt: clanMembersTable.joinedAt,
+                  kills: sql<number>`COALESCE((
                 SELECT SUM(kills) FROM clan_member_stats
                 WHERE clan_member_stats.clan_id = ${clanMembersTable.clanId}
                 AND clan_member_stats.user_id = ${clanMembersTable.userId}
+                AND clan_member_stats.season = ${season}
             ), 0)`,
-            wins: sql<number>`COALESCE((
+                  wins: sql<number>`COALESCE((
                 SELECT SUM(wins) FROM clan_member_stats
                 WHERE clan_member_stats.clan_id = ${clanMembersTable.clanId}
                 AND clan_member_stats.user_id = ${clanMembersTable.userId}
+                AND clan_member_stats.season = ${season}
             ), 0)`,
-        })
-        .from(clanMembersTable)
-        .innerJoin(usersTable, eq(usersTable.id, clanMembersTable.userId))
-        .where(eq(clanMembersTable.clanId, clanId));
+              })
+              .from(clanMembersTable)
+              .innerJoin(usersTable, eq(usersTable.id, clanMembersTable.userId))
+              .where(eq(clanMembersTable.clanId, clanId))
+        : await db
+              .select({
+                  odUserId: usersTable.id,
+                  username: usersTable.username,
+                  slug: usersTable.slug,
+                  playerIcon: sql<string>`${usersTable.loadout}->>'player_icon'`,
+                  joinedAt: clanSeasonMembersTable.joinedAt,
+                  kills: sql<number>`COALESCE((
+                SELECT SUM(kills) FROM clan_member_stats
+                WHERE clan_member_stats.clan_id = ${clanSeasonMembersTable.clanId}
+                AND clan_member_stats.user_id = ${clanSeasonMembersTable.userId}
+                AND clan_member_stats.season = ${season}
+            ), 0)`,
+                  wins: sql<number>`COALESCE((
+                SELECT SUM(wins) FROM clan_member_stats
+                WHERE clan_member_stats.clan_id = ${clanSeasonMembersTable.clanId}
+                AND clan_member_stats.user_id = ${clanSeasonMembersTable.userId}
+                AND clan_member_stats.season = ${season}
+            ), 0)`,
+              })
+              .from(clanSeasonMembersTable)
+              .innerJoin(usersTable, eq(usersTable.id, clanSeasonMembersTable.userId))
+              .where(
+                  and(
+                      eq(clanSeasonMembersTable.clanId, clanId),
+                      eq(clanSeasonMembersTable.season, season),
+                  ),
+              );
 
     const members: ClanMember[] = membersData.map((m) => ({
         odUserId: m.odUserId,
@@ -790,9 +1019,69 @@ async function getClanDetail(clanId: string): Promise<ClanDetail | null> {
         },
     }));
 
+    if (clanInfo.isCurrentSeason) {
+        for (const member of members) {
+            await trackClanSeasonMember(clanId, member.odUserId);
+        }
+    }
+
+    const clanWarRows = await db
+        .select({
+            id: clanWarHistoryTable.id,
+            opponentClanName: clanWarHistoryTable.opponentClanName,
+            result: clanWarHistoryTable.result,
+            cgpAwarded: clanWarHistoryTable.cgpAwarded,
+            createdAt: clanWarHistoryTable.createdAt,
+        })
+        .from(clanWarHistoryTable)
+        .where(
+            and(
+                eq(clanWarHistoryTable.clanId, clanId),
+                eq(clanWarHistoryTable.season, season),
+            ),
+        )
+        .orderBy(desc(clanWarHistoryTable.createdAt))
+        .limit(20);
+
+    const clanWarHistory: ClanWarHistoryEntry[] = clanWarRows.map((war) => ({
+        id: war.id,
+        opponentClanName: war.opponentClanName,
+        result: war.result,
+        cgpAwarded: war.cgpAwarded,
+        createdAt: war.createdAt.getTime(),
+    }));
+
+    const canViewRequests = !!viewerUserId && viewerUserId === clanInfo.ownerId;
+    const joinRequests: ClanJoinRequest[] = canViewRequests
+        ? (
+              await db
+                  .select({
+                      id: clanJoinRequestsTable.id,
+                      odUserId: usersTable.id,
+                      username: usersTable.username,
+                      slug: usersTable.slug,
+                      playerIcon: sql<string>`${usersTable.loadout}->>'player_icon'`,
+                      requestedAt: clanJoinRequestsTable.createdAt,
+                  })
+                  .from(clanJoinRequestsTable)
+                  .innerJoin(usersTable, eq(usersTable.id, clanJoinRequestsTable.userId))
+                  .where(eq(clanJoinRequestsTable.clanId, clanId))
+                  .orderBy(asc(clanJoinRequestsTable.createdAt))
+          ).map((request) => ({
+              id: request.id,
+              odUserId: request.odUserId,
+              username: request.username,
+              slug: request.slug,
+              playerIcon: request.playerIcon || "emote_surviv",
+              requestedAt: request.requestedAt.getTime(),
+          }))
+        : [];
+
     return {
         ...clanInfo,
         members,
+        clanWarHistory,
+        joinRequests,
     };
 }
 
@@ -821,7 +1110,11 @@ ClanRouter.post("/my_clan", async (c) => {
         });
     }
 
-    const clan = await getClanDetail(membership.clanId);
+    const clan = await getClanDetail(
+        membership.clanId,
+        ClanConstants.CurrentSeason,
+        user.id,
+    );
 
     return c.json<GetMyClanResponse>({
         success: true,
@@ -875,14 +1168,23 @@ ClanRouter.post("/create", validateParams(zCreateClanRequest), async (c) => {
         userId: user.id,
     });
 
+    await trackClanSeasonMember(newClan.id, user.id);
+
+    await db
+        .delete(clanJoinRequestsTable)
+        .where(eq(clanJoinRequestsTable.userId, user.id));
+
     await db.insert(clanMemberStatsTable).values({
         clanId: newClan.id,
         userId: user.id,
+        season: ClanConstants.CurrentSeason,
         kills: 0,
         wins: 0,
+        killCgpMilli: 0,
+        winCgpMilli: 0,
     });
 
-    const clanInfo = await getClanInfo(newClan.id);
+    const clanInfo = await getClanInfo(newClan.id, ClanConstants.CurrentSeason, user.id);
 
     return c.json<CreateClanResponse>({ success: true, clan: clanInfo! }, 201);
 });
@@ -938,28 +1240,145 @@ ClanRouter.post("/join", validateParams(zJoinClanRequest), async (c) => {
         return c.json<JoinClanResponse>({ success: false, error: "clan_full" }, 400);
     }
 
-    await db.insert(clanMembersTable).values({
-        clanId,
-        userId: user.id,
+    if (clan.isLocked) {
+        return c.json<JoinClanResponse>({ success: false, error: "clan_locked" }, 400);
+    }
+
+    await addClanMember(clanId, user.id, user.username);
+
+    const clanInfo = await getClanInfo(clanId, ClanConstants.CurrentSeason, user.id);
+
+    return c.json<JoinClanResponse>({ success: true, clan: clanInfo! });
+});
+
+ClanRouter.post("/request_join", validateParams(zRequestJoinClanRequest), async (c) => {
+    const user = c.get("user")!;
+    const { clanId } = c.req.valid("json");
+
+    const existingMembership = await db.query.clanMembersTable.findFirst({
+        where: eq(clanMembersTable.userId, user.id),
     });
 
-    await db.insert(clanMemberStatsTable).values({
+    if (existingMembership) {
+        return c.json<RequestJoinClanResponse>(
+            { success: false, error: "already_in_clan" },
+            400,
+        );
+    }
+
+    const lastLeave = await db.query.clanLeaveHistoryTable.findFirst({
+        where: eq(clanLeaveHistoryTable.userId, user.id),
+        orderBy: desc(clanLeaveHistoryTable.leftAt),
+    });
+
+    if (lastLeave) {
+        const cooldownEnd = lastLeave.leftAt.getTime() + ClanConstants.RejoinCooldownMs;
+        if (Date.now() < cooldownEnd) {
+            return c.json<RequestJoinClanResponse>(
+                {
+                    success: false,
+                    error: "cooldown_active",
+                    cooldownRemaining: cooldownEnd - Date.now(),
+                },
+                400,
+            );
+        }
+    }
+
+    const clan = await db.query.clansTable.findFirst({
+        where: eq(clansTable.id, clanId),
+    });
+
+    if (!clan) {
+        return c.json<RequestJoinClanResponse>(
+            { success: false, error: "clan_not_found" },
+            404,
+        );
+    }
+
+    const memberCount = await db
+        .select({ count: count() })
+        .from(clanMembersTable)
+        .where(eq(clanMembersTable.clanId, clanId));
+
+    if ((memberCount[0]?.count || 0) >= ClanConstants.MaxMembers) {
+        return c.json<RequestJoinClanResponse>(
+            { success: false, error: "clan_full" },
+            400,
+        );
+    }
+
+    const existingRequest = await db.query.clanJoinRequestsTable.findFirst({
+        where: and(
+            eq(clanJoinRequestsTable.clanId, clanId),
+            eq(clanJoinRequestsTable.userId, user.id),
+        ),
+    });
+
+    if (existingRequest) {
+        return c.json<RequestJoinClanResponse>(
+            { success: false, error: "already_requested" },
+            400,
+        );
+    }
+
+    await db.insert(clanJoinRequestsTable).values({
         clanId,
         userId: user.id,
-        kills: 0,
-        wins: 0,
     });
 
     await createClanSystemMessage(
         clanId,
         user.id,
         "member_join",
-        `${user.username} joined the clan.`,
+        `${user.username} requested to join the clan.`,
     );
 
-    const clanInfo = await getClanInfo(clanId);
+    server.notifyUsersSocialEvent([clan.ownerId], {
+        type: "clan_join_requests_changed",
+        clanId,
+    });
 
-    return c.json<JoinClanResponse>({ success: true, clan: clanInfo! });
+    return c.json<RequestJoinClanResponse>({
+        success: true,
+        requestPending: true,
+    });
+});
+
+ClanRouter.post("/cancel_request", validateParams(zCancelClanJoinRequest), async (c) => {
+    const user = c.get("user")!;
+    const { clanId } = c.req.valid("json");
+
+    const deleted = await db
+        .delete(clanJoinRequestsTable)
+        .where(
+            and(
+                eq(clanJoinRequestsTable.clanId, clanId),
+                eq(clanJoinRequestsTable.userId, user.id),
+            ),
+        )
+        .returning({
+            clanId: clanJoinRequestsTable.clanId,
+        });
+
+    if (deleted.length === 0) {
+        return c.json<CancelClanJoinRequestResponse>(
+            { success: false, error: "request_not_found" },
+            404,
+        );
+    }
+
+    const clan = await db.query.clansTable.findFirst({
+        where: eq(clansTable.id, clanId),
+    });
+    if (clan) {
+        server.notifyUsersSocialEvent([clan.ownerId], {
+            type: "clan_join_requests_changed",
+            clanId,
+        });
+    }
+
+    return c.json<CancelClanJoinRequestResponse>({ success: true });
 });
 
 ClanRouter.post("/leave", async (c) => {
@@ -993,14 +1412,7 @@ ClanRouter.post("/leave", async (c) => {
             ),
         );
 
-    await db
-        .delete(clanMemberStatsTable)
-        .where(
-            and(
-                eq(clanMemberStatsTable.clanId, membership.clanId),
-                eq(clanMemberStatsTable.userId, user.id),
-            ),
-        );
+    await closeClanSeasonMember(membership.clanId, user.id);
 
     await db.insert(clanLeaveHistoryTable).values({
         userId: user.id,
@@ -1070,15 +1482,7 @@ ClanRouter.post("/kick", validateParams(zKickMemberRequest), async (c) => {
             ),
         );
 
-    // Remove the kicked player's stats for this clan so they don't get duplicated on rejoin
-    await db
-        .delete(clanMemberStatsTable)
-        .where(
-            and(
-                eq(clanMemberStatsTable.clanId, clan.id),
-                eq(clanMemberStatsTable.userId, memberId),
-            ),
-        );
+    await closeClanSeasonMember(clan.id, memberId);
 
     await db.insert(clanLeaveHistoryTable).values({
         userId: memberId,
@@ -1088,7 +1492,7 @@ ClanRouter.post("/kick", validateParams(zKickMemberRequest), async (c) => {
         clan.id,
         memberId,
         "member_leave",
-        `${kickedUser?.username || "A member"} left the clan.`,
+        `${user.username} kicked ${kickedUser?.username || "a member"} from the clan.`,
     );
 
     return c.json<KickMemberResponse>({ success: true });
@@ -1142,9 +1546,95 @@ ClanRouter.post("/transfer", validateParams(zTransferOwnershipRequest), async (c
     return c.json<TransferOwnershipResponse>({ success: true });
 });
 
+ClanRouter.post(
+    "/respond_request",
+    validateParams(zRespondClanJoinRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { requestId, action } = c.req.valid("json");
+
+        const membership = await db.query.clanMembersTable.findFirst({
+            where: eq(clanMembersTable.userId, user.id),
+        });
+
+        if (!membership) {
+            return c.json<RespondClanJoinRequestResponse>(
+                { success: false, error: "not_owner" },
+                403,
+            );
+        }
+
+        const clan = await db.query.clansTable.findFirst({
+            where: eq(clansTable.id, membership.clanId),
+        });
+
+        if (!clan || clan.ownerId !== user.id) {
+            return c.json<RespondClanJoinRequestResponse>(
+                { success: false, error: "not_owner" },
+                403,
+            );
+        }
+
+        const request = await db.query.clanJoinRequestsTable.findFirst({
+            where: and(
+                eq(clanJoinRequestsTable.id, requestId),
+                eq(clanJoinRequestsTable.clanId, clan.id),
+            ),
+        });
+
+        if (!request) {
+            return c.json<RespondClanJoinRequestResponse>(
+                { success: false, error: "request_not_found" },
+                404,
+            );
+        }
+
+        if (action === "decline") {
+            await db
+                .delete(clanJoinRequestsTable)
+                .where(eq(clanJoinRequestsTable.id, request.id));
+            return c.json<RespondClanJoinRequestResponse>({ success: true });
+        }
+
+        const existingMembership = await db.query.clanMembersTable.findFirst({
+            where: eq(clanMembersTable.userId, request.userId),
+        });
+
+        if (existingMembership) {
+            await db
+                .delete(clanJoinRequestsTable)
+                .where(eq(clanJoinRequestsTable.id, request.id));
+            return c.json<RespondClanJoinRequestResponse>(
+                { success: false, error: "already_in_clan" },
+                400,
+            );
+        }
+
+        const memberCount = await db
+            .select({ count: count() })
+            .from(clanMembersTable)
+            .where(eq(clanMembersTable.clanId, clan.id));
+
+        if ((memberCount[0]?.count || 0) >= ClanConstants.MaxMembers) {
+            return c.json<RespondClanJoinRequestResponse>(
+                { success: false, error: "clan_full" },
+                400,
+            );
+        }
+
+        const requester = await db.query.usersTable.findFirst({
+            where: eq(usersTable.id, request.userId),
+        });
+
+        await addClanMember(clan.id, request.userId, requester?.username || "A member");
+
+        return c.json<RespondClanJoinRequestResponse>({ success: true });
+    },
+);
+
 ClanRouter.post("/update", validateParams(zUpdateClanRequest), async (c) => {
     const user = c.get("user")!;
-    const { name, icon, tagColor } = c.req.valid("json");
+    const { name, icon, tagColor, isLocked } = c.req.valid("json");
 
     const membership = await db.query.clanMembersTable.findFirst({
         where: eq(clanMembersTable.userId, user.id),
@@ -1167,6 +1657,7 @@ ClanRouter.post("/update", validateParams(zUpdateClanRequest), async (c) => {
         slug: string;
         icon: string;
         tagColor: string;
+        isLocked: boolean;
     }> = {};
 
     if (name && name !== clan.name) {
@@ -1206,11 +1697,19 @@ ClanRouter.post("/update", validateParams(zUpdateClanRequest), async (c) => {
         }
     }
 
+    if (isLocked !== undefined && isLocked !== clan.isLocked) {
+        updates.isLocked = isLocked;
+    }
+
     if (Object.keys(updates).length > 0) {
         await db.update(clansTable).set(updates).where(eq(clansTable.id, clan.id));
     }
 
-    const updatedClan = await getClanDetail(clan.id);
+    const updatedClan = await getClanDetail(
+        clan.id,
+        ClanConstants.CurrentSeason,
+        user.id,
+    );
 
     return c.json<UpdateClanResponse>({ success: true, clan: updatedClan! });
 });
@@ -1251,9 +1750,10 @@ ClanRouter.post("/delete", async (c) => {
 });
 
 ClanRouter.post("/get", validateParams(zGetClanRequest), async (c) => {
-    const { clanId } = c.req.valid("json");
+    const user = c.get("user")!;
+    const { clanId, season } = c.req.valid("json");
 
-    const clan = await getClanDetail(clanId);
+    const clan = await getClanDetail(clanId, getRequestedSeason(season), user.id);
 
     if (!clan) {
         return c.json<GetClanResponse>({ success: false, error: "clan_not_found" }, 404);
@@ -1413,80 +1913,153 @@ ClanRouter.post("/send_message", validateParams(zSendClanMessageRequest), async 
     });
 });
 
-ClanRouter.post("/resolve_klipy_gif", validateParams(zResolveKlipyGifRequest), async (c) => {
-    const user = c.get("user")!;
-    const { clanId, url } = c.req.valid("json");
+ClanRouter.post(
+    "/resolve_klipy_gif",
+    validateParams(zResolveKlipyGifRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { clanId, url } = c.req.valid("json");
 
-    const membership = await getUserMembership(user.id);
-    if (!membership || membership.clanId !== clanId) {
-        return c.json<ResolveKlipyGifResponse>(
-            { success: false, error: "not_in_clan" },
-            403,
-        );
-    }
+        const membership = await getUserMembership(user.id);
+        if (!membership || membership.clanId !== clanId) {
+            return c.json<ResolveKlipyGifResponse>(
+                { success: false, error: "not_in_clan" },
+                403,
+            );
+        }
 
-    if (!parseKlipyUrl(url)) {
-        return c.json<ResolveKlipyGifResponse>(
-            { success: false, error: "invalid_url" },
-            400,
-        );
-    }
+        if (!parseKlipyUrl(url)) {
+            return c.json<ResolveKlipyGifResponse>(
+                { success: false, error: "invalid_url" },
+                400,
+            );
+        }
 
-    try {
-        const gif = await resolveKlipyGif(url);
-        if (!gif) {
+        try {
+            const gif = await resolveKlipyGif(url);
+            if (!gif) {
+                return c.json<ResolveKlipyGifResponse>(
+                    { success: false, error: "not_found" },
+                    404,
+                );
+            }
+
+            return c.json<ResolveKlipyGifResponse>({ success: true, gif });
+        } catch {
             return c.json<ResolveKlipyGifResponse>(
                 { success: false, error: "not_found" },
                 404,
             );
         }
+    },
+);
 
-        return c.json<ResolveKlipyGifResponse>({ success: true, gif });
-    } catch {
-        return c.json<ResolveKlipyGifResponse>(
-            { success: false, error: "not_found" },
-            404,
-        );
-    }
-});
+ClanRouter.post(
+    "/search_klipy_gifs",
+    validateParams(zSearchKlipyGifsRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { clanId, query, section, limit, adMaxWidth, adMaxHeight } =
+            c.req.valid("json");
 
-ClanRouter.post("/search_klipy_gifs", validateParams(zSearchKlipyGifsRequest), async (c) => {
-    const user = c.get("user")!;
-    const { clanId, query, section, limit, adMaxWidth, adMaxHeight } =
-        c.req.valid("json");
+        const membership = await getUserMembership(user.id);
+        if (!membership || membership.clanId !== clanId) {
+            return c.json<SearchKlipyGifsResponse>(
+                { success: false, error: "not_in_clan" },
+                403,
+            );
+        }
 
-    const membership = await getUserMembership(user.id);
-    if (!membership || membership.clanId !== clanId) {
-        return c.json<SearchKlipyGifsResponse>(
-            { success: false, error: "not_in_clan" },
-            403,
-        );
-    }
+        if (!Config.secrets.KLIPY_API_KEY) {
+            return c.json<SearchKlipyGifsResponse>(
+                { success: false, error: "not_configured" },
+                500,
+            );
+        }
 
-    if (!Config.secrets.KLIPY_API_KEY) {
-        return c.json<SearchKlipyGifsResponse>(
-            { success: false, error: "not_configured" },
-            500,
-        );
-    }
+        try {
+            const gifs = await fetchKlipyGifPickerItems({
+                query,
+                section,
+                limit,
+                customerId: user.id,
+                adMaxWidth,
+                adMaxHeight,
+            });
+            return c.json<SearchKlipyGifsResponse>({ success: true, gifs });
+        } catch {
+            return c.json<SearchKlipyGifsResponse>(
+                { success: false, error: "not_found" },
+                404,
+            );
+        }
+    },
+);
 
-    try {
-        const gifs = await fetchKlipyGifPickerItems({
-            query,
-            section,
-            limit,
-            customerId: user.id,
-            adMaxWidth,
-            adMaxHeight,
-        });
-        return c.json<SearchKlipyGifsResponse>({ success: true, gifs });
-    } catch {
-        return c.json<SearchKlipyGifsResponse>(
-            { success: false, error: "not_found" },
-            404,
-        );
-    }
-});
+ClanRouter.post(
+    "/resolve_lobby_klipy_gif",
+    validateParams(zResolveLobbyKlipyGifRequest),
+    async (c) => {
+        const { url } = c.req.valid("json");
+
+        if (!parseKlipyUrl(url)) {
+            return c.json<ResolveKlipyGifResponse>(
+                { success: false, error: "invalid_url" },
+                400,
+            );
+        }
+
+        try {
+            const gif = await resolveKlipyGif(url);
+            if (!gif) {
+                return c.json<ResolveKlipyGifResponse>(
+                    { success: false, error: "not_found" },
+                    404,
+                );
+            }
+
+            return c.json<ResolveKlipyGifResponse>({ success: true, gif });
+        } catch {
+            return c.json<ResolveKlipyGifResponse>(
+                { success: false, error: "not_found" },
+                404,
+            );
+        }
+    },
+);
+
+ClanRouter.post(
+    "/search_lobby_klipy_gifs",
+    validateParams(zSearchLobbyKlipyGifsRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { query, section, limit, adMaxWidth, adMaxHeight } = c.req.valid("json");
+
+        if (!Config.secrets.KLIPY_API_KEY) {
+            return c.json<SearchKlipyGifsResponse>(
+                { success: false, error: "not_configured" },
+                500,
+            );
+        }
+
+        try {
+            const gifs = await fetchKlipyGifPickerItems({
+                query,
+                section,
+                limit,
+                customerId: user.id,
+                adMaxWidth,
+                adMaxHeight,
+            });
+            return c.json<SearchKlipyGifsResponse>({ success: true, gifs });
+        } catch {
+            return c.json<SearchKlipyGifsResponse>(
+                { success: false, error: "not_found" },
+                404,
+            );
+        }
+    },
+);
 
 ClanRouter.post("/edit_message", validateParams(zEditClanMessageRequest), async (c) => {
     const user = c.get("user")!;
@@ -1606,6 +2179,7 @@ ClanRouter.post(
 );
 
 ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
+    const user = c.get("user")!;
     const { page, limit, search } = c.req.valid("json");
 
     const offset = (page - 1) * limit;
@@ -1623,6 +2197,7 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
             name: clansTable.name,
             icon: clansTable.icon,
             tagColor: clansTable.tagColor,
+            isLocked: clansTable.isLocked,
             ownerId: clansTable.ownerId,
             createdAt: clansTable.createdAt,
             memberCount: sql<number>`(
@@ -1632,11 +2207,28 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
             totalKills: sql<number>`COALESCE((
                 SELECT SUM(kills) FROM clan_member_stats 
                 WHERE clan_member_stats.clan_id = clans.id
+                AND clan_member_stats.season = ${ClanConstants.CurrentSeason}
             ), 0)`,
             totalWins: sql<number>`COALESCE((
                 SELECT SUM(wins) FROM clan_member_stats 
                 WHERE clan_member_stats.clan_id = clans.id
+                AND clan_member_stats.season = ${ClanConstants.CurrentSeason}
             ), 0)`,
+            totalCgpMilli: sql<number>`COALESCE((
+                SELECT SUM(kill_cgp_milli + win_cgp_milli) FROM clan_member_stats
+                WHERE clan_member_stats.clan_id = clans.id
+                AND clan_member_stats.season = ${ClanConstants.CurrentSeason}
+            ), 0)`,
+            clanWarCgp: sql<number>`COALESCE((
+                SELECT SUM(cgp_awarded) FROM clan_war_history
+                WHERE clan_war_history.clan_id = clans.id
+                AND clan_war_history.season = ${ClanConstants.CurrentSeason}
+            ), 0)`,
+            clanWarsPlayed: sql<number>`(
+                SELECT COUNT(*) FROM clan_war_history
+                WHERE clan_war_history.clan_id = clans.id
+                AND clan_war_history.season = ${ClanConstants.CurrentSeason}
+            )`,
         })
         .from(clansTable)
         .where(search ? sql`${clansTable.name} ILIKE ${`%${search}%`}` : undefined)
@@ -1646,19 +2238,40 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
         ) DESC`)
         .limit(limit)
         .offset(offset);
+    const playoffClanIds = await getPlayoffClanIds(ClanConstants.CurrentSeason);
+    const pendingRequestRows = await db
+        .select({ clanId: clanJoinRequestsTable.clanId })
+        .from(clanJoinRequestsTable)
+        .where(eq(clanJoinRequestsTable.userId, user.id));
+    const pendingRequestClanIds = new Set(pendingRequestRows.map((row) => row.clanId));
 
-    const clans: ClanInfo[] = clansData.map((c) => ({
-        id: c.id,
-        name: c.name,
-        icon: c.icon,
-        tagColor: c.tagColor,
-        ownerId: c.ownerId,
-        memberCount: c.memberCount,
-        maxMembers: ClanConstants.MaxMembers,
-        createdAt: c.createdAt.getTime(),
-        totalKills: c.totalKills,
-        totalWins: c.totalWins,
-    }));
+    const clans: ClanInfo[] = clansData.map((c) => {
+        const totalKills = toStatNumber(c.totalKills);
+        const totalWins = toStatNumber(c.totalWins);
+        const totalCgpMilli = toStatNumber(c.totalCgpMilli);
+        const clanWarCgp = toStatNumber(c.clanWarCgp);
+
+        return {
+            id: c.id,
+            name: c.name,
+            icon: c.icon,
+            tagColor: c.tagColor,
+            ownerId: c.ownerId,
+            memberCount: toStatNumber(c.memberCount),
+            maxMembers: ClanConstants.MaxMembers,
+            createdAt: c.createdAt.getTime(),
+            totalCgp: calculateTotalCgp(totalCgpMilli, clanWarCgp),
+            totalKills,
+            totalWins,
+            clanWarCgp,
+            clanWarsPlayed: toStatNumber(c.clanWarsPlayed),
+            season: ClanConstants.CurrentSeason,
+            isCurrentSeason: true,
+            playoffQualified: playoffClanIds.has(c.id),
+            isLocked: c.isLocked,
+            requestPending: pendingRequestClanIds.has(c.id),
+        };
+    });
 
     return c.json<ListClansResponse>({
         clans,
@@ -1669,12 +2282,44 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
 });
 
 ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (c) => {
-    const { type, gameMode, page, limit } = c.req.valid("json");
+    const { type, gameMode, page, limit, season } = c.req.valid("json");
 
     const offset = (page - 1) * limit;
+    const statGameMode =
+        type === "cgp" || gameMode === ALL_GAME_MODE_STATUS ? undefined : gameMode;
+    const gameModeFilter = statGameMode
+        ? sql`AND clan_member_stats.game_mode = ${statGameMode}`
+        : sql``;
+    const memberCountSql =
+        season === ClanConstants.CurrentSeason
+            ? sql<number>`(
+                SELECT COUNT(*) FROM clan_members
+                WHERE clan_members.clan_id = clans.id
+            )`
+            : sql<number>`(
+                SELECT COUNT(*) FROM clan_season_members
+                WHERE clan_season_members.clan_id = clans.id
+                AND clan_season_members.season = ${season}
+            )`;
 
     const totalCountResult = await db.select({ count: count() }).from(clansTable);
     const totalCount = totalCountResult[0]?.count || 0;
+    const orderSql =
+        type === "cgp"
+            ? cgpScoreSql(season)
+            : type === "kills"
+              ? sql<number>`COALESCE((
+                    SELECT SUM(kills) FROM clan_member_stats
+                    WHERE clan_member_stats.clan_id = clans.id
+                    AND clan_member_stats.season = ${season}
+                    ${gameModeFilter}
+                ), 0)`
+              : sql<number>`COALESCE((
+                    SELECT SUM(wins) FROM clan_member_stats
+                    WHERE clan_member_stats.clan_id = clans.id
+                    AND clan_member_stats.season = ${season}
+                    ${gameModeFilter}
+                ), 0)`;
 
     const clansData = await db
         .select({
@@ -1682,57 +2327,75 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
             name: clansTable.name,
             icon: clansTable.icon,
             tagColor: clansTable.tagColor,
+            isLocked: clansTable.isLocked,
             ownerId: clansTable.ownerId,
             createdAt: clansTable.createdAt,
-            memberCount: sql<number>`(
-                SELECT COUNT(*) FROM clan_members 
-                WHERE clan_members.clan_id = clans.id
-            )`,
+            memberCount: memberCountSql,
             totalKills: sql<number>`COALESCE((
                 SELECT SUM(kills) FROM clan_member_stats 
                 WHERE clan_member_stats.clan_id = clans.id
-                AND clan_member_stats.game_mode = ${gameMode}
+                AND clan_member_stats.season = ${season}
+                ${gameModeFilter}
             ), 0)`,
             totalWins: sql<number>`COALESCE((
                 SELECT SUM(wins) FROM clan_member_stats 
                 WHERE clan_member_stats.clan_id = clans.id
-                AND clan_member_stats.game_mode = ${gameMode}
+                AND clan_member_stats.season = ${season}
+                ${gameModeFilter}
             ), 0)`,
+            totalCgpMilli: sql<number>`COALESCE((
+                SELECT SUM(kill_cgp_milli + win_cgp_milli) FROM clan_member_stats
+                WHERE clan_member_stats.clan_id = clans.id
+                AND clan_member_stats.season = ${season}
+                ${gameModeFilter}
+            ), 0)`,
+            clanWarCgp: sql<number>`COALESCE((
+                SELECT SUM(cgp_awarded) FROM clan_war_history
+                WHERE clan_war_history.clan_id = clans.id
+                AND clan_war_history.season = ${season}
+            ), 0)`,
+            clanWarsPlayed: sql<number>`(
+                SELECT COUNT(*) FROM clan_war_history
+                WHERE clan_war_history.clan_id = clans.id
+                AND clan_war_history.season = ${season}
+            )`,
         })
         .from(clansTable)
-        .orderBy(
-            desc(
-                type === "kills"
-                    ? sql<number>`COALESCE((
-                        SELECT SUM(kills) FROM clan_member_stats
-                        WHERE clan_member_stats.clan_id = clans.id
-                        AND clan_member_stats.game_mode = ${gameMode}
-                    ), 0)`
-                    : sql<number>`COALESCE((
-                        SELECT SUM(wins) FROM clan_member_stats
-                        WHERE clan_member_stats.clan_id = clans.id
-                        AND clan_member_stats.game_mode = ${gameMode}
-                    ), 0)`,
-            ),
-        )
+        .orderBy(...clanRankOrder(orderSql))
         .limit(limit)
         .offset(offset);
+    const playoffClanIds = await getPlayoffClanIds(season);
 
-    const entries = clansData.map((c, index) => ({
-        rank: offset + index + 1,
-        clan: {
-            id: c.id,
-            name: c.name,
-            icon: c.icon,
-            tagColor: c.tagColor,
-            ownerId: c.ownerId,
-            memberCount: c.memberCount,
-            maxMembers: ClanConstants.MaxMembers,
-            createdAt: c.createdAt.getTime(),
-            totalKills: c.totalKills,
-            totalWins: c.totalWins,
-        },
-    }));
+    const entries = clansData.map((c, index) => {
+        const totalKills = toStatNumber(c.totalKills);
+        const totalWins = toStatNumber(c.totalWins);
+        const totalCgpMilli = toStatNumber(c.totalCgpMilli);
+        const clanWarCgp = toStatNumber(c.clanWarCgp);
+
+        return {
+            rank: offset + index + 1,
+            clan: {
+                id: c.id,
+                name: c.name,
+                icon: c.icon,
+                tagColor: c.tagColor,
+                ownerId: c.ownerId,
+                memberCount: toStatNumber(c.memberCount),
+                maxMembers: ClanConstants.MaxMembers,
+                createdAt: c.createdAt.getTime(),
+                totalCgp: calculateTotalCgp(totalCgpMilli, clanWarCgp),
+                totalKills,
+                totalWins,
+                clanWarCgp,
+                clanWarsPlayed: toStatNumber(c.clanWarsPlayed),
+                season,
+                isCurrentSeason: season === ClanConstants.CurrentSeason,
+                playoffQualified: playoffClanIds.has(c.id),
+                isLocked: c.isLocked,
+                requestPending: false,
+            },
+        };
+    });
 
     return c.json<ClanLeaderboardResponse>({
         entries,

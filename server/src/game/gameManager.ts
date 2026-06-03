@@ -8,7 +8,9 @@ export abstract class GameManager {
 
     abstract getById(id: string): GameData | undefined;
 
-    abstract findGame(body: FindGamePrivateBody): Promise<string>;
+    abstract findGame(
+        body: FindGamePrivateBody,
+    ): Promise<{ gameId: string; forcedSpectator?: boolean }>;
 
     abstract kickPlayerByIP(encodedIp: string): void;
 

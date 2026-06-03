@@ -56,7 +56,9 @@ const BindDefs = {
     [GameInput.UseHealthKit]: def("Use Med Kit", inputKey(Key.Eight)),
     [GameInput.UseSoda]: def("Use Soda", inputKey(Key.Nine)),
     [GameInput.UsePainkiller]: def("Use Pills", inputKey(Key.Zero)),
+    [GameInput.UseNitroLace]: def("Use Nitro Lace", null),
     [GameInput.SwapWeapSlots]: def("Switch Gun Slots", inputKey(Key.T)),
+    [GameInput.ActivateStreak]: def("Activate Streak", null),
     [GameInput.ToggleMap]: def("Toggle Map", inputKey(Key.M)),
     [GameInput.CycleUIMode]: def("Toggle Minimap", inputKey(Key.V)),
     [GameInput.EmoteMenu]: def("Emote Menu", mouseButton(MouseButton.Right)),
@@ -66,6 +68,13 @@ const BindDefs = {
     [GameInput.HideUI]: def("Hide UI", null),
     [GameInput.TeamPingSingle]: def("Team Ping Menu", null),
 };
+
+const BindDisplayOrder = Object.keys(BindDefs)
+    .map(Number)
+    .filter(
+        (bind) => bind !== GameInput.UseNitroLace && bind !== GameInput.ActivateStreak,
+    )
+    .concat(GameInput.UseNitroLace, GameInput.ActivateStreak);
 
 export class InputBinds {
     binds: Array<InputValue | null> = [];
@@ -266,14 +275,13 @@ export class InputBindUi {
     }
 
     refresh() {
-        const defKeys = Object.keys(BindDefs);
         const binds = this.inputBinds.binds;
         const container = $(".js-keybind-list");
         container.empty();
-        for (let i = 0; i < defKeys.length; i++) {
-            const key = defKeys[i];
-            const bindDef = BindDefs[key as unknown as keyof typeof BindDefs];
-            const bind = binds[key as unknown as number];
+        for (let i = 0; i < BindDisplayOrder.length; i++) {
+            const bindIdx = BindDisplayOrder[i];
+            const bindDef = BindDefs[bindIdx as keyof typeof BindDefs];
+            const bind = binds[bindIdx];
             const nameKey =
                 "bind-" +
                 bindDef.name
@@ -328,7 +336,7 @@ export class InputBindUi {
                         if (inputValue.equals(inputKey(Key.Backspace))) {
                             bindValue = null;
                         }
-                        this.inputBinds.setBind(parseInt(key), bindValue);
+                        this.inputBinds.setBind(bindIdx, bindValue);
                         this.inputBinds.saveBinds();
                         this.refresh();
                     }

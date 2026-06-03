@@ -158,7 +158,9 @@ export class Group extends BasePlayerGroup {
 
     canJoin(players: number) {
         return (
-            !this.locked && this.maxPlayers - players >= 0 && !this.allDeadOrDisconnected
+            !this.locked &&
+            this.players.length + players <= this.maxPlayers &&
+            !this.allDeadOrDisconnected
         );
     }
 }

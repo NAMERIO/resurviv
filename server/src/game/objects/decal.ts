@@ -1,5 +1,5 @@
 import { MapObjectDefs } from "../../../../shared/defs/mapObjectDefs";
-import type { DecalDef } from "../../../../shared/defs/mapObjectsTyping";
+import type { DecalDef, SurfaceData } from "../../../../shared/defs/mapObjectsTyping";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
 import type { AABB, Circle } from "../../../../shared/utils/coldet";
 import { collider } from "../../../../shared/utils/collider";
@@ -27,8 +27,25 @@ export class DecalBarn {
         }
     }
 
-    addDecal(type: string, pos: Vec2, layer: number, ori?: number, scale?: number) {
-        const decal = new Decal(this.game, type, pos, layer, ori, scale);
+    addDecal(
+        type: string,
+        pos: Vec2,
+        layer: number,
+        ori?: number,
+        scale?: number,
+        isSkin?: boolean,
+        isPropDisguise?: boolean,
+    ) {
+        const decal = new Decal(
+            this.game,
+            type,
+            pos,
+            layer,
+            ori,
+            scale,
+            isSkin,
+            isPropDisguise,
+        );
         this.decals.push(decal);
         this.game.objectRegister.register(decal);
         return decal;
@@ -45,8 +62,15 @@ export class Decal extends BaseGameObject {
     goreKills = 0;
     ori: number;
     rot: number;
-    collider?: Circle;
+    collider!: Circle;
     surface?: string;
+    surfaceData?: SurfaceData;
+    height: number;
+    healthT = 1;
+    dead = false;
+    isSkin: boolean;
+    skinPlayerId?: number;
+    isPropDisguise: boolean;
 
     lifeTime = Infinity;
 
@@ -57,6 +81,8 @@ export class Decal extends BaseGameObject {
         layer: number,
         ori?: number,
         scale?: number,
+        isSkin?: boolean,
+        isPropDisguise?: boolean,
     ) {
         super(game, pos);
         this.layer = layer;
@@ -64,8 +90,11 @@ export class Decal extends BaseGameObject {
         this.scale = scale ?? 1;
         this.ori = ori ?? 0;
         this.rot = math.oriToRad(this.ori);
+        this.isSkin = isSkin ?? false;
+        this.isPropDisguise = isPropDisguise ?? false;
 
         const def = MapObjectDefs[type] as DecalDef;
+        this.height = def.height;
 
         this.collider = collider.transform(
             def.collision,
@@ -74,6 +103,7 @@ export class Decal extends BaseGameObject {
             this.scale,
         ) as Circle;
         this.surface = def.surface?.type;
+        this.surfaceData = def.surface?.data;
 
         this.bounds = collider.toAabb(
             collider.transform(
@@ -92,5 +122,29 @@ export class Decal extends BaseGameObject {
                     ? def.lifetime
                     : util.random(def.lifetime.min, def.lifetime.max);
         }
+    }
+
+    updateCollider() {
+        const def = MapObjectDefs[this.type] as DecalDef;
+        this.rot = math.oriToRad(this.ori);
+        this.collider = collider.transform(
+            def.collision,
+            this.pos,
+            this.rot,
+            this.scale,
+        ) as Circle;
+
+        this.game.grid.updateObject(this);
+    }
+
+    kill(_params?: unknown) {
+        this.healthT = 0;
+        this.dead = true;
+        this.destroy();
+    }
+
+    override destroy() {
+        util.removeFrom(this.game.decalBarn.decals, this);
+        super.destroy();
     }
 }

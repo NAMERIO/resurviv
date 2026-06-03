@@ -1,8 +1,11 @@
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
 import { collider } from "../../../../shared/utils/collider";
+import { util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import type { Game } from "../game";
 import { BaseGameObject } from "./gameObject";
+
+export const amongUsDeadBodyReportRad = 3.25;
 
 export class DeadBodyBarn {
     deadBodies: DeadBody[] = [];
@@ -20,6 +23,36 @@ export class DeadBodyBarn {
         const deadBody = new DeadBody(this.game, pos, playerId, layer, dir);
         this.deadBodies.push(deadBody);
         this.game.objectRegister.register(deadBody);
+    }
+
+    getReportableDeadBody(pos: Vec2, rad: number, layer: number) {
+        const objs = this.game.grid.intersectCollider(
+            collider.createCircle(pos, rad + amongUsDeadBodyReportRad),
+        );
+
+        let closestBody: DeadBody | undefined;
+        let closestDistSq = Number.MAX_VALUE;
+
+        for (const obj of objs) {
+            if (obj.__type !== ObjectType.DeadBody || obj.destroyed) continue;
+            if (!util.sameLayer(obj.layer, layer)) continue;
+
+            const distSq = v2.lengthSqr(v2.sub(pos, obj.pos));
+            const reportRad = rad + amongUsDeadBodyReportRad;
+            if (distSq <= reportRad * reportRad && distSq < closestDistSq) {
+                closestBody = obj;
+                closestDistSq = distSq;
+            }
+        }
+
+        return closestBody;
+    }
+
+    clear() {
+        for (const deadBody of [...this.deadBodies]) {
+            deadBody.destroy();
+        }
+        this.deadBodies.length = 0;
     }
 }
 
@@ -73,5 +106,10 @@ export class DeadBody extends BaseGameObject {
             this.setPartDirty();
             this.game.grid.updateObject(this);
         }
+    }
+
+    override destroy() {
+        util.removeFrom(this.game.deadBodyBarn.deadBodies, this);
+        super.destroy();
     }
 }

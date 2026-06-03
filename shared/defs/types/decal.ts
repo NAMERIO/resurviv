@@ -1,5 +1,6 @@
 import type { Collider } from "../../utils/coldet";
 import type { TerrainSpawnDef } from "../mapObjectsTyping";
+import type { SurfaceData } from "./building";
 
 export interface DecalDef {
     readonly type: "decal";
@@ -28,10 +29,7 @@ export interface DecalDef {
     fadeChance?: number;
     surface?: {
         type: string;
-        data: {
-            waterColor: number;
-            rippleColor: number;
-        };
+        data: SurfaceData;
     };
     gore?: {
         fade: {

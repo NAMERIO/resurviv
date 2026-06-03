@@ -9,6 +9,7 @@ import { math } from "../../../../shared/utils/math";
 import { util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import type { Game } from "../game";
+import { isAmongUsMiniGame } from "../privateLobbyMiniGames";
 import type { Building } from "./building";
 import { BaseGameObject, type DamageParams } from "./gameObject";
 import type { Player } from "./player";
@@ -89,6 +90,7 @@ export class Obstacle extends BaseGameObject {
 
     isSkin: boolean;
     skinPlayerId?: number;
+    isPropDisguise: boolean;
 
     isWindow: boolean;
     isWall: boolean;
@@ -117,6 +119,7 @@ export class Obstacle extends BaseGameObject {
         parentBuildingId?: number,
         puzzlePiece?: string,
         isSkin?: boolean,
+        isPropDisguise?: boolean,
     ) {
         super(game, pos);
         this.type = type;
@@ -147,6 +150,7 @@ export class Obstacle extends BaseGameObject {
         this.height = def.height;
 
         this.isSkin = isSkin ?? false;
+        this.isPropDisguise = isPropDisguise ?? false;
         this.collidable = (def.collidable && !this.isSkin) ?? true;
         this.isWindow = def.isWindow ?? false;
         this.isWall = def.isWall ?? false;
@@ -168,7 +172,7 @@ export class Obstacle extends BaseGameObject {
         if (def.door) {
             this.door = {
                 open: false,
-                canUse: def.door.canUse,
+                canUse: this.isSkin ? false : def.door.canUse,
                 hinge: def.hinge!,
                 closedPos: v2.copy(this.pos),
                 closedOri: this.ori,
@@ -192,7 +196,7 @@ export class Obstacle extends BaseGameObject {
         if (def.button) {
             this.button = {
                 onOff: false,
-                canUse: true,
+                canUse: !this.isSkin,
                 seq: 1,
                 useOnce: def.button.useOnce,
                 useType: def.button.useType!,
@@ -361,6 +365,7 @@ export class Obstacle extends BaseGameObject {
 
     damage(params: DamageParams): void {
         if (this.isSkin) return;
+        if (isAmongUsMiniGame(this.game.miniGame)) return;
 
         const def = MapObjectDefs[this.type] as ObstacleDef;
         if (this.health === 0 || !this.destructible) return;
@@ -597,6 +602,21 @@ export class Obstacle extends BaseGameObject {
 
     useButton(): void {
         if (!this.button.canUse) return;
+
+        if (
+            this.type === "control_panel_01" &&
+            this.parentBuilding?.type === "cafetria_01" &&
+            this.game.map.amongUsMode &&
+            this.interactedBy
+        ) {
+            const meetingCalled = this.game.playerBarn.callAmongUsEmergencyMeeting(
+                this.interactedBy,
+                this,
+            );
+            this.button.onOff = meetingCalled;
+            this.button.seq++;
+            return;
+        }
 
         this.button.onOff = !this.button.onOff;
         this.button.seq++;

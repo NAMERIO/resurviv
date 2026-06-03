@@ -50,6 +50,23 @@ export type MatchHistory = {
 export type MatchHistoryResponse = MatchHistory[];
 
 //
+// Weapon History
+//
+export const zWeaponHistoryRequest = z.object({
+    slug: z.string(),
+});
+
+export type WeaponHistoryParams = z.infer<typeof zWeaponHistoryRequest>;
+export type WeaponHistoryResponse = {
+    type: string;
+    kills: number;
+    deaths: number;
+    damage_dealt: number;
+    damage_taken: number;
+    last_used: string | Date;
+}[];
+
+//
 // Match Data
 //
 export const zMatchDataRequest = z.object({
@@ -106,6 +123,7 @@ export type UserStatsResponse = {
     kills: number;
     games: number;
     kpg: string;
+    global_rank: number;
     modes: Mode[];
 };
 
@@ -141,7 +159,7 @@ export const zLeaderboardsRequest = z.object({
             message: "Invalid map ID",
         })
         .transform((mapId) => Number(mapId)),
-    type: z.enum(["most_kills", "most_damage_dealt", "kpg", "kills", "wins"]),
+    type: z.enum(["rank", "most_kills", "most_damage_dealt", "kpg", "kills", "wins"]),
     teamMode: z.enum(["solo", "duo", "squad"]).transform((mode) => teamModeMap[mode]),
     gameMode: z
         .enum([GameModeStatus.Deathmatch, GameModeStatus.BattleRoyale])

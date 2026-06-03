@@ -193,6 +193,8 @@ export class PlaneBarn {
         timeBeforeStart: number,
         airstrikeInterval: number,
     ) {
+        if (this.game.disableAirstrikes) return;
+
         const timeToDropZone = 2.5; // takes 2.5 seconds from when a plane is called to reach its drop zone
         const finishBuffer = 2.5; // 2.5 second buffer after all planes are done
         const duration =

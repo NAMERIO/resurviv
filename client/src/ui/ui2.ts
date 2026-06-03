@@ -1,3 +1,4 @@
+import type { AmongUsTaskId } from "../../../shared/defs/amongUsTaskDefs";
 import { GameObjectDefs, type LootDef } from "../../../shared/defs/gameObjectDefs";
 import {
     DamageStreakDefs,
@@ -32,6 +33,7 @@ import { device } from "../device";
 import { helpers } from "../helpers";
 import type { InputBinds } from "../inputBinds";
 import type { Map } from "../map";
+import type { DeadBody, DeadBodyBarn } from "../objects/deadBody";
 import type { Loot, LootBarn } from "../objects/loot";
 import type { Obstacle } from "../objects/obstacle";
 import type { Player, PlayerBarn } from "../objects/player";
@@ -47,6 +49,7 @@ enum InteractionType {
     Loot,
     Revive,
     Object,
+    Report,
 }
 
 const WeaponSlotToBind = {
@@ -332,6 +335,7 @@ export class UiManager2 {
             progressFill: HTMLElement;
             timerFill: HTMLElement;
             dmgText: HTMLElement;
+            label: HTMLElement;
             tooltipTitle: HTMLElement;
             tooltipDesc: HTMLElement;
         },
@@ -543,6 +547,7 @@ export class UiManager2 {
                 dmgText: el.getElementsByClassName(
                     "ui-streak-dmg-text",
                 )[0] as HTMLElement,
+                label: el.getElementsByClassName("ui-streak-label")[0] as HTMLElement,
                 tooltipTitle: el.getElementsByClassName(
                     "tooltip-title",
                 )[0] as HTMLElement,
@@ -618,6 +623,9 @@ export class UiManager2 {
         window.addEventListener("focus", this.clearQueuedItemActions);
 
         this.onKeyUp = (e: KeyboardEvent) => {
+            if (this.inputBinds.input.isGameplayInputBlocked(e.target)) {
+                return;
+            }
             // Add an input handler specifically to handle fullscreen on Firefox;
             // "requestFullscreen() must be called from inside a short running user-generated event handler."
             const keyCode = e.which || e.keyCode;
@@ -695,8 +703,10 @@ export class UiManager2 {
         spectating: boolean,
         playerBarn: PlayerBarn,
         lootBarn: LootBarn,
+        deadBodyBarn: DeadBodyBarn,
         map: Map,
         inputBinds: InputBinds,
+        completedAmongUsTasks?: ReadonlySet<AmongUsTaskId>,
     ) {
         const state = this.newState;
 
@@ -779,22 +789,49 @@ export class UiManager2 {
 
         // Interaction
         let interactionType = InteractionType.None;
-        let interactionObject: Obstacle | Loot | Player | null = null;
+        let interactionObject: Obstacle | Loot | Player | DeadBody | null = null;
         let interactionUsable = true;
+        const amongUsMode = !!map.getMapDef().gameMode.amongUsMode;
+        const amongUsRole = playerBarn.getPlayerInfo(activePlayer.__id).amongUsRole || "";
 
-        if (activePlayer.canInteract(map)) {
+        if (!spectating && activePlayer.canInteract(map)) {
+            if (amongUsMode) {
+                const deadBody = deadBodyBarn.getReportableDeadBody(
+                    activePlayer.m_netData.m_pos,
+                    activePlayer.m_rad,
+                    activePlayer.layer,
+                );
+                if (deadBody) {
+                    interactionType = InteractionType.Report;
+                    interactionObject = deadBody;
+                    interactionUsable = true;
+                }
+            }
+
             // Usable obstacles
             let closestObj = null;
             let closestPen = 0;
             const obstacles = map.m_obstaclePool.m_getPool();
 
-            for (let i = 0; i < obstacles.length; i++) {
+            for (
+                let i = 0;
+                interactionType === InteractionType.None && i < obstacles.length;
+                i++
+            ) {
                 const obstacle = obstacles[i];
                 if (
                     obstacle.active &&
                     !obstacle.dead &&
                     util.sameLayer(obstacle.layer, activePlayer.layer)
                 ) {
+                    const obstacleDef = MapObjectDefs[obstacle.type] as ObstacleDef;
+                    if (
+                        obstacleDef.amongUsTask &&
+                        (completedAmongUsTasks?.has(obstacleDef.amongUsTask) ||
+                            (amongUsMode && amongUsRole === "impostor"))
+                    ) {
+                        continue;
+                    }
                     const interact = obstacle.getInteraction();
                     if (interact) {
                         const res = collider.intersectCircle(
@@ -809,7 +846,7 @@ export class UiManager2 {
                     }
                 }
             }
-            if (closestObj) {
+            if (interactionType === InteractionType.None && closestObj) {
                 interactionType = InteractionType.Object;
                 interactionObject = closestObj;
                 interactionUsable = true;
@@ -817,7 +854,11 @@ export class UiManager2 {
 
             // Loot
             const loot = lootBarn.getClosestLoot();
-            if (loot && !activePlayer.m_netData.m_downed) {
+            if (
+                interactionType === InteractionType.None &&
+                loot &&
+                !activePlayer.m_netData.m_downed
+            ) {
                 // Ignore if it's a gun and we have full guns w/ fists out...
                 // unless we're on a small screen
                 const itemDef = GameObjectDefs[loot.type] as LootDef;
@@ -915,12 +956,30 @@ export class UiManager2 {
                 interactionUsable = true;
             }
         }
+        const amongUsEmergencyButton =
+            amongUsMode &&
+            interactionType === InteractionType.Object &&
+            (interactionObject as Obstacle | null)?.type === "control_panel_01";
+        if (amongUsEmergencyButton) {
+            const callCooldown =
+                activePlayer.m_localData.m_amongUsEmergencyCallCooldownTime;
+            const callsRemaining =
+                activePlayer.m_localData.m_amongUsEmergencyCallsRemaining;
+            if (callCooldown > 0) {
+                state.interaction.text = `Emergency meeting: ${Math.ceil(callCooldown)}s`;
+            } else if (callsRemaining <= 0) {
+                state.interaction.text = "Emergency calls 0/1";
+            } else {
+                state.interaction.text = "Emergency calls 1/1";
+            }
+        } else {
+            state.interaction.text = this.getInteractionText(
+                interactionType,
+                interactionObject!,
+                activePlayer,
+            );
+        }
         state.interaction.type = interactionType;
-        state.interaction.text = this.getInteractionText(
-            interactionType,
-            interactionObject!,
-            activePlayer,
-        );
         state.interaction.key = this.getInteractionKey(interactionType);
         state.interaction.usable = interactionUsable && !spectating;
         state.loading = activePlayer.m_netData.m_loadingBlaster;
@@ -974,7 +1033,7 @@ export class UiManager2 {
         state.ammo.current = we;
         state.ammo.remaining = fe;
         state.ammo.displayCurrent = weaponDef.type != "melee";
-        state.ammo.displayRemaining = fe > 0;
+        state.ammo.displayRemaining = fe > 0 || ge.type === "prop_o_matic";
         state.ammo.nitroLaceActive = activePlayer.m_localData.m_nitroLaceActive;
         state.ammo.nitroLacePercentage = activePlayer.m_localData.m_nitroLacePercentage;
         const curWeapIdx = activePlayer.m_localData.m_curWeapIdx;
@@ -1087,7 +1146,44 @@ export class UiManager2 {
             const ld = activePlayer.m_localData;
             const sd = this.dom.streakSingle;
             if (sd) {
-                if (!this.streakEnabled) {
+                const killCooldown = ld.m_amongUsKillCooldownTime;
+                const showAmongUsKillCard = amongUsMode && amongUsRole === "impostor";
+                const hideAmongUsCard = amongUsMode && amongUsRole !== "impostor";
+
+                if (showAmongUsKillCard) {
+                    const pct = math.clamp((killCooldown / 20) * 100, 0, 100);
+                    const ready = killCooldown <= 0;
+                    sd.div.style.display = "";
+                    sd.div.classList.remove(
+                        "streak-ready",
+                        "streak-active",
+                        "streak-used",
+                        "among-us-kill-ready",
+                    );
+                    sd.div.classList.add(
+                        ready ? "among-us-kill-ready" : "among-us-kill-cooldown",
+                    );
+                    sd.image.src = "img/loot/loot-melee-karambit-rugged.svg";
+                    sd.label.textContent = "KILL";
+                    sd.tooltipTitle.textContent = "Kill cooldown";
+                    sd.tooltipDesc.textContent = ready
+                        ? "Ready to kill."
+                        : "Impostor kills unlock when this reaches 0.";
+                    sd.progressFill.style.height = ready ? "100%" : "0%";
+                    sd.timerFill.style.height = ready ? "0%" : `${pct}%`;
+                    sd.dmgText.textContent = ready
+                        ? "READY"
+                        : `${Math.ceil(killCooldown)}s`;
+                } else if (!this.streakEnabled || hideAmongUsCard) {
+                    sd.div.style.display = hideAmongUsCard ? "none" : "";
+                    sd.div.classList.remove(
+                        "among-us-kill-cooldown",
+                        "among-us-kill-ready",
+                        "streak-ready",
+                        "streak-active",
+                        "streak-used",
+                    );
+                    sd.label.textContent = "Streak";
                     sd.div.classList.remove(
                         "streak-ready",
                         "streak-active",
@@ -1097,6 +1193,12 @@ export class UiManager2 {
                     sd.timerFill.style.height = "0%";
                     sd.dmgText.textContent = "";
                 } else {
+                    sd.div.style.display = "";
+                    sd.div.classList.remove(
+                        "among-us-kill-cooldown",
+                        "among-us-kill-ready",
+                    );
+                    sd.label.textContent = "Streak";
                     const def = DamageStreakDefs[this.chosenStreakType];
                     const isActive = ld.m_streakActive;
                     const isReady = ld.m_streakReady;
@@ -1606,6 +1708,13 @@ export class UiManager2 {
                 return `${targetName} ${killTxt}`;
             }
             case DamageType.Gas: {
+                if (sourceType == "poison_gas" && killerName) {
+                    return `${killerName} ${this.localization.translate(
+                        downed ? "game-knocked-out" : "game-killed",
+                    )} ${targetName} ${this.localization.translate(
+                        "game-with",
+                    )} ${this.localization.translate("game-poison_gas")}`;
+                }
                 let killName;
                 let killTxt;
                 if (downed) {
@@ -1812,7 +1921,7 @@ export class UiManager2 {
 
     getInteractionText(
         type: InteractionType,
-        object: Obstacle | Loot | Player,
+        object: Obstacle | Loot | Player | DeadBody,
         player: Player,
     ) {
         switch (type) {
@@ -1830,6 +1939,8 @@ export class UiManager2 {
                     return this.localization.translate("game-revive-self");
                 }
                 return this.localization.translate("game-revive-teammate");
+            case InteractionType.Report:
+                return this.localization.translate("game-report-body");
             case InteractionType.Object: {
                 const x = (object as Obstacle).getInteraction()!;
                 return `${this.localization.translate(
@@ -1861,6 +1972,7 @@ export class UiManager2 {
                     this.inputBinds.getBind(Input.Interact);
                 break;
             case InteractionType.Object:
+            case InteractionType.Report:
                 bind =
                     this.inputBinds.getBind(Input.Use) ||
                     this.inputBinds.getBind(Input.Interact);

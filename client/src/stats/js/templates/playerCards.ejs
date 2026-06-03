@@ -16,13 +16,13 @@
           <div class='col-md-1 col-sm-2 col-3'>
               <div class='player-image' style='background-image: url("<%= env.profile.avatarTexture %>")'></div>
           </div>
-          <div class='col-md-5 col-sm-10 col-9'>
+          <div class='col-md-4 col-sm-10 col-9'>
               <div class='card-player-name ml-md-5 ml-sm-1 ml-xs-1 <%= env.profile.banned ? "" : "mt-3"%>'><%= env.profile.username %></div>
               <% if (env.profile.banned) { %>
                 <div class='card-player-banned ml-md-5' data-l10n='stats-banned'>(Account banned)</div>
               <% } %>
           </div>
-          <div class='col-md-6 col-12'>
+          <div class='col-md-7 col-12'>
             <table class='player-stats-overview'>
               <thead>
                 <tr>
@@ -30,6 +30,7 @@
                   <th scope="col" data-l10n='stats-kills'>Kills</th>
                   <th scope="col" data-l10n='stats-games'>Games</th>
                   <th scope="col" data-l10n='stats-kg'>K/G</th>
+                  <th scope="col">Global Rank</th>
                 </tr>
               </thead>
               <tbody>
@@ -38,6 +39,7 @@
                   <td><%= env.profile.kills %></td>
                   <td><%= env.profile.games %></td>
                   <td><%= env.profile.kpg %></td>
+                  <td><%= env.profile.globalRank %></td>
                 </tr>
               </tbody>
             </table>
@@ -73,9 +75,6 @@
         <option value="deathmatch">Deathmatch</option>
         <option value="battleroyale">Battle Royale</option>
       </select>
-    </div>
-    <div class='offset-6 col-2 col-rating-help'>
-      <div class='rating-help'>What is Rating?<div class='rating-help-desc'><span class='highlight'>This feature coming soon!</span></br>Rating will be based on placement and kills within an individual game mode.</div></div>
     </div>
   </div>
 </div>
@@ -120,6 +119,7 @@
           <div class='col-12'>No games played.</div>
         </div>
       <% } else { %>
+        <% if (env.teamModes[i].midStats.length > 0) { %>
         <div class="card card-mode card-mode-bg-mid">
           <div class="card-body p-1">
             <div class='row m-1'>
@@ -138,7 +138,8 @@
             </div>
           </div>
         </div>
-        <div class="card card-mode card-mode-bg-bot">
+        <% } %>
+        <div class="card card-mode card-mode-bg-bot <%= env.teamModes[i].midStats.length == 0 ? 'card-mode-stats-only' : '' %>">
           <div class="card-body p-1">
             <div class='row m-1'>
                <% for (var j = 0; j < env.teamModes[i].botStats.length; j++) { %>
@@ -193,8 +194,8 @@
     <div class='row'>
       <!-- Extra Stats Selectors -->
       <div class='col-12 col-md-2'>
-        <div id='selector-extra-matches' class='extra-matches selector-extra col-2 col-md-12 p-0'>Matches<span class='selected-extra'></span></div>
-        <!-- <div id='selector-extra-weapons' class='extra-weapons selector-extra'>Weapons</div> -->
+        <div id='selector-extra-matches' class='extra-matches selector-extra col-2 col-md-12 p-0 btn-darken'>Matches<% if (env.extraView == 'matches') { %><span class='selected-extra'></span><% } %></div>
+        <div id='selector-extra-weapons' class='extra-weapons selector-extra col-2 col-md-12 p-0 btn-darken'>Weapons<% if (env.extraView == 'weapons') { %><span class='selected-extra'></span><% } %></div>
         <!-- <div id='selector-extra-misc' class='extra-misc selector-extra'>Misc</div> -->
       </div>
       <!-- Extra Stats Main -->

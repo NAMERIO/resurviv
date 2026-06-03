@@ -683,6 +683,29 @@ const SkinDefs: Record<string, OutfitDef> = {
         rarity: 5,
         lore: "For those who wield the power of the pan.",
     }),
+    outfitDiamond: defineOutfitSkin("outfitBase", {
+        name: "Diamond",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-diamond.img",
+            handTint: 0xffffff,
+            handSprite: "player-hand-diamond.img",
+            footTint: 0xffffff,
+            footSprite: "player-hand-diamond.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-diamond.img",
+            frontSpritePos: { x: -5, y: 0 },
+            frontSprite: "player-accessory-diamond.img",
+            aboveHand: false,
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitDiamond.img",
+            tint: 0xffffff,
+        },
+        rarity: 5,
+        lore: "For those who are retarded.",
+    }),
     outfitMultiTusking: defineOutfitSkin("outfitBase", {
         name: "Multi Tusking",
         noDropOnDeath: true,
@@ -3528,6 +3551,30 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
+    outfitIgris: defineOutfitSkin("outfitBase", {
+        name: "Igris",
+        noDropOnDeath: true,
+
+        rarity: 4,
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-igris.img",
+            handTint: 0xffffff,
+            handSprite: "player-hand-igris.img",
+            footTint: 0xffffff,
+            footSprite: "player-hand-igris.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-igris.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-igris.img",
+        },
+        lootImg: {
+            sprite: "loot-outfit-igris.img",
+            tint: 0xffffff,
+        },
+    }),
+
     outfitKingGalaxy: defineOutfitSkin("outfitBase", {
         name: "King Galaxy",
         noDropOnDeath: true,
@@ -4646,11 +4693,11 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-outfitvitamnD.img",
-            handTint: 0xFFE600,
+            handTint: 0xffe600,
             handSprite: "player-fists-flaming-nucleus-l.img",
-            footTint: 0xFFE600,
+            footTint: 0xffe600,
             footSprite: "player-fists-flaming-nucleus-l.img",
-            backpackTint: 0xFFE600,
+            backpackTint: 0xffe600,
             frontSpritePos: { x: 0, y: -1 },
             frontSprite: "player-accessory-Vitamin-D.img",
         },
