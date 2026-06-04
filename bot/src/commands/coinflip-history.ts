@@ -2,7 +2,6 @@ import {
     type ChatInputCommandInteraction,
     EmbedBuilder,
     escapeMarkdown,
-    MessageFlags,
     SlashCommandBuilder,
 } from "discord.js";
 import { botLogger, Command, honoClient } from "../utils";
@@ -117,7 +116,7 @@ export const coinFlipHistoryHandler = {
         ),
 
     async execute(interaction: ChatInputCommandInteraction) {
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        await interaction.deferReply();
 
         try {
             const res = await honoClient.coinflip_history.$post({
