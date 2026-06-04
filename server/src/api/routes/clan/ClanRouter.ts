@@ -9,6 +9,7 @@ import {
     type ClanJoinRequest,
     type ClanLeaderboardResponse,
     type ClanMember,
+    type ClanMemberRole,
     type ClanMessage,
     ClanTagColorRegex,
     type ClanWarHistoryEntry,
@@ -29,6 +30,7 @@ import {
     type RespondClanJoinRequestResponse,
     type SearchKlipyGifsResponse,
     type SendClanMessageResponse,
+    type SetClanMemberRoleResponse,
     type TransferOwnershipResponse,
     type UpdateClanResponse,
     zCancelClanJoinRequest,
@@ -48,6 +50,7 @@ import {
     zSearchKlipyGifsRequest,
     zSearchLobbyKlipyGifsRequest,
     zSendClanMessageRequest,
+    zSetClanMemberRoleRequest,
     zTransferOwnershipRequest,
     zUpdateClanRequest,
 } from "../../../../../shared/types/clan";
@@ -235,6 +238,39 @@ function getUserMembership(userId: string) {
     });
 }
 
+function getEffectiveClanRole(
+    membership: { userId: string; role: ClanMemberRole },
+    clan: { ownerId: string },
+): ClanMemberRole | "owner" {
+    return membership.userId === clan.ownerId ? "owner" : membership.role;
+}
+
+function canKickClanMember(
+    actorRole: ClanMemberRole | "owner",
+    targetRole: ClanMemberRole | "owner",
+) {
+    if (actorRole === "owner") return targetRole !== "owner";
+    if (actorRole === "admin") return targetRole === "mod" || targetRole === "member";
+    return false;
+}
+
+function canDeleteClanMessage(actorRole: ClanMemberRole | "owner") {
+    return actorRole === "owner" || actorRole === "admin" || actorRole === "mod";
+}
+
+function canSetClanMemberRole(
+    actorRole: ClanMemberRole | "owner",
+    targetRole: ClanMemberRole,
+    nextRole: ClanMemberRole,
+) {
+    if (actorRole === "owner") return true;
+    return (
+        actorRole === "admin" &&
+        ((targetRole === "member" && nextRole === "mod") ||
+            (targetRole === "mod" && nextRole === "member"))
+    );
+}
+
 async function getClanMemberUserIds(clanId: string) {
     const rows = await db
         .select({ userId: clanMembersTable.userId })
@@ -242,6 +278,13 @@ async function getClanMemberUserIds(clanId: string) {
         .where(eq(clanMembersTable.clanId, clanId));
 
     return rows.map((row) => row.userId);
+}
+
+async function notifyClanMembersChanged(clanId: string) {
+    server.notifyUsersSocialEvent(await getClanMemberUserIds(clanId), {
+        type: "clan_members_changed",
+        clanId,
+    });
 }
 
 async function userHasPendingClanRequest(clanId: string, userId?: string | null) {
@@ -997,6 +1040,7 @@ async function getClanDetail(
                   slug: usersTable.slug,
                   playerIcon: sql<string>`${usersTable.loadout}->>'player_icon'`,
                   joinedAt: clanMembersTable.joinedAt,
+                  role: clanMembersTable.role,
                   kills: sql<number>`COALESCE((
                 SELECT SUM(kills) FROM clan_member_stats
                 WHERE clan_member_stats.clan_id = ${clanMembersTable.clanId}
@@ -1020,6 +1064,7 @@ async function getClanDetail(
                   slug: usersTable.slug,
                   playerIcon: sql<string>`${usersTable.loadout}->>'player_icon'`,
                   joinedAt: clanSeasonMembersTable.joinedAt,
+                  role: sql<ClanMemberRole>`'member'`,
                   kills: sql<number>`COALESCE((
                 SELECT SUM(kills) FROM clan_member_stats
                 WHERE clan_member_stats.clan_id = ${clanSeasonMembersTable.clanId}
@@ -1049,6 +1094,7 @@ async function getClanDetail(
         playerIcon: m.playerIcon || "emote_surviv",
         joinedAt: m.joinedAt.getTime(),
         isOwner: m.odUserId === clanInfo.ownerId,
+        role: m.odUserId === clanInfo.ownerId ? "member" : m.role,
         statsAfterJoin: {
             kills: m.kills || 0,
             wins: m.wins || 0,
@@ -1482,15 +1528,21 @@ ClanRouter.post("/kick", validateParams(zKickMemberRequest), async (c) => {
     });
 
     if (!membership) {
-        return c.json<KickMemberResponse>({ success: false, error: "not_owner" }, 403);
+        return c.json<KickMemberResponse>(
+            { success: false, error: "not_allowed" },
+            403,
+        );
     }
 
     const clan = await db.query.clansTable.findFirst({
         where: eq(clansTable.id, membership.clanId),
     });
 
-    if (!clan || clan.ownerId !== user.id) {
-        return c.json<KickMemberResponse>({ success: false, error: "not_owner" }, 403);
+    if (!clan) {
+        return c.json<KickMemberResponse>(
+            { success: false, error: "not_allowed" },
+            403,
+        );
     }
 
     if (memberId === user.id) {
@@ -1511,6 +1563,15 @@ ClanRouter.post("/kick", validateParams(zKickMemberRequest), async (c) => {
         return c.json<KickMemberResponse>(
             { success: false, error: "member_not_found" },
             404,
+        );
+    }
+
+    const actorRole = getEffectiveClanRole(membership, clan);
+    const targetRole = getEffectiveClanRole(memberToKick, clan);
+    if (!canKickClanMember(actorRole, targetRole)) {
+        return c.json<KickMemberResponse>(
+            { success: false, error: "not_allowed" },
+            403,
         );
     }
 
@@ -1539,6 +1600,11 @@ ClanRouter.post("/kick", validateParams(zKickMemberRequest), async (c) => {
         "member_leave",
         `${user.username} kicked ${kickedUser?.username || "a member"} from the clan.`,
     );
+    server.notifyUsersSocialEvent([memberId], {
+        type: "clan_members_changed",
+        clanId: clan.id,
+    });
+    await notifyClanMembersChanged(clan.id);
 
     return c.json<KickMemberResponse>({ success: true });
 });
@@ -1587,9 +1653,94 @@ ClanRouter.post("/transfer", validateParams(zTransferOwnershipRequest), async (c
         .update(clansTable)
         .set({ ownerId: newOwnerId })
         .where(eq(clansTable.id, clan.id));
+    await notifyClanMembersChanged(clan.id);
 
     return c.json<TransferOwnershipResponse>({ success: true });
 });
+
+ClanRouter.post(
+    "/set_member_role",
+    validateParams(zSetClanMemberRoleRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { memberId, role } = c.req.valid("json");
+
+        const membership = await db.query.clanMembersTable.findFirst({
+            where: eq(clanMembersTable.userId, user.id),
+        });
+
+        if (!membership) {
+            return c.json<SetClanMemberRoleResponse>(
+                { success: false, error: "not_allowed" },
+                403,
+            );
+        }
+
+        const clan = await db.query.clansTable.findFirst({
+            where: eq(clansTable.id, membership.clanId),
+        });
+
+        if (!clan) {
+            return c.json<SetClanMemberRoleResponse>(
+                { success: false, error: "not_allowed" },
+                403,
+            );
+        }
+
+        const targetMembership = await db.query.clanMembersTable.findFirst({
+            where: and(
+                eq(clanMembersTable.clanId, clan.id),
+                eq(clanMembersTable.userId, memberId),
+            ),
+        });
+
+        if (!targetMembership) {
+            return c.json<SetClanMemberRoleResponse>(
+                { success: false, error: "member_not_found" },
+                404,
+            );
+        }
+
+        if (targetMembership.userId === clan.ownerId) {
+            return c.json<SetClanMemberRoleResponse>(
+                { success: false, error: "cannot_change_owner" },
+                400,
+            );
+        }
+
+        const actorRole = getEffectiveClanRole(membership, clan);
+        if (!canSetClanMemberRole(actorRole, targetMembership.role, role)) {
+            return c.json<SetClanMemberRoleResponse>(
+                { success: false, error: "not_allowed" },
+                403,
+            );
+        }
+
+        if (targetMembership.role !== role) {
+            await db
+                .update(clanMembersTable)
+                .set({ role })
+                .where(
+                    and(
+                        eq(clanMembersTable.clanId, clan.id),
+                        eq(clanMembersTable.userId, memberId),
+                    ),
+                );
+            await notifyClanMembersChanged(clan.id);
+        }
+
+        const updatedClan = await getClanDetail(
+            clan.id,
+            ClanConstants.CurrentSeason,
+            user.id,
+        );
+
+        return c.json<SetClanMemberRoleResponse>({
+            success: true,
+            clan: updatedClan!,
+        });
+    },
+);
 
 ClanRouter.post(
     "/respond_request",
@@ -2216,13 +2367,17 @@ ClanRouter.post(
         }
         if (existingMessage.type !== "user") {
             return c.json<DeleteClanMessageResponse>(
-                { success: false, error: "not_author" },
+                { success: false, error: "not_allowed" },
                 403,
             );
         }
-        if (existingMessage.userId !== user.id) {
+        const clan = await db.query.clansTable.findFirst({
+            where: eq(clansTable.id, clanId),
+        });
+        const actorRole = clan ? getEffectiveClanRole(membership, clan) : "member";
+        if (existingMessage.userId !== user.id && !canDeleteClanMessage(actorRole)) {
             return c.json<DeleteClanMessageResponse>(
-                { success: false, error: "not_author" },
+                { success: false, error: "not_allowed" },
                 403,
             );
         }

@@ -13,6 +13,7 @@ import {
     uuid,
 } from "drizzle-orm/pg-core";
 import { TeamMode } from "../../../../shared/gameConfig";
+import type { ClanMemberRole } from "../../../../shared/types/clan";
 import { GameModeStatus } from "../../../../shared/types/stats";
 import { ItemStatus, type Loadout, loadout } from "../../../../shared/utils/loadout";
 
@@ -551,6 +552,7 @@ export const clanMembersTable = pgTable(
                 onDelete: "cascade",
                 onUpdate: "cascade",
             }),
+        role: text("role").$type<ClanMemberRole>().notNull().default("member"),
         joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
     },
     (table) => [

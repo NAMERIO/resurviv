@@ -60,6 +60,15 @@ export const zKickMemberRequest = z.object({
 });
 export type KickMemberRequest = z.infer<typeof zKickMemberRequest>;
 
+export const ClanMemberRoles = ["member", "mod", "admin"] as const;
+export type ClanMemberRole = (typeof ClanMemberRoles)[number];
+
+export const zSetClanMemberRoleRequest = z.object({
+    memberId: z.string(),
+    role: z.enum(ClanMemberRoles),
+});
+export type SetClanMemberRoleRequest = z.infer<typeof zSetClanMemberRoleRequest>;
+
 export const zTransferOwnershipRequest = z.object({
     newOwnerId: z.string(),
 });
@@ -182,6 +191,7 @@ export type ClanMember = {
     playerIcon: string;
     joinedAt: number;
     isOwner: boolean;
+    role: ClanMemberRole;
     statsAfterJoin: {
         kills: number;
         wins: number;
@@ -317,7 +327,22 @@ export type KickMemberResponse =
     | { success: true }
     | {
           success: false;
-          error: "not_owner" | "member_not_found" | "cannot_kick_self" | "server_error";
+          error:
+              | "not_allowed"
+              | "member_not_found"
+              | "cannot_kick_self"
+              | "server_error";
+      };
+
+export type SetClanMemberRoleResponse =
+    | { success: true; clan: ClanDetail }
+    | {
+          success: false;
+          error:
+              | "not_allowed"
+              | "member_not_found"
+              | "cannot_change_owner"
+              | "server_error";
       };
 
 export type TransferOwnershipResponse =
@@ -387,7 +412,7 @@ export type EditClanMessageResponse =
 
 export type DeleteClanMessageResponse =
     | { success: true; messageId: string }
-    | { success: false; error: "not_in_clan" | "not_author" | "message_not_found" };
+    | { success: false; error: "not_in_clan" | "not_allowed" | "message_not_found" };
 
 export type ResolveKlipyGifResponse =
     | {

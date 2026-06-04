@@ -12,6 +12,7 @@ import {
     type ClanLeaderboardResponse,
     type ClanLeaderboardType,
     type ClanMember,
+    type ClanMemberRole,
     type ClanMessage,
     type CreateClanResponse,
     type DeleteClanMessageResponse,
@@ -25,6 +26,7 @@ import {
     type RespondClanJoinRequestResponse,
     type SearchKlipyGifsResponse,
     type SendClanMessageResponse,
+    type SetClanMemberRoleResponse,
     type UpdateClanResponse,
 } from "../../../shared/types/clan";
 import {
@@ -136,6 +138,58 @@ function normalizeColorInputValue(color?: string | null) {
 
 function normalizeMentionValue(value: string) {
     return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+type EffectiveClanRole = ClanMemberRole | "owner";
+
+function getEffectiveClanRole(member: ClanMember): EffectiveClanRole {
+    return member.isOwner ? "owner" : member.role;
+}
+
+function getClanRoleTitle(role: EffectiveClanRole) {
+    switch (role) {
+        case "owner":
+            return "Owner: can manage clan settings, roles, requests, members, and messages.";
+        case "admin":
+            return "Admin: can delete clan messages, kick members and mods, and add or remove mods.";
+        case "mod":
+            return "Mod: can delete clan messages.";
+        default:
+            return "Member";
+    }
+}
+
+function canKickClanMember(actor: EffectiveClanRole, target: EffectiveClanRole) {
+    if (actor === "owner") return target !== "owner";
+    if (actor === "admin") return target === "member" || target === "mod";
+    return false;
+}
+
+function canManageClanRole(
+    actor: EffectiveClanRole,
+    target: EffectiveClanRole,
+    nextRole: ClanMemberRole,
+) {
+    if (target === "owner") return false;
+    if (actor === "owner") return true;
+    return (
+        actor === "admin" &&
+        ((target === "member" && nextRole === "mod") ||
+            (target === "mod" && nextRole === "member"))
+    );
+}
+
+function getClanRoleRank(role: EffectiveClanRole) {
+    switch (role) {
+        case "owner":
+            return 3;
+        case "admin":
+            return 2;
+        case "mod":
+            return 1;
+        default:
+            return 0;
+    }
 }
 
 export class ClanUi {
@@ -1268,6 +1322,71 @@ export class ClanUi {
         return matches.map((mention) => mention.slice(1));
     }
 
+    getCurrentClanMember(clan: ClanDetail | null = this.viewingClan) {
+        if (!clan || !this.account.profile?.slug) return null;
+        const candidates = [clan, this.currentClan]
+            .filter(
+                (candidate): candidate is ClanDetail =>
+                    !!candidate && candidate.id === clan.id,
+            )
+            .map(
+                (candidate) =>
+                    candidate.members.find(
+                        (member) => member.slug === this.account.profile!.slug,
+                    ) || null,
+            )
+            .filter((member): member is ClanMember => !!member);
+
+        return candidates.reduce<ClanMember | null>((best, member) => {
+            if (!best) return member;
+            return getClanRoleRank(getEffectiveClanRole(member)) >
+                getClanRoleRank(getEffectiveClanRole(best))
+                ? member
+                : best;
+        }, null);
+    }
+
+    canDeleteClanMessage(message: ClanMessage) {
+        if (this.isOwnClanMessage(message)) return true;
+        const currentMember = this.getCurrentClanMember();
+        if (!currentMember) return false;
+        const role = getEffectiveClanRole(currentMember);
+        return role === "owner" || role === "admin" || role === "mod";
+    }
+
+    getMessageSenderMember(message: ClanMessage) {
+        const clans = [this.viewingClan, this.currentClan].filter(
+            (clan): clan is ClanDetail => !!clan && clan.id === message.clanId,
+        );
+        for (const clan of clans) {
+            const member = clan.members.find(
+                (candidate) => candidate.odUserId === message.senderId,
+            );
+            if (member) return member;
+        }
+        return null;
+    }
+
+    renderClanRoleBadge(role: EffectiveClanRole) {
+        if (role === "member") return $();
+        const label = role === "owner" ? "Owner" : role === "admin" ? "Admin" : "Mod";
+        return $("<span/>", {
+            class: `clan-role-badge clan-role-badge-${role}`,
+            text: label,
+            title: getClanRoleTitle(role),
+            "aria-label": label,
+        });
+    }
+
+    renderClanBotBadge() {
+        return $("<span/>", {
+            class: "clan-role-badge clan-role-badge-bot",
+            text: "BOT",
+            title: "Automated clan system message.",
+            "aria-label": "BOT",
+        });
+    }
+
     renderClanDetail(clan: ClanDetail) {
         $("#clan-detail-icon").css(
             "background-image",
@@ -1291,10 +1410,9 @@ export class ClanUi {
         const createdDate = new Date(clan.createdAt).toLocaleDateString();
         $("#clan-detail-created").text(`Created: ${createdDate}`);
         $("#clan-detail-lock-status").text(clan.isLocked ? "Locked" : "Open");
-        const isOwner =
-            clan.isCurrentSeason &&
-            !!this.account.profile?.slug &&
-            clan.members.some((m) => m.slug === this.account.profile!.slug && m.isOwner);
+        const currentMember = this.getCurrentClanMember(clan);
+        const currentRole = currentMember ? getEffectiveClanRole(currentMember) : "member";
+        const isOwner = clan.isCurrentSeason && currentRole === "owner";
         if (clan.discordInviteUrl) {
             $("#clan-detail-discord-row").css("display", "flex");
         } else {
@@ -1321,9 +1439,7 @@ export class ClanUi {
         const membersContainer = $("#clan-members-list");
         membersContainer.empty();
 
-        const isMember =
-            this.account.profile?.slug &&
-            clan.members.some((m) => m.slug === this.account.profile.slug);
+        const isMember = !!currentMember;
         if (isOwner && clan.isCurrentSeason) {
             $("#btn-clan-edit-icon").show();
             $("#clan-tag-color-input").show();
@@ -1352,13 +1468,21 @@ export class ClanUi {
 
         for (const member of clan.members) {
             const item = $("<div/>", { class: "clan-member-item" });
+            const memberRole = getEffectiveClanRole(member);
 
             const iconDiv = $("<div/>", {
                 class: "clan-member-icon",
             }).css("background-image", `url(${getClanIconUrl(member.playerIcon)})`);
 
             if (member.isOwner) {
-                iconDiv.append($("<div/>", { class: "clan-member-crown" }));
+                iconDiv.append(
+                    $("<div/>", {
+                        class: "clan-member-crown",
+                        title: getClanRoleTitle("owner"),
+                    }),
+                );
+            } else if (memberRole === "admin" || memberRole === "mod") {
+                iconDiv.append(this.renderClanRoleBadge(memberRole));
             }
 
             item.append(iconDiv);
@@ -1368,44 +1492,82 @@ export class ClanUi {
                     class: "clan-member-info",
                 }).append(
                     $("<div/>", {
-                        class: `clan-member-name${member.isOwner ? " owner" : ""}`,
-                        text: member.username,
-                    }),
+                        class: `clan-member-name ${memberRole}`,
+                    }).append(
+                        $("<span/>", { text: member.username }),
+                        this.renderClanRoleBadge(memberRole),
+                    ),
                     $("<div/>", {
                         class: "clan-member-stats",
                         text: `Kills: ${member.statsAfterJoin.kills} | Wins: ${member.statsAfterJoin.wins}`,
                     }),
                 ),
             );
-            if (clan.isCurrentSeason && isOwner && !member.isOwner) {
+            if (
+                clan.isCurrentSeason &&
+                currentMember &&
+                member.odUserId !== currentMember.odUserId &&
+                !member.isOwner
+            ) {
                 const controls = $("<div/>", { class: "clan-member-controls" });
 
-                controls.append(
-                    $("<div/>", {
-                        class: "clan-btn-small clan-btn-transfer",
-                        text: "Transfer",
-                        title: "Transfer ownership",
-                    }).on("click", (e) => {
-                        e.stopPropagation();
-                        if (confirm(`Transfer ownership to ${member.username}?`)) {
-                            this.transferOwnership(member.odUserId);
-                        }
-                    }),
-                );
+                if (isOwner) {
+                    controls.append(
+                        $("<div/>", {
+                            class: "clan-btn-small clan-btn-transfer",
+                            text: "Transfer",
+                            title: "Transfer ownership",
+                        }).on("click", (e) => {
+                            e.stopPropagation();
+                            if (confirm(`Transfer ownership to ${member.username}?`)) {
+                                this.transferOwnership(member.odUserId);
+                            }
+                        }),
+                    );
+                }
 
-                controls.append(
-                    $("<div/>", {
-                        class: "clan-btn-small clan-btn-kick",
-                        text: "Kick",
-                    }).on("click", (e) => {
-                        e.stopPropagation();
-                        if (confirm(`Kick ${member.username} from the clan?`)) {
-                            this.kickMember(member.odUserId);
-                        }
-                    }),
-                );
+                const roleButtons: Array<{ role: ClanMemberRole; text: string }> = [
+                    { role: "admin", text: "Admin" },
+                    { role: "mod", text: "Mod" },
+                    { role: "member", text: "Member" },
+                ];
 
-                item.append(controls);
+                for (const roleButton of roleButtons) {
+                    if (
+                        member.role === roleButton.role ||
+                        !canManageClanRole(currentRole, memberRole, roleButton.role)
+                    ) {
+                        continue;
+                    }
+                    controls.append(
+                        $("<div/>", {
+                            class: "clan-btn-small clan-btn-role",
+                            text: roleButton.text,
+                            title: `Set role to ${roleButton.text}`,
+                        }).on("click", (e) => {
+                            e.stopPropagation();
+                            this.setMemberRole(member.odUserId, roleButton.role);
+                        }),
+                    );
+                }
+
+                if (canKickClanMember(currentRole, memberRole)) {
+                    controls.append(
+                        $("<div/>", {
+                            class: "clan-btn-small clan-btn-kick",
+                            text: "Kick",
+                        }).on("click", (e) => {
+                            e.stopPropagation();
+                            if (confirm(`Kick ${member.username} from the clan?`)) {
+                                this.kickMember(member.odUserId);
+                            }
+                        }),
+                    );
+                }
+
+                if (controls.children().length > 0) {
+                    item.append(controls);
+                }
             }
 
             membersContainer.append(item);
@@ -2362,6 +2524,8 @@ export class ClanUi {
             );
 
             const onlyKlipyUrl = isOnlyKlipyUrl(message.message);
+            const senderMember = this.getMessageSenderMember(message);
+            const senderRole = senderMember ? getEffectiveClanRole(senderMember) : "member";
             const bubble = $("<div/>", { class: "clan-chat-bubble" }).append(
                 $("<button/>", {
                     class: "clan-chat-actions-btn",
@@ -2389,6 +2553,9 @@ export class ClanUi {
                         class: "clan-chat-author",
                         text: message.username,
                     }),
+                    message.type !== "user"
+                        ? this.renderClanBotBadge()
+                        : this.renderClanRoleBadge(senderRole),
                     $("<span/>", {
                         class: "clan-chat-time",
                         text: formatChatTime(message.createdAt),
@@ -2414,6 +2581,7 @@ export class ClanUi {
         if (message.type !== "user") return;
         this.hideMessageActionsMenu();
         const isOwnMessage = this.isOwnClanMessage(message);
+        const canDeleteMessage = this.canDeleteClanMessage(message);
         const menu = $("<div/>", { class: "clan-chat-actions-menu" });
 
         menu.append(
@@ -2437,6 +2605,11 @@ export class ClanUi {
                         this.hideMessageActionsMenu();
                     },
                 ),
+            );
+        }
+
+        if (canDeleteMessage) {
+            menu.append(
                 $("<div/>", {
                     class: "clan-chat-actions-item danger",
                     text: "Delete",
@@ -2553,7 +2726,7 @@ export class ClanUi {
     deleteClanMessage(messageId: string) {
         if (!this.viewingClan) return;
         const message = this.findClanMessage(messageId);
-        if (!message || !this.isOwnClanMessage(message)) return;
+        if (!message || !this.canDeleteClanMessage(message)) return;
         const clanId = this.viewingClan.id;
         clanRequest<DeleteClanMessageResponse>(
             "/api/clan/delete_message",
@@ -2604,10 +2777,32 @@ export class ClanUi {
                 this.showError("Failed to kick member.");
                 return;
             }
-            if (this.currentClan) {
-                this.loadClanDetail(this.currentClan.id);
+            const clanId = this.viewingClan?.id || this.currentClan?.id;
+            if (clanId) {
+                this.loadClanDetail(clanId);
+                this.loadMyClan();
             }
         });
+    }
+
+    setMemberRole(memberId: string, role: ClanMemberRole) {
+        clanRequest<SetClanMemberRoleResponse>(
+            "/api/clan/set_member_role",
+            { memberId, role },
+            (err, res) => {
+                if (err || !res?.success) {
+                    this.showError("Failed to update member role.");
+                    return;
+                }
+                this.viewingClan = res.clan;
+                if (this.currentClan?.id === res.clan.id) {
+                    this.currentClan = res.clan;
+                    this.updateMainCard();
+                }
+                this.renderClanDetail(res.clan);
+                this.setClanPageTab(this.clanPageTab);
+            },
+        );
     }
 
     transferOwnership(newOwnerId: string) {
@@ -2619,8 +2814,9 @@ export class ClanUi {
                     this.showError("Failed to transfer ownership.");
                     return;
                 }
-                if (this.currentClan) {
-                    this.loadClanDetail(this.currentClan.id);
+                const clanId = this.viewingClan?.id || this.currentClan?.id;
+                if (clanId) {
+                    this.loadClanDetail(clanId);
                     this.loadMyClan();
                 }
             },

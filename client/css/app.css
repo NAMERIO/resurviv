@@ -12125,11 +12125,59 @@ input [type="image"]:focus {
   background-repeat: no-repeat;
 }
 
+.clan-role-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 3px;
+  margin-left: 6px;
+  font-size: 11px;
+  line-height: 18px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 1px 0 #000;
+  box-shadow: inset 0 -2px rgba(0, 0, 0, 0.35);
+  flex: 0 0 auto;
+}
+
+.clan-member-icon > .clan-role-badge {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  margin-left: 0;
+  min-width: 0;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 9px;
+  line-height: 16px;
+}
+
+.clan-role-badge-owner {
+  background-color: #d6a800;
+}
+
+.clan-role-badge-admin {
+  background-color: #1e90ff;
+}
+
+.clan-role-badge-mod {
+  background-color: #26a269;
+}
+
+.clan-role-badge-bot {
+  background-color: #3fbf54;
+}
+
 .clan-member-info {
   flex: 1;
 }
 
 .clan-member-name {
+  display: flex;
+  align-items: center;
   font-size: 18px;
   font-weight: bold;
   color: #7cfc00;
@@ -12138,6 +12186,14 @@ input [type="image"]:focus {
 
 .clan-member-name.owner {
   color: #ffe400;
+}
+
+.clan-member-name.admin {
+  color: #72b7ff;
+}
+
+.clan-member-name.mod {
+  color: #7fe0a5;
 }
 
 .clan-member-stats {
@@ -12174,6 +12230,12 @@ input [type="image"]:focus {
   background-color: #1e90ff;
   box-shadow: inset 0 -2px #1871c8;
   border-bottom: 2px solid #1871c8;
+}
+
+.clan-btn-role {
+  background-color: #26a269;
+  box-shadow: inset 0 -2px #17633f;
+  border-bottom: 2px solid #17633f;
 }
 
 .clan-btn-kick {
