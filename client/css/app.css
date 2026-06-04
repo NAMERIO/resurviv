@@ -11630,11 +11630,12 @@ input [type="image"]:focus {
 
 /* Clan Detail/Page View */
 .clan-detail-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 64px minmax(190px, 1fr) minmax(260px, 1fr);
   align-items: center;
-  gap: 20px;
-  margin-bottom: 14px;
-  padding: 14px 16px;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
   background-color: #282828;
   border-radius: 5px;
 }
@@ -11683,14 +11684,18 @@ input [type="image"]:focus {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .clan-detail-name {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: bold;
   color: #fff;
-  margin-bottom: 5px;
+  margin-bottom: 3px;
   text-shadow: 1px 1px 0px #000000;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .clan-edit-name-btn {
@@ -11731,30 +11736,14 @@ input [type="image"]:focus {
   border-radius: 2px;
 }
 
-.clan-detail-name-edit {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 5px;
-}
-
-.clan-detail-name-edit .clan-name-input {
-  width: 200px;
-  height: 32px;
-  font-size: 16px;
-  margin-bottom: 0;
-}
-
-.clan-detail-name-edit .clan-btn-small {
-  height: 32px;
-  line-height: 32px;
-  padding: 0 12px;
-  font-size: 12px;
-}
-
 .clan-detail-meta {
-  font-size: 14px;
+  max-width: 100%;
   color: #c4c4c4;
+  font-size: 13px;
+  line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .clan-lock-control {
@@ -11781,22 +11770,26 @@ input [type="image"]:focus {
 }
 
 .clan-detail-stats {
-  flex: 0 0 360px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin: 0;
+  min-width: 0;
 }
 
 .clan-stat-box {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  justify-content: center;
   background-color: #1f1f1f;
   border-radius: 5px;
-  min-height: 58px;
-  padding: 9px 10px 7px 42px;
-  text-align: center;
+  min-height: 46px;
+  padding: 7px 8px 6px 34px;
+  text-align: left;
   background-repeat: no-repeat;
-  background-position: 12px center;
-  background-size: 22px;
+  background-position: 9px center;
+  background-size: 19px;
 }
 
 .clan-stat-box.games {
@@ -11820,21 +11813,90 @@ input [type="image"]:focus {
 }
 
 .clan-stat-label {
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 14px;
   color: #fff;
-  margin-bottom: 2px;
+  margin-bottom: 0;
+  white-space: nowrap;
 }
 
 .clan-stat-value {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
   color: #ffe400;
-  line-height: 22px;
+  line-height: 20px;
+  white-space: nowrap;
 }
 
 .clan-stat-subvalue {
-  font-size: 10px;
-  line-height: 12px;
+  font-size: 9px;
+  line-height: 11px;
+  color: #969b91;
+}
+
+.clan-settings-panel {
+  display: grid;
+  gap: 12px;
+  min-height: 0;
+  padding: 16px;
+  background-color: #282828;
+  border-radius: 5px;
+}
+
+.clan-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.clan-settings-card {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  background-color: #1f1f1f;
+  border-radius: 5px;
+}
+
+.clan-settings-label {
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.clan-settings-icon-row,
+.clan-settings-name-row,
+.clan-settings-field-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.clan-settings-field-row .clan-name-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.clan-settings-field-row .clan-btn-small,
+.clan-discord-edit .clan-btn-small {
+  flex: 0 0 auto;
+  height: 32px;
+  line-height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+.clan-settings-card .clan-tag-color-inline {
+  margin-bottom: 0;
+}
+
+#btn-clan-edit-icon {
+  cursor: pointer;
+}
+
+#btn-clan-edit-icon:hover {
+  filter: brightness(120%);
 }
 
 .clan-war-section {

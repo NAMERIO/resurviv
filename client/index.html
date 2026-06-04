@@ -2623,6 +2623,10 @@
               <div class="tab-icon" style="background-image: url(img/gui/crown.svg);"></div>
               Clan Details
             </div>
+            <div class="modal-clans-tab" id="btn-clan-page-settings-tab" style="display: none;">
+              <div class="tab-icon" style="background-image: url(img/gui/cog.svg);"></div>
+              Settings
+            </div>
             <div class="modal-clans-tab" id="btn-clan-page-requests-tab" style="display: none;">
               <div class="tab-icon" style="background-image: url(img/gui/player-gui.svg);"></div>
               Requests
@@ -2647,18 +2651,10 @@
               <div class="clan-detail-header">
                 <div class="clan-detail-icon-wrapper">
                   <div id="clan-detail-icon" class="clan-detail-icon" style="background-image: url(img/gui/player-gui.svg);"></div>
-                  <div id="btn-clan-edit-icon" class="clan-edit-icon-btn" style="display: none;" title="Change Icon"></div>
                 </div>
                 <div class="clan-detail-info">
                   <div class="clan-detail-name-wrapper">
                     <div id="clan-detail-name" class="clan-detail-name">Clan Name</div>
-                    <div id="btn-clan-edit-name" class="clan-edit-name-btn" style="display: none;" title="Edit Name"></div>
-                    <input type="color" id="clan-tag-color-input" class="clan-tag-color-inline" value="#ffffff" style="display: none;" title="Tag Color" />
-                  </div>
-                  <div id="clan-detail-name-edit" class="clan-detail-name-edit" style="display: none;">
-                    <input type="text" id="clan-edit-name-input" class="clan-name-input" placeholder="Clan Name" maxlength="16" />
-                    <div id="btn-clan-save-name" class="clan-btn clan-btn-green clan-btn-small">Save</div>
-                    <div id="btn-clan-cancel-name" class="clan-btn clan-btn-grey clan-btn-small">Cancel</div>
                   </div>
                   <div id="clan-detail-members-count" class="clan-detail-meta">0 / 20 Members</div>
                   <div id="clan-detail-owner" class="clan-detail-meta">Owner: Unknown</div>
@@ -2669,22 +2665,11 @@
                       <span class="clan-discord-icon"></span>
                       <span>Join Discord</span>
                     </a>
-                    <div id="btn-clan-edit-discord" class="clan-btn clan-btn-blue clan-btn-small" style="display: none;">Edit</div>
                   </div>
-                  <div id="clan-detail-discord-edit" class="clan-discord-edit" style="display: none;">
-                    <span class="clan-discord-icon"></span>
-                    <input type="text" id="clan-edit-discord-input" class="clan-discord-input" placeholder="Discord invite link" maxlength="120" />
-                    <div id="btn-clan-save-discord" class="clan-btn clan-btn-green clan-btn-small">Save</div>
-                    <div id="btn-clan-clear-discord" class="clan-btn clan-btn-grey clan-btn-small">Clear</div>
-                  </div>
-                  <label id="clan-lock-control" class="clan-lock-control" style="display: none;">
-                    <input id="clan-lock-toggle" type="checkbox" />
-                    <span>Lock Clan</span>
-                  </label>
                 </div>
                 <div class="clan-detail-stats">
                   <div class="clan-stat-box cgp">
-                    <div class="clan-stat-label">Total CGP</div>
+                    <div class="clan-stat-label">CGP</div>
                     <div id="clan-detail-cgp" class="clan-stat-value">0</div>
                     <div id="clan-detail-war-cgp" class="clan-stat-subvalue">+0 from clan wars</div>
                   </div>
@@ -2697,7 +2682,7 @@
                     <div id="clan-detail-kills" class="clan-stat-value">0</div>
                   </div>
                   <div class="clan-stat-box wars">
-                    <div class="clan-stat-label">Clan Wars</div>
+                    <div class="clan-stat-label">Wars</div>
                     <div id="clan-detail-wars" class="clan-stat-value">0</div>
                   </div>
                 </div>
@@ -2712,6 +2697,48 @@
               <div id="clan-member-actions" class="clan-actions" style="display: none;">
                 <div id="btn-clan-leave" class="clan-btn clan-btn-red">Leave Clan</div>
                 <div id="btn-clan-delete" class="clan-btn clan-btn-red" style="display: none;">Delete Clan</div>
+              </div>
+            </div>
+            <div id="clan-settings-section" class="clan-column" style="flex: 1; display: none;">
+              <div class="clan-settings-panel">
+                <div class="clan-members-header">
+                  <div class="clan-members-title">Clan Settings</div>
+                  <div class="clan-members-count">Owner only</div>
+                </div>
+                <div class="clan-settings-grid">
+                  <div class="clan-settings-card">
+                    <div class="clan-settings-label">Icon</div>
+                    <div class="clan-settings-icon-row">
+                      <div id="btn-clan-edit-icon" class="clan-detail-icon" style="background-image: url(img/gui/player-gui.svg);" title="Change Icon"></div>
+                    </div>
+                  </div>
+                  <div class="clan-settings-card">
+                    <div class="clan-settings-label">Name</div>
+                    <div class="clan-settings-field-row">
+                      <input type="text" id="clan-edit-name-input" class="clan-name-input" placeholder="Clan Name" maxlength="16" />
+                      <div id="btn-clan-save-name" class="clan-btn clan-btn-green clan-btn-small">Save</div>
+                    </div>
+                  </div>
+                  <div class="clan-settings-card">
+                    <div class="clan-settings-label">Tag Color</div>
+                    <input type="color" id="clan-tag-color-input" class="clan-tag-color-inline" value="#ffffff" title="Tag Color" />
+                  </div>
+                  <div class="clan-settings-card">
+                    <div class="clan-settings-label">Discord</div>
+                    <div id="clan-detail-discord-edit" class="clan-discord-edit">
+                      <span class="clan-discord-icon"></span>
+                      <input type="text" id="clan-edit-discord-input" class="clan-discord-input" placeholder="Discord invite link" maxlength="120" />
+                      <div id="btn-clan-save-discord" class="clan-btn clan-btn-green clan-btn-small">Save</div>
+                    </div>
+                  </div>
+                  <div class="clan-settings-card">
+                    <div class="clan-settings-label">Access</div>
+                    <label id="clan-lock-control" class="clan-lock-control">
+                      <input id="clan-lock-toggle" type="checkbox" />
+                      <span>Lock Clan</span>
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
             <div id="clan-requests-section" class="clan-column" style="flex: 1; display: none;">

@@ -146,7 +146,7 @@ export class ClanUi {
 
     currentClan: ClanDetail | null = null;
     viewingClan: ClanDetail | null = null;
-    clanPageTab: "details" | "requests" = "details";
+    clanPageTab: "details" | "settings" | "requests" = "details";
     cooldownUntil: number | null = null;
     availableIcons: string[] = [];
     selectedIcon: string = "emote_surviv";
@@ -240,21 +240,8 @@ export class ClanUi {
                 this.showIconSelector();
             }
         });
-        $("#btn-clan-edit-name").on("click", () => {
-            if (this.viewingClan) {
-                $("#clan-detail-name").hide();
-                $("#btn-clan-edit-name").hide();
-                $("#clan-detail-name-edit").show();
-                $("#clan-edit-name-input").val(this.viewingClan.name).focus();
-            }
-        });
         $("#btn-clan-save-name").on("click", () => {
-            const newName = ($("#clan-edit-name-input").val() as string).trim();
-            if (newName && this.viewingClan && newName !== this.viewingClan.name) {
-                this.updateClan({ name: newName });
-            } else {
-                this.cancelNameEdit();
-            }
+            this.saveClanNameSetting();
         });
         $("#clan-tag-color-input").on("change", () => {
             const tagColor = ($("#clan-tag-color-input").val() as string) || "";
@@ -264,34 +251,22 @@ export class ClanUi {
             const tagColor = ($("#clan-main-tag-color-input").val() as string) || "";
             this.updateClan({ tagColor });
         });
-        $("#btn-clan-edit-discord").on("click", () => {
-            $("#clan-detail-discord-row").hide();
-            $("#clan-detail-discord-edit").css("display", "flex");
-            $("#clan-edit-discord-input").focus();
-        });
         $("#btn-clan-save-discord").on("click", () => {
-            const discordInviteUrl = (
-                ($("#clan-edit-discord-input").val() as string) || ""
-            ).trim();
-            this.updateClan({ discordInviteUrl });
+            this.saveClanDiscordSetting();
         });
-        $("#btn-clan-clear-discord").on("click", () => {
-            this.updateClan({ discordInviteUrl: "" });
-        });
-        $("#clan-edit-discord-input").on("keypress", (e) => {
+        $("#clan-edit-discord-input").on("keydown", (e) => {
             if (e.key === "Enter") {
-                $("#btn-clan-save-discord").trigger("click");
+                e.preventDefault();
+                this.saveClanDiscordSetting();
             }
         });
         $("#clan-lock-toggle").on("change", () => {
             this.updateClan({ isLocked: $("#clan-lock-toggle").prop("checked") });
         });
-        $("#btn-clan-cancel-name").on("click", () => {
-            this.cancelNameEdit();
-        });
-        $("#clan-edit-name-input").on("keypress", (e) => {
+        $("#clan-edit-name-input").on("keydown", (e) => {
             if (e.key === "Enter") {
-                $("#btn-clan-save-name").trigger("click");
+                e.preventDefault();
+                this.saveClanNameSetting();
             }
         });
         $("#btn-clan-leave").on("click", () => {
@@ -372,6 +347,9 @@ export class ClanUi {
         });
         $("#btn-clan-page-details-tab").on("click", () => {
             this.setClanPageTab("details");
+        });
+        $("#btn-clan-page-settings-tab").on("click", () => {
+            this.setClanPageTab("settings");
         });
         $("#btn-clan-page-requests-tab").on("click", () => {
             this.setClanPageTab("requests");
@@ -538,12 +516,14 @@ export class ClanUi {
         this.clanPageModal.show(true);
     }
 
-    setClanPageTab(tab: "details" | "requests") {
+    setClanPageTab(tab: "details" | "settings" | "requests") {
         this.clanPageTab = tab;
         $("#btn-clan-page-details-tab").toggleClass("active", tab === "details");
+        $("#btn-clan-page-settings-tab").toggleClass("active", tab === "settings");
         $("#btn-clan-page-requests-tab").toggleClass("active", tab === "requests");
         $("#clan-war-column").toggle(tab === "details");
         $("#clan-page-detail").toggle(tab === "details");
+        $("#clan-settings-section").toggle(tab === "settings");
         $("#clan-requests-section").toggle(tab === "requests");
         $("#clan-chat-section").toggle(
             tab === "details" &&
@@ -1293,24 +1273,29 @@ export class ClanUi {
             "background-image",
             `url(${getClanIconUrl(clan.icon)})`,
         );
+        $("#btn-clan-edit-icon").css(
+            "background-image",
+            `url(${getClanIconUrl(clan.icon)})`,
+        );
         $("#clan-detail-season-label").text(
             clan.isCurrentSeason ? "Current Season" : `Season ${clan.season} History`,
         );
         $("#clan-detail-name").text(clan.name);
         $("#clan-detail-name").css("color", clan.tagColor || "");
-        $("#clan-detail-members-count, #clan-members-count").text(
-            `${clan.memberCount} / ${clan.maxMembers}`,
+        $("#clan-detail-members-count").text(
+            `${clan.memberCount} / ${clan.maxMembers} Members`,
         );
+        $("#clan-members-count").text(`${clan.memberCount} / ${clan.maxMembers}`);
         const owner = clan.members?.find((m) => m.isOwner)?.username || "Unknown";
         $("#clan-detail-owner").text(`Owner: ${owner}`);
         const createdDate = new Date(clan.createdAt).toLocaleDateString();
         $("#clan-detail-created").text(`Created: ${createdDate}`);
         $("#clan-detail-lock-status").text(clan.isLocked ? "Locked" : "Open");
-        const canEditDiscord =
+        const isOwner =
             clan.isCurrentSeason &&
             !!this.account.profile?.slug &&
             clan.members.some((m) => m.slug === this.account.profile!.slug && m.isOwner);
-        if (clan.discordInviteUrl || canEditDiscord) {
+        if (clan.discordInviteUrl) {
             $("#clan-detail-discord-row").css("display", "flex");
         } else {
             $("#clan-detail-discord-row").hide();
@@ -1322,10 +1307,7 @@ export class ClanUi {
         } else {
             $("#clan-detail-discord-link").hide().attr("href", "#");
         }
-        $("#btn-clan-edit-discord")
-            .text(clan.discordInviteUrl ? "Edit" : "Add Discord")
-            .toggle(canEditDiscord);
-        $("#clan-detail-discord-edit").hide();
+        $("#clan-edit-name-input").val(clan.name);
         $("#clan-edit-discord-input").val(clan.discordInviteUrl || "");
         $("#clan-lock-toggle").prop("checked", clan.isLocked);
         $("#clan-detail-cgp").text(formatCgp(clan.totalCgp));
@@ -1339,31 +1321,26 @@ export class ClanUi {
         const membersContainer = $("#clan-members-list");
         membersContainer.empty();
 
-        const isOwner =
-            this.account.profile?.slug &&
-            clan.members.some((m) => m.slug === this.account.profile.slug && m.isOwner);
         const isMember =
             this.account.profile?.slug &&
             clan.members.some((m) => m.slug === this.account.profile.slug);
         if (isOwner && clan.isCurrentSeason) {
             $("#btn-clan-edit-icon").show();
-            $("#btn-clan-edit-name").show();
             $("#clan-tag-color-input").show();
             $("#clan-tag-color-input").val(normalizeColorInputValue(clan.tagColor));
             $("#clan-lock-control").show();
+            $("#btn-clan-page-settings-tab").show();
             $("#btn-clan-page-requests-tab").show();
         } else {
             $("#btn-clan-edit-icon").hide();
-            $("#btn-clan-edit-name").hide();
             $("#clan-tag-color-input").hide();
             $("#clan-lock-control").hide();
+            $("#btn-clan-page-settings-tab").hide();
             $("#btn-clan-page-requests-tab").hide();
-            if (this.clanPageTab === "requests") {
+            if (this.clanPageTab === "settings" || this.clanPageTab === "requests") {
                 this.clanPageTab = "details";
             }
         }
-        this.cancelNameEdit();
-
         if (!clan.isCurrentSeason && clan.members.length === 0) {
             membersContainer.append(
                 $("<div/>", {
@@ -2820,17 +2797,29 @@ export class ClanUi {
         }
     }
 
-    cancelNameEdit() {
-        const canEditViewedClan =
-            !!this.viewingClan &&
-            this.viewingClan.isCurrentSeason &&
-            !!this.account.profile?.slug &&
-            this.viewingClan.members.some(
-                (m) => m.slug === this.account.profile!.slug && m.isOwner,
-            );
-        $("#clan-detail-name-edit").hide();
-        $("#clan-detail-name").show();
-        $("#btn-clan-edit-name").toggle(canEditViewedClan);
+    saveClanNameSetting() {
+        if (!this.viewingClan) return;
+
+        const name = (($("#clan-edit-name-input").val() as string) || "").trim();
+        if (!name) {
+            $("#clan-edit-name-input").val(this.viewingClan.name);
+            return;
+        }
+
+        if (name !== this.viewingClan.name) {
+            this.updateClan({ name });
+        }
+    }
+
+    saveClanDiscordSetting() {
+        if (!this.viewingClan) return;
+
+        const discordInviteUrl = (
+            ($("#clan-edit-discord-input").val() as string) || ""
+        ).trim();
+        if (discordInviteUrl !== this.viewingClan.discordInviteUrl) {
+            this.updateClan({ discordInviteUrl });
+        }
     }
 
     updateClan(updates: {
@@ -2863,7 +2852,6 @@ export class ClanUi {
             this.renderClanDetail(res.clan);
             this.renderClanRequests(res.clan);
             this.setClanPageTab(this.clanPageTab);
-            this.cancelNameEdit();
             this.updateMainCard();
         });
     }
