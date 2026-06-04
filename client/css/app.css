@@ -218,6 +218,8 @@ a:active {
   justify-content: center;
   left: 0;
   line-height: 20px;
+  max-width: 100%;
+  overflow-x: hidden;
   position: absolute;
   top: 0;
   width: 100%;
@@ -7068,7 +7070,22 @@ a:active {
       "brteam";
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto;
-    overflow: auto;
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  #modal-prestige-arena
+    #modal-battle-window.arena-joined-layout.arena-battle-royale
+    #arena-teams-board,
+  #modal-prestige-arena
+    #modal-battle-window.arena-joined-layout.arena-battle-royale
+    #arena-br-team-board,
+  #modal-prestige-arena
+    #modal-battle-window.arena-joined-layout.arena-battle-royale
+    .arena-br-lobby-card {
+    max-width: 100%;
+    min-width: 0;
   }
 
   #modal-prestige-arena #arena-mobile-panel-tabs {
@@ -7315,6 +7332,9 @@ a:active {
       "teams"
       "brteam";
     grid-template-rows: auto auto;
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   #modal-prestige-arena
@@ -16361,7 +16381,8 @@ div.roulette {
 #start-menu-wrapper {
   align-items: flex-start;
   color: #fff;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 @media (max-height: 720px) {

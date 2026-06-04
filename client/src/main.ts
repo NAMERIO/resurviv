@@ -3275,6 +3275,11 @@ export class Application {
     }
 
     joinGame(matchData: FindGameMatchData) {
+        window.scrollTo(0, 0);
+        document.documentElement.scrollLeft = 0;
+        document.body.scrollLeft = 0;
+        $("#start-menu-wrapper").scrollLeft(0);
+
         if (!this.game) {
             setTimeout(() => {
                 this.joinGame(matchData);
