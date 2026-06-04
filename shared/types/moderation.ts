@@ -102,6 +102,11 @@ export const zCoinFlipResolveParams = zCoinFlipCheckParams.extend({
     opponent_pick: z.enum(["heads", "tails"]),
 });
 
+export const zCoinFlipHistoryParams = z.object({
+    discord_id: z.string(),
+    limit: z.number().int().min(1).max(25).default(10),
+});
+
 export const zBlackjackCheckParams = zCoinFlipCheckParams;
 
 export const zBlackjackResolveParams = zCoinFlipCheckParams.extend({

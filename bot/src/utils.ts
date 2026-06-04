@@ -42,6 +42,7 @@ export const enum Command {
     GpLeaderboard = "gp_leaderboard",
     TopRankPlayers = "rank_leadrboard",
     CoinFlip = "coinflip",
+    CoinFlipHistory = "coinflip_history",
     Blackjack = "blackjack",
     Balance = "balance",
     ListGameModes = "list_game_modes",

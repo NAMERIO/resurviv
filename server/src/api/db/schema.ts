@@ -80,6 +80,55 @@ export const userAuthIdentityTable = pgTable(
 
 export type UserAuthIdentityTableInsert = typeof userAuthIdentityTable.$inferInsert;
 
+export const coinFlipHistoryTable = pgTable(
+    "coinflip_history",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        challengerUserId: text("challenger_user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        opponentUserId: text("opponent_user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        winnerUserId: text("winner_user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        loserUserId: text("loser_user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        bet: integer("bet").notNull(),
+        coinResult: text("coin_result").$type<"heads" | "tails">().notNull(),
+        opponentPick: text("opponent_pick").$type<"heads" | "tails">().notNull(),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        index("idx_coinflip_history_challenger_created").on(
+            table.challengerUserId,
+            table.createdAt,
+        ),
+        index("idx_coinflip_history_opponent_created").on(
+            table.opponentUserId,
+            table.createdAt,
+        ),
+        index("idx_coinflip_history_winner").on(table.winnerUserId),
+        index("idx_coinflip_history_loser").on(table.loserUserId),
+    ],
+);
+
+export type CoinFlipHistoryTableSelect = typeof coinFlipHistoryTable.$inferSelect;
+
 export const userFriendsTable = pgTable(
     "user_friends",
     {

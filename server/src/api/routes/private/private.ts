@@ -1,5 +1,5 @@
 import { randomInt } from "node:crypto";
-import { and, asc, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { saveConfig } from "../../../../../config";
@@ -18,6 +18,7 @@ import {
     zBlackjackCheckParams,
     zBlackjackResolveParams,
     zCoinFlipCheckParams,
+    zCoinFlipHistoryParams,
     zCoinFlipResolveParams,
     zDiscordBalanceParams,
     zGetGpParams,
@@ -66,6 +67,7 @@ import {
     clanSeasonMembersTable,
     clansTable,
     clanWarHistoryTable,
+    coinFlipHistoryTable,
     itemsTable,
     type MatchDataTable,
     marketListingTable,
@@ -524,6 +526,8 @@ type CoinFlipUser = {
     gpBalance: number;
 };
 
+type CoinFlipHistoryPlayer = Pick<CoinFlipUser, "id" | "slug" | "username">;
+
 async function findDiscordLinkedUser(
     discordId: string,
     database: Pick<typeof db, "select"> = db,
@@ -553,6 +557,13 @@ function toCoinFlipPlayer(user: CoinFlipUser) {
         slug: user.slug,
         username: user.username,
         gpBalance: user.gpBalance,
+    };
+}
+
+function toCoinFlipHistoryPlayer(user: CoinFlipHistoryPlayer) {
+    return {
+        slug: user.slug,
+        username: user.username,
     };
 }
 
@@ -1666,6 +1677,92 @@ export const PrivateRouter = new Hono<Context>()
         },
     )
     .post(
+        "/coinflip_history",
+        databaseEnabledMiddleware,
+        validateParams(zCoinFlipHistoryParams),
+        async (c) => {
+            const { discord_id: discordId, limit } = c.req.valid("json");
+            const user = await findDiscordLinkedUser(discordId);
+
+            if (!user) {
+                return c.json(
+                    {
+                        ok: false,
+                        message:
+                            "This Discord account is not connected to any game account.",
+                    },
+                    200,
+                );
+            }
+
+            const history = await db
+                .select()
+                .from(coinFlipHistoryTable)
+                .where(
+                    or(
+                        eq(coinFlipHistoryTable.challengerUserId, user.id),
+                        eq(coinFlipHistoryTable.opponentUserId, user.id),
+                    ),
+                )
+                .orderBy(desc(coinFlipHistoryTable.createdAt))
+                .limit(limit);
+
+            const playerIds = [
+                ...new Set(
+                    history.flatMap((game) => [
+                        game.challengerUserId,
+                        game.opponentUserId,
+                        game.winnerUserId,
+                        game.loserUserId,
+                    ]),
+                ),
+            ];
+
+            const players = playerIds.length
+                ? await db
+                      .select({
+                          id: usersTable.id,
+                          slug: usersTable.slug,
+                          username: usersTable.username,
+                      })
+                      .from(usersTable)
+                      .where(inArray(usersTable.id, playerIds))
+                : [];
+            const playersById = new Map(players.map((player) => [player.id, player]));
+
+            return c.json(
+                {
+                    ok: true,
+                    player: toCoinFlipPlayer(user),
+                    history: history.flatMap((game) => {
+                        const challenger = playersById.get(game.challengerUserId);
+                        const opponent = playersById.get(game.opponentUserId);
+                        const winner = playersById.get(game.winnerUserId);
+                        const loser = playersById.get(game.loserUserId);
+
+                        if (!challenger || !opponent || !winner || !loser) {
+                            return [];
+                        }
+
+                        return {
+                            id: game.id,
+                            bet: game.bet,
+                            coinResult: game.coinResult,
+                            opponentPick: game.opponentPick,
+                            createdAt: game.createdAt.toISOString(),
+                            challenger: toCoinFlipHistoryPlayer(challenger),
+                            opponent: toCoinFlipHistoryPlayer(opponent),
+                            winner: toCoinFlipHistoryPlayer(winner),
+                            loser: toCoinFlipHistoryPlayer(loser),
+                            result: game.winnerUserId === user.id ? "won" : "lost",
+                        };
+                    }),
+                },
+                200,
+            );
+        },
+    )
+    .post(
         "/coinflip_resolve",
         databaseEnabledMiddleware,
         validateParams(zCoinFlipResolveParams),
@@ -1770,6 +1867,16 @@ export const PrivateRouter = new Hono<Context>()
                     .returning({
                         gpBalance: usersTable.gpBalance,
                     });
+
+                await tx.insert(coinFlipHistoryTable).values({
+                    challengerUserId: challenger.id,
+                    opponentUserId: opponent.id,
+                    winnerUserId: winner.id,
+                    loserUserId: loser.id,
+                    bet,
+                    coinResult,
+                    opponentPick,
+                });
 
                 return {
                     ok: true,

@@ -32,6 +32,7 @@ import { Command } from "../utils";
 import { balanceHandler } from "./balance";
 import { blackjackHandler } from "./blackjack";
 import { coinFlipHandler } from "./coinflip";
+import { coinFlipHistoryHandler } from "./coinflip-history";
 import { gpLeaderboardHandler } from "./gp-leaderboard";
 import { createCommand, createSlashCommand, genericExecute } from "./helpers";
 import { listGameModesHandler } from "./list-game-modes";
@@ -556,6 +557,7 @@ const commands = {
         | "search_player"
         | "search_ip"
         | "coinflip"
+        | "coinflip_history"
         | "blackjack"
         | "balance"
         | "gp_leaderboard"
@@ -589,6 +591,7 @@ export const commandHandlers: CommandHandlers = (
         [Command.SearchPlayer]: searchPlayersHandler.execute,
         [Command.SearchIp]: searchIpHandler.execute,
         [Command.CoinFlip]: coinFlipHandler.execute,
+        [Command.CoinFlipHistory]: coinFlipHistoryHandler.execute,
         [Command.Blackjack]: blackjackHandler.execute,
         [Command.Balance]: balanceHandler.execute,
         [Command.GpLeaderboard]: gpLeaderboardHandler.execute,
@@ -603,6 +606,7 @@ export const commandsToRegister: SlashCommandOptionsOnlyBuilder[] = [
     searchPlayersHandler.command,
     searchIpHandler.command,
     coinFlipHandler.command,
+    coinFlipHistoryHandler.command,
     blackjackHandler.command,
     balanceHandler.command,
     gpLeaderboardHandler.command,
