@@ -73,6 +73,7 @@ export interface TeamMenuPlayer {
     clanTagColor?: string;
     team?: "A" | "B";
     spectator?: boolean;
+    brTeamCode?: string;
 }
 
 /**
@@ -158,6 +159,7 @@ export const zTeamJoinMsg = z.object({
         arena: z.boolean().optional(),
         preferredTeam: z.enum(["A", "B"]).optional(),
         spectator: z.boolean().optional(),
+        teamCode: z.string().trim().max(12).optional(),
         playerData: z.object({
             name: z.string(),
             outfit: z.string().optional(),
@@ -236,6 +238,26 @@ export const zTeamSwapTeamMsg = z.object({
 
 export type TeamSwapTeamMsg = z.infer<typeof zTeamSwapTeamMsg>;
 
+export const zTeamCreateBattleRoyaleTeamMsg = z.object({
+    type: z.literal("createBattleRoyaleTeam"),
+    data: z.object({}).optional(),
+});
+
+export type TeamCreateBattleRoyaleTeamMsg = z.infer<
+    typeof zTeamCreateBattleRoyaleTeamMsg
+>;
+
+export const zTeamJoinBattleRoyaleTeamMsg = z.object({
+    type: z.literal("joinBattleRoyaleTeam"),
+    data: z.object({
+        teamCode: z.string().trim().min(4).max(4),
+    }),
+});
+
+export type TeamJoinBattleRoyaleTeamMsg = z.infer<
+    typeof zTeamJoinBattleRoyaleTeamMsg
+>;
+
 export const zTeamPlayGameMsg = z.object({
     type: z.literal("playGame"),
     data: z.object({
@@ -262,6 +284,8 @@ export const zTeamClientMsg = z.discriminatedUnion("type", [
     zTeamPlayGameMsg,
     zTeamKickMsg,
     zTeamSwapTeamMsg,
+    zTeamCreateBattleRoyaleTeamMsg,
+    zTeamJoinBattleRoyaleTeamMsg,
     zTeamChangeNameMsg,
     zTeamChangeOutfitMsg,
     zTeamLobbyChatSendMsg,
@@ -279,5 +303,7 @@ export type ClientToServerTeamMsg =
     | TeamCreateMsg
     | TeamKickMsg
     | TeamSwapTeamMsg
+    | TeamCreateBattleRoyaleTeamMsg
+    | TeamJoinBattleRoyaleTeamMsg
     | TeamGameCompleteMsg
     | TeamPlayGameMsg;

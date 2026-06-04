@@ -140,6 +140,7 @@ class Room {
     players: Player[] = [];
     arenaTeams = new Map<Player, "A" | "B">();
     arenaSpectators = new Set<Player>();
+    battleRoyaleTeams = new Map<Player, string>();
     battleRoyaleArenaReachedMaxPlayers = false;
     currentArenaGameId = "";
 
@@ -184,6 +185,7 @@ class Room {
         opts?: {
             preferredTeam?: "A" | "B";
             spectator?: boolean;
+            battleRoyaleTeamCode?: string;
         },
     ): { ok: true } | { ok: false; error: TeamMenuErrorType } {
         if (!this.data.arena && this.players.length >= this.data.maxPlayers) {
@@ -193,11 +195,19 @@ class Room {
         if (this.data.arena && this.isBattleRoyaleArena()) {
             if (opts?.spectator) {
                 this.arenaSpectators.add(player);
+                this.battleRoyaleTeams.delete(player);
             } else if (this.getBattleRoyaleArenaPlayerCount() >= this.data.maxPlayers) {
                 return { ok: false, error: "join_full" };
-            } else if (
-                this.getBattleRoyaleArenaPlayerCount() + 1 >=
-                this.data.maxPlayers
+            } else if (opts?.battleRoyaleTeamCode) {
+                const teamRes = this.setBattleRoyaleTeam(
+                    player,
+                    opts.battleRoyaleTeamCode,
+                );
+                if (!teamRes.ok) return teamRes;
+            }
+            if (
+                !opts?.spectator &&
+                this.getBattleRoyaleArenaPlayerCount() + 1 >= this.data.maxPlayers
             ) {
                 this.battleRoyaleArenaReachedMaxPlayers = true;
             }
@@ -358,6 +368,36 @@ class Room {
 
                 this.arenaSpectators.delete(targetPlayer);
                 this.arenaTeams.set(targetPlayer, targetTeam);
+                this.sendState();
+                break;
+            }
+            case "createBattleRoyaleTeam": {
+                if (!this.isBattleRoyaleArena()) break;
+                if (
+                    this.data.findingGame ||
+                    player.inGame ||
+                    this.arenaSpectators.has(player)
+                ) {
+                    break;
+                }
+                this.createBattleRoyaleTeamForPlayer(player);
+                this.sendState();
+                break;
+            }
+            case "joinBattleRoyaleTeam": {
+                if (!this.isBattleRoyaleArena()) break;
+                if (
+                    this.data.findingGame ||
+                    player.inGame ||
+                    this.arenaSpectators.has(player)
+                ) {
+                    break;
+                }
+                const joinRes = this.setBattleRoyaleTeam(player, msg.data.teamCode);
+                if (!joinRes.ok) {
+                    player.send("error", { type: joinRes.error });
+                    break;
+                }
                 this.sendState();
                 break;
             }
@@ -539,6 +579,7 @@ class Room {
 
         this.arenaTeams.delete(player);
         this.arenaSpectators.delete(player);
+        this.battleRoyaleTeams.delete(player);
         player.room = undefined;
         player.socket.close();
 
@@ -581,6 +622,11 @@ class Room {
         return cap;
     }
 
+    getBattleRoyaleTeamCapacity() {
+        const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
+        return Math.max(1, mode?.teamMode ?? 1);
+    }
+
     getAmongUsRequiredPlayerCount() {
         return this.data.amongUsImpostorCount * 2 + 1;
     }
@@ -611,6 +657,77 @@ class Room {
             if (!this.arenaSpectators.has(p)) count++;
         }
         return count;
+    }
+
+    normalizeBattleRoyaleTeamCode(rawCode: string) {
+        return rawCode.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+    }
+
+    battleRoyaleTeamExists(teamCode: string) {
+        for (const code of this.battleRoyaleTeams.values()) {
+            if (code === teamCode) return true;
+        }
+        return false;
+    }
+
+    generateBattleRoyaleTeamCode() {
+        let teamCode = this.normalizeBattleRoyaleTeamCode(generateTeamCode(4));
+        while (this.battleRoyaleTeamExists(teamCode)) {
+            teamCode = this.normalizeBattleRoyaleTeamCode(generateTeamCode(4));
+        }
+        return teamCode;
+    }
+
+    getBattleRoyaleTeamCount(teamCode: string) {
+        let count = 0;
+        for (const p of this.players) {
+            if (
+                this.battleRoyaleTeams.get(p) === teamCode &&
+                !this.arenaSpectators.has(p)
+            ) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    createBattleRoyaleTeamForPlayer(player: Player) {
+        const teamCode = this.generateBattleRoyaleTeamCode();
+        this.arenaSpectators.delete(player);
+        this.battleRoyaleTeams.set(player, teamCode);
+        return teamCode;
+    }
+
+    setBattleRoyaleTeam(
+        player: Player,
+        rawCode: string,
+        requireExisting = true,
+    ): { ok: true } | { ok: false; error: TeamMenuErrorType } {
+        const teamCode = this.normalizeBattleRoyaleTeamCode(rawCode);
+        if (teamCode.length !== 4) {
+            return { ok: false, error: "team_full" };
+        }
+        if (requireExisting && !this.battleRoyaleTeamExists(teamCode)) {
+            return { ok: false, error: "join_not_found" };
+        }
+
+        const currentTeam = this.battleRoyaleTeams.get(player);
+        const currentTeamCount = currentTeam === teamCode ? 1 : 0;
+        if (
+            this.getBattleRoyaleTeamCount(teamCode) - currentTeamCount >=
+            this.getBattleRoyaleTeamCapacity()
+        ) {
+            return { ok: false, error: "team_full" };
+        }
+
+        this.arenaSpectators.delete(player);
+        this.battleRoyaleTeams.set(player, teamCode);
+        return { ok: true };
+    }
+
+    getBattleRoyaleMatchRoomId(player: Player) {
+        const teamCode = this.battleRoyaleTeams.get(player);
+        return teamCode ? `${this.id}-BR-${teamCode}` : this.id;
     }
 
     canBattleRoyaleArenaJoinInProgressAsPlayer() {
@@ -655,6 +772,7 @@ class Room {
         if (!this.data.arena) {
             this.arenaTeams.clear();
             this.arenaSpectators.clear();
+            this.battleRoyaleTeams.clear();
             return;
         }
         if (this.isBattleRoyaleArena()) {
@@ -666,8 +784,26 @@ class Room {
             ) {
                 this.arenaSpectators.clear();
             }
+            const cap = this.getBattleRoyaleTeamCapacity();
+            const teamCounts = new Map<string, number>();
+            for (const p of this.players) {
+                if (this.arenaSpectators.has(p)) {
+                    this.battleRoyaleTeams.delete(p);
+                    continue;
+                }
+                const teamCode = this.battleRoyaleTeams.get(p);
+                if (!teamCode) continue;
+                const count = teamCounts.get(teamCode) || 0;
+                if (count >= cap) {
+                    const newTeamCode = this.createBattleRoyaleTeamForPlayer(p);
+                    teamCounts.set(newTeamCode, 1);
+                } else {
+                    teamCounts.set(teamCode, count + 1);
+                }
+            }
             return;
         }
+        this.battleRoyaleTeams.clear();
         const cap = this.getArenaTeamCapacity();
         if (this.isSingleTeamArena()) {
             for (const p of this.players) {
@@ -766,8 +902,11 @@ class Room {
         }
         this.data.region = region;
 
-        const queuedPlayers =
-            this.data.arena || isBattleRoyaleMode ? this.players : [player];
+        const queuedPlayers = this.isBattleRoyaleArena()
+            ? this.players.filter((p) => !this.isArenaSpectator(p))
+            : this.data.arena || isBattleRoyaleMode
+              ? this.players
+              : [player];
         const tokenMap = new Map<Player, string>();
         const playerData = await getFindGamePlayerData(
             queuedPlayers.map((player) => {
@@ -779,7 +918,9 @@ class Room {
                     this.isArenaSpectator(player);
                 return {
                     roomId:
-                        this.data.arena && arenaSpectator
+                        this.data.arena && this.isBattleRoyaleArena()
+                            ? this.getBattleRoyaleMatchRoomId(player)
+                            : this.data.arena && arenaSpectator
                             ? `${this.id}-S-${player.playerId}`
                             : this.data.arena &&
                                 !this.isBattleRoyaleArena() &&
@@ -940,7 +1081,9 @@ class Room {
                 const arenaSpectator = spectator || this.isArenaSpectator(player);
                 return {
                     roomId:
-                        arenaSpectator && !this.isBattleRoyaleArena()
+                        this.isBattleRoyaleArena()
+                            ? this.getBattleRoyaleMatchRoomId(player)
+                            : arenaSpectator && !this.isBattleRoyaleArena()
                             ? `${this.id}-S-${player.playerId}`
                             : this.data.arena &&
                                 !this.isBattleRoyaleArena() &&
@@ -1020,6 +1163,12 @@ class Room {
             spectator:
                 this.data.arena && !this.isBattleRoyaleArena()
                     ? this.isArenaSpectator(p)
+                    : this.data.arena && this.isBattleRoyaleArena()
+                      ? this.isArenaSpectator(p)
+                    : undefined,
+            brTeamCode:
+                this.data.arena && this.isBattleRoyaleArena() && !this.isArenaSpectator(p)
+                    ? this.battleRoyaleTeams.get(p)
                     : undefined,
         }));
         // all players must be logged in to disable it
@@ -1398,6 +1547,22 @@ export class TeamMenu {
                     if (!joinRes.ok) {
                         player.send("error", { type: joinRes.error });
                         break;
+                    }
+
+                    if (
+                        !wantsSpectator &&
+                        room.isBattleRoyaleArena() &&
+                        msg.data.teamCode
+                    ) {
+                        const teamJoinRes = room.setBattleRoyaleTeam(
+                            player,
+                            msg.data.teamCode,
+                        );
+                        if (!teamJoinRes.ok) {
+                            player.send("error", { type: teamJoinRes.error });
+                        } else {
+                            room.sendState();
+                        }
                     }
 
                     if (

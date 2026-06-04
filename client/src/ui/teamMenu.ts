@@ -140,10 +140,12 @@ export class TeamMenu {
         isLeader: boolean;
         team?: "A" | "B";
         spectator?: boolean;
+        brTeamCode?: string;
     }> = [];
     joinPrefs: {
         preferredTeam?: "A" | "B";
         spectator?: boolean;
+        teamCode?: string;
     } = {};
 
     prevPlayerCount = 0;
@@ -164,6 +166,8 @@ export class TeamMenu {
     lobbyGifStillFrameCache = new Map<string, string | null>();
     lobbyGifImageObserver: IntersectionObserver | null = null;
     observedLobbyGifImages = new Set<HTMLImageElement>();
+    battleRoyaleTeamError: TeamMenuErrorType | "" = "";
+    battleRoyaleTeamErrorTimeout: ReturnType<typeof setTimeout> | null = null;
 
     hideUrl!: boolean;
 
@@ -353,6 +357,7 @@ export class TeamMenu {
         joinPrefs?: {
             preferredTeam?: "A" | "B";
             spectator?: boolean;
+            teamCode?: string;
         },
     ) {
         const shouldReconnect =
@@ -448,6 +453,7 @@ export class TeamMenu {
                             arena: this.arena,
                             preferredTeam: this.joinPrefs.preferredTeam,
                             spectator: this.joinPrefs.spectator,
+                            teamCode: this.joinPrefs.teamCode,
                             playerData: {
                                 ...this.playerData,
                                 outfit: loadout?.outfit,
@@ -477,6 +483,11 @@ export class TeamMenu {
             this.joiningGame = false;
             this.arena = false;
             this.joinPrefs = {};
+            if (this.battleRoyaleTeamErrorTimeout) {
+                clearTimeout(this.battleRoyaleTeamErrorTimeout);
+                this.battleRoyaleTeamErrorTimeout = null;
+            }
+            this.battleRoyaleTeamError = "";
             this.lobbyMessages = [];
             this.hideLobbyGifPicker();
             this.refreshUi();
@@ -526,6 +537,9 @@ export class TeamMenu {
                 this.players = stateData.players;
                 this.localPlayerId = stateData.localPlayerId;
                 this.isLeader = this.getPlayerById(this.localPlayerId)!.isLeader;
+                if (this.getPlayerById(this.localPlayerId)?.brTeamCode) {
+                    this.battleRoyaleTeamError = "";
+                }
 
                 // Override room properties with local values if we're
                 // the leader; otherwise, the server may override a
@@ -566,6 +580,29 @@ export class TeamMenu {
                 this.leave("kicked");
                 break;
             case "error":
+                if (
+                    this.joined &&
+                    this.arena &&
+                    ["team_full", "join_not_found"].includes(
+                        (data as { type: TeamMenuErrorType }).type,
+                    )
+                ) {
+                    this.battleRoyaleTeamError = (data as {
+                        type: TeamMenuErrorType;
+                    }).type;
+                    this.refreshUi();
+                    this.onStateUpdated?.();
+                    if (this.battleRoyaleTeamErrorTimeout) {
+                        clearTimeout(this.battleRoyaleTeamErrorTimeout);
+                    }
+                    this.battleRoyaleTeamErrorTimeout = setTimeout(() => {
+                        this.battleRoyaleTeamError = "";
+                        this.battleRoyaleTeamErrorTimeout = null;
+                        this.refreshUi();
+                        this.onStateUpdated?.();
+                    }, 3000);
+                    break;
+                }
                 this.leave((data as { type: string }).type);
         }
     }
@@ -1157,6 +1194,19 @@ export class TeamMenu {
         this.sendMessage("swapTeam", {
             playerId,
             team,
+        });
+    }
+
+    createBattleRoyaleTeam() {
+        if (!this.joined || !this.arena) return;
+        this.sendMessage("createBattleRoyaleTeam", {});
+    }
+
+    joinBattleRoyaleTeam(teamCode: string) {
+        if (!this.joined || !this.arena) return;
+        this.battleRoyaleTeamError = "";
+        this.sendMessage("joinBattleRoyaleTeam", {
+            teamCode,
         });
     }
 
