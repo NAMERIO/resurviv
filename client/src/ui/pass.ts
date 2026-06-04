@@ -114,6 +114,47 @@ function createPassLock() {
     );
 }
 
+function getXpToReachPassLevel(
+    passType: string,
+    currentLevel: number,
+    currentXp: number,
+    targetLevel: number,
+) {
+    if (currentLevel >= targetLevel) return 0;
+
+    let remainingXp = Math.max(
+        0,
+        passUtil.getPassLevelXp(passType, currentLevel) - currentXp,
+    );
+    for (let level = currentLevel + 1; level < targetLevel; level++) {
+        remainingXp += passUtil.getPassLevelXp(passType, level);
+    }
+    return remainingXp;
+}
+
+function createPassXpTooltip(
+    passType: string,
+    passLevel: number,
+    passXp: number,
+    targetLevel: number,
+) {
+    const remainingXp = getXpToReachPassLevel(passType, passLevel, passXp, targetLevel);
+    const xpText = `${remainingXp.toLocaleString()} XP`;
+    return $("<div/>", {
+        class: "pass-xp-tooltip",
+        "aria-hidden": "true",
+    }).append(
+        $("<div/>", { class: "pass-xp-tooltip-value", text: xpText }),
+        $("<div/>", {
+            class: "pass-xp-tooltip-label",
+            text:
+                remainingXp === 0
+                    ? `Level ${targetLevel} reached`
+                    : `to reach Level ${targetLevel}`,
+        }),
+    );
+}
+
 function hasPremiumPassUnlock(passData: unknown) {
     const unlocks = (passData as { unlocks?: Record<string, boolean> }).unlocks;
     return !!unlocks?.[premiumPassUnlockType];
@@ -734,7 +775,14 @@ export class Pass {
                     applyPassRewardRarityStyle(itemDiv, passItem);
                 }
                 itemDiv.append(
-                    $("<div/>", { class: "pass-item-level", text: itemLevel }),
+                    $("<div/>", { class: "pass-item-level", text: itemLevel }).append(
+                        createPassXpTooltip(
+                            this.pass.data.type,
+                            passLevel,
+                            passXp,
+                            itemLevel,
+                        ),
+                    ),
                     $("<div/>", {
                         class: "pass-item-image",
                         css: {
@@ -750,7 +798,7 @@ export class Pass {
 
             const trackItem = $("<div/>", {
                 class: `pass-track-item ${isUnlocked ? "unlocked" : "locked"} ${isGoldPotatoReward ? "golden" : ""}`,
-                title: `${itemName} - Level ${itemLevel}`,
+                "aria-label": `${itemName} - Level ${itemLevel}`,
             });
 
             if (isGoldPotatoReward) {
@@ -776,7 +824,7 @@ export class Pass {
                 : (() => {
                       const emptySlot = $("<div/>", {
                           class: "pass-premium-item pass-track-item pass-empty-slot locked",
-                          title: `Premium reward - Level ${premiumItemLevel}`,
+                          "aria-label": `Premium reward - Level ${premiumItemLevel}`,
                       });
                       if (!ownsPremiumPass) {
                           emptySlot.append(createPassLock());
@@ -790,7 +838,14 @@ export class Pass {
                 $("<div/>", {
                     class: `hexagon ${isUnlocked ? "passed" : ""}`,
                     text: String(itemLevel),
-                }),
+                }).append(
+                    createPassXpTooltip(
+                        this.pass.data.type,
+                        passLevel,
+                        passXp,
+                        itemLevel,
+                    ),
+                ),
             );
         }
         if (options.autoScroll ?? true) {
@@ -839,7 +894,7 @@ export class Pass {
         const isGoldPotatoReward = !("item" in passItem) && "gp" in passItem;
         const trackItem = $("<div/>", {
             class: `pass-premium-item pass-track-item premium ${isUnlocked ? "unlocked" : "locked"} ${isGoldPotatoReward ? "golden" : ""}`,
-            title: `${itemName} - Premium Level ${passItem.level}`,
+            "aria-label": `${itemName} - Premium Level ${passItem.level}`,
         });
 
         if (isGoldPotatoReward) {

@@ -4872,6 +4872,7 @@ a:active {
   font-weight: 700;
   height: 28px;
   line-height: 28px;
+  position: relative;
   text-align: center;
   width: 28px;
 }
@@ -4907,6 +4908,72 @@ a:active {
   background-size: contain;
   background-repeat: no-repeat;
   opacity: 0.7;
+}
+
+.pass-xp-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  z-index: 20;
+  min-width: 82px;
+  max-width: 116px;
+  padding: 6px 8px 7px;
+  transform: translate(-50%, 8px);
+  border: 1px solid rgba(255, 216, 0, 0.75);
+  border-radius: 5px;
+  background:
+    linear-gradient(180deg, rgba(35, 35, 35, 0.98), rgba(12, 12, 12, 0.98));
+  box-shadow:
+    0 5px 12px rgba(0, 0, 0, 0.45),
+    inset 0 1px rgba(255, 255, 255, 0.12);
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  text-align: center;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+  white-space: normal;
+}
+
+.pass-xp-tooltip::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 0;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: #ffd800;
+}
+
+.pass-xp-tooltip-value {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.05;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.pass-xp-tooltip-label {
+  margin-top: 3px;
+  color: #c4c4c4;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.pass-item-level:hover > .pass-xp-tooltip,
+#start-menu .pass-progress-levels .hexagon:hover > .pass-xp-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.pass-item-level > .pass-xp-tooltip {
+  bottom: 32px;
+}
+
+#start-menu .pass-progress-levels .hexagon > .pass-xp-tooltip {
+  bottom: 37px;
 }
 
 #pass-items-list::-webkit-scrollbar {
