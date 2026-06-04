@@ -38,6 +38,7 @@ type CoinFlipHistoryResponse =
       };
 
 type CoinFlipHistoryAccount = Extract<CoinFlipHistoryResponse, { ok: true }>["player"];
+const MAX_HISTORY_GRID_GAMES = 8;
 
 function formatGp(value: number) {
     return value.toLocaleString("en-US");
@@ -71,25 +72,47 @@ function buildHistoryEmbed(
         .setTitle("Coinflip History")
         .setColor(netGp >= 0 ? 0x4fbf7a : 0xd95f59)
         .setDescription(
-            [
-                `**${displayAccountName(player)}** • ${wins}W ${losses}L • **${netGp >= 0 ? "+" : ""}${formatGp(netGp)} GP**`,
-                "",
-                history
-                    .map((game, index) => {
-                        const opponent = game.result === "won" ? game.loser : game.winner;
-                        const resultLabel = game.result === "won" ? "Won" : "Lost";
-                        const gpPrefix = game.result === "won" ? "+" : "-";
-
-                        return [
-                            `**#${index + 1} ${resultLabel} ${gpPrefix}${formatGp(game.bet)} GP** vs **${displayAccountName(opponent)}** • ${formatTimestamp(game.createdAt)}`,
-                            `Coin **${titleCase(game.coinResult)}** • pick **${titleCase(game.opponentPick)}** • ${displayAccountName(game.winner)} beat ${displayAccountName(game.loser)}`,
-                        ].join("\n");
-                    })
-                    .join("\n\n"),
-            ].join("\n"),
+            `**${displayAccountName(player)}** • ${wins}W ${losses}L • **${netGp >= 0 ? "+" : ""}${formatGp(netGp)} GP**`,
         )
         .setFooter({ text: "Newest coinflips first" })
         .setTimestamp();
+
+    embed.addFields(
+        history.flatMap((game, index) => {
+            const opponent = game.result === "won" ? game.loser : game.winner;
+            const resultLabel = game.result === "won" ? "Won" : "Lost";
+            const gpPrefix = game.result === "won" ? "+" : "-";
+
+            return [
+                {
+                    name: `#${index + 1} Match`,
+                    value: [
+                        `**${displayAccountName(player)}**`,
+                        `vs **${displayAccountName(opponent)}**`,
+                        formatTimestamp(game.createdAt),
+                    ].join("\n"),
+                    inline: true,
+                },
+                {
+                    name: "Result",
+                    value: [
+                        `**${resultLabel} ${gpPrefix}${formatGp(game.bet)} GP**`,
+                        `W: ${displayAccountName(game.winner)}`,
+                        `L: ${displayAccountName(game.loser)}`,
+                    ].join("\n"),
+                    inline: true,
+                },
+                {
+                    name: "Flip",
+                    value: [
+                        `Coin: **${titleCase(game.coinResult)}**`,
+                        `Pick: **${titleCase(game.opponentPick)}**`,
+                    ].join("\n"),
+                    inline: true,
+                },
+            ];
+        }),
+    );
 
     return embed;
 }
@@ -103,7 +126,7 @@ export const coinFlipHistoryHandler = {
                 .setName("limit")
                 .setDescription("Number of recent coinflips to show")
                 .setMinValue(1)
-                .setMaxValue(25)
+                .setMaxValue(MAX_HISTORY_GRID_GAMES)
                 .setRequired(false),
         ),
 
@@ -114,7 +137,10 @@ export const coinFlipHistoryHandler = {
             const res = await honoClient.coinflip_history.$post({
                 json: {
                     discord_id: interaction.user.id,
-                    limit: interaction.options.getInteger("limit") ?? 10,
+                    limit: Math.min(
+                        interaction.options.getInteger("limit") ?? MAX_HISTORY_GRID_GAMES,
+                        MAX_HISTORY_GRID_GAMES,
+                    ),
                 },
             });
             const result = (await res.json()) as CoinFlipHistoryResponse;
