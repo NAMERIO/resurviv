@@ -11122,6 +11122,88 @@ input [type="image"]:focus {
   margin-bottom: 0;
 }
 
+.clan-discord-input-row,
+.clan-discord-edit,
+.clan-discord-row,
+.clan-discord-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clan-discord-input-row {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.clan-discord-icon {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  background-image: url(../img/clans/discord-logo.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.clan-discord-input {
+  box-sizing: border-box;
+  min-width: 0;
+  flex: 1 1 auto;
+  height: 32px;
+  padding: 0 10px;
+  border: 2px solid #1d1d1d;
+  border-radius: 4px;
+  background-color: #1f1f1f;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+}
+
+.clan-discord-input:focus {
+  border-color: #5865f2;
+}
+
+.clan-discord-link {
+  width: max-content;
+  color: #d7dcff;
+  font-size: 14px;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.clan-discord-link:hover {
+  filter: brightness(85%);
+}
+
+.clan-discord-edit {
+  max-width: 520px;
+  margin-top: 7px;
+}
+
+.clan-discord-row {
+  width: max-content;
+  max-width: 100%;
+  margin-top: 8px;
+}
+
+.clan-discord-row .clan-btn-small {
+  flex: 0 0 auto;
+  min-width: 52px;
+  height: 28px;
+  line-height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.clan-discord-edit .clan-btn-small {
+  flex: 0 0 auto;
+  height: 32px;
+  line-height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
 /* Region Dropdown */
 .clan-region-group {
   width: 100%;

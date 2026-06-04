@@ -6,6 +6,7 @@ export const ClanConstants = {
     MaxMembers: 20,
     NameMinLen: 2,
     NameMaxLen: 16,
+    DiscordInviteMaxLen: 120,
     MessageMaxLen: 300,
     RejoinCooldownMs: 0, // none cooldown for now
     CurrentSeason: 2,
@@ -21,6 +22,12 @@ export const zCreateClanRequest = z.object({
     name: z.string().trim().min(ClanConstants.NameMinLen).max(ClanConstants.NameMaxLen),
     icon: z.string().min(1),
     tagColor: z.string().trim().regex(ClanTagColorRegex).optional().default(""),
+    discordInviteUrl: z
+        .string()
+        .trim()
+        .max(ClanConstants.DiscordInviteMaxLen)
+        .optional()
+        .default(""),
 });
 export type CreateClanRequest = z.infer<typeof zCreateClanRequest>;
 
@@ -67,6 +74,7 @@ export const zUpdateClanRequest = z.object({
         .optional(),
     icon: z.string().min(1).optional(),
     tagColor: z.string().trim().regex(ClanTagColorRegex).optional(),
+    discordInviteUrl: z.string().trim().max(ClanConstants.DiscordInviteMaxLen).optional(),
     isLocked: z.boolean().optional(),
 });
 export type UpdateClanRequest = z.infer<typeof zUpdateClanRequest>;
@@ -204,6 +212,7 @@ export type ClanInfo = {
     name: string;
     icon: string;
     tagColor: string;
+    discordInviteUrl: string;
     ownerId: string;
     memberCount: number;
     maxMembers: number;
@@ -248,7 +257,12 @@ export type CreateClanResponse =
     | { success: true; clan: ClanInfo }
     | {
           success: false;
-          error: "name_taken" | "invalid_name" | "already_in_clan" | "server_error";
+          error:
+              | "name_taken"
+              | "invalid_name"
+              | "invalid_discord_url"
+              | "already_in_clan"
+              | "server_error";
       };
 
 export type JoinClanResponse =
@@ -314,7 +328,12 @@ export type UpdateClanResponse =
     | { success: true; clan: ClanDetail }
     | {
           success: false;
-          error: "not_owner" | "name_taken" | "invalid_name" | "server_error";
+          error:
+              | "not_owner"
+              | "name_taken"
+              | "invalid_name"
+              | "invalid_discord_url"
+              | "server_error";
       };
 
 export type DeleteClanResponse =

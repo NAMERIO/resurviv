@@ -2535,6 +2535,10 @@
                         <span>Tag Color</span>
                         <input type="color" id="clan-create-tag-color-input" class="clan-tag-color-inline" value="#ffffff" title="Tag Color" />
                       </div>
+                      <div class="clan-discord-input-row">
+                        <span class="clan-discord-icon"></span>
+                        <input type="text" id="clan-create-discord-input" class="clan-discord-input" placeholder="Discord invite link (optional)" maxlength="120" />
+                      </div>
                       <div id="btn-clan-create-submit" class="clan-btn clan-btn-green">Create Clan</div>
                       <div class="clan-logo-buttons">
                         <div id="btn-clan-icon-reset" class="clan-btn-reset"></div>
@@ -2660,6 +2664,19 @@
                   <div id="clan-detail-owner" class="clan-detail-meta">Owner: Unknown</div>
                   <div id="clan-detail-lock-status" class="clan-detail-meta">Open</div>
                   <div id="clan-detail-created" class="clan-detail-meta">Created: N/A</div>
+                  <div id="clan-detail-discord-row" class="clan-discord-row" style="display: none;">
+                    <a id="clan-detail-discord-link" class="clan-discord-link" href="#" target="_blank" rel="noopener noreferrer" style="display: none;">
+                      <span class="clan-discord-icon"></span>
+                      <span>Join Discord</span>
+                    </a>
+                    <div id="btn-clan-edit-discord" class="clan-btn clan-btn-blue clan-btn-small" style="display: none;">Edit</div>
+                  </div>
+                  <div id="clan-detail-discord-edit" class="clan-discord-edit" style="display: none;">
+                    <span class="clan-discord-icon"></span>
+                    <input type="text" id="clan-edit-discord-input" class="clan-discord-input" placeholder="Discord invite link" maxlength="120" />
+                    <div id="btn-clan-save-discord" class="clan-btn clan-btn-green clan-btn-small">Save</div>
+                    <div id="btn-clan-clear-discord" class="clan-btn clan-btn-grey clan-btn-small">Clear</div>
+                  </div>
                   <label id="clan-lock-control" class="clan-lock-control" style="display: none;">
                     <input id="clan-lock-toggle" type="checkbox" />
                     <span>Lock Clan</span>

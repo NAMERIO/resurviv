@@ -156,6 +156,41 @@ function sanitizeClanTagColor(color: string | null | undefined): string {
     return normalized;
 }
 
+function sanitizeDiscordInviteUrl(url: string | null | undefined): string | null {
+    const normalized = (url ?? "").trim();
+    if (!normalized) return "";
+    const urlWithProtocol = /^https?:\/\//i.test(normalized)
+        ? normalized
+        : `https://${normalized}`;
+
+    try {
+        const parsed = new URL(urlWithProtocol);
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+            return null;
+        }
+
+        const hostname = parsed.hostname.toLowerCase();
+        const isInviteHost =
+            hostname === "discord.gg" ||
+            hostname === "www.discord.gg" ||
+            hostname === "discord.com" ||
+            hostname === "www.discord.com";
+        const isDiscordComInvite =
+            (hostname === "discord.com" || hostname === "www.discord.com") &&
+            parsed.pathname.toLowerCase().startsWith("/invite/");
+
+        if (!isInviteHost || (hostname.includes("discord.com") && !isDiscordComInvite)) {
+            return null;
+        }
+
+        parsed.protocol = "https:";
+        parsed.hash = "";
+        return parsed.toString();
+    } catch {
+        return null;
+    }
+}
+
 async function pruneClanMessages(clanId: string) {
     await db
         .delete(clanMessagesTable)
@@ -928,6 +963,7 @@ async function getClanInfo(
         name: clan.name,
         icon: clan.icon,
         tagColor: clan.tagColor,
+        discordInviteUrl: clan.discordInviteUrl,
         ownerId: clan.ownerId,
         memberCount: memberCountResult[0]?.count || 0,
         maxMembers: ClanConstants.MaxMembers,
@@ -1125,7 +1161,7 @@ ClanRouter.post("/my_clan", async (c) => {
 
 ClanRouter.post("/create", validateParams(zCreateClanRequest), async (c) => {
     const user = c.get("user")!;
-    const { name, icon, tagColor } = c.req.valid("json");
+    const { name, icon, tagColor, discordInviteUrl } = c.req.valid("json");
 
     const existingMembership = await db.query.clanMembersTable.findFirst({
         where: eq(clanMembersTable.userId, user.id),
@@ -1152,6 +1188,14 @@ ClanRouter.post("/create", validateParams(zCreateClanRequest), async (c) => {
         return c.json<CreateClanResponse>({ success: false, error: "name_taken" }, 400);
     }
 
+    const sanitizedDiscordInviteUrl = sanitizeDiscordInviteUrl(discordInviteUrl);
+    if (sanitizedDiscordInviteUrl === null) {
+        return c.json<CreateClanResponse>(
+            { success: false, error: "invalid_discord_url" },
+            400,
+        );
+    }
+
     const [newClan] = await db
         .insert(clansTable)
         .values({
@@ -1159,6 +1203,7 @@ ClanRouter.post("/create", validateParams(zCreateClanRequest), async (c) => {
             slug,
             icon,
             tagColor: sanitizeClanTagColor(tagColor),
+            discordInviteUrl: sanitizedDiscordInviteUrl,
             ownerId: user.id,
         })
         .returning();
@@ -1634,7 +1679,7 @@ ClanRouter.post(
 
 ClanRouter.post("/update", validateParams(zUpdateClanRequest), async (c) => {
     const user = c.get("user")!;
-    const { name, icon, tagColor, isLocked } = c.req.valid("json");
+    const { name, icon, tagColor, discordInviteUrl, isLocked } = c.req.valid("json");
 
     const membership = await db.query.clanMembersTable.findFirst({
         where: eq(clanMembersTable.userId, user.id),
@@ -1657,6 +1702,7 @@ ClanRouter.post("/update", validateParams(zUpdateClanRequest), async (c) => {
         slug: string;
         icon: string;
         tagColor: string;
+        discordInviteUrl: string;
         isLocked: boolean;
     }> = {};
 
@@ -1694,6 +1740,19 @@ ClanRouter.post("/update", validateParams(zUpdateClanRequest), async (c) => {
         const sanitizedTagColor = sanitizeClanTagColor(tagColor);
         if (sanitizedTagColor !== clan.tagColor) {
             updates.tagColor = sanitizedTagColor;
+        }
+    }
+
+    if (discordInviteUrl !== undefined) {
+        const sanitizedDiscordInviteUrl = sanitizeDiscordInviteUrl(discordInviteUrl);
+        if (sanitizedDiscordInviteUrl === null) {
+            return c.json<UpdateClanResponse>(
+                { success: false, error: "invalid_discord_url" },
+                400,
+            );
+        }
+        if (sanitizedDiscordInviteUrl !== clan.discordInviteUrl) {
+            updates.discordInviteUrl = sanitizedDiscordInviteUrl;
         }
     }
 
@@ -2197,6 +2256,7 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
             name: clansTable.name,
             icon: clansTable.icon,
             tagColor: clansTable.tagColor,
+            discordInviteUrl: clansTable.discordInviteUrl,
             isLocked: clansTable.isLocked,
             ownerId: clansTable.ownerId,
             createdAt: clansTable.createdAt,
@@ -2256,6 +2316,7 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
             name: c.name,
             icon: c.icon,
             tagColor: c.tagColor,
+            discordInviteUrl: c.discordInviteUrl,
             ownerId: c.ownerId,
             memberCount: toStatNumber(c.memberCount),
             maxMembers: ClanConstants.MaxMembers,
@@ -2327,6 +2388,7 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
             name: clansTable.name,
             icon: clansTable.icon,
             tagColor: clansTable.tagColor,
+            discordInviteUrl: clansTable.discordInviteUrl,
             isLocked: clansTable.isLocked,
             ownerId: clansTable.ownerId,
             createdAt: clansTable.createdAt,
@@ -2379,6 +2441,7 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
                 name: c.name,
                 icon: c.icon,
                 tagColor: c.tagColor,
+                discordInviteUrl: c.discordInviteUrl,
                 ownerId: c.ownerId,
                 memberCount: toStatNumber(c.memberCount),
                 maxMembers: ClanConstants.MaxMembers,

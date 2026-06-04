@@ -522,6 +522,7 @@ export const clansTable = pgTable("clans", {
     slug: text("slug").notNull().unique(),
     icon: text("icon").notNull(), // Emote type for clan icon
     tagColor: text("tag_color").notNull().default(""),
+    discordInviteUrl: text("discord_invite_url").notNull().default(""),
     isLocked: boolean("is_locked").notNull().default(false),
     ownerId: text("owner_id")
         .notNull()

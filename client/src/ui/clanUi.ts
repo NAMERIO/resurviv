@@ -208,6 +208,11 @@ export class ClanUi {
                 this.createClan();
             }
         });
+        $("#clan-create-discord-input").on("keypress", (e) => {
+            if (e.key === "Enter") {
+                this.createClan();
+            }
+        });
         $("#btn-clan-icon-edit").on("click", () => {
             this.isEditingIcon = false;
             this.showIconSelector();
@@ -258,6 +263,25 @@ export class ClanUi {
         $("#clan-main-tag-color-input").on("change", () => {
             const tagColor = ($("#clan-main-tag-color-input").val() as string) || "";
             this.updateClan({ tagColor });
+        });
+        $("#btn-clan-edit-discord").on("click", () => {
+            $("#clan-detail-discord-row").hide();
+            $("#clan-detail-discord-edit").css("display", "flex");
+            $("#clan-edit-discord-input").focus();
+        });
+        $("#btn-clan-save-discord").on("click", () => {
+            const discordInviteUrl = (
+                ($("#clan-edit-discord-input").val() as string) || ""
+            ).trim();
+            this.updateClan({ discordInviteUrl });
+        });
+        $("#btn-clan-clear-discord").on("click", () => {
+            this.updateClan({ discordInviteUrl: "" });
+        });
+        $("#clan-edit-discord-input").on("keypress", (e) => {
+            if (e.key === "Enter") {
+                $("#btn-clan-save-discord").trigger("click");
+            }
         });
         $("#clan-lock-toggle").on("change", () => {
             this.updateClan({ isLocked: $("#clan-lock-toggle").prop("checked") });
@@ -693,6 +717,9 @@ export class ClanUi {
     createClan() {
         const name = ($("#clan-create-name-input").val() as string).trim();
         const tagColor = ($("#clan-create-tag-color-input").val() as string) || "";
+        const discordInviteUrl = (
+            ($("#clan-create-discord-input").val() as string) || ""
+        ).trim();
 
         if (this.currentClan) {
             $("#clan-create-warning")
@@ -732,6 +759,7 @@ export class ClanUi {
                 name,
                 icon: this.selectedIcon,
                 tagColor,
+                discordInviteUrl,
             },
             (err, res) => {
                 if (err) {
@@ -745,6 +773,8 @@ export class ClanUi {
                     const errorMessages: Record<string, string> = {
                         name_taken: "This clan name is already taken.",
                         invalid_name: "Invalid clan name.",
+                        invalid_discord_url:
+                            "Discord invite must be a discord.gg or discord.com/invite link.",
                         already_in_clan: "You are already in a clan.",
                         server_error: "Server error. Please try again.",
                     };
@@ -1276,6 +1306,27 @@ export class ClanUi {
         const createdDate = new Date(clan.createdAt).toLocaleDateString();
         $("#clan-detail-created").text(`Created: ${createdDate}`);
         $("#clan-detail-lock-status").text(clan.isLocked ? "Locked" : "Open");
+        const canEditDiscord =
+            clan.isCurrentSeason &&
+            !!this.account.profile?.slug &&
+            clan.members.some((m) => m.slug === this.account.profile!.slug && m.isOwner);
+        if (clan.discordInviteUrl || canEditDiscord) {
+            $("#clan-detail-discord-row").css("display", "flex");
+        } else {
+            $("#clan-detail-discord-row").hide();
+        }
+        if (clan.discordInviteUrl) {
+            $("#clan-detail-discord-link")
+                .attr("href", clan.discordInviteUrl)
+                .css("display", "flex");
+        } else {
+            $("#clan-detail-discord-link").hide().attr("href", "#");
+        }
+        $("#btn-clan-edit-discord")
+            .text(clan.discordInviteUrl ? "Edit" : "Add Discord")
+            .toggle(canEditDiscord);
+        $("#clan-detail-discord-edit").hide();
+        $("#clan-edit-discord-input").val(clan.discordInviteUrl || "");
         $("#clan-lock-toggle").prop("checked", clan.isLocked);
         $("#clan-detail-cgp").text(formatCgp(clan.totalCgp));
         $("#clan-detail-war-cgp").text(`+${formatCgp(clan.clanWarCgp)} from clan wars`);
@@ -2786,6 +2837,7 @@ export class ClanUi {
         name?: string;
         icon?: string;
         tagColor?: string;
+        discordInviteUrl?: string;
         isLocked?: boolean;
     }) {
         clanRequest<UpdateClanResponse>("/api/clan/update", updates, (err, res) => {
@@ -2799,6 +2851,8 @@ export class ClanUi {
                     not_owner: "You are not the owner of this clan.",
                     name_taken: "This clan name is already taken.",
                     invalid_name: "Invalid clan name.",
+                    invalid_discord_url:
+                        "Discord invite must be a discord.gg or discord.com/invite link.",
                     server_error: "Server error. Please try again.",
                 };
                 this.showError(errorMessages[res?.error || "server_error"]);
