@@ -72,32 +72,24 @@ function buildHistoryEmbed(
         .setColor(netGp >= 0 ? 0x4fbf7a : 0xd95f59)
         .setDescription(
             [
-                `History for **${displayAccountName(player)}**`,
-                `Record in shown games: **${wins}W - ${losses}L**`,
-                `Net result: **${netGp >= 0 ? "+" : ""}${formatGp(netGp)} GP**`,
+                `**${displayAccountName(player)}** • ${wins}W ${losses}L • **${netGp >= 0 ? "+" : ""}${formatGp(netGp)} GP**`,
+                "",
+                history
+                    .map((game, index) => {
+                        const opponent = game.result === "won" ? game.loser : game.winner;
+                        const resultLabel = game.result === "won" ? "Won" : "Lost";
+                        const gpPrefix = game.result === "won" ? "+" : "-";
+
+                        return [
+                            `**#${index + 1} ${resultLabel} ${gpPrefix}${formatGp(game.bet)} GP** vs **${displayAccountName(opponent)}** • ${formatTimestamp(game.createdAt)}`,
+                            `Coin **${titleCase(game.coinResult)}** • pick **${titleCase(game.opponentPick)}** • ${displayAccountName(game.winner)} beat ${displayAccountName(game.loser)}`,
+                        ].join("\n");
+                    })
+                    .join("\n\n"),
             ].join("\n"),
         )
         .setFooter({ text: "Newest coinflips first" })
         .setTimestamp();
-
-    embed.addFields(
-        history.map((game, index) => {
-            const opponent =
-                game.challenger.slug === player.slug ? game.opponent : game.challenger;
-            const resultLabel = game.result === "won" ? "Win" : "Loss";
-            const gpPrefix = game.result === "won" ? "+" : "-";
-
-            return {
-                name: `#${index + 1}  ${resultLabel} vs ${displayAccountName(opponent)}`,
-                value: [
-                    `${formatTimestamp(game.createdAt)} • **${gpPrefix}${formatGp(game.bet)} GP**`,
-                    `Coin: **${titleCase(game.coinResult)}** • Opponent picked **${titleCase(game.opponentPick)}**`,
-                    `Winner: **${displayAccountName(game.winner)}** • Loser: **${displayAccountName(game.loser)}**`,
-                ].join("\n"),
-                inline: false,
-            };
-        }),
-    );
 
     return embed;
 }
