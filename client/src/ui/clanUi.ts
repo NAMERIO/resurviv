@@ -1410,18 +1410,14 @@ export class ClanUi {
 
             membersContainer.append(item);
         }
-        if (clan.isCurrentSeason && isMember) {
+        if (clan.isCurrentSeason && isMember && !isOwner) {
             $("#clan-member-actions").show();
-            if (isOwner) {
-                $("#btn-clan-leave").hide();
-                $("#btn-clan-delete").show();
-            } else {
-                $("#btn-clan-leave").show();
-                $("#btn-clan-delete").hide();
-            }
+            $("#btn-clan-leave").show();
         } else {
             $("#clan-member-actions").hide();
+            $("#btn-clan-leave").hide();
         }
+        $("#btn-clan-delete").toggle(clan.isCurrentSeason && isOwner);
     }
 
     renderClanWarHistory(clan: ClanDetail) {

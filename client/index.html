@@ -2666,6 +2666,9 @@
                       <span>Join Discord</span>
                     </a>
                   </div>
+                  <div id="clan-member-actions" class="clan-detail-actions" style="display: none;">
+                    <div id="btn-clan-leave" class="clan-btn clan-btn-red clan-btn-small">Leave Clan</div>
+                  </div>
                 </div>
                 <div class="clan-detail-stats">
                   <div class="clan-stat-box cgp">
@@ -2693,10 +2696,6 @@
                   <div class="clan-members-count" id="clan-members-count">0 / 20</div>
                 </div>
                 <div id="clan-members-list" class="clan-members-list"></div>
-              </div>
-              <div id="clan-member-actions" class="clan-actions" style="display: none;">
-                <div id="btn-clan-leave" class="clan-btn clan-btn-red">Leave Clan</div>
-                <div id="btn-clan-delete" class="clan-btn clan-btn-red" style="display: none;">Delete Clan</div>
               </div>
             </div>
             <div id="clan-settings-section" class="clan-column" style="flex: 1; display: none;">
@@ -2737,6 +2736,10 @@
                       <input id="clan-lock-toggle" type="checkbox" />
                       <span>Lock Clan</span>
                     </label>
+                  </div>
+                  <div class="clan-settings-card clan-settings-danger">
+                    <div class="clan-settings-label">Danger Zone</div>
+                    <div id="btn-clan-delete" class="clan-btn clan-btn-red" style="display: none;">Delete Clan</div>
                   </div>
                 </div>
               </div>
