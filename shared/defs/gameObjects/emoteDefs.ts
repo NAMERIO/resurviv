@@ -1857,6 +1857,16 @@ export const EmotesDefs: Record<string, EmoteDef> = {
             "shur12.img",
         ],
     },
+    emote_son: {
+        type: "emote",
+        name: "son!",
+        rarity: Rarity.Common,
+        texture: "emote-son.img",
+        sound: "emote_01",
+        channel: "ui",
+        teamOnly: false,
+        category: EmoteCategory.Other,
+    },
     emote_too_close: {
         type: "emote",
         name: "Too Close",
