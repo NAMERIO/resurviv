@@ -147,6 +147,7 @@ export interface Item {
     maker: string;
     kills: number;
     wins: number;
+    holders: number;
     status?: ItemStatus;
     ackd?: ItemStatus.Ackd;
 }
@@ -162,6 +163,7 @@ interface ItemInfo {
     maker: string;
     kills: number;
     wins: number;
+    holders: number;
     idx: number;
     subcat: EmoteCategory;
     outerDiv: JQuery<HTMLElement> | null;
@@ -180,6 +182,7 @@ interface EquippedItem {
     maker?: string;
     kills?: number;
     wins?: number;
+    holders?: number;
 }
 
 function getItemIdentity(item: Pick<Item, "type" | "id" | "timeAcquired" | "source">) {
@@ -295,6 +298,7 @@ export class LoadoutMenu {
         maker?: string;
         kills?: number;
         wins?: number;
+        holders?: number;
     } = {
         selectedElem: null,
         prevSlot: null,
@@ -317,6 +321,7 @@ export class LoadoutMenu {
     modalCustomizeItemMaker: JQuery<HTMLElement>;
     modalCustomizeItemKills: JQuery<HTMLElement>;
     modalCustomizeItemWins: JQuery<HTMLElement>;
+    modalCustomizeItemHolders: JQuery<HTMLElement>;
 
     picker: any;
 
@@ -362,6 +367,7 @@ export class LoadoutMenu {
         this.modalCustomizeItemMaker = $("#modal-customize-item-maker");
         this.modalCustomizeItemKills = $("#modal-customize-item-kills");
         this.modalCustomizeItemWins = $("#modal-customize-item-wins");
+        this.modalCustomizeItemHolders = $("#modal-customize-item-holders");
         this.modal = new MenuModal(this.modalCustomize);
         this.modal.onShow(() => {
             this.onShow();
@@ -1203,6 +1209,7 @@ export class LoadoutMenu {
             maker: selectedItem.maker,
             kills: selectedItem.kills,
             wins: selectedItem.wins,
+            holders: selectedItem.holders,
         };
         this.modalCustomizeItemName.html(this.selectedItem.displayName!);
         const source =
@@ -1245,6 +1252,7 @@ export class LoadoutMenu {
         this.modalCustomizeItemMaker.text(selectedItem.maker || "Unknown");
         this.modalCustomizeItemKills.text(selectedItem.kills || 0);
         this.modalCustomizeItemWins.text(selectedItem.wins || 0);
+        this.modalCustomizeItemHolders.text(selectedItem.holders || 1);
         if (this.selectedItem.loadoutType == "emote") {
             this.highlightedSlots.css({
                 display: "block",
@@ -1680,6 +1688,7 @@ export class LoadoutMenu {
                 maker: item.maker,
                 kills: item.kills,
                 wins: item.wins,
+                holders: item.holders,
                 idx: i,
                 subcat:
                     (GameObjectDefs[item.type] as unknown as EmoteDef)?.category ||

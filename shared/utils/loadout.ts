@@ -17,6 +17,7 @@ export type Item = {
     maker: string;
     kills: number;
     wins: number;
+    holders: number;
     status?: ItemStatus;
     ackd?: ItemStatus.Ackd;
 };
@@ -192,6 +193,7 @@ export const loadout = {
                 maker: "Stock",
                 kills: 0,
                 wins: 0,
+                holders: 1,
                 ackd: loadout.ItemStatus.Ackd,
             });
         }
@@ -202,6 +204,7 @@ export const loadout = {
             maker: "Stock",
             kills: 0,
             wins: 0,
+            holders: 1,
             ackd: loadout.ItemStatus.Ackd,
         });
         for (let i = 0; i < heroItems.length; i++) {

@@ -38,6 +38,7 @@ type Listing = {
     maker: string;
     kills: number;
     wins: number;
+    holders: number;
     owned?: boolean;
     action: "buy" | "sell" | "sell_or_auction" | "cancel" | "auction_live";
     sellerName?: string;
@@ -59,6 +60,7 @@ type AuctionViewListing = {
     maker: string;
     kills: number;
     wins: number;
+    holders: number;
     sellerName?: string;
     highestBidderName?: string;
     createdAt?: number;
@@ -594,6 +596,7 @@ export class ShopMenu {
                     maker: listing.maker,
                     kills: listing.kills,
                     wins: listing.wins,
+                    holders: listing.holders,
                     owned: this.account.items.some(
                         (item) => item.type === listing.itemType,
                     ),
@@ -632,6 +635,7 @@ export class ShopMenu {
                     maker: listing.maker,
                     kills: listing.kills,
                     wins: listing.wins,
+                    holders: listing.holders,
                     owned: true,
                     action: "cancel",
                     sellerName: this.localization.translate("market-you") || "You",
@@ -660,6 +664,7 @@ export class ShopMenu {
                     maker: auction.maker,
                     kills: auction.kills,
                     wins: auction.wins,
+                    holders: auction.holders,
                     owned: false,
                     action: "auction_live",
                     sellerName: this.localization.translate("market-you") || "You",
@@ -696,6 +701,7 @@ export class ShopMenu {
                     maker: item.maker,
                     kills: item.kills,
                     wins: item.wins,
+                    holders: item.holders,
                     owned: true,
                     action: "sell_or_auction",
                     sellerName: this.localization.translate("market-you") || "You",
@@ -747,6 +753,7 @@ export class ShopMenu {
             maker: auction.maker,
             kills: auction.kills,
             wins: auction.wins,
+            holders: auction.holders,
             sellerName: auction.sellerSlug,
             highestBidderName: auction.highestBidderSlug,
             createdAt: auction.createdAt,
@@ -1036,7 +1043,7 @@ export class ShopMenu {
         });
     }
 
-    buildItemInstanceStats(item: Pick<Listing, "maker" | "kills" | "wins">) {
+    buildItemInstanceStats(item: Pick<Listing, "maker" | "kills" | "wins" | "holders">) {
         return $("<div/>", { class: "market-item-instance-stats" }).append(
             $("<div/>", { class: "market-item-stats-text" }).append(
                 $("<span/>", {
@@ -1050,6 +1057,10 @@ export class ShopMenu {
                         text: `${this.localization.translate("market-sort-kills") || "Kills"}: `,
                     }),
                     $("<p/>", { text: item.kills }),
+                ),
+                $("<div/>", { class: "market-item-stats-text" }).append(
+                    $("<span/>", { text: "Holders: " }),
+                    $("<p/>", { text: item.holders || 1 }),
                 ),
                 $("<div/>", { class: "market-item-stats-text" }).append(
                     $("<span/>", {
@@ -1322,6 +1333,7 @@ export class ShopMenu {
             maker: item.maker,
             kills: item.kills,
             wins: item.wins,
+            holders: item.holders,
             bidCount: 0,
             sellerName: item.sellerName,
             referenceValue: getMarketReferencePrice(item.type) ?? 0,
@@ -2395,6 +2407,7 @@ export class ShopMenu {
                 maker: "Unknown",
                 kills: 0,
                 wins: 0,
+                holders: 1,
             });
             added = true;
         }
@@ -2514,6 +2527,7 @@ export class ShopMenu {
                 maker: "Unknown",
                 kills: 0,
                 wins: 0,
+                holders: 1,
             });
         }
         this.showNextSoldNotification();

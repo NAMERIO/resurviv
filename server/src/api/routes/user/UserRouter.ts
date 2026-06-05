@@ -548,6 +548,7 @@ async function getUserItems(userId: string) {
             maker: itemsTable.maker,
             kills: itemsTable.kills,
             wins: itemsTable.wins,
+            holders: itemsTable.holders,
             status: itemsTable.status,
         })
         .from(itemsTable)
@@ -575,6 +576,7 @@ async function expireMarketListings(tx: any, targetUserId?: string) {
             itemMaker: marketListingTable.itemMaker,
             itemKills: marketListingTable.itemKills,
             itemWins: marketListingTable.itemWins,
+            itemHolders: marketListingTable.itemHolders,
         });
 
     if (expiredNow.length === 0) {
@@ -592,6 +594,7 @@ async function expireMarketListings(tx: any, targetUserId?: string) {
                     itemMaker: string;
                     itemKills: number;
                     itemWins: number;
+                    itemHolders: number;
                 }) => ({
                     id: listing.itemId,
                     userId: listing.sellerUserId,
@@ -599,6 +602,7 @@ async function expireMarketListings(tx: any, targetUserId?: string) {
                     maker: listing.itemMaker,
                     kills: listing.itemKills,
                     wins: listing.itemWins,
+                    holders: listing.itemHolders,
                     source: "Item expired",
                     timeAcquired: Date.now(),
                 }),
@@ -645,6 +649,7 @@ async function expireAuctionListings(tx: any) {
                 maker: auction.itemMaker,
                 kills: auction.itemKills,
                 wins: auction.itemWins,
+                holders: auction.itemHolders + 1,
                 source: "auction_win",
                 timeAcquired: Date.now(),
             });
@@ -663,6 +668,7 @@ async function expireAuctionListings(tx: any) {
                 maker: auction.itemMaker,
                 kills: auction.itemKills,
                 wins: auction.itemWins,
+                holders: auction.itemHolders,
                 source: "auction_expired",
                 timeAcquired: Date.now(),
             });
@@ -745,6 +751,7 @@ async function buildMarketState(userId: string) {
         maker: listing.itemMaker,
         kills: listing.itemKills,
         wins: listing.itemWins,
+        holders: listing.itemHolders,
         price: listing.price,
         sellerSlug: slugByUserId.get(listing.sellerUserId) || "unknown",
         createdAt: new Date(listing.createdAt).getTime(),
@@ -765,6 +772,7 @@ async function buildMarketState(userId: string) {
         maker: auction.itemMaker,
         kills: auction.itemKills,
         wins: auction.itemWins,
+        holders: auction.itemHolders,
         sellerSlug: slugByUserId.get(auction.sellerUserId) || "unknown",
         startPrice: auction.startPrice,
         highestBid: auction.highestBid,
@@ -1293,6 +1301,7 @@ UserRouter.post(
                         source: `gift_from:${user.slug}`,
                         status: ItemStatus.New,
                         timeAcquired: Date.now(),
+                        holders: sql`${itemsTable.holders} + 1`,
                     })
                     .where(
                         and(
@@ -1316,6 +1325,7 @@ UserRouter.post(
                         maker: itemsTable.maker,
                         kills: itemsTable.kills,
                         wins: itemsTable.wins,
+                        holders: itemsTable.holders,
                         status: itemsTable.status,
                     })
                     .from(itemsTable)
@@ -1933,6 +1943,7 @@ UserRouter.post(
                             : ownedItem.maker,
                     itemKills: ownedItem.kills,
                     itemWins: ownedItem.wins,
+                    itemHolders: ownedItem.holders,
                     price,
                     status: "active",
                 });
@@ -2023,6 +2034,7 @@ UserRouter.post(
                     maker: listing.itemMaker,
                     kills: listing.itemKills,
                     wins: listing.itemWins,
+                    holders: listing.itemHolders + 1,
                     source: "market_buy",
                     timeAcquired: Date.now(),
                 });
@@ -2174,6 +2186,7 @@ UserRouter.post(
                             : ownedItem.maker,
                     itemKills: ownedItem.kills,
                     itemWins: ownedItem.wins,
+                    itemHolders: ownedItem.holders,
                     startPrice,
                     highestBid: 0,
                     status: "active",
@@ -2588,6 +2601,7 @@ UserRouter.post(
                         itemMaker: marketListingTable.itemMaker,
                         itemKills: marketListingTable.itemKills,
                         itemWins: marketListingTable.itemWins,
+                        itemHolders: marketListingTable.itemHolders,
                     });
 
                 if (canceled.length === 0) {
@@ -2601,6 +2615,7 @@ UserRouter.post(
                     maker: canceled[0]!.itemMaker,
                     kills: canceled[0]!.itemKills,
                     wins: canceled[0]!.itemWins,
+                    holders: canceled[0]!.itemHolders,
                     source: "market_cancel",
                     timeAcquired: Date.now(),
                 });
@@ -2659,6 +2674,7 @@ UserRouter.post(
                         itemMaker: auctionListingTable.itemMaker,
                         itemKills: auctionListingTable.itemKills,
                         itemWins: auctionListingTable.itemWins,
+                        itemHolders: auctionListingTable.itemHolders,
                         highestBid: auctionListingTable.highestBid,
                         highestBidUserId: auctionListingTable.highestBidUserId,
                     });
@@ -2684,6 +2700,7 @@ UserRouter.post(
                     maker: auction.itemMaker,
                     kills: auction.itemKills,
                     wins: auction.itemWins,
+                    holders: auction.itemHolders,
                     source: "auction_cancel",
                     timeAcquired: Date.now(),
                 });

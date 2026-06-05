@@ -12,8 +12,8 @@ const BACKPACK_LEVEL = 3;
 
 util.mergeDeep(Config, {
     clientTheme: "main",
-    modes: [{ mapName: "inferno", teamMode: TeamMode.Duo, enabled: true }],
-    br_modes: [{ mapName: "birthday", teamMode: TeamMode.Duo, enabled: true }],
+    modes: [{ mapName: "main", teamMode: TeamMode.Duo, enabled: true }],
+    br_modes: [{ mapName: "main", teamMode: TeamMode.Duo, enabled: true }],
     debug: {
         spawnMode: process.env.NODE_ENV === "production" ? "default" : "fixed",
     },

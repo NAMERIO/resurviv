@@ -50,6 +50,7 @@ export type MarketListing = {
     maker: string;
     kills: number;
     wins: number;
+    holders: number;
     price: number;
     sellerSlug: string;
     createdAt: number;
@@ -76,6 +77,7 @@ export type AuctionListing = {
     maker: string;
     kills: number;
     wins: number;
+    holders: number;
     sellerSlug: string;
     startPrice: number;
     highestBid: number;
