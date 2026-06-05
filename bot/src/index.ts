@@ -22,6 +22,7 @@ function setupInteractionHandlers() {
             interaction.guild?.id !== DISCORD_GUILD_ID ||
             (![
                 Command.CoinFlip,
+                Command.CoinFlipHistory,
                 Command.Balance,
                 Command.GpLeaderboard,
                 Command.TopRankPlayers,
