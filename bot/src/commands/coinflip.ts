@@ -176,6 +176,7 @@ export const coinFlipHandler = {
     command: new SlashCommandBuilder()
         .setName(Command.CoinFlip)
         .setDescription("Challenge another connected Discord user to a GP coinflip")
+        .setDefaultMemberPermissions(null)
         .addUserOption((option) =>
             option
                 .setName("user")

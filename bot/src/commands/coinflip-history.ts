@@ -121,6 +121,7 @@ export const coinFlipHistoryHandler = {
     command: new SlashCommandBuilder()
         .setName(Command.CoinFlipHistory)
         .setDescription("Show your recent GP coinflip history")
+        .setDefaultMemberPermissions(null)
         .addIntegerOption((option) =>
             option
                 .setName("limit")
