@@ -258,6 +258,15 @@ export type TeamJoinBattleRoyaleTeamMsg = z.infer<
     typeof zTeamJoinBattleRoyaleTeamMsg
 >;
 
+export const zTeamJoinCurrentArenaGameMsg = z.object({
+    type: z.literal("joinCurrentArenaGame"),
+    data: z.object({}).optional(),
+});
+
+export type TeamJoinCurrentArenaGameMsg = z.infer<
+    typeof zTeamJoinCurrentArenaGameMsg
+>;
+
 export const zTeamPlayGameMsg = z.object({
     type: z.literal("playGame"),
     data: z.object({
@@ -286,6 +295,7 @@ export const zTeamClientMsg = z.discriminatedUnion("type", [
     zTeamSwapTeamMsg,
     zTeamCreateBattleRoyaleTeamMsg,
     zTeamJoinBattleRoyaleTeamMsg,
+    zTeamJoinCurrentArenaGameMsg,
     zTeamChangeNameMsg,
     zTeamChangeOutfitMsg,
     zTeamLobbyChatSendMsg,
@@ -305,5 +315,6 @@ export type ClientToServerTeamMsg =
     | TeamSwapTeamMsg
     | TeamCreateBattleRoyaleTeamMsg
     | TeamJoinBattleRoyaleTeamMsg
+    | TeamJoinCurrentArenaGameMsg
     | TeamGameCompleteMsg
     | TeamPlayGameMsg;

@@ -2106,6 +2106,8 @@ export class Application {
             const teamMembers = localTeamCode
                 ? players.filter((p) => p.brTeamCode === localTeamCode && !p.spectator)
                 : [];
+            const gameStarted =
+                this.teamMenu.roomData.findingGame || players.some((p) => p.inGame);
             const teamChangingBlocked =
                 this.teamMenu.roomData.findingGame ||
                 players.some((p) => p.inGame) ||
@@ -2208,6 +2210,19 @@ export class Application {
                                     ),
                                 }),
                             ),
+                    )
+                    .append(
+                        $("<button>", {
+                            class: `arena-br-join-game btn-darken${gameStarted ? " active" : ""}`,
+                            type: "button",
+                            text: gameStarted ? "Join Game" : "Waiting to start...",
+                            disabled: !gameStarted,
+                        }).on("click", (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (!gameStarted) return;
+                            this.teamMenu.joinCurrentArenaGame();
+                        }),
                     );
 
             this.prestigeArenaTeamAList.append(summaryCard);

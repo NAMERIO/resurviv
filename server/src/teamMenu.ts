@@ -401,6 +401,20 @@ class Room {
                 this.sendState();
                 break;
             }
+            case "joinCurrentArenaGame": {
+                if (
+                    !this.isBattleRoyaleArena() ||
+                    !this.currentArenaGameId ||
+                    (!this.data.findingGame && !this.players.some((p) => p.inGame))
+                ) {
+                    break;
+                }
+                void this.joinArenaPlayersToCurrentGame(
+                    [player],
+                    this.isArenaSpectator(player),
+                );
+                break;
+            }
             case "playGame": {
                 if ((this.data.arena || this.isBattleRoyaleMode()) && !player.isLeader) {
                     break;

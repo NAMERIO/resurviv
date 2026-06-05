@@ -168,6 +168,7 @@ export class TeamMenu {
     observedLobbyGifImages = new Set<HTMLImageElement>();
     battleRoyaleTeamError: TeamMenuErrorType | "" = "";
     battleRoyaleTeamErrorTimeout: ReturnType<typeof setTimeout> | null = null;
+    lastJoinGameData: FindGameMatchData | null = null;
 
     hideUrl!: boolean;
 
@@ -385,6 +386,7 @@ export class TeamMenu {
             this.syncedOutfit = undefined;
             this.syncedPlayerIcon = undefined;
             this.lobbyMessages = [];
+            this.lastJoinGameData = null;
             this.hideLobbyGifPicker();
 
             // Load properties from config
@@ -483,6 +485,7 @@ export class TeamMenu {
             this.joiningGame = false;
             this.arena = false;
             this.joinPrefs = {};
+            this.lastJoinGameData = null;
             if (this.battleRoyaleTeamErrorTimeout) {
                 clearTimeout(this.battleRoyaleTeamErrorTimeout);
                 this.battleRoyaleTeamErrorTimeout = null;
@@ -514,6 +517,7 @@ export class TeamMenu {
             this.joiningGame = false;
             this.roomData.findingGame = false;
             this.roomData.lastError = "";
+            this.lastJoinGameData = null;
             const localPlayer = this.getPlayerById(this.localPlayerId);
             if (localPlayer) {
                 localPlayer.inGame = false;
@@ -569,7 +573,8 @@ export class TeamMenu {
             }
             case "joinGame":
                 this.joiningGame = true;
-                this.joinGameCb(data as FindGameMatchData);
+                this.lastJoinGameData = data as FindGameMatchData;
+                this.joinGameCb(this.lastJoinGameData);
                 break;
             case "keepAlive":
                 break;
@@ -1208,6 +1213,19 @@ export class TeamMenu {
         this.sendMessage("joinBattleRoyaleTeam", {
             teamCode,
         });
+    }
+
+    joinCurrentArenaGame() {
+        if (!this.joined || !this.arena || !this.isBattleRoyaleRoom()) return;
+        if (!this.roomData.findingGame && !this.players.some((player) => player.inGame)) {
+            return;
+        }
+        this.sendMessage("joinCurrentArenaGame", {});
+        if (this.lastJoinGameData && !this.joiningGame) {
+            this.joiningGame = true;
+            this.joinGameCb(this.lastJoinGameData);
+            this.refreshUi();
+        }
     }
 
     isBattleRoyaleRoom() {
