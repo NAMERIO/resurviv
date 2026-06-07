@@ -154,7 +154,7 @@ export class PlayerBarn {
     dirtyPlayerInfos: Player[] = [];
     deletedPlayers: number[] = [];
     killedPlayers: Player[] = [];
-    groupIdAllocator = new IDAllocator(8);
+    groupIdAllocator = new IDAllocator(255);
     aliveCountDirty = false;
 
     socketIdToPlayer = new Map<string, Player>();
