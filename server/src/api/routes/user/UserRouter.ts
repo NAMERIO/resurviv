@@ -539,7 +539,7 @@ async function getUserItems(userId: string) {
         })
         .where(and(eq(itemsTable.userId, userId), eq(itemsTable.maker, "Unknown")));
 
-    return db
+    const items = await db
         .select({
             id: itemsTable.id,
             type: itemsTable.type,
@@ -553,6 +553,65 @@ async function getUserItems(userId: string) {
         })
         .from(itemsTable)
         .where(eq(itemsTable.userId, userId));
+
+    const holderCounts = await getCurrentItemHolderCounts(items.map((item) => item.type));
+    return items.map((item) => ({
+        ...item,
+        holders: holderCounts.get(item.type) ?? 0,
+    }));
+}
+
+async function getCurrentItemHolderCounts(itemTypes: string[], tx: any = db) {
+    const uniqueItemTypes = [...new Set(itemTypes)].filter(Boolean);
+    if (uniqueItemTypes.length === 0) {
+        return new Map<string, number>();
+    }
+
+    const itemCounts = await tx
+        .select({
+            type: itemsTable.type,
+            holders: sql<number>`count(*)`.mapWith(Number),
+        })
+        .from(itemsTable)
+        .where(inArray(itemsTable.type, uniqueItemTypes))
+        .groupBy(itemsTable.type);
+
+    const marketCounts = await tx
+        .select({
+            type: marketListingTable.itemType,
+            holders: sql<number>`count(*)`.mapWith(Number),
+        })
+        .from(marketListingTable)
+        .where(
+            and(
+                eq(marketListingTable.status, "active"),
+                inArray(marketListingTable.itemType, uniqueItemTypes),
+            ),
+        )
+        .groupBy(marketListingTable.itemType);
+
+    const auctionCounts = await tx
+        .select({
+            type: auctionListingTable.itemType,
+            holders: sql<number>`count(*)`.mapWith(Number),
+        })
+        .from(auctionListingTable)
+        .where(
+            and(
+                eq(auctionListingTable.status, "active"),
+                inArray(auctionListingTable.itemType, uniqueItemTypes),
+            ),
+        )
+        .groupBy(auctionListingTable.itemType);
+
+    const counts = new Map<string, number>();
+    for (const count of [...itemCounts, ...marketCounts, ...auctionCounts] as {
+        type: string;
+        holders: number;
+    }[]) {
+        counts.set(count.type, (counts.get(count.type) ?? 0) + count.holders);
+    }
+    return counts;
 }
 
 async function expireMarketListings(tx: any, targetUserId?: string) {
@@ -649,7 +708,7 @@ async function expireAuctionListings(tx: any) {
                 maker: auction.itemMaker,
                 kills: auction.itemKills,
                 wins: auction.itemWins,
-                holders: auction.itemHolders + 1,
+                holders: auction.itemHolders,
                 source: "auction_win",
                 timeAcquired: Date.now(),
             });
@@ -744,6 +803,12 @@ async function buildMarketState(userId: string) {
             .map((item) => item.source)
             .filter((source) => source.startsWith("featured_bundle:")),
     );
+    const holderCounts = await getCurrentItemHolderCounts([
+        ...publicListings.map((listing) => listing.itemType),
+        ...userListings.map((listing) => listing.itemType),
+        ...publicAuctions.map((auction) => auction.itemType),
+        ...userAuctions.map((auction) => auction.itemType),
+    ]);
     const toClientListing = (listing: (typeof publicListings)[number]) => ({
         id: listing.id,
         itemId: listing.itemId,
@@ -751,7 +816,7 @@ async function buildMarketState(userId: string) {
         maker: listing.itemMaker,
         kills: listing.itemKills,
         wins: listing.itemWins,
-        holders: listing.itemHolders,
+        holders: holderCounts.get(listing.itemType) ?? 0,
         price: listing.price,
         sellerSlug: slugByUserId.get(listing.sellerUserId) || "unknown",
         createdAt: new Date(listing.createdAt).getTime(),
@@ -772,7 +837,7 @@ async function buildMarketState(userId: string) {
         maker: auction.itemMaker,
         kills: auction.itemKills,
         wins: auction.itemWins,
-        holders: auction.itemHolders,
+        holders: holderCounts.get(auction.itemType) ?? 0,
         sellerSlug: slugByUserId.get(auction.sellerUserId) || "unknown",
         startPrice: auction.startPrice,
         highestBid: auction.highestBid,
@@ -1301,7 +1366,6 @@ UserRouter.post(
                         source: `gift_from:${user.slug}`,
                         status: ItemStatus.New,
                         timeAcquired: Date.now(),
-                        holders: sql`${itemsTable.holders} + 1`,
                     })
                     .where(
                         and(
@@ -1911,6 +1975,7 @@ UserRouter.post(
                 }
 
                 await tx.delete(itemsTable).where(eq(itemsTable.id, itemId));
+                const holderCounts = await getCurrentItemHolderCounts([itemType], tx);
 
                 const remainingItems = await tx
                     .select({
@@ -1943,7 +2008,7 @@ UserRouter.post(
                             : ownedItem.maker,
                     itemKills: ownedItem.kills,
                     itemWins: ownedItem.wins,
-                    itemHolders: ownedItem.holders,
+                    itemHolders: holderCounts.get(itemType) ?? 0,
                     price,
                     status: "active",
                 });
@@ -2034,7 +2099,7 @@ UserRouter.post(
                     maker: listing.itemMaker,
                     kills: listing.itemKills,
                     wins: listing.itemWins,
-                    holders: listing.itemHolders + 1,
+                    holders: listing.itemHolders,
                     source: "market_buy",
                     timeAcquired: Date.now(),
                 });
@@ -2154,6 +2219,7 @@ UserRouter.post(
                 }
 
                 await tx.delete(itemsTable).where(eq(itemsTable.id, itemId));
+                const holderCounts = await getCurrentItemHolderCounts([ownedItem.type], tx);
 
                 const remainingItems = await tx
                     .select({
@@ -2186,7 +2252,7 @@ UserRouter.post(
                             : ownedItem.maker,
                     itemKills: ownedItem.kills,
                     itemWins: ownedItem.wins,
-                    itemHolders: ownedItem.holders,
+                    itemHolders: holderCounts.get(ownedItem.type) ?? 0,
                     startPrice,
                     highestBid: 0,
                     status: "active",
