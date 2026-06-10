@@ -205,18 +205,19 @@ export class GameProcessManager implements GameManager {
 
     readonly processById = new Map<string, GameProcess>();
     readonly processes: GameProcess[] = [];
+    readonly terminatingProcesses = new Set<GameProcess>();
 
     readonly logger = new ServerLogger("Game Process Manager");
 
     constructor() {
         process.on("beforeExit", () => {
-            for (const gameProc of this.processes) {
+            for (const gameProc of [...this.processes]) {
                 gameProc.process.kill();
             }
         });
 
         setInterval(() => {
-            for (const gameProc of this.processes) {
+            for (const gameProc of [...this.processes]) {
                 gameProc.send({
                     type: ProcessMsgType.KeepAlive,
                 });
@@ -239,6 +240,46 @@ export class GameProcessManager implements GameManager {
                 }
             }
         }, 5000);
+
+        process.once("SIGINT", () => {
+            this.shutdown();
+        });
+        process.once("SIGTERM", () => {
+            this.shutdown();
+        });
+    }
+
+    private shutdown(): void {
+        const childProcesses = this.processes
+            .map((gameProc) => gameProc.process)
+            .filter(
+                (child) => child.exitCode === null && child.signalCode === null,
+            );
+
+        this.logger.info(
+            `Shutting down ${childProcesses.length} game process(es)`,
+        );
+        this.commitProcessGenocide();
+
+        if (childProcesses.length === 0) {
+            process.exit(0);
+        }
+
+        let remaining = childProcesses.length;
+        const onExit = () => {
+            remaining--;
+            if (remaining === 0) {
+                process.exit(0);
+            }
+        };
+
+        for (const child of childProcesses) {
+            child.once("exit", onExit);
+        }
+
+        setTimeout(() => {
+            process.exit(0);
+        }, 6000);
     }
 
     kickPlayerByIP(encodedIp: string) {
@@ -295,12 +336,15 @@ export class GameProcessManager implements GameManager {
     }
 
     commitProcessGenocide() {
-        for (const proc of this.processes) {
+        for (const proc of [...this.processes]) {
             this.killProcess(proc);
         }
     }
 
     killProcess(gameProc: GameProcess, signal: NodeJS.Signals = "SIGTERM"): void {
+        if (this.terminatingProcesses.has(gameProc)) return;
+        this.terminatingProcesses.add(gameProc);
+
         for (const [, socket] of this.sockets) {
             const data = socket.getUserData();
             if (data.closed) continue;
@@ -312,7 +356,10 @@ export class GameProcessManager implements GameManager {
         // send SIGTERM, if still hasn't terminated after 5 seconds, send SIGKILL >:3
         gameProc.process.kill(signal);
         setTimeout(() => {
-            if (!gameProc.process.killed) {
+            if (
+                gameProc.process.exitCode === null &&
+                gameProc.process.signalCode === null
+            ) {
                 gameProc.process.kill("SIGKILL");
             }
         }, 5000);
