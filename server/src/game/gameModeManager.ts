@@ -399,23 +399,12 @@ export class GameModeManager {
             );
     }
 
-    showStatsMsg(player: Player): boolean {
-        switch (this.mode) {
-            case GameMode.Solo:
-                return false;
-            case GameMode.Team:
-                return !player.group!.allDeadOrDisconnected && this.aliveCount() > 1;
-            case GameMode.Faction:
-                return this.aliveCount() > 1;
-        }
-    }
-
     getGameoverPlayers(player: Player): Player[] {
         switch (this.mode) {
             case GameMode.Solo:
-                return [player];
+                return this.game.playerBarn.matchPlayers;
             case GameMode.Team:
-                return player.group!.players;
+                return this.game.playerBarn.matchPlayers;
             case GameMode.Faction:
                 const redLeader = this.game.playerBarn.teams[TeamColor.Red - 1].leader;
                 const blueLeader = this.game.playerBarn.teams[TeamColor.Blue - 1].leader;

@@ -1029,9 +1029,11 @@ export class Game {
             specMsg.specNext = specNext;
             specMsg.specPrev = specPrev;
             specMsg.specForce = specForce;
+            specMsg.targetId = this.m_uiManager.specTargetId;
             this.m_sendMessage(net.MsgType.Spectate, specMsg, 128);
 
             this.m_uiManager.specBegin = false;
+            this.m_uiManager.specTargetId = 0;
             this.m_uiManager.specNext = false;
             this.m_uiManager.specPrev = false;
         }

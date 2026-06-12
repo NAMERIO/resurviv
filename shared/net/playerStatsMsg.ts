@@ -1,4 +1,4 @@
-import type { AbstractMsg, BitStream } from "./net";
+import { type AbstractMsg, type BitStream, Constants } from "./net";
 
 export class PlayerStatsMsg implements AbstractMsg {
     playerStats = {
@@ -8,6 +8,8 @@ export class PlayerStatsMsg implements AbstractMsg {
         dead: false,
         damageDealt: 0,
         damageTaken: 0,
+        killerId: 0,
+        name: "",
     };
 
     serialize(s: BitStream) {
@@ -20,6 +22,8 @@ export class PlayerStatsMsg implements AbstractMsg {
         // so without rounding 99.9999... will become 99 instead of 100
         s.writeUint16(Math.round(this.playerStats.damageDealt));
         s.writeUint16(Math.round(this.playerStats.damageTaken));
+        s.writeUint16(this.playerStats.killerId ?? 0);
+        s.writeString(this.playerStats.name ?? "", Constants.PlayerNameMaxLen);
         /* STRIP_FROM_PROD_CLIENT:END */
     }
 
@@ -31,6 +35,8 @@ export class PlayerStatsMsg implements AbstractMsg {
         playerStats.dead = s.readUint8() as unknown as boolean;
         playerStats.damageDealt = s.readUint16();
         playerStats.damageTaken = s.readUint16();
+        playerStats.killerId = s.readUint16();
+        playerStats.name = s.readString(Constants.PlayerNameMaxLen);
         this.playerStats = playerStats;
     }
 }

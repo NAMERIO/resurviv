@@ -452,8 +452,10 @@ export class PlayerBarn {
         // doing this after updates ensures that gameover msgs sent are always accurate
         // if this was done in netsync, players could die while waiting for the next netsync call
         // then the gameover msgs would be inaccurate since theyre based on the current alive count
-        for (let i = 0; i < this.killedPlayers.length; i++) {
-            this.killedPlayers[i].addGameOverMsg();
+        if (!this.game.over) {
+            for (let i = 0; i < this.killedPlayers.length; i++) {
+                this.killedPlayers[i].addGameOverMsg();
+            }
         }
         this.killedPlayers.length = 0;
 
@@ -4500,6 +4502,15 @@ export class Player extends BaseGameObject {
         let playerToSpec: Player | undefined;
         switch (true) {
             case spectateMsg.specBegin:
+                if (spectateMsg.targetId) {
+                    playerToSpec = spectatablePlayers.find(
+                        (player) => player.playerId === spectateMsg.targetId,
+                    );
+                    if (playerToSpec) {
+                        break;
+                    }
+                }
+
                 const groupExistsOrAlive =
                     this.game.isTeamMode && this.group!.livingPlayers.length > 0;
                 const teamExistsOrAlive =
@@ -4757,32 +4768,38 @@ export class Player extends BaseGameObject {
         this.questManager.flushProgress(winningTeamId);
 
         const gameOver = opts.gameOver || !!winningTeamId;
-        const aliveCount = this.game.modeManager.aliveCount();
-        const teamRank = winningTeamId == this.teamId ? 1 : aliveCount + 1;
 
-        if (
-            !gameOver &&
-            ((this.game.map.amongUsMode && winningTeamId === 0) ||
-                this.game.modeManager.showStatsMsg(this))
-        ) {
+        if (!gameOver && this.game.map.amongUsMode && winningTeamId === 0) {
             const statsMsg = new net.PlayerStatsMsg();
             statsMsg.playerStats = this.getPlayerStatsSnapshot(this);
             this.msgsToSend.push({ type: net.MsgType.PlayerStats, msg: statsMsg });
         } else {
-            const gameOverMsg = new net.GameOverMsg();
+            const recipients = new Set<Player>([this, ...this.spectators]);
+            if (!this.game.map.amongUsMode) {
+                for (const player of this.game.playerBarn.players) {
+                    if (player.dead && !player.disconnected) {
+                        recipients.add(player);
+                    }
+                }
+            }
 
-            const statsArr: net.PlayerStatsMsg["playerStats"][] = this.game.modeManager
-                .getGameoverPlayers(this)
-                .map((player) => this.getPlayerStatsSnapshot(player));
-            gameOverMsg.playerStats = statsArr;
-            gameOverMsg.teamRank = teamRank; // gameover msg sent after alive count updated
-            gameOverMsg.teamId = this.teamId;
-            gameOverMsg.winningTeamId = winningTeamId;
-            gameOverMsg.gameOver = gameOver;
-            this.msgsToSend.push({ type: net.MsgType.GameOver, msg: gameOverMsg });
-
-            for (const spectator of this.spectators) {
-                spectator.msgsToSend.push({
+            const rankedPlayers = this.game.modeManager.getPlayersSortedByRank();
+            for (const recipient of recipients) {
+                const gameOverMsg = new net.GameOverMsg();
+                const statsArr: net.PlayerStatsMsg["playerStats"][] =
+                    this.game.modeManager
+                        .getGameoverPlayers(recipient)
+                        .map((player) => this.getPlayerStatsSnapshot(player));
+                gameOverMsg.playerStats = statsArr;
+                gameOverMsg.teamRank =
+                    winningTeamId == recipient.teamId
+                        ? 1
+                        : (rankedPlayers.find(({ player }) => player === recipient)
+                              ?.rank ?? this.game.modeManager.aliveCount() + 1);
+                gameOverMsg.teamId = recipient.teamId;
+                gameOverMsg.winningTeamId = winningTeamId;
+                gameOverMsg.gameOver = gameOver;
+                recipient.msgsToSend.push({
                     type: net.MsgType.GameOver,
                     msg: gameOverMsg,
                 });
@@ -4853,6 +4870,8 @@ export class Player extends BaseGameObject {
             dead: player.dead,
             damageDealt: Math.round(player.damageDealt),
             damageTaken: Math.round(player.damageTaken),
+            killerId: player.getAliveKiller()?.playerId ?? player.killedBy?.playerId ?? 0,
+            name: player.name,
         };
     }
 

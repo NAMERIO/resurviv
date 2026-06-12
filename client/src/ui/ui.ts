@@ -167,6 +167,7 @@ export class UiManager {
 
     specStatsButton = $("#btn-spectate-view-stats");
     specBegin = false;
+    specTargetId = 0;
     specNext = false;
     specPrev = false;
     specNextButton = $("#btn-spectate-next-player");
@@ -1444,8 +1445,9 @@ export class UiManager {
         this.setLocalKills(0);
     }
 
-    beginSpectating() {
+    beginSpectating(targetId = 0) {
         this.specBegin = true;
+        this.specTargetId = targetId;
     }
 
     hideStats() {
@@ -1585,6 +1587,8 @@ export class UiManager {
         // If we're spectating a team that's not our own, and the game isn't over yet,
         // don't display the stats screen again.
         if (!spectating || teamId == localTeamId || gameOver) {
+            const updatingStats =
+                this.displayingStats && this.statsMain.css("display") !== "none";
             this.toggleEscMenu(true);
             this.displayingStats = true;
             this.m_pieTimer.stop();
@@ -1594,7 +1598,8 @@ export class UiManager {
 
             this.removeAds();
             this.statsMain.css("display", "block");
-            this.statsLogo.css("display", "block");
+            this.statsLogo.css("display", amongUsMode ? "block" : "none");
+            this.statsContents.toggleClass("ui-stats-battle-results", !amongUsMode);
 
             this.statsContentsContainer.css({
                 top: "",
@@ -1604,14 +1609,14 @@ export class UiManager {
             });
 
             const victory = localTeamId == winningTeamId;
-            const statsDelay = victory ? 1750 : 2500;
+            const statsDelay = updatingStats ? 0 : victory ? 1750 : 2500;
 
-            this.setBannerAd(statsDelay, ui2);
+            if (!updatingStats) {
+                this.setBannerAd(statsDelay, ui2);
+            }
 
-            const gameMode = map.getMapDef().gameMode;
             const isLocalTeamWinner =
                 localTeamId == winningTeamId || (spectating && winningTeamId == teamId);
-            const spectatingAnotherTeam = spectating && localTeamId != teamId;
             const localRole =
                 playerBarn.getPlayerInfo(this.game.m_localId).amongUsRole || "";
             const titleClass = amongUsMode
@@ -1619,12 +1624,20 @@ export class UiManager {
                 : "";
             const S = amongUsMode
                 ? this.getAmongUsTitleText(localRole, isLocalTeamWinner)
-                : isLocalTeamWinner
-                  ? this.getTitleVictoryText(spectatingAnotherTeam, gameMode)
-                  : this.getTitleDefeatText(teamMode, spectatingAnotherTeam);
+                : "Battle Results";
+            const orderedPlayerStats = [...playerStats].sort((a, b) => {
+                if (a.dead !== b.dead) return a.dead ? 1 : -1;
+                if (a.timeAlive !== b.timeAlive) return b.timeAlive - a.timeAlive;
+                if (a.kills !== b.kills) return b.kills - a.kills;
+                return a.playerId - b.playerId;
+            });
             let teamKills = 0;
-            for (let i = 0; i < playerStats.length; i++) {
-                teamKills += playerStats[i].kills;
+            for (let i = 0; i < orderedPlayerStats.length; i++) {
+                const stats = orderedPlayerStats[i];
+                const playerInfo = playerBarn.getPlayerInfo(stats.playerId);
+                if (playerInfo.teamId == teamId) {
+                    teamKills += stats.kills;
+                }
             }
             const z = this.getOverviewElems(
                 teamMode,
@@ -1632,73 +1645,137 @@ export class UiManager {
                 teamKills,
                 map.getMapDef().gameMode.factionMode!,
             );
-            const I = $("<div/>")
-                .append(
-                    $("<div/>", {
-                        class: `ui-stats-header-title${titleClass ? ` ${titleClass}` : ""}`,
-                        html: S,
-                    }),
-                )
-                .append(
+            const I = $("<div/>").append(
+                $("<div/>", {
+                    class: `ui-stats-header-title${titleClass ? ` ${titleClass}` : ""}`,
+                    html: S,
+                }),
+            );
+            if (amongUsMode || map.getMapDef().gameMode.factionMode) {
+                I.append(
                     $("<div/>", {
                         class: "ui-stats-header-overview",
                         html: z,
                     }),
                 );
+            }
             this.statsHeader.html(I as unknown as HTMLElement);
-            const T = (e: string, t: string | number) =>
+            this.statsInfoBox.addClass("ui-stats-info-box-list");
+            this.statsInfoBox.append(
                 $("<div/>", {
-                    class: "ui-stats-info",
+                    class: "ui-stats-player-row ui-stats-player-row-header ui-stats-player-row-header-small",
                 })
-                    .append(
-                        $("<div/>", {
-                            html: e,
-                        }),
-                    )
-                    .append(
-                        $("<div/>", {
-                            html: t,
-                        }),
+                    .append($("<div/>"))
+                    .append($("<div/>", { html: "battle" }))
+                    .append($("<div/>", { html: "damage" }))
+                    .append($("<div/>", { html: "damage" }))
+                    .append($("<div/>", { html: "survival" })),
+            );
+            this.statsInfoBox.append(
+                $("<div/>", {
+                    class: "ui-stats-player-row ui-stats-player-row-header",
+                })
+                    .append($("<div/>", { html: "player" }))
+                    .append($("<div/>", { html: "kills" }))
+                    .append($("<div/>", { html: "done" }))
+                    .append($("<div/>", { html: "taken" }))
+                    .append($("<div/>", { html: "time" })),
+            );
+            const alivePlayerIds = new Set(
+                orderedPlayerStats
+                    .filter((stats) => !stats.dead)
+                    .map((stats) => stats.playerId),
+            );
+            const rankByPlayerId = new globalThis.Map<number, number>();
+            if (teamMode == TeamMode.Solo) {
+                let nextRank = alivePlayerIds.size + 1;
+                for (let i = 0; i < orderedPlayerStats.length; i++) {
+                    const stats = orderedPlayerStats[i];
+                    rankByPlayerId.set(stats.playerId, stats.dead ? nextRank++ : 1);
+                }
+            } else {
+                const aliveTeamKeys = new Set<number>();
+                for (const stats of orderedPlayerStats) {
+                    if (stats.dead) continue;
+                    const info = playerBarn.getPlayerInfo(stats.playerId);
+                    aliveTeamKeys.add(
+                        map.getMapDef().gameMode.factionMode || !info.groupId
+                            ? info.teamId
+                            : info.groupId,
                     );
-            const M = device.uiLayout != device.UiLayout.Sm || device.tablet ? 250 : 125;
-            let P = 0;
-            P -= ((playerStats.length - 1) * M) / 2;
-            P -= (playerStats.length - 1) * 10;
-            for (let C = 0; C < playerStats.length; C++) {
-                const stats = playerStats[C];
+                }
+
+                const rankByTeamKey = new globalThis.Map<number, number>();
+                let nextRank = aliveTeamKeys.size + 1;
+                for (const stats of orderedPlayerStats) {
+                    const info = playerBarn.getPlayerInfo(stats.playerId);
+                    const teamKey =
+                        map.getMapDef().gameMode.factionMode || !info.groupId
+                            ? info.teamId
+                            : info.groupId;
+                    if (!rankByTeamKey.has(teamKey)) {
+                        rankByTeamKey.set(teamKey, stats.dead ? nextRank++ : 1);
+                    }
+                    rankByPlayerId.set(stats.playerId, rankByTeamKey.get(teamKey)!);
+                }
+            }
+            for (let C = 0; C < orderedPlayerStats.length; C++) {
+                const stats = orderedPlayerStats[C];
                 const playerInfo = playerBarn.getPlayerInfo(stats.playerId);
                 const D = humanizeTime(stats.timeAlive);
-                let E = "ui-stats-info-player";
-                E += stats.dead ? " ui-stats-info-status" : "";
-                const B = ((e) =>
-                    $("<div/>", {
-                        class: e,
-                    }))(E);
-                B.css("left", P);
+                const rankText = !stats.dead
+                    ? gameOver
+                        ? "#1"
+                        : "?"
+                    : `#${rankByPlayerId.get(stats.playerId) ?? C + 1}`;
+                const spectateTargetId = stats.dead
+                    ? alivePlayerIds.has(stats.killerId)
+                        ? stats.killerId
+                        : 0
+                    : stats.playerId;
+                const playerNameHtml =
+                    playerBarn.getPlayerNameHtml(
+                        stats.playerId,
+                        this.game.m_localId,
+                        false,
+                    ) || helpers.htmlEscape(stats.name || `Player${stats.playerId}`);
+                const B = $("<div/>", {
+                    class: `ui-stats-player-row${stats.dead ? " ui-stats-info-status" : ""}${
+                        stats.playerId == this.game.m_localId
+                            ? " ui-stats-player-row-current"
+                            : ""
+                    }`,
+                });
                 B.append(
                     $("<div/>", {
-                        class: "ui-stats-info-player-name",
-                        html: playerBarn.getPlayerNameHtml(
-                            stats.playerId,
-                            this.game.m_localId,
-                            false,
-                        ),
+                        class: "ui-stats-player-rank",
+                        html: rankText,
                     }),
-                );
-                B.append(T(this.localization.translate("game-kills"), `${stats.kills}`))
+                )
                     .append(
-                        T(
-                            this.localization.translate("game-damage-dealt"),
-                            stats.damageDealt,
-                        ),
+                        $("<div/>", {
+                            class: "ui-stats-info-player-name",
+                            html: playerNameHtml,
+                        }),
                     )
                     .append(
-                        T(
-                            this.localization.translate("game-damage-taken"),
-                            stats.damageTaken,
-                        ),
+                        $("<div/>", {
+                            class: `ui-stats-player-spectate-icon${
+                                spectateTargetId
+                                    ? ""
+                                    : " ui-stats-player-spectate-disabled"
+                            }`,
+                        }).on("click", () => {
+                            if (spectateTargetId) {
+                                this.beginSpectating(spectateTargetId);
+                                this.hideStats();
+                            }
+                        }),
                     )
-                    .append(T(this.localization.translate("game-survived"), D));
+                    .append($("<div/>", { html: `${stats.kills}` }))
+                    .append($("<div/>", { html: stats.damageDealt }))
+                    .append($("<div/>", { html: stats.damageTaken }))
+                    .append($("<div/>", { html: D }));
                 if (map.getMapDef().gameMode.factionMode && gameOver) {
                     switch (C) {
                         case 1:
@@ -1729,11 +1806,24 @@ export class UiManager {
                     }
                 }
                 this.statsInfoBox.append(B);
-                P += 10;
             }
+            const localKillerId = localStats?.killerId ?? 0;
+            const findKillerButton = $("<a/>", {
+                class: `ui-stats-find-killer menu-option${
+                    localKillerId ? "" : " btn-disabled"
+                }`,
+                html: "Find Killer",
+            });
+            findKillerButton.on("click", () => {
+                if (localKillerId) {
+                    this.beginSpectating(localKillerId);
+                    this.hideStats();
+                }
+            });
+            this.statsOptions.append(findKillerButton);
             const restartButton = $("<a/>", {
-                class: "ui-stats-restart btn-green btn-darken menu-option",
-                html: this.localization.translate("game-play-new-game"),
+                class: "ui-stats-restart ui-stats-play-again menu-option",
+                html: "Play Again",
             });
             restartButton.on("click", () => {
                 SDK.requestFullscreenAd(() => {
@@ -1742,31 +1832,27 @@ export class UiManager {
             });
             this.statsOptions.append(restartButton);
             if (gameOver || this.waitingForPlayers) {
-                restartButton.css({
-                    width:
-                        device.uiLayout != device.UiLayout.Sm || device.tablet
-                            ? 225
-                            : 130,
-                });
-            } else {
-                restartButton.css({
-                    left:
-                        device.uiLayout != device.UiLayout.Sm || device.tablet
-                            ? -72
-                            : -46,
-                });
-                const q = $("<a/>", {
-                    class: "btn-green btn-darken menu-option ui-stats-spectate",
-                    html: this.localization.translate("game-spectate"),
-                });
-                q.on("click", this.beginSpectating.bind(this));
-                this.statsOptions.append(q);
+                restartButton.css({ left: "" });
             }
 
             let elemIdx = 0;
             const elemFadeTime = 500;
-            const elemDelay = 250 / math.max(1, playerStats.length);
-            const baseDelay = 750 / math.max(1, playerStats.length);
+            const elemDelay = 250 / math.max(1, orderedPlayerStats.length);
+            const baseDelay = 750 / math.max(1, orderedPlayerStats.length);
+            if (updatingStats) {
+                this.statsInfoBox.children().css("opacity", 1);
+                this.statsInfoBox.children().children().css("opacity", 1);
+                this.statsOptions.children().show();
+                this.statsElem.stop().css({
+                    display: "block",
+                    opacity: 1,
+                });
+                this.statsContents.stop().css({
+                    display: "block",
+                    opacity: 1,
+                });
+                return;
+            }
             this.statsInfoBox.children().each((idx, elem) => {
                 const e = $(elem);
                 e.css("opacity", 0);
@@ -1826,6 +1912,8 @@ export class UiManager {
     clearStatsElems() {
         this.statsHeader.empty();
         this.statsInfoBox.empty();
+        this.statsInfoBox.removeClass("ui-stats-info-box-list");
+        this.statsContents.removeClass("ui-stats-battle-results");
         this.statsOptions.empty();
         this.statsAds.css("display", "none");
         this.statsContents.stop();
@@ -1907,7 +1995,9 @@ export class UiManager {
             class: "btn-green btn-darken menu-option ui-stats-spectate",
             html: this.localization.translate("game-spectate"),
         });
-        i.on("click", this.beginSpectating.bind(this));
+        i.on("click", () => {
+            this.beginSpectating();
+        });
         this.statsOptions.append(i);
         let elemIdx = 0;
 

@@ -5,12 +5,14 @@ export class SpectateMsg implements AbstractMsg {
     specNext = false;
     specPrev = false;
     specForce = false;
+    targetId = 0;
 
     serialize(s: BitStream) {
         s.writeBoolean(this.specBegin);
         s.writeBoolean(this.specNext);
         s.writeBoolean(this.specPrev);
         s.writeBoolean(this.specForce);
+        s.writeUint16(this.targetId);
     }
 
     deserialize(s: BitStream) {
@@ -18,5 +20,6 @@ export class SpectateMsg implements AbstractMsg {
         this.specNext = s.readBoolean();
         this.specPrev = s.readBoolean();
         this.specForce = s.readBoolean();
+        this.targetId = s.readUint16();
     }
 }

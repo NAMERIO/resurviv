@@ -4208,6 +4208,14 @@ img {
   margin-top: 75px;
 }
 
+#ui-stats-contents-inner.ui-stats-battle-results {
+  width: min(860px, calc(100vw - 32px));
+  margin: 38px auto 0;
+  padding: 18px 42px 30px;
+  background-color: rgba(0, 0, 0, 0.82);
+  box-sizing: border-box;
+}
+
 @media (max-height: 768px) {
   #ui-stats-contents-inner {
     margin-top: 25px;
@@ -4232,6 +4240,20 @@ img {
   font-size: 48px;
   margin: 20px;
   color: gold;
+}
+
+.ui-stats-battle-results .ui-stats-header-title {
+  margin: 0 0 20px;
+  font-size: 42px;
+  line-height: 42px;
+  color: #ffd12c;
+  text-shadow:
+    0 2px 0 #000,
+    0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+.ui-stats-battle-results #ui-stats-header {
+  transform: none;
 }
 
 .ui-stats-header-title-among-us-win,
@@ -4291,11 +4313,175 @@ span.ui-stats-header-value {
   display: flex;
 }
 
+#ui-stats-info-box.ui-stats-info-box-list {
+  display: block;
+  left: initial;
+  width: 100%;
+  max-height: min(435px, calc(100vh - 250px));
+  height: auto;
+  margin-top: 0;
+  overflow-y: auto;
+  transform: none;
+  background-color: transparent;
+  border: 0;
+  border-radius: 0;
+  scrollbar-color: #d5d5d5 rgba(255, 255, 255, 0.18);
+  scrollbar-width: thin;
+}
+
+.ui-stats-player-row {
+  display: grid;
+  grid-template-columns: 48px minmax(220px, 1.8fr) 48px repeat(4, minmax(88px, 1fr));
+  align-items: center;
+  min-height: 38px;
+  margin-bottom: 5px;
+  border-bottom: 0;
+  position: relative;
+  background-color: rgba(28, 34, 30, 0.92);
+  color: #fff;
+}
+
+.ui-stats-player-row > div {
+  padding: 7px 10px;
+  font-size: 14px;
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 1px #000;
+}
+
+.ui-stats-player-row-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  min-height: 20px;
+  margin-bottom: 0;
+  background-color: #000;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.ui-stats-player-row-header-small {
+  min-height: 16px;
+}
+
+.ui-stats-player-row-header-small + .ui-stats-player-row-header {
+  top: 16px;
+  margin-bottom: 5px;
+}
+
+.ui-stats-player-row-header > div {
+  padding: 0 8px 2px;
+  font-size: 12px;
+  line-height: 12px;
+}
+
+.ui-stats-player-row-header > div:first-child {
+  grid-column: span 3;
+  text-align: left;
+  padding-left: 18px;
+}
+
+.ui-stats-player-row-header-small > div {
+  padding: 0 8px;
+  font-size: 9px;
+  line-height: 10px;
+  color: #fff;
+}
+
+.ui-stats-player-row-header-small > div:first-child {
+  padding-left: 0;
+}
+
+.ui-stats-player-row .ui-stats-info-player-name {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+  color: #fff;
+  font-size: 14px;
+  font-style: normal;
+  text-align: left;
+}
+
+.ui-stats-player-row .ui-stats-info-player-name:before {
+  content: "";
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  margin-right: 10px;
+  background-color: #b992ff;
+  background-image: url(/img/gui/player.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 23px;
+  border-radius: 2px;
+}
+
+.ui-stats-player-rank {
+  color: #fff;
+  text-align: center;
+}
+
+.ui-stats-player-row-current {
+  background-color: rgba(28, 34, 30, 0.74);
+  outline: 1px solid rgba(255, 209, 44, 0.55);
+  color: #fff;
+}
+
+.ui-stats-player-row-current > div {
+  text-shadow: 0 1px 1px #000;
+}
+
+.ui-stats-player-row-current .ui-stats-info-player-name {
+  color: #fff;
+}
+
+.ui-stats-player-spectate-icon {
+  height: 100%;
+  min-height: 38px;
+  padding: 0 !important;
+  background-color: #165f92;
+  background-image: url(/img/gui/eye.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 20px;
+  cursor: pointer;
+}
+
+.ui-stats-player-spectate-icon:hover {
+  background-color: #217fbd;
+}
+
+.ui-stats-player-spectate-disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.ui-stats-player-spectate-disabled:hover {
+  background-color: #165f92;
+}
+
+.ui-stats-player-row.ui-stats-info-status:after {
+  display: none;
+}
+
+.ui-stats-player-row > div {
+  z-index: 1;
+}
+
 @media (max-height: 768px) {
   #ui-stats-info-box {
     margin-top: -30px;
     transform: scale(0.9);
     transform-origin: left;
+  }
+
+  #ui-stats-info-box.ui-stats-info-box-list {
+    margin-top: 0;
+    transform: none;
   }
 }
 
@@ -4303,6 +4489,47 @@ span.ui-stats-header-value {
   #ui-stats-info-box {
     transform: scale(0.85);
     transform-origin: left;
+  }
+
+  #ui-stats-info-box.ui-stats-info-box-list {
+    transform: none;
+  }
+}
+
+@media (max-width: 720px) {
+  #ui-stats-contents-inner.ui-stats-battle-results {
+    width: calc(100vw - 16px);
+    margin-top: 16px;
+    padding: 12px 12px 20px;
+  }
+
+  #ui-stats-info-box.ui-stats-info-box-list {
+    width: 100%;
+    max-height: min(390px, calc(100vh - 185px));
+    margin-top: 10px;
+  }
+
+  .ui-stats-player-row {
+    grid-template-columns: 42px minmax(130px, 1.5fr) 42px repeat(4, minmax(64px, 1fr));
+  }
+
+  .ui-stats-player-row > div {
+    padding: 5px 4px;
+    font-size: 11px;
+  }
+
+  .ui-stats-player-row-header > div {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 560px) {
+  #ui-stats-info-box.ui-stats-info-box-list {
+    overflow-x: auto;
+  }
+
+  .ui-stats-player-row {
+    min-width: 520px;
   }
 }
 
@@ -4424,6 +4651,19 @@ span.ui-stats-header-value {
   z-index: 1;
 }
 
+.ui-stats-battle-results #ui-stats-options,
+#ui-stats-contents-inner.ui-stats-battle-results + #ui-stats-options {
+  position: static;
+}
+
+.ui-stats-battle-results .ui-stats-options {
+  position: static;
+}
+
+#ui-stats-contents-inner.ui-stats-battle-results #ui-stats-options {
+  position: static;
+}
+
 @media (max-height: 768px) {
   #ui-stats-options {
     margin-top: 8px;
@@ -4439,6 +4679,50 @@ span.ui-stats-header-value {
   position: absolute;
   transform: translateX(-50%);
   width: 200px;
+}
+
+.ui-stats-battle-results ~ #ui-stats-options,
+.ui-stats-battle-results #ui-stats-options {
+  left: initial;
+  display: flex;
+  justify-content: center;
+  gap: 44px;
+  min-height: 28px;
+  margin-top: 12px;
+}
+
+.ui-stats-battle-results .ui-stats-find-killer,
+.ui-stats-battle-results .ui-stats-play-again {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 130px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 24px;
+  text-shadow: 0 1px 1px #000;
+  transform: none;
+  position: static;
+}
+
+.ui-stats-battle-results .ui-stats-find-killer {
+  background: #d60000;
+  box-shadow: inset 0 -2px rgba(0, 0, 0, 0.28);
+}
+
+.ui-stats-battle-results .ui-stats-play-again {
+  background: #2389ee;
+  box-shadow: inset 0 -2px rgba(0, 0, 0, 0.28);
+}
+
+.ui-stats-battle-results .btn-disabled {
+  opacity: 0.55;
 }
 
 .ui-stats-spectate {
