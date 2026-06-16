@@ -2308,6 +2308,13 @@ export class Player extends BaseGameObject {
 
     moveToAmongUsMeeting(pos: Vec2): void {
         this.cancelAction();
+        this.moveLeft = false;
+        this.moveRight = false;
+        this.moveUp = false;
+        this.moveDown = false;
+        this.touchMoveActive = false;
+        this.touchMoveDir = v2.create(0, 0);
+        this.touchMoveLen = 0;
         this.shootHold = false;
         this.shootStart = false;
         this.layer = 0;

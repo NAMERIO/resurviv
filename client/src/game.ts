@@ -2046,6 +2046,10 @@ export class Game {
             this.m_amongUsCameraImageLoaded = true;
             this.clearAmongUsCameraBaseSceneCaches();
         };
+        this.m_amongUsCameraImage.onerror = () => {
+            this.m_amongUsCameraImageLoaded = false;
+            this.clearAmongUsCameraBaseSceneCaches();
+        };
         this.m_amongUsCameraImage.src = cafeteriaFloorSprite.img;
     }
 
