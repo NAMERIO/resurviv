@@ -1587,8 +1587,13 @@ export class UiManager {
         // If we're spectating a team that's not our own, and the game isn't over yet,
         // don't display the stats screen again.
         if (!spectating || teamId == localTeamId || gameOver) {
+            const statsVisible =
+                Number.parseFloat(this.statsElem.css("opacity")) > 0 ||
+                Number.parseFloat(this.statsContents.css("opacity")) > 0;
             const updatingStats =
-                this.displayingStats && this.statsMain.css("display") !== "none";
+                this.displayingStats &&
+                this.statsMain.css("display") !== "none" &&
+                statsVisible;
             this.toggleEscMenu(true);
             this.displayingStats = true;
             this.m_pieTimer.stop();
