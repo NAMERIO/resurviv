@@ -1,4 +1,37 @@
+import { GunDefs } from "../../shared/defs/gameObjects/gunDefs";
 import { PingTest } from "./pingTest";
+
+const ammoBorderColors: Record<string, string> = {
+    "9mm": "#FFAE00",
+    "762mm": "#007FFF",
+    "556mm": "#0f690d",
+    "12gauge": "#FF0000",
+    "45acp": "#800080",
+    "50AE": "#000000",
+    "308sub": "#808000",
+    potato_ammo: "#945400ff",
+    flare: "#FF4500",
+    "40mm": "#008080",
+    heart_ammo: "#FFC0CB",
+    "9mm_cursed": "#130900",
+    flux_rifle_ammo: "#00FFFF",
+    snow_ammo: "#A7D8FF",
+    rainbow_ammo: "#000000",
+    bugle_ammo: "#FFFFFF",
+};
+
+const weaponBorderColors = new Map<string, string>();
+for (const def of Object.values(GunDefs)) {
+    const color = ammoBorderColors[def.ammo];
+    if (color) {
+        const weaponName = def.name.toUpperCase();
+        if (!weaponBorderColors.has(weaponName)) {
+            weaponBorderColors.set(weaponName, color);
+        }
+    }
+}
+
+weaponBorderColors.set("VECTOR (.45 ACP)", ammoBorderColors["45acp"]);
 
 export class GameMod {
     lastFrameTime: number;
@@ -263,103 +296,8 @@ export class GameMod {
             ) as HTMLElement;
             const observer = new MutationObserver(() => {
                 const weaponName = weaponNameElement.textContent?.trim() || "";
-                let border = "#FFFFFF";
-
-                switch (weaponName.toUpperCase()) {
-                    //yellow
-                    case "CZ-3A1":
-                    case "G18C":
-                    case "M9":
-                    case "M93R":
-                    case "MAC-10":
-                    case "MP5":
-                    case "P30L":
-                    case "DUAL P30L":
-                    case "UMP9":
-                    case "VECTOR":
-                    case "VSS":
-                    case "FLAMETHROWER":
-                        border = "#FFAE00";
-                        break;
-                    //blue
-                    case "AK-47":
-                    case "OT-38":
-                    case "OTS-38":
-                    case "M39 EMR":
-                    case "DP-28":
-                    case "MOSIN-NAGANT":
-                    case "SCAR-H":
-                    case "SV-98":
-                    case "M1 GARAND":
-                    case "PKP PECHENEG":
-                    case "AN-94":
-                    case "BAR M1918":
-                    case "BLR 81":
-                    case "SVD-63":
-                    case "M134":
-                    case "GROZA":
-                    case "GROZA-S":
-                        border = "#007FFF";
-                        break;
-                    //green
-                    case "FAMAS":
-                    case "M416":
-                    case "M249":
-                    case "QBB-97":
-                    case "MK 12 SPR":
-                    case "M4A1-S":
-                    case "SCOUT ELITE":
-                    case "L86A2":
-                        border = "#0f690d";
-                        break;
-                    //red
-                    case "M870":
-                    case "MP220":
-                    case "SAIGA-12":
-                    case "SPAS-12":
-                    case "USAS-12":
-                    case "SUPER 90":
-                    case "LASR GUN":
-                    case "M1100":
-                        border = "#FF0000";
-                        break;
-                    //purple
-                    case "MODEL 94":
-                    case "PEACEMAKER":
-                    case "VECTOR (.45 ACP)":
-                    case "M1911":
-                    case "M1A1":
-                        border = "#800080";
-                        break;
-                    //black
-                    case "DEAGLE 50":
-                    case "RAINBOW BLASTER":
-                        border = "#000000";
-                        break;
-                    //olive
-                    case "AWM-S":
-                    case "MK 20 SSR":
-                        border = "#808000";
-                        break;
-                    //brown
-                    case "POTATO CANNON":
-                    case "SPUD GUN":
-                        border = "#A52A2A";
-                        break;
-                    //other Guns
-                    case "FLARE GUN":
-                        border = "#FF4500";
-                        break;
-                    case "M79":
-                        border = "#008080";
-                        break;
-                    case "HEART CANNON":
-                        border = "#FFC0CB";
-                        break;
-                    default:
-                        border = "#FFFFFF";
-                        break;
-                }
+                const border =
+                    weaponBorderColors.get(weaponName.toUpperCase()) ?? "#FFFFFF";
 
                 if (weaponContainer.id !== "ui-weapon-id-4") {
                     weaponContainer.style.border = `3px solid ${border}`;
