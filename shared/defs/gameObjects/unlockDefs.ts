@@ -359,6 +359,7 @@ const _allowedOutfits = [
     // "outfitInfernoCamo",
     // "outfitMango",
     // "outfitParrot",
+    // "outfitReTag",
     // "outfitCrusader",
     // "outfitLasrDisk",
     // "outfitBeachCamo",

@@ -1720,6 +1720,7 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-accessory-outfitMecha.svg",
         "player/player-accessory-poinsetee.svg",
         "player/player-accessory-ranch-dressing.svg",
+        "player/player-accessory-rsrv-tag.svg",
         "player/player-accessory-sir-loin.svg",
         "player/player-accessory-snowman.svg",
         "player/player-accessory-snowy-claus.svg",
@@ -1859,6 +1860,7 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-back-moosli.svg",
         "player/player-back-prey-dinner.svg",
         "player/player-back-checkmate.svg",
+        "player/player-back-rsrv-tag.svg",
 
         "proj/proj-bomb-iron-01.svg",
         "proj/proj-coconut-01.svg",

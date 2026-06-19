@@ -4509,6 +4509,29 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+    outfitReTag: defineOutfitSkin("outfitBase", {
+        name: "Vitamin D",
+        noDropOnDeath: true,
+        rarity: 4,
+        lore: "",
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitvitamnD.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-starry-night.img",
+            footTint: 0xffffff,
+            footSprite: "player-hands-starry-night.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-rsrv-tag.img",
+            frontSpritePos: { x: -2, y: 0 },
+            frontSprite: "player-accessory-rsrv-tag.img",
+            aboveHand: false,
+        },
+        lootImg: {
+            sprite: "loot-snowman-outfit.img",
+            tint: 0xffffff,
+        },
+    }),
 };
 
 export const OutfitDefs = { ...BaseDefs, ...SkinDefs };
