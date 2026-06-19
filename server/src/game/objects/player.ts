@@ -4781,8 +4781,13 @@ export class Player extends BaseGameObject {
             statsMsg.playerStats = this.getPlayerStatsSnapshot(this);
             this.msgsToSend.push({ type: net.MsgType.PlayerStats, msg: statsMsg });
         } else {
-            const recipients = new Set<Player>([this, ...this.spectators]);
-            if (!this.game.map.amongUsMode) {
+            const recipients = new Set<Player>([this]);
+            if (gameOver) {
+                for (const spectator of this.spectators) {
+                    recipients.add(spectator);
+                }
+            }
+            if (gameOver && !this.game.map.amongUsMode) {
                 for (const player of this.game.playerBarn.players) {
                     if (player.dead && !player.disconnected) {
                         recipients.add(player);

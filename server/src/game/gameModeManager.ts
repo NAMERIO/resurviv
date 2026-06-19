@@ -445,9 +445,9 @@ export class GameModeManager {
 
         // Priority list of spectate targets.
         const spectateTargets = [
+            player.getAliveKiller(),
             player.group?.randomPlayer(), // undefined if no player to choose
             player.team?.randomPlayer(), // undefined if no player to choose
-            player.getAliveKiller(),
             player.game.playerBarn.randomPlayer(),
         ];
 
