@@ -421,6 +421,11 @@ export interface ConfigType {
     discordGuildId?: string;
 
     /**
+     * Guild ID whose Discord server tag grants the configured in-game reward.
+     */
+    discordServerTagGuildId?: string;
+
+    /**
      * Enables caching some expensive API requests (like leaderboards) with Redis.
      *
      * This requires a Redis server to be set up with the API server.

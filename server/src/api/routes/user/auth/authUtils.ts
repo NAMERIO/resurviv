@@ -4,13 +4,16 @@ import type { Context } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import slugify from "slugify";
 import { UnlockDefs } from "../../../../../../shared/defs/gameObjects/unlockDefs";
+import loadout, { ItemStatus } from "../../../../../../shared/utils/loadout";
 import { util } from "../../../../../../shared/utils/util";
 import { Config } from "../../../../config";
 import { checkForBadWords } from "../../../../utils/serverHelpers";
 import { createSession, invalidateSession, validateSessionToken } from "../../../auth";
 import { db } from "../../../db";
 import {
+    auctionListingTable,
     itemsTable,
+    marketListingTable,
     type UsersTableInsert,
     type UsersTableSelect,
     userAuthIdentityTable,
@@ -22,6 +25,140 @@ if (URL.canParse(Config.oauthBasePath)) {
     oauthBaseURL = new URL(Config.oauthBasePath);
 }
 export const cookieDomain = oauthBaseURL?.hostname;
+
+const discordServerTagRewardSource = "discord_server_tag";
+const discordServerTagRewardItem = "outfitReTag";
+
+type DiscordPrimaryGuild = {
+    identity_guild_id?: string | null;
+    identity_enabled?: boolean | null;
+    tag?: string | null;
+};
+
+export type DiscordUserWithPrimaryGuild = {
+    id: string;
+    verified?: boolean;
+    primary_guild?: DiscordPrimaryGuild | null;
+};
+
+function hasConfiguredDiscordServerTag(discordUser: DiscordUserWithPrimaryGuild) {
+    const guildId = Config.discordServerTagGuildId ?? Config.discordGuildId;
+    if (!guildId) return false;
+
+    const primaryGuild = discordUser.primary_guild;
+    return (
+        primaryGuild?.identity_enabled === true &&
+        primaryGuild.identity_guild_id === guildId
+    );
+}
+
+async function fetchDiscordUser(discordId: string) {
+    if (!Config.secrets.DISCORD_BOT_TOKEN) return undefined;
+
+    const response = await fetch(`https://discord.com/api/users/${discordId}`, {
+        headers: {
+            Authorization: `Bot ${Config.secrets.DISCORD_BOT_TOKEN}`,
+        },
+    });
+
+    if (response.status === 404) return null;
+    if (!response.ok) return undefined;
+    return (await response.json()) as DiscordUserWithPrimaryGuild;
+}
+
+async function removeDiscordServerTagReward(
+    user: Pick<UsersTableSelect, "id" | "loadout">,
+    tx: typeof db = db,
+) {
+    await tx
+        .delete(itemsTable)
+        .where(
+            and(
+                eq(itemsTable.userId, user.id),
+                eq(itemsTable.type, discordServerTagRewardItem),
+                eq(itemsTable.source, discordServerTagRewardSource),
+            ),
+        );
+
+    await tx
+        .update(marketListingTable)
+        .set({ status: "canceled", canceledAt: new Date() })
+        .where(
+            and(
+                eq(marketListingTable.sellerUserId, user.id),
+                eq(marketListingTable.itemType, discordServerTagRewardItem),
+                eq(marketListingTable.status, "active"),
+            ),
+        );
+
+    await tx
+        .update(auctionListingTable)
+        .set({ status: "canceled", canceledAt: new Date() })
+        .where(
+            and(
+                eq(auctionListingTable.sellerUserId, user.id),
+                eq(auctionListingTable.itemType, discordServerTagRewardItem),
+                eq(auctionListingTable.status, "active"),
+            ),
+        );
+
+    const remainingItems = await tx
+        .select({
+            id: itemsTable.id,
+            type: itemsTable.type,
+            timeAcquired: itemsTable.timeAcquired,
+            source: itemsTable.source,
+            status: itemsTable.status,
+        })
+        .from(itemsTable)
+        .where(eq(itemsTable.userId, user.id));
+
+    await tx
+        .update(usersTable)
+        .set({
+            loadout: loadout.validateWithAvailableItems(user.loadout, remainingItems),
+        })
+        .where(eq(usersTable.id, user.id));
+}
+
+export async function syncDiscordServerTagReward(
+    user: Pick<UsersTableSelect, "id" | "loadout">,
+    discordId?: string,
+    discordUser?: DiscordUserWithPrimaryGuild,
+) {
+    if (!Config.discordServerTagGuildId && !Config.discordGuildId) return;
+
+    if (!discordId) {
+        await removeDiscordServerTagReward(user);
+        return;
+    }
+
+    const userData = discordUser ?? (await fetchDiscordUser(discordId));
+    if (userData === undefined) return;
+
+    if (!userData || !hasConfiguredDiscordServerTag(userData)) {
+        await removeDiscordServerTagReward(user);
+        return;
+    }
+
+    const existing = await db.query.itemsTable.findFirst({
+        where: and(
+            eq(itemsTable.userId, user.id),
+            eq(itemsTable.type, discordServerTagRewardItem),
+            eq(itemsTable.source, discordServerTagRewardSource),
+        ),
+        columns: { id: true },
+    });
+    if (existing) return;
+
+    await db.insert(itemsTable).values({
+        userId: user.id,
+        source: discordServerTagRewardSource,
+        type: discordServerTagRewardItem,
+        timeAcquired: Date.now(),
+        status: ItemStatus.New,
+    });
+}
 
 const random = {
     read(bytes: Uint8Array) {
@@ -291,12 +428,15 @@ export async function handleAuthUser(
             .where(eq(usersTable.id, currentUser.id));
 
         await setSessionTokenCookie(currentUser.id, c);
-        return {};
+        return { user: currentUser };
     }
 
     if (existingIdentity) {
         await setSessionTokenCookie(existingIdentity.userId, c);
-        return {};
+        const user = await db.query.usersTable.findFirst({
+            where: eq(usersTable.id, existingIdentity.userId),
+        });
+        return { user };
     }
 
     let generateUsername = true;
@@ -334,7 +474,10 @@ export async function handleAuthUser(
     );
 
     await setSessionTokenCookie(userId, c);
-    return {};
+    const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, userId),
+    });
+    return { user };
 }
 
 export async function createNewUser(

@@ -4,9 +4,11 @@ import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { Config } from "../../../../config";
 import {
     cookieDomain,
+    type DiscordUserWithPrimaryGuild,
     getOAuthRedirect,
     getRedirectUri,
     handleAuthUser,
+    syncDiscordServerTagReward,
 } from "./authUtils";
 
 export const discord = new Discord(
@@ -99,16 +101,16 @@ DiscordRouter.get("/callback", async (c) => {
         },
     });
 
-    const resData = (await discordUserResponse.json()) as {
-        id: string;
-        verified: boolean;
-    };
+    const resData = (await discordUserResponse.json()) as DiscordUserWithPrimaryGuild;
 
     if (!resData.verified) {
         return c.json({ error: "verified_email_required" }, 400);
     }
 
     const result = await handleAuthUser(c, "discord", resData.id, { linkAccount });
+    if (!result.error && result.user) {
+        await syncDiscordServerTagReward(result.user, resData.id, resData);
+    }
 
     return c.redirect(getOAuthRedirect(result.error));
 });

@@ -10,6 +10,8 @@ const supportedMarketTypes = new Set([
     "death_effect",
 ]);
 
+const unsellableMarketItems = new Set(["outfitReTag"]);
+
 export const marketMinPriceByRarity: Record<Rarity, number> = {
     [Rarity.Stock]: 1,
     [Rarity.Common]: 1,
@@ -32,6 +34,8 @@ export const marketReferenceValueByRarity: Record<Rarity, number> = {
 };
 
 export function getMarketItemRarity(itemType: string) {
+    if (unsellableMarketItems.has(itemType)) return null;
+
     const def = GameObjectDefs[itemType] as
         | { type?: string; rarity?: Rarity }
         | undefined;

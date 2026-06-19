@@ -101,6 +101,7 @@ import {
     getTimeUntilNextUsernameChange,
     logoutUser,
     sanitizeSlug,
+    syncDiscordServerTagReward,
 } from "./auth/authUtils";
 import { PassRouter } from "./PassRouter";
 
@@ -878,7 +879,7 @@ UserRouter.post("/profile", async (c) => {
     const user = c.get("user")!;
 
     const {
-        loadout,
+        loadout: userLoadout,
         slug,
         username,
         usernameSet,
@@ -899,11 +900,16 @@ UserRouter.post("/profile", async (c) => {
 
     const timeUntilNextChange = getTimeUntilNextUsernameChange(lastUsernameChangeTime);
     const authState = await ensureUserAuthIdentities(user);
+    const discordIdentity = authState.identities.find(
+        (identity) => identity.provider === "discord",
+    );
+    await syncDiscordServerTagReward(user, discordIdentity?.authId);
     const claimedThanksReward = await tryClaimAprilThanksReward(c, user.id);
     const gpGifts = await claimGpGifts(user.id);
     const skinGifts = await claimSkinGifts(user.id);
 
     const items = await getUserItems(user.id);
+    const validatedLoadout = loadout.validateWithAvailableItems(userLoadout, items);
 
     return c.json<ProfileResponse>(
         {
@@ -927,7 +933,7 @@ UserRouter.post("/profile", async (c) => {
                 : undefined,
             gpGifts,
             skinGifts,
-            loadout,
+            loadout: validatedLoadout,
             items: items,
         },
         200,
@@ -1560,6 +1566,10 @@ UserRouter.post("/unlink_auth", validateParams(zUnlinkAuthRequest), async (c) =>
             )
             .where(eq(usersTable.id, user.id));
     });
+
+    if (provider === "discord") {
+        await syncDiscordServerTagReward(user);
+    }
 
     return c.json({ success: true } as const, 200);
 });
