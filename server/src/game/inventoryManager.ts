@@ -195,11 +195,13 @@ export class InventoryManager {
                 // switch to a lower scope if the scope dropped is the equipped one
                 if (this.player.scope === item) {
                     const scopeIdx = SCOPE_LEVELS.indexOf(item);
+                    let nextScope: InventoryItem = "1xscope";
                     for (let i = scopeIdx; i >= 0; i--) {
                         if (!this.has(SCOPE_LEVELS[i] as InventoryItem)) continue;
-                        this.player.scope = SCOPE_LEVELS[i];
+                        nextScope = SCOPE_LEVELS[i] as InventoryItem;
                         break;
                     }
+                    this.player.scope = nextScope;
                 }
                 break;
             }

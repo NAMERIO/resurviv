@@ -18,7 +18,10 @@ export const BattleRoyaleDefaultItems = {
     scope: "1xscope",
     perks: [],
     inventory: Object.fromEntries(
-        Object.keys(GameConfig.player.defaultItems.inventory).map((item) => [item, 0]),
+        Object.keys(GameConfig.player.defaultItems.inventory).map((item) => [
+            item,
+            item === "1xscope" ? 1 : 0,
+        ]),
     ),
 };
 
