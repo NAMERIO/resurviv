@@ -30,7 +30,8 @@ export type TeamMenuErrorType =
     | "rate_limited"
     | "arena_cooldown"
     | "arena_round_finished"
-    | "arena_need_teams";
+    | "arena_need_teams"
+    | "br_need_players";
 
 export interface RoomData {
     roomUrl: string;
@@ -254,18 +255,14 @@ export const zTeamJoinBattleRoyaleTeamMsg = z.object({
     }),
 });
 
-export type TeamJoinBattleRoyaleTeamMsg = z.infer<
-    typeof zTeamJoinBattleRoyaleTeamMsg
->;
+export type TeamJoinBattleRoyaleTeamMsg = z.infer<typeof zTeamJoinBattleRoyaleTeamMsg>;
 
 export const zTeamJoinCurrentArenaGameMsg = z.object({
     type: z.literal("joinCurrentArenaGame"),
     data: z.object({}).optional(),
 });
 
-export type TeamJoinCurrentArenaGameMsg = z.infer<
-    typeof zTeamJoinCurrentArenaGameMsg
->;
+export type TeamJoinCurrentArenaGameMsg = z.infer<typeof zTeamJoinCurrentArenaGameMsg>;
 
 export const zTeamPlayGameMsg = z.object({
     type: z.literal("playGame"),

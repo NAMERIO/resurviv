@@ -5258,7 +5258,7 @@ export class Player extends BaseGameObject {
 
         for (const item of Object.keys(this.invManager.items) as InventoryItem[]) {
             // const def = GameObjectDefs[item] as AmmoDef | HealDef;
-            if (item == "1xscope" && !isBattleRoyaleMapName(this.game.mapName)) {
+            if (item == "1xscope") {
                 continue;
             }
 

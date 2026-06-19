@@ -95,6 +95,7 @@ function errorTypeToString(type: string, localization: Localization) {
         arena_cooldown: localization.translate("index-arena-cooldown"),
         arena_round_finished: localization.translate("index-arena-round-finished"),
         arena_need_teams: localization.translate("index-arena-need-teams"),
+        br_need_players: localization.translate("game-waiting-for-players"),
         kicked: localization.translate("index-team-kicked"),
         banned: localization.translate("index-ip-banned"),
         behind_proxy: "behind_proxy", // this will get passed to the main app to show a modal

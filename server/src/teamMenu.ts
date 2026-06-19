@@ -696,6 +696,58 @@ class Room {
         return count;
     }
 
+    getBattleRoyaleArenaTeamCount() {
+        const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
+        if ((mode?.teamMode ?? 1) <= 1) {
+            return this.getBattleRoyaleArenaActivePlayerCount();
+        }
+
+        const teamCodes = new Set<string>();
+        let unassignedPlayers = 0;
+        for (const p of this.players) {
+            if (this.arenaSpectators.has(p)) continue;
+            const teamCode = this.battleRoyaleTeams.get(p);
+            if (teamCode) {
+                teamCodes.add(teamCode);
+            } else {
+                unassignedPlayers++;
+            }
+        }
+        return (
+            teamCodes.size + (this.hasBattleRoyaleArenaTeams() ? unassignedPlayers : 0)
+        );
+    }
+
+    hasBattleRoyaleArenaTeams() {
+        for (const p of this.players) {
+            if (this.arenaSpectators.has(p)) continue;
+            if (this.battleRoyaleTeams.has(p)) return true;
+        }
+        return false;
+    }
+
+    getBattleRoyaleArenaRequiredPlayerCount() {
+        const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
+        const teamMode = Math.max(1, mode?.teamMode ?? 1);
+        return Math.max(2, teamMode === 2 ? 3 : teamMode);
+    }
+
+    validateBattleRoyaleArenaStart(): TeamMenuErrorType | undefined {
+        if (!this.isBattleRoyaleArena()) return undefined;
+        if (
+            this.getBattleRoyaleArenaActivePlayerCount() <
+            this.getBattleRoyaleArenaRequiredPlayerCount()
+        ) {
+            return "br_need_players";
+        }
+        if (
+            this.hasBattleRoyaleArenaTeams() &&
+            this.getBattleRoyaleArenaTeamCount() < 2
+        ) {
+            return "br_need_players";
+        }
+    }
+
     normalizeBattleRoyaleTeamCode(rawCode: string) {
         return rawCode.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
     }
@@ -764,7 +816,9 @@ class Room {
 
     getBattleRoyaleMatchRoomId(player: Player) {
         const teamCode = this.battleRoyaleTeams.get(player);
-        return teamCode ? `${this.id}-BR-${teamCode}` : this.id;
+        if (teamCode) return `${this.id}-BR-${teamCode}`;
+        if (this.hasBattleRoyaleArenaTeams()) return `${this.id}-BR-${player.playerId}`;
+        return this.id;
     }
 
     canBattleRoyaleArenaJoinInProgressAsPlayer() {
@@ -901,6 +955,13 @@ class Room {
                 if (roomPlayer !== player && roomPlayer.inGame) {
                     this.removePlayer(roomPlayer);
                 }
+            }
+            const startError = this.validateBattleRoyaleArenaStart();
+            if (startError) {
+                this.data.lastError = startError;
+                this.data.findingGame = false;
+                this.sendState();
+                return;
             }
         }
         if (isBattleRoyaleMode && this.players.some((p) => p.inGame)) {

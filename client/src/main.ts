@@ -20,7 +20,7 @@ import type {
 } from "../../shared/types/api";
 import { math } from "../../shared/utils/math";
 import { Account } from "./account";
-import { googleH5Ads, type GoogleH5AdPlacementInfo } from "./ads/googleH5Ads";
+import { type GoogleH5AdPlacementInfo, googleH5Ads } from "./ads/googleH5Ads";
 import { Ambiance } from "./ambiance";
 import { api } from "./api";
 import { AudioManager } from "./audioManager";
@@ -1857,10 +1857,41 @@ export class Application {
             return "";
         }
 
+        if (this.teamMenu.isBattleRoyaleRoom() && error === "br_need_players") {
+            const mode = this.siteInfo.info.modes?.[this.teamMenu.roomData.gameModeIdx];
+            const teamMode = Math.max(1, mode?.teamMode ?? 1);
+            const requiredPlayers = Math.max(2, teamMode === 2 ? 3 : teamMode);
+            const activePlayers = this.teamMenu.players.filter(
+                (player) => !player.spectator,
+            );
+
+            if (activePlayers.length < requiredPlayers) {
+                return `Need ${requiredPlayers} players to start (${activePlayers.length}/${requiredPlayers}).`;
+            }
+
+            if (teamMode <= 1) {
+                return "Need more than one player to start.";
+            }
+
+            const teamCodes = new Set<string>();
+            let unassignedPlayers = 0;
+            for (const player of activePlayers) {
+                if (player.brTeamCode) {
+                    teamCodes.add(player.brTeamCode);
+                } else {
+                    unassignedPlayers++;
+                }
+            }
+            if (teamCodes.size > 0 && teamCodes.size + unassignedPlayers < 2) {
+                return "Need more than one team to start.";
+            }
+        }
+
         const errorTextByType: Record<string, string> = {
             arena_need_teams: this.localization.translate("index-arena-need-teams"),
             game_in_progress: this.localization.translate("index-game-in-progress"),
             waiting_for_players: this.localization.translate("game-waiting-for-players"),
+            br_need_players: this.localization.translate("game-waiting-for-players"),
             find_game_error: this.localization.translate("index-failed-finding-game"),
             find_game_full: this.localization.translate("index-failed-finding-game"),
             find_game_invalid_protocol: this.localization.translate(
@@ -2141,89 +2172,89 @@ export class Application {
                     }),
                 );
             const summaryCard = $("<div>", { class: "arena-br-lobby-card" })
-                    .append(
-                        $("<div>", { class: "arena-br-lobby-hero" })
-                            .append(
-                                $("<div>", {
-                                    class: "arena-br-lobby-mode",
-                                    text: "Private Battle Royale",
-                                }),
-                            )
-                            .append(
-                                $("<div>", {
-                                    class: "arena-br-lobby-sub",
-                                    text: `${this.getArenaTeamModeDisplayName(
-                                        teamSize,
-                                        this.teamMenu.roomData.miniGame,
-                                    )} lobby`,
-                                }),
-                            ),
-                    )
-                    .append(
-                        $("<div>", { class: "arena-br-lobby-row arena-br-lobby-owner" })
-                            .append(
-                                $("<span>", {
-                                    class: "arena-br-lobby-label",
-                                    text: "Owner",
-                                }),
-                            )
-                            .append(
-                                $("<span>", {
-                                    class: "arena-br-lobby-value",
-                                    html: owner
-                                        ? owner.clanName
-                                            ? `${helpers.getClanTagHtml(owner.clanName, owner.clanTagColor || "")} ${helpers.htmlEscape(owner.name)}`
-                                            : helpers.htmlEscape(owner.name)
-                                        : "Waiting",
-                                }),
-                            ),
-                    )
-                    .append(
-                        $("<div>", { class: "arena-br-lobby-row arena-br-lobby-players" })
-                            .append(
-                                $("<span>", {
-                                    class: "arena-br-lobby-label",
-                                    text: "Players",
-                                }),
-                            )
-                            .append(
-                                $("<span>", {
-                                    class: "arena-br-lobby-value",
-                                    text: `${players.length}/${maxPlayers}`,
-                                }),
-                            ),
-                    )
-                    .append(
-                        $("<div>", { class: "arena-br-lobby-row arena-br-lobby-type" })
-                            .append(
-                                $("<span>", {
-                                    class: "arena-br-lobby-label",
-                                    text: "Type",
-                                }),
-                            )
-                            .append(
-                                $("<span>", {
-                                    class: "arena-br-lobby-value",
-                                    text: this.getArenaTeamModeDisplayName(
-                                        teamSize,
-                                        this.teamMenu.roomData.miniGame,
-                                    ),
-                                }),
-                            ),
-                    )
-                    .append(
-                        $("<button>", {
-                            class: `arena-br-join-game btn-darken${gameStarted ? " active" : ""}`,
-                            type: "button",
-                            text: gameStarted ? "Join Game" : "Waiting to start...",
-                            disabled: !gameStarted,
-                        }).on("click", (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (!gameStarted) return;
-                            this.teamMenu.joinCurrentArenaGame();
-                        }),
-                    );
+                .append(
+                    $("<div>", { class: "arena-br-lobby-hero" })
+                        .append(
+                            $("<div>", {
+                                class: "arena-br-lobby-mode",
+                                text: "Private Battle Royale",
+                            }),
+                        )
+                        .append(
+                            $("<div>", {
+                                class: "arena-br-lobby-sub",
+                                text: `${this.getArenaTeamModeDisplayName(
+                                    teamSize,
+                                    this.teamMenu.roomData.miniGame,
+                                )} lobby`,
+                            }),
+                        ),
+                )
+                .append(
+                    $("<div>", { class: "arena-br-lobby-row arena-br-lobby-owner" })
+                        .append(
+                            $("<span>", {
+                                class: "arena-br-lobby-label",
+                                text: "Owner",
+                            }),
+                        )
+                        .append(
+                            $("<span>", {
+                                class: "arena-br-lobby-value",
+                                html: owner
+                                    ? owner.clanName
+                                        ? `${helpers.getClanTagHtml(owner.clanName, owner.clanTagColor || "")} ${helpers.htmlEscape(owner.name)}`
+                                        : helpers.htmlEscape(owner.name)
+                                    : "Waiting",
+                            }),
+                        ),
+                )
+                .append(
+                    $("<div>", { class: "arena-br-lobby-row arena-br-lobby-players" })
+                        .append(
+                            $("<span>", {
+                                class: "arena-br-lobby-label",
+                                text: "Players",
+                            }),
+                        )
+                        .append(
+                            $("<span>", {
+                                class: "arena-br-lobby-value",
+                                text: `${players.length}/${maxPlayers}`,
+                            }),
+                        ),
+                )
+                .append(
+                    $("<div>", { class: "arena-br-lobby-row arena-br-lobby-type" })
+                        .append(
+                            $("<span>", {
+                                class: "arena-br-lobby-label",
+                                text: "Type",
+                            }),
+                        )
+                        .append(
+                            $("<span>", {
+                                class: "arena-br-lobby-value",
+                                text: this.getArenaTeamModeDisplayName(
+                                    teamSize,
+                                    this.teamMenu.roomData.miniGame,
+                                ),
+                            }),
+                        ),
+                )
+                .append(
+                    $("<button>", {
+                        class: `arena-br-join-game btn-darken${gameStarted ? " active" : ""}`,
+                        type: "button",
+                        text: gameStarted ? "Join Game" : "Waiting to start...",
+                        disabled: !gameStarted,
+                    }).on("click", (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!gameStarted) return;
+                        this.teamMenu.joinCurrentArenaGame();
+                    }),
+                );
 
             this.prestigeArenaTeamAList.append(summaryCard);
 
