@@ -533,6 +533,14 @@ export class UiManager2 {
         // Single streak icon setup
         {
             const el = domElemById("ui-streak-0");
+            let streakActionQueued = false;
+            let streakTouchOsId: number | undefined;
+            const queueStreakActivation = () => {
+                if (!this.streakEnabled) return;
+                this.streakActivateRequested = true;
+                this.streakClickedIdx = -1;
+                document.getElementById("cvs")?.focus();
+            };
             this.dom.streakSingle = {
                 div: el,
                 image: el.getElementsByClassName(
@@ -555,10 +563,48 @@ export class UiManager2 {
             };
             this.updateStreakIcon();
 
-            setEventListener("click", el, () => {
-                if (!this.streakEnabled) return;
-                this.streakActivateRequested = true;
-                this.streakClickedIdx = -1;
+            setEventListener("mousedown", el, (e) => {
+                if (!isLmb(e)) return;
+                e.preventDefault();
+                e.stopPropagation();
+                streakActionQueued = true;
+            });
+            setEventListener("mouseup", el, (e) => {
+                if (!streakActionQueued || !isLmb(e)) return;
+                e.preventDefault();
+                e.stopPropagation();
+                queueStreakActivation();
+                streakActionQueued = false;
+            });
+            setEventListener("click", el, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            setEventListener("touchstart", el, (e) => {
+                if (e.changedTouches.length === 0) return;
+                e.preventDefault();
+                e.stopPropagation();
+                streakActionQueued = true;
+                streakTouchOsId = e.changedTouches[0].identifier;
+            });
+            setEventListener("touchend", el, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const changedTouches = Array.from(e.changedTouches);
+                const releasedStreakTouch = changedTouches.some(
+                    (touch) => touch.identifier === streakTouchOsId,
+                );
+                if (streakActionQueued && releasedStreakTouch) {
+                    queueStreakActivation();
+                }
+                streakActionQueued = false;
+                streakTouchOsId = undefined;
+            });
+            setEventListener("touchcancel", el, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                streakActionQueued = false;
+                streakTouchOsId = undefined;
             });
         }
 
