@@ -5910,6 +5910,9 @@ export class Player extends BaseGameObject {
 
         if (!this.invManager.isValid(msg.useItem) || !this.invManager.has(msg.useItem))
             return;
+        if (msg.useItem === "nitroLace" && !this.game.map.mapDef.gameMode.infernoMode) {
+            return;
+        }
         const def = GameObjectDefs[msg.useItem];
         switch (def.type) {
             case "heal":

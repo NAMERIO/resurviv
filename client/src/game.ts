@@ -953,7 +953,10 @@ export class Game {
                 inputMsg.useItem = "soda";
             } else if (this.m_inputBinds.isBindPressed(Input.UsePainkiller)) {
                 inputMsg.useItem = "painkiller";
-            } else if (this.m_inputBinds.isBindPressed(Input.UseNitroLace)) {
+            } else if (
+                this.m_map.infernoMode &&
+                this.m_inputBinds.isBindPressed(Input.UseNitroLace)
+            ) {
                 inputMsg.useItem = "nitroLace";
             }
 
