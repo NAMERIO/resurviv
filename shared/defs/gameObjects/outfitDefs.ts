@@ -4510,10 +4510,10 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
     outfitReTag: defineOutfitSkin("outfitBase", {
-        name: "Vitamin D",
+        name: "RSRV",
         noDropOnDeath: true,
-        rarity: 4,
-        lore: "",
+        rarity: 5,
+        lore: "Resurviv discord tag user",
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-outfitvitamnD.img",
@@ -4528,7 +4528,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             aboveHand: false,
         },
         lootImg: {
-            sprite: "loot-snowman-outfit.img",
+            sprite: "loot-rsrv-tag.img",
             tint: 0xffffff,
         },
     }),
