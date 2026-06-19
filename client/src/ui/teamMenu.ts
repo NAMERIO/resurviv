@@ -541,6 +541,13 @@ export class TeamMenu {
                 this.players = stateData.players;
                 this.localPlayerId = stateData.localPlayerId;
                 this.isLeader = this.getPlayerById(this.localPlayerId)!.isLeader;
+                if (
+                    this.isBattleRoyaleRoom() &&
+                    !this.roomData.findingGame &&
+                    !this.players.some((player) => player.inGame)
+                ) {
+                    this.lastJoinGameData = null;
+                }
                 if (this.getPlayerById(this.localPlayerId)?.brTeamCode) {
                     this.battleRoyaleTeamError = "";
                 }
@@ -592,9 +599,11 @@ export class TeamMenu {
                         (data as { type: TeamMenuErrorType }).type,
                     )
                 ) {
-                    this.battleRoyaleTeamError = (data as {
-                        type: TeamMenuErrorType;
-                    }).type;
+                    this.battleRoyaleTeamError = (
+                        data as {
+                            type: TeamMenuErrorType;
+                        }
+                    ).type;
                     this.refreshUi();
                     this.onStateUpdated?.();
                     if (this.battleRoyaleTeamErrorTimeout) {
@@ -1221,11 +1230,6 @@ export class TeamMenu {
             return;
         }
         this.sendMessage("joinCurrentArenaGame", {});
-        if (this.lastJoinGameData && !this.joiningGame) {
-            this.joiningGame = true;
-            this.joinGameCb(this.lastJoinGameData);
-            this.refreshUi();
-        }
     }
 
     isBattleRoyaleRoom() {

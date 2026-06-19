@@ -196,7 +196,9 @@ class Room {
             if (opts?.spectator) {
                 this.arenaSpectators.add(player);
                 this.battleRoyaleTeams.delete(player);
-            } else if (this.getBattleRoyaleArenaPlayerCount() >= this.data.maxPlayers) {
+            } else if (
+                this.getBattleRoyaleArenaActivePlayerCount() >= this.data.maxPlayers
+            ) {
                 return { ok: false, error: "join_full" };
             } else if (opts?.battleRoyaleTeamCode) {
                 const teamRes = this.setBattleRoyaleTeam(
@@ -207,7 +209,7 @@ class Room {
             }
             if (
                 !opts?.spectator &&
-                this.getBattleRoyaleArenaPlayerCount() + 1 >= this.data.maxPlayers
+                this.getBattleRoyaleArenaActivePlayerCount() + 1 >= this.data.maxPlayers
             ) {
                 this.battleRoyaleArenaReachedMaxPlayers = true;
             }
@@ -292,15 +294,7 @@ class Room {
                 this.data.lastError = "";
                 if (this.data.arena) {
                     if (this.isBattleRoyaleArena() && player.isLeader) {
-                        for (const roomPlayer of [...this.players]) {
-                            if (roomPlayer !== player) {
-                                this.removePlayerWithError(
-                                    roomPlayer,
-                                    "arena_round_finished",
-                                );
-                            }
-                        }
-                        this.endArenaRound();
+                        this.endBattleRoyaleArenaRoundForOwner();
                         break;
                     }
                     if (this.players.some((p) => p.inGame)) {
@@ -631,6 +625,13 @@ class Room {
         this.sendState();
     }
 
+    endBattleRoyaleArenaRoundForOwner() {
+        this.data.findingGame = false;
+        this.data.lastError = "";
+        this.resetBattleRoyaleArenaRoundState();
+        this.sendState();
+    }
+
     resetBattleRoyaleArenaRoundState() {
         this.currentArenaGameId = "";
         this.battleRoyaleArenaReachedMaxPlayers = false;
@@ -679,6 +680,15 @@ class Room {
     }
 
     getBattleRoyaleArenaPlayerCount() {
+        let count = 0;
+        for (const p of this.players) {
+            if (p.inGame) continue;
+            if (!this.arenaSpectators.has(p)) count++;
+        }
+        return count;
+    }
+
+    getBattleRoyaleArenaActivePlayerCount() {
         let count = 0;
         for (const p of this.players) {
             if (!this.arenaSpectators.has(p)) count++;
@@ -760,7 +770,9 @@ class Room {
     canBattleRoyaleArenaJoinInProgressAsPlayer() {
         if (!this.isBattleRoyaleArena()) return false;
         if (this.battleRoyaleArenaReachedMaxPlayers) return false;
-        if (this.getBattleRoyaleArenaPlayerCount() >= this.data.maxPlayers) return false;
+        if (this.getBattleRoyaleArenaActivePlayerCount() >= this.data.maxPlayers) {
+            return false;
+        }
         return true;
     }
 
@@ -884,13 +896,24 @@ class Room {
             this.sendState();
             return;
         }
+        if (this.isBattleRoyaleArena()) {
+            for (const roomPlayer of [...this.players]) {
+                if (roomPlayer !== player && roomPlayer.inGame) {
+                    this.removePlayer(roomPlayer);
+                }
+            }
+        }
         if (isBattleRoyaleMode && this.players.some((p) => p.inGame)) {
             this.data.lastError = "waiting_for_players";
             this.data.findingGame = false;
             this.sendState();
             return;
         }
-        if (this.data.arena && this.players.some((p) => p.inGame)) {
+        if (
+            this.data.arena &&
+            !this.isBattleRoyaleArena() &&
+            this.players.some((p) => p.inGame)
+        ) {
             this.data.lastError = "game_in_progress";
             this.data.findingGame = false;
             this.sendState();
@@ -1181,23 +1204,30 @@ class Room {
     }
 
     sendState() {
-        const players = this.players.map((p) => ({
-            ...p.data,
-            team:
-                this.data.arena && !this.isBattleRoyaleArena()
-                    ? this.getPlayerTeam(p)
-                    : undefined,
-            spectator:
-                this.data.arena && !this.isBattleRoyaleArena()
-                    ? this.isArenaSpectator(p)
-                    : this.data.arena && this.isBattleRoyaleArena()
-                      ? this.isArenaSpectator(p)
-                      : undefined,
-            brTeamCode:
-                this.data.arena && this.isBattleRoyaleArena() && !this.isArenaSpectator(p)
-                    ? this.battleRoyaleTeams.get(p)
-                    : undefined,
-        }));
+        const getPlayersFor = (recipient: Player) => {
+            const statePlayers = this.isBattleRoyaleArena()
+                ? this.players.filter((p) => !p.inGame || p === recipient)
+                : this.players;
+            return statePlayers.map((p) => ({
+                ...p.data,
+                team:
+                    this.data.arena && !this.isBattleRoyaleArena()
+                        ? this.getPlayerTeam(p)
+                        : undefined,
+                spectator:
+                    this.data.arena && !this.isBattleRoyaleArena()
+                        ? this.isArenaSpectator(p)
+                        : this.data.arena && this.isBattleRoyaleArena()
+                          ? this.isArenaSpectator(p)
+                          : undefined,
+                brTeamCode:
+                    this.data.arena &&
+                    this.isBattleRoyaleArena() &&
+                    !this.isArenaSpectator(p)
+                        ? this.battleRoyaleTeams.get(p)
+                        : undefined,
+            }));
+        };
         // all players must be logged in to disable it
         this.data.captchaEnabled =
             this.teamMenu.server.captchaEnabled && !this.players.every((p) => !!p.userId);
@@ -1205,7 +1235,7 @@ class Room {
             player.send("state", {
                 localPlayerId: player.playerId,
                 room: this.data,
-                players,
+                players: getPlayersFor(player),
             });
         }
     }
