@@ -416,7 +416,12 @@ class Room {
                 break;
             }
             case "playGame": {
-                if ((this.data.arena || this.isBattleRoyaleMode()) && !player.isLeader) {
+                if (
+                    (this.data.arena ||
+                        this.isBattleRoyaleMode() ||
+                        this.isBattleRoyaleArena()) &&
+                    !player.isLeader
+                ) {
                     break;
                 }
                 this.findGame(msg.data, player);
@@ -603,6 +608,9 @@ class Room {
             this.arenaOwnerKey = nextLeader
                 ? nextLeader.userId || nextLeader.encodedIp
                 : undefined;
+            if (this.isBattleRoyaleArena()) {
+                this.resetBattleRoyaleArenaRoundState();
+            }
         }
 
         this.sendState();
@@ -616,12 +624,17 @@ class Room {
         // Keep private arena lobbies alive between rounds.
         this.data.findingGame = false;
         this.data.lastError = "";
-        this.currentArenaGameId = "";
-        this.battleRoyaleArenaReachedMaxPlayers = false;
+        this.resetBattleRoyaleArenaRoundState();
         for (const player of this.players) {
             player.inGame = false;
         }
         this.sendState();
+    }
+
+    resetBattleRoyaleArenaRoundState() {
+        this.currentArenaGameId = "";
+        this.battleRoyaleArenaReachedMaxPlayers = false;
+        this.data.findingGame = false;
     }
 
     findGameCooldown = 0;
@@ -866,7 +879,8 @@ class Room {
     async findGame(data: TeamPlayGameMsg["data"], player: Player) {
         if (this.data.findingGame) return;
         const isBattleRoyaleMode = this.isBattleRoyaleMode();
-        if (isBattleRoyaleMode && !player.isLeader) {
+        const ownerOnlyStart = isBattleRoyaleMode || this.isBattleRoyaleArena();
+        if (ownerOnlyStart && !player.isLeader) {
             this.sendState();
             return;
         }
@@ -935,12 +949,12 @@ class Room {
                         this.data.arena && this.isBattleRoyaleArena()
                             ? this.getBattleRoyaleMatchRoomId(player)
                             : this.data.arena && arenaSpectator
-                            ? `${this.id}-S-${player.playerId}`
-                            : this.data.arena &&
-                                !this.isBattleRoyaleArena() &&
-                                this.getPlayerTeam(player)
-                              ? `${this.id}-${this.getPlayerTeam(player)}`
-                              : this.id,
+                              ? `${this.id}-S-${player.playerId}`
+                              : this.data.arena &&
+                                  !this.isBattleRoyaleArena() &&
+                                  this.getPlayerTeam(player)
+                                ? `${this.id}-${this.getPlayerTeam(player)}`
+                                : this.id,
                     spectator: arenaSpectator,
                     arenaTeam:
                         this.data.arena && !this.isBattleRoyaleArena()
@@ -1094,16 +1108,15 @@ class Room {
                 tokenMap.set(player, token);
                 const arenaSpectator = spectator || this.isArenaSpectator(player);
                 return {
-                    roomId:
-                        this.isBattleRoyaleArena()
-                            ? this.getBattleRoyaleMatchRoomId(player)
-                            : arenaSpectator && !this.isBattleRoyaleArena()
-                            ? `${this.id}-S-${player.playerId}`
-                            : this.data.arena &&
-                                !this.isBattleRoyaleArena() &&
-                                this.getPlayerTeam(player)
-                              ? `${this.id}-${this.getPlayerTeam(player)}`
-                              : this.id,
+                    roomId: this.isBattleRoyaleArena()
+                        ? this.getBattleRoyaleMatchRoomId(player)
+                        : arenaSpectator && !this.isBattleRoyaleArena()
+                          ? `${this.id}-S-${player.playerId}`
+                          : this.data.arena &&
+                              !this.isBattleRoyaleArena() &&
+                              this.getPlayerTeam(player)
+                            ? `${this.id}-${this.getPlayerTeam(player)}`
+                            : this.id,
                     spectator: arenaSpectator,
                     arenaTeam:
                         this.data.arena && !this.isBattleRoyaleArena()
@@ -1179,7 +1192,7 @@ class Room {
                     ? this.isArenaSpectator(p)
                     : this.data.arena && this.isBattleRoyaleArena()
                       ? this.isArenaSpectator(p)
-                    : undefined,
+                      : undefined,
             brTeamCode:
                 this.data.arena && this.isBattleRoyaleArena() && !this.isArenaSpectator(p)
                     ? this.battleRoyaleTeams.get(p)
