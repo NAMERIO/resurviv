@@ -123,6 +123,8 @@ export class Application {
     prestigeArenaBattleImpostorCountSelection = $("#battle-impostors-selection");
     prestigeArenaRegionSelect = $("#create-region-select");
     prestigeArenaRegionOpts = $("#create-region-opts");
+    prestigeArenaBattleRegionSelect = $("#battle-region-select");
+    prestigeArenaBattleRegionOpts = $("#battle-region-opts");
     prestigeArenaModeLabel = $("#create-link-mode");
     prestigeArenaTypeLabel = $("#create-link-type");
     prestigeArenaMiniGameLabel = $("#create-link-minigame");
@@ -669,6 +671,15 @@ export class Application {
                     }
                 }
             });
+            this.prestigeArenaBattleRegionSelect.on("change", () => {
+                const region = this.prestigeArenaBattleRegionSelect
+                    .find(":selected")
+                    .val();
+                if (region && this.canEditPrestigeArenaLiveOptions()) {
+                    this.config.set("region", region as string);
+                    this.teamMenu.setRoomProperty("region", region as string);
+                }
+            });
             this.prestigeArenaDisableAirstrikesBtn.on("click", () => {
                 this.setPrestigeArenaCreateOption(
                     "disableAirstrikes",
@@ -1146,10 +1157,12 @@ export class Application {
 
     syncPrestigeArenaRegions() {
         this.prestigeArenaRegionOpts.empty();
+        this.prestigeArenaBattleRegionOpts.empty();
         $("#server-opts")
             .children("option")
             .each((_i, sourceOption) => {
                 this.prestigeArenaRegionOpts.append($(sourceOption).clone());
+                this.prestigeArenaBattleRegionOpts.append($(sourceOption).clone());
             });
 
         const configRegion = this.config.get("region");
@@ -1160,6 +1173,19 @@ export class Application {
         });
         if (!foundSelected) {
             this.prestigeArenaRegionSelect.find("option").first().prop("selected", true);
+        }
+
+        const roomRegion = this.teamMenu.roomData.region || configRegion;
+        let foundBattleSelected = false;
+        this.prestigeArenaBattleRegionSelect.find("option").each((_i, option) => {
+            option.selected = option.value === roomRegion;
+            foundBattleSelected = foundBattleSelected || option.selected;
+        });
+        if (!foundBattleSelected) {
+            this.prestigeArenaBattleRegionSelect
+                .find("option")
+                .first()
+                .prop("selected", true);
         }
     }
 
@@ -2890,13 +2916,14 @@ export class Application {
         }
         this.warmupArenaLobbyMapAssets();
         this.renderPrestigeArenaTeams();
+        this.syncPrestigeArenaRegions();
+        this.prestigeArenaBattleRegionSelect.prop(
+            "disabled",
+            !this.canEditPrestigeArenaLiveOptions(),
+        );
         const mode = this.siteInfo.info.modes?.[this.teamMenu.roomData.gameModeIdx];
-        const lobbyRegion =
-            this.teamMenu.roomData.region || this.config.get("region") || "";
-        if (mode && lobbyRegion) {
-            this.prestigeArenaBattleModeLabel.html(
-                `${helpers.htmlEscape(this.getModeDisplayName(mode.mapName))} <span class="battle-mode-region">(${helpers.htmlEscape(lobbyRegion.toUpperCase())})</span>`,
-            );
+        if (mode) {
+            this.prestigeArenaBattleModeLabel.text(this.getModeDisplayName(mode.mapName));
         }
         const joinedCount = this.teamMenu.players.length;
         const maxPlayers = this.teamMenu.roomData.maxPlayers || 80;

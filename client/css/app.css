@@ -4923,8 +4923,7 @@ a:active {
   transform: translate(-50%, 8px);
   border: 1px solid rgba(255, 216, 0, 0.75);
   border-radius: 5px;
-  background:
-    linear-gradient(180deg, rgba(35, 35, 35, 0.98), rgba(12, 12, 12, 0.98));
+  background: linear-gradient(180deg, rgba(35, 35, 35, 0.98), rgba(12, 12, 12, 0.98));
   box-shadow:
     0 5px 12px rgba(0, 0, 0, 0.45),
     inset 0 1px rgba(255, 255, 255, 0.12);
@@ -5328,7 +5327,7 @@ a:active {
   #modal-prestige-wrapper.arena-joined-shell:has(
     #modal-battle-window.arena-battle-royale
   ) {
-  height: min(520px, calc(100vh - 24px));
+  height: min(570px, calc(100vh - 24px));
   width: min(1210px, calc(100vw - 24px));
 }
 
@@ -5878,7 +5877,8 @@ a:active {
   width: 30px;
 }
 
-#modal-prestige-arena #create-region-select {
+#modal-prestige-arena #create-region-select,
+#modal-prestige-arena #battle-region-select {
   background: #2f5568;
   border: 1px solid rgba(255, 255, 255, 0.62);
   border-radius: 4px;
@@ -5891,7 +5891,20 @@ a:active {
   width: 100%;
 }
 
-#modal-prestige-arena #create-region-select option {
+#modal-prestige-arena #battle-region-select {
+  background-position: 10px center;
+  flex: 1 1 auto;
+  margin: 0;
+  min-width: 0;
+}
+
+#modal-prestige-arena #battle-region-select:disabled {
+  cursor: default;
+  opacity: 0.78;
+}
+
+#modal-prestige-arena #create-region-select option,
+#modal-prestige-arena #battle-region-select option {
   color: #000000;
 }
 
@@ -6061,13 +6074,14 @@ a:active {
   grid-template-areas:
     "counter"
     "code"
+    "region"
     "mode"
     "type"
     "game"
     "options"
     "actions";
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: 52px 44px 50px 50px 50px auto auto;
+  grid-template-rows: 52px 44px 50px 50px 50px 50px auto auto;
   min-height: 0;
   overflow: visible;
   padding: 12px;
@@ -6082,11 +6096,12 @@ a:active {
   grid-template-areas:
     "counter"
     "code"
+    "region"
     "mode"
     "type"
     "game"
     "actions";
-  grid-template-rows: 52px 44px 50px 50px 50px auto;
+  grid-template-rows: 52px 44px 50px 50px 50px 50px auto;
 }
 
 #modal-prestige-arena
@@ -6095,6 +6110,7 @@ a:active {
   grid-template-areas:
     "counter"
     "code"
+    "region"
     "mode"
     "type"
     "game"
@@ -6111,11 +6127,12 @@ a:active {
   grid-template-areas:
     "counter"
     "code"
+    "region"
     "mode"
     "type"
     "game"
     "actions";
-  grid-template-rows: 52px 44px 50px 50px 50px auto;
+  grid-template-rows: 52px 44px 50px 50px 50px 50px auto;
 }
 
 #modal-prestige-arena #modal-create-window.arena-battle-royale:not(.hide) {
@@ -6145,6 +6162,15 @@ a:active {
 
 #modal-prestige-arena .battle-type {
   grid-area: type;
+}
+
+#modal-prestige-arena .battle-region {
+  align-items: center;
+  display: flex;
+  grid-area: region;
+  height: 50px;
+  min-width: 0;
+  width: 100%;
 }
 
 #modal-prestige-arena .battle-minigame {
@@ -6964,6 +6990,7 @@ a:active {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-areas:
       "counter code"
+      "region region"
       "mode type"
       "game impostors"
       "options actions";
@@ -7200,6 +7227,7 @@ a:active {
     grid-template-areas:
       "counter"
       "code"
+      "region"
       "mode"
       "type"
       "game"
@@ -7406,6 +7434,7 @@ a:active {
     grid-template-areas:
       "counter"
       "code"
+      "region"
       "mode"
       "type"
       "game"
@@ -7425,6 +7454,7 @@ a:active {
 
   #modal-prestige-arena .battle-mode,
   #modal-prestige-arena .battle-type,
+  #modal-prestige-arena .battle-region,
   #modal-prestige-arena .battle-minigame,
   #modal-prestige-arena .battle-impostors,
   #modal-prestige-arena #create-mode,
@@ -7436,6 +7466,7 @@ a:active {
 
   #modal-prestige-arena .battle-game-mode,
   #modal-prestige-arena .battle-game-type,
+  #modal-prestige-arena .battle-game-region,
   #modal-prestige-arena .battle-game-minigame,
   #modal-prestige-arena .battle-game-impostors,
   #modal-prestige-arena .create-game-mode,
