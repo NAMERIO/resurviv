@@ -327,11 +327,7 @@ export type KickMemberResponse =
     | { success: true }
     | {
           success: false;
-          error:
-              | "not_allowed"
-              | "member_not_found"
-              | "cannot_kick_self"
-              | "server_error";
+          error: "not_allowed" | "member_not_found" | "cannot_kick_self" | "server_error";
       };
 
 export type SetClanMemberRoleResponse =

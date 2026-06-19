@@ -2219,7 +2219,10 @@ UserRouter.post(
                 }
 
                 await tx.delete(itemsTable).where(eq(itemsTable.id, itemId));
-                const holderCounts = await getCurrentItemHolderCounts([ownedItem.type], tx);
+                const holderCounts = await getCurrentItemHolderCounts(
+                    [ownedItem.type],
+                    tx,
+                );
 
                 const remainingItems = await tx
                     .select({

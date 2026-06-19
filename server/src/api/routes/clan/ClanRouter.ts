@@ -1528,10 +1528,7 @@ ClanRouter.post("/kick", validateParams(zKickMemberRequest), async (c) => {
     });
 
     if (!membership) {
-        return c.json<KickMemberResponse>(
-            { success: false, error: "not_allowed" },
-            403,
-        );
+        return c.json<KickMemberResponse>({ success: false, error: "not_allowed" }, 403);
     }
 
     const clan = await db.query.clansTable.findFirst({
@@ -1539,10 +1536,7 @@ ClanRouter.post("/kick", validateParams(zKickMemberRequest), async (c) => {
     });
 
     if (!clan) {
-        return c.json<KickMemberResponse>(
-            { success: false, error: "not_allowed" },
-            403,
-        );
+        return c.json<KickMemberResponse>({ success: false, error: "not_allowed" }, 403);
     }
 
     if (memberId === user.id) {
@@ -1569,10 +1563,7 @@ ClanRouter.post("/kick", validateParams(zKickMemberRequest), async (c) => {
     const actorRole = getEffectiveClanRole(membership, clan);
     const targetRole = getEffectiveClanRole(memberToKick, clan);
     if (!canKickClanMember(actorRole, targetRole)) {
-        return c.json<KickMemberResponse>(
-            { success: false, error: "not_allowed" },
-            403,
-        );
+        return c.json<KickMemberResponse>({ success: false, error: "not_allowed" }, 403);
     }
 
     const kickedUser = await db.query.usersTable.findFirst({

@@ -96,10 +96,16 @@ function createLoginOptions(
             return;
         }
 
-        addLoginOption(provider, () => {
-            const linkQuery = linkAccount ? "?link=1" : "";
-            window.location.href = api.resolveUrl(`/api/auth/${provider}${linkQuery}`);
-        }, linkAccount ? `Link ${providerName}` : undefined);
+        addLoginOption(
+            provider,
+            () => {
+                const linkQuery = linkAccount ? "?link=1" : "";
+                window.location.href = api.resolveUrl(
+                    `/api/auth/${provider}${linkQuery}`,
+                );
+            },
+            linkAccount ? `Link ${providerName}` : undefined,
+        );
     };
 
     if (proxy.loginSupported("google")) {

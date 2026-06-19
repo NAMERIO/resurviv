@@ -1,5 +1,5 @@
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
-import { MapDefs, type MapDef } from "../../../shared/defs/mapDefs";
+import { type MapDef, MapDefs } from "../../../shared/defs/mapDefs";
 import type { LootSpawnDef } from "../../../shared/defs/mapObjectsTyping";
 import "./styles.css";
 
@@ -35,7 +35,8 @@ const root = document.getElementById("loot-table-maker");
 if (!root) throw new Error("Missing #loot-table-maker root");
 
 const mapEntries = Object.entries(MapDefs).filter(([, map]) => map.lootTable);
-const defaultMapName = mapEntries.find(([name]) => name === "main")?.[0] || mapEntries[0][0];
+const defaultMapName =
+    mapEntries.find(([name]) => name === "main")?.[0] || mapEntries[0][0];
 const allLootTable = createAllLootTable();
 const itemNames = Object.entries(GameObjectDefs)
     .filter(([, def]) => "lootImg" in def)
@@ -190,9 +191,11 @@ function createDoc(mapName: string): MakerDoc {
 }
 
 function normalizeDoc(value: Partial<MakerDoc>): MakerDoc {
-    const mapName = value.mapName === ALL_TIERS_MODE || (value.mapName && MapDefs[value.mapName as keyof typeof MapDefs])
-        ? value.mapName
-        : defaultMapName;
+    const mapName =
+        value.mapName === ALL_TIERS_MODE ||
+        (value.mapName && MapDefs[value.mapName as keyof typeof MapDefs])
+            ? value.mapName
+            : defaultMapName;
     return {
         schemaVersion: 2,
         mapName,
@@ -212,8 +215,14 @@ function defaultTestCrate(): TestCrateDef {
 
 function normalizeTestCrate(value: Partial<TestCrateDef> | undefined): TestCrateDef {
     const fallback = defaultTestCrate();
-    const oldMin = readNumber((value as { min?: number } | undefined)?.min, fallback.minRolls);
-    const oldMax = readNumber((value as { max?: number } | undefined)?.max, fallback.maxRolls);
+    const oldMin = readNumber(
+        (value as { min?: number } | undefined)?.min,
+        fallback.minRolls,
+    );
+    const oldMax = readNumber(
+        (value as { max?: number } | undefined)?.max,
+        fallback.maxRolls,
+    );
     const minRolls = Math.max(0, Math.floor(readNumber(value?.minRolls, oldMin)));
     const maxRolls = Math.max(minRolls, Math.floor(readNumber(value?.maxRolls, oldMax)));
     return {
@@ -260,7 +269,9 @@ function ensureEditedTier(): LootEntry[] {
         selectedTier = "tier_new";
         doc.lootTable[selectedTier] = [];
     }
-    doc.lootTable[selectedTier] ||= (getSourceLootTable()[selectedTier] || []).map((entry) => ({ ...entry }));
+    doc.lootTable[selectedTier] ||= (getSourceLootTable()[selectedTier] || []).map(
+        (entry) => ({ ...entry }),
+    );
     return doc.lootTable[selectedTier];
 }
 
@@ -269,12 +280,21 @@ function saveWorkingDoc() {
 }
 
 function setupControls() {
-    mapSelect.innerHTML = `<option value="${ALL_TIERS_MODE}">All tiers - every map</option>` + mapEntries
-        .map(([name, map]) => `<option value="${escapeAttr(name)}">${escapeHtml(name)} - ${escapeHtml(map.desc.name)}</option>`)
-        .join("");
+    mapSelect.innerHTML =
+        `<option value="${ALL_TIERS_MODE}">All tiers - every map</option>` +
+        mapEntries
+            .map(
+                ([name, map]) =>
+                    `<option value="${escapeAttr(name)}">${escapeHtml(name)} - ${escapeHtml(map.desc.name)}</option>`,
+            )
+            .join("");
     mapSelect.value = doc.mapName;
     mapSelect.addEventListener("change", () => {
-        if (!confirm("Load this map's current loot table? Unsaved edits stay in local saves only.")) {
+        if (
+            !confirm(
+                "Load this map's current loot table? Unsaved edits stay in local saves only.",
+            )
+        ) {
             mapSelect.value = doc.mapName;
             return;
         }
@@ -289,7 +309,9 @@ function setupControls() {
     qs<HTMLButtonElement>("new-tier").addEventListener("click", newTier);
     qs<HTMLButtonElement>("duplicate-tier").addEventListener("click", duplicateTier);
     qs<HTMLButtonElement>("delete-tier").addEventListener("click", deleteTier);
-    qs<HTMLButtonElement>("add-entry").addEventListener("click", () => addEntry({ name: "", count: 1, weight: 1 }));
+    qs<HTMLButtonElement>("add-entry").addEventListener("click", () =>
+        addEntry({ name: "", count: 1, weight: 1 }),
+    );
     qs<HTMLButtonElement>("save-doc").addEventListener("click", saveNamedDoc);
     qs<HTMLButtonElement>("load-doc").addEventListener("click", openLoadDialog);
     qs<HTMLButtonElement>("import-doc").addEventListener("click", openImportDialog);
@@ -309,24 +331,41 @@ function setupControls() {
 }
 
 function syncTestCrate() {
-    const minRolls = Math.max(0, Math.floor(readNumber(testCrateMin.value, doc.testCrate.minRolls)));
-    const maxRolls = Math.max(minRolls, Math.floor(readNumber(testCrateMax.value, doc.testCrate.maxRolls)));
+    const minRolls = Math.max(
+        0,
+        Math.floor(readNumber(testCrateMin.value, doc.testCrate.minRolls)),
+    );
+    const maxRolls = Math.max(
+        minRolls,
+        Math.floor(readNumber(testCrateMax.value, doc.testCrate.maxRolls)),
+    );
     doc.testCrate = {
         name: selectedTier || doc.testCrate.name,
         minRolls,
         maxRolls,
     };
-    doc.customCrates[doc.testCrate.name] = [{ tier: selectedTier, min: doc.testCrate.minRolls, max: doc.testCrate.maxRolls }];
+    doc.customCrates[doc.testCrate.name] = [
+        { tier: selectedTier, min: doc.testCrate.minRolls, max: doc.testCrate.maxRolls },
+    ];
     saveWorkingDoc();
 }
 
 function useSelectedTierForTest() {
-    if (selectedTier) doc.customCrates[doc.testCrate.name] = [{ tier: selectedTier, min: doc.testCrate.minRolls, max: doc.testCrate.maxRolls }];
+    if (selectedTier)
+        doc.customCrates[doc.testCrate.name] = [
+            {
+                tier: selectedTier,
+                min: doc.testCrate.minRolls,
+                max: doc.testCrate.maxRolls,
+            },
+        ];
 }
 
 function render() {
     mapSelect.value = doc.mapName;
-    if (!getSelectedEntries()) selectedTier = Object.keys(doc.lootTable)[0] || Object.keys(getSourceLootTable())[0] || "";
+    if (!getSelectedEntries())
+        selectedTier =
+            Object.keys(doc.lootTable)[0] || Object.keys(getSourceLootTable())[0] || "";
     updateDefaultCrateName();
     useSelectedTierForTest();
     renderLootNameOptions();
@@ -350,10 +389,18 @@ function renderTierList() {
         .sort((a, b) => a.localeCompare(b));
 
     editedTierList.innerHTML = editedTiers.length
-        ? editedTiers.map((tier) => tierButton(tier, doc.lootTable[tier], "edited")).join("")
+        ? editedTiers
+              .map((tier) => tierButton(tier, doc.lootTable[tier], "edited"))
+              .join("")
         : `<div class="empty compact">Nothing edited yet.</div>`;
     sourceTierList.innerHTML = sourceTiers
-        .map((tier) => tierButton(tier, getSourceLootTable()[tier], doc.lootTable[tier] ? "edited copy" : "game"))
+        .map((tier) =>
+            tierButton(
+                tier,
+                getSourceLootTable()[tier],
+                doc.lootTable[tier] ? "edited copy" : "game",
+            ),
+        )
         .join("");
 
     for (const list of [editedTierList, sourceTierList]) {
@@ -365,23 +412,30 @@ function renderTierList() {
             });
         });
     }
-    editedTierList.querySelectorAll<HTMLButtonElement>("[data-delete-tier]").forEach((button) => {
-        button.addEventListener("click", (event) => {
-            event.stopPropagation();
-            const tier = button.dataset.deleteTier || "";
-            if (!tier || !confirm(`Remove edits for ${tier}?`)) return;
-            delete doc.lootTable[tier];
-            if (selectedTier === tier) selectedTier = Object.keys(doc.lootTable)[0] || Object.keys(getSourceLootTable())[0] || "";
-            commit();
+    editedTierList
+        .querySelectorAll<HTMLButtonElement>("[data-delete-tier]")
+        .forEach((button) => {
+            button.addEventListener("click", (event) => {
+                event.stopPropagation();
+                const tier = button.dataset.deleteTier || "";
+                if (!tier || !confirm(`Remove edits for ${tier}?`)) return;
+                delete doc.lootTable[tier];
+                if (selectedTier === tier)
+                    selectedTier =
+                        Object.keys(doc.lootTable)[0] ||
+                        Object.keys(getSourceLootTable())[0] ||
+                        "";
+                commit();
+            });
         });
-    });
 }
 
 function tierButton(tier: string, entries: LootEntry[], label: string): string {
     const total = totalWeight(entries);
-    const deleteButton = label === "edited"
-        ? `<button class="tier-delete danger" data-delete-tier="${escapeAttr(tier)}" title="Delete edited tier">Delete</button>`
-        : "";
+    const deleteButton =
+        label === "edited"
+            ? `<button class="tier-delete danger" data-delete-tier="${escapeAttr(tier)}" title="Delete edited tier">Delete</button>`
+            : "";
     return `<div class="tier-row-wrap">
                 <button class="tier-row ${tier === selectedTier ? "active" : ""}" data-tier="${escapeAttr(tier)}">
                     <span>${escapeHtml(tier)}</span>
@@ -402,35 +456,54 @@ function renderTierEditor() {
 
     entryList.querySelectorAll<HTMLElement>("[data-index]").forEach((row) => {
         const index = Number(row.dataset.index);
-        row.querySelector<HTMLInputElement>("[data-field=name]")?.addEventListener("change", (event) => {
-            const editable = ensureEditedTier();
-            const nextName = (event.currentTarget as HTMLInputElement).value.trim();
-            if (nextName && !isKnownLootName(nextName)) {
-                alert(`${nextName} does not exist in the game.`);
-                (event.currentTarget as HTMLInputElement).value = editable[index].name;
-                return;
-            }
-            editable[index].name = nextName;
-            commit();
-        });
+        row.querySelector<HTMLInputElement>("[data-field=name]")?.addEventListener(
+            "change",
+            (event) => {
+                const editable = ensureEditedTier();
+                const nextName = (event.currentTarget as HTMLInputElement).value.trim();
+                if (nextName && !isKnownLootName(nextName)) {
+                    alert(`${nextName} does not exist in the game.`);
+                    (event.currentTarget as HTMLInputElement).value =
+                        editable[index].name;
+                    return;
+                }
+                editable[index].name = nextName;
+                commit();
+            },
+        );
         for (const field of ["count", "weight"] as const) {
-            row.querySelector<HTMLInputElement>(`[data-field=${field}]`)?.addEventListener("change", (event) => {
-                ensureEditedTier()[index][field] = readNumber((event.currentTarget as HTMLInputElement).value, field === "count" ? 1 : 0);
+            row.querySelector<HTMLInputElement>(
+                `[data-field=${field}]`,
+            )?.addEventListener("change", (event) => {
+                ensureEditedTier()[index][field] = readNumber(
+                    (event.currentTarget as HTMLInputElement).value,
+                    field === "count" ? 1 : 0,
+                );
                 commit();
             });
         }
-        row.querySelector<HTMLButtonElement>("[data-move=up]")?.addEventListener("click", () => moveEntry(index, -1));
-        row.querySelector<HTMLButtonElement>("[data-move=down]")?.addEventListener("click", () => moveEntry(index, 1));
-        row.querySelector<HTMLButtonElement>("[data-delete]")?.addEventListener("click", () => {
-            ensureEditedTier().splice(index, 1);
-            commit();
-        });
+        row.querySelector<HTMLButtonElement>("[data-move=up]")?.addEventListener(
+            "click",
+            () => moveEntry(index, -1),
+        );
+        row.querySelector<HTMLButtonElement>("[data-move=down]")?.addEventListener(
+            "click",
+            () => moveEntry(index, 1),
+        );
+        row.querySelector<HTMLButtonElement>("[data-delete]")?.addEventListener(
+            "click",
+            () => {
+                ensureEditedTier().splice(index, 1);
+                commit();
+            },
+        );
     });
 }
 
 function entryRow(entry: LootEntry, index: number): string {
     const entries = getSelectedEntries() || [];
-    const chance = totalWeight(entries) > 0 ? (entry.weight / totalWeight(entries)) * 100 : 0;
+    const chance =
+        totalWeight(entries) > 0 ? (entry.weight / totalWeight(entries)) * 100 : 0;
     return `<div class="entry-row" data-index="${index}">
         <input class="field" data-field="name" list="loot-name-options" value="${escapeAttr(entry.name)}" placeholder="item_or_tier" title="Item name, or another tier name like tier_world">
         <input class="field number" data-field="count" type="number" min="0" step="1" value="${formatNum(entry.count)}" title="How many drops you get if this entry is picked">
@@ -443,21 +516,35 @@ function entryRow(entry: LootEntry, index: number): string {
 }
 
 function renderLootNameOptions() {
-    const names = [...new Set([...Object.keys(allLootTable), ...Object.keys(getSourceLootTable()), ...Object.keys(doc.lootTable), ...itemNames])].sort((a, b) => a.localeCompare(b));
-    lootNameOptions.innerHTML = names.map((name) => `<option value="${escapeAttr(name)}"></option>`).join("");
+    const names = [
+        ...new Set([
+            ...Object.keys(allLootTable),
+            ...Object.keys(getSourceLootTable()),
+            ...Object.keys(doc.lootTable),
+            ...itemNames,
+        ]),
+    ].sort((a, b) => a.localeCompare(b));
+    lootNameOptions.innerHTML = names
+        .map((name) => `<option value="${escapeAttr(name)}"></option>`)
+        .join("");
 }
 
 function isKnownLootName(name: string): boolean {
-    return Boolean(allLootTable[name] || doc.lootTable[name] || GameObjectDefs[name as keyof typeof GameObjectDefs]);
+    return Boolean(
+        allLootTable[name] ||
+            doc.lootTable[name] ||
+            GameObjectDefs[name as keyof typeof GameObjectDefs],
+    );
 }
 
 function renderCratePanel() {
     testCrateName.value = doc.testCrate.name;
     testCrateMin.value = String(doc.testCrate.minRolls);
     testCrateMax.value = String(doc.testCrate.maxRolls);
-    crateSpawns.innerHTML = spawnReport(doc.testCrate.name)
-        .map((line) => `<div>${escapeHtml(line)}</div>`)
-        .join("") || `<div>No existing spawn uses this crate name yet.</div>`;
+    crateSpawns.innerHTML =
+        spawnReport(doc.testCrate.name)
+            .map((line) => `<div>${escapeHtml(line)}</div>`)
+            .join("") || `<div>No existing spawn uses this crate name yet.</div>`;
     renderRollOutput();
 }
 
@@ -469,7 +556,12 @@ function renderRollOutput() {
     if (lastRolls.length === 1) {
         const roll = lastRolls[0];
         rollOutput.innerHTML = roll.length
-            ? roll.map((item) => `<div class="roll-item depth-${Math.min(item.depth, 4)}"><strong>${escapeHtml(item.name || "(empty)")}</strong><span>x${item.count} from ${escapeHtml(item.sourceTier)}</span></div>`).join("")
+            ? roll
+                  .map(
+                      (item) =>
+                          `<div class="roll-item depth-${Math.min(item.depth, 4)}"><strong>${escapeHtml(item.name || "(empty)")}</strong><span>x${item.count} from ${escapeHtml(item.sourceTier)}</span></div>`,
+                  )
+                  .join("")
             : `<div class="empty">Nothing dropped.</div>`;
         return;
     }
@@ -481,10 +573,14 @@ function renderRollOutput() {
             summary.set(item.name, (summary.get(item.name) || 0) + item.count);
         }
     }
-    rollOutput.innerHTML = [...summary.entries()]
-        .sort((a, b) => b[1] - a[1])
-        .map(([name, count]) => `<div class="roll-item"><strong>${escapeHtml(name)}</strong><span>${formatNum(count / lastRolls.length)} avg/run, ${count} total</span></div>`)
-        .join("") || `<div class="empty">Runs only dropped empty results.</div>`;
+    rollOutput.innerHTML =
+        [...summary.entries()]
+            .sort((a, b) => b[1] - a[1])
+            .map(
+                ([name, count]) =>
+                    `<div class="roll-item"><strong>${escapeHtml(name)}</strong><span>${formatNum(count / lastRolls.length)} avg/run, ${count} total</span></div>`,
+            )
+            .join("") || `<div class="empty">Runs only dropped empty results.</div>`;
 }
 
 function addEntry(entry: LootEntry) {
@@ -530,9 +626,16 @@ function duplicateTier() {
 }
 
 function deleteTier() {
-    if (!selectedTier || !doc.lootTable[selectedTier] || !confirm(`Remove edits for ${selectedTier}?`)) return;
+    if (
+        !selectedTier ||
+        !doc.lootTable[selectedTier] ||
+        !confirm(`Remove edits for ${selectedTier}?`)
+    )
+        return;
     delete doc.lootTable[selectedTier];
-    selectedTier = getSelectedEntries() ? selectedTier : Object.keys(doc.lootTable)[0] || Object.keys(getSourceLootTable())[0] || "";
+    selectedTier = getSelectedEntries()
+        ? selectedTier
+        : Object.keys(doc.lootTable)[0] || Object.keys(getSourceLootTable())[0] || "";
     commit();
 }
 
@@ -551,11 +654,18 @@ function rollTestCrate(): RollResult[] {
     return output;
 }
 
-function rollTier(tier: string, depth: number, visited: Set<string>): RollResult | undefined {
-    if (visited.has(tier)) return { name: "(recursive tier)", count: 1, sourceTier: tier, depth };
+function rollTier(
+    tier: string,
+    depth: number,
+    visited: Set<string>,
+): RollResult | undefined {
+    if (visited.has(tier))
+        return { name: "(recursive tier)", count: 1, sourceTier: tier, depth };
     visited.add(tier);
-    const entries = doc.lootTable[tier] || getSourceLootTable()[tier] || allLootTable[tier];
-    if (!entries?.length) return { name: "(missing tier)", count: 1, sourceTier: tier, depth };
+    const entries =
+        doc.lootTable[tier] || getSourceLootTable()[tier] || allLootTable[tier];
+    if (!entries?.length)
+        return { name: "(missing tier)", count: 1, sourceTier: tier, depth };
     const picked = weightedPick(entries);
     if (!picked) return undefined;
     if (picked.name.startsWith("tier_")) return rollTier(picked.name, depth + 1, visited);
@@ -574,7 +684,8 @@ function weightedPick(entries: LootEntry[]): LootEntry | undefined {
 }
 
 function spawnReport(crateName: string): string[] {
-    if (doc.mapName === ALL_TIERS_MODE) return ["Pick a specific map to see spawn hints."];
+    if (doc.mapName === ALL_TIERS_MODE)
+        return ["Pick a specific map to see spawn hints."];
     const mapDef = MapDefs[doc.mapName as keyof typeof MapDefs];
     const lines: string[] = [];
     const density = mapDef.mapGen?.densitySpawns?.[0]?.[crateName];
@@ -582,7 +693,10 @@ function spawnReport(crateName: string): string[] {
     const fixed = mapDef.mapGen?.fixedSpawns?.[0]?.[crateName];
     if (fixed !== undefined) lines.push(`Fixed spawn: ${formatSpawnValue(fixed)}`);
     for (const random of mapDef.mapGen?.randomSpawns || []) {
-        if (random.spawns.includes(crateName)) lines.push(`Random group: choose ${random.choose} from ${random.spawns.join(", ")}`);
+        if (random.spawns.includes(crateName))
+            lines.push(
+                `Random group: choose ${random.choose} from ${random.spawns.join(", ")}`,
+            );
     }
     const replacement = mapDef.mapGen?.spawnReplacements?.[0]?.[crateName];
     if (replacement) lines.push(`Replacement: ${crateName} becomes ${replacement}`);
@@ -615,11 +729,13 @@ function openLoadDialog() {
     const saves = loadSaves();
     const rows = Object.entries(saves)
         .sort(([, a], [, b]) => b.savedAt - a.savedAt)
-        .map(([name, save]) => `<div class="save-row">
+        .map(
+            ([name, save]) => `<div class="save-row">
             <div><strong>${escapeHtml(name)}</strong><small>${new Date(save.savedAt).toLocaleString()}</small></div>
             <button data-load="${escapeAttr(name)}">Load</button>
             <button data-delete="${escapeAttr(name)}" class="danger">Delete</button>
-        </div>`)
+        </div>`,
+        )
         .join("");
     openDialog("Local Saves", rows || `<div class="empty">No saves yet.</div>`, "");
     document.querySelectorAll<HTMLButtonElement>("[data-load]").forEach((button) => {
@@ -656,7 +772,10 @@ function openImportDialog() {
             } else {
                 doc.lootTable = { ...doc.lootTable, ...cloneLootTable(parsed) };
             }
-            selectedTier = Object.keys(doc.lootTable)[0] || Object.keys(getSourceLootTable())[0] || "";
+            selectedTier =
+                Object.keys(doc.lootTable)[0] ||
+                Object.keys(getSourceLootTable())[0] ||
+                "";
             closeDialog();
             commit();
         } catch (err) {
@@ -675,8 +794,12 @@ function openExportDialog() {
         <textarea id="export-ts" class="textarea short" spellcheck="false">${escapeHtml(ts)}</textarea>`,
         `<button id="copy-export" class="primary">Copy JSON</button><button id="copy-ts">Copy TS snippet</button>`,
     );
-    qs<HTMLButtonElement>("copy-export").addEventListener("click", () => navigator.clipboard?.writeText(text));
-    qs<HTMLButtonElement>("copy-ts").addEventListener("click", () => navigator.clipboard?.writeText(ts));
+    qs<HTMLButtonElement>("copy-export").addEventListener("click", () =>
+        navigator.clipboard?.writeText(text),
+    );
+    qs<HTMLButtonElement>("copy-ts").addEventListener("click", () =>
+        navigator.clipboard?.writeText(ts),
+    );
 }
 
 function formatCrateLoot(): string {
@@ -685,10 +808,14 @@ function formatCrateLoot(): string {
 
 function formatLootTable(table: LootTable): string {
     const lines = ["{"];
-    for (const [tier, entries] of lootTableEntries(table).sort(([a], [b]) => a.localeCompare(b))) {
+    for (const [tier, entries] of lootTableEntries(table).sort(([a], [b]) =>
+        a.localeCompare(b),
+    )) {
         lines.push(`    ${tier}: [`);
         for (const entry of entries) {
-            lines.push(`        { name: "${entry.name}", count: ${formatNum(entry.count)}, weight: ${formatNum(entry.weight)} },`);
+            lines.push(
+                `        { name: "${entry.name}", count: ${formatNum(entry.count)}, weight: ${formatNum(entry.weight)} },`,
+            );
         }
         lines.push("    ],");
     }
@@ -698,7 +825,10 @@ function formatLootTable(table: LootTable): string {
 
 function formatLootEntries(entries: LootEntry[]): string {
     return `[\n${entries
-        .map((entry) => `        { name: "${entry.name}", count: ${formatNum(entry.count)}, weight: ${formatNum(entry.weight)} },`)
+        .map(
+            (entry) =>
+                `        { name: "${entry.name}", count: ${formatNum(entry.count)}, weight: ${formatNum(entry.weight)} },`,
+        )
         .join("\n")}\n    ]`;
 }
 
@@ -732,11 +862,19 @@ function sanitizeKey(value: string): string {
 
 function formatNum(value: number): string {
     const rounded = Math.round(value * 1000) / 1000;
-    return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
+    return Number.isInteger(rounded)
+        ? String(rounded)
+        : rounded.toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
 }
 
 function escapeHtml(value: string): string {
-    return value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char] || char);
+    return value.replace(
+        /[&<>"']/g,
+        (char) =>
+            ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[
+                char
+            ] || char,
+    );
 }
 
 function escapeAttr(value: string): string {

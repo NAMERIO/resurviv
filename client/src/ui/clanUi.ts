@@ -1411,7 +1411,9 @@ export class ClanUi {
         $("#clan-detail-created").text(`Created: ${createdDate}`);
         $("#clan-detail-lock-status").text(clan.isLocked ? "Locked" : "Open");
         const currentMember = this.getCurrentClanMember(clan);
-        const currentRole = currentMember ? getEffectiveClanRole(currentMember) : "member";
+        const currentRole = currentMember
+            ? getEffectiveClanRole(currentMember)
+            : "member";
         const isOwner = clan.isCurrentSeason && currentRole === "owner";
         if (clan.discordInviteUrl) {
             $("#clan-detail-discord-row").css("display", "flex");
@@ -2525,7 +2527,9 @@ export class ClanUi {
 
             const onlyKlipyUrl = isOnlyKlipyUrl(message.message);
             const senderMember = this.getMessageSenderMember(message);
-            const senderRole = senderMember ? getEffectiveClanRole(senderMember) : "member";
+            const senderRole = senderMember
+                ? getEffectiveClanRole(senderMember)
+                : "member";
             const bubble = $("<div/>", { class: "clan-chat-bubble" }).append(
                 $("<button/>", {
                     class: "clan-chat-actions-btn",

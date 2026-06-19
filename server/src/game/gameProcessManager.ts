@@ -252,13 +252,9 @@ export class GameProcessManager implements GameManager {
     private shutdown(): void {
         const childProcesses = this.processes
             .map((gameProc) => gameProc.process)
-            .filter(
-                (child) => child.exitCode === null && child.signalCode === null,
-            );
+            .filter((child) => child.exitCode === null && child.signalCode === null);
 
-        this.logger.info(
-            `Shutting down ${childProcesses.length} game process(es)`,
-        );
+        this.logger.info(`Shutting down ${childProcesses.length} game process(es)`);
         this.commitProcessGenocide();
 
         if (childProcesses.length === 0) {

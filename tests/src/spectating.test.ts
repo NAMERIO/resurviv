@@ -33,7 +33,5 @@ test("Spectator follows spectated player's killer without reopening scoreboard",
     game.step(0.1);
 
     expect(spectator.spectating).toBe(killer);
-    expect(spectator.msgsToSend.some((msg) => msg.type === MsgType.GameOver)).toBe(
-        false,
-    );
+    expect(spectator.msgsToSend.some((msg) => msg.type === MsgType.GameOver)).toBe(false);
 });
