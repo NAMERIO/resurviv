@@ -49,6 +49,7 @@ export const enum Command {
     SetGameMode = "set_game_mode",
     SetBattleRoyaleMode = "set_battle_royale_mode",
     SetPauseClanStats = "set_pause_clan_stats",
+    SetLockClanJoins = "set_lock_clan_joins",
     BattlePassEnd = "battlepass_end",
     SetClientTheme = "set_client_theme",
     FuturedYoutubers = "futured-youtubers",

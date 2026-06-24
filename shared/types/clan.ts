@@ -272,6 +272,7 @@ export type CreateClanResponse =
               | "invalid_name"
               | "invalid_discord_url"
               | "already_in_clan"
+              | "clan_joins_locked"
               | "server_error";
       };
 
@@ -283,6 +284,7 @@ export type JoinClanResponse =
               | "clan_not_found"
               | "clan_full"
               | "clan_locked"
+              | "clan_joins_locked"
               | "already_in_clan"
               | "cooldown_active"
               | "server_error";
@@ -296,6 +298,7 @@ export type RequestJoinClanResponse =
           error:
               | "clan_not_found"
               | "clan_full"
+              | "clan_joins_locked"
               | "already_in_clan"
               | "already_requested"
               | "cooldown_active"
@@ -374,6 +377,7 @@ export type ListClansResponse = {
     totalCount: number;
     page: number;
     totalPages: number;
+    clansLocked: boolean;
 };
 
 export type ClanLeaderboardEntry = {

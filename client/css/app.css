@@ -12406,9 +12406,57 @@ input [type="image"]:focus {
   border-bottom: 2px solid #2c2c2c;
 }
 
-.clan-btn.disabled {
+.clan-btn.disabled,
+.clan-btn-disabled {
   filter: brightness(60%);
   pointer-events: none;
+  cursor: default;
+  opacity: 0.55;
+}
+
+.clan-lock-notice {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08), 0 8px 18px rgba(0, 0, 0, 0.22);
+  color: #f5f5f5;
+  backdrop-filter: blur(6px);
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 1.25;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.clan-lock-copy {
+  min-width: 0;
+}
+
+.clan-lock-more-info {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 3px;
+  color: #f2f2f2;
+  font-size: 13px;
+  font-weight: normal;
+}
+
+.clan-lock-discord-btn {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background-image: url(/img/icon_discord_sm.png);
+  background-color: #7289da;
+  background-size: 24px;
+  box-shadow: inset 0 -2px #46558a;
+}
+
+.clan-lock-discord-btn:hover {
+  filter: brightness(85%);
 }
 
 /* Clan List */

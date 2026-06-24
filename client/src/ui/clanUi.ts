@@ -227,6 +227,7 @@ export class ClanUi {
     observedGifImages = new Set<HTMLImageElement>();
     gifStillFrameCache = new Map<string, string | null>();
     viewingClanId: string | null = null;
+    clansLocked = false;
 
     constructor(
         public account: Account,
@@ -742,9 +743,24 @@ export class ClanUi {
             $("#clan-main-tag-color-input").hide();
             $("#btn-clan-my-clan").addClass("disabled").css("opacity", "0.5");
         }
-        if (this.cooldownUntil && this.cooldownUntil > Date.now()) {
+        this.updateCreateClanLockState();
+        if (!this.clansLocked && this.cooldownUntil && this.cooldownUntil > Date.now()) {
             const remaining = formatTimeRemaining(this.cooldownUntil - Date.now());
             $("#clan-create-warning").text(`You can join a clan in ${remaining}`).show();
+        }
+    }
+
+    updateCreateClanLockState() {
+        $("#btn-clan-create-submit")
+            .toggleClass("clan-btn-disabled", this.clansLocked)
+            .attr(
+                "title",
+                this.clansLocked ? "Clan creation is locked right now." : "",
+            );
+        if (this.clansLocked && !this.currentClan) {
+            $("#clan-create-warning").text("Clan creation is locked.").show();
+        } else if (!this.currentClan) {
+            $("#clan-create-warning").hide();
         }
     }
 
@@ -759,6 +775,11 @@ export class ClanUi {
             $("#clan-create-warning")
                 .text("You must leave your current clan first.")
                 .show();
+            return;
+        }
+
+        if (this.clansLocked) {
+            $("#clan-create-warning").text("Clan creation is locked.").show();
             return;
         }
 
@@ -810,6 +831,7 @@ export class ClanUi {
                         invalid_discord_url:
                             "Discord invite must be a discord.gg or discord.com/invite link.",
                         already_in_clan: "You are already in a clan.",
+                        clan_joins_locked: "Clan creation is locked.",
                         server_error: "Server error. Please try again.",
                     };
                     $("#clan-create-warning")
@@ -843,9 +865,16 @@ export class ClanUi {
                     return;
                 }
 
+                this.clansLocked = res.clansLocked;
+                this.updateClanJoinLockNotice();
+                this.updateCreateClanLockState();
                 this.renderClanList(res.clans, res.page, res.totalPages);
             },
         );
+    }
+
+    updateClanJoinLockNotice() {
+        $("#clan-join-lock-notice").toggle(this.clansLocked);
     }
 
     renderClanList(clans: ClanInfo[], page: number, totalPages: number) {
@@ -927,10 +956,18 @@ export class ClanUi {
                     }),
                 );
             } else if (!this.currentClan) {
+                const isJoinLocked = this.clansLocked && !clan.requestPending;
                 const joinBtn = $("<div/>", {
                     class: `clan-btn ${
-                        clan.requestPending ? "clan-btn-grey" : "clan-btn-teal"
+                        clan.requestPending
+                            ? "clan-btn-grey"
+                            : isJoinLocked
+                              ? "clan-btn-grey clan-btn-disabled"
+                              : "clan-btn-teal"
                     } clan-btn-small`,
+                    title: isJoinLocked
+                        ? "All clan joining is locked right now."
+                        : undefined,
                     text: clan.requestPending
                         ? "Cancel"
                         : clan.isLocked
@@ -938,6 +975,7 @@ export class ClanUi {
                           : "Join",
                 }).on("click", (e) => {
                     e.stopPropagation();
+                    if (isJoinLocked) return;
                     if (clan.requestPending) {
                         this.cancelJoinRequest(clan.id);
                     } else if (clan.isLocked) {
@@ -1008,6 +1046,8 @@ export class ClanUi {
                     clan_not_found: "Clan not found.",
                     clan_full: "This clan is full.",
                     clan_locked: "This clan is locked. Send a request to join.",
+                    clan_joins_locked:
+                        "All clans are locked. You can leave your clan, but you cannot join back until they are unlocked.",
                     already_in_clan: "You are already in a clan.",
                     cooldown_active: "You must wait before joining a new clan.",
                     server_error: "Server error. Please try again.",
@@ -1049,6 +1089,8 @@ export class ClanUi {
                     const errorMessages: Record<string, string> = {
                         clan_not_found: "Clan not found.",
                         clan_full: "This clan is full.",
+                        clan_joins_locked:
+                            "All clans are locked. You can leave your clan, but you cannot join back until they are unlocked.",
                         already_in_clan: "You are already in a clan.",
                         already_requested: "You already requested to join this clan.",
                         cooldown_active: "You must wait before joining a new clan.",

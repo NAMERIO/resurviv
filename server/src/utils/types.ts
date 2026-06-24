@@ -53,6 +53,10 @@ export const zSetPauseClanStatsBody = z.object({
     enabled: z.boolean(),
 });
 
+export const zSetLockClanJoinsBody = z.object({
+    locked: z.boolean(),
+});
+
 export const zSetBattlePassEndBody = z.object({
     days: z.number().int().min(0).max(3650),
 });
