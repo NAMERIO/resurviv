@@ -1,4 +1,4 @@
-import type { PrivateLobbyMiniGame } from "../../../shared/defs/miniGame";
+import type { ArenaTeam, PrivateLobbyMiniGame } from "../../../shared/defs/miniGame";
 import type { InventoryItem } from "../../../shared/gameConfig";
 
 export interface PrivateLobbyMiniGameWeaponOverride {
@@ -50,7 +50,7 @@ interface PrivateLobbyMiniGameServerSettings {
     hideAndSeek?: HideAndSeekSettings;
     infected?: InfectedSettings;
     getWeaponOverride?: (
-        arenaTeam: "A" | "B" | undefined,
+        arenaTeam: ArenaTeam | undefined,
     ) => PrivateLobbyMiniGameWeaponOverride | undefined;
 }
 
@@ -162,7 +162,7 @@ export function isBattleRoyaleMiniGame(miniGame: PrivateLobbyMiniGame | undefine
 
 export function getPrivateLobbyMiniGameWeaponOverride(
     miniGame: PrivateLobbyMiniGame | undefined,
-    arenaTeam: "A" | "B" | undefined,
+    arenaTeam: ArenaTeam | undefined,
 ): PrivateLobbyMiniGameWeaponOverride | undefined {
     if (!miniGame) return undefined;
     return PrivateLobbyMiniGameServerSettings[miniGame].getWeaponOverride?.(arenaTeam);
@@ -184,7 +184,7 @@ export function getInfectedSettings(
 
 export function isHideAndSeekHider(
     miniGame: PrivateLobbyMiniGame | undefined,
-    arenaTeam: "A" | "B" | undefined,
+    arenaTeam: ArenaTeam | undefined,
 ) {
     const settings = getHideAndSeekSettings(miniGame);
     return !!settings && arenaTeam === settings.hiderTeam;
@@ -192,7 +192,7 @@ export function isHideAndSeekHider(
 
 export function isHideAndSeekSeeker(
     miniGame: PrivateLobbyMiniGame | undefined,
-    arenaTeam: "A" | "B" | undefined,
+    arenaTeam: ArenaTeam | undefined,
 ) {
     const settings = getHideAndSeekSettings(miniGame);
     return !!settings && arenaTeam === settings.seekerTeam;
@@ -200,7 +200,7 @@ export function isHideAndSeekSeeker(
 
 export function isInfectedZombie(
     miniGame: PrivateLobbyMiniGame | undefined,
-    arenaTeam: "A" | "B" | undefined,
+    arenaTeam: ArenaTeam | undefined,
 ) {
     const settings = getInfectedSettings(miniGame);
     return !!settings && arenaTeam === settings.zombieTeam;
@@ -208,7 +208,7 @@ export function isInfectedZombie(
 
 export function isInfectedHuman(
     miniGame: PrivateLobbyMiniGame | undefined,
-    arenaTeam: "A" | "B" | undefined,
+    arenaTeam: ArenaTeam | undefined,
 ) {
     const settings = getInfectedSettings(miniGame);
     return !!settings && arenaTeam === settings.humanTeam;

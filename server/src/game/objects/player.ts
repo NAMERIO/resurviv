@@ -34,6 +34,7 @@ import {
 import { UnlockDefs } from "../../../../shared/defs/gameObjects/unlockDefs";
 import { MapObjectDefs } from "../../../../shared/defs/mapObjectDefs";
 import type { ObstacleDef, StructureDef } from "../../../../shared/defs/mapObjectsTyping";
+import type { ArenaTeam } from "../../../../shared/defs/miniGame";
 import { MapId } from "../../../../shared/defs/types/misc";
 import {
     type Action,
@@ -105,8 +106,8 @@ interface Emote {
     pos: Vec2;
     type: string;
     isPing: boolean;
-    targetArenaTeam?: "A" | "B";
-    targetArenaTeams?: Array<"A" | "B">;
+    targetArenaTeam?: ArenaTeam;
+    targetArenaTeams?: ArenaTeam[];
     /**
      * if type is "emote_loot", typestring of item goes here
      * "m870", "mosin", "1xscope", "762mm", etc
@@ -1123,7 +1124,7 @@ export class PlayerBarn {
         type: string,
         pos: Vec2,
         playerId = 0,
-        targetArenaTeam?: "A" | "B" | Array<"A" | "B">,
+        targetArenaTeam?: ArenaTeam | ArenaTeam[],
     ) {
         const targetArenaTeams = Array.isArray(targetArenaTeam)
             ? targetArenaTeam
@@ -2135,7 +2136,7 @@ export class Player extends BaseGameObject {
         ping: string;
         pingOffsetRadius: number;
         shotAlt: boolean;
-        targetArenaTeams: Array<"A" | "B">;
+        targetArenaTeams: ArenaTeam[];
     }): void {
         const weaponDef = GameObjectDefs[settings.weapon] as GunDef;
         const pingOffsetAngle = util.random(0, Math.PI * 2);
@@ -2845,7 +2846,7 @@ export class Player extends BaseGameObject {
         clanTagColor: string | null | undefined,
         canUseDeveloper = false,
         loadout?: Loadout,
-        public arenaTeam?: "A" | "B",
+        public arenaTeam?: JoinTokenData["arenaTeam"],
         questIds?: string[],
     ) {
         super(game, pos);

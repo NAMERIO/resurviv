@@ -5,6 +5,7 @@ import { WeaponTypeToDefs } from "../../../shared/defs/gameObjectDefs";
 import type { MapDefs } from "../../../shared/defs/mapDefs";
 import {
     type AmongUsImpostorCount,
+    type ArenaTeam,
     DefaultAmongUsImpostorCount,
     DefaultPrivateLobbyMiniGame,
     normalizeAmongUsImpostorCount,
@@ -66,7 +67,7 @@ export interface JoinTokenData {
     findGameIp: string;
     spectator?: boolean;
     loadout?: Loadout;
-    arenaTeam?: "A" | "B";
+    arenaTeam?: ArenaTeam;
     quests?: string[];
     groupData: {
         autoFill: boolean;

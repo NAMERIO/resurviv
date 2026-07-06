@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { MapDefs } from "../../../shared/defs/mapDefs";
 import {
     type AmongUsImpostorCount,
+    ArenaTeamIds,
     type PrivateLobbyMiniGame,
     PrivateLobbyMiniGameIds,
 } from "../../../shared/defs/miniGame";
@@ -137,7 +138,7 @@ export const zFindGamePrivateBody = z.object({
             clanTagColor: z.string().nullable().optional(),
             canUseDeveloper: z.boolean().optional(),
             loadout: loadoutSchema.optional(),
-            arenaTeam: z.enum(["A", "B"]).optional(),
+            arenaTeam: z.enum(ArenaTeamIds).optional(),
             quests: z.array(z.string()).optional(),
         }),
     ),

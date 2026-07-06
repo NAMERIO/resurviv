@@ -9,6 +9,12 @@ export const PrivateLobbyMiniGameIds = [
 export type PrivateLobbyMiniGame = (typeof PrivateLobbyMiniGameIds)[number];
 export const DefaultPrivateLobbyMiniGame: PrivateLobbyMiniGame = "pvp";
 
+export const ArenaTeamIds = ["A", "B", "C", "D"] as const;
+export type ArenaTeam = (typeof ArenaTeamIds)[number];
+export const ArenaTeamCounts = [2, 3, 4] as const;
+export type ArenaTeamCount = (typeof ArenaTeamCounts)[number];
+export const DefaultArenaTeamCount: ArenaTeamCount = 2;
+
 export const AmongUsImpostorCounts = [1, 2, 3] as const;
 export type AmongUsImpostorCount = (typeof AmongUsImpostorCounts)[number];
 export const DefaultAmongUsImpostorCount: AmongUsImpostorCount = 1;
@@ -18,10 +24,7 @@ export interface PrivateLobbyMiniGameDef {
     name: string;
     singleTeam?: boolean;
     battleRoyale?: boolean;
-    teamNames: {
-        A: string;
-        B: string;
-    };
+    teamNames: Record<ArenaTeam, string>;
 }
 
 export const PrivateLobbyMiniGameDefs = {
@@ -31,6 +34,8 @@ export const PrivateLobbyMiniGameDefs = {
         teamNames: {
             A: "Team A",
             B: "Team B",
+            C: "Team C",
+            D: "Team D",
         },
     },
     battle_royale: {
@@ -40,6 +45,8 @@ export const PrivateLobbyMiniGameDefs = {
         teamNames: {
             A: "Players",
             B: "",
+            C: "",
+            D: "",
         },
     },
     hide_and_seek: {
@@ -48,6 +55,8 @@ export const PrivateLobbyMiniGameDefs = {
         teamNames: {
             A: "Hiders",
             B: "Seekers",
+            C: "",
+            D: "",
         },
     },
     infected: {
@@ -56,6 +65,8 @@ export const PrivateLobbyMiniGameDefs = {
         teamNames: {
             A: "Zombies",
             B: "Humans",
+            C: "",
+            D: "",
         },
     },
     among_us: {
@@ -65,6 +76,8 @@ export const PrivateLobbyMiniGameDefs = {
         teamNames: {
             A: "Players",
             B: "",
+            C: "",
+            D: "",
         },
     },
 } satisfies Record<PrivateLobbyMiniGame, PrivateLobbyMiniGameDef>;
@@ -87,4 +100,10 @@ export function normalizeAmongUsImpostorCount(count: unknown): AmongUsImpostorCo
     return AmongUsImpostorCounts.includes(count as AmongUsImpostorCount)
         ? (count as AmongUsImpostorCount)
         : DefaultAmongUsImpostorCount;
+}
+
+export function normalizeArenaTeamCount(count: unknown): ArenaTeamCount {
+    return ArenaTeamCounts.includes(count as ArenaTeamCount)
+        ? (count as ArenaTeamCount)
+        : DefaultArenaTeamCount;
 }

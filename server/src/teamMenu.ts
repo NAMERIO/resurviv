@@ -5,10 +5,14 @@ import type { UpgradeWebSocket, WSContext } from "hono/ws";
 import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
 import { MapDefs } from "../../shared/defs/mapDefs";
 import {
+    type ArenaTeam,
+    ArenaTeamIds,
     DefaultAmongUsImpostorCount,
+    DefaultArenaTeamCount,
     DefaultPrivateLobbyMiniGame,
     isPrivateLobbyMiniGame,
     normalizeAmongUsImpostorCount,
+    normalizeArenaTeamCount,
 } from "../../shared/defs/miniGame";
 import { GameConfig } from "../../shared/gameConfig";
 import type { FindGameError } from "../../shared/types/api";
@@ -138,7 +142,7 @@ class Player {
 class Room {
     static readonly MaxArenaSpectators = Number.MAX_SAFE_INTEGER;
     players: Player[] = [];
-    arenaTeams = new Map<Player, "A" | "B">();
+    arenaTeams = new Map<Player, ArenaTeam>();
     arenaSpectators = new Set<Player>();
     battleRoyaleTeams = new Map<Player, string>();
     battleRoyaleArenaReachedMaxPlayers = false;
@@ -156,6 +160,7 @@ class Room {
         captchaEnabled: false,
         arena: false,
         teamsLocked: false,
+        teamCount: DefaultArenaTeamCount,
         miniGame: DefaultPrivateLobbyMiniGame,
         amongUsImpostorCount: DefaultAmongUsImpostorCount,
         disableAirstrikes: false,
@@ -183,7 +188,7 @@ class Room {
     addPlayer(
         player: Player,
         opts?: {
-            preferredTeam?: "A" | "B";
+            preferredTeam?: ArenaTeam;
             spectator?: boolean;
             battleRoyaleTeamCode?: string;
         },
@@ -224,18 +229,23 @@ class Room {
                         return { ok: false, error: "spectator_full" };
                     }
                     this.arenaSpectators.add(player);
-                } else if (this.getArenaTeamCount("A") >= cap) {
+                } else if (this.getArenaTeamPlayerCount("A") >= cap) {
                     this.arenaSpectators.add(player);
                 } else {
                     this.arenaTeams.set(player, "A");
                 }
-            } else if (opts?.spectator || this.data.teamsLocked || !opts?.preferredTeam) {
+            } else if (
+                opts?.spectator ||
+                this.data.teamsLocked ||
+                !opts?.preferredTeam ||
+                !this.isActiveArenaTeam(opts.preferredTeam)
+            ) {
                 if (spectatorsFull) {
                     return { ok: false, error: "spectator_full" };
                 }
                 this.arenaSpectators.add(player);
             } else if (opts?.preferredTeam) {
-                if (this.getArenaTeamCount(opts.preferredTeam) >= cap) {
+                if (this.getArenaTeamPlayerCount(opts.preferredTeam) >= cap) {
                     if (spectatorsFull) {
                         return { ok: false, error: "spectator_full" };
                     }
@@ -346,6 +356,10 @@ class Room {
                     break;
                 }
 
+                if (!this.isActiveArenaTeam(msg.data.team)) {
+                    break;
+                }
+
                 const targetTeam = this.isSingleTeamArena() ? "A" : msg.data.team;
 
                 if (msg.data.team === "B" && this.isSingleTeamArena()) {
@@ -354,7 +368,8 @@ class Room {
 
                 if (
                     this.getPlayerTeam(targetPlayer) !== targetTeam &&
-                    this.getArenaTeamCount(targetTeam) >= this.getArenaTeamCapacity()
+                    this.getArenaTeamPlayerCount(targetTeam) >=
+                        this.getArenaTeamCapacity()
                 ) {
                     player.send("error", { type: "team_full" });
                     break;
@@ -447,6 +462,10 @@ class Room {
             this.data.arena && isPrivateLobbyMiniGame(props.miniGame)
                 ? props.miniGame
                 : DefaultPrivateLobbyMiniGame;
+        this.data.teamCount =
+            this.data.arena && this.data.miniGame === "pvp"
+                ? normalizeArenaTeamCount(props.teamCount)
+                : DefaultArenaTeamCount;
         if (this.data.arena) {
             const wantsBattleRoyale = isBattleRoyaleMiniGame(this.data.miniGame);
             const selectedModeIsBattleRoyale =
@@ -468,12 +487,16 @@ class Room {
         this.data.maxPlayers = this.data.arena
             ? this.isBattleRoyaleArena()
                 ? 80
-                : this.getArenaTeamCapacity() * (this.isSingleTeamArena() ? 1 : 2)
+                : this.getArenaTeamCapacity() * this.getArenaTeamCountLimit()
             : modes[gameModeIdx].teamMode;
         this.data.autoFill = this.data.arena ? false : props.autoFill;
         this.data.teamsLocked = this.data.arena ? !!props.teamsLocked : false;
         this.data.disableAirstrikes = this.data.arena ? !!props.disableAirstrikes : false;
         this.data.disablePerks = this.data.arena ? !!props.disablePerks : false;
+
+        if (this.data.arena && !this.isBattleRoyaleArena()) {
+            this.moveInactiveArenaTeamsToSpectators();
+        }
 
         // kick players that don't fit on the new max players
         if (!this.data.arena) {
@@ -659,8 +682,31 @@ class Room {
         return this.data.amongUsImpostorCount * 2 + 1;
     }
 
-    getPlayerTeam(player: Player): "A" | "B" | undefined {
+    getPlayerTeam(player: Player): ArenaTeam | undefined {
         return this.arenaTeams.get(player);
+    }
+
+    getActiveArenaTeams(): ArenaTeam[] {
+        if (this.isSingleTeamArena()) return ["A"];
+        if (this.data.miniGame !== "pvp") return ["A", "B"];
+        return ArenaTeamIds.slice(0, this.data.teamCount);
+    }
+
+    getArenaTeamCountLimit() {
+        return this.getActiveArenaTeams().length;
+    }
+
+    isActiveArenaTeam(team: unknown): team is ArenaTeam {
+        return this.getActiveArenaTeams().includes(team as ArenaTeam);
+    }
+
+    moveInactiveArenaTeamsToSpectators() {
+        for (const p of this.players) {
+            const currentTeam = this.arenaTeams.get(p);
+            if (!currentTeam || this.isActiveArenaTeam(currentTeam)) continue;
+            this.arenaTeams.delete(p);
+            this.arenaSpectators.add(p);
+        }
     }
 
     isSingleTeamArena() {
@@ -830,7 +876,7 @@ class Room {
         return true;
     }
 
-    getArenaTeamCount(team: "A" | "B") {
+    getArenaTeamPlayerCount(team: ArenaTeam) {
         let count = 0;
         for (const p of this.players) {
             if (this.arenaTeams.get(p) === team && !this.arenaSpectators.has(p)) count++;
@@ -838,18 +884,15 @@ class Room {
         return count;
     }
 
-    getNextArenaTeam(): "A" | "B" | undefined {
+    getNextArenaTeam(): ArenaTeam | undefined {
         const cap = this.getArenaTeamCapacity();
-        const a = this.getArenaTeamCount("A");
         if (this.isSingleTeamArena()) {
-            return a < cap ? "A" : undefined;
+            return this.getArenaTeamPlayerCount("A") < cap ? "A" : undefined;
         }
-        const b = this.getArenaTeamCount("B");
-        if (a >= cap && b >= cap) return undefined;
-        if (a < b && a < cap) return "A";
-        if (b < cap) return "B";
-        if (a < cap) return "A";
-        return undefined;
+        return this.getActiveArenaTeams()
+            .map((team) => ({ team, count: this.getArenaTeamPlayerCount(team) }))
+            .filter(({ count }) => count < cap)
+            .sort((a, b) => a.count - b.count)[0]?.team;
     }
 
     isBattleRoyaleMode() {
@@ -919,6 +962,12 @@ class Room {
                 this.arenaTeams.delete(p);
                 continue;
             }
+            const currentTeam = this.arenaTeams.get(p);
+            if (currentTeam && !this.isActiveArenaTeam(currentTeam)) {
+                this.arenaTeams.delete(p);
+                this.arenaSpectators.add(p);
+                continue;
+            }
             if (!this.arenaTeams.has(p)) {
                 const team = this.getNextArenaTeam();
                 if (team) {
@@ -928,16 +977,17 @@ class Room {
                 }
             }
         }
-        const overflow = (team: "A" | "B") =>
+        const overflow = (team: ArenaTeam) =>
             this.players.filter((p) => this.arenaTeams.get(p) === team).slice(cap);
-        for (const p of overflow("A")) {
-            if (this.getArenaTeamCount("B") < cap) {
-                this.arenaTeams.set(p, "B");
-            }
-        }
-        for (const p of overflow("B")) {
-            if (this.getArenaTeamCount("A") < cap) {
-                this.arenaTeams.set(p, "A");
+        for (const team of this.getActiveArenaTeams()) {
+            for (const p of overflow(team)) {
+                const targetTeam = this.getNextArenaTeam();
+                if (targetTeam && targetTeam !== team) {
+                    this.arenaTeams.set(p, targetTeam);
+                } else {
+                    this.arenaTeams.delete(p);
+                    this.arenaSpectators.add(p);
+                }
             }
         }
     }
@@ -982,9 +1032,8 @@ class Room {
         }
 
         if (this.data.arena && !this.isBattleRoyaleArena()) {
-            const teamACount = this.getArenaTeamCount("A");
-            const teamBCount = this.getArenaTeamCount("B");
-            if (teamACount < 1 || (!this.isSingleTeamArena() && teamBCount < 1)) {
+            const activeTeams = this.getActiveArenaTeams();
+            if (activeTeams.some((team) => this.getArenaTeamPlayerCount(team) < 1)) {
                 this.data.lastError = "arena_need_teams";
                 this.data.findingGame = false;
                 this.sendState();
@@ -993,7 +1042,7 @@ class Room {
 
             if (
                 this.data.miniGame === "among_us" &&
-                teamACount < this.getAmongUsRequiredPlayerCount()
+                this.getArenaTeamPlayerCount("A") < this.getAmongUsRequiredPlayerCount()
             ) {
                 this.data.lastError = "waiting_for_players";
                 this.data.findingGame = false;
@@ -1398,8 +1447,9 @@ export class TeamMenu {
             teamMode: mode.teamMode,
             miniGame: room.data.miniGame,
             findingGame: room.data.findingGame,
-            teamACount: room.getArenaTeamCount("A"),
-            teamBCount: room.getArenaTeamCount("B"),
+            teamCount: room.data.teamCount,
+            teamACount: room.getArenaTeamPlayerCount("A"),
+            teamBCount: room.getArenaTeamPlayerCount("B"),
         };
     }
 
