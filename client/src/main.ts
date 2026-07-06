@@ -2942,33 +2942,34 @@ export class Application {
             .find(".arena-team-column:not(.hide)")
             .add("#arena-spectators-board");
         dropTargets.toggleClass("arena-drop-enabled", hostCanAssign);
+        dropTargets.off(".arenaAssign");
         if (hostCanAssign) {
+            $(".arena-team-slot[draggable=true], .arena-spectator-item[draggable=true]")
+                .off(".arenaAssign")
+                .on("dragstart.arenaAssign", (e) => {
+                    const playerId = $(e.currentTarget).attr("data-playerid") || "";
+                    e.originalEvent?.dataTransfer?.setData("text/plain", playerId);
+                    e.originalEvent?.dataTransfer?.setData(
+                        "application/x-player-id",
+                        playerId,
+                    );
+                    e.originalEvent?.dataTransfer?.setDragImage(e.currentTarget, 12, 12);
+                    $(e.currentTarget).addClass("dragging");
+                });
             $(
                 ".arena-team-slot[draggable=true], .arena-spectator-item[draggable=true]",
-            ).on("dragstart", (e) => {
-                const playerId = $(e.currentTarget).attr("data-playerid") || "";
-                e.originalEvent?.dataTransfer?.setData("text/plain", playerId);
-                e.originalEvent?.dataTransfer?.setData(
-                    "application/x-player-id",
-                    playerId,
-                );
-                e.originalEvent?.dataTransfer?.setDragImage(e.currentTarget, 12, 12);
-                $(e.currentTarget).addClass("dragging");
-            });
-            $(
-                ".arena-team-slot[draggable=true], .arena-spectator-item[draggable=true]",
-            ).on("dragend", (e) => {
+            ).on("dragend.arenaAssign", (e) => {
                 $(e.currentTarget).removeClass("dragging");
                 dropTargets.removeClass("drag-over");
             });
-            dropTargets.on("dragover", (e) => {
+            dropTargets.on("dragover.arenaAssign", (e) => {
                 e.preventDefault();
                 $(e.currentTarget).addClass("drag-over");
             });
-            dropTargets.on("dragleave", (e) => {
+            dropTargets.on("dragleave.arenaAssign", (e) => {
                 $(e.currentTarget).removeClass("drag-over");
             });
-            dropTargets.on("drop", (e) => {
+            dropTargets.on("drop.arenaAssign", (e) => {
                 e.preventDefault();
                 dropTargets.removeClass("drag-over");
                 const playerId = Number(

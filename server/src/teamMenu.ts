@@ -343,10 +343,10 @@ class Room {
                 }
 
                 if (msg.data.team === "spectator") {
-                    if (
-                        !this.isArenaSpectator(targetPlayer) &&
-                        this.getArenaSpectatorCount() >= Room.MaxArenaSpectators
-                    ) {
+                    if (this.isArenaSpectator(targetPlayer)) {
+                        break;
+                    }
+                    if (this.getArenaSpectatorCount() >= Room.MaxArenaSpectators) {
                         player.send("error", { type: "spectator_full" });
                         break;
                     }
@@ -363,6 +363,13 @@ class Room {
                 const targetTeam = this.isSingleTeamArena() ? "A" : msg.data.team;
 
                 if (msg.data.team === "B" && this.isSingleTeamArena()) {
+                    break;
+                }
+
+                if (
+                    !this.isArenaSpectator(targetPlayer) &&
+                    this.getPlayerTeam(targetPlayer) === targetTeam
+                ) {
                     break;
                 }
 
