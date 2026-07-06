@@ -10,7 +10,7 @@ survev-config.json
 survev-config.hjson
 
 # env file
-.env
+
 
 # sqlite db
 game.db
