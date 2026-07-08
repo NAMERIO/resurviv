@@ -100,7 +100,6 @@ export class CaptureTheFlagManager {
 
             if (
                 enemyFlag.carrier === player &&
-                ownFlag.status === "base" &&
                 (this.isInFlagZone(player.pos, ownFlag.basePos, captureZoneSize) ||
                     v2.distance(player.pos, ownFlag.basePos) <= captureRadius)
             ) {

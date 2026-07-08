@@ -758,7 +758,8 @@ export class UiManager {
         this.hideTeamStatus = !!map.getMapDef().gameMode.amongUsMode;
         this.applyTeamStatusVisibility();
         const displayLeader = map.getMapDef().gameMode.killLeaderEnabled;
-        const displayLeaderboard = !map.mapName.startsWith("br_");
+        const displayLeaderboard =
+            !map.mapName.startsWith("br_") && !map.getMapDef().gameMode.captureTheFlag;
 
         $("#ui-kill-leader-container").css("display", displayLeader ? "block" : "none");
         $("#ui-kill-leaderboard-title").css("display", displayLeaderboard ? "" : "none");
@@ -822,8 +823,7 @@ export class UiManager {
         this.captureTheFlagRedProgress.css("width", `${redPct}%`);
         this.captureTheFlagBlueProgress.css("width", `${bluePct}%`);
 
-        const elapsed = (performance.now() - state.receivedAt) / 1000;
-        const timeText = formatClockTime(state.matchTimeLeft - elapsed);
+        const timeText = formatClockTime(state.matchTimeLeft);
         if (force || timeText !== this.captureTheFlagLastTimeText) {
             this.captureTheFlagLastTimeText = timeText;
             this.captureTheFlagTime.text(timeText);

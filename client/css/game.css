@@ -1620,6 +1620,10 @@ img {
   flex-direction: row-reverse;
 }
 
+.ui-ctf-red .ui-ctf-score-row {
+  flex-direction: row-reverse;
+}
+
 .ui-ctf-team-name {
   opacity: 0.82;
   text-transform: uppercase;

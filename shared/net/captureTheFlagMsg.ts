@@ -38,7 +38,7 @@ export class CaptureTheFlagMsg implements AbstractMsg {
         s.writeUint8(this.redScore);
         s.writeUint8(this.blueScore);
         s.writeUint8(this.scoreLimit);
-        s.writeFloat(this.matchTimeLeft, 0, 600, 10);
+        s.writeUint16(Math.ceil(this.matchTimeLeft));
         s.writeBits(this.redFlagStatus, 2);
         s.writeBits(this.blueFlagStatus, 2);
         s.writeMapPos(this.redFlagPos);
@@ -58,7 +58,7 @@ export class CaptureTheFlagMsg implements AbstractMsg {
         this.redScore = s.readUint8();
         this.blueScore = s.readUint8();
         this.scoreLimit = s.readUint8();
-        this.matchTimeLeft = s.readFloat(0, 600, 10);
+        this.matchTimeLeft = s.readUint16();
         this.redFlagStatus = s.readBits(2);
         this.blueFlagStatus = s.readBits(2);
         this.redFlagPos = s.readMapPos();
