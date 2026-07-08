@@ -753,10 +753,7 @@ export class ClanUi {
     updateCreateClanLockState() {
         $("#btn-clan-create-submit")
             .toggleClass("clan-btn-disabled", this.clansLocked)
-            .attr(
-                "title",
-                this.clansLocked ? "Clan creation is locked right now." : "",
-            );
+            .attr("title", this.clansLocked ? "Clan creation is locked right now." : "");
         if (this.clansLocked && !this.currentClan) {
             $("#clan-create-warning").text("Clan creation is locked.").show();
         } else if (!this.currentClan) {
