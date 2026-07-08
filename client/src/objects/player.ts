@@ -231,6 +231,7 @@ export class Player implements AbstractObject {
     pyroSprite = createSprite();
     helmetSprite = createSprite();
     visorSprite = createSprite();
+    captureTheFlagSprite = createSprite();
     backpackSprite = createSprite();
     handLSprite = createSprite();
     handRSprite = createSprite();
@@ -425,6 +426,7 @@ export class Player implements AbstractObject {
         m_hideAndSeekHunterReleaseTime: number;
         m_hideAndSeekHunterReleaseSeeker: boolean;
         m_infectedRespawnTime: number;
+        m_captureTheFlagRespawnTime: number;
         m_miniGameWinCountdownTime: number;
         m_miniGameWinCountdownProps: boolean;
         m_amongUsKillCooldownTime: number;
@@ -500,6 +502,7 @@ export class Player implements AbstractObject {
 
         this.container.addChild(this.bodyContainer);
 
+        this.container.addChild(this.captureTheFlagSprite);
         this.container.addChild(this.nameText);
 
         this.auraContainer.addChild(this.auraCircle);
@@ -602,6 +605,7 @@ export class Player implements AbstractObject {
             m_hideAndSeekHunterReleaseTime: 0,
             m_hideAndSeekHunterReleaseSeeker: false,
             m_infectedRespawnTime: 0,
+            m_captureTheFlagRespawnTime: 0,
             m_miniGameWinCountdownTime: 0,
             m_miniGameWinCountdownProps: false,
             m_amongUsKillCooldownTime: 0,
@@ -784,6 +788,8 @@ export class Player implements AbstractObject {
         this.m_localData.m_hideAndSeekHunterReleaseSeeker =
             data.hideAndSeekHunterReleaseSeeker ?? false;
         this.m_localData.m_infectedRespawnTime = data.infectedRespawnTime ?? 0;
+        this.m_localData.m_captureTheFlagRespawnTime =
+            data.captureTheFlagRespawnTime ?? 0;
         this.m_localData.m_miniGameWinCountdownTime = data.miniGameWinCountdownTime ?? 0;
         this.m_localData.m_miniGameWinCountdownProps =
             data.miniGameWinCountdownProps ?? false;
@@ -2302,6 +2308,23 @@ export class Player implements AbstractObject {
             this.visorSprite.visible = true;
         } else {
             this.visorSprite.visible = false;
+        }
+        const ctfRoleDef =
+            this.m_netData.m_role === "ctf_flag_red" ||
+            this.m_netData.m_role === "ctf_flag_blue"
+                ? (GameObjectDefs[this.m_netData.m_role] as RoleDef)
+                : undefined;
+        if (ctfRoleDef?.mapIndicator) {
+            this.captureTheFlagSprite.texture = PIXI.Texture.from(
+                ctfRoleDef.mapIndicator.sprite,
+            );
+            this.captureTheFlagSprite.tint =
+                ctfRoleDef.color ?? ctfRoleDef.mapIndicator.tint;
+            this.captureTheFlagSprite.scale.set(0.9, 0.9);
+            this.captureTheFlagSprite.position.set(0, -34);
+            this.captureTheFlagSprite.visible = !this.m_netData.m_dead;
+        } else {
+            this.captureTheFlagSprite.visible = false;
         }
         if (outfitImg.frontSprite) {
             this.frontSprite.texture = PIXI.Texture.from(outfitImg.frontSprite);

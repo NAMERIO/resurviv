@@ -7,6 +7,10 @@ import { type RoleDef, RoleDefs } from "../../../shared/defs/gameObjects/roleDef
 import type { MapDef } from "../../../shared/defs/mapDefs";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import { Action, GameConfig, GasMode, TeamMode } from "../../../shared/gameConfig";
+import {
+    CaptureTheFlagFlagStatus,
+    type CaptureTheFlagMsg,
+} from "../../../shared/net/captureTheFlagMsg";
 import type { LeaderboardMsg } from "../../../shared/net/leaderboardMsg";
 import type { PlayerStatsMsg } from "../../../shared/net/playerStatsMsg";
 import type { MapIndicator, PlayerStatus } from "../../../shared/net/updateMsg";
@@ -24,6 +28,7 @@ import type { SoundHandle } from "../lib/createJS";
 import type { Map } from "../map";
 import { MapIndicatorBarn } from "../objects/mapIndicator";
 import { type MapSprite, MapSpriteBarn } from "../objects/mapSprite";
+import { setCaptureTheFlagTimerState } from "../objects/obstacle";
 import type { ParticleBarn } from "../objects/particles";
 import type { PlaneBarn } from "../objects/plane";
 import type { Player, PlayerBarn } from "../objects/player";
@@ -45,6 +50,13 @@ function humanizeTime(time: number) {
         timeText += `${minutes}m `;
     }
     return (timeText += `${seconds}s`);
+}
+
+function formatClockTime(time: number) {
+    const clamped = math.max(0, Math.ceil(time));
+    const minutes = Math.floor(clamped / 60);
+    const seconds = clamped % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
 function Interpolate(start: number, end: number, steps: number, count: number) {
@@ -73,6 +85,18 @@ interface ContainerWithMask extends PIXI.Container {
 }
 
 type PrevStatus = Pick<PlayerStatus, "downed" | "dead" | "disconnected" | "role">;
+type CaptureTheFlagZone = {
+    teamId: 1 | 2;
+    status: CaptureTheFlagFlagStatus;
+    pos: Vec2;
+};
+type CaptureTheFlagScoreState = {
+    redScore: number;
+    blueScore: number;
+    scoreLimit: number;
+    matchTimeLeft: number;
+    receivedAt: number;
+};
 export class UiManager {
     m_pieTimer = new PieTimer();
     gameElem = $("#ui-game");
@@ -217,6 +241,20 @@ export class UiManager {
     playerMapSprites: MapSprite[] = [];
     playerPingSprites = {} as Record<number, MapSprite[]>;
     amongUsTaskMapMarkers = new globalThis.Map<string, MapSprite>();
+    captureTheFlagZoneOverlay = new PIXI.Graphics();
+    private captureTheFlagZones: CaptureTheFlagZone[] = [];
+    private captureTheFlagScoreState: CaptureTheFlagScoreState | undefined;
+    private captureTheFlagLastTimeText = "";
+    private captureTheFlagZoneLabels = [
+        this.createCaptureTheFlagZoneLabel(),
+        this.createCaptureTheFlagZoneLabel(),
+    ];
+    captureTheFlagScoreboard = $("#ui-ctf-scoreboard");
+    captureTheFlagTime = $("#ui-ctf-time");
+    captureTheFlagRedScore = $("#ui-ctf-red-score");
+    captureTheFlagBlueScore = $("#ui-ctf-blue-score");
+    captureTheFlagRedProgress = $("#ui-ctf-red-progress");
+    captureTheFlagBlueProgress = $("#ui-ctf-blue-progress");
     container = new PIXI.Container() as ContainerWithMask;
 
     resetWeapSlotStyling!: () => void;
@@ -224,6 +262,7 @@ export class UiManager {
         gas: PIXI.DisplayObject;
         gasSafeZone: PIXI.Container;
         airstrikeZones: PIXI.Container;
+        captureTheFlagMapZones: PIXI.Graphics;
         mapSprites: PIXI.Container;
         teammates: PIXI.Container;
         player: PIXI.Container;
@@ -290,6 +329,9 @@ export class UiManager {
         this.touch = touch;
         this.inputBinds = inputBinds;
         this.inputBindUi = inputBindUi;
+        for (let i = 0; i < this.captureTheFlagZoneLabels.length; i++) {
+            this.captureTheFlagZoneOverlay.addChild(this.captureTheFlagZoneLabels[i]);
+        }
 
         this.roleMenuConfirm.on("click", (e) => {
             e.stopPropagation();
@@ -482,6 +524,7 @@ export class UiManager {
             gas: this.gasRenderer.display!,
             gasSafeZone: this.gasSafeZoneRenderer.display,
             airstrikeZones: planeBarn.airstrikeZoneContainer,
+            captureTheFlagMapZones: new PIXI.Graphics(),
             mapSprites: this.mapSpriteBarn.container,
             teammates: new PIXI.Container(),
             player: new PIXI.Container(),
@@ -490,6 +533,7 @@ export class UiManager {
 
         this.mapSprite.anchor = new PIXI.Point(0.5, 0.5) as PIXI.ObservablePoint;
         this.container.addChild(this.mapSprite);
+        this.container.addChild(this.display.captureTheFlagMapZones);
         this.container.addChild(this.display.gas);
         this.container.addChild(this.display.gasSafeZone);
         this.container.addChild(this.display.airstrikeZones);
@@ -647,6 +691,66 @@ export class UiManager {
 
     onMapLoad(map: Map, camera: Camera) {
         this.clearAmongUsTaskMapMarkers();
+        const ctfDef = map.getMapDef().gameMode.captureTheFlag;
+        if (ctfDef) {
+            this.captureTheFlagZones = [
+                {
+                    teamId: 1,
+                    status: CaptureTheFlagFlagStatus.AtBase,
+                    pos: v2.copy(ctfDef.redFlag),
+                },
+                {
+                    teamId: 2,
+                    status: CaptureTheFlagFlagStatus.AtBase,
+                    pos: v2.copy(ctfDef.blueFlag),
+                },
+            ];
+            setCaptureTheFlagTimerState(
+                {
+                    status: CaptureTheFlagFlagStatus.AtBase,
+                    pos: ctfDef.redFlag,
+                    returnTime: 0,
+                    returnDuration: 0,
+                },
+                {
+                    status: CaptureTheFlagFlagStatus.AtBase,
+                    pos: ctfDef.blueFlag,
+                    returnTime: 0,
+                    returnDuration: 0,
+                },
+            );
+            this.captureTheFlagScoreState = {
+                redScore: 0,
+                blueScore: 0,
+                scoreLimit: 100,
+                matchTimeLeft: 600,
+                receivedAt: performance.now(),
+            };
+            this.captureTheFlagLastTimeText = "";
+            this.updateCaptureTheFlagScoreboard(true);
+            this.captureTheFlagScoreboard.css("display", "block");
+        } else {
+            this.captureTheFlagZones = [];
+            this.captureTheFlagZoneOverlay.clear();
+            this.hideCaptureTheFlagZoneLabels();
+            this.captureTheFlagScoreState = undefined;
+            this.captureTheFlagLastTimeText = "";
+            this.captureTheFlagScoreboard.css("display", "none");
+            setCaptureTheFlagTimerState(
+                {
+                    status: CaptureTheFlagFlagStatus.AtBase,
+                    pos: v2.create(0, 0),
+                    returnTime: 0,
+                    returnDuration: 0,
+                },
+                {
+                    status: CaptureTheFlagFlagStatus.AtBase,
+                    pos: v2.create(0, 0),
+                    returnTime: 0,
+                    returnDuration: 0,
+                },
+            );
+        }
         this.resize(map, camera);
         if (this.hideTeamStatus) {
             $("#ui-team, #ui-team-indicators").css("display", "");
@@ -665,6 +769,222 @@ export class UiManager {
 
         if (!device.mobile) {
             $("#ui-killfeed-wrapper").css("top", displayLeader ? "60px" : "12px");
+        }
+    }
+
+    setCaptureTheFlagState(msg: CaptureTheFlagMsg) {
+        this.captureTheFlagScoreState = {
+            redScore: msg.redScore,
+            blueScore: msg.blueScore,
+            scoreLimit: math.max(1, msg.scoreLimit),
+            matchTimeLeft: msg.matchTimeLeft,
+            receivedAt: performance.now(),
+        };
+        this.updateCaptureTheFlagScoreboard(true);
+        this.captureTheFlagZones = [
+            {
+                teamId: 1,
+                status: msg.redFlagStatus,
+                pos: v2.copy(msg.redFlagPos),
+            },
+            {
+                teamId: 2,
+                status: msg.blueFlagStatus,
+                pos: v2.copy(msg.blueFlagPos),
+            },
+        ];
+        setCaptureTheFlagTimerState(
+            {
+                status: msg.redFlagStatus,
+                pos: msg.redFlagPos,
+                returnTime: msg.redFlagReturnTime,
+                returnDuration: msg.droppedFlagReturnDuration,
+            },
+            {
+                status: msg.blueFlagStatus,
+                pos: msg.blueFlagPos,
+                returnTime: msg.blueFlagReturnTime,
+                returnDuration: msg.droppedFlagReturnDuration,
+            },
+        );
+    }
+
+    private updateCaptureTheFlagScoreboard(force = false) {
+        const state = this.captureTheFlagScoreState;
+        if (!state) return;
+
+        const scoreLimit = math.max(1, state.scoreLimit);
+        const redPct = math.clamp(state.redScore / scoreLimit, 0, 1) * 100;
+        const bluePct = math.clamp(state.blueScore / scoreLimit, 0, 1) * 100;
+
+        this.captureTheFlagRedScore.text(`${state.redScore}`);
+        this.captureTheFlagBlueScore.text(`${state.blueScore}`);
+        this.captureTheFlagRedProgress.css("width", `${redPct}%`);
+        this.captureTheFlagBlueProgress.css("width", `${bluePct}%`);
+
+        const elapsed = (performance.now() - state.receivedAt) / 1000;
+        const timeText = formatClockTime(state.matchTimeLeft - elapsed);
+        if (force || timeText !== this.captureTheFlagLastTimeText) {
+            this.captureTheFlagLastTimeText = timeText;
+            this.captureTheFlagTime.text(timeText);
+        }
+    }
+
+    private createCaptureTheFlagZoneLabel() {
+        const label = new PIXI.Text("Flag Return", {
+            align: "center",
+            dropShadow: true,
+            dropShadowAlpha: 0.55,
+            dropShadowBlur: 3,
+            dropShadowDistance: 1,
+            fill: 0xffffff,
+            fontFamily: "Arial",
+            fontSize: 24,
+            fontWeight: "bold",
+            stroke: 0x000000,
+            strokeThickness: 3,
+        });
+        label.anchor.set(0.5);
+        label.visible = false;
+        return label;
+    }
+
+    private hideCaptureTheFlagZoneLabels() {
+        for (let i = 0; i < this.captureTheFlagZoneLabels.length; i++) {
+            this.captureTheFlagZoneLabels[i].visible = false;
+        }
+    }
+
+    private renderCaptureTheFlagZones(camera: Camera, map: Map) {
+        const ctfDef = map.getMapDef().gameMode.captureTheFlag;
+        const overlay = this.captureTheFlagZoneOverlay;
+        overlay.clear();
+        this.hideCaptureTheFlagZoneLabels();
+
+        if (!ctfDef || !this.hudVisible) return;
+
+        const captureRadius = ctfDef.captureRadius ?? 4;
+        const captureZoneSize =
+            ctfDef.captureZoneSize ?? v2.create(captureRadius * 2.5, captureRadius * 8.5);
+        const width = camera.m_scaleToScreen(captureZoneSize.x);
+        const height = camera.m_scaleToScreen(captureZoneSize.y);
+        const tileSize = math.max(14, camera.m_scaleToScreen(2));
+        const borderSize = math.max(3, camera.m_scaleToScreen(0.18));
+        const dashSize = math.max(10, camera.m_scaleToScreen(1.4));
+        const gapSize = dashSize * 0.72;
+        const pulse = 0.82 + Math.sin(performance.now() / 260) * 0.12;
+        let labelIdx = 0;
+
+        for (let i = 0; i < this.captureTheFlagZones.length; i++) {
+            const zone = this.captureTheFlagZones[i];
+            const zonePos = zone.teamId === 1 ? ctfDef.redFlag : ctfDef.blueFlag;
+
+            const center = camera.m_pointToScreen(zonePos);
+            const x = center.x - width / 2;
+            const y = center.y - height / 2;
+            const color = zone.teamId === 1 ? 0xff2f2f : 0x2f7dff;
+
+            overlay.lineStyle(0);
+            overlay.beginFill(color, 0.1 * pulse);
+            overlay.drawRect(x, y, width, height);
+            overlay.endFill();
+
+            const cols = Math.ceil(width / tileSize);
+            const rows = Math.ceil(height / tileSize);
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    if ((row + col) % 2 !== 0) continue;
+
+                    overlay.beginFill(0xffffff, 0.06 * pulse);
+                    overlay.drawRect(
+                        x + col * tileSize,
+                        y + row * tileSize,
+                        math.min(tileSize, width - col * tileSize),
+                        math.min(tileSize, height - row * tileSize),
+                    );
+                    overlay.endFill();
+                }
+            }
+
+            overlay.beginFill(color, 0.2 * pulse);
+            overlay.drawRect(x, y, width, borderSize);
+            overlay.drawRect(x, y + height - borderSize, width, borderSize);
+            overlay.drawRect(x, y, borderSize, height);
+            overlay.drawRect(x + width - borderSize, y, borderSize, height);
+            overlay.endFill();
+
+            overlay.beginFill(0xffffff, 0.74);
+            for (let dashX = x; dashX < x + width; dashX += dashSize + gapSize) {
+                const dashWidth = math.min(dashSize, x + width - dashX);
+                overlay.drawRect(dashX, y - borderSize, dashWidth, borderSize);
+                overlay.drawRect(dashX, y + height, dashWidth, borderSize);
+            }
+            for (let dashY = y; dashY < y + height; dashY += dashSize + gapSize) {
+                const dashHeight = math.min(dashSize, y + height - dashY);
+                overlay.drawRect(x - borderSize, dashY, borderSize, dashHeight);
+                overlay.drawRect(x + width, dashY, borderSize, dashHeight);
+            }
+            overlay.endFill();
+
+            const label = this.captureTheFlagZoneLabels[labelIdx++];
+            if (label) {
+                label.x = center.x;
+                label.y = center.y;
+                label.visible = true;
+                label.alpha = 0.78 * pulse;
+                label.scale.set(math.clamp(camera.m_zoom / 1.5, 0.75, 1.15));
+            }
+        }
+    }
+
+    private renderCaptureTheFlagMapZones(map: Map) {
+        const ctfDef = map.getMapDef().gameMode.captureTheFlag;
+        const overlay = this.display.captureTheFlagMapZones;
+        overlay.clear();
+
+        if (!ctfDef) return;
+
+        const captureRadius = ctfDef.captureRadius ?? 4;
+        const captureZoneSize =
+            ctfDef.captureZoneSize ?? v2.create(captureRadius * 2.5, captureRadius * 8.5);
+        const width = (captureZoneSize.x / map.width) * this.mapSprite.width;
+        const height = (captureZoneSize.y / map.height) * this.mapSprite.height;
+        const borderSize = math.max(1, math.min(width, height) * 0.08);
+        const dashSize = math.max(3, math.min(width, height) * 0.22);
+        const gapSize = dashSize * 0.72;
+
+        for (let i = 0; i < this.captureTheFlagZones.length; i++) {
+            const zone = this.captureTheFlagZones[i];
+            const zonePos = zone.teamId === 1 ? ctfDef.redFlag : ctfDef.blueFlag;
+            const center = this.getMapPosFromWorldPos(zonePos, map);
+            const x = center.x - width / 2;
+            const y = center.y - height / 2;
+            const color = zone.teamId === 1 ? 0xff2f2f : 0x2f7dff;
+
+            overlay.lineStyle(0);
+            overlay.beginFill(color, 0.14);
+            overlay.drawRect(x, y, width, height);
+            overlay.endFill();
+
+            overlay.beginFill(color, 0.36);
+            overlay.drawRect(x, y, width, borderSize);
+            overlay.drawRect(x, y + height - borderSize, width, borderSize);
+            overlay.drawRect(x, y, borderSize, height);
+            overlay.drawRect(x + width - borderSize, y, borderSize, height);
+            overlay.endFill();
+
+            overlay.beginFill(0xffffff, 0.7);
+            for (let dashX = x; dashX < x + width; dashX += dashSize + gapSize) {
+                const dashWidth = math.min(dashSize, x + width - dashX);
+                overlay.drawRect(dashX, y - borderSize, dashWidth, borderSize);
+                overlay.drawRect(dashX, y + height, dashWidth, borderSize);
+            }
+            for (let dashY = y; dashY < y + height; dashY += dashSize + gapSize) {
+                const dashHeight = math.min(dashSize, y + height - dashY);
+                overlay.drawRect(x - borderSize, dashY, borderSize, dashHeight);
+                overlay.drawRect(x + width, dashY, borderSize, dashHeight);
+            }
+            overlay.endFill();
         }
     }
 
@@ -693,6 +1013,8 @@ export class UiManager {
 
         this.weapsDirty = false;
         this.mapIndicatorBarn.updateIndicatorPulses(dt);
+        this.renderCaptureTheFlagZones(camera, map);
+        this.updateCaptureTheFlagScoreboard();
 
         // Gas timer display
         const timeLeft = math.max(Math.floor(gas.duration * (1 - gas.circleT)), 0);
@@ -727,6 +1049,9 @@ export class UiManager {
             this.m_pieTimer.stop();
         } else if (!player.m_netData.m_dead && this.dead) {
             this.dead = false;
+            if (this.displayingStats) {
+                this.hideStats();
+            }
         }
 
         if (localPlayer.downed || this.dead) {
@@ -1033,6 +1358,8 @@ export class UiManager {
             mapSprite.sprite.texture = PIXI.Texture.from(texture);
             mapSprite.sprite.tint = tint;
         };
+        const isCaptureTheFlagRole = (role: string) =>
+            role === "ctf_flag_red" || role === "ctf_flag_blue";
         const keys = Object.keys(playerBarn.playerStatus);
         for (let i = 0; i < keys.length; i++) {
             const playerStatus = playerBarn.playerStatus[keys[i] as unknown as number];
@@ -1074,15 +1401,37 @@ export class UiManager {
             const dotScale = device.uiLayout == device.UiLayout.Sm ? 0.15 : 0.2;
             let scale = dotScale;
 
-            scale = sameGroup
-                ? playerStatus.dead
+            const ctfRole = isCaptureTheFlagRole(playerStatus.role);
+            if (sameGroup) {
+                scale = playerStatus.dead
                     ? dotScale * 1.5
-                    : customMapIcon
-                      ? dotScale * 1.25
-                      : dotScale * 1
-                : playerStatus.dead || playerStatus.downed || customMapIcon
-                  ? dotScale * 1.25
-                  : dotScale * 0.75;
+                    : ctfRole
+                      ? dotScale * 2
+                      : customMapIcon
+                        ? dotScale * 1.25
+                        : dotScale;
+            } else {
+                scale =
+                    playerStatus.dead || playerStatus.downed
+                        ? dotScale * 1.25
+                        : ctfRole
+                          ? dotScale * 2
+                          : customMapIcon
+                            ? dotScale * 1.25
+                            : dotScale * 0.75;
+            }
+
+            if (ctfRole && !playerStatus.dead && !playerStatus.downed) {
+                addSprite(
+                    playerStatus.pos,
+                    scale * 1.35,
+                    playerStatus.minimapAlpha!,
+                    playerStatus.minimapVisible!,
+                    zOrder - 1,
+                    texture,
+                    0xffffff,
+                );
+            }
 
             addSprite(
                 playerStatus.pos,
@@ -1578,6 +1927,7 @@ export class UiManager {
             (stats) => stats.playerId === this.game.m_localId,
         );
         const amongUsMode = Boolean(map.getMapDef().gameMode.amongUsMode);
+        const captureTheFlagMode = Boolean(map.getMapDef().gameMode.captureTheFlag);
         if (amongUsMode && !gameOver && localStats?.dead) {
             this.beginSpectating();
             this.clearStatsElems();
@@ -1629,7 +1979,13 @@ export class UiManager {
                 : "";
             const S = amongUsMode
                 ? this.getAmongUsTitleText(localRole, isLocalTeamWinner)
-                : "Battle Results";
+                : captureTheFlagMode && gameOver
+                  ? winningTeamId === 1
+                      ? "Red Team Won"
+                      : winningTeamId === 2
+                        ? "Blue Team Won"
+                        : "Red and Blue Tied"
+                  : "Battle Results";
             const orderedPlayerStats = [...playerStats].sort((a, b) => {
                 if (a.dead !== b.dead) return a.dead ? 1 : -1;
                 if (a.timeAlive !== b.timeAlive) return b.timeAlive - a.timeAlive;
@@ -1648,7 +2004,7 @@ export class UiManager {
                 teamMode,
                 teamRank,
                 teamKills,
-                map.getMapDef().gameMode.factionMode!,
+                map.getMapDef().gameMode.factionMode! || captureTheFlagMode,
             );
             const I = $("<div/>").append(
                 $("<div/>", {
@@ -1656,7 +2012,11 @@ export class UiManager {
                     html: S,
                 }),
             );
-            if (amongUsMode || map.getMapDef().gameMode.factionMode) {
+            if (
+                amongUsMode ||
+                map.getMapDef().gameMode.factionMode ||
+                captureTheFlagMode
+            ) {
                 I.append(
                     $("<div/>", {
                         class: "ui-stats-header-overview",
@@ -2334,6 +2694,7 @@ export class UiManager {
         );
 
         planeBarn.renderAirstrikeZones(this, map);
+        this.renderCaptureTheFlagMapZones(map);
     }
 
     updateHealthBar(

@@ -461,6 +461,36 @@ export const RoleDefs: Record<string, RoleDef> = {
         },
         perks: ["hunted"],
     },
+    ctf_flag_red: {
+        type: "role",
+        announce: false,
+        sound: {},
+        mapIcon: {
+            alive: "loot_flag.img",
+        },
+        mapIndicator: {
+            sprite: "loot_flag.img",
+            tint: 0xcc0000,
+            pulse: true,
+            pulseTint: 0xcc0000,
+        },
+        color: 0xcc0000,
+    },
+    ctf_flag_blue: {
+        type: "role",
+        announce: false,
+        sound: {},
+        mapIcon: {
+            alive: "loot_flag.img",
+        },
+        mapIndicator: {
+            sprite: "loot_flag.img",
+            tint: 0x007eff,
+            pulse: true,
+            pulseTint: 0x007eff,
+        },
+        color: 0x007eff,
+    },
     healer: {
         type: "role",
         defaultItems: createDefaultItems({

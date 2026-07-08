@@ -32,6 +32,7 @@ import { DeatchmatchWoods as Woods } from "../../server/src/deathmatch/maps/wood
 import type { Vec2 } from "../utils/v2";
 import { Beach } from "./maps/beachDefs";
 import { Birthday } from "./maps/birthdayDefs";
+import { DeathmatchCaptureTheFlag } from "./maps/captureTheFlagDefs";
 import { MainSpring } from "./maps/mainSpringDefs";
 import { MainSummer } from "./maps/mainSummerDefs";
 import { Potato } from "./maps/potatoDefs";
@@ -66,6 +67,7 @@ export type Atlas =
 export const MapDefs = {
     main: DeatchmatchMain,
     among_us: DeathmatchAmongUs,
+    capture_the_flag: DeathmatchCaptureTheFlag,
     br_main: BattleRoyaleMain,
     main_spring: MainSpring,
     br_main_spring: BattleRoyaleMainSpring,
@@ -175,6 +177,16 @@ export interface MapDef {
         amongUsMode?: boolean;
         amongUsVisionRadius?: number;
         amongUsSpawnOffsets?: Vec2[];
+        captureTheFlag?: {
+            redSpawn: Vec2;
+            blueSpawn: Vec2;
+            redFlag: Vec2;
+            blueFlag: Vec2;
+            spawnRadius?: number;
+            flagPickupRadius?: number;
+            captureRadius?: number;
+            captureZoneSize?: Vec2;
+        };
         disableGas?: boolean;
     };
     gameConfig: {

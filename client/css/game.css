@@ -1578,6 +1578,118 @@ img {
   }
 }
 
+#ui-ctf-scoreboard {
+  position: absolute;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  width: min(72vw, 620px);
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 1px 1px 0 #00000000;
+}
+
+.ui-ctf-panel {
+  display: grid;
+  grid-template-columns: 1fr 58px 1fr;
+  gap: 6px;
+  align-items: start;
+  padding: 6px 8px 7px;
+  background: rgba(0, 0, 0, 0.308);
+  border-radius: 6px;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.185));
+}
+
+.ui-ctf-side {
+  min-width: 0;
+}
+
+.ui-ctf-score-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  height: 18px;
+  margin-bottom: 4px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.ui-ctf-blue .ui-ctf-score-row {
+  flex-direction: row-reverse;
+}
+
+.ui-ctf-team-name {
+  opacity: 0.82;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+
+.ui-ctf-score {
+  font-size: 17px;
+  line-height: 18px;
+}
+
+.ui-ctf-progress {
+  height: 7px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+}
+
+.ui-ctf-progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 4px;
+  transition: width 160ms linear;
+}
+
+.ui-ctf-red .ui-ctf-progress-fill {
+  margin-left: auto;
+  background: linear-gradient(90deg, #ff2f57, #ff3d5d);
+}
+
+.ui-ctf-blue .ui-ctf-progress-fill {
+  background: linear-gradient(90deg, #168cff, #2f9fff);
+}
+
+.ui-ctf-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 29px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.52);
+  border-radius: 5px;
+}
+
+.ui-ctf-vs {
+  transform: skew(-10deg);
+  font-size: 13px;
+  line-height: 13px;
+  color: #48adff;
+}
+
+.ui-ctf-vs::first-letter {
+  color: #ff3155;
+}
+
+#ui-ctf-time {
+  margin-top: 2px;
+  font-size: 14px;
+  line-height: 14px;
+}
+
+@media (max-height: 768px), (max-width: 1200px) {
+  #ui-ctf-scoreboard {
+    transform: translateX(-50%) scale(0.85);
+    transform-origin: top center;
+  }
+}
+
 #ui-leaderboard-alive {
   display: none;
   background: rgba(0, 0, 0, 0.4);

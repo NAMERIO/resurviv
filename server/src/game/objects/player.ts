@@ -74,6 +74,7 @@ import {
     getInfectedSettings,
     getPrivateLobbyMiniGameWeaponOverride,
     isAmongUsMiniGame,
+    isCaptureTheFlagMiniGame,
     isHideAndSeekHider,
     isHideAndSeekSeeker,
     isInfectedHuman,
@@ -263,7 +264,9 @@ export class PlayerBarn {
             pos = spawnBuilding.pos;
             layer = spawnBuilding.layer;
         } else {
-            pos = this.game.map.getSpawnPos(group, team);
+            pos =
+                this.game.captureTheFlagManager.getSpawnPos(joinData.arenaTeam) ??
+                this.game.map.getSpawnPos(group, team);
             if (group && !group.spawnPosition) {
                 group.spawnPosition = v2.copy(pos);
             }
@@ -455,7 +458,14 @@ export class PlayerBarn {
         // then the gameover msgs would be inaccurate since theyre based on the current alive count
         if (!this.game.over) {
             for (let i = 0; i < this.killedPlayers.length; i++) {
-                this.killedPlayers[i].addGameOverMsg();
+                const player = this.killedPlayers[i];
+                if (
+                    isCaptureTheFlagMiniGame(this.game.miniGame) &&
+                    player.captureTheFlagRespawnTicker > 0
+                ) {
+                    continue;
+                }
+                player.addGameOverMsg();
             }
         }
         this.killedPlayers.length = 0;
@@ -1030,6 +1040,16 @@ export class PlayerBarn {
         let group = this.groupsByHash.get(groupData.groupHashToJoin);
 
         let team = this.game.map.factionMode ? this.getSmallestTeam() : undefined;
+        if (isCaptureTheFlagMiniGame(this.game.miniGame)) {
+            team =
+                groupData.groupHashToJoin.endsWith("-A") ||
+                groupData.groupHashToJoin.includes("-A")
+                    ? this.teams[0]
+                    : groupData.groupHashToJoin.endsWith("-B") ||
+                        groupData.groupHashToJoin.includes("-B")
+                      ? this.teams[1]
+                      : undefined;
+        }
 
         if (!group && groupData.autoFill) {
             const groups = team ? team.getGroups() : this.groups;
@@ -1534,6 +1554,13 @@ export class Player extends BaseGameObject {
     aimLayer = 0;
     dead = false;
     infectedRespawnTicker = 0;
+    captureTheFlagRespawnTicker = 0;
+    private captureTheFlagRespawnPerks: Array<{
+        type: string;
+        droppable: boolean;
+        replaceOnDeath?: string;
+        isFromRole?: boolean;
+    }> = [];
     downed = false;
 
     downedCount = 0;
@@ -2547,6 +2574,93 @@ export class Player extends BaseGameObject {
         this.game.updateData();
     }
 
+    respawnCaptureTheFlagPlayer(): void {
+        if (!isCaptureTheFlagMiniGame(this.game.miniGame)) return;
+
+        this.dead = false;
+        this.captureTheFlagRespawnTicker = 0;
+        this.health = GameConfig.player.health;
+        this.boost = 0;
+        this.downed = false;
+        this.spectating = undefined;
+        this.sentDeathEmote = false;
+        this.sendDeathEmoteTicker = 0;
+        this.layer = 0;
+
+        const spawnPos =
+            this.game.captureTheFlagManager.getSpawnPos(this.arenaTeam) ??
+            this.game.map.getSpawnPos(this.group, this.team);
+        v2.set(this.pos, spawnPos);
+        this.collider.pos = this.pos;
+        this.removeRole();
+        this.applyCaptureTheFlagRespawnLoadout();
+
+        this.game.playerBarn.livingPlayers.push(this);
+        if (this.group && !this.group.livingPlayers.includes(this)) {
+            this.group.livingPlayers.push(this);
+            this.group.allDeadOrDisconnected = false;
+        }
+        if (this.team && !this.team.livingPlayers.includes(this)) {
+            this.team.livingPlayers.push(this);
+            this.team.allDeadOrDisconnected = false;
+        }
+        this.game.playerBarn.livingPlayers.sort((a, b) => a.teamId - b.teamId);
+
+        this.game.grid.updateObject(this);
+        this.game.playerBarn.aliveCountDirty = true;
+        this.setDirty();
+        this.setGroupStatuses();
+        this.game.updateData();
+    }
+
+    private applyCaptureTheFlagRespawnLoadout(): void {
+        const defaultItems = this.game.playerBarn.defaultItems;
+
+        this.invManager.emptyAll();
+        this._perks.length = 0;
+        this._perkTypes.length = 0;
+        this.hasRoleHelmet = false;
+        this.streakReady = false;
+        this.streakActive = false;
+        this.streakDirty = true;
+
+        for (let i = 0; i < GameConfig.WeaponSlot.Count; i++) {
+            this.weaponManager.setWeapon(i, "", 0);
+        }
+
+        for (let i = 0; i < GameConfig.WeaponSlot.Count; i++) {
+            const weap = defaultItems.weapons[i];
+            if (!weap.type) continue;
+            this.weaponManager.setWeapon(i, weap.type, weap.ammo ?? 0);
+        }
+
+        this.chest = defaultItems.chest;
+        this.scope = defaultItems.scope;
+        this.helmet = defaultItems.helmet;
+        this.backpack = defaultItems.backpack;
+        this.outfit = defaultItems.outfit;
+        this.meleeSkin = this.weapons[GameConfig.WeaponSlot.Melee].type;
+
+        this.invManager.set(this.scope as InventoryItem, 1);
+        for (const [item, amount] of Object.entries(defaultItems.inventory)) {
+            this.invManager.set(item as InventoryItem, amount as number);
+        }
+
+        this.setLoadout(this.loadout as net.JoinMsg["loadout"]);
+        this._perks.length = 0;
+        this._perkTypes.length = 0;
+        for (const perk of this.captureTheFlagRespawnPerks) {
+            this.addPerk(perk.type, perk.droppable, perk.replaceOnDeath, perk.isFromRole);
+        }
+        this.weaponManager.setCurWeapIndex(GameConfig.WeaponSlot.Primary);
+        this.weaponManager.showNextThrowable();
+        this.recalculateScale();
+        this.healthDirty = true;
+        this.boostDirty = true;
+        this.inventoryDirty = true;
+        this.setDirty();
+    }
+
     punishHideAndSeekWrongPropHit(): void {
         const settings = getHideAndSeekSettings(this.game.miniGame);
         if (!settings || this.arenaTeam !== settings.seekerTeam) return;
@@ -2703,6 +2817,9 @@ export class Player extends BaseGameObject {
     }
     get infectedRespawnTime(): number {
         return this.infectedRespawnTicker;
+    }
+    get captureTheFlagRespawnTime(): number {
+        return this.captureTheFlagRespawnTicker;
     }
     get miniGameWinCountdownTime(): number {
         if (
@@ -2960,6 +3077,16 @@ export class Player extends BaseGameObject {
                 this.infectedRespawnTicker = Math.max(0, this.infectedRespawnTicker - dt);
                 if (this.infectedRespawnTicker <= 0) {
                     this.respawnInfectedZombie();
+                    return;
+                }
+            }
+            if (this.captureTheFlagRespawnTicker > 0) {
+                this.captureTheFlagRespawnTicker = Math.max(
+                    0,
+                    this.captureTheFlagRespawnTicker - dt,
+                );
+                if (this.captureTheFlagRespawnTicker <= 0) {
+                    this.respawnCaptureTheFlagPlayer();
                     return;
                 }
             }
@@ -4130,6 +4257,7 @@ export class Player extends BaseGameObject {
         const updateMsg = new net.UpdateMsg();
 
         updateMsg.ack = this.ack;
+        updateMsg.started = game.started;
 
         if (game.gas.dirty || this._firstUpdate) {
             updateMsg.gasDirty = true;
@@ -4252,6 +4380,7 @@ export class Player extends BaseGameObject {
                 hideAndSeekHunterReleaseTime: player.hideAndSeekHunterReleaseTime,
                 hideAndSeekHunterReleaseSeeker: player.hideAndSeekHunterReleaseSeeker,
                 infectedRespawnTime: player.infectedRespawnTime,
+                captureTheFlagRespawnTime: player.captureTheFlagRespawnTime,
                 miniGameWinCountdownTime: player.miniGameWinCountdownTime,
                 miniGameWinCountdownProps: player.miniGameWinCountdownProps,
                 amongUsKillCooldownTime: player.amongUsKillCooldownTime,
@@ -4910,6 +5039,10 @@ export class Player extends BaseGameObject {
         if (this.handleInfectedFatalDamage(params)) return;
         if (this.downed) this.downed = false;
         this.dead = true;
+        const isCaptureTheFlagDeath = isCaptureTheFlagMiniGame(this.game.miniGame);
+        if (isCaptureTheFlagDeath) {
+            this.captureTheFlagRespawnPerks = this.perks.map((perk) => ({ ...perk }));
+        }
         this.trackWeaponStat(
             this.weaponDeaths,
             params.weaponSourceType ?? params.gameSourceType,
@@ -5067,9 +5200,8 @@ export class Player extends BaseGameObject {
         }
 
         if (
-            this.hasPerk("martyrdom") ||
-            this.role == "grenadier" ||
-            this.role == "demo"
+            !isCaptureTheFlagDeath &&
+            (this.hasPerk("martyrdom") || this.role == "grenadier" || this.role == "demo")
         ) {
             const martyrNadeType = "martyr_nade";
             const throwableDef = GameObjectDefs[martyrNadeType] as ThrowableDef;
@@ -5238,8 +5370,9 @@ export class Player extends BaseGameObject {
             switch (def.type) {
                 case "gun":
                     if (
-                        !isHideAndSeekHiderDeath ||
-                        weap.type !== hideAndSeekSettings.hiderPrimaryWeapon
+                        !isCaptureTheFlagDeath &&
+                        (!isHideAndSeekHiderDeath ||
+                            weap.type !== hideAndSeekSettings.hiderPrimaryWeapon)
                     ) {
                         this.weaponManager.dropGun(i);
                     }
@@ -5247,7 +5380,9 @@ export class Player extends BaseGameObject {
                     break;
                 case "melee":
                     if (def.noDropOnDeath || weap.type === "fists") break;
-                    this.game.lootBarn.addLoot(weap.type, this.pos, this.layer, 1);
+                    if (!isCaptureTheFlagDeath) {
+                        this.game.lootBarn.addLoot(weap.type, this.pos, this.layer, 1);
+                    }
                     weap.type = "fists";
                     break;
                 case "throwable":
@@ -5264,27 +5399,30 @@ export class Player extends BaseGameObject {
             }
 
             const amount = this.invManager.get(item);
-            if (amount > 0) {
+            if (amount > 0 && !isCaptureTheFlagDeath) {
                 this.game.lootBarn.addLoot(item, this.pos, this.layer, amount);
             }
         }
 
-        for (const item of GEAR_TYPES) {
-            const type = this[item];
-            if (!type) continue;
-            const def = GameObjectDefs[type] as HelmetDef | ChestDef | BackpackDef;
-            if (!!(def as ChestDef).noDrop || def.level < 1) continue;
-            this.game.lootBarn.addLoot(type, this.pos, this.layer, 1);
-        }
+        if (!isCaptureTheFlagDeath) {
+            for (const item of GEAR_TYPES) {
+                const type = this[item];
+                if (!type) continue;
+                const def = GameObjectDefs[type] as HelmetDef | ChestDef | BackpackDef;
+                if (!!(def as ChestDef).noDrop || def.level < 1) continue;
+                this.game.lootBarn.addLoot(type, this.pos, this.layer, 1);
+            }
 
-        if (this.outfit) {
-            const def = GameObjectDefs[this.outfit] as OutfitDef;
-            if (!def.noDropOnDeath && !def.noDrop) {
-                this.game.lootBarn.addLoot(this.outfit, this.pos, this.layer, 1);
+            if (this.outfit) {
+                const def = GameObjectDefs[this.outfit] as OutfitDef;
+                if (!def.noDropOnDeath && !def.noDrop) {
+                    this.game.lootBarn.addLoot(this.outfit, this.pos, this.layer, 1);
+                }
             }
         }
 
         if (
+            !isCaptureTheFlagDeath &&
             !this.game.disablePerks &&
             !isAmongUsMiniGame(this.game.miniGame) &&
             !this.game.map.amongUsMode
@@ -6818,6 +6956,7 @@ export class Player extends BaseGameObject {
             isItemInLoadout(loadout.perk, "perk") &&
             (this.game.map.perkMode || !!this.game.map.mapDef.gameMode.allowLoadoutPerks)
         ) {
+            this.loadout.perk = loadout.perk;
             this.addPerk(loadout.perk, false);
         }
 

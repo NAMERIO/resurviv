@@ -1531,6 +1531,7 @@ export class Application {
             "valentine",
             "inferno",
             "woods",
+            "capture_the_flag",
         ]);
         const gameModeStyles = this.siteInfo.getGameModeStyles();
         const deathmatchArenaModes = modes.filter((m) =>
@@ -1553,7 +1554,11 @@ export class Application {
             return deathmatchArenaModes.length ? deathmatchArenaModes : arenaModes;
         };
         const getTeamModesForMiniGame = (miniGame: PrivateLobbyMiniGame) =>
-            this.isBattleRoyaleMiniGame(miniGame) ? [1, 2, 4] : [1, 2, 4, 10, 15];
+            this.isBattleRoyaleMiniGame(miniGame)
+                ? [1, 2, 4]
+                : miniGame === "capture_the_flag"
+                  ? [2, 4, 10, 15]
+                  : [1, 2, 4, 10, 15];
         const mapStyleByName = new Map<
             string,
             {

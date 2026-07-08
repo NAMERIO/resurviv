@@ -234,6 +234,8 @@ export class Game {
     m_hideAndSeekHunterReleaseWasActive = false;
     m_infectedRespawnLastSecond = -1;
     m_infectedRespawnWasActive = false;
+    m_captureTheFlagRespawnLastSecond = -1;
+    m_captureTheFlagRespawnWasActive = false;
     m_miniGameWinCountdownLastSecond = -1;
     m_amongUsEmergencyMeetingSeq = 0;
     m_amongUsMeeting: net.AmongUsMeetingStateMsg | null = null;
@@ -515,6 +517,7 @@ export class Game {
         this.m_amongUsVisionGradient = createAmongUsVisionGradient();
         const pixiContainers = [
             this.m_map.display.ground,
+            this.m_uiManager.captureTheFlagZoneOverlay,
             this.m_renderer.layers[0],
             this.m_renderer.ground,
             this.m_renderer.layers[1],
@@ -1334,6 +1337,7 @@ export class Game {
         this.renderHideAndSeekBlindOverlay(dt);
         this.renderHideAndSeekHunterReleaseAnnouncement();
         this.renderInfectedRespawnAnnouncement();
+        this.renderCaptureTheFlagRespawnAnnouncement();
         this.renderMiniGameWinCountdownAnnouncement();
         this.m_uiManager.m_render(
             this.m_activePlayer.m_pos,
@@ -3457,6 +3461,25 @@ export class Game {
         this.m_infectedRespawnWasActive = false;
     }
 
+    renderCaptureTheFlagRespawnAnnouncement() {
+        const timeLeft = this.m_activePlayer.m_localData.m_captureTheFlagRespawnTime;
+        if (timeLeft > 0) {
+            const seconds = Math.ceil(timeLeft);
+            if (seconds !== this.m_captureTheFlagRespawnLastSecond) {
+                this.m_uiManager.displayAnnouncement(`Respawn: ${seconds}s`, 1500);
+                this.m_captureTheFlagRespawnLastSecond = seconds;
+            }
+            this.m_captureTheFlagRespawnWasActive = true;
+            return;
+        }
+
+        if (this.m_captureTheFlagRespawnWasActive) {
+            this.m_uiManager.displayAnnouncement("Respawned", 1500);
+        }
+        this.m_captureTheFlagRespawnLastSecond = -1;
+        this.m_captureTheFlagRespawnWasActive = false;
+    }
+
     renderMiniGameWinCountdownAnnouncement() {
         const localData = this.m_activePlayer.m_localData;
         const timeLeft = localData.m_miniGameWinCountdownTime;
@@ -3534,6 +3557,11 @@ export class Game {
             smokeBarn: this.m_smokeBarn,
             decalBarn: this.m_decalBarn,
         };
+        if (this.m_map.getMapDef().gameMode.captureTheFlag) {
+            this.m_uiManager.setWaitingForPlayers(!msg.started);
+        } else if (msg.started) {
+            this.m_uiManager.setWaitingForPlayers(false);
+        }
         // Update active playerId
         if (msg.activePlayerIdDirty) {
             this.m_activeId = msg.activePlayerId;
@@ -3761,6 +3789,37 @@ export class Game {
                     msg.go ? "GO!" : `${msg.seconds}`,
                     msg.go ? "#58d06f" : "#ffd166",
                 );
+                break;
+            }
+            case net.MsgType.CaptureTheFlag: {
+                const msg = new net.CaptureTheFlagMsg();
+                msg.deserialize(stream);
+                this.m_uiManager.setCaptureTheFlagState(msg);
+                const localTeamId = this.m_playerBarn.getPlayerInfo(
+                    this.m_localId,
+                ).teamId;
+                if (msg.event !== net.CaptureTheFlagEvent.None) {
+                    const ourFlag = msg.flagTeamId === localTeamId;
+                    const teamName = msg.flagTeamId === 1 ? "Red" : "Blue";
+                    const text =
+                        msg.event === net.CaptureTheFlagEvent.Taken
+                            ? ourFlag
+                                ? "Our Flag Taken"
+                                : "Enemy Flag Taken"
+                            : msg.event === net.CaptureTheFlagEvent.Dropped
+                              ? `${teamName} Flag Dropped`
+                              : msg.event === net.CaptureTheFlagEvent.Returned
+                                ? `${teamName} Flag Returned`
+                                : msg.event === net.CaptureTheFlagEvent.Captured
+                                  ? `${msg.actorTeamId === 1 ? "Red" : "Blue"} Flag Captured`
+                                  : "";
+                    if (text) {
+                        this.m_ui2Manager.addKillFeedMessage(
+                            text,
+                            msg.actorTeamId === 1 ? "#ff6666" : "#66b7ff",
+                        );
+                    }
+                }
                 break;
             }
             case net.MsgType.AmongUsMeetingState: {

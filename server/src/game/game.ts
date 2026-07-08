@@ -28,6 +28,7 @@ import {
     type ServerGameConfig,
     type UpdateDataMsg,
 } from "../utils/types";
+import { CaptureTheFlagManager } from "./captureTheFlagManager";
 import { GameModeManager } from "./gameModeManager";
 import { Grid } from "./grid";
 import { GameMap } from "./map";
@@ -97,6 +98,7 @@ export class Game {
     infectedHumansWon = false;
     hideAndSeekHidersWon = false;
     amongUsWinningRole?: AmongUsRole;
+    captureTheFlagManager: CaptureTheFlagManager;
     arenaStartLockTimer = 0;
     arenaLastCountdownSecond = -1;
     arenaGoBroadcasted = false;
@@ -216,10 +218,14 @@ export class Game {
 
         this.gas = new Gas(this);
 
+        this.captureTheFlagManager = new CaptureTheFlagManager(this);
         this.modeManager = new GameModeManager(this);
 
-        if (this.map.factionMode) {
-            for (let i = 1; i <= this.map.mapDef.gameMode.factions!; i++) {
+        if (this.map.factionMode || this.captureTheFlagManager.enabled) {
+            const teamCount = this.captureTheFlagManager.enabled
+                ? 2
+                : this.map.mapDef.gameMode.factions!;
+            for (let i = 1; i <= teamCount; i++) {
                 this.playerBarn.addTeam(i);
             }
         }
@@ -255,6 +261,7 @@ export class Game {
     async init() {
         await this.pluginManager.loadPlugins();
         this.map.init();
+        this.captureTheFlagManager.init();
         this.pluginManager.emit("gameCreated", this);
 
         this.allowJoin = true;
@@ -318,6 +325,10 @@ export class Game {
 
         this.profiler.addSample("players");
         this.playerBarn.update(dt);
+        this.profiler.endSample();
+
+        this.profiler.addSample("captureTheFlag");
+        this.captureTheFlagManager.update(dt);
         this.profiler.endSample();
 
         this.profiler.addSample("map");

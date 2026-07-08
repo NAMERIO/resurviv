@@ -14,7 +14,7 @@ import {
     normalizeAmongUsImpostorCount,
     normalizeArenaTeamCount,
 } from "../../shared/defs/miniGame";
-import { GameConfig } from "../../shared/gameConfig";
+import { GameConfig, TeamMode } from "../../shared/gameConfig";
 import type { FindGameError } from "../../shared/types/api";
 import {
     type ClientRoomData,
@@ -481,6 +481,23 @@ class Room {
                 const fallbackModeIdx = this.data.enabledGameModeIdxs.find((idx) => {
                     const mode = modes[idx];
                     return !!mode && mode.mapName.startsWith("br_") === wantsBattleRoyale;
+                });
+                if (fallbackModeIdx !== undefined) {
+                    gameModeIdx = fallbackModeIdx;
+                    this.data.gameModeIdx = gameModeIdx;
+                }
+            }
+            if (
+                this.data.miniGame === "capture_the_flag" &&
+                modes[gameModeIdx]?.teamMode === TeamMode.Solo
+            ) {
+                const fallbackModeIdx = this.data.enabledGameModeIdxs.find((idx) => {
+                    const mode = modes[idx];
+                    return (
+                        !!mode &&
+                        !mode.mapName.startsWith("br_") &&
+                        mode.teamMode !== TeamMode.Solo
+                    );
                 });
                 if (fallbackModeIdx !== undefined) {
                     gameModeIdx = fallbackModeIdx;

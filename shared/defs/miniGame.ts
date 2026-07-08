@@ -4,6 +4,7 @@ export const PrivateLobbyMiniGameIds = [
     "hide_and_seek",
     "infected",
     "among_us",
+    "capture_the_flag",
 ] as const;
 
 export type PrivateLobbyMiniGame = (typeof PrivateLobbyMiniGameIds)[number];
@@ -76,6 +77,16 @@ export const PrivateLobbyMiniGameDefs = {
         teamNames: {
             A: "Players",
             B: "",
+            C: "",
+            D: "",
+        },
+    },
+    capture_the_flag: {
+        id: "capture_the_flag",
+        name: "Capture the Flag",
+        teamNames: {
+            A: "Red",
+            B: "Blue",
             C: "",
             D: "",
         },

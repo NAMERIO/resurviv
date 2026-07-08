@@ -42,11 +42,13 @@ export function playHitFx(
     particleBarn: ParticleBarn,
     audioManager: AudioManager,
 ) {
-    const numParticles = Math.floor(util.random(1, 2));
-    let vel = v2.mul(dir, 9.5);
-    for (let i = 0; i < numParticles; i++) {
-        vel = v2.rotate(vel, ((Math.random() - 0.5) * Math.PI) / 3);
-        particleBarn.addParticle(particleName, layer, pos, vel);
+    if (particleName) {
+        const numParticles = Math.floor(util.random(1, 2));
+        let vel = v2.mul(dir, 9.5);
+        for (let i = 0; i < numParticles; i++) {
+            vel = v2.rotate(vel, ((Math.random() - 0.5) * Math.PI) / 3);
+            particleBarn.addParticle(particleName, layer, pos, vel);
+        }
     }
     audioManager.playGroup(soundName, {
         channel: "hits",

@@ -80,6 +80,7 @@ function serializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     s.writeFloat(data.hideAndSeekHunterReleaseTime, 0, 60, 8);
     s.writeBoolean(data.hideAndSeekHunterReleaseSeeker);
     s.writeFloat(data.infectedRespawnTime, 0, 10, 8);
+    s.writeFloat(data.captureTheFlagRespawnTime, 0, 10, 8);
     s.writeFloat(data.miniGameWinCountdownTime, 0, 5, 8);
     s.writeBoolean(data.miniGameWinCountdownProps);
     s.writeFloat(data.amongUsKillCooldownTime, 0, 20, 8);
@@ -162,6 +163,7 @@ function deserializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     data.hideAndSeekHunterReleaseTime = s.readFloat(0, 60, 8);
     data.hideAndSeekHunterReleaseSeeker = s.readBoolean();
     data.infectedRespawnTime = s.readFloat(0, 10, 8);
+    data.captureTheFlagRespawnTime = s.readFloat(0, 10, 8);
     data.miniGameWinCountdownTime = s.readFloat(0, 5, 8);
     data.miniGameWinCountdownProps = s.readBoolean();
     data.amongUsKillCooldownTime = s.readFloat(0, 20, 8);
@@ -396,6 +398,7 @@ export class UpdateMsg implements AbstractMsg {
     killLeaderKills = 0;
     killLeaderDirty = false;
     ack = 0;
+    started = false;
 
     serialize(s: BitStream) {
         /* STRIP_FROM_PROD_CLIENT:START */
@@ -591,6 +594,7 @@ export class UpdateMsg implements AbstractMsg {
         }
 
         s.writeUint8(this.ack);
+        s.writeBoolean(this.started);
         const idx = s.byteIndex;
         s.byteIndex = flagsIdx;
         s.writeUint16(flags);
@@ -818,6 +822,7 @@ export class UpdateMsg implements AbstractMsg {
             this.killLeaderDirty = true;
         }
         this.ack = s.readUint8();
+        this.started = s.readBoolean();
     }
 }
 
@@ -950,6 +955,7 @@ export interface LocalDataWithDirty extends LocalData {
     hideAndSeekHunterReleaseTime: number;
     hideAndSeekHunterReleaseSeeker: boolean;
     infectedRespawnTime: number;
+    captureTheFlagRespawnTime: number;
     miniGameWinCountdownTime: number;
     miniGameWinCountdownProps: boolean;
     amongUsKillCooldownTime: number;

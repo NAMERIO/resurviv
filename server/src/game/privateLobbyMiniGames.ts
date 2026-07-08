@@ -46,9 +46,19 @@ export interface InfectedSettings {
     zombieRespawnCooldown: number;
 }
 
+export interface CaptureTheFlagSettings {
+    redTeam: "A";
+    blueTeam: "B";
+    captureScore: number;
+    scoreLimit: number;
+    matchDuration: number;
+    droppedFlagReturnTime: number;
+}
+
 interface PrivateLobbyMiniGameServerSettings {
     hideAndSeek?: HideAndSeekSettings;
     infected?: InfectedSettings;
+    captureTheFlag?: CaptureTheFlagSettings;
     getWeaponOverride?: (
         arenaTeam: ArenaTeam | undefined,
     ) => PrivateLobbyMiniGameWeaponOverride | undefined;
@@ -91,6 +101,15 @@ export const InfectedSettings: InfectedSettings = {
     zombieSpeedMultiplier: 1.2,
     zombieDamageReduction: 0.4,
     zombieRespawnCooldown: 5,
+};
+
+export const CaptureTheFlagSettings: CaptureTheFlagSettings = {
+    redTeam: "A",
+    blueTeam: "B",
+    captureScore: 20,
+    scoreLimit: 100,
+    matchDuration: 600,
+    droppedFlagReturnTime: 5,
 };
 
 export const PrivateLobbyMiniGameServerSettings: Record<
@@ -140,12 +159,17 @@ export const PrivateLobbyMiniGameServerSettings: Record<
         },
     },
     among_us: {},
+    capture_the_flag: {
+        captureTheFlag: CaptureTheFlagSettings,
+    },
 };
 
 export function getPrivateLobbyMiniGameMapName(
     miniGame: PrivateLobbyMiniGame | undefined,
 ) {
-    return miniGame === "among_us" ? "among_us" : undefined;
+    if (miniGame === "among_us") return "among_us";
+    if (miniGame === "capture_the_flag") return "capture_the_flag";
+    return undefined;
 }
 
 export function isAmongUsMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
@@ -180,6 +204,17 @@ export function getInfectedSettings(
 ): InfectedSettings | undefined {
     if (!miniGame) return undefined;
     return PrivateLobbyMiniGameServerSettings[miniGame].infected;
+}
+
+export function getCaptureTheFlagSettings(
+    miniGame: PrivateLobbyMiniGame | undefined,
+): CaptureTheFlagSettings | undefined {
+    if (!miniGame) return undefined;
+    return PrivateLobbyMiniGameServerSettings[miniGame].captureTheFlag;
+}
+
+export function isCaptureTheFlagMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
+    return miniGame === "capture_the_flag";
 }
 
 export function isHideAndSeekHider(
