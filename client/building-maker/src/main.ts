@@ -20,6 +20,7 @@ const MIN_ASSET_PANEL_WIDTH = 150;
 const MAX_ASSET_PANEL_WIDTH = 520;
 const MIN_GRID_SIZE = 0.03125;
 const DEFAULT_SCOPE = "1xscope";
+const DEFAULT_MAP_FLOOR_COLOR = 0xc6aa6c;
 const scopeOrder = ["1xscope", "2xscope", "4xscope", "8xscope", "15xscope"] as const;
 // Matches deathmatch/main terrain without importing server map data stripped from production clients.
 const editorMapColors = {
@@ -69,12 +70,14 @@ const paletteCategories = [
     "windows",
     "roof",
     "basement",
+    "buildings",
     "objects",
 ] as const;
 
 type LayerId = (typeof layerOrder)[number];
 type PaletteCategory = (typeof paletteCategories)[number];
 type EditorMode = "base" | "roof" | "basement" | "preview";
+type MapGroundPatchShape = "rect" | "ellipse";
 type ItemKind =
     | "floor"
     | "roof"
@@ -109,6 +112,14 @@ interface EditorItem {
     alpha: number;
     tint: number;
     surfaceType?: string;
+    mapGroundPatch?: {
+        shape?: MapGroundPatchShape;
+        segments?: number;
+        roughness?: number;
+        offsetDist?: number;
+        order?: number;
+        useAsMapShape?: boolean;
+    };
     ignoreMapSpawnReplacement?: boolean;
     inheritOri?: boolean;
     localCollider?: Collider;
@@ -141,6 +152,8 @@ interface PaletteEntry {
     fallbackWidth: number;
     fallbackHeight: number;
     localCollider?: Collider;
+    buildingType?: string;
+    mapGroundPatch?: EditorItem["mapGroundPatch"];
 }
 
 interface ImageState {
@@ -178,10 +191,24 @@ type DragState =
           itemId: string;
       }
     | {
+          type: "resize";
+          itemId: string;
+          handle: ResizeHandle;
+          startCenter: Vec2;
+          startWidth: number;
+          startHeight: number;
+          startRotation: number;
+      }
+    | {
           type: "select";
           start: Vec2;
           current: Vec2;
       };
+
+interface ResizeHandle {
+    x: -1 | 0 | 1;
+    y: -1 | 0 | 1;
+}
 
 interface PreviewState {
     pos: Vec2;
@@ -223,6 +250,7 @@ root.innerHTML = `
             <option value="windows">Windows</option>
             <option value="roof">Roof</option>
             <option value="basement">Basement</option>
+            <option value="buildings">Buildings</option>
             <option value="objects">Objects</option>
           </select>
         </div>
@@ -489,6 +517,7 @@ function normalizeItem(item: Partial<EditorItem>): EditorItem {
         alpha: finite(item.alpha, 1),
         tint: finite(item.tint, 0xffffff),
         surfaceType: item.surfaceType,
+        mapGroundPatch: item.mapGroundPatch,
         ignoreMapSpawnReplacement: item.ignoreMapSpawnReplacement,
         inheritOri: item.inheritOri,
         localCollider:
@@ -565,6 +594,22 @@ function buildPalette(): PaletteEntry[] {
             fallbackHeight: 4,
             localCollider: createAabbCollider(8, 4),
         },
+        {
+            id: "quick-ground-patch",
+            name: "map_floor",
+            category: "floors",
+            kind: "floor",
+            layer: "floor",
+            assetScale: 1,
+            fallbackWidth: 24,
+            fallbackHeight: 16,
+            localCollider: createAabbCollider(24, 16),
+            mapGroundPatch: {
+                roughness: 0.06,
+                offsetDist: 0,
+                useAsMapShape: true,
+            },
+        },
     ];
     const seenSprites = new Set<string>();
 
@@ -621,6 +666,24 @@ function buildPalette(): PaletteEntry[] {
             });
         } else if (def.type === "building") {
             const building = def as BuildingDef;
+            const previewSprite =
+                building.ceiling?.imgs?.[0]?.sprite || building.floor?.imgs?.[0]?.sprite;
+            entries.push({
+                id: `building-${name}`,
+                name,
+                category: "buildings",
+                kind: "object",
+                layer: "objects",
+                type: name,
+                sprite: previewSprite,
+                assetScale:
+                    building.ceiling?.imgs?.[0]?.scale ||
+                    building.floor?.imgs?.[0]?.scale ||
+                    1,
+                fallbackWidth: 12,
+                fallbackHeight: 12,
+                buildingType: name,
+            });
             for (const img of building.floor?.imgs || []) {
                 addImageEntry(entries, seenSprites, img, "floor");
             }
@@ -872,9 +935,14 @@ function makeItemFromPalette(
         fallbackWidth: entry.fallbackWidth,
         fallbackHeight: entry.fallbackHeight,
         alpha: 1,
-        tint: 0xffffff,
+        tint: entry.mapGroundPatch ? DEFAULT_MAP_FLOOR_COLOR : 0xffffff,
         surfaceType:
-            entry.kind === "floor" || entry.kind === "basementFloor" ? "wood" : undefined,
+            entry.mapGroundPatch
+                ? "sand"
+                : entry.kind === "floor" || entry.kind === "basementFloor"
+                  ? "wood"
+                  : undefined,
+        mapGroundPatch: entry.mapGroundPatch,
         localCollider:
             entry.localCollider ||
             createAabbCollider(entry.fallbackWidth, entry.fallbackHeight),
@@ -940,6 +1008,17 @@ function spriteToPath(sprite?: string): string {
 }
 
 function itemSize(item: EditorItem): { width: number; height: number } {
+    const building = buildingDefForItem(item);
+    if (building) {
+        const bounds = buildingLocalImageBounds(building);
+        if (bounds) {
+            return {
+                width: Math.max(MIN_GRID_SIZE, (bounds.max.x - bounds.min.x) * item.scale),
+                height: Math.max(MIN_GRID_SIZE, (bounds.max.y - bounds.min.y) * item.scale),
+            };
+        }
+    }
+
     const image = getImage(item.sprite);
     if (image?.loaded && image.img.naturalWidth > 0 && image.img.naturalHeight > 0) {
         return {
@@ -950,6 +1029,69 @@ function itemSize(item: EditorItem): { width: number; height: number } {
     return {
         width: item.fallbackWidth * item.scale,
         height: item.fallbackHeight * item.scale,
+    };
+}
+
+function buildingDefForItem(item: EditorItem): BuildingDef | undefined {
+    if (!item.type) return undefined;
+    const def = MapObjectDefs[item.type];
+    return def?.type === "building" ? (def as BuildingDef) : undefined;
+}
+
+function buildingImageSize(img: FloorImage): { width: number; height: number } {
+    const image = getImage(img.sprite);
+    if (image?.loaded && image.img.naturalWidth > 0 && image.img.naturalHeight > 0) {
+        return {
+            width: (image.img.naturalWidth * img.scale) / PPU,
+            height: (image.img.naturalHeight * img.scale) / PPU,
+        };
+    }
+    return {
+        width: 20 * (img.scale || 1),
+        height: 14 * (img.scale || 1),
+    };
+}
+
+function buildingLocalImageBounds(building: BuildingDef): AABB | null {
+    const imgs = [...(building.floor?.imgs || []), ...(building.ceiling?.imgs || [])];
+    if (!imgs.length) return null;
+
+    const min = v2.create(Number.MAX_VALUE, Number.MAX_VALUE);
+    const max = v2.create(-Number.MAX_VALUE, -Number.MAX_VALUE);
+    for (const img of imgs) {
+        const pos = img.pos || v2.create(0, 0);
+        const size = buildingImageSize(img);
+        min.x = Math.min(min.x, pos.x - size.width / 2);
+        min.y = Math.min(min.y, pos.y - size.height / 2);
+        max.x = Math.max(max.x, pos.x + size.width / 2);
+        max.y = Math.max(max.y, pos.y + size.height / 2);
+    }
+
+    return collider.createAabb(min, max);
+}
+
+function setItemSize(item: EditorItem, width: number, height: number) {
+    const scale = item.scale || 1;
+    item.fallbackWidth = Math.max(MIN_GRID_SIZE, width / scale);
+    item.fallbackHeight = Math.max(MIN_GRID_SIZE, height / scale);
+    item.localCollider = createAabbCollider(item.fallbackWidth, item.fallbackHeight);
+}
+
+function setItemWidth(item: EditorItem, width: number) {
+    setItemSize(item, width, itemSize(item).height);
+}
+
+function setItemHeight(item: EditorItem, height: number) {
+    setItemSize(item, itemSize(item).width, height);
+}
+
+function patchDefaults(): NonNullable<EditorItem["mapGroundPatch"]> {
+    return {
+        shape: "rect",
+        segments: 12,
+        roughness: 0.06,
+        offsetDist: 0,
+        useAsMapShape: true,
     };
 }
 
@@ -1267,6 +1409,24 @@ function isBasementItem(item: EditorItem): boolean {
 
 function drawItem(item: EditorItem) {
     const selected = selectedIds.has(item.id);
+    const building = buildingDefForItem(item);
+
+    if (building) {
+        ctx.save();
+        ctx.globalAlpha = item.alpha;
+        drawBuildingObject(item, building);
+        ctx.restore();
+
+        if (selected || doc.layers.hitboxes.visible || item.layer === "hitboxes") {
+            drawColliders(item, selected);
+        }
+
+        if (selected && !preview) {
+            drawItemSelection(item);
+        }
+        return;
+    }
+
     const screen = worldToScreen(v2.create(item.x, item.y));
     const size = itemSize(item);
     const screenWidth = size.width * PPU * camera.zoom;
@@ -1286,6 +1446,14 @@ function drawItem(item: EditorItem) {
             screenWidth,
             screenHeight,
         );
+    } else if (isEllipseMapFloor(item)) {
+        ctx.fillStyle = fillForItem(item);
+        ctx.strokeStyle = strokeForItem(item);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, screenWidth / 2, screenHeight / 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
     } else {
         ctx.fillStyle = fillForItem(item);
         ctx.strokeStyle = strokeForItem(item);
@@ -1309,7 +1477,189 @@ function drawItem(item: EditorItem) {
     }
 }
 
+function drawBuildingObject(item: EditorItem, building: BuildingDef) {
+    drawBuildingGroundPatches(item, building);
+    if (drawBuildingMapShapes(item, building)) return;
+
+    const screen = worldToScreen(v2.create(item.x, item.y));
+    ctx.save();
+    ctx.translate(screen.x, screen.y);
+    ctx.rotate(-item.rotation);
+    drawFallbackItemBox(item);
+    ctx.restore();
+}
+
+function drawBuildingGroundPatches(item: EditorItem, building: BuildingDef) {
+    const buildingOri = radToOri(item.rotation);
+    ctx.save();
+    for (const patch of building.mapGroundPatches || []) {
+        const a = buildingLocalToWorld(item, patch.bound.min, buildingOri);
+        const b = buildingLocalToWorld(item, patch.bound.max, buildingOri);
+        const min = worldToScreen(v2.minElems(a, b));
+        const max = worldToScreen(v2.maxElems(a, b));
+        const x = Math.min(min.x, max.x);
+        const y = Math.min(min.y, max.y);
+        const width = Math.abs(max.x - min.x);
+        const height = Math.abs(max.y - min.y);
+        ctx.fillStyle = `${hexCss(patch.color)}cc`;
+        ctx.strokeStyle = `${hexCss(patch.color)}`;
+        ctx.lineWidth = 1;
+        ctx.fillRect(x, y, width, height);
+        ctx.strokeRect(x, y, width, height);
+    }
+    ctx.restore();
+}
+
+function drawBuildingChildObjects(item: EditorItem, building: BuildingDef, depth: number) {
+    if (depth > 2) return;
+    const buildingOri = radToOri(item.rotation);
+    for (const mapObject of building.mapObjects || []) {
+        if (!mapObject.type || typeof mapObject.type !== "string") continue;
+        const def = MapObjectDefs[mapObject.type];
+        if (!def) continue;
+
+        const childOri =
+            mapObject.inheritOri === false
+                ? mapObject.ori || 0
+                : ((mapObject.ori || 0) + buildingOri) % 4;
+        const childPos = buildingLocalToWorld(item, mapObject.pos, buildingOri);
+
+        if (def.type === "building") {
+            drawBuildingObject(
+                {
+                    id: "child-preview",
+                    name: mapObject.type,
+                    kind: "object",
+                    layer: "objects",
+                    type: mapObject.type,
+                    x: childPos.x,
+                    y: childPos.y,
+                    rotation: oriToRad(childOri),
+                    scale: (mapObject.scale || 1) * item.scale,
+                    assetScale: 1,
+                    fallbackWidth: 12,
+                    fallbackHeight: 12,
+                    alpha: 1,
+                    tint: 0xffffff,
+                    localCollider: createAabbCollider(12, 12),
+                },
+                def as BuildingDef,
+            );
+            continue;
+        }
+
+        ctx.save();
+        const screen = worldToScreen(childPos);
+        ctx.translate(screen.x, screen.y);
+        ctx.rotate(-oriToRad(childOri));
+
+        if (def.type === "obstacle") {
+            const obstacle = def as ObstacleDef;
+            const image = getImage(obstacle.img?.sprite);
+            if (image?.loaded && !image.failed) {
+                const scale =
+                    (obstacle.img?.scale ?? 1) * (mapObject.scale || 1) * item.scale;
+                ctx.drawImage(
+                    image.img,
+                    (-image.img.naturalWidth * scale * camera.zoom) / 2,
+                    (-image.img.naturalHeight * scale * camera.zoom) / 2,
+                    image.img.naturalWidth * scale * camera.zoom,
+                    image.img.naturalHeight * scale * camera.zoom,
+                );
+            }
+        }
+
+        ctx.restore();
+    }
+}
+
+function drawBuildingMapShapes(item: EditorItem, building: BuildingDef): boolean {
+    const shapes = building.map?.shapes;
+    if (!shapes?.length) return false;
+
+    ctx.save();
+    ctx.lineWidth = 2;
+    for (const shape of shapes) {
+        ctx.fillStyle = `${hexCss(shape.color)}cc`;
+        ctx.strokeStyle = hexCss(shape.color);
+        drawBuildingLocalCollider(item, shape.collider);
+    }
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.font = "12px ui-sans-serif, system-ui";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const center = worldToScreen(v2.create(item.x, item.y));
+    ctx.fillText(shortLabel(item), center.x, center.y);
+    ctx.restore();
+    return true;
+}
+
+function drawBuildingLocalCollider(item: EditorItem, localCollider: Collider) {
+    const buildingOri = radToOri(item.rotation);
+    if (localCollider.type === 0) {
+        const pos = buildingLocalToWorld(item, localCollider.pos, buildingOri);
+        const screen = worldToScreen(pos);
+        const radius = localCollider.rad * item.scale * PPU * camera.zoom;
+        ctx.beginPath();
+        ctx.arc(screen.x, screen.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        return;
+    }
+
+    const min = localCollider.min;
+    const max = localCollider.max;
+    const points = [
+        v2.create(min.x, min.y),
+        v2.create(max.x, min.y),
+        v2.create(max.x, max.y),
+        v2.create(min.x, max.y),
+    ].map((point) => worldToScreen(buildingLocalToWorld(item, point, buildingOri)));
+
+    ctx.beginPath();
+    points.forEach((point, idx) => {
+        if (idx === 0) ctx.moveTo(point.x, point.y);
+        else ctx.lineTo(point.x, point.y);
+    });
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+}
+
+function buildingLocalToWorld(item: EditorItem, pos: Vec2, ori: number): Vec2 {
+    const scaled = v2.mul(pos, item.scale);
+    switch (((ori % 4) + 4) % 4) {
+        case 1:
+            return v2.add(v2.create(item.x, item.y), v2.create(-scaled.y, scaled.x));
+        case 2:
+            return v2.add(v2.create(item.x, item.y), v2.create(-scaled.x, -scaled.y));
+        case 3:
+            return v2.add(v2.create(item.x, item.y), v2.create(scaled.y, -scaled.x));
+        default:
+            return v2.add(v2.create(item.x, item.y), scaled);
+    }
+}
+
+function drawFallbackItemBox(item: EditorItem) {
+    const size = itemSize(item);
+    const screenWidth = size.width * PPU * camera.zoom;
+    const screenHeight = size.height * PPU * camera.zoom;
+    ctx.fillStyle = fillForItem(item);
+    ctx.strokeStyle = strokeForItem(item);
+    ctx.lineWidth = 2;
+    ctx.fillRect(-screenWidth / 2, -screenHeight / 2, screenWidth, screenHeight);
+    ctx.strokeRect(-screenWidth / 2, -screenHeight / 2, screenWidth, screenHeight);
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.font = "12px ui-sans-serif, system-ui";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(shortLabel(item), 0, 0, Math.max(30, screenWidth - 8));
+}
+
 function fillForItem(item: EditorItem): string {
+    if (item.mapGroundPatch) {
+        return `${hexCss(item.tint)}cc`;
+    }
     switch (item.kind) {
         case "roof":
             return "rgba(104, 94, 47, 0.72)";
@@ -1328,6 +1678,10 @@ function fillForItem(item: EditorItem): string {
         default:
             return "rgba(58, 91, 104, 0.72)";
     }
+}
+
+function isEllipseMapFloor(item: EditorItem): boolean {
+    return item.mapGroundPatch?.shape === "ellipse";
 }
 
 function strokeForItem(item: EditorItem): string {
@@ -1401,6 +1755,17 @@ function drawItemSelection(item: EditorItem) {
     ctx.beginPath();
     ctx.arc(handle.x, handle.y, 6, 0, Math.PI * 2);
     ctx.fill();
+    if (item.mapGroundPatch) {
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#1f6f68";
+        for (const resizeHandle of resizeHandlePoints(item)) {
+            const p = worldToScreen(resizeHandle.pos);
+            ctx.beginPath();
+            ctx.rect(p.x - 5, p.y - 5, 10, 10);
+            ctx.fill();
+            ctx.stroke();
+        }
+    }
     ctx.restore();
 }
 
@@ -1480,6 +1845,31 @@ function itemCorners(item: EditorItem): Vec2[] {
     );
 }
 
+function resizeHandlePoints(item: EditorItem): Array<{ handle: ResizeHandle; pos: Vec2 }> {
+    if (!item.mapGroundPatch) return [];
+    const size = itemSize(item);
+    const handles: ResizeHandle[] = [
+        { x: -1, y: 1 },
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+        { x: 1, y: 0 },
+        { x: 1, y: -1 },
+        { x: 0, y: -1 },
+        { x: -1, y: -1 },
+        { x: -1, y: 0 },
+    ];
+    return handles.map((handle) => ({
+        handle,
+        pos: v2.add(
+            v2.create(item.x, item.y),
+            v2.rotate(
+                v2.create((handle.x * size.width) / 2, (handle.y * size.height) / 2),
+                item.rotation,
+            ),
+        ),
+    }));
+}
+
 function selectionBounds(): AABB | null {
     const selected = selectedItems();
     if (!selected.length) return null;
@@ -1519,7 +1909,18 @@ function applyFloorRole(item: EditorItem, basement = mode === "basement") {
     item.kind = basement ? "basementFloor" : "floor";
     item.layer = basement ? "basementFloor" : "floor";
     item.type = undefined;
+    item.mapGroundPatch = undefined;
     item.surfaceType ||= "wood";
+}
+
+function applyMapFloorRole(item: EditorItem) {
+    item.kind = "floor";
+    item.layer = "floor";
+    item.type = undefined;
+    item.sprite = undefined;
+    item.mapGroundPatch ??= patchDefaults();
+    item.surfaceType ||= "sand";
+    if (item.tint === 0xffffff) item.tint = DEFAULT_MAP_FLOOR_COLOR;
 }
 
 function applyRoofRole(item: EditorItem) {
@@ -1527,6 +1928,7 @@ function applyRoofRole(item: EditorItem) {
     item.layer = "roof";
     item.type = undefined;
     item.surfaceType = undefined;
+    item.mapGroundPatch = undefined;
 }
 
 function applyMapObjectRole(item: EditorItem) {
@@ -1552,13 +1954,15 @@ function applyMapObjectRole(item: EditorItem) {
         item.layer = mode === "basement" ? "basement" : "objects";
     }
     item.surfaceType = undefined;
+    item.mapGroundPatch = undefined;
 }
 
-function applyRoleToSelection(role: "floor" | "roof" | "mapObject") {
+function applyRoleToSelection(role: "floor" | "mapFloor" | "roof" | "mapObject") {
     const selected = selectedItems();
     if (!selected.length) return;
     for (const item of selected) {
         if (role === "floor") applyFloorRole(item);
+        if (role === "mapFloor") applyMapFloorRole(item);
         if (role === "roof") applyRoofRole(item);
         if (role === "mapObject") applyMapObjectRole(item);
     }
@@ -1566,7 +1970,10 @@ function applyRoleToSelection(role: "floor" | "roof" | "mapObject") {
     renderAllPanels();
 }
 
-function itemExportRole(item: EditorItem): "floor" | "roof" | "mapObject" | "none" {
+function itemExportRole(
+    item: EditorItem,
+): "floor" | "mapFloor" | "roof" | "mapObject" | "none" {
+    if (item.mapGroundPatch) return "mapFloor";
     if (item.layer === "floor" || item.layer === "basementFloor") return "floor";
     if (item.layer === "roof") return "roof";
     if (item.layer === "walls" || item.layer === "objects" || item.layer === "basement")
@@ -1595,20 +2002,68 @@ function hitTest(pos: Vec2): EditorItem | null {
 function pointInItem(pos: Vec2, item: EditorItem): boolean {
     const local = v2.rotate(v2.sub(pos, v2.create(item.x, item.y)), -item.rotation);
     const size = itemSize(item);
+    if (isEllipseMapFloor(item)) {
+        const rx = Math.max(size.width / 2, MIN_GRID_SIZE);
+        const ry = Math.max(size.height / 2, MIN_GRID_SIZE);
+        return (local.x * local.x) / (rx * rx) + (local.y * local.y) / (ry * ry) <= 1;
+    }
     return Math.abs(local.x) <= size.width / 2 && Math.abs(local.y) <= size.height / 2;
 }
 
-function handleAt(pos: Vec2): "rotate" | null {
+function resizeItemFromHandle(
+    item: EditorItem,
+    state: Extract<DragState, { type: "resize" }>,
+    pos: Vec2,
+) {
+    const local = v2.rotate(v2.sub(pos, state.startCenter), -state.startRotation);
+    const fixedX = (-state.handle.x * state.startWidth) / 2;
+    const fixedY = (-state.handle.y * state.startHeight) / 2;
+
+    let width = state.startWidth;
+    let height = state.startHeight;
+    const centerLocal = v2.create(0, 0);
+
+    if (state.handle.x !== 0) {
+        width = Math.max(MIN_GRID_SIZE, Math.abs(local.x - fixedX));
+        centerLocal.x = (local.x + fixedX) / 2;
+    }
+    if (state.handle.y !== 0) {
+        height = Math.max(MIN_GRID_SIZE, Math.abs(local.y - fixedY));
+        centerLocal.y = (local.y + fixedY) / 2;
+    }
+
+    if (doc.snapToGrid) {
+        width = Math.max(MIN_GRID_SIZE, snap(width));
+        height = Math.max(MIN_GRID_SIZE, snap(height));
+    }
+
+    const nextCenter = v2.add(state.startCenter, v2.rotate(centerLocal, state.startRotation));
+    item.x = doc.snapToGrid ? snap(nextCenter.x) : nextCenter.x;
+    item.y = doc.snapToGrid ? snap(nextCenter.y) : nextCenter.y;
+    setItemSize(item, width, height);
+}
+
+function handleAt(
+    pos: Vec2,
+): { type: "rotate" } | { type: "resize"; handle: ResizeHandle } | null {
     if (selectedIds.size !== 1) return null;
     const item = selectedItems()[0];
     if (!item || !isEditableInMode(item)) return null;
+    if (item.mapGroundPatch) {
+        for (const resizeHandle of resizeHandlePoints(item)) {
+            if (v2.length(v2.sub(pos, resizeHandle.pos)) <= 0.9 / camera.zoom) {
+                return { type: "resize", handle: resizeHandle.handle };
+            }
+        }
+    }
     const corners = itemCorners(item);
     const top = v2.mul(v2.add(corners[0], corners[1]), 0.5);
     const handleWorld = v2.add(
         top,
         v2.rotate(v2.create(0, itemSize(item).height * 0.22 + 1.2), item.rotation),
     );
-    if (v2.length(v2.sub(pos, handleWorld)) <= 0.9 / camera.zoom) return "rotate";
+    if (v2.length(v2.sub(pos, handleWorld)) <= 0.9 / camera.zoom)
+        return { type: "rotate" };
     return null;
 }
 
@@ -1628,10 +2083,24 @@ canvas.addEventListener("pointerdown", (event) => {
     }
 
     const handle = handleAt(pointer.world);
-    if (handle === "rotate") {
+    if (handle?.type === "rotate") {
         dragState = {
             type: "rotate",
             itemId: selectedItems()[0].id,
+        };
+        return;
+    }
+    if (handle?.type === "resize") {
+        const item = selectedItems()[0];
+        const size = itemSize(item);
+        dragState = {
+            type: "resize",
+            itemId: item.id,
+            handle: handle.handle,
+            startCenter: v2.create(item.x, item.y),
+            startWidth: size.width,
+            startHeight: size.height,
+            startRotation: item.rotation,
         };
         return;
     }
@@ -1696,6 +2165,13 @@ canvas.addEventListener("pointermove", (event) => {
         item.rotation =
             Math.atan2(pointer.world.y - item.y, pointer.world.x - item.x) - Math.PI / 2;
         if (doc.snapToGrid) item.rotation = oriToRad(radToOri(item.rotation));
+        renderSelectionPanel();
+        return;
+    }
+    if (state.type === "resize") {
+        const item = doc.items.find((candidate) => candidate.id === state.itemId);
+        if (!item) return;
+        resizeItemFromHandle(item, state, pointer.world);
         renderSelectionPanel();
         return;
     }
@@ -2069,7 +2545,7 @@ function renderPalette() {
         .filter((entry) => activeCategory === "all" || entry.category === activeCategory)
         .filter((entry) => {
             if (!search) return true;
-            return `${entry.name} ${entry.type || ""} ${entry.sprite || ""}`
+            return `${entry.name} ${entry.type || ""} ${entry.sprite || ""} ${entry.buildingType || ""}`
                 .toLowerCase()
                 .includes(search);
         });
@@ -2092,13 +2568,19 @@ function renderPalette() {
             img.loading = "lazy";
             thumb.appendChild(img);
         } else {
-            thumb.textContent = entry.kind === "hitbox" ? "Box" : "Obj";
+            thumb.textContent = entry.buildingType
+                ? "Bld"
+                : entry.kind === "hitbox"
+                  ? "Box"
+                  : entry.mapGroundPatch
+                    ? "Map"
+                  : "Obj";
         }
 
         const meta = document.createElement("div");
         meta.className = "asset-meta";
         meta.innerHTML = `<div class="asset-name" title="${escapeHtml(entry.name)}">${escapeHtml(entry.name)}</div>
-          <div class="asset-kind">${escapeHtml(layerLabels[entry.layer])} · ${escapeHtml(entry.kind)}</div>`;
+          <div class="asset-kind">${escapeHtml(entry.buildingType ? "Building object" : `${layerLabels[entry.layer]} · ${entry.kind}`)}</div>`;
 
         const add = document.createElement("button");
         add.className = "mini-button";
@@ -2155,6 +2637,7 @@ function renderSelectionPanel() {
           <div class="selection-empty">${selected.length} parts selected. Use alignment, duplicate, delete, or drag them together.</div>
           <div class="field-grid" style="margin-top: 8px;">
             <button id="role-floor" class="mini-button" title="Export selected sprites through floor.imgs">Use as floor</button>
+            <button id="role-map-floor" class="mini-button" title="Export selected rectangles as colored mapGroundPatches">Use as map floor</button>
             <button id="role-roof" class="mini-button" title="Export selected sprites through ceiling.imgs">Use as roof</button>
             <button id="role-object" class="mini-button" title="Export selected typed parts through mapObjects">Use as object</button>
           </div>
@@ -2178,9 +2661,10 @@ function renderSelectionPanel() {
         <input id="sel-sprite" class="text-field" value="${escapeAttr(item.sprite || "")}" list="sprite-name-list">
       </div>
       <div class="field" style="margin-top: 8px;">
-        <label for="sel-export-role">Export as</label>
+          <label for="sel-export-role">Export as</label>
         <select id="sel-export-role" class="select-field">
           <option value="floor" ${itemExportRole(item) === "floor" ? "selected" : ""}>Floor image</option>
+          <option value="mapFloor" ${itemExportRole(item) === "mapFloor" ? "selected" : ""}>Map floor</option>
           <option value="roof" ${itemExportRole(item) === "roof" ? "selected" : ""}>Roof image</option>
           <option value="mapObject" ${itemExportRole(item) === "mapObject" ? "selected" : ""}>Map object / wall</option>
           <option value="none" ${itemExportRole(item) === "none" ? "selected" : ""}>Hitbox only</option>
@@ -2245,6 +2729,61 @@ function renderSelectionPanel() {
         <input id="sel-surface" class="text-field" value="${escapeAttr(item.surfaceType || "")}" placeholder="wood, tile, asphalt">
       </div>
       <label class="check-row">
+        <span>Export as map ground patch</span>
+        <input id="sel-ground-patch" type="checkbox" ${item.mapGroundPatch ? "checked" : ""}>
+      </label>
+      ${
+          item.mapGroundPatch
+              ? `<div class="field-grid" style="margin-top: 8px;">
+        <div class="field">
+          <label for="sel-map-floor-width">Floor width</label>
+          <input id="sel-map-floor-width" class="number-field" type="number" min="${MIN_GRID_SIZE}" step="0.25" value="${formatNum(itemSize(item).width)}">
+        </div>
+        <div class="field">
+          <label for="sel-map-floor-height">Floor height</label>
+          <input id="sel-map-floor-height" class="number-field" type="number" min="${MIN_GRID_SIZE}" step="0.25" value="${formatNum(itemSize(item).height)}">
+        </div>
+      </div>
+      <div class="field" style="margin-top: 8px;">
+        <label for="sel-map-floor-color">Map floor color</label>
+        <input id="sel-map-floor-color" class="text-field" value="${hexColor(item.tint)}">
+      </div>
+      <div class="field-grid" style="margin-top: 8px;">
+        <div class="field">
+          <label for="sel-patch-shape">Patch shape</label>
+          <select id="sel-patch-shape" class="select-field">
+            <option value="rect" ${(item.mapGroundPatch.shape ?? "rect") === "rect" ? "selected" : ""}>Rectangle</option>
+            <option value="ellipse" ${item.mapGroundPatch.shape === "ellipse" ? "selected" : ""}>Circle / oval</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="sel-patch-segments">Circle quality</label>
+          <input id="sel-patch-segments" class="number-field" type="number" min="4" max="32" step="1" value="${item.mapGroundPatch.segments ?? 12}">
+        </div>
+      </div>
+      <div class="field-grid" style="margin-top: 8px;">
+        <div class="field">
+          <label for="sel-patch-roughness">Patch roughness</label>
+          <input id="sel-patch-roughness" class="number-field" type="number" min="0" step="0.01" value="${formatNum(item.mapGroundPatch.roughness ?? 0)}">
+        </div>
+        <div class="field">
+          <label for="sel-patch-offset">Patch offset</label>
+          <input id="sel-patch-offset" class="number-field" type="number" min="0" step="0.25" value="${formatNum(item.mapGroundPatch.offsetDist ?? 0)}">
+        </div>
+      </div>
+      <div class="field-grid" style="margin-top: 8px;">
+        <div class="field">
+          <label for="sel-patch-order">Patch order</label>
+          <input id="sel-patch-order" class="number-field" type="number" step="1" value="${item.mapGroundPatch.order ?? ""}">
+        </div>
+        <label class="check-row compact-check">
+          <span>Use as map shape</span>
+          <input id="sel-patch-map-shape" type="checkbox" ${item.mapGroundPatch.useAsMapShape ? "checked" : ""}>
+        </label>
+      </div>`
+              : ""
+      }
+      <label class="check-row">
         <span>Ignore map spawn replacement</span>
         <input id="sel-ignore-replacement" type="checkbox" ${item.ignoreMapSpawnReplacement ? "checked" : ""}>
       </label>
@@ -2254,6 +2793,7 @@ function renderSelectionPanel() {
       </label>
       <div class="field-grid" style="margin-top: 8px;">
         <button id="role-floor" class="mini-button" title="Export this sprite through floor.imgs">Use as floor</button>
+        <button id="role-map-floor" class="mini-button" title="Export this rectangle as a colored mapGroundPatch">Use as map floor</button>
         <button id="role-roof" class="mini-button" title="Export this sprite through ceiling.imgs">Use as roof</button>
         <button id="role-object" class="mini-button" title="Export this part through mapObjects when it has an object type">Use as object</button>
       </div>
@@ -2286,6 +2826,7 @@ function renderSelectionPanel() {
     bindText("sel-sprite", (value) => (item.sprite = value || undefined));
     bindSelect("sel-export-role", (value) => {
         if (value === "floor") applyFloorRole(item);
+        if (value === "mapFloor") applyMapFloorRole(item);
         if (value === "roof") applyRoofRole(item);
         if (value === "mapObject") applyMapObjectRole(item);
         if (value === "none") {
@@ -2317,6 +2858,53 @@ function renderSelectionPanel() {
     bindNumber("sel-alpha", (value) => (item.alpha = clamp(value, 0, 1)));
     bindText("sel-tint", (value) => (item.tint = parseHexColor(value, item.tint)));
     bindText("sel-surface", (value) => (item.surfaceType = value || undefined));
+    const groundPatch = document.getElementById("sel-ground-patch") as HTMLInputElement;
+    groundPatch.addEventListener("change", () => {
+        item.mapGroundPatch = groundPatch.checked
+            ? (item.mapGroundPatch ?? patchDefaults())
+            : undefined;
+        if (groundPatch.checked) {
+            applyMapFloorRole(item);
+        }
+        commit("edit selected");
+        renderSelectionPanel();
+    });
+    if (item.mapGroundPatch) {
+        bindNumber("sel-map-floor-width", (value) => setItemWidth(item, value));
+        bindNumber("sel-map-floor-height", (value) => setItemHeight(item, value));
+        bindText(
+            "sel-map-floor-color",
+            (value) => (item.tint = parseHexColor(value, item.tint)),
+        );
+        bindSelect("sel-patch-shape", (value) => {
+            if (!item.mapGroundPatch) return;
+            item.mapGroundPatch.shape = value === "ellipse" ? "ellipse" : "rect";
+        });
+        bindNumber("sel-patch-segments", (value) => {
+            if (!item.mapGroundPatch) return;
+            item.mapGroundPatch.segments = Math.round(clamp(value, 4, 32));
+        });
+        bindNumber("sel-patch-roughness", (value) => {
+            if (!item.mapGroundPatch) return;
+            item.mapGroundPatch.roughness = Math.max(0, value);
+        });
+        bindNumber("sel-patch-offset", (value) => {
+            if (!item.mapGroundPatch) return;
+            item.mapGroundPatch.offsetDist = Math.max(0, value);
+        });
+        bindNumber("sel-patch-order", (value) => {
+            if (!item.mapGroundPatch) return;
+            item.mapGroundPatch.order = Math.round(value);
+        });
+        const mapShape = document.getElementById(
+            "sel-patch-map-shape",
+        ) as HTMLInputElement | null;
+        mapShape?.addEventListener("change", () => {
+            if (!item.mapGroundPatch) return;
+            item.mapGroundPatch.useAsMapShape = mapShape.checked || undefined;
+            commit("edit selected");
+        });
+    }
     const ignore = document.getElementById("sel-ignore-replacement") as HTMLInputElement;
     ignore.addEventListener("change", () => {
         item.ignoreMapSpawnReplacement = ignore.checked;
@@ -2334,6 +2922,9 @@ function bindRoleButtons() {
     document
         .getElementById("role-floor")
         ?.addEventListener("click", () => applyRoleToSelection("floor"));
+    document
+        .getElementById("role-map-floor")
+        ?.addEventListener("click", () => applyRoleToSelection("mapFloor"));
     document
         .getElementById("role-roof")
         ?.addEventListener("click", () => applyRoleToSelection("roof"));
@@ -2421,7 +3012,8 @@ function validateDoc(): string[] {
             (item.layer === "floor" ||
                 item.layer === "basementFloor" ||
                 item.layer === "roof") &&
-            !item.sprite
+            !item.sprite &&
+            !item.mapGroundPatch
         ) {
             warnings.push(
                 `${item.name} is on ${layerLabels[item.layer]} but has no sprite, so no image will export.`,
@@ -2773,7 +3365,7 @@ function generateExport(): string {
         (item) => item.layer === "basement" || item.layer === "basementFloor",
     );
     const base = buildBuildingDef("base");
-    const baseCode = `${doc.name}: ${formatBuilding(base, hasBasement ? doc.name + "_basement" : undefined)}`;
+    const baseCode = `${doc.name}: ${formatBuilding(base, hasBasement ? `${doc.name}_basement` : undefined)}`;
     if (!hasBasement) return `${baseCode},`;
     const basement = buildBuildingDef("basement");
     return `${baseCode},\n\n${doc.name}_basement: ${formatBuilding(basement)},`;
@@ -2784,6 +3376,10 @@ function buildBuildingDef(section: "base" | "basement") {
     const floorLayers: LayerId[] = isBasement ? ["basementFloor"] : ["floor"];
     const objectLayers: LayerId[] = isBasement ? ["basement"] : ["walls", "objects"];
     const floorItems = doc.items.filter((item) => floorLayers.includes(item.layer));
+    const groundPatchItems = isBasement
+        ? []
+        : floorItems.filter((item) => item.mapGroundPatch);
+    const regularFloorItems = floorItems.filter((item) => !item.mapGroundPatch);
     const roofItems = isBasement ? [] : doc.items.filter((item) => item.layer === "roof");
     const hitboxes = doc.items.filter((item) => {
         if (item.layer !== "hitboxes" && item.kind !== "hitbox") return false;
@@ -2796,7 +3392,7 @@ function buildBuildingDef(section: "base" | "basement") {
 
     const surfaceColliders = hitboxes.length
         ? hitboxes.map((item) => firstAabb(itemColliders(item)[0]))
-        : floorItems.map((item) => firstAabb(itemColliders(item)[0]));
+        : regularFloorItems.map((item) => firstAabb(itemColliders(item)[0]));
     const zoomColliders = roofItems.length
         ? [boundsForItems([...floorItems, ...mapObjects])]
         : [];
@@ -2805,16 +3401,20 @@ function buildBuildingDef(section: "base" | "basement") {
         mapDisplay: !isBasement,
         mapColor: doc.mapColor,
         zIdx: isBasement ? 0 : doc.zIdx,
-        floorImgs: floorItems.filter((item) => item.sprite).map(itemToFloorImage),
+        floorImgs: regularFloorItems.filter((item) => item.sprite).map(itemToFloorImage),
         floorSurfaces: [
             {
-                type: floorItems[0]?.surfaceType || hitboxes[0]?.surfaceType || "wood",
+                type:
+                    regularFloorItems[0]?.surfaceType ||
+                    hitboxes[0]?.surfaceType ||
+                    "wood",
                 collision: surfaceColliders.filter(Boolean) as AABB[],
             },
         ],
         ceilingImgs: roofItems.filter((item) => item.sprite).map(itemToFloorImage),
         zoomRegions: zoomColliders.filter(Boolean) as AABB[],
         mapObjects: mapObjects.map(itemToMapObject),
+        mapGroundPatches: groundPatchItems.flatMap(itemToMapGroundPatches),
     };
 }
 
@@ -2838,6 +3438,39 @@ function itemToMapObject(item: EditorItem) {
         ignoreMapSpawnReplacement: item.ignoreMapSpawnReplacement,
         inheritOri: item.inheritOri,
     };
+}
+
+function itemToMapGroundPatches(item: EditorItem) {
+    const base = {
+        color: item.tint,
+        roughness: item.mapGroundPatch?.roughness,
+        offsetDist: item.mapGroundPatch?.offsetDist,
+        order: item.mapGroundPatch?.order,
+        useAsMapShape: item.mapGroundPatch?.useAsMapShape,
+    };
+    if (!isEllipseMapFloor(item)) {
+        return [{ bound: firstAabb(itemColliders(item)[0]), ...base }];
+    }
+
+    const size = itemSize(item);
+    const segments = Math.max(4, Math.round(item.mapGroundPatch?.segments ?? 12));
+    const rx = size.width / 2;
+    const ry = size.height / 2;
+    const strips: Array<{ bound: AABB | null } & typeof base> = [];
+    for (let i = 0; i < segments; i++) {
+        const y0 = -ry + (i / segments) * size.height;
+        const y1 = -ry + ((i + 1) / segments) * size.height;
+        const midY = (y0 + y1) / 2;
+        const halfWidth = rx * Math.sqrt(Math.max(0, 1 - (midY * midY) / (ry * ry)));
+        const local = collider.createAabb(v2.create(-halfWidth, y0), v2.create(halfWidth, y1));
+        strips.push({
+            bound: firstAabb(
+                collider.transform(local, v2.create(item.x, item.y), item.rotation, 1),
+            ),
+            ...base,
+        });
+    }
+    return strips;
 }
 
 function boundsForItems(items: EditorItem[]): AABB | null {
@@ -2872,6 +3505,28 @@ function formatBuilding(
     lines.push(
         `    terrain: { grass: ${doc.terrain.grass}, beach: ${doc.terrain.beach} },`,
     );
+    if (building.mapGroundPatches.length) {
+        lines.push(`    mapGroundPatches: [`);
+        for (const patch of building.mapGroundPatches) {
+            if (!patch.bound) continue;
+            const extraLines: string[] = [];
+            if (patch.roughness !== undefined)
+                extraLines.push(`roughness: ${formatNum(patch.roughness)}`);
+            if (patch.offsetDist !== undefined)
+                extraLines.push(`offsetDist: ${formatNum(patch.offsetDist)}`);
+            if (patch.order !== undefined) extraLines.push(`order: ${patch.order}`);
+            if (patch.useAsMapShape !== undefined)
+                extraLines.push(`useAsMapShape: ${patch.useAsMapShape}`);
+            lines.push(`        {`);
+            lines.push(`            bound: ${formatAabb(patch.bound)},`);
+            lines.push(`            color: ${hexColor(patch.color)},`);
+            for (const line of extraLines) {
+                lines.push(`            ${line},`);
+            }
+            lines.push(`        },`);
+        }
+        lines.push(`    ],`);
+    }
     lines.push(`    zIdx: ${building.zIdx},`);
     lines.push(`    ori: 0,`);
     lines.push(`    floor: {`);
@@ -3084,6 +3739,34 @@ function importBuildingIntoDoc(
                 localCollider: createAabbCollider(size.x, size.y),
             });
         }
+    }
+    for (const patch of building.mapGroundPatches || []) {
+        const box = collider.toAabb(patch.bound);
+        const size = v2.sub(box.max, box.min);
+        const center = v2.mul(v2.add(box.min, box.max), 0.5);
+        next.items.push({
+            id: makeId("part"),
+            name: "map_floor",
+            kind: "floor",
+            layer: floorLayer,
+            x: center.x,
+            y: center.y,
+            rotation: 0,
+            scale: 1,
+            assetScale: 1,
+            fallbackWidth: size.x,
+            fallbackHeight: size.y,
+            alpha: 0.82,
+            tint: patch.color,
+            surfaceType: building.floor?.surfaces?.[0]?.type || "grass",
+            mapGroundPatch: {
+                roughness: patch.roughness,
+                offsetDist: patch.offsetDist,
+                order: patch.order,
+                useAsMapShape: patch.useAsMapShape,
+            },
+            localCollider: createAabbCollider(size.x, size.y),
+        });
     }
     for (const obj of building.mapObjects || []) {
         if (!obj.type || typeof obj.type !== "string") continue;
