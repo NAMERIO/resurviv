@@ -368,6 +368,7 @@ export enum MsgType {
     AmongUsMeetingChat,
     AmongUsMeetingChatSend,
     CaptureTheFlag,
+    KingOfTheHill,
 }
 
 export enum PickupMsgType {
@@ -407,6 +408,7 @@ export { GameOverMsg } from "./gameOverMsg";
 export { InputMsg } from "./inputMsg";
 export { JoinedMsg } from "./joinedMsg";
 export { JoinMsg } from "./joinMsg";
+export { KingOfTheHillMsg, KingOfTheHillPhase } from "./kingOfTheHillMsg";
 export { KillMsg } from "./killMsg";
 export { LeaderboardMsg } from "./leaderboardMsg";
 export { MapMsg } from "./mapMsg";

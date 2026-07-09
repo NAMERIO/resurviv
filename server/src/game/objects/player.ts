@@ -79,6 +79,7 @@ import {
     isHideAndSeekSeeker,
     isInfectedHuman,
     isInfectedZombie,
+    isKingOfTheHillMiniGame,
 } from "../privateLobbyMiniGames";
 import { QuestManager } from "../questManager";
 import { WeaponManager } from "../weaponManager";
@@ -252,7 +253,9 @@ export class PlayerBarn {
         const group = result?.group;
         // solo 50v50 just chooses the smallest team everytime no matter what
         const team =
-            (this.game.map.factionMode || this.game.captureTheFlagManager.enabled) &&
+            (this.game.map.factionMode ||
+                this.game.captureTheFlagManager.enabled ||
+                this.game.kingOfTheHillManager.enabled) &&
             !this.game.isTeamMode
                 ? this.getSmallestTeam()
                 : result?.team;
@@ -267,6 +270,10 @@ export class PlayerBarn {
         } else {
             pos =
                 this.game.captureTheFlagManager.getSpawnPos(
+                    joinData.arenaTeam,
+                    team?.id,
+                ) ??
+                this.game.kingOfTheHillManager.getSpawnPos(
                     joinData.arenaTeam,
                     team?.id,
                 ) ?? this.game.map.getSpawnPos(group, team);
@@ -463,7 +470,8 @@ export class PlayerBarn {
             for (let i = 0; i < this.killedPlayers.length; i++) {
                 const player = this.killedPlayers[i];
                 if (
-                    isCaptureTheFlagMiniGame(this.game.miniGame) &&
+                    (isCaptureTheFlagMiniGame(this.game.miniGame) ||
+                        isKingOfTheHillMiniGame(this.game.miniGame)) &&
                     player.captureTheFlagRespawnTicker > 0
                 ) {
                     continue;
@@ -2580,7 +2588,12 @@ export class Player extends BaseGameObject {
     }
 
     respawnCaptureTheFlagPlayer(): void {
-        if (!isCaptureTheFlagMiniGame(this.game.miniGame)) return;
+        if (
+            !isCaptureTheFlagMiniGame(this.game.miniGame) &&
+            !isKingOfTheHillMiniGame(this.game.miniGame)
+        ) {
+            return;
+        }
 
         this.dead = false;
         this.captureTheFlagRespawnTicker = 0;
@@ -2597,6 +2610,7 @@ export class Player extends BaseGameObject {
 
         const spawnPos =
             this.game.captureTheFlagManager.getSpawnPos(this.arenaTeam, this.teamId) ??
+            this.game.kingOfTheHillManager.getSpawnPos(this.arenaTeam, this.teamId) ??
             this.game.map.getSpawnPos(this.group, this.team);
         v2.set(this.pos, spawnPos);
         this.collider.pos = this.pos;
@@ -4241,6 +4255,7 @@ export class Player extends BaseGameObject {
             joinedMsg.playerId = this.__id;
             joinedMsg.started = game.started;
             joinedMsg.arenaPrivate = this.game.arenaPrivate;
+            joinedMsg.miniGame = this.game.miniGame ?? "";
             joinedMsg.arenaCountdown = Math.ceil(this.game.arenaStartLockTimer);
             joinedMsg.teamMode = game.teamMode;
             joinedMsg.emotes = this.loadout.emotes;
@@ -5047,7 +5062,9 @@ export class Player extends BaseGameObject {
         if (this.handleInfectedFatalDamage(params)) return;
         if (this.downed) this.downed = false;
         this.dead = true;
-        const isCaptureTheFlagDeath = isCaptureTheFlagMiniGame(this.game.miniGame);
+        const isCaptureTheFlagDeath =
+            isCaptureTheFlagMiniGame(this.game.miniGame) ||
+            isKingOfTheHillMiniGame(this.game.miniGame);
         if (isCaptureTheFlagDeath) {
             this.captureTheFlagRespawnPerks = this.perks.map((perk) => ({ ...perk }));
         }

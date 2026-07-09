@@ -162,6 +162,25 @@ export class GameModeManager {
 
     /** true if game needs to end */
     handleGameEnd(): boolean {
+        if (this.game.kingOfTheHillManager.enabled) {
+            if (!this.game.started) return false;
+            if (this.game.kingOfTheHillManager.hasReachedScoreLimit()) {
+                const winningTeamId = this.game.kingOfTheHillManager.getWinningTeamId();
+                if (winningTeamId) {
+                    return this.game.kingOfTheHillManager.endWithWinner(winningTeamId);
+                }
+            }
+            if (
+                this.game.gas.finalCloseStarted ||
+                this.game.startedTime >=
+                    (this.game.kingOfTheHillManager.settings?.matchDuration ?? 600)
+            ) {
+                const winningTeamId = this.game.kingOfTheHillManager.getWinningTeamId();
+                return this.game.kingOfTheHillManager.endWithWinner(winningTeamId);
+            }
+            return false;
+        }
+
         if (this.game.captureTheFlagManager.enabled) {
             if (!this.game.started) return false;
             if (this.game.captureTheFlagManager.hasReachedScoreLimit()) {
@@ -326,14 +345,23 @@ export class GameModeManager {
         if (this.game.arenaPrivate && this.game.arenaStartLockTimer > 0) {
             return false;
         }
-        if (this.game.captureTheFlagManager.enabled) {
+        if (
+            this.game.captureTheFlagManager.enabled ||
+            this.game.kingOfTheHillManager.enabled
+        ) {
             let redAlive = false;
             let blueAlive = false;
             for (const player of this.game.playerBarn.livingPlayers) {
                 if (player.disconnected || player.spectatorOnly) continue;
-                if (player.arenaTeam === "A" || player.teamId === 1) {
+                if (
+                    player.arenaTeam === "A" ||
+                    (!player.arenaTeam && player.teamId === 1)
+                ) {
                     redAlive = true;
-                } else if (player.arenaTeam === "B" || player.teamId === 2) {
+                } else if (
+                    player.arenaTeam === "B" ||
+                    (!player.arenaTeam && player.teamId === 2)
+                ) {
                     blueAlive = true;
                 }
                 if (redAlive && blueAlive) return true;
@@ -350,14 +378,23 @@ export class GameModeManager {
     }
 
     updateAliveCounts(aliveCounts: number[]): void {
-        if (this.game.captureTheFlagManager.enabled) {
+        if (
+            this.game.captureTheFlagManager.enabled ||
+            this.game.kingOfTheHillManager.enabled
+        ) {
             let redAlive = 0;
             let blueAlive = 0;
             for (const player of this.game.playerBarn.livingPlayers) {
                 if (player.disconnected || player.spectatorOnly) continue;
-                if (player.arenaTeam === "A" || player.teamId === 1) {
+                if (
+                    player.arenaTeam === "A" ||
+                    (!player.arenaTeam && player.teamId === 1)
+                ) {
                     redAlive++;
-                } else if (player.arenaTeam === "B" || player.teamId === 2) {
+                } else if (
+                    player.arenaTeam === "B" ||
+                    (!player.arenaTeam && player.teamId === 2)
+                ) {
                     blueAlive++;
                 }
             }
@@ -530,6 +567,12 @@ export class GameModeManager {
     handlePlayerDeath(player: Player, params: DamageParams): void {
         if (this.game.captureTheFlagManager.enabled) {
             this.game.captureTheFlagManager.onPlayerDeath(player);
+            player.kill(params);
+            player.captureTheFlagRespawnTicker = 5;
+            return;
+        }
+
+        if (this.game.kingOfTheHillManager.enabled) {
             player.kill(params);
             player.captureTheFlagRespawnTicker = 5;
             return;

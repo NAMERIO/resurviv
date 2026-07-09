@@ -187,6 +187,7 @@ export interface MapDef {
             flagPickupRadius?: number;
             captureRadius?: number;
             captureZoneSize?: Vec2;
+            kingOfTheHillLocations?: Vec2[];
         };
         disableGas?: boolean;
     };

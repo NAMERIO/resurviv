@@ -9,6 +9,7 @@ import type { Player } from "./objects/player";
 import {
     CaptureTheFlagSettings as DefaultCaptureTheFlagSettings,
     getCaptureTheFlagSettings,
+    isCaptureTheFlagMiniGame,
 } from "./privateLobbyMiniGames";
 
 type FlagStatus = "base" | "taken" | "dropped";
@@ -36,10 +37,11 @@ export class CaptureTheFlagManager {
 
     constructor(readonly game: Game) {
         const def = game.map.mapDef.gameMode.captureTheFlag;
+        const isCaptureTheFlagMode = isCaptureTheFlagMiniGame(this.game.miniGame);
         this.settings =
             getCaptureTheFlagSettings(this.game.miniGame) ??
-            (def ? DefaultCaptureTheFlagSettings : undefined);
-        this.enabled = !!def && !!this.settings;
+            (isCaptureTheFlagMode && def ? DefaultCaptureTheFlagSettings : undefined);
+        this.enabled = isCaptureTheFlagMode && !!def && !!this.settings;
         const redFlag =
             def?.redFlag ?? v2.create(game.map.width * 0.15, game.map.height / 2);
         const blueFlag =

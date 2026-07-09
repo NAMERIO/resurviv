@@ -31,6 +31,7 @@ import {
 import { CaptureTheFlagManager } from "./captureTheFlagManager";
 import { GameModeManager } from "./gameModeManager";
 import { Grid } from "./grid";
+import { KingOfTheHillManager } from "./kingOfTheHillManager";
 import { GameMap } from "./map";
 import { AirdropBarn } from "./objects/airdrop";
 import { BulletBarn } from "./objects/bullet";
@@ -99,6 +100,7 @@ export class Game {
     hideAndSeekHidersWon = false;
     amongUsWinningRole?: AmongUsRole;
     captureTheFlagManager: CaptureTheFlagManager;
+    kingOfTheHillManager: KingOfTheHillManager;
     arenaStartLockTimer = 0;
     arenaLastCountdownSecond = -1;
     arenaGoBroadcasted = false;
@@ -219,10 +221,16 @@ export class Game {
         this.gas = new Gas(this);
 
         this.captureTheFlagManager = new CaptureTheFlagManager(this);
+        this.kingOfTheHillManager = new KingOfTheHillManager(this);
         this.modeManager = new GameModeManager(this);
 
-        if (this.map.factionMode || this.captureTheFlagManager.enabled) {
-            const teamCount = this.captureTheFlagManager.enabled
+        if (
+            this.map.factionMode ||
+            this.captureTheFlagManager.enabled ||
+            this.kingOfTheHillManager.enabled
+        ) {
+            const teamCount =
+                this.captureTheFlagManager.enabled || this.kingOfTheHillManager.enabled
                 ? 2
                 : this.map.mapDef.gameMode.factions!;
             for (let i = 1; i <= teamCount; i++) {
@@ -262,6 +270,7 @@ export class Game {
         await this.pluginManager.loadPlugins();
         this.map.init();
         this.captureTheFlagManager.init();
+        this.kingOfTheHillManager.init();
         this.pluginManager.emit("gameCreated", this);
 
         this.allowJoin = true;
@@ -329,6 +338,10 @@ export class Game {
 
         this.profiler.addSample("captureTheFlag");
         this.captureTheFlagManager.update(dt);
+        this.profiler.endSample();
+
+        this.profiler.addSample("kingOfTheHill");
+        this.kingOfTheHillManager.update(dt);
         this.profiler.endSample();
 
         this.profiler.addSample("map");

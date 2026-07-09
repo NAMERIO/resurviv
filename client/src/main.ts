@@ -1556,7 +1556,7 @@ export class Application {
         const getTeamModesForMiniGame = (miniGame: PrivateLobbyMiniGame) =>
             this.isBattleRoyaleMiniGame(miniGame)
                 ? [1, 2, 4]
-                : miniGame === "capture_the_flag"
+                : miniGame === "capture_the_flag" || miniGame === "king_of_the_hill"
                   ? [2, 4, 10, 15]
                   : [1, 2, 4, 10, 15];
         const mapStyleByName = new Map<
@@ -2630,7 +2630,8 @@ export class Application {
         this.prestigeArenaTeamsBoard.toggleClass("arena-single-team", singleTeam);
         this.prestigeArenaTeamsBoard.toggleClass(
             "arena-capture-the-flag",
-            miniGameDef.id === "capture_the_flag",
+            miniGameDef.id === "capture_the_flag" ||
+                miniGameDef.id === "king_of_the_hill",
         );
         this.prestigeArenaTeamsBoard.css({
             "--arena-team-board-columns": String(Math.min(activeTeams.length, 2)),

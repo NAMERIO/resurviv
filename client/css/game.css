@@ -1679,6 +1679,14 @@ img {
   line-height: 14px;
 }
 
+#ui-ctf-match-time {
+  display: none;
+  margin-top: 1px;
+  font-size: 10px;
+  line-height: 10px;
+  opacity: 0.78;
+}
+
 @media (max-height: 768px), (max-width: 1200px) {
   #ui-ctf-scoreboard {
     transform: translateX(-50%) scale(0.85);

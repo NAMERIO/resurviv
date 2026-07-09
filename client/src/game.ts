@@ -289,6 +289,7 @@ export class Game {
     seqSendTime!: number;
     pings!: number[];
     m_arenaPrivate = false;
+    m_privateMiniGame = "";
     debugPingTime!: number;
     lastUpdateTime!: number;
     updateIntervals!: number[];
@@ -1201,6 +1202,7 @@ export class Game {
             this.m_gas,
             this.m_playerBarn,
             this.m_camera,
+            this.m_renderer,
             this.teamMode,
             this.m_map.factionMode,
             this.m_amongUsCompletedTasks,
@@ -3739,6 +3741,7 @@ export class Game {
                 this.onJoin();
                 this.teamMode = msg.teamMode;
                 this.m_arenaPrivate = !!msg.arenaPrivate;
+                this.m_privateMiniGame = msg.miniGame;
                 this.m_localId = msg.playerId;
                 this.m_playerBarn.localPlayerId = this.m_localId;
                 this.m_validateAlpha = true;
@@ -3823,6 +3826,15 @@ export class Game {
                         );
                     }
                 }
+                break;
+            }
+            case net.MsgType.KingOfTheHill: {
+                const msg = new net.KingOfTheHillMsg();
+                msg.deserialize(stream);
+                if (!this.m_map.getMapDef().gameMode.captureTheFlag) {
+                    break;
+                }
+                this.m_uiManager.setKingOfTheHillState(msg);
                 break;
             }
             case net.MsgType.AmongUsMeetingState: {

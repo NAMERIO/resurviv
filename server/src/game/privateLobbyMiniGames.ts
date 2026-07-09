@@ -55,10 +55,21 @@ export interface CaptureTheFlagSettings {
     droppedFlagReturnTime: number;
 }
 
+export interface KingOfTheHillSettings {
+    redTeam: "A";
+    blueTeam: "B";
+    scoreLimit: number;
+    pointsPerSecond: number;
+    hillDuration: number;
+    nextHillDelay: number;
+    matchDuration: number;
+}
+
 interface PrivateLobbyMiniGameServerSettings {
     hideAndSeek?: HideAndSeekSettings;
     infected?: InfectedSettings;
     captureTheFlag?: CaptureTheFlagSettings;
+    kingOfTheHill?: KingOfTheHillSettings;
     getWeaponOverride?: (
         arenaTeam: ArenaTeam | undefined,
     ) => PrivateLobbyMiniGameWeaponOverride | undefined;
@@ -112,6 +123,16 @@ export const CaptureTheFlagSettings: CaptureTheFlagSettings = {
     droppedFlagReturnTime: 5,
 };
 
+export const KingOfTheHillSettings: KingOfTheHillSettings = {
+    redTeam: "A",
+    blueTeam: "B",
+    scoreLimit: 200,
+    pointsPerSecond: 1,
+    hillDuration: 60,
+    nextHillDelay: 10,
+    matchDuration: 600,
+};
+
 export const PrivateLobbyMiniGameServerSettings: Record<
     PrivateLobbyMiniGame,
     PrivateLobbyMiniGameServerSettings
@@ -162,6 +183,9 @@ export const PrivateLobbyMiniGameServerSettings: Record<
     capture_the_flag: {
         captureTheFlag: CaptureTheFlagSettings,
     },
+    king_of_the_hill: {
+        kingOfTheHill: KingOfTheHillSettings,
+    },
 };
 
 export function getPrivateLobbyMiniGameMapName(
@@ -169,6 +193,7 @@ export function getPrivateLobbyMiniGameMapName(
 ) {
     if (miniGame === "among_us") return "among_us";
     if (miniGame === "capture_the_flag") return "capture_the_flag";
+    if (miniGame === "king_of_the_hill") return "capture_the_flag";
     return undefined;
 }
 
@@ -215,6 +240,17 @@ export function getCaptureTheFlagSettings(
 
 export function isCaptureTheFlagMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
     return miniGame === "capture_the_flag";
+}
+
+export function getKingOfTheHillSettings(
+    miniGame: PrivateLobbyMiniGame | undefined,
+): KingOfTheHillSettings | undefined {
+    if (!miniGame) return undefined;
+    return PrivateLobbyMiniGameServerSettings[miniGame].kingOfTheHill;
+}
+
+export function isKingOfTheHillMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
+    return miniGame === "king_of_the_hill";
 }
 
 export function isHideAndSeekHider(
