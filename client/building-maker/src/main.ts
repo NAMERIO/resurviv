@@ -936,12 +936,11 @@ function makeItemFromPalette(
         fallbackHeight: entry.fallbackHeight,
         alpha: 1,
         tint: entry.mapGroundPatch ? DEFAULT_MAP_FLOOR_COLOR : 0xffffff,
-        surfaceType:
-            entry.mapGroundPatch
-                ? "sand"
-                : entry.kind === "floor" || entry.kind === "basementFloor"
-                  ? "wood"
-                  : undefined,
+        surfaceType: entry.mapGroundPatch
+            ? "sand"
+            : entry.kind === "floor" || entry.kind === "basementFloor"
+              ? "wood"
+              : undefined,
         mapGroundPatch: entry.mapGroundPatch,
         localCollider:
             entry.localCollider ||
@@ -1013,8 +1012,14 @@ function itemSize(item: EditorItem): { width: number; height: number } {
         const bounds = buildingLocalImageBounds(building);
         if (bounds) {
             return {
-                width: Math.max(MIN_GRID_SIZE, (bounds.max.x - bounds.min.x) * item.scale),
-                height: Math.max(MIN_GRID_SIZE, (bounds.max.y - bounds.min.y) * item.scale),
+                width: Math.max(
+                    MIN_GRID_SIZE,
+                    (bounds.max.x - bounds.min.x) * item.scale,
+                ),
+                height: Math.max(
+                    MIN_GRID_SIZE,
+                    (bounds.max.y - bounds.min.y) * item.scale,
+                ),
             };
         }
     }
@@ -1510,7 +1515,11 @@ function drawBuildingGroundPatches(item: EditorItem, building: BuildingDef) {
     ctx.restore();
 }
 
-function drawBuildingChildObjects(item: EditorItem, building: BuildingDef, depth: number) {
+function drawBuildingChildObjects(
+    item: EditorItem,
+    building: BuildingDef,
+    depth: number,
+) {
     if (depth > 2) return;
     const buildingOri = radToOri(item.rotation);
     for (const mapObject of building.mapObjects || []) {
@@ -1845,7 +1854,9 @@ function itemCorners(item: EditorItem): Vec2[] {
     );
 }
 
-function resizeHandlePoints(item: EditorItem): Array<{ handle: ResizeHandle; pos: Vec2 }> {
+function resizeHandlePoints(
+    item: EditorItem,
+): Array<{ handle: ResizeHandle; pos: Vec2 }> {
     if (!item.mapGroundPatch) return [];
     const size = itemSize(item);
     const handles: ResizeHandle[] = [
@@ -2037,7 +2048,10 @@ function resizeItemFromHandle(
         height = Math.max(MIN_GRID_SIZE, snap(height));
     }
 
-    const nextCenter = v2.add(state.startCenter, v2.rotate(centerLocal, state.startRotation));
+    const nextCenter = v2.add(
+        state.startCenter,
+        v2.rotate(centerLocal, state.startRotation),
+    );
     item.x = doc.snapToGrid ? snap(nextCenter.x) : nextCenter.x;
     item.y = doc.snapToGrid ? snap(nextCenter.y) : nextCenter.y;
     setItemSize(item, width, height);
@@ -2574,7 +2588,7 @@ function renderPalette() {
                   ? "Box"
                   : entry.mapGroundPatch
                     ? "Map"
-                  : "Obj";
+                    : "Obj";
         }
 
         const meta = document.createElement("div");
@@ -3462,7 +3476,10 @@ function itemToMapGroundPatches(item: EditorItem) {
         const y1 = -ry + ((i + 1) / segments) * size.height;
         const midY = (y0 + y1) / 2;
         const halfWidth = rx * Math.sqrt(Math.max(0, 1 - (midY * midY) / (ry * ry)));
-        const local = collider.createAabb(v2.create(-halfWidth, y0), v2.create(halfWidth, y1));
+        const local = collider.createAabb(
+            v2.create(-halfWidth, y0),
+            v2.create(halfWidth, y1),
+        );
         strips.push({
             bound: firstAabb(
                 collider.transform(local, v2.create(item.x, item.y), item.rotation, 1),

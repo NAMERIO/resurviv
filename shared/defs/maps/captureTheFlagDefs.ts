@@ -30,7 +30,7 @@ export const CaptureTheFlagMapDef: PartialMapDef = {
         disableGas: true,
     },
     assets: {
-        atlases: ["gradient", "loadout", "shared", "main", "cobalt", "woods"],
+        atlases: ["gradient", "loadout", "shared", "main", "cobalt", "woods", "faction"],
     },
     gameConfig: {
         planes: {

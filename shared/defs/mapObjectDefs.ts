@@ -35164,7 +35164,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 color: 0xc6aa6c,
                 roughness: 0,
                 offsetDist: 0,
-                order: 27,
+                order: 0.1,
                 useAsMapShape: true,
             },
             {
@@ -35265,7 +35265,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 color: 0xc6aa6c,
                 roughness: 0,
                 offsetDist: 0,
-                order: 27,
+                order: 0.1,
                 useAsMapShape: true,
             },
             {
@@ -35315,6 +35315,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                         v2.create(0, -15),
                         v2.create(200, 117.313),
                     ),
+                    noZoom: true,
                 },
             ],
             imgs: [
