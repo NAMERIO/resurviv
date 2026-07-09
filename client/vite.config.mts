@@ -124,14 +124,6 @@ export default defineConfig(({ mode }) => {
                         import.meta.dirname,
                         "loot-table-maker/index.html",
                     ),
-                    ...(isDev
-                        ? {
-                              "building-editor": resolve(
-                                  import.meta.dirname,
-                                  "building-editor/index.html",
-                              ),
-                          }
-                        : {}),
                 },
                 output: {
                     assetFileNames(assetInfo) {

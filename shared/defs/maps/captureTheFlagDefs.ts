@@ -20,8 +20,8 @@ export const CaptureTheFlagMapDef: PartialMapDef = {
         captureTheFlag: {
             redSpawn: v2.create(mapWidth * 0.18, mapWidth * 0.5),
             blueSpawn: v2.create(mapWidth * 0.82, mapWidth * 0.5),
-            redFlag: v2.create(mapWidth * 0.13, mapWidth * 0.5),
-            blueFlag: v2.create(mapWidth * 0.87, mapWidth * 0.5),
+            redFlag: v2.create(341.21, 189.71),
+            blueFlag: v2.create(35.91, 189.71),
             spawnRadius: 18,
             flagPickupRadius: 2.6,
             captureRadius: 4,
