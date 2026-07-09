@@ -231,8 +231,8 @@ export class Game {
         ) {
             const teamCount =
                 this.captureTheFlagManager.enabled || this.kingOfTheHillManager.enabled
-                ? 2
-                : this.map.mapDef.gameMode.factions!;
+                    ? 2
+                    : this.map.mapDef.gameMode.factions!;
             for (let i = 1; i <= teamCount; i++) {
                 this.playerBarn.addTeam(i);
             }

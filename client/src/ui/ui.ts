@@ -11,8 +11,8 @@ import {
     CaptureTheFlagFlagStatus,
     type CaptureTheFlagMsg,
 } from "../../../shared/net/captureTheFlagMsg";
-import { KingOfTheHillPhase, type KingOfTheHillMsg } from "../../../shared/net/net";
 import type { LeaderboardMsg } from "../../../shared/net/leaderboardMsg";
+import { type KingOfTheHillMsg, KingOfTheHillPhase } from "../../../shared/net/net";
 import type { PlayerStatsMsg } from "../../../shared/net/playerStatsMsg";
 import type { MapIndicator, PlayerStatus } from "../../../shared/net/updateMsg";
 import { coldet } from "../../../shared/utils/coldet";
@@ -348,7 +348,9 @@ export class UiManager {
         this.inputBindUi = inputBindUi;
         for (let i = 0; i < this.captureTheFlagZoneLabels.length; i++) {
             this.captureTheFlagZoneOverlay.addChild(this.captureTheFlagZoneLabels[i]);
-            this.captureTheFlagZoneOverlay.addChild(this.captureTheFlagZoneFlagSprites[i]);
+            this.captureTheFlagZoneOverlay.addChild(
+                this.captureTheFlagZoneFlagSprites[i],
+            );
         }
 
         this.roleMenuConfirm.on("click", (e) => {
@@ -560,7 +562,9 @@ export class UiManager {
         this.container.addChild(this.display.player);
         this.container.addChild(this.display.border);
         for (let i = 0; i < this.captureTheFlagMapFlagSprites.length; i++) {
-            this.display.captureTheFlagMapZones.addChild(this.captureTheFlagMapFlagSprites[i]);
+            this.display.captureTheFlagMapZones.addChild(
+                this.captureTheFlagMapFlagSprites[i],
+            );
         }
 
         const minimapMargin = this.getMinimapMargin();
@@ -1085,10 +1089,7 @@ export class UiManager {
 
             const label = this.captureTheFlagZoneLabels[labelIdx++];
             const flagSprite = this.captureTheFlagZoneFlagSprites[labelIdx - 1];
-            const showFlag =
-                this.kingOfTheHillMode &&
-                !zone.locked &&
-                !zone.inactive;
+            const showFlag = this.kingOfTheHillMode && !zone.locked && !zone.inactive;
             if (label) {
                 label.text = this.kingOfTheHillMode
                     ? zone.locked

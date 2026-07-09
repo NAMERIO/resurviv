@@ -1,5 +1,5 @@
 import $ from "jquery";
-import * as PIXI from "pixi.js-legacy";
+import type * as PIXI from "pixi.js-legacy";
 import { type FolderApi, Pane, type TabPageApi } from "tweakpane";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { RoleDefs } from "../../../shared/defs/gameObjects/roleDefs";
@@ -16,8 +16,8 @@ import {
     debugRenderConfig,
     type debugToolsConfig,
 } from "../config";
-import { type InputHandler, Key, MouseButton } from "../input";
 import { helpers } from "../helpers";
+import { type InputHandler, Key, MouseButton } from "../input";
 
 const availableLoot = Object.entries(GameObjectDefs)
     .filter(([_, def]) => "lootImg" in def)

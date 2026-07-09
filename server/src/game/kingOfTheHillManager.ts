@@ -26,13 +26,16 @@ export class KingOfTheHillManager {
         const def = game.map.mapDef.gameMode.captureTheFlag;
         this.settings = getKingOfTheHillSettings(this.game.miniGame);
         this.enabled = !!def && !!this.settings;
-        this.hillLocations = (def?.kingOfTheHillLocations?.length
-            ? def.kingOfTheHillLocations
-            : [
-                  def?.redFlag ?? v2.create(game.map.width * 0.65, game.map.height / 2),
-                  v2.create(game.map.width / 2, game.map.height / 2),
-                  def?.blueFlag ?? v2.create(game.map.width * 0.35, game.map.height / 2),
-              ]
+        this.hillLocations = (
+            def?.kingOfTheHillLocations?.length
+                ? def.kingOfTheHillLocations
+                : [
+                      def?.redFlag ??
+                          v2.create(game.map.width * 0.65, game.map.height / 2),
+                      v2.create(game.map.width / 2, game.map.height / 2),
+                      def?.blueFlag ??
+                          v2.create(game.map.width * 0.35, game.map.height / 2),
+                  ]
         ).map((pos) => v2.copy(pos));
     }
 
@@ -51,7 +54,9 @@ export class KingOfTheHillManager {
         this.phaseTicker -= dt;
 
         const scoringDt =
-            this.phase === "countdown" ? Math.min(dt, Math.max(0, previousPhaseTicker)) : dt;
+            this.phase === "countdown"
+                ? Math.min(dt, Math.max(0, previousPhaseTicker))
+                : dt;
         if (scoringDt > 0 && this.currentHillPos) {
             this.controllingTeamId = this.getControllingTeamId();
             if (this.controllingTeamId === 1) {

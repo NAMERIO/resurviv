@@ -276,7 +276,8 @@ export class PlayerBarn {
                 this.game.kingOfTheHillManager.getSpawnPos(
                     joinData.arenaTeam,
                     team?.id,
-                ) ?? this.game.map.getSpawnPos(group, team);
+                ) ??
+                this.game.map.getSpawnPos(group, team);
             if (group && !group.spawnPosition) {
                 group.spawnPosition = v2.copy(pos);
             }
