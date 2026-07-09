@@ -3794,6 +3794,9 @@ export class Game {
             case net.MsgType.CaptureTheFlag: {
                 const msg = new net.CaptureTheFlagMsg();
                 msg.deserialize(stream);
+                if (!this.m_map.getMapDef().gameMode.captureTheFlag) {
+                    break;
+                }
                 this.m_uiManager.setCaptureTheFlagState(msg);
                 const localTeamId = this.m_playerBarn.getPlayerInfo(
                     this.m_localId,

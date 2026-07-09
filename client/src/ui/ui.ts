@@ -245,6 +245,7 @@ export class UiManager {
     private captureTheFlagZones: CaptureTheFlagZone[] = [];
     private captureTheFlagScoreState: CaptureTheFlagScoreState | undefined;
     private captureTheFlagLastTimeText = "";
+    private captureTheFlagMode = false;
     private captureTheFlagZoneLabels = [
         this.createCaptureTheFlagZoneLabel(),
         this.createCaptureTheFlagZoneLabel(),
@@ -681,6 +682,8 @@ export class UiManager {
         this.setSpectating(false);
         this.updateSpectatorCountDisplay(true);
         this.resetWeapSlotStyling();
+        this.captureTheFlagMode = false;
+        this.clearCaptureTheFlagState();
         this.dead = false;
 
         // Reset team selector colors
@@ -692,6 +695,7 @@ export class UiManager {
     onMapLoad(map: Map, camera: Camera) {
         this.clearAmongUsTaskMapMarkers();
         const ctfDef = map.getMapDef().gameMode.captureTheFlag;
+        this.captureTheFlagMode = !!ctfDef;
         if (ctfDef) {
             this.captureTheFlagZones = [
                 {
@@ -730,26 +734,7 @@ export class UiManager {
             this.updateCaptureTheFlagScoreboard(true);
             this.captureTheFlagScoreboard.css("display", "block");
         } else {
-            this.captureTheFlagZones = [];
-            this.captureTheFlagZoneOverlay.clear();
-            this.hideCaptureTheFlagZoneLabels();
-            this.captureTheFlagScoreState = undefined;
-            this.captureTheFlagLastTimeText = "";
-            this.captureTheFlagScoreboard.css("display", "none");
-            setCaptureTheFlagTimerState(
-                {
-                    status: CaptureTheFlagFlagStatus.AtBase,
-                    pos: v2.create(0, 0),
-                    returnTime: 0,
-                    returnDuration: 0,
-                },
-                {
-                    status: CaptureTheFlagFlagStatus.AtBase,
-                    pos: v2.create(0, 0),
-                    returnTime: 0,
-                    returnDuration: 0,
-                },
-            );
+            this.clearCaptureTheFlagState();
         }
         this.resize(map, camera);
         if (this.hideTeamStatus) {
@@ -774,6 +759,10 @@ export class UiManager {
     }
 
     setCaptureTheFlagState(msg: CaptureTheFlagMsg) {
+        if (!this.captureTheFlagMode) {
+            this.clearCaptureTheFlagState();
+            return;
+        }
         this.captureTheFlagScoreState = {
             redScore: msg.redScore,
             blueScore: msg.blueScore,
@@ -806,6 +795,29 @@ export class UiManager {
                 pos: msg.blueFlagPos,
                 returnTime: msg.blueFlagReturnTime,
                 returnDuration: msg.droppedFlagReturnDuration,
+            },
+        );
+    }
+
+    private clearCaptureTheFlagState() {
+        this.captureTheFlagZones = [];
+        this.captureTheFlagZoneOverlay.clear();
+        this.hideCaptureTheFlagZoneLabels();
+        this.captureTheFlagScoreState = undefined;
+        this.captureTheFlagLastTimeText = "";
+        this.captureTheFlagScoreboard.css("display", "none");
+        setCaptureTheFlagTimerState(
+            {
+                status: CaptureTheFlagFlagStatus.AtBase,
+                pos: v2.create(0, 0),
+                returnTime: 0,
+                returnDuration: 0,
+            },
+            {
+                status: CaptureTheFlagFlagStatus.AtBase,
+                pos: v2.create(0, 0),
+                returnTime: 0,
+                returnDuration: 0,
             },
         );
     }
@@ -1359,7 +1371,8 @@ export class UiManager {
             mapSprite.sprite.tint = tint;
         };
         const isCaptureTheFlagRole = (role: string) =>
-            role === "ctf_flag_red" || role === "ctf_flag_blue";
+            this.captureTheFlagMode &&
+            (role === "ctf_flag_red" || role === "ctf_flag_blue");
         const keys = Object.keys(playerBarn.playerStatus);
         for (let i = 0; i < keys.length; i++) {
             const playerStatus = playerBarn.playerStatus[keys[i] as unknown as number];
