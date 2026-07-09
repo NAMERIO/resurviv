@@ -210,6 +210,7 @@ export class Emitter {
 export class ParticleBarn {
     particles: Particle[] = [];
     emitters: Emitter[] = [];
+    noopParticle = new Particle();
     valueAdjust = 1;
 
     constructor(public renderer: Renderer) {
@@ -242,6 +243,11 @@ export class ParticleBarn {
         parent?: PIXI.Container | null,
         zOrd?: number,
     ) {
+        const def = ParticleDefs[type];
+        if (!def) {
+            return this.noopParticle;
+        }
+
         let particle = null;
         for (let i = 0; i < this.particles.length; i++) {
             if (!this.particles[i].active) {
@@ -255,7 +261,7 @@ export class ParticleBarn {
         }
         scale = scale !== undefined ? scale : 1;
         rot = rot !== undefined ? rot : Math.random() * Math.PI * 2;
-        zOrd = zOrd !== undefined ? zOrd : ParticleDefs[type].zOrd || 20;
+        zOrd = zOrd !== undefined ? zOrd : def.zOrd || 20;
 
         particle.init(
             this.renderer,
