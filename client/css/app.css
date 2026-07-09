@@ -5306,7 +5306,7 @@ a:active {
   top: 50%;
   transform: translate(-50%, -50%) scale(var(--arena-modal-scale));
   transform-origin: center;
-  width: min(920px, calc(100vw - 8px));
+  width: min(1040px, calc(100vw - 8px));
   z-index: 1201;
 }
 
@@ -5473,7 +5473,7 @@ a:active {
   display: grid;
   gap: 14px;
   grid-template-areas: "setup join";
-  grid-template-columns: minmax(0, 560px) 352px;
+  grid-template-columns: minmax(0, 660px) 352px;
   justify-content: center;
   padding: 14px;
 }
@@ -5952,6 +5952,17 @@ a:active {
 
 #modal-prestige-arena #create-mode-selection {
   grid-template-columns: 1fr;
+}
+
+#modal-prestige-arena #create-minigame-selection,
+#modal-prestige-arena #battle-minigame-selection {
+  grid-template-columns: minmax(0, 1fr);
+  width: min(420px, calc(100vw - 24px));
+}
+
+#modal-prestige-arena #create-minigame-selection {
+  left: auto;
+  right: 0;
 }
 
 #modal-prestige-arena #create-impostors-selection {
