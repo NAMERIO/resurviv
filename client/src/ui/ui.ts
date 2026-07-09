@@ -732,7 +732,7 @@ export class UiManager {
             };
             this.captureTheFlagLastTimeText = "";
             this.updateCaptureTheFlagScoreboard(true);
-            this.captureTheFlagScoreboard.css("display", "block");
+            this.updateCaptureTheFlagScoreboardVisibility();
         } else {
             this.clearCaptureTheFlagState();
         }
@@ -819,6 +819,15 @@ export class UiManager {
                 returnTime: 0,
                 returnDuration: 0,
             },
+        );
+    }
+
+    private updateCaptureTheFlagScoreboardVisibility() {
+        this.captureTheFlagScoreboard.css(
+            "display",
+            this.captureTheFlagMode && this.hudVisible && !this.bigmapDisplayed
+                ? "block"
+                : "none",
         );
     }
 
@@ -2562,6 +2571,7 @@ export class UiManager {
         );
         $(".js-ui-map-show").css("display", this.bigmapDisplayed ? "block" : "none");
         this.applyTeamStatusVisibility();
+        this.updateCaptureTheFlagScoreboardVisibility();
         this.updateSpectatorCountDisplay(true);
         this.redraw(this.game.m_camera);
     }
@@ -2618,6 +2628,7 @@ export class UiManager {
             this.hideMiniMap();
             this.hudVisible = false;
         }
+        this.updateCaptureTheFlagScoreboardVisibility();
     }
 
     hideMiniMap() {
