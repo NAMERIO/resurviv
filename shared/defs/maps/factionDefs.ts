@@ -83,7 +83,7 @@ const mapDef: PartialMapDef = {
                 channel: "otherPlayers",
             },
         ],
-        atlases: ["gradient", "loadout", "shared", "faction"],
+        atlases: ["gradient", "loadout", "shared"],
     },
     biome: {
         colors: {
