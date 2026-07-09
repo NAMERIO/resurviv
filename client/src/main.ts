@@ -2306,7 +2306,7 @@ export class Application {
             this.prestigeArenaWrapper.removeClass("arena-large-teams");
             this.prestigeArenaBattlePane.removeClass("arena-large-teams");
             this.prestigeArenaTeamsBoard.removeClass(
-                "arena-large-teams arena-single-team arena-battle-royale-summary",
+                "arena-large-teams arena-single-team arena-battle-royale-summary arena-capture-the-flag",
             );
             this.prestigeArenaSpectatorsBoard.addClass("hide");
             return;
@@ -2350,7 +2350,7 @@ export class Application {
             this.prestigeArenaWrapper.removeClass("arena-large-teams");
             this.prestigeArenaBattlePane.removeClass("arena-large-teams");
             this.prestigeArenaTeamsBoard
-                .removeClass("arena-large-teams arena-single-team")
+                .removeClass("arena-large-teams arena-single-team arena-capture-the-flag")
                 .addClass("arena-battle-royale-summary");
             this.prestigeArenaTeamBList.empty();
             this.prestigeArenaSpectatorList.empty();
@@ -2628,6 +2628,10 @@ export class Application {
         this.prestigeArenaBattlePane.toggleClass("arena-large-teams", largeTeams);
         this.prestigeArenaTeamsBoard.toggleClass("arena-large-teams", largeTeams);
         this.prestigeArenaTeamsBoard.toggleClass("arena-single-team", singleTeam);
+        this.prestigeArenaTeamsBoard.toggleClass(
+            "arena-capture-the-flag",
+            miniGameDef.id === "capture_the_flag",
+        );
         this.prestigeArenaTeamsBoard.css({
             "--arena-team-board-columns": String(Math.min(activeTeams.length, 2)),
             "--arena-single-team-columns": String(Math.min(teamSize, 5)),

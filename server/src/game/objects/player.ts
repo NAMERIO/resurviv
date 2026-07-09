@@ -1683,8 +1683,10 @@ export class Player extends BaseGameObject {
         this.inventoryDirty = true;
         this.setDirty();
 
-        // for savannah the hunted indicator
-        if (roleDef.mapIndicator) {
+        const ctfFlagRole = role === "ctf_flag_red" || role === "ctf_flag_blue";
+
+        // CTF carriers are already drawn on the minimap from player role status.
+        if (roleDef.mapIndicator && !ctfFlagRole) {
             this.mapIndicator?.kill();
             this.mapIndicator = this.game.mapIndicatorBarn.allocIndicator(role, true);
         }

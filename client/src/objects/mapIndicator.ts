@@ -92,7 +92,7 @@ export class MapIndicatorBarn {
         mapSprite.scale = scale;
         mapSprite.alpha = 1;
         mapSprite.zOrder = zOrder;
-        mapSprite.visible = true;
+        mapSprite.visible = ctfIndicator ? indicator.equipped : true;
         mapSprite.sprite.texture = PIXI.Texture.from(objDef.mapIndicator?.sprite!);
 
         mapSprite.sprite.tint = objDef.mapIndicator?.tint ?? 0xffffff;
@@ -101,7 +101,7 @@ export class MapIndicatorBarn {
             pulseSprite.pos = v2.copy(indicator.pos);
             pulseSprite.scale = ctfIndicator ? scale * 1.35 : 1;
             pulseSprite.zOrder = zOrder - 1;
-            pulseSprite.visible = true;
+            pulseSprite.visible = ctfIndicator ? indicator.equipped : true;
             pulseSprite.sprite.texture = PIXI.Texture.from(
                 ctfIndicator ? objDef.mapIndicator.sprite : "part-pulse-01.img",
             );
@@ -125,7 +125,7 @@ export class MapIndicatorBarn {
             if (indicator.type === "ctf_flag_red" || indicator.type === "ctf_flag_blue") {
                 const scale = (device.uiLayout == device.UiLayout.Sm ? 0.15 : 0.2) * 2.2;
                 indicator.pulseSprite.scale = scale * 1.35;
-                indicator.pulseSprite.visible = true;
+                indicator.pulseSprite.visible = indicator.equipped;
                 continue;
             }
             if (

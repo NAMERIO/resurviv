@@ -6457,6 +6457,16 @@ a:active {
   box-shadow: inset 0 -2px #642b2b;
 }
 
+#modal-prestige-arena #arena-teams-board.arena-capture-the-flag .arena-team-a {
+  background: #8a3a3a;
+  box-shadow: inset 0 -2px #642b2b;
+}
+
+#modal-prestige-arena #arena-teams-board.arena-capture-the-flag .arena-team-b {
+  background: #2f5f94;
+  box-shadow: inset 0 -2px #1e4067;
+}
+
 #modal-prestige-arena .arena-team-c {
   background: #567233;
   box-shadow: inset 0 -2px #384d22;

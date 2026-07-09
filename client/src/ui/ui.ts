@@ -1375,6 +1375,12 @@ export class UiManager {
             if (customMapIcon) {
                 zOrder += 65535;
             }
+            const ctfRole = isCaptureTheFlagRole(playerStatus.role);
+            const livePlayer = ctfRole ? playerBarn.getPlayerById(playerId) : null;
+            const mapPos =
+                ctfRole && livePlayer && !playerStatus.dead
+                    ? livePlayer.m_pos
+                    : playerStatus.pos;
 
             // Add the inner dot sprite
             let texture = "player-map-inner.img";
@@ -1395,13 +1401,15 @@ export class UiManager {
                 : sameGroup
                   ? playerBarn.getGroupColor(playerId)
                   : playerBarn.getTeamColor(playerInfo.teamId);
-            if ((map.factionMode || arenaTeamVision) && customMapIcon) {
+            const dotTint = tint;
+            if (ctfRole) {
+                tint = roleDef?.color ?? roleDef?.mapIndicator?.tint ?? tint;
+            } else if ((map.factionMode || arenaTeamVision) && customMapIcon) {
                 tint = playerBarn.getTeamColor(playerInfo.teamId);
             }
             const dotScale = device.uiLayout == device.UiLayout.Sm ? 0.15 : 0.2;
             let scale = dotScale;
 
-            const ctfRole = isCaptureTheFlagRole(playerStatus.role);
             if (sameGroup) {
                 scale = playerStatus.dead
                     ? dotScale * 1.5
@@ -1423,7 +1431,16 @@ export class UiManager {
 
             if (ctfRole && !playerStatus.dead && !playerStatus.downed) {
                 addSprite(
-                    playerStatus.pos,
+                    mapPos,
+                    dotScale,
+                    playerStatus.minimapAlpha!,
+                    playerStatus.minimapVisible!,
+                    zOrder - 2,
+                    "player-map-inner.img",
+                    dotTint,
+                );
+                addSprite(
+                    mapPos,
                     scale * 1.35,
                     playerStatus.minimapAlpha!,
                     playerStatus.minimapVisible!,
@@ -1434,7 +1451,7 @@ export class UiManager {
             }
 
             addSprite(
-                playerStatus.pos,
+                mapPos,
                 scale,
                 playerStatus.minimapAlpha!,
                 playerStatus.minimapVisible!,
@@ -1449,7 +1466,7 @@ export class UiManager {
                 const visible = playerStatus.minimapVisible! && !customMapIcon;
 
                 addSprite(
-                    playerStatus.pos,
+                    mapPos,
                     scale,
                     playerStatus.minimapAlpha!,
                     visible,

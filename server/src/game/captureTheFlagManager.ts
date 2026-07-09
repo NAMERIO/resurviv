@@ -215,7 +215,7 @@ export class CaptureTheFlagManager {
             }
             flag.indicator?.updatePosition(flag.pos);
             if (flag.indicator) {
-                flag.indicator.equipped = flag.status !== "base";
+                flag.indicator.equipped = flag.status === "dropped";
                 flag.indicator.dirty = true;
             }
         }
