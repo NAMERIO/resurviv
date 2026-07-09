@@ -17,6 +17,7 @@ export class KingOfTheHillManager {
     private phaseTicker = 0;
     private activeHillIdx = -1;
     private pendingHillIdx = -1;
+    private hillQueue: number[] = [];
     private controllingTeamId = 0;
     private lastBroadcastSecond = -1;
     private lastBroadcastControl = -1;
@@ -156,11 +157,30 @@ export class KingOfTheHillManager {
     private getNextHillIdx(): number {
         if (this.hillLocations.length <= 1) return 0;
 
-        let nextIdx = this.activeHillIdx;
-        while (nextIdx === this.activeHillIdx) {
-            nextIdx = Math.floor(Math.random() * this.hillLocations.length);
+        while (this.hillQueue.length === 0) {
+            this.hillQueue = Array.from(
+                { length: this.hillLocations.length },
+                (_, idx) => idx,
+            );
+            for (let i = this.hillQueue.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [this.hillQueue[i], this.hillQueue[j]] = [
+                    this.hillQueue[j],
+                    this.hillQueue[i],
+                ];
+            }
+            if (
+                this.hillQueue.length > 1 &&
+                this.hillQueue[this.hillQueue.length - 1] === this.activeHillIdx
+            ) {
+                const swapIdx = Math.floor(Math.random() * (this.hillQueue.length - 1));
+                [this.hillQueue[this.hillQueue.length - 1], this.hillQueue[swapIdx]] = [
+                    this.hillQueue[swapIdx],
+                    this.hillQueue[this.hillQueue.length - 1],
+                ];
+            }
         }
-        return nextIdx;
+        return this.hillQueue.pop()!;
     }
 
     private getControllingTeamId(): number {
