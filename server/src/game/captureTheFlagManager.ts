@@ -6,7 +6,10 @@ import type { Game } from "./game";
 import type { MapIndicator } from "./objects/mapIndicator";
 import type { Obstacle } from "./objects/obstacle";
 import type { Player } from "./objects/player";
-import { getCaptureTheFlagSettings } from "./privateLobbyMiniGames";
+import {
+    CaptureTheFlagSettings as DefaultCaptureTheFlagSettings,
+    getCaptureTheFlagSettings,
+} from "./privateLobbyMiniGames";
 
 type FlagStatus = "base" | "taken" | "dropped";
 type FlagTeam = "A" | "B";
@@ -32,9 +35,11 @@ export class CaptureTheFlagManager {
     private lastBroadcastSecond = -1;
 
     constructor(readonly game: Game) {
-        this.settings = getCaptureTheFlagSettings(this.game.miniGame);
-        this.enabled = !!this.settings && this.game.arenaPrivate;
         const def = game.map.mapDef.gameMode.captureTheFlag;
+        this.settings =
+            getCaptureTheFlagSettings(this.game.miniGame) ??
+            (def ? DefaultCaptureTheFlagSettings : undefined);
+        this.enabled = !!def && !!this.settings;
         const redFlag =
             def?.redFlag ?? v2.create(game.map.width * 0.15, game.map.height / 2);
         const blueFlag =
@@ -126,18 +131,24 @@ export class CaptureTheFlagManager {
         }
     }
 
-    getSpawnPos(arenaTeam: ArenaTeam | undefined): Vec2 | undefined {
+    getSpawnPos(arenaTeam: ArenaTeam | undefined, teamId?: number): Vec2 | undefined {
         if (!this.enabled) return undefined;
         const def = this.game.map.mapDef.gameMode.captureTheFlag;
+        const flagTeam = teamId === 1 ? "A" : teamId === 2 ? "B" : arenaTeam;
         const center =
-            arenaTeam === "A"
+            flagTeam === "A"
                 ? (def?.redSpawn ?? this.flags.A.basePos)
-                : arenaTeam === "B"
+                : flagTeam === "B"
                   ? (def?.blueSpawn ?? this.flags.B.basePos)
                   : undefined;
         if (!center) return undefined;
         const radius = this.game.map.mapDef.gameMode.captureTheFlag?.spawnRadius ?? 16;
-        return v2.add(center, v2.mul(v2.randomUnit(), Math.random() * radius));
+        const pos = v2.add(center, v2.mul(v2.randomUnit(), Math.random() * radius));
+        if (flagTeam === "A" && def?.redSpawnXRange) {
+            const [minX, maxX] = def.redSpawnXRange;
+            pos.x = minX + Math.random() * (maxX - minX);
+        }
+        return pos;
     }
 
     getWinningTeamId(): number {
@@ -349,8 +360,8 @@ export class CaptureTheFlagManager {
     }
 
     private getPlayerFlagTeam(player: Player): FlagTeam | undefined {
-        if (player.arenaTeam === "A" || player.teamId === 1) return "A";
-        if (player.arenaTeam === "B" || player.teamId === 2) return "B";
+        if (player.teamId === 1 || player.arenaTeam === "A") return "A";
+        if (player.teamId === 2 || player.arenaTeam === "B") return "B";
         return undefined;
     }
 

@@ -183,6 +183,7 @@ export interface MapDef {
             redFlag: Vec2;
             blueFlag: Vec2;
             spawnRadius?: number;
+            redSpawnXRange?: [number, number];
             flagPickupRadius?: number;
             captureRadius?: number;
             captureZoneSize?: Vec2;

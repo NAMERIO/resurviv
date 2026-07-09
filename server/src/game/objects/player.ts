@@ -252,7 +252,8 @@ export class PlayerBarn {
         const group = result?.group;
         // solo 50v50 just chooses the smallest team everytime no matter what
         const team =
-            this.game.map.factionMode && !this.game.isTeamMode
+            (this.game.map.factionMode || this.game.captureTheFlagManager.enabled) &&
+            !this.game.isTeamMode
                 ? this.getSmallestTeam()
                 : result?.team;
 
@@ -265,8 +266,10 @@ export class PlayerBarn {
             layer = spawnBuilding.layer;
         } else {
             pos =
-                this.game.captureTheFlagManager.getSpawnPos(joinData.arenaTeam) ??
-                this.game.map.getSpawnPos(group, team);
+                this.game.captureTheFlagManager.getSpawnPos(
+                    joinData.arenaTeam,
+                    team?.id,
+                ) ?? this.game.map.getSpawnPos(group, team);
             if (group && !group.spawnPosition) {
                 group.spawnPosition = v2.copy(pos);
             }
@@ -2588,7 +2591,7 @@ export class Player extends BaseGameObject {
         this.layer = 0;
 
         const spawnPos =
-            this.game.captureTheFlagManager.getSpawnPos(this.arenaTeam) ??
+            this.game.captureTheFlagManager.getSpawnPos(this.arenaTeam, this.teamId) ??
             this.game.map.getSpawnPos(this.group, this.team);
         v2.set(this.pos, spawnPos);
         this.collider.pos = this.pos;
