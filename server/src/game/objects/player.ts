@@ -6975,6 +6975,7 @@ export class Player extends BaseGameObject {
 
         // Normal mode: Initialize primary weapon
         if (!battleRoyaleMode && isItemInLoadout(loadout.primary, "gun")) {
+            this.loadout.primary = loadout.primary;
             const slot = GameConfig.WeaponSlot.Primary;
             this.weapons[slot].type = this.game.map.aprilFoolsMode
                 ? this.game.getRandomAprilFoolsGunType(loadout.primary)
@@ -6989,6 +6990,7 @@ export class Player extends BaseGameObject {
 
         // Normal mode: Initialize secondary weapon
         if (!battleRoyaleMode && isItemInLoadout(loadout.secondary, "gun")) {
+            this.loadout.secondary = loadout.secondary;
             const slot = GameConfig.WeaponSlot.Secondary;
             this.weapons[slot].type = this.game.map.aprilFoolsMode
                 ? this.game.getRandomAprilFoolsGunType(loadout.secondary)
