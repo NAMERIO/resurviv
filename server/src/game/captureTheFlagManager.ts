@@ -267,8 +267,10 @@ export class CaptureTheFlagManager {
     private takeFlag(player: Player, flag: CtfFlag): void {
         flag.status = "taken";
         flag.carrier = player;
+        v2.set(flag.pos, player.pos);
         flag.droppedReturnTicker = 0;
         player.promoteToRole(flag.roleType);
+        flag.indicator?.updatePosition(flag.pos);
         this.syncFlagObject(flag);
         this.broadcast(
             net.CaptureTheFlagEvent.Taken,
@@ -281,6 +283,7 @@ export class CaptureTheFlagManager {
     private dropFlag(flag: CtfFlag, pos: Vec2, actorTeamId: number): void {
         flag.status = "dropped";
         flag.carrier?.removeRole();
+        flag.carrier?.markPlayerInfoDirty();
         flag.carrier = undefined;
         v2.set(flag.pos, pos);
         flag.droppedReturnTicker = this.settings?.droppedFlagReturnTime ?? 20;
