@@ -4,7 +4,7 @@ import { v2 } from "../../utils/v2";
 import type { MapDef } from "../mapDefs";
 import { Main, type PartialMapDef } from "./baseDefs";
 
-const mapWidth = 220;
+const mapWidth = 225;
 
 export const CaptureTheFlagMapDef: PartialMapDef = {
     desc: {
@@ -30,7 +30,7 @@ export const CaptureTheFlagMapDef: PartialMapDef = {
         disableGas: true,
     },
     assets: {
-        atlases: ["gradient", "loadout", "shared", "main"],
+        atlases: ["gradient", "loadout", "shared", "main", "cobalt", "woods"],
     },
     gameConfig: {
         planes: {
@@ -66,8 +66,6 @@ export const CaptureTheFlagMapDef: PartialMapDef = {
         ],
         fixedSpawns: [
             {
-                warehouse_01: 2,
-                house_red_01: 2,
                 mil_crate_02: 6,
                 mil_crate_03: 6,
             },
@@ -76,7 +74,14 @@ export const CaptureTheFlagMapDef: PartialMapDef = {
         spawnReplacements: [{}],
         importantSpawns: [],
         customSpawnRules: {
-            locationSpawns: [],
+            locationSpawns: [
+                {
+                    type: "ctf_town_01",
+                    pos: v2.create(0.5, 0.5),
+                    rad: 0,
+                    retryOnFailure: false,
+                },
+            ],
             placeSpawns: [],
         },
     },
