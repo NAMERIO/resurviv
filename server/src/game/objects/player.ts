@@ -2583,11 +2583,14 @@ export class Player extends BaseGameObject {
         this.dead = false;
         this.captureTheFlagRespawnTicker = 0;
         this.health = GameConfig.player.health;
-        this.boost = 0;
+        this.boost = 100;
         this.downed = false;
         this.spectating = undefined;
         this.sentDeathEmote = false;
         this.sendDeathEmoteTicker = 0;
+        this.emoteSoftTicker = 0;
+        this.emoteHardTicker = 0;
+        this.emoteCounter = 0;
         this.layer = 0;
 
         const spawnPos =

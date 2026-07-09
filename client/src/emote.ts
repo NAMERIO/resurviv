@@ -565,6 +565,14 @@ export class EmoteBarn {
         this.inputReset();
     }
 
+    resetEmoteThrottle() {
+        this.emoteSoftTicker = 0;
+        this.emoteHardTicker = 0;
+        this.emoteCounter = 0;
+        this.emoteWheelsGreyed = false;
+        this.emoteWheels.css("opacity", 1);
+    }
+
     inputReset() {
         this.pingMouseTriggered = false;
         this.pingKeyTriggered = false;
@@ -905,6 +913,9 @@ export class EmoteBarn {
         if ((localId != player.__id || !!player.m_netData.m_dead) && !this.disable) {
             this.m_free();
             this.disable = true;
+        } else if (localId == player.__id && !player.m_netData.m_dead && this.disable) {
+            this.init();
+            this.resetEmoteThrottle();
         }
 
         const perkModeDisable = map.perkMode && !player.m_netData.m_role;
