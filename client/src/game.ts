@@ -1348,12 +1348,15 @@ export class Game {
             this.m_planeBarn,
         );
         this.m_emoteBarn.m_render(this.m_camera);
-        if (IS_DEV) {
+        if (IS_DEV || this.editor) {
             this.m_debugDisplay.clear();
-            if (debug.enabled) {
+            if (IS_DEV && debug.enabled) {
                 debugLines.m_render(this.m_camera, this.m_debugDisplay);
             }
-            debugLines.flush();
+            this.editor?.m_render(this.m_debugDisplay, this.m_camera);
+            if (IS_DEV) {
+                debugLines.flush();
+            }
         }
     }
 
