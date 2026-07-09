@@ -1021,7 +1021,13 @@ export class UiManager {
 
         for (let i = 0; i < this.captureTheFlagZones.length; i++) {
             const zone = this.captureTheFlagZones[i];
-            const zonePos = zone.pos;
+            const zonePos = this.kingOfTheHillMode
+                ? zone.pos
+                : zone.teamId === 1
+                  ? ctfDef.redFlag
+                  : zone.teamId === 2
+                    ? ctfDef.blueFlag
+                    : zone.pos;
 
             const center = camera.m_pointToScreen(zonePos);
             const x = center.x - width / 2;
@@ -1131,7 +1137,13 @@ export class UiManager {
 
         for (let i = 0; i < this.captureTheFlagZones.length; i++) {
             const zone = this.captureTheFlagZones[i];
-            const zonePos = zone.pos;
+            const zonePos = this.kingOfTheHillMode
+                ? zone.pos
+                : zone.teamId === 1
+                  ? ctfDef.redFlag
+                  : zone.teamId === 2
+                    ? ctfDef.blueFlag
+                    : zone.pos;
             const center = this.getMapPosFromWorldPos(zonePos, map);
             const x = center.x - width / 2;
             const y = center.y - height / 2;
@@ -1165,12 +1177,17 @@ export class UiManager {
 
             const flagSprite = this.captureTheFlagMapFlagSprites[flagIdx++];
             if (flagSprite) {
-                const showFlag = this.kingOfTheHillMode && !zone.inactive;
+                const showFlag = this.kingOfTheHillMode
+                    ? !zone.inactive
+                    : zone.status !== CaptureTheFlagFlagStatus.Taken;
+                const flagCenter = this.kingOfTheHillMode
+                    ? center
+                    : this.getMapPosFromWorldPos(zone.pos, map);
                 const flagSize = math.max(6, math.min(width, height) * 0.72);
                 flagSprite.texture = PIXI.Texture.from("loot_flag.img");
                 flagSprite.tint = this.getCaptureTheFlagZoneFlagTint(zone.teamId);
-                flagSprite.x = center.x;
-                flagSprite.y = center.y;
+                flagSprite.x = flagCenter.x;
+                flagSprite.y = flagCenter.y;
                 flagSprite.width = flagSize;
                 flagSprite.height = flagSize;
                 flagSprite.alpha = zone.locked ? 0.65 : 0.9;
