@@ -212,7 +212,9 @@ export class Projectile extends BaseGameObject {
         //
         // Height / posZ
         //
-        this.velZ -= gravity * dt;
+        if (!def.throwPhysics.ignoreGravity) {
+            this.velZ -= gravity * dt;
+        }
         this.posZ += this.velZ * dt;
         this.posZ = math.clamp(this.posZ, 0, GameConfig.projectile.maxHeight);
 

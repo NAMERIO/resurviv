@@ -135,10 +135,12 @@ class Gun {
         this.container.visible = vis;
     }
 
-    setType(type: string, t: number) {
+    setType(type: string, t: number, loaded = false) {
         const gunDef = GameObjectDefs[type] as GunDef;
         const imgDef = gunDef.worldImg;
-        this.gunBarrel.texture = PIXI.Texture.from(imgDef.sprite);
+        this.gunBarrel.texture = PIXI.Texture.from(
+            loaded && imgDef.onLoadComplete ? imgDef.onLoadComplete : imgDef.sprite,
+        );
 
         this.gunBarrel.anchor.set(0.5, 1);
         this.gunBarrel.position.set(0, 0);
@@ -1697,20 +1699,6 @@ export class Player implements AbstractObject {
         }
         if (curWeapDef && (curWeapDef as GunDef).fireMode === "blaster") {
             const gunDef = curWeapDef as GunDef;
-            if (this.gunRSprites?.gunBarrel && gunDef.worldImg?.onLoadComplete) {
-                if (this.m_netData.m_gunLoaded) {
-                    this.gunRSprites.gunBarrel.texture = PIXI.Texture.from(
-                        gunDef.worldImg.onLoadComplete,
-                    );
-                } else {
-                    this.gunRSprites.gunBarrel.texture = PIXI.Texture.from(
-                        gunDef.worldImg.sprite,
-                    );
-                }
-            }
-        }
-        if (curWeapDef && (curWeapDef as GunDef).fireMode === "blaster") {
-            const gunDef = curWeapDef as GunDef;
 
             if (this.gunRSprites?.gunBall && gunDef.worldImg?.loadingBullet) {
                 const maxScale =
@@ -2101,10 +2089,18 @@ export class Player implements AbstractObject {
             | MeleeDef
             | ThrowableDef;
         if (weapDef.type == "gun") {
-            this.gunRSprites.setType(this.m_netData.m_activeWeapon, bodyScale);
+            this.gunRSprites.setType(
+                this.m_netData.m_activeWeapon,
+                bodyScale,
+                this.m_netData.m_gunLoaded,
+            );
             this.gunRSprites.setVisible(true);
             if (weapDef.isDual) {
-                this.gunLSprites.setType(this.m_netData.m_activeWeapon, bodyScale);
+                this.gunLSprites.setType(
+                    this.m_netData.m_activeWeapon,
+                    bodyScale,
+                    this.m_netData.m_gunLoaded,
+                );
                 this.gunLSprites.setVisible(true);
             } else {
                 this.gunLSprites.setVisible(false);

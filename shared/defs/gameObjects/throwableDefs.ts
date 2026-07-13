@@ -20,6 +20,8 @@ export interface ThrowableDef {
         spinDrag: number;
         fixedCollisionHeight?: number;
         randomizeSpinDir?: boolean;
+        ignoreGravity?: boolean;
+        alignToVelocity?: boolean;
     };
     speed: {
         equip: number;
@@ -1469,6 +1471,62 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
             throwing: "frag_throw_01",
             pickup: "potato_pickup_01",
             deploy: "frag_deploy_01",
+        },
+    },
+    bazooka_rocket: {
+        name: "Bazooka",
+        type: "throwable",
+        quality: 0,
+        explosionType: "explosion_bazooka",
+        inventoryOrder: 0,
+        noPotatoSwap: true,
+        cookable: false,
+        forceMaxThrowDistance: true,
+        explodeOnImpact: true,
+        destroyNonCollidables: true,
+        playerCollision: true,
+        fuseTime: 6,
+        aimDistance: 250,
+        rad: 0.6,
+        throwPhysics: {
+            playerVelMult: 0,
+            velZ: 0,
+            speed: 55,
+            spinVel: 0,
+            spinDrag: 0,
+            fixedCollisionHeight: 0.5,
+            ignoreGravity: true,
+            alignToVelocity: true,
+        },
+        speed: {
+            equip: 0,
+            attack: 0,
+        },
+        lootImg: {
+            sprite: "loot-weapon-bazooka.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-01.img",
+            borderTint: 0,
+            scale: 0.2,
+        },
+        worldImg: {
+            sprite: "proj-bazooka-tip.img",
+            scale: 0.18,
+            tint: 0xffffff,
+        },
+        handImg: {},
+        useThrowParticles: false,
+        sound: {
+            pullPin: "",
+            throwing: "",
+            pickup: "gun_pickup_01",
+            deploy: "m79_switch_01",
+        },
+        trail: {
+            maxLength: 8,
+            width: 0.25,
+            alpha: 0.65,
+            tint: 0xffffff,
         },
     },
 };

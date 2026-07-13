@@ -1367,10 +1367,13 @@ export class Player extends BaseGameObject {
 
     get gunLoaded() {
         const itemDef = GameObjectDefs[this.activeWeapon] as GunDef | undefined;
+        if (itemDef?.type !== "gun") return false;
+        if (itemDef.fireMode === "blaster") {
+            return this.loadingBlaster >= (itemDef.loadTime ?? 1.5);
+        }
         return (
-            itemDef?.type === "gun" &&
-            itemDef.fireMode === "blaster" &&
-            this.loadingBlaster >= (itemDef.loadTime ?? 1.5)
+            !!itemDef.worldImg.onLoadComplete &&
+            (this.weapons[this.curWeapIdx]?.ammo ?? 0) > 0
         );
     }
 
