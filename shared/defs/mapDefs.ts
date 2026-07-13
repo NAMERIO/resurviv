@@ -188,6 +188,7 @@ export interface MapDef {
             captureRadius?: number;
             captureZoneSize?: Vec2;
             kingOfTheHillLocations?: Vec2[];
+            dominationLocations?: Vec2[];
         };
         disableGas?: boolean;
     };

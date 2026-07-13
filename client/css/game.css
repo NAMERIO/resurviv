@@ -1687,6 +1687,16 @@ img {
   opacity: 0.78;
 }
 
+#ui-ctf-score-goal {
+  display: none;
+  margin-top: 2px;
+  font-size: 9px;
+  line-height: 10px;
+  letter-spacing: 0.25px;
+  opacity: 0.82;
+  white-space: nowrap;
+}
+
 @media (max-height: 768px), (max-width: 1200px) {
   #ui-ctf-scoreboard {
     transform: translateX(-50%) scale(0.85);

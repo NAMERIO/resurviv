@@ -369,6 +369,7 @@ export enum MsgType {
     AmongUsMeetingChatSend,
     CaptureTheFlag,
     KingOfTheHill,
+    Domination,
 }
 
 export enum PickupMsgType {
@@ -401,6 +402,7 @@ export {
     CaptureTheFlagMsg,
 } from "./captureTheFlagMsg";
 export { DisconnectMsg } from "./disconnectMsg";
+export { DominationMsg, type DominationPointNetState } from "./dominationMsg";
 export { DropItemMsg } from "./dropItemMsg";
 export { EditMsg } from "./editMsg";
 export { EmoteMsg } from "./emoteMsg";

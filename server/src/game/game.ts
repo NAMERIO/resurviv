@@ -29,6 +29,7 @@ import {
     type UpdateDataMsg,
 } from "../utils/types";
 import { CaptureTheFlagManager } from "./captureTheFlagManager";
+import { DominationManager } from "./dominationManager";
 import { GameModeManager } from "./gameModeManager";
 import { Grid } from "./grid";
 import { KingOfTheHillManager } from "./kingOfTheHillManager";
@@ -101,6 +102,7 @@ export class Game {
     amongUsWinningRole?: AmongUsRole;
     captureTheFlagManager: CaptureTheFlagManager;
     kingOfTheHillManager: KingOfTheHillManager;
+    dominationManager: DominationManager;
     arenaStartLockTimer = 0;
     arenaLastCountdownSecond = -1;
     arenaGoBroadcasted = false;
@@ -222,15 +224,19 @@ export class Game {
 
         this.captureTheFlagManager = new CaptureTheFlagManager(this);
         this.kingOfTheHillManager = new KingOfTheHillManager(this);
+        this.dominationManager = new DominationManager(this);
         this.modeManager = new GameModeManager(this);
 
         if (
             this.map.factionMode ||
             this.captureTheFlagManager.enabled ||
-            this.kingOfTheHillManager.enabled
+            this.kingOfTheHillManager.enabled ||
+            this.dominationManager.enabled
         ) {
             const teamCount =
-                this.captureTheFlagManager.enabled || this.kingOfTheHillManager.enabled
+                this.captureTheFlagManager.enabled ||
+                this.kingOfTheHillManager.enabled ||
+                this.dominationManager.enabled
                     ? 2
                     : this.map.mapDef.gameMode.factions!;
             for (let i = 1; i <= teamCount; i++) {
@@ -271,6 +277,7 @@ export class Game {
         this.map.init();
         this.captureTheFlagManager.init();
         this.kingOfTheHillManager.init();
+        this.dominationManager.init();
         this.pluginManager.emit("gameCreated", this);
 
         this.allowJoin = true;
@@ -342,6 +349,10 @@ export class Game {
 
         this.profiler.addSample("kingOfTheHill");
         this.kingOfTheHillManager.update(dt);
+        this.profiler.endSample();
+
+        this.profiler.addSample("domination");
+        this.dominationManager.update(dt);
         this.profiler.endSample();
 
         this.profiler.addSample("map");

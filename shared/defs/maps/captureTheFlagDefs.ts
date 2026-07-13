@@ -40,6 +40,11 @@ export const CaptureTheFlagMapDef: PartialMapDef = {
                 v2.create(311.87, 267.37),
                 v2.create(52.91, 264.66),
             ],
+            dominationLocations: [
+                v2.create(46.73, 238.59),
+                v2.create(189.31, 188.89),
+                v2.create(314.41, 241.17),
+            ],
         },
         disableGas: true,
     },

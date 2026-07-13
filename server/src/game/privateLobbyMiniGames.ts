@@ -65,11 +65,24 @@ export interface KingOfTheHillSettings {
     matchDuration: number;
 }
 
+export interface DominationSettings {
+    redTeam: "A";
+    blueTeam: "B";
+    scoreLimit: number;
+    pointsPerSecond: number;
+    neutralCaptureTime: number;
+    enemyCaptureTime: number;
+    resetDelay: number;
+    resetDuration: number;
+    matchDuration: number;
+}
+
 interface PrivateLobbyMiniGameServerSettings {
     hideAndSeek?: HideAndSeekSettings;
     infected?: InfectedSettings;
     captureTheFlag?: CaptureTheFlagSettings;
     kingOfTheHill?: KingOfTheHillSettings;
+    domination?: DominationSettings;
     getWeaponOverride?: (
         arenaTeam: ArenaTeam | undefined,
     ) => PrivateLobbyMiniGameWeaponOverride | undefined;
@@ -133,6 +146,18 @@ export const KingOfTheHillSettings: KingOfTheHillSettings = {
     matchDuration: 600,
 };
 
+export const DominationSettings: DominationSettings = {
+    redTeam: "A",
+    blueTeam: "B",
+    scoreLimit: 700,
+    pointsPerSecond: 1,
+    neutralCaptureTime: 5,
+    enemyCaptureTime: 8,
+    resetDelay: 0,
+    resetDuration: 3,
+    matchDuration: 600,
+};
+
 export const PrivateLobbyMiniGameServerSettings: Record<
     PrivateLobbyMiniGame,
     PrivateLobbyMiniGameServerSettings
@@ -186,6 +211,9 @@ export const PrivateLobbyMiniGameServerSettings: Record<
     king_of_the_hill: {
         kingOfTheHill: KingOfTheHillSettings,
     },
+    domination: {
+        domination: DominationSettings,
+    },
 };
 
 export function getPrivateLobbyMiniGameMapName(
@@ -194,6 +222,7 @@ export function getPrivateLobbyMiniGameMapName(
     if (miniGame === "among_us") return "among_us";
     if (miniGame === "capture_the_flag") return "capture_the_flag";
     if (miniGame === "king_of_the_hill") return "capture_the_flag";
+    if (miniGame === "domination") return "capture_the_flag";
     return undefined;
 }
 
@@ -251,6 +280,17 @@ export function getKingOfTheHillSettings(
 
 export function isKingOfTheHillMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
     return miniGame === "king_of_the_hill";
+}
+
+export function getDominationSettings(
+    miniGame: PrivateLobbyMiniGame | undefined,
+): DominationSettings | undefined {
+    if (!miniGame) return undefined;
+    return PrivateLobbyMiniGameServerSettings[miniGame].domination;
+}
+
+export function isDominationMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
+    return miniGame === "domination";
 }
 
 export function isHideAndSeekHider(

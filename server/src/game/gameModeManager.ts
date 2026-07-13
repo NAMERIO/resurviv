@@ -162,6 +162,24 @@ export class GameModeManager {
 
     /** true if game needs to end */
     handleGameEnd(): boolean {
+        if (this.game.dominationManager.enabled) {
+            if (!this.game.started) return false;
+            if (this.game.dominationManager.hasReachedScoreLimit()) {
+                const winner = this.game.dominationManager.getWinningTeamId();
+                if (winner) return this.game.dominationManager.endWithWinner(winner);
+            }
+            if (
+                this.game.gas.finalCloseStarted ||
+                this.game.startedTime >=
+                    (this.game.dominationManager.settings?.matchDuration ?? 600)
+            ) {
+                return this.game.dominationManager.endWithWinner(
+                    this.game.dominationManager.getWinningTeamId(),
+                );
+            }
+            return false;
+        }
+
         if (this.game.kingOfTheHillManager.enabled) {
             if (!this.game.started) return false;
             if (this.game.kingOfTheHillManager.hasReachedScoreLimit()) {
@@ -347,7 +365,8 @@ export class GameModeManager {
         }
         if (
             this.game.captureTheFlagManager.enabled ||
-            this.game.kingOfTheHillManager.enabled
+            this.game.kingOfTheHillManager.enabled ||
+            this.game.dominationManager.enabled
         ) {
             let redAlive = false;
             let blueAlive = false;
@@ -380,7 +399,8 @@ export class GameModeManager {
     updateAliveCounts(aliveCounts: number[]): void {
         if (
             this.game.captureTheFlagManager.enabled ||
-            this.game.kingOfTheHillManager.enabled
+            this.game.kingOfTheHillManager.enabled ||
+            this.game.dominationManager.enabled
         ) {
             let redAlive = 0;
             let blueAlive = 0;
@@ -573,6 +593,12 @@ export class GameModeManager {
         }
 
         if (this.game.kingOfTheHillManager.enabled) {
+            player.kill(params);
+            player.captureTheFlagRespawnTicker = 5;
+            return;
+        }
+
+        if (this.game.dominationManager.enabled) {
             player.kill(params);
             player.captureTheFlagRespawnTicker = 5;
             return;

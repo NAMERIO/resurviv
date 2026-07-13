@@ -6,6 +6,7 @@ export const PrivateLobbyMiniGameIds = [
     "among_us",
     "capture_the_flag",
     "king_of_the_hill",
+    "domination",
 ] as const;
 
 export type PrivateLobbyMiniGame = (typeof PrivateLobbyMiniGameIds)[number];
@@ -95,6 +96,16 @@ export const PrivateLobbyMiniGameDefs = {
     king_of_the_hill: {
         id: "king_of_the_hill",
         name: "King of the Hill",
+        teamNames: {
+            A: "Red",
+            B: "Blue",
+            C: "",
+            D: "",
+        },
+    },
+    domination: {
+        id: "domination",
+        name: "Domination",
         teamNames: {
             A: "Red",
             B: "Blue",

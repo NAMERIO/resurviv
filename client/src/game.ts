@@ -3840,6 +3840,13 @@ export class Game {
                 this.m_uiManager.setKingOfTheHillState(msg);
                 break;
             }
+            case net.MsgType.Domination: {
+                const msg = new net.DominationMsg();
+                msg.deserialize(stream);
+                if (!this.m_map.getMapDef().gameMode.captureTheFlag) break;
+                this.m_uiManager.setDominationState(msg);
+                break;
+            }
             case net.MsgType.AmongUsMeetingState: {
                 const msg = new net.AmongUsMeetingStateMsg();
                 msg.deserialize(stream);

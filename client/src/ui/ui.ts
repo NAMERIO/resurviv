@@ -12,7 +12,11 @@ import {
     type CaptureTheFlagMsg,
 } from "../../../shared/net/captureTheFlagMsg";
 import type { LeaderboardMsg } from "../../../shared/net/leaderboardMsg";
-import { type KingOfTheHillMsg, KingOfTheHillPhase } from "../../../shared/net/net";
+import {
+    type DominationMsg,
+    type KingOfTheHillMsg,
+    KingOfTheHillPhase,
+} from "../../../shared/net/net";
 import type { PlayerStatsMsg } from "../../../shared/net/playerStatsMsg";
 import type { MapIndicator, PlayerStatus } from "../../../shared/net/updateMsg";
 import { coldet } from "../../../shared/utils/coldet";
@@ -93,6 +97,12 @@ type CaptureTheFlagZone = {
     pos: Vec2;
     locked?: boolean;
     inactive?: boolean;
+    label?: string;
+    progress?: number;
+    captureDuration?: number;
+    contested?: boolean;
+    resetting?: boolean;
+    capturingTeamId?: 0 | 1 | 2;
 };
 type CaptureTheFlagScoreState = {
     redScore: number;
@@ -247,27 +257,33 @@ export class UiManager {
     playerPingSprites = {} as Record<number, MapSprite[]>;
     amongUsTaskMapMarkers = new globalThis.Map<string, MapSprite>();
     captureTheFlagZoneOverlay = new PIXI.Graphics();
+    captureTheFlagZoneIndicatorOverlay = new PIXI.Container();
     private captureTheFlagZones: CaptureTheFlagZone[] = [];
     private captureTheFlagScoreState: CaptureTheFlagScoreState | undefined;
     private captureTheFlagLastTimeText = "";
     private captureTheFlagMode = false;
     private kingOfTheHillMode = false;
+    private dominationMode = false;
     private kingOfTheHillLocked = false;
     private captureTheFlagZoneLabels = [
+        this.createCaptureTheFlagZoneLabel(),
         this.createCaptureTheFlagZoneLabel(),
         this.createCaptureTheFlagZoneLabel(),
     ];
     private captureTheFlagZoneFlagSprites = [
         this.createCaptureTheFlagZoneFlagSprite(),
         this.createCaptureTheFlagZoneFlagSprite(),
+        this.createCaptureTheFlagZoneFlagSprite(),
     ];
     private captureTheFlagMapFlagSprites = [
+        this.createCaptureTheFlagZoneFlagSprite(),
         this.createCaptureTheFlagZoneFlagSprite(),
         this.createCaptureTheFlagZoneFlagSprite(),
     ];
     captureTheFlagScoreboard = $("#ui-ctf-scoreboard");
     captureTheFlagTime = $("#ui-ctf-time");
     captureTheFlagMatchTime = $("#ui-ctf-match-time");
+    captureTheFlagScoreGoal = $("#ui-ctf-score-goal");
     captureTheFlagRedScore = $("#ui-ctf-red-score");
     captureTheFlagBlueScore = $("#ui-ctf-blue-score");
     captureTheFlagRedProgress = $("#ui-ctf-red-progress");
@@ -347,8 +363,10 @@ export class UiManager {
         this.inputBinds = inputBinds;
         this.inputBindUi = inputBindUi;
         for (let i = 0; i < this.captureTheFlagZoneLabels.length; i++) {
-            this.captureTheFlagZoneOverlay.addChild(this.captureTheFlagZoneLabels[i]);
-            this.captureTheFlagZoneOverlay.addChild(
+            this.captureTheFlagZoneIndicatorOverlay.addChild(
+                this.captureTheFlagZoneLabels[i],
+            );
+            this.captureTheFlagZoneIndicatorOverlay.addChild(
                 this.captureTheFlagZoneFlagSprites[i],
             );
         }
@@ -708,6 +726,7 @@ export class UiManager {
         this.resetWeapSlotStyling();
         this.captureTheFlagMode = false;
         this.kingOfTheHillMode = false;
+        this.dominationMode = false;
         this.kingOfTheHillLocked = false;
         this.clearCaptureTheFlagState();
         this.dead = false;
@@ -723,7 +742,9 @@ export class UiManager {
         const ctfDef = map.getMapDef().gameMode.captureTheFlag;
         this.kingOfTheHillMode =
             !!ctfDef && this.game.m_privateMiniGame === "king_of_the_hill";
-        this.captureTheFlagMode = !!ctfDef && !this.kingOfTheHillMode;
+        this.dominationMode = !!ctfDef && this.game.m_privateMiniGame === "domination";
+        this.captureTheFlagMode =
+            !!ctfDef && !this.kingOfTheHillMode && !this.dominationMode;
         if (ctfDef && this.captureTheFlagMode) {
             this.captureTheFlagZones = [
                 {
@@ -761,14 +782,21 @@ export class UiManager {
             this.captureTheFlagLastTimeText = "";
             this.updateCaptureTheFlagScoreboard(true);
             this.updateCaptureTheFlagScoreboardVisibility();
-        } else if (ctfDef && this.kingOfTheHillMode) {
-            this.captureTheFlagZones = [];
+        } else if (ctfDef && (this.kingOfTheHillMode || this.dominationMode)) {
+            this.captureTheFlagZones = this.dominationMode
+                ? (ctfDef.dominationLocations ?? []).map((pos, idx) => ({
+                      teamId: 0,
+                      status: CaptureTheFlagFlagStatus.AtBase,
+                      pos: v2.copy(pos),
+                      label: String.fromCharCode(65 + idx),
+                  }))
+                : [];
             this.captureTheFlagZoneOverlay.clear();
             this.hideCaptureTheFlagZoneLabels();
             this.captureTheFlagScoreState = {
                 redScore: 0,
                 blueScore: 0,
-                scoreLimit: 200,
+                scoreLimit: this.dominationMode ? 700 : 200,
                 matchTimeLeft: 0,
                 totalMatchTimeLeft: 600,
                 receivedAt: performance.now(),
@@ -891,6 +919,32 @@ export class UiManager {
         this.updateCaptureTheFlagScoreboardVisibility();
     }
 
+    setDominationState(msg: DominationMsg) {
+        this.dominationMode = true;
+        this.kingOfTheHillMode = false;
+        this.captureTheFlagMode = false;
+        this.captureTheFlagScoreState = {
+            redScore: msg.redScore,
+            blueScore: msg.blueScore,
+            scoreLimit: math.max(1, msg.scoreLimit),
+            matchTimeLeft: msg.matchTimeLeft,
+            receivedAt: performance.now(),
+        };
+        this.captureTheFlagZones = msg.points.map((point, idx) => ({
+            teamId: point.ownerTeamId,
+            status: CaptureTheFlagFlagStatus.AtBase,
+            pos: v2.copy(point.pos),
+            label: String.fromCharCode(65 + idx),
+            progress: point.progress,
+            captureDuration: point.captureDuration,
+            contested: point.contested,
+            resetting: point.resetting,
+            capturingTeamId: point.capturingTeamId,
+        }));
+        this.updateCaptureTheFlagScoreboard(true);
+        this.updateCaptureTheFlagScoreboardVisibility();
+    }
+
     private clearCaptureTheFlagState() {
         this.captureTheFlagZones = [];
         this.captureTheFlagZoneOverlay.clear();
@@ -898,9 +952,11 @@ export class UiManager {
         this.captureTheFlagScoreState = undefined;
         this.captureTheFlagLastTimeText = "";
         this.kingOfTheHillMode = false;
+        this.dominationMode = false;
         this.kingOfTheHillLocked = false;
         this.captureTheFlagScoreboard.css("display", "none");
         this.captureTheFlagMatchTime.css("display", "none");
+        this.captureTheFlagScoreGoal.css("display", "none");
         setCaptureTheFlagTimerState(
             {
                 status: CaptureTheFlagFlagStatus.AtBase,
@@ -920,7 +976,7 @@ export class UiManager {
     private updateCaptureTheFlagScoreboardVisibility() {
         this.captureTheFlagScoreboard.css(
             "display",
-            (this.captureTheFlagMode || this.kingOfTheHillMode) &&
+            (this.captureTheFlagMode || this.kingOfTheHillMode || this.dominationMode) &&
                 this.hudVisible &&
                 !this.bigmapDisplayed
                 ? "block"
@@ -958,6 +1014,13 @@ export class UiManager {
                 .css("display", "block");
         } else {
             this.captureTheFlagMatchTime.css("display", "none");
+        }
+        if (this.dominationMode) {
+            this.captureTheFlagScoreGoal
+                .text(`GOAL: ${scoreLimit}`)
+                .css("display", "block");
+        } else {
+            this.captureTheFlagScoreGoal.css("display", "none");
         }
     }
 
@@ -1021,11 +1084,12 @@ export class UiManager {
         const dashSize = math.max(10, camera.m_scaleToScreen(1.4));
         const gapSize = dashSize * 0.72;
         const pulse = 0.82 + Math.sin(performance.now() / 260) * 0.12;
+        const controlPointMode = this.kingOfTheHillMode || this.dominationMode;
         let labelIdx = 0;
 
         for (let i = 0; i < this.captureTheFlagZones.length; i++) {
             const zone = this.captureTheFlagZones[i];
-            const zonePos = this.kingOfTheHillMode
+            const zonePos = controlPointMode
                 ? zone.pos
                 : zone.teamId === 1
                   ? ctfDef.redFlag
@@ -1036,10 +1100,18 @@ export class UiManager {
             const center = camera.m_pointToScreen(zonePos);
             const x = center.x - width / 2;
             const y = center.y - height / 2;
+            const displayTeamId =
+                this.dominationMode && zone.progress && !zone.resetting
+                    ? zone.capturingTeamId
+                    : zone.teamId;
             const color =
-                zone.teamId === 1 ? 0xff2f2f : zone.teamId === 2 ? 0x2f7dff : 0xffffff;
-            const lockedAlpha = this.kingOfTheHillMode && !!zone.locked;
-            const inactiveAlpha = this.kingOfTheHillMode && !!zone.inactive;
+                displayTeamId === 1
+                    ? 0xff2f2f
+                    : displayTeamId === 2
+                      ? 0x2f7dff
+                      : 0xffffff;
+            const lockedAlpha = controlPointMode && !!zone.locked;
+            const inactiveAlpha = controlPointMode && !!zone.inactive;
             const zoneAlpha = inactiveAlpha ? 0.45 : 1;
 
             overlay.lineStyle(0);
@@ -1091,14 +1163,25 @@ export class UiManager {
             const flagSprite = this.captureTheFlagZoneFlagSprites[labelIdx - 1];
             const showFlag = this.kingOfTheHillMode && !zone.locked && !zone.inactive;
             if (label) {
-                label.text = this.kingOfTheHillMode
-                    ? zone.locked
-                        ? "Locked"
-                        : ""
-                    : "Flag Return";
+                const timeLeft = Math.max(
+                    0,
+                    (zone.captureDuration ?? 0) - (zone.progress ?? 0),
+                );
+                label.text = this.dominationMode
+                    ? zone.contested
+                        ? `${zone.label} · Contested`
+                        : zone.progress
+                          ? `${zone.label} · ${zone.resetting ? `Resetting ${zone.progress.toFixed(1)}` : `${timeLeft.toFixed(1)}s`}`
+                          : `${zone.label}`
+                    : this.kingOfTheHillMode
+                      ? zone.locked
+                          ? "Locked"
+                          : ""
+                      : "Flag Return";
                 label.x = center.x;
                 label.y = center.y;
-                label.visible = !showFlag && label.text.length > 0;
+                label.visible =
+                    (this.dominationMode || !showFlag) && label.text.length > 0;
                 label.alpha = (zone.locked ? 0.55 : 0.78) * pulse * zoneAlpha;
                 label.scale.set(math.clamp(camera.m_zoom / 1.5, 0.75, 1.15));
             }
@@ -1113,7 +1196,13 @@ export class UiManager {
             }
         }
 
-        renderer.addPIXIObj(overlay, activePlayer.renderLayer, 17, 0);
+        renderer.addPIXIObj(overlay, activePlayer.renderLayer, 9, 0);
+        renderer.addPIXIObj(
+            this.captureTheFlagZoneIndicatorOverlay,
+            activePlayer.renderLayer,
+            17,
+            0,
+        );
     }
 
     private renderCaptureTheFlagMapZones(map: Map) {
@@ -1134,11 +1223,12 @@ export class UiManager {
         const borderSize = math.max(1, math.min(width, height) * 0.08);
         const dashSize = math.max(3, math.min(width, height) * 0.22);
         const gapSize = dashSize * 0.72;
+        const controlPointMode = this.kingOfTheHillMode || this.dominationMode;
         let flagIdx = 0;
 
         for (let i = 0; i < this.captureTheFlagZones.length; i++) {
             const zone = this.captureTheFlagZones[i];
-            const zonePos = this.kingOfTheHillMode
+            const zonePos = controlPointMode
                 ? zone.pos
                 : zone.teamId === 1
                   ? ctfDef.redFlag
@@ -1178,10 +1268,10 @@ export class UiManager {
 
             const flagSprite = this.captureTheFlagMapFlagSprites[flagIdx++];
             if (flagSprite) {
-                const showFlag = this.kingOfTheHillMode
+                const showFlag = controlPointMode
                     ? !zone.inactive
                     : zone.status !== CaptureTheFlagFlagStatus.Taken;
-                const flagCenter = this.kingOfTheHillMode
+                const flagCenter = controlPointMode
                     ? center
                     : this.getMapPosFromWorldPos(zone.pos, map);
                 const flagSize = math.max(6, math.min(width, height) * 0.72);
@@ -2157,8 +2247,10 @@ export class UiManager {
         const amongUsMode = Boolean(map.getMapDef().gameMode.amongUsMode);
         const captureTheFlagMode =
             Boolean(map.getMapDef().gameMode.captureTheFlag) &&
-            this.game.m_privateMiniGame !== "king_of_the_hill";
+            this.game.m_privateMiniGame !== "king_of_the_hill" &&
+            this.game.m_privateMiniGame !== "domination";
         const kingOfTheHillMode = this.game.m_privateMiniGame === "king_of_the_hill";
+        const dominationMode = this.game.m_privateMiniGame === "domination";
         if (amongUsMode && !gameOver && localStats?.dead) {
             this.beginSpectating();
             this.clearStatsElems();
@@ -2210,7 +2302,7 @@ export class UiManager {
                 : "";
             const S = amongUsMode
                 ? this.getAmongUsTitleText(localRole, isLocalTeamWinner)
-                : (captureTheFlagMode || kingOfTheHillMode) && gameOver
+                : (captureTheFlagMode || kingOfTheHillMode || dominationMode) && gameOver
                   ? winningTeamId === 1
                       ? "Red Team Won"
                       : winningTeamId === 2
@@ -2237,7 +2329,8 @@ export class UiManager {
                 teamKills,
                 map.getMapDef().gameMode.factionMode! ||
                     captureTheFlagMode ||
-                    kingOfTheHillMode,
+                    kingOfTheHillMode ||
+                    dominationMode,
             );
             const I = $("<div/>").append(
                 $("<div/>", {
@@ -2249,7 +2342,8 @@ export class UiManager {
                 amongUsMode ||
                 map.getMapDef().gameMode.factionMode ||
                 captureTheFlagMode ||
-                kingOfTheHillMode
+                kingOfTheHillMode ||
+                dominationMode
             ) {
                 I.append(
                     $("<div/>", {
