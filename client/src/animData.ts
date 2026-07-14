@@ -225,7 +225,7 @@ export const Animations: Record<
                 alpha: 1,
                 startTime: 0.44,
                 endTime: 3,
-                onTop: true,
+                onTop: false,
             },
         ],
     },
