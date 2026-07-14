@@ -83,7 +83,7 @@ export const loadoutGunSections = [
             // "m79",
             // "waterGun",
             // "rainbow_blaster",
-            "bazooka",
+            // "bazooka",
             "flux_rifle",
             "snow_cannon",
         ],
