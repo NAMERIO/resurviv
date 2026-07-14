@@ -869,6 +869,15 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
             path: "audio/guns/potato_cannon_switch_01.mp3",
             volume: 1,
         },
+        bazooka_shoot: {
+            path: "audio/guns/bazooka_shoot.mp3",
+            volume: 1,
+            maxInstances: 5,
+        },
+        bazooka_reload: {
+            path: "audio/guns/bazooka_reload.mp3",
+            volume: 1,
+        },
         bandage_use_01: {
             path: "audio/ui/bandage_use_01.mp3",
             volume: 1,
