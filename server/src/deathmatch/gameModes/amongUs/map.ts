@@ -3,6 +3,7 @@ import { Main, type PartialMapDef } from "../../../../../shared/defs/maps/baseDe
 import { GameConfig } from "../../../../../shared/gameConfig";
 import { util } from "../../../../../shared/utils/util";
 import { v2 } from "../../../../../shared/utils/v2";
+import { DeatchmatchMain } from "../../maps/main";
 
 const cafeteriaMapWidth = 184;
 const cafeteriaMapHeight = 96;
@@ -125,5 +126,7 @@ DeathmatchAmongUs.lootTable = {
         { name: "soda", count: 1, weight: 1 },
     ],
 };
+
+Object.assign(DeathmatchAmongUs.lootTable, structuredClone(DeatchmatchMain.lootTable));
 
 DeathmatchAmongUs.gameConfig.bagSizes = GameConfig.bagSizes;

@@ -3,6 +3,7 @@ import { Desert } from "../../../../shared/defs/maps/desertDefs";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { util } from "../../../../shared/utils/util";
 import { loadAirstrike } from "../helpers";
+import { DeatchmatchMain } from "./main";
 
 const switchToSmallMap = false;
 
@@ -190,3 +191,5 @@ DeatchmatchDesert.lootTable = {
         { name: "awc", count: 1, weight: 0.1 },
     ],
 };
+
+Object.assign(DeatchmatchDesert.lootTable, structuredClone(DeatchmatchMain.lootTable));

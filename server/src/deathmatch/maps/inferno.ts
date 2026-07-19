@@ -4,6 +4,7 @@ import { MapId } from "../../../../shared/defs/types/misc";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { util } from "../../../../shared/utils/util";
 import { v2 } from "../../../../shared/utils/v2";
+import { DeatchmatchMain } from "./main";
 
 const switchToSmallMap = false;
 
@@ -217,3 +218,5 @@ DeathmatchInferno["lootTable"] = {
         { name: "garand", count: 1, weight: 0.9 },
     ],
 };
+
+Object.assign(DeathmatchInferno.lootTable, structuredClone(DeatchmatchMain.lootTable));

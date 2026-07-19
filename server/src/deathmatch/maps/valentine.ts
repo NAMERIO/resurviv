@@ -1,8 +1,8 @@
 import type { MapDef } from "../../../../shared/defs/mapDefs";
 import { Main, type PartialMapDef } from "../../../../shared/defs/maps/baseDefs";
-import { MapId } from "../../../../shared/defs/types/misc";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { util } from "../../../../shared/utils/util";
+import { DeatchmatchMain } from "./main";
 
 const valentineDef: PartialMapDef = {
     mapId: 19,
@@ -171,3 +171,5 @@ DeathmatchValentine["lootTable"] = {
     ...DeathmatchValentine["lootTable"],
     tier_valentine_box: [{ name: "heart_cannon", count: 1, weight: 1 }],
 };
+
+Object.assign(DeathmatchValentine.lootTable, structuredClone(DeatchmatchMain.lootTable));

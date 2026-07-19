@@ -4,6 +4,7 @@ import { Cobalt } from "../../../../shared/defs/maps/cobaltDefs";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { util } from "../../../../shared/utils/util";
 import { loadAirstrike } from "../helpers";
+import { DeatchmatchMain } from "./main";
 
 const switchToSmallMap = false;
 
@@ -158,3 +159,5 @@ Resurviv_Cobalt["lootTable"] = {
         { name: "splinter", count: 1, weight: 3 },
     ],
 };
+
+Object.assign(Resurviv_Cobalt.lootTable, structuredClone(DeatchmatchMain.lootTable));
