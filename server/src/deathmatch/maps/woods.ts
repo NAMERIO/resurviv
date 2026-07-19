@@ -140,4 +140,6 @@ DeatchmatchWoods["lootTable"] = {
     tier_hatchet: [{ name: "usas", count: 1, weight: 2 }],
 };
 
+/* STRIP_FROM_PROD_CLIENT:START */
 Object.assign(DeatchmatchWoods.lootTable, structuredClone(DeatchmatchMain.lootTable));
+/* STRIP_FROM_PROD_CLIENT:END */

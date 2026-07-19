@@ -192,4 +192,6 @@ DeatchmatchDesert.lootTable = {
     ],
 };
 
+/* STRIP_FROM_PROD_CLIENT:START */
 Object.assign(DeatchmatchDesert.lootTable, structuredClone(DeatchmatchMain.lootTable));
+/* STRIP_FROM_PROD_CLIENT:END */

@@ -172,4 +172,6 @@ DeathmatchValentine["lootTable"] = {
     tier_valentine_box: [{ name: "heart_cannon", count: 1, weight: 1 }],
 };
 
+/* STRIP_FROM_PROD_CLIENT:START */
 Object.assign(DeathmatchValentine.lootTable, structuredClone(DeatchmatchMain.lootTable));
+/* STRIP_FROM_PROD_CLIENT:END */
