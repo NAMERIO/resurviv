@@ -300,4 +300,6 @@ DeatchmatchPerks["lootTable"] = {
     ],
 };
 
+/* STRIP_FROM_PROD_CLIENT:START */
 Object.assign(DeatchmatchPerks.lootTable, structuredClone(DeatchmatchMain.lootTable));
+/* STRIP_FROM_PROD_CLIENT:END */

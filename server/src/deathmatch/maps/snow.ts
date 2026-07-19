@@ -321,4 +321,6 @@ DeatchmatchSnow["lootTable"] = {
     ],
 };
 
+/* STRIP_FROM_PROD_CLIENT:START */
 Object.assign(DeatchmatchSnow.lootTable, structuredClone(DeatchmatchMain.lootTable));
+/* STRIP_FROM_PROD_CLIENT:END */

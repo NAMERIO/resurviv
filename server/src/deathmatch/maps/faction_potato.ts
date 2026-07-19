@@ -286,4 +286,6 @@ FactionPotato["lootTable"] = {
     ],
 };
 
+/* STRIP_FROM_PROD_CLIENT:START */
 Object.assign(FactionPotato.lootTable, structuredClone(DeatchmatchMain.lootTable));
+/* STRIP_FROM_PROD_CLIENT:END */

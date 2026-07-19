@@ -167,4 +167,6 @@ const mapDef = {
 
 export const DeatchmatchHalloween = util.mergeDeep({}, Halloween, mapDef) as MapDef;
 
+/* STRIP_FROM_PROD_CLIENT:START */
 Object.assign(DeatchmatchHalloween.lootTable, structuredClone(DeatchmatchMain.lootTable));
+/* STRIP_FROM_PROD_CLIENT:END */

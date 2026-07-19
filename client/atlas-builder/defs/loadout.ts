@@ -3,7 +3,7 @@ import type { AtlasDef } from "../atlasDefs";
 export const LoadoutAtlas: AtlasDef = {
     compress: false,
     images: [
-        "emotes/acorn.svg", 
+        "emotes/acorn.svg",
         "emotes/ammo-12gauge.svg",
         "emotes/ammo-308sub.svg",
         "emotes/ammo-45acp.svg",
@@ -1735,11 +1735,7 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-accessory-diamond.svg",
         "player/player-accessory-outfitDiamondy.svg",
         "player/player-accessory-toxic-fire.svg",
-        "player/player-accessory-cyberpunk.svg",
-        "player/player-accessory-bugcat.svg",
-        "player/player-accessory-peru.svg",
         "player/player-accessory-bee.svg",
-        "player/player-accessory-voidcore.svg",
         "player/player-accessory-beru.svg",
         "player/player-accessory-archaiccrown.svg",
         "player/player-accessory-outfitFireball.svg",

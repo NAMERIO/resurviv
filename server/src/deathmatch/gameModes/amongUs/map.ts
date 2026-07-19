@@ -127,6 +127,8 @@ DeathmatchAmongUs.lootTable = {
     ],
 };
 
+/* STRIP_FROM_PROD_CLIENT:START */
 Object.assign(DeathmatchAmongUs.lootTable, structuredClone(DeatchmatchMain.lootTable));
+/* STRIP_FROM_PROD_CLIENT:END */
 
 DeathmatchAmongUs.gameConfig.bagSizes = GameConfig.bagSizes;

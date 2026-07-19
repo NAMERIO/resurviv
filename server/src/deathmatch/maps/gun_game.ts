@@ -148,4 +148,6 @@ gun_game["lootTable"] = {
     ],
 };
 
+/* STRIP_FROM_PROD_CLIENT:START */
 Object.assign(gun_game.lootTable, structuredClone(DeatchmatchMain.lootTable));
+/* STRIP_FROM_PROD_CLIENT:END */
