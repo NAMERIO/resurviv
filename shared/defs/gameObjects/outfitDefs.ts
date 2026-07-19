@@ -3589,6 +3589,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-beru.img",
+            aboveHand: true,
             handTint: 0xffffff,
             handSprite: "player-hands-beru.img",
             footTint: 0xffffff,
