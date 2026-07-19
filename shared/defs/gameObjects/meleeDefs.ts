@@ -410,6 +410,7 @@ const BaseDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
     },
+
     machete: {
         name: "Machete",
         type: "melee",
