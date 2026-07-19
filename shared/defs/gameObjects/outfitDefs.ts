@@ -3469,15 +3469,12 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-cyberpunk.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-cyberpunk.img",
         },
         lootImg: {
             sprite: "loot-shirt-outfitDiamondy.img",
             tint: 0xffffff,
         },
     }),
-
 
     outfitBugcat: defineOutfitSkin("outfitBase", {
         name: "Bugcat",
@@ -3495,15 +3492,13 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-bugcat.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-bugcat.img",
         },
         lootImg: {
             sprite: "loot-shirt-outfitDiamondy.img",
             tint: 0xffffff,
         },
     }),
-       
+
     outfitPeru: defineOutfitSkin("outfitBase", {
         name: "Peru",
         noDropOnDeath: true,
@@ -3520,8 +3515,6 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-peru.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-peru.img",
         },
         lootImg: {
             sprite: "loot-shirt-outfitDiamondy.img",
@@ -3570,8 +3563,6 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-voidcore.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-voidcore.img",
         },
         lootImg: {
             sprite: "loot-shirt-outfitDiamondy.img",
