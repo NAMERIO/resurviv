@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { MapDefs } from "../../../shared/defs/mapDefs";
 import {
     type AmongUsImpostorCount,
+    ArenaTeamIds,
     type PrivateLobbyMiniGame,
     PrivateLobbyMiniGameIds,
 } from "../../../shared/defs/miniGame";
@@ -51,6 +52,10 @@ export const zSetBattleRoyaleModeBody = z.object({
 
 export const zSetPauseClanStatsBody = z.object({
     enabled: z.boolean(),
+});
+
+export const zSetLockClanJoinsBody = z.object({
+    locked: z.boolean(),
 });
 
 export const zSetBattlePassEndBody = z.object({
@@ -133,7 +138,7 @@ export const zFindGamePrivateBody = z.object({
             clanTagColor: z.string().nullable().optional(),
             canUseDeveloper: z.boolean().optional(),
             loadout: loadoutSchema.optional(),
-            arenaTeam: z.enum(["A", "B"]).optional(),
+            arenaTeam: z.enum(ArenaTeamIds).optional(),
             quests: z.array(z.string()).optional(),
         }),
     ),

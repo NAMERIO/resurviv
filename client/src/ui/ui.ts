@@ -7,7 +7,16 @@ import { type RoleDef, RoleDefs } from "../../../shared/defs/gameObjects/roleDef
 import type { MapDef } from "../../../shared/defs/mapDefs";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import { Action, GameConfig, GasMode, TeamMode } from "../../../shared/gameConfig";
+import {
+    CaptureTheFlagFlagStatus,
+    type CaptureTheFlagMsg,
+} from "../../../shared/net/captureTheFlagMsg";
 import type { LeaderboardMsg } from "../../../shared/net/leaderboardMsg";
+import {
+    type DominationMsg,
+    type KingOfTheHillMsg,
+    KingOfTheHillPhase,
+} from "../../../shared/net/net";
 import type { PlayerStatsMsg } from "../../../shared/net/playerStatsMsg";
 import type { MapIndicator, PlayerStatus } from "../../../shared/net/updateMsg";
 import { coldet } from "../../../shared/utils/coldet";
@@ -24,9 +33,11 @@ import type { SoundHandle } from "../lib/createJS";
 import type { Map } from "../map";
 import { MapIndicatorBarn } from "../objects/mapIndicator";
 import { type MapSprite, MapSpriteBarn } from "../objects/mapSprite";
+import { setCaptureTheFlagTimerState } from "../objects/obstacle";
 import type { ParticleBarn } from "../objects/particles";
 import type { PlaneBarn } from "../objects/plane";
 import type { Player, PlayerBarn } from "../objects/player";
+import type { Renderer } from "../renderer";
 import { SDK } from "../sdk/sdk";
 import type { Localization } from "./localization";
 import { PieTimer } from "./pieTimer";
@@ -45,6 +56,13 @@ function humanizeTime(time: number) {
         timeText += `${minutes}m `;
     }
     return (timeText += `${seconds}s`);
+}
+
+function formatClockTime(time: number) {
+    const clamped = math.max(0, Math.ceil(time));
+    const minutes = Math.floor(clamped / 60);
+    const seconds = clamped % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
 function Interpolate(start: number, end: number, steps: number, count: number) {
@@ -73,6 +91,27 @@ interface ContainerWithMask extends PIXI.Container {
 }
 
 type PrevStatus = Pick<PlayerStatus, "downed" | "dead" | "disconnected" | "role">;
+type CaptureTheFlagZone = {
+    teamId: 0 | 1 | 2;
+    status: CaptureTheFlagFlagStatus;
+    pos: Vec2;
+    locked?: boolean;
+    inactive?: boolean;
+    label?: string;
+    progress?: number;
+    captureDuration?: number;
+    contested?: boolean;
+    resetting?: boolean;
+    capturingTeamId?: 0 | 1 | 2;
+};
+type CaptureTheFlagScoreState = {
+    redScore: number;
+    blueScore: number;
+    scoreLimit: number;
+    matchTimeLeft: number;
+    totalMatchTimeLeft?: number;
+    receivedAt: number;
+};
 export class UiManager {
     m_pieTimer = new PieTimer();
     gameElem = $("#ui-game");
@@ -217,6 +256,38 @@ export class UiManager {
     playerMapSprites: MapSprite[] = [];
     playerPingSprites = {} as Record<number, MapSprite[]>;
     amongUsTaskMapMarkers = new globalThis.Map<string, MapSprite>();
+    captureTheFlagZoneOverlay = new PIXI.Graphics();
+    captureTheFlagZoneIndicatorOverlay = new PIXI.Container();
+    private captureTheFlagZones: CaptureTheFlagZone[] = [];
+    private captureTheFlagScoreState: CaptureTheFlagScoreState | undefined;
+    private captureTheFlagLastTimeText = "";
+    private captureTheFlagMode = false;
+    private kingOfTheHillMode = false;
+    private dominationMode = false;
+    private kingOfTheHillLocked = false;
+    private captureTheFlagZoneLabels = [
+        this.createCaptureTheFlagZoneLabel(),
+        this.createCaptureTheFlagZoneLabel(),
+        this.createCaptureTheFlagZoneLabel(),
+    ];
+    private captureTheFlagZoneFlagSprites = [
+        this.createCaptureTheFlagZoneFlagSprite(),
+        this.createCaptureTheFlagZoneFlagSprite(),
+        this.createCaptureTheFlagZoneFlagSprite(),
+    ];
+    private captureTheFlagMapFlagSprites = [
+        this.createCaptureTheFlagZoneFlagSprite(),
+        this.createCaptureTheFlagZoneFlagSprite(),
+        this.createCaptureTheFlagZoneFlagSprite(),
+    ];
+    captureTheFlagScoreboard = $("#ui-ctf-scoreboard");
+    captureTheFlagTime = $("#ui-ctf-time");
+    captureTheFlagMatchTime = $("#ui-ctf-match-time");
+    captureTheFlagScoreGoal = $("#ui-ctf-score-goal");
+    captureTheFlagRedScore = $("#ui-ctf-red-score");
+    captureTheFlagBlueScore = $("#ui-ctf-blue-score");
+    captureTheFlagRedProgress = $("#ui-ctf-red-progress");
+    captureTheFlagBlueProgress = $("#ui-ctf-blue-progress");
     container = new PIXI.Container() as ContainerWithMask;
 
     resetWeapSlotStyling!: () => void;
@@ -224,6 +295,7 @@ export class UiManager {
         gas: PIXI.DisplayObject;
         gasSafeZone: PIXI.Container;
         airstrikeZones: PIXI.Container;
+        captureTheFlagMapZones: PIXI.Graphics;
         mapSprites: PIXI.Container;
         teammates: PIXI.Container;
         player: PIXI.Container;
@@ -290,6 +362,14 @@ export class UiManager {
         this.touch = touch;
         this.inputBinds = inputBinds;
         this.inputBindUi = inputBindUi;
+        for (let i = 0; i < this.captureTheFlagZoneLabels.length; i++) {
+            this.captureTheFlagZoneIndicatorOverlay.addChild(
+                this.captureTheFlagZoneLabels[i],
+            );
+            this.captureTheFlagZoneIndicatorOverlay.addChild(
+                this.captureTheFlagZoneFlagSprites[i],
+            );
+        }
 
         this.roleMenuConfirm.on("click", (e) => {
             e.stopPropagation();
@@ -482,6 +562,7 @@ export class UiManager {
             gas: this.gasRenderer.display!,
             gasSafeZone: this.gasSafeZoneRenderer.display,
             airstrikeZones: planeBarn.airstrikeZoneContainer,
+            captureTheFlagMapZones: new PIXI.Graphics(),
             mapSprites: this.mapSpriteBarn.container,
             teammates: new PIXI.Container(),
             player: new PIXI.Container(),
@@ -490,6 +571,7 @@ export class UiManager {
 
         this.mapSprite.anchor = new PIXI.Point(0.5, 0.5) as PIXI.ObservablePoint;
         this.container.addChild(this.mapSprite);
+        this.container.addChild(this.display.captureTheFlagMapZones);
         this.container.addChild(this.display.gas);
         this.container.addChild(this.display.gasSafeZone);
         this.container.addChild(this.display.airstrikeZones);
@@ -497,6 +579,11 @@ export class UiManager {
         this.container.addChild(this.display.teammates);
         this.container.addChild(this.display.player);
         this.container.addChild(this.display.border);
+        for (let i = 0; i < this.captureTheFlagMapFlagSprites.length; i++) {
+            this.display.captureTheFlagMapZones.addChild(
+                this.captureTheFlagMapFlagSprites[i],
+            );
+        }
 
         const minimapMargin = this.getMinimapMargin();
         const minimapSize = this.getMinimapSize();
@@ -637,6 +724,11 @@ export class UiManager {
         this.setSpectating(false);
         this.updateSpectatorCountDisplay(true);
         this.resetWeapSlotStyling();
+        this.captureTheFlagMode = false;
+        this.kingOfTheHillMode = false;
+        this.dominationMode = false;
+        this.kingOfTheHillLocked = false;
+        this.clearCaptureTheFlagState();
         this.dead = false;
 
         // Reset team selector colors
@@ -647,6 +739,74 @@ export class UiManager {
 
     onMapLoad(map: Map, camera: Camera) {
         this.clearAmongUsTaskMapMarkers();
+        const ctfDef = map.getMapDef().gameMode.captureTheFlag;
+        this.kingOfTheHillMode =
+            !!ctfDef && this.game.m_privateMiniGame === "king_of_the_hill";
+        this.dominationMode = !!ctfDef && this.game.m_privateMiniGame === "domination";
+        this.captureTheFlagMode =
+            !!ctfDef && !this.kingOfTheHillMode && !this.dominationMode;
+        if (ctfDef && this.captureTheFlagMode) {
+            this.captureTheFlagZones = [
+                {
+                    teamId: 1,
+                    status: CaptureTheFlagFlagStatus.AtBase,
+                    pos: v2.copy(ctfDef.redFlag),
+                },
+                {
+                    teamId: 2,
+                    status: CaptureTheFlagFlagStatus.AtBase,
+                    pos: v2.copy(ctfDef.blueFlag),
+                },
+            ];
+            setCaptureTheFlagTimerState(
+                {
+                    status: CaptureTheFlagFlagStatus.AtBase,
+                    pos: ctfDef.redFlag,
+                    returnTime: 0,
+                    returnDuration: 0,
+                },
+                {
+                    status: CaptureTheFlagFlagStatus.AtBase,
+                    pos: ctfDef.blueFlag,
+                    returnTime: 0,
+                    returnDuration: 0,
+                },
+            );
+            this.captureTheFlagScoreState = {
+                redScore: 0,
+                blueScore: 0,
+                scoreLimit: 100,
+                matchTimeLeft: 600,
+                receivedAt: performance.now(),
+            };
+            this.captureTheFlagLastTimeText = "";
+            this.updateCaptureTheFlagScoreboard(true);
+            this.updateCaptureTheFlagScoreboardVisibility();
+        } else if (ctfDef && (this.kingOfTheHillMode || this.dominationMode)) {
+            this.captureTheFlagZones = this.dominationMode
+                ? (ctfDef.dominationLocations ?? []).map((pos, idx) => ({
+                      teamId: 0,
+                      status: CaptureTheFlagFlagStatus.AtBase,
+                      pos: v2.copy(pos),
+                      label: String.fromCharCode(65 + idx),
+                  }))
+                : [];
+            this.captureTheFlagZoneOverlay.clear();
+            this.hideCaptureTheFlagZoneLabels();
+            this.captureTheFlagScoreState = {
+                redScore: 0,
+                blueScore: 0,
+                scoreLimit: this.dominationMode ? 700 : 200,
+                matchTimeLeft: 0,
+                totalMatchTimeLeft: 600,
+                receivedAt: performance.now(),
+            };
+            this.captureTheFlagLastTimeText = "";
+            this.updateCaptureTheFlagScoreboard(true);
+            this.updateCaptureTheFlagScoreboardVisibility();
+        } else {
+            this.clearCaptureTheFlagState();
+        }
         this.resize(map, camera);
         if (this.hideTeamStatus) {
             $("#ui-team, #ui-team-indicators").css("display", "");
@@ -654,7 +814,8 @@ export class UiManager {
         this.hideTeamStatus = !!map.getMapDef().gameMode.amongUsMode;
         this.applyTeamStatusVisibility();
         const displayLeader = map.getMapDef().gameMode.killLeaderEnabled;
-        const displayLeaderboard = !map.mapName.startsWith("br_");
+        const displayLeaderboard =
+            !map.mapName.startsWith("br_") && !map.getMapDef().gameMode.captureTheFlag;
 
         $("#ui-kill-leader-container").css("display", displayLeader ? "block" : "none");
         $("#ui-kill-leaderboard-title").css("display", displayLeaderboard ? "" : "none");
@@ -665,6 +826,464 @@ export class UiManager {
 
         if (!device.mobile) {
             $("#ui-killfeed-wrapper").css("top", displayLeader ? "60px" : "12px");
+        }
+    }
+
+    setCaptureTheFlagState(msg: CaptureTheFlagMsg) {
+        if (!this.captureTheFlagMode) {
+            this.clearCaptureTheFlagState();
+            return;
+        }
+        this.captureTheFlagScoreState = {
+            redScore: msg.redScore,
+            blueScore: msg.blueScore,
+            scoreLimit: math.max(1, msg.scoreLimit),
+            matchTimeLeft: msg.matchTimeLeft,
+            receivedAt: performance.now(),
+        };
+        this.updateCaptureTheFlagScoreboard(true);
+        this.captureTheFlagZones = [
+            {
+                teamId: 1,
+                status: msg.redFlagStatus,
+                pos: v2.copy(msg.redFlagPos),
+            },
+            {
+                teamId: 2,
+                status: msg.blueFlagStatus,
+                pos: v2.copy(msg.blueFlagPos),
+            },
+        ];
+        setCaptureTheFlagTimerState(
+            {
+                status: msg.redFlagStatus,
+                pos: msg.redFlagPos,
+                returnTime: msg.redFlagReturnTime,
+                returnDuration: msg.droppedFlagReturnDuration,
+            },
+            {
+                status: msg.blueFlagStatus,
+                pos: msg.blueFlagPos,
+                returnTime: msg.blueFlagReturnTime,
+                returnDuration: msg.droppedFlagReturnDuration,
+            },
+        );
+    }
+
+    setKingOfTheHillState(msg: KingOfTheHillMsg) {
+        this.kingOfTheHillMode = true;
+        this.captureTheFlagMode = false;
+        this.captureTheFlagScoreState = {
+            redScore: msg.redScore,
+            blueScore: msg.blueScore,
+            scoreLimit: math.max(1, msg.scoreLimit),
+            matchTimeLeft: msg.phaseTimeLeft,
+            totalMatchTimeLeft: msg.matchTimeLeft,
+            receivedAt: performance.now(),
+        };
+        this.kingOfTheHillLocked = msg.phase === KingOfTheHillPhase.Countdown;
+        this.captureTheFlagZones = [];
+        if (
+            this.kingOfTheHillLocked &&
+            msg.showPreviousHill &&
+            (msg.previousHillPos.x !== 0 || msg.previousHillPos.y !== 0)
+        ) {
+            this.captureTheFlagZones.push({
+                teamId:
+                    msg.controllingTeamId === 1 || msg.controllingTeamId === 2
+                        ? msg.controllingTeamId
+                        : 0,
+                status: CaptureTheFlagFlagStatus.AtBase,
+                pos: v2.copy(msg.previousHillPos),
+            });
+        }
+        if (msg.hillPos.x !== 0 || msg.hillPos.y !== 0) {
+            this.captureTheFlagZones.push({
+                teamId:
+                    msg.phase === KingOfTheHillPhase.Active &&
+                    (msg.controllingTeamId === 1 || msg.controllingTeamId === 2)
+                        ? msg.controllingTeamId
+                        : 0,
+                status: CaptureTheFlagFlagStatus.AtBase,
+                pos: v2.copy(msg.hillPos),
+                locked: this.kingOfTheHillLocked,
+            });
+        }
+        this.updateCaptureTheFlagScoreboard(true);
+        const timeText =
+            msg.phase === KingOfTheHillPhase.Active
+                ? formatClockTime(msg.phaseTimeLeft)
+                : `Next hill in ${Math.ceil(msg.phaseTimeLeft)}`;
+        this.captureTheFlagLastTimeText = timeText;
+        this.captureTheFlagTime.text(timeText);
+        this.updateCaptureTheFlagScoreboardVisibility();
+    }
+
+    setDominationState(msg: DominationMsg) {
+        this.dominationMode = true;
+        this.kingOfTheHillMode = false;
+        this.captureTheFlagMode = false;
+        this.captureTheFlagScoreState = {
+            redScore: msg.redScore,
+            blueScore: msg.blueScore,
+            scoreLimit: math.max(1, msg.scoreLimit),
+            matchTimeLeft: msg.matchTimeLeft,
+            receivedAt: performance.now(),
+        };
+        this.captureTheFlagZones = msg.points.map((point, idx) => ({
+            teamId: point.ownerTeamId,
+            status: CaptureTheFlagFlagStatus.AtBase,
+            pos: v2.copy(point.pos),
+            label: String.fromCharCode(65 + idx),
+            progress: point.progress,
+            captureDuration: point.captureDuration,
+            contested: point.contested,
+            resetting: point.resetting,
+            capturingTeamId: point.capturingTeamId,
+        }));
+        this.updateCaptureTheFlagScoreboard(true);
+        this.updateCaptureTheFlagScoreboardVisibility();
+    }
+
+    private clearCaptureTheFlagState() {
+        this.captureTheFlagZones = [];
+        this.captureTheFlagZoneOverlay.clear();
+        this.hideCaptureTheFlagZoneLabels();
+        this.captureTheFlagScoreState = undefined;
+        this.captureTheFlagLastTimeText = "";
+        this.kingOfTheHillMode = false;
+        this.dominationMode = false;
+        this.kingOfTheHillLocked = false;
+        this.captureTheFlagScoreboard.css("display", "none");
+        this.captureTheFlagMatchTime.css("display", "none");
+        this.captureTheFlagScoreGoal.css("display", "none");
+        setCaptureTheFlagTimerState(
+            {
+                status: CaptureTheFlagFlagStatus.AtBase,
+                pos: v2.create(0, 0),
+                returnTime: 0,
+                returnDuration: 0,
+            },
+            {
+                status: CaptureTheFlagFlagStatus.AtBase,
+                pos: v2.create(0, 0),
+                returnTime: 0,
+                returnDuration: 0,
+            },
+        );
+    }
+
+    private updateCaptureTheFlagScoreboardVisibility() {
+        this.captureTheFlagScoreboard.css(
+            "display",
+            (this.captureTheFlagMode || this.kingOfTheHillMode || this.dominationMode) &&
+                this.hudVisible &&
+                !this.bigmapDisplayed
+                ? "block"
+                : "none",
+        );
+    }
+
+    private updateCaptureTheFlagScoreboard(force = false) {
+        const state = this.captureTheFlagScoreState;
+        if (!state) return;
+
+        const scoreLimit = math.max(1, state.scoreLimit);
+        const redPct = math.clamp(state.redScore / scoreLimit, 0, 1) * 100;
+        const bluePct = math.clamp(state.blueScore / scoreLimit, 0, 1) * 100;
+
+        this.captureTheFlagRedScore.text(`${state.redScore}`);
+        this.captureTheFlagBlueScore.text(`${state.blueScore}`);
+        this.captureTheFlagRedProgress.css("width", `${redPct}%`);
+        this.captureTheFlagBlueProgress.css("width", `${bluePct}%`);
+
+        const elapsed = (performance.now() - state.receivedAt) / 1000;
+        const matchTimeLeft = math.max(0, state.matchTimeLeft - elapsed);
+        const timeText =
+            this.kingOfTheHillMode && this.kingOfTheHillLocked
+                ? `Next hill in ${Math.ceil(matchTimeLeft)}`
+                : formatClockTime(matchTimeLeft);
+        if (force || timeText !== this.captureTheFlagLastTimeText) {
+            this.captureTheFlagLastTimeText = timeText;
+            this.captureTheFlagTime.text(timeText);
+        }
+        if (this.kingOfTheHillMode && state.totalMatchTimeLeft !== undefined) {
+            const totalMatchTimeLeft = math.max(0, state.totalMatchTimeLeft - elapsed);
+            this.captureTheFlagMatchTime
+                .text(`Match ${formatClockTime(totalMatchTimeLeft)}`)
+                .css("display", "block");
+        } else {
+            this.captureTheFlagMatchTime.css("display", "none");
+        }
+        if (this.dominationMode) {
+            this.captureTheFlagScoreGoal
+                .text(`GOAL: ${scoreLimit}`)
+                .css("display", "block");
+        } else {
+            this.captureTheFlagScoreGoal.css("display", "none");
+        }
+    }
+
+    private createCaptureTheFlagZoneLabel() {
+        const label = new PIXI.Text("Flag Return", {
+            align: "center",
+            dropShadow: true,
+            dropShadowAlpha: 0.55,
+            dropShadowBlur: 3,
+            dropShadowDistance: 1,
+            fill: 0xffffff,
+            fontFamily: "Arial",
+            fontSize: 24,
+            fontWeight: "bold",
+            stroke: 0x000000,
+            strokeThickness: 3,
+        });
+        label.anchor.set(0.5);
+        label.visible = false;
+        return label;
+    }
+
+    private createCaptureTheFlagZoneFlagSprite() {
+        const sprite = new PIXI.Sprite(PIXI.Texture.from("loot_flag.img"));
+        sprite.anchor.set(0.5);
+        sprite.visible = false;
+        return sprite;
+    }
+
+    private getCaptureTheFlagZoneFlagTint(teamId: 0 | 1 | 2) {
+        return teamId === 1 ? 0xcc0000 : teamId === 2 ? 0x007eff : 0x9a9a9a;
+    }
+
+    private hideCaptureTheFlagZoneLabels() {
+        for (let i = 0; i < this.captureTheFlagZoneLabels.length; i++) {
+            this.captureTheFlagZoneLabels[i].visible = false;
+            this.captureTheFlagZoneFlagSprites[i].visible = false;
+        }
+    }
+
+    private renderCaptureTheFlagZones(
+        camera: Camera,
+        map: Map,
+        renderer: Renderer,
+        activePlayer: Player,
+    ) {
+        const ctfDef = map.getMapDef().gameMode.captureTheFlag;
+        const overlay = this.captureTheFlagZoneOverlay;
+        overlay.clear();
+        this.hideCaptureTheFlagZoneLabels();
+
+        if (!ctfDef || !this.hudVisible) return;
+
+        const captureRadius = ctfDef.captureRadius ?? 4;
+        const captureZoneSize =
+            ctfDef.captureZoneSize ?? v2.create(captureRadius * 2.5, captureRadius * 8.5);
+        const width = camera.m_scaleToScreen(captureZoneSize.x);
+        const height = camera.m_scaleToScreen(captureZoneSize.y);
+        const tileSize = math.max(14, camera.m_scaleToScreen(2));
+        const borderSize = math.max(3, camera.m_scaleToScreen(0.18));
+        const dashSize = math.max(10, camera.m_scaleToScreen(1.4));
+        const gapSize = dashSize * 0.72;
+        const pulse = 0.82 + Math.sin(performance.now() / 260) * 0.12;
+        const controlPointMode = this.kingOfTheHillMode || this.dominationMode;
+        let labelIdx = 0;
+
+        for (let i = 0; i < this.captureTheFlagZones.length; i++) {
+            const zone = this.captureTheFlagZones[i];
+            const zonePos = controlPointMode
+                ? zone.pos
+                : zone.teamId === 1
+                  ? ctfDef.redFlag
+                  : zone.teamId === 2
+                    ? ctfDef.blueFlag
+                    : zone.pos;
+
+            const center = camera.m_pointToScreen(zonePos);
+            const x = center.x - width / 2;
+            const y = center.y - height / 2;
+            const displayTeamId =
+                this.dominationMode && zone.progress && !zone.resetting
+                    ? zone.capturingTeamId
+                    : zone.teamId;
+            const color =
+                displayTeamId === 1
+                    ? 0xff2f2f
+                    : displayTeamId === 2
+                      ? 0x2f7dff
+                      : 0xffffff;
+            const lockedAlpha = controlPointMode && !!zone.locked;
+            const inactiveAlpha = controlPointMode && !!zone.inactive;
+            const zoneAlpha = inactiveAlpha ? 0.45 : 1;
+
+            overlay.lineStyle(0);
+            overlay.beginFill(color, (lockedAlpha ? 0.06 : 0.1) * pulse * zoneAlpha);
+            overlay.drawRect(x, y, width, height);
+            overlay.endFill();
+
+            const cols = Math.ceil(width / tileSize);
+            const rows = Math.ceil(height / tileSize);
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    if ((row + col) % 2 !== 0) continue;
+
+                    overlay.beginFill(
+                        0xffffff,
+                        (lockedAlpha ? 0.035 : 0.06) * pulse * zoneAlpha,
+                    );
+                    overlay.drawRect(
+                        x + col * tileSize,
+                        y + row * tileSize,
+                        math.min(tileSize, width - col * tileSize),
+                        math.min(tileSize, height - row * tileSize),
+                    );
+                    overlay.endFill();
+                }
+            }
+
+            overlay.beginFill(color, (lockedAlpha ? 0.12 : 0.2) * pulse * zoneAlpha);
+            overlay.drawRect(x, y, width, borderSize);
+            overlay.drawRect(x, y + height - borderSize, width, borderSize);
+            overlay.drawRect(x, y, borderSize, height);
+            overlay.drawRect(x + width - borderSize, y, borderSize, height);
+            overlay.endFill();
+
+            overlay.beginFill(0xffffff, 0.74 * zoneAlpha);
+            for (let dashX = x; dashX < x + width; dashX += dashSize + gapSize) {
+                const dashWidth = math.min(dashSize, x + width - dashX);
+                overlay.drawRect(dashX, y - borderSize, dashWidth, borderSize);
+                overlay.drawRect(dashX, y + height, dashWidth, borderSize);
+            }
+            for (let dashY = y; dashY < y + height; dashY += dashSize + gapSize) {
+                const dashHeight = math.min(dashSize, y + height - dashY);
+                overlay.drawRect(x - borderSize, dashY, borderSize, dashHeight);
+                overlay.drawRect(x + width, dashY, borderSize, dashHeight);
+            }
+            overlay.endFill();
+
+            const label = this.captureTheFlagZoneLabels[labelIdx++];
+            const flagSprite = this.captureTheFlagZoneFlagSprites[labelIdx - 1];
+            const showFlag = this.kingOfTheHillMode && !zone.locked && !zone.inactive;
+            if (label) {
+                const timeLeft = Math.max(
+                    0,
+                    (zone.captureDuration ?? 0) - (zone.progress ?? 0),
+                );
+                label.text = this.dominationMode
+                    ? zone.contested
+                        ? `${zone.label} · Contested`
+                        : zone.progress
+                          ? `${zone.label} · ${zone.resetting ? `Resetting ${zone.progress.toFixed(1)}` : `${timeLeft.toFixed(1)}s`}`
+                          : `${zone.label}`
+                    : this.kingOfTheHillMode
+                      ? zone.locked
+                          ? "Locked"
+                          : ""
+                      : "Flag Return";
+                label.x = center.x;
+                label.y = center.y;
+                label.visible =
+                    (this.dominationMode || !showFlag) && label.text.length > 0;
+                label.alpha = (zone.locked ? 0.55 : 0.78) * pulse * zoneAlpha;
+                label.scale.set(math.clamp(camera.m_zoom / 1.5, 0.75, 1.15));
+            }
+            if (flagSprite) {
+                flagSprite.texture = PIXI.Texture.from("loot_flag.img");
+                flagSprite.tint = this.getCaptureTheFlagZoneFlagTint(zone.teamId);
+                flagSprite.x = center.x;
+                flagSprite.y = center.y;
+                flagSprite.visible = showFlag;
+                flagSprite.alpha = 0.88 * pulse;
+                flagSprite.scale.set(math.clamp(camera.m_zoom * 0.55, 0.7, 1.1));
+            }
+        }
+
+        renderer.addPIXIObj(overlay, activePlayer.renderLayer, 9, 0);
+        renderer.addPIXIObj(
+            this.captureTheFlagZoneIndicatorOverlay,
+            activePlayer.renderLayer,
+            17,
+            0,
+        );
+    }
+
+    private renderCaptureTheFlagMapZones(map: Map) {
+        const ctfDef = map.getMapDef().gameMode.captureTheFlag;
+        const overlay = this.display.captureTheFlagMapZones;
+        overlay.clear();
+        for (let i = 0; i < this.captureTheFlagMapFlagSprites.length; i++) {
+            this.captureTheFlagMapFlagSprites[i].visible = false;
+        }
+
+        if (!ctfDef) return;
+
+        const captureRadius = ctfDef.captureRadius ?? 4;
+        const captureZoneSize =
+            ctfDef.captureZoneSize ?? v2.create(captureRadius * 2.5, captureRadius * 8.5);
+        const width = (captureZoneSize.x / map.width) * this.mapSprite.width;
+        const height = (captureZoneSize.y / map.height) * this.mapSprite.height;
+        const borderSize = math.max(1, math.min(width, height) * 0.08);
+        const dashSize = math.max(3, math.min(width, height) * 0.22);
+        const gapSize = dashSize * 0.72;
+        const controlPointMode = this.kingOfTheHillMode || this.dominationMode;
+        let flagIdx = 0;
+
+        for (let i = 0; i < this.captureTheFlagZones.length; i++) {
+            const zone = this.captureTheFlagZones[i];
+            const zonePos = controlPointMode
+                ? zone.pos
+                : zone.teamId === 1
+                  ? ctfDef.redFlag
+                  : zone.teamId === 2
+                    ? ctfDef.blueFlag
+                    : zone.pos;
+            const center = this.getMapPosFromWorldPos(zonePos, map);
+            const x = center.x - width / 2;
+            const y = center.y - height / 2;
+            const color =
+                zone.teamId === 1 ? 0xff2f2f : zone.teamId === 2 ? 0x2f7dff : 0xffffff;
+
+            overlay.lineStyle(0);
+            overlay.beginFill(color, 0.14);
+            overlay.drawRect(x, y, width, height);
+            overlay.endFill();
+
+            overlay.beginFill(color, 0.36);
+            overlay.drawRect(x, y, width, borderSize);
+            overlay.drawRect(x, y + height - borderSize, width, borderSize);
+            overlay.drawRect(x, y, borderSize, height);
+            overlay.drawRect(x + width - borderSize, y, borderSize, height);
+            overlay.endFill();
+
+            overlay.beginFill(0xffffff, 0.7);
+            for (let dashX = x; dashX < x + width; dashX += dashSize + gapSize) {
+                const dashWidth = math.min(dashSize, x + width - dashX);
+                overlay.drawRect(dashX, y - borderSize, dashWidth, borderSize);
+                overlay.drawRect(dashX, y + height, dashWidth, borderSize);
+            }
+            for (let dashY = y; dashY < y + height; dashY += dashSize + gapSize) {
+                const dashHeight = math.min(dashSize, y + height - dashY);
+                overlay.drawRect(x - borderSize, dashY, borderSize, dashHeight);
+                overlay.drawRect(x + width, dashY, borderSize, dashHeight);
+            }
+            overlay.endFill();
+
+            const flagSprite = this.captureTheFlagMapFlagSprites[flagIdx++];
+            if (flagSprite) {
+                const showFlag = controlPointMode
+                    ? !zone.inactive
+                    : zone.status !== CaptureTheFlagFlagStatus.Taken;
+                const flagCenter = controlPointMode
+                    ? center
+                    : this.getMapPosFromWorldPos(zone.pos, map);
+                const flagSize = math.max(6, math.min(width, height) * 0.72);
+                flagSprite.texture = PIXI.Texture.from("loot_flag.img");
+                flagSprite.tint = this.getCaptureTheFlagZoneFlagTint(zone.teamId);
+                flagSprite.x = flagCenter.x;
+                flagSprite.y = flagCenter.y;
+                flagSprite.width = flagSize;
+                flagSprite.height = flagSize;
+                flagSprite.alpha = zone.locked ? 0.65 : 0.9;
+                flagSprite.visible = showFlag;
+            }
         }
     }
 
@@ -681,6 +1300,7 @@ export class UiManager {
         gas: Gas,
         playerBarn: PlayerBarn,
         camera: Camera,
+        renderer: Renderer,
         teamMode: TeamMode,
         factionMode: boolean,
         completedAmongUsTasks: ReadonlySet<AmongUsTaskId>,
@@ -693,6 +1313,8 @@ export class UiManager {
 
         this.weapsDirty = false;
         this.mapIndicatorBarn.updateIndicatorPulses(dt);
+        this.renderCaptureTheFlagZones(camera, map, renderer, player);
+        this.updateCaptureTheFlagScoreboard();
 
         // Gas timer display
         const timeLeft = math.max(Math.floor(gas.duration * (1 - gas.circleT)), 0);
@@ -727,6 +1349,9 @@ export class UiManager {
             this.m_pieTimer.stop();
         } else if (!player.m_netData.m_dead && this.dead) {
             this.dead = false;
+            if (this.displayingStats) {
+                this.hideStats();
+            }
         }
 
         if (localPlayer.downed || this.dead) {
@@ -1033,6 +1658,9 @@ export class UiManager {
             mapSprite.sprite.texture = PIXI.Texture.from(texture);
             mapSprite.sprite.tint = tint;
         };
+        const isCaptureTheFlagRole = (role: string) =>
+            this.captureTheFlagMode &&
+            (role === "ctf_flag_red" || role === "ctf_flag_blue");
         const keys = Object.keys(playerBarn.playerStatus);
         for (let i = 0; i < keys.length; i++) {
             const playerStatus = playerBarn.playerStatus[keys[i] as unknown as number];
@@ -1048,6 +1676,12 @@ export class UiManager {
             if (customMapIcon) {
                 zOrder += 65535;
             }
+            const ctfRole = isCaptureTheFlagRole(playerStatus.role);
+            const livePlayer = ctfRole ? playerBarn.getPlayerById(playerId) : null;
+            const mapPos =
+                ctfRole && livePlayer && !playerStatus.dead
+                    ? livePlayer.m_pos
+                    : playerStatus.pos;
 
             // Add the inner dot sprite
             let texture = "player-map-inner.img";
@@ -1068,24 +1702,57 @@ export class UiManager {
                 : sameGroup
                   ? playerBarn.getGroupColor(playerId)
                   : playerBarn.getTeamColor(playerInfo.teamId);
-            if ((map.factionMode || arenaTeamVision) && customMapIcon) {
+            const dotTint = tint;
+            if (ctfRole) {
+                tint = roleDef?.color ?? roleDef?.mapIndicator?.tint ?? tint;
+            } else if ((map.factionMode || arenaTeamVision) && customMapIcon) {
                 tint = playerBarn.getTeamColor(playerInfo.teamId);
             }
             const dotScale = device.uiLayout == device.UiLayout.Sm ? 0.15 : 0.2;
             let scale = dotScale;
 
-            scale = sameGroup
-                ? playerStatus.dead
+            if (sameGroup) {
+                scale = playerStatus.dead
                     ? dotScale * 1.5
-                    : customMapIcon
-                      ? dotScale * 1.25
-                      : dotScale * 1
-                : playerStatus.dead || playerStatus.downed || customMapIcon
-                  ? dotScale * 1.25
-                  : dotScale * 0.75;
+                    : ctfRole
+                      ? dotScale * 2
+                      : customMapIcon
+                        ? dotScale * 1.25
+                        : dotScale;
+            } else {
+                scale =
+                    playerStatus.dead || playerStatus.downed
+                        ? dotScale * 1.25
+                        : ctfRole
+                          ? dotScale * 2
+                          : customMapIcon
+                            ? dotScale * 1.25
+                            : dotScale * 0.75;
+            }
+
+            if (ctfRole && !playerStatus.dead && !playerStatus.downed) {
+                addSprite(
+                    mapPos,
+                    dotScale,
+                    playerStatus.minimapAlpha!,
+                    playerStatus.minimapVisible!,
+                    zOrder - 2,
+                    "player-map-inner.img",
+                    dotTint,
+                );
+                addSprite(
+                    mapPos,
+                    scale * 1.35,
+                    playerStatus.minimapAlpha!,
+                    playerStatus.minimapVisible!,
+                    zOrder - 1,
+                    texture,
+                    0xffffff,
+                );
+            }
 
             addSprite(
-                playerStatus.pos,
+                mapPos,
                 scale,
                 playerStatus.minimapAlpha!,
                 playerStatus.minimapVisible!,
@@ -1100,7 +1767,7 @@ export class UiManager {
                 const visible = playerStatus.minimapVisible! && !customMapIcon;
 
                 addSprite(
-                    playerStatus.pos,
+                    mapPos,
                     scale,
                     playerStatus.minimapAlpha!,
                     visible,
@@ -1578,6 +2245,12 @@ export class UiManager {
             (stats) => stats.playerId === this.game.m_localId,
         );
         const amongUsMode = Boolean(map.getMapDef().gameMode.amongUsMode);
+        const captureTheFlagMode =
+            Boolean(map.getMapDef().gameMode.captureTheFlag) &&
+            this.game.m_privateMiniGame !== "king_of_the_hill" &&
+            this.game.m_privateMiniGame !== "domination";
+        const kingOfTheHillMode = this.game.m_privateMiniGame === "king_of_the_hill";
+        const dominationMode = this.game.m_privateMiniGame === "domination";
         if (amongUsMode && !gameOver && localStats?.dead) {
             this.beginSpectating();
             this.clearStatsElems();
@@ -1629,7 +2302,13 @@ export class UiManager {
                 : "";
             const S = amongUsMode
                 ? this.getAmongUsTitleText(localRole, isLocalTeamWinner)
-                : "Battle Results";
+                : (captureTheFlagMode || kingOfTheHillMode || dominationMode) && gameOver
+                  ? winningTeamId === 1
+                      ? "Red Team Won"
+                      : winningTeamId === 2
+                        ? "Blue Team Won"
+                        : "Red and Blue Tied"
+                  : "Battle Results";
             const orderedPlayerStats = [...playerStats].sort((a, b) => {
                 if (a.dead !== b.dead) return a.dead ? 1 : -1;
                 if (a.timeAlive !== b.timeAlive) return b.timeAlive - a.timeAlive;
@@ -1648,7 +2327,10 @@ export class UiManager {
                 teamMode,
                 teamRank,
                 teamKills,
-                map.getMapDef().gameMode.factionMode!,
+                map.getMapDef().gameMode.factionMode! ||
+                    captureTheFlagMode ||
+                    kingOfTheHillMode ||
+                    dominationMode,
             );
             const I = $("<div/>").append(
                 $("<div/>", {
@@ -1656,7 +2338,13 @@ export class UiManager {
                     html: S,
                 }),
             );
-            if (amongUsMode || map.getMapDef().gameMode.factionMode) {
+            if (
+                amongUsMode ||
+                map.getMapDef().gameMode.factionMode ||
+                captureTheFlagMode ||
+                kingOfTheHillMode ||
+                dominationMode
+            ) {
                 I.append(
                     $("<div/>", {
                         class: "ui-stats-header-overview",
@@ -2172,6 +2860,7 @@ export class UiManager {
         );
         $(".js-ui-map-show").css("display", this.bigmapDisplayed ? "block" : "none");
         this.applyTeamStatusVisibility();
+        this.updateCaptureTheFlagScoreboardVisibility();
         this.updateSpectatorCountDisplay(true);
         this.redraw(this.game.m_camera);
     }
@@ -2228,6 +2917,7 @@ export class UiManager {
             this.hideMiniMap();
             this.hudVisible = false;
         }
+        this.updateCaptureTheFlagScoreboardVisibility();
     }
 
     hideMiniMap() {
@@ -2334,6 +3024,7 @@ export class UiManager {
         );
 
         planeBarn.renderAirstrikeZones(this, map);
+        this.renderCaptureTheFlagMapZones(map);
     }
 
     updateHealthBar(

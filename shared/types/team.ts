@@ -3,6 +3,9 @@
 import { z } from "zod";
 import {
     type AmongUsImpostorCount,
+    type ArenaTeam,
+    type ArenaTeamCount,
+    ArenaTeamIds,
     type PrivateLobbyMiniGame,
     PrivateLobbyMiniGameIds,
 } from "../defs/miniGame";
@@ -45,6 +48,7 @@ export interface RoomData {
     captchaEnabled: boolean;
     arena: boolean;
     teamsLocked: boolean;
+    teamCount: ArenaTeamCount;
     miniGame: PrivateLobbyMiniGame;
     amongUsImpostorCount: AmongUsImpostorCount;
     disableAirstrikes: boolean;
@@ -72,7 +76,7 @@ export interface TeamMenuPlayer {
     playerIcon?: string;
     clanName?: string;
     clanTagColor?: string;
-    team?: "A" | "B";
+    team?: ArenaTeam;
     spectator?: boolean;
     brTeamCode?: string;
 }
@@ -139,6 +143,7 @@ export const zClientRoomData = z.object({
     gameModeIdx: z.number(),
     arena: z.boolean().optional(),
     teamsLocked: z.boolean().optional(),
+    teamCount: z.number().int().min(2).max(4).optional(),
     miniGame: z.enum(PrivateLobbyMiniGameIds).optional(),
     amongUsImpostorCount: z.number().int().min(1).max(3).optional(),
     disableAirstrikes: z.boolean().optional(),
@@ -158,7 +163,7 @@ export const zTeamJoinMsg = z.object({
     data: z.object({
         roomUrl: z.string(),
         arena: z.boolean().optional(),
-        preferredTeam: z.enum(["A", "B"]).optional(),
+        preferredTeam: z.enum(ArenaTeamIds).optional(),
         spectator: z.boolean().optional(),
         teamCode: z.string().trim().max(12).optional(),
         playerData: z.object({
@@ -233,7 +238,7 @@ export const zTeamSwapTeamMsg = z.object({
     type: z.literal("swapTeam"),
     data: z.object({
         playerId: z.number(),
-        team: z.enum(["A", "B", "spectator"]),
+        team: z.union([z.enum(ArenaTeamIds), z.literal("spectator")]),
     }),
 });
 

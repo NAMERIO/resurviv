@@ -1,6 +1,8 @@
 import $ from "jquery";
 import {
+    type ArenaTeam,
     DefaultAmongUsImpostorCount,
+    DefaultArenaTeamCount,
     DefaultPrivateLobbyMiniGame,
 } from "../../../shared/defs/miniGame";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
@@ -139,12 +141,12 @@ export class TeamMenu {
         clanName?: string;
         clanTagColor?: string;
         isLeader: boolean;
-        team?: "A" | "B";
+        team?: ArenaTeam;
         spectator?: boolean;
         brTeamCode?: string;
     }> = [];
     joinPrefs: {
-        preferredTeam?: "A" | "B";
+        preferredTeam?: ArenaTeam;
         spectator?: boolean;
         teamCode?: string;
     } = {};
@@ -357,7 +359,7 @@ export class TeamMenu {
         roomUrl: string,
         arena = false,
         joinPrefs?: {
-            preferredTeam?: "A" | "B";
+            preferredTeam?: ArenaTeam;
             spectator?: boolean;
             teamCode?: string;
         },
@@ -401,6 +403,7 @@ export class TeamMenu {
                 autoFill: arena ? false : this.config.get("teamAutoFill")!,
                 arena,
                 teamsLocked: false,
+                teamCount: this.roomData.teamCount || DefaultArenaTeamCount,
                 miniGame: this.roomData.miniGame || DefaultPrivateLobbyMiniGame,
                 amongUsImpostorCount:
                     this.roomData.amongUsImpostorCount || DefaultAmongUsImpostorCount,
@@ -565,6 +568,7 @@ export class TeamMenu {
                     this.roomData.gameModeIdx = ourRoomData.gameModeIdx;
                     this.roomData.autoFill = ourRoomData.autoFill;
                     this.roomData.teamsLocked = ourRoomData.teamsLocked;
+                    this.roomData.teamCount = ourRoomData.teamCount;
                     this.roomData.miniGame = ourRoomData.miniGame;
                     this.roomData.amongUsImpostorCount = ourRoomData.amongUsImpostorCount;
                     this.roomData.disableAirstrikes = ourRoomData.disableAirstrikes;
@@ -1197,7 +1201,7 @@ export class TeamMenu {
         });
     }
 
-    swapPlayerTeam(playerId: number, team: "A" | "B" | "spectator") {
+    swapPlayerTeam(playerId: number, team: ArenaTeam | "spectator") {
         if (!this.arena) return;
         const player = this.getPlayerById(playerId);
         if (!player) return;

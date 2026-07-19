@@ -408,6 +408,8 @@ export const LoadoutAtlas: AtlasDef = {
         "guns/gun-rainbow-blaster.svg",
         "guns/gun-rainbow-top.svg",
         "guns/gun-rainbow-blater-loaded.svg",
+        "guns/gun-bazooka.svg",
+        "guns/gun-bazooka-loaded.svg",
         "guns/gun-heart-cannon-01.svg",
 
         "loot/loot-ammo-box.svg",
@@ -597,6 +599,7 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/loot-perk-hunted.svg",
         "loot/loot-perk-inspiration.svg",
         "loot/loot-perk-leadership.svg",
+        "loot/loot_flag.svg",
         "loot/loot-perk-low-hp-surge.svg",
         "loot/loot-perk-martyrdom.svg",
         "loot/loot-perk-melee-runner.svg",
@@ -819,6 +822,7 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/loot-weapon-water.svg",
         "loot/loot-weapon-m134.svg",
         "loot/loot-weapon-rainbow-blaster.svg",
+        "loot/loot-weapon-bazooka.svg",
 
         "loot/loot-xp-bone-01.svg",
         "loot/loot-xp-book-01.svg",
@@ -1921,6 +1925,7 @@ export const LoadoutAtlas: AtlasDef = {
         "proj/proj-wedge-01.svg",
         "proj/proj-mine-01.svg",
         "proj/proj-40mm-01.svg",
+        "proj/proj-bazooka-tip.svg",
         "proj/proj-water-balloon.svg",
         "proj/proj-antiFire.svg",
         "proj/proj-heart-01.svg",

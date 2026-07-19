@@ -135,10 +135,12 @@ class Gun {
         this.container.visible = vis;
     }
 
-    setType(type: string, t: number) {
+    setType(type: string, t: number, loaded = false) {
         const gunDef = GameObjectDefs[type] as GunDef;
         const imgDef = gunDef.worldImg;
-        this.gunBarrel.texture = PIXI.Texture.from(imgDef.sprite);
+        this.gunBarrel.texture = PIXI.Texture.from(
+            loaded && imgDef.onLoadComplete ? imgDef.onLoadComplete : imgDef.sprite,
+        );
 
         this.gunBarrel.anchor.set(0.5, 1);
         this.gunBarrel.position.set(0, 0);
@@ -231,6 +233,7 @@ export class Player implements AbstractObject {
     pyroSprite = createSprite();
     helmetSprite = createSprite();
     visorSprite = createSprite();
+    captureTheFlagSprite = createSprite();
     backpackSprite = createSprite();
     handLSprite = createSprite();
     handRSprite = createSprite();
@@ -269,6 +272,11 @@ export class Player implements AbstractObject {
 
     // Anim
     bones: Pose[] = [];
+    animImageSprites: Array<{
+        sprite: PIXI.Sprite;
+        startTime: number;
+        endTime: number;
+    }> = [];
     anim = {
         type: Anim.None,
         data: {} as {
@@ -425,6 +433,7 @@ export class Player implements AbstractObject {
         m_hideAndSeekHunterReleaseTime: number;
         m_hideAndSeekHunterReleaseSeeker: boolean;
         m_infectedRespawnTime: number;
+        m_captureTheFlagRespawnTime: number;
         m_miniGameWinCountdownTime: number;
         m_miniGameWinCountdownProps: boolean;
         m_amongUsKillCooldownTime: number;
@@ -500,6 +509,7 @@ export class Player implements AbstractObject {
 
         this.container.addChild(this.bodyContainer);
 
+        this.container.addChild(this.captureTheFlagSprite);
         this.container.addChild(this.nameText);
 
         this.auraContainer.addChild(this.auraCircle);
@@ -602,6 +612,7 @@ export class Player implements AbstractObject {
             m_hideAndSeekHunterReleaseTime: 0,
             m_hideAndSeekHunterReleaseSeeker: false,
             m_infectedRespawnTime: 0,
+            m_captureTheFlagRespawnTime: 0,
             m_miniGameWinCountdownTime: 0,
             m_miniGameWinCountdownProps: false,
             m_amongUsKillCooldownTime: 0,
@@ -615,6 +626,7 @@ export class Player implements AbstractObject {
 
     m_free() {
         this.container.visible = false;
+        this.clearAnimImages();
         this.auraContainer.visible = false;
         if (this.useItemEmitter) {
             this.useItemEmitter.stop();
@@ -661,6 +673,10 @@ export class Player implements AbstractObject {
         this.m_netData.m_dir = v2.copy(data.dir);
 
         if (fullUpdate) {
+            const actionChanged = data.actionSeq !== this.m_action.seq;
+            const wasPlayingBazookaReload =
+                this.currentAnim() === Anim.ChangePose &&
+                this.anim.data.type === "bazooka_reload";
             this.m_netData.m_outfit = data.outfit;
             this.m_netData.m_meleeSkin = data.meleeSkin;
             this.m_netData.m_backpack = data.backpack;
@@ -695,6 +711,9 @@ export class Player implements AbstractObject {
             }
 
             this.m_netData.m_perks = data.perks;
+            if (actionChanged && wasPlayingBazookaReload) {
+                this.playAnim(Anim.None, data.animSeq);
+            }
             if (data.animSeq != this.anim.seq) {
                 if (this.currentAnim() !== Anim.ChangePose) {
                     this.playAnim(data.animType, data.animSeq);
@@ -703,6 +722,15 @@ export class Player implements AbstractObject {
             this.m_action.type = data.actionType;
             this.m_action.seq = data.actionSeq;
             this.m_action.item = data.actionItem;
+            if (actionChanged) {
+                const isBazookaReload =
+                    data.actionItem === "bazooka" &&
+                    (data.actionType === Action.Reload ||
+                        data.actionType === Action.ReloadAlt);
+                if (isBazookaReload) {
+                    this.playAnimation(Anim.ChangePose, data.actionSeq, "bazooka_reload");
+                }
+            }
             this.visualsDirty = true;
         }
 
@@ -784,6 +812,8 @@ export class Player implements AbstractObject {
         this.m_localData.m_hideAndSeekHunterReleaseSeeker =
             data.hideAndSeekHunterReleaseSeeker ?? false;
         this.m_localData.m_infectedRespawnTime = data.infectedRespawnTime ?? 0;
+        this.m_localData.m_captureTheFlagRespawnTime =
+            data.captureTheFlagRespawnTime ?? 0;
         this.m_localData.m_miniGameWinCountdownTime = data.miniGameWinCountdownTime ?? 0;
         this.m_localData.m_miniGameWinCountdownProps =
             data.miniGameWinCountdownProps ?? false;
@@ -1691,20 +1721,6 @@ export class Player implements AbstractObject {
         }
         if (curWeapDef && (curWeapDef as GunDef).fireMode === "blaster") {
             const gunDef = curWeapDef as GunDef;
-            if (this.gunRSprites?.gunBarrel && gunDef.worldImg?.onLoadComplete) {
-                if (this.m_netData.m_gunLoaded) {
-                    this.gunRSprites.gunBarrel.texture = PIXI.Texture.from(
-                        gunDef.worldImg.onLoadComplete,
-                    );
-                } else {
-                    this.gunRSprites.gunBarrel.texture = PIXI.Texture.from(
-                        gunDef.worldImg.sprite,
-                    );
-                }
-            }
-        }
-        if (curWeapDef && (curWeapDef as GunDef).fireMode === "blaster") {
-            const gunDef = curWeapDef as GunDef;
 
             if (this.gunRSprites?.gunBall && gunDef.worldImg?.loadingBullet) {
                 const maxScale =
@@ -2095,10 +2111,18 @@ export class Player implements AbstractObject {
             | MeleeDef
             | ThrowableDef;
         if (weapDef.type == "gun") {
-            this.gunRSprites.setType(this.m_netData.m_activeWeapon, bodyScale);
+            this.gunRSprites.setType(
+                this.m_netData.m_activeWeapon,
+                bodyScale,
+                this.m_netData.m_gunLoaded,
+            );
             this.gunRSprites.setVisible(true);
             if (weapDef.isDual) {
-                this.gunLSprites.setType(this.m_netData.m_activeWeapon, bodyScale);
+                this.gunLSprites.setType(
+                    this.m_netData.m_activeWeapon,
+                    bodyScale,
+                    this.m_netData.m_gunLoaded,
+                );
                 this.gunLSprites.setVisible(true);
             } else {
                 this.gunLSprites.setVisible(false);
@@ -2302,6 +2326,23 @@ export class Player implements AbstractObject {
             this.visorSprite.visible = true;
         } else {
             this.visorSprite.visible = false;
+        }
+        const ctfRoleDef =
+            this.m_netData.m_role === "ctf_flag_red" ||
+            this.m_netData.m_role === "ctf_flag_blue"
+                ? (GameObjectDefs[this.m_netData.m_role] as RoleDef)
+                : undefined;
+        if (ctfRoleDef?.mapIndicator) {
+            this.captureTheFlagSprite.texture = PIXI.Texture.from(
+                ctfRoleDef.mapIndicator.sprite,
+            );
+            this.captureTheFlagSprite.tint =
+                ctfRoleDef.color ?? ctfRoleDef.mapIndicator.tint;
+            this.captureTheFlagSprite.scale.set(0.9, 0.9);
+            this.captureTheFlagSprite.position.set(0, -34);
+            this.captureTheFlagSprite.visible = !this.m_netData.m_dead;
+        } else {
+            this.captureTheFlagSprite.visible = false;
         }
         if (outfitImg.frontSprite) {
             this.frontSprite.texture = PIXI.Texture.from(outfitImg.frontSprite);
@@ -2679,11 +2720,59 @@ export class Player implements AbstractObject {
         return this.anim.type;
     }
 
-    playAnim(type: Anim, seq: number) {
+    clearAnimImages() {
+        for (const image of this.animImageSprites) {
+            image.sprite.destroy();
+        }
+        this.animImageSprites.length = 0;
+    }
+
+    setupAnimImages() {
+        this.clearAnimImages();
+        const animation = Animations[this.anim.data.type];
+        for (const image of animation?.images ?? []) {
+            const sprite = PIXI.Sprite.from(image.sprite);
+            sprite.anchor.set(0.5);
+            sprite.position.set(
+                image.pos.x,
+                this.anim.data.mirror ? -image.pos.y : image.pos.y,
+            );
+            sprite.rotation = this.anim.data.mirror ? -image.rot : image.rot;
+            sprite.scale.set(image.scale.x, image.scale.y);
+            sprite.tint = image.tint ?? 0xffffff;
+            sprite.alpha = image.alpha ?? 1;
+            sprite.visible = false;
+
+            let attach = image.attach;
+            if (this.anim.data.mirror) {
+                if (attach === "handL") attach = "handR";
+                else if (attach === "handR") attach = "handL";
+            }
+            const parent =
+                attach === "handL"
+                    ? this.handLContainer
+                    : attach === "handR"
+                      ? this.handRContainer
+                      : this.bodyContainer;
+            if (image.onTop === false) parent.addChildAt(sprite, 0);
+            else parent.addChild(sprite);
+
+            this.animImageSprites.push({
+                sprite,
+                startTime: image.startTime ?? 0,
+                endTime: image.endTime ?? Number.POSITIVE_INFINITY,
+            });
+        }
+    }
+
+    playAnim(type: Anim, seq: number, definitionId: string | null = null) {
         this.anim.type = type;
-        this.anim.data = this.selectAnim(type);
+        this.anim.data = definitionId
+            ? { type: definitionId, mirror: false }
+            : this.selectAnim(type);
         this.anim.seq = seq;
         this.anim.ticker = 0;
+        this.setupAnimImages();
         for (let i = 0; i < this.bones.length; i++) {
             const a = this.anim.bones[i];
             a.weight = 0;
@@ -2699,6 +2788,12 @@ export class Player implements AbstractObject {
             const ticker = this.anim.ticker;
             this.anim.ticker += dt * 1;
             const anim = Animations[this.anim.data.type];
+
+            for (const image of this.animImageSprites) {
+                image.sprite.visible =
+                    this.anim.ticker >= image.startTime &&
+                    this.anim.ticker <= image.endTime;
+            }
 
             const frames = anim.keyframes;
             let frameAIdx = -1;
@@ -2737,7 +2832,21 @@ export class Player implements AbstractObject {
                     }
                 }
             }
-            const w = frameBIdx == frames.length - 1 && math.eqAbs(t, 1);
+            const imageEndTime = Math.max(
+                0,
+                ...(anim.images ?? []).map((image) => image.endTime ?? 0),
+            );
+            const effectEndTime = Math.max(
+                0,
+                ...anim.effects.map((effect) => effect.time),
+            );
+            const animationEndTime = Math.max(
+                frames[frames.length - 1].time,
+                imageEndTime,
+                effectEndTime,
+            );
+            const w =
+                frameBIdx == frames.length - 1 && this.anim.ticker >= animationEndTime;
             let f = this.anim.ticker;
             if (w) {
                 f += 1;
@@ -2758,7 +2867,7 @@ export class Player implements AbstractObject {
     }
 
     playAnimation(type: Anim, seq: number, definitionId: string | null = null) {
-        this.playAnim(type, seq);
+        this.playAnim(type, seq, definitionId);
     }
 
     animPlaySound(animCtx: Partial<AnimCtx>, args: { sound: string }) {

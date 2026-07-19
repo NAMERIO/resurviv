@@ -239,13 +239,13 @@ function Footer() {
               <a href='https://twitter.com/survevio' target='_blank' class='btn-social btn-darken btn-twitter'></a>
               <a href='https://reddit.com/r/survevio' target='_blank' class='btn-social btn-darken btn-reddit'></a> */}
                             <a
-                                href="https://discord.gg/75RAK3p3K2"
+                                href="https://discord.gg/vhg9pUXrVn"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="btn-social btn-darken btn-discord"
                             ></a>
                             <a
-                                href="https://ko-fi.com/survev"
+                                href="https://ko-fi.com/resurviv"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="btn-social btn-darken btn-kofi"

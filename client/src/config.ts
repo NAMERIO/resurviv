@@ -29,6 +29,9 @@ export const debugToolsConfig = {
     punchFast: false,
     moveObjs: false,
     explosionDecalBrush: false,
+    kothHillEditor: false,
+    kothHillX: 0,
+    kothHillY: 0,
 };
 
 export const debugRenderConfig = {

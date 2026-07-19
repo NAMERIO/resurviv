@@ -1,4 +1,4 @@
-import type { PrivateLobbyMiniGame } from "../../../shared/defs/miniGame";
+import type { ArenaTeam, PrivateLobbyMiniGame } from "../../../shared/defs/miniGame";
 import type { InventoryItem } from "../../../shared/gameConfig";
 
 export interface PrivateLobbyMiniGameWeaponOverride {
@@ -46,11 +46,45 @@ export interface InfectedSettings {
     zombieRespawnCooldown: number;
 }
 
+export interface CaptureTheFlagSettings {
+    redTeam: "A";
+    blueTeam: "B";
+    captureScore: number;
+    scoreLimit: number;
+    matchDuration: number;
+    droppedFlagReturnTime: number;
+}
+
+export interface KingOfTheHillSettings {
+    redTeam: "A";
+    blueTeam: "B";
+    scoreLimit: number;
+    pointsPerSecond: number;
+    hillDuration: number;
+    nextHillDelay: number;
+    matchDuration: number;
+}
+
+export interface DominationSettings {
+    redTeam: "A";
+    blueTeam: "B";
+    scoreLimit: number;
+    pointsPerSecond: number;
+    neutralCaptureTime: number;
+    enemyCaptureTime: number;
+    resetDelay: number;
+    resetDuration: number;
+    matchDuration: number;
+}
+
 interface PrivateLobbyMiniGameServerSettings {
     hideAndSeek?: HideAndSeekSettings;
     infected?: InfectedSettings;
+    captureTheFlag?: CaptureTheFlagSettings;
+    kingOfTheHill?: KingOfTheHillSettings;
+    domination?: DominationSettings;
     getWeaponOverride?: (
-        arenaTeam: "A" | "B" | undefined,
+        arenaTeam: ArenaTeam | undefined,
     ) => PrivateLobbyMiniGameWeaponOverride | undefined;
 }
 
@@ -91,6 +125,37 @@ export const InfectedSettings: InfectedSettings = {
     zombieSpeedMultiplier: 1.2,
     zombieDamageReduction: 0.4,
     zombieRespawnCooldown: 5,
+};
+
+export const CaptureTheFlagSettings: CaptureTheFlagSettings = {
+    redTeam: "A",
+    blueTeam: "B",
+    captureScore: 20,
+    scoreLimit: 100,
+    matchDuration: 600,
+    droppedFlagReturnTime: 5,
+};
+
+export const KingOfTheHillSettings: KingOfTheHillSettings = {
+    redTeam: "A",
+    blueTeam: "B",
+    scoreLimit: 200,
+    pointsPerSecond: 1,
+    hillDuration: 60,
+    nextHillDelay: 10,
+    matchDuration: 600,
+};
+
+export const DominationSettings: DominationSettings = {
+    redTeam: "A",
+    blueTeam: "B",
+    scoreLimit: 700,
+    pointsPerSecond: 1,
+    neutralCaptureTime: 5,
+    enemyCaptureTime: 8,
+    resetDelay: 0,
+    resetDuration: 3,
+    matchDuration: 600,
 };
 
 export const PrivateLobbyMiniGameServerSettings: Record<
@@ -140,12 +205,25 @@ export const PrivateLobbyMiniGameServerSettings: Record<
         },
     },
     among_us: {},
+    capture_the_flag: {
+        captureTheFlag: CaptureTheFlagSettings,
+    },
+    king_of_the_hill: {
+        kingOfTheHill: KingOfTheHillSettings,
+    },
+    domination: {
+        domination: DominationSettings,
+    },
 };
 
 export function getPrivateLobbyMiniGameMapName(
     miniGame: PrivateLobbyMiniGame | undefined,
 ) {
-    return miniGame === "among_us" ? "among_us" : undefined;
+    if (miniGame === "among_us") return "among_us";
+    if (miniGame === "capture_the_flag") return "capture_the_flag";
+    if (miniGame === "king_of_the_hill") return "capture_the_flag";
+    if (miniGame === "domination") return "capture_the_flag";
+    return undefined;
 }
 
 export function isAmongUsMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
@@ -162,7 +240,7 @@ export function isBattleRoyaleMiniGame(miniGame: PrivateLobbyMiniGame | undefine
 
 export function getPrivateLobbyMiniGameWeaponOverride(
     miniGame: PrivateLobbyMiniGame | undefined,
-    arenaTeam: "A" | "B" | undefined,
+    arenaTeam: ArenaTeam | undefined,
 ): PrivateLobbyMiniGameWeaponOverride | undefined {
     if (!miniGame) return undefined;
     return PrivateLobbyMiniGameServerSettings[miniGame].getWeaponOverride?.(arenaTeam);
@@ -182,9 +260,42 @@ export function getInfectedSettings(
     return PrivateLobbyMiniGameServerSettings[miniGame].infected;
 }
 
+export function getCaptureTheFlagSettings(
+    miniGame: PrivateLobbyMiniGame | undefined,
+): CaptureTheFlagSettings | undefined {
+    if (!miniGame) return undefined;
+    return PrivateLobbyMiniGameServerSettings[miniGame].captureTheFlag;
+}
+
+export function isCaptureTheFlagMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
+    return miniGame === "capture_the_flag";
+}
+
+export function getKingOfTheHillSettings(
+    miniGame: PrivateLobbyMiniGame | undefined,
+): KingOfTheHillSettings | undefined {
+    if (!miniGame) return undefined;
+    return PrivateLobbyMiniGameServerSettings[miniGame].kingOfTheHill;
+}
+
+export function isKingOfTheHillMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
+    return miniGame === "king_of_the_hill";
+}
+
+export function getDominationSettings(
+    miniGame: PrivateLobbyMiniGame | undefined,
+): DominationSettings | undefined {
+    if (!miniGame) return undefined;
+    return PrivateLobbyMiniGameServerSettings[miniGame].domination;
+}
+
+export function isDominationMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
+    return miniGame === "domination";
+}
+
 export function isHideAndSeekHider(
     miniGame: PrivateLobbyMiniGame | undefined,
-    arenaTeam: "A" | "B" | undefined,
+    arenaTeam: ArenaTeam | undefined,
 ) {
     const settings = getHideAndSeekSettings(miniGame);
     return !!settings && arenaTeam === settings.hiderTeam;
@@ -192,7 +303,7 @@ export function isHideAndSeekHider(
 
 export function isHideAndSeekSeeker(
     miniGame: PrivateLobbyMiniGame | undefined,
-    arenaTeam: "A" | "B" | undefined,
+    arenaTeam: ArenaTeam | undefined,
 ) {
     const settings = getHideAndSeekSettings(miniGame);
     return !!settings && arenaTeam === settings.seekerTeam;
@@ -200,7 +311,7 @@ export function isHideAndSeekSeeker(
 
 export function isInfectedZombie(
     miniGame: PrivateLobbyMiniGame | undefined,
-    arenaTeam: "A" | "B" | undefined,
+    arenaTeam: ArenaTeam | undefined,
 ) {
     const settings = getInfectedSettings(miniGame);
     return !!settings && arenaTeam === settings.zombieTeam;
@@ -208,7 +319,7 @@ export function isInfectedZombie(
 
 export function isInfectedHuman(
     miniGame: PrivateLobbyMiniGame | undefined,
-    arenaTeam: "A" | "B" | undefined,
+    arenaTeam: ArenaTeam | undefined,
 ) {
     const settings = getInfectedSettings(miniGame);
     return !!settings && arenaTeam === settings.humanTeam;

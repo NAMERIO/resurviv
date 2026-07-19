@@ -345,6 +345,19 @@ export const ExplosionDefs: Record<string, ExplosionDef> = {
         explosionEffectType: "rounds",
         decalType: "decal_rounds_explosion",
     },
+    explosion_bazooka: {
+        type: "explosion",
+        damage: 140,
+        obstacleDamage: 2,
+        rad: {
+            min: 2.5,
+            max: 7,
+        },
+        shrapnelCount: 0,
+        shrapnelType: "",
+        explosionEffectType: "frag",
+        decalType: "decal_frag_explosion",
+    },
     explosion_coconut: {
         type: "explosion",
         damage: 22,

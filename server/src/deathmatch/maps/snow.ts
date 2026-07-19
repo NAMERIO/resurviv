@@ -2,6 +2,7 @@ import type { MapDef } from "../../../../shared/defs/mapDefs";
 import { Main } from "../../../../shared/defs/maps/baseDefs";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { util } from "../../../../shared/utils/util";
+import { DeatchmatchMain } from "./main";
 
 const switchToSmallMap = false;
 
@@ -319,3 +320,5 @@ DeatchmatchSnow["lootTable"] = {
         { name: "pkp", count: 1, weight: 1 },
     ],
 };
+
+Object.assign(DeatchmatchSnow.lootTable, structuredClone(DeatchmatchMain.lootTable));

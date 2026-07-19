@@ -5,6 +5,7 @@ import { WeaponTypeToDefs } from "../../../shared/defs/gameObjectDefs";
 import type { MapDefs } from "../../../shared/defs/mapDefs";
 import {
     type AmongUsImpostorCount,
+    type ArenaTeam,
     DefaultAmongUsImpostorCount,
     DefaultPrivateLobbyMiniGame,
     normalizeAmongUsImpostorCount,
@@ -27,8 +28,11 @@ import {
     type ServerGameConfig,
     type UpdateDataMsg,
 } from "../utils/types";
+import { CaptureTheFlagManager } from "./captureTheFlagManager";
+import { DominationManager } from "./dominationManager";
 import { GameModeManager } from "./gameModeManager";
 import { Grid } from "./grid";
+import { KingOfTheHillManager } from "./kingOfTheHillManager";
 import { GameMap } from "./map";
 import { AirdropBarn } from "./objects/airdrop";
 import { BulletBarn } from "./objects/bullet";
@@ -66,7 +70,7 @@ export interface JoinTokenData {
     findGameIp: string;
     spectator?: boolean;
     loadout?: Loadout;
-    arenaTeam?: "A" | "B";
+    arenaTeam?: ArenaTeam;
     quests?: string[];
     groupData: {
         autoFill: boolean;
@@ -96,6 +100,9 @@ export class Game {
     infectedHumansWon = false;
     hideAndSeekHidersWon = false;
     amongUsWinningRole?: AmongUsRole;
+    captureTheFlagManager: CaptureTheFlagManager;
+    kingOfTheHillManager: KingOfTheHillManager;
+    dominationManager: DominationManager;
     arenaStartLockTimer = 0;
     arenaLastCountdownSecond = -1;
     arenaGoBroadcasted = false;
@@ -215,10 +222,24 @@ export class Game {
 
         this.gas = new Gas(this);
 
+        this.captureTheFlagManager = new CaptureTheFlagManager(this);
+        this.kingOfTheHillManager = new KingOfTheHillManager(this);
+        this.dominationManager = new DominationManager(this);
         this.modeManager = new GameModeManager(this);
 
-        if (this.map.factionMode) {
-            for (let i = 1; i <= this.map.mapDef.gameMode.factions!; i++) {
+        if (
+            this.map.factionMode ||
+            this.captureTheFlagManager.enabled ||
+            this.kingOfTheHillManager.enabled ||
+            this.dominationManager.enabled
+        ) {
+            const teamCount =
+                this.captureTheFlagManager.enabled ||
+                this.kingOfTheHillManager.enabled ||
+                this.dominationManager.enabled
+                    ? 2
+                    : this.map.mapDef.gameMode.factions!;
+            for (let i = 1; i <= teamCount; i++) {
                 this.playerBarn.addTeam(i);
             }
         }
@@ -254,6 +275,9 @@ export class Game {
     async init() {
         await this.pluginManager.loadPlugins();
         this.map.init();
+        this.captureTheFlagManager.init();
+        this.kingOfTheHillManager.init();
+        this.dominationManager.init();
         this.pluginManager.emit("gameCreated", this);
 
         this.allowJoin = true;
@@ -317,6 +341,18 @@ export class Game {
 
         this.profiler.addSample("players");
         this.playerBarn.update(dt);
+        this.profiler.endSample();
+
+        this.profiler.addSample("captureTheFlag");
+        this.captureTheFlagManager.update(dt);
+        this.profiler.endSample();
+
+        this.profiler.addSample("kingOfTheHill");
+        this.kingOfTheHillManager.update(dt);
+        this.profiler.endSample();
+
+        this.profiler.addSample("domination");
+        this.dominationManager.update(dt);
         this.profiler.endSample();
 
         this.profiler.addSample("map");

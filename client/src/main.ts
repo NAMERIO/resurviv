@@ -2,10 +2,15 @@ import $ from "jquery";
 import * as PIXI from "pixi.js-legacy";
 import {
     AmongUsImpostorCounts,
+    type ArenaTeam,
+    ArenaTeamCounts,
+    ArenaTeamIds,
     DefaultAmongUsImpostorCount,
+    DefaultArenaTeamCount,
     DefaultPrivateLobbyMiniGame,
     getPrivateLobbyMiniGameDef,
     normalizeAmongUsImpostorCount,
+    normalizeArenaTeamCount,
     type PrivateLobbyMiniGame,
     PrivateLobbyMiniGameDefs,
     PrivateLobbyMiniGameIds,
@@ -76,6 +81,7 @@ export class Application {
     prestigeArenaCreatePane = $("#modal-create-window");
     prestigeArenaBattleModeRow = $("#modal-battle-window .battle-mode");
     prestigeArenaBattleTypeRow = $("#modal-battle-window .battle-type");
+    prestigeArenaBattleTeamCountRow = $("#modal-battle-window .battle-team-count");
     prestigeArenaBattleMiniGameRow = $("#modal-battle-window .battle-minigame");
     prestigeArenaCodeInput = $<HTMLInputElement>(".battle-link-entry");
     prestigeArenaBattleInputGroup = $("#modal-battle-window .input-group");
@@ -111,6 +117,8 @@ export class Application {
     prestigeArenaModeSelection = $("#create-mode-selection");
     prestigeArenaTypeDropdown = $("#create-type");
     prestigeArenaTypeSelection = $("#create-type-selection");
+    prestigeArenaTeamCountDropdown = $("#create-team-count");
+    prestigeArenaTeamCountSelection = $("#create-team-count-selection");
     prestigeArenaMiniGameDropdown = $("#create-minigame");
     prestigeArenaMiniGameSelection = $("#create-minigame-selection");
     prestigeArenaImpostorCountDropdown = $("#create-impostors");
@@ -118,6 +126,7 @@ export class Application {
     prestigeArenaImpostorCountSelection = $("#create-impostors-selection");
     prestigeArenaBattleModeSelection = $("#battle-mode-selection");
     prestigeArenaBattleTypeSelection = $("#battle-type-selection");
+    prestigeArenaBattleTeamCountSelection = $("#battle-team-count-selection");
     prestigeArenaBattleMiniGameSelection = $("#battle-minigame-selection");
     prestigeArenaBattleImpostorCountRow = $("#modal-battle-window .battle-impostors");
     prestigeArenaBattleImpostorCountSelection = $("#battle-impostors-selection");
@@ -127,10 +136,12 @@ export class Application {
     prestigeArenaBattleRegionOpts = $("#battle-region-opts");
     prestigeArenaModeLabel = $("#create-link-mode");
     prestigeArenaTypeLabel = $("#create-link-type");
+    prestigeArenaTeamCountLabel = $("#create-link-team-count");
     prestigeArenaMiniGameLabel = $("#create-link-minigame");
     prestigeArenaImpostorCountLabel = $("#create-link-impostors");
     prestigeArenaBattleModeLabel = $("#battle-link-mode");
     prestigeArenaBattleTypeLabel = $("#battle-link-type");
+    prestigeArenaBattleTeamCountLabel = $("#battle-link-team-count");
     prestigeArenaBattleMiniGameLabel = $("#battle-link-minigame");
     prestigeArenaBattleImpostorCountLabel = $("#battle-link-impostors");
     prestigeArenaPreviewReqId = 0;
@@ -244,6 +255,10 @@ export class Application {
         return this.getTeamModeDisplayName(teamMode);
     }
 
+    getArenaTeamCountDisplayName(teamCount: number) {
+        return `${teamCount} Teams`;
+    }
+
     getTeamModeDisplayName(teamMode: number) {
         const teamModeMap: Record<number, string> = {
             1: "1v1",
@@ -258,6 +273,10 @@ export class Application {
     getTeamModeIcon(teamMode: number) {
         if (teamMode === 1) return "/img/gui/player-gui.svg";
         if (teamMode === 2) return "/img/ui/duo-player.svg";
+        return "/img/ui/squad-player.svg";
+    }
+
+    getArenaTeamCountIcon() {
         return "/img/ui/squad-player.svg";
     }
 
@@ -545,6 +564,7 @@ export class Application {
                 this.prestigeArenaModeSelection.css("display", visible ? "none" : "grid");
                 if (!visible) {
                     this.prestigeArenaTypeSelection.css("display", "none");
+                    this.prestigeArenaTeamCountSelection.css("display", "none");
                     this.prestigeArenaMiniGameSelection.css("display", "none");
                     this.prestigeArenaImpostorCountSelection.css("display", "none");
                     this.hidePrestigeArenaBattleSelections();
@@ -555,6 +575,22 @@ export class Application {
                 this.prestigeArenaTypeSelection.css("display", visible ? "none" : "grid");
                 if (!visible) {
                     this.prestigeArenaModeSelection.css("display", "none");
+                    this.prestigeArenaTeamCountSelection.css("display", "none");
+                    this.prestigeArenaMiniGameSelection.css("display", "none");
+                    this.prestigeArenaImpostorCountSelection.css("display", "none");
+                    this.hidePrestigeArenaBattleSelections();
+                }
+            });
+            this.prestigeArenaTeamCountDropdown.on("click", () => {
+                const visible =
+                    this.prestigeArenaTeamCountSelection.css("display") !== "none";
+                this.prestigeArenaTeamCountSelection.css(
+                    "display",
+                    visible ? "none" : "grid",
+                );
+                if (!visible) {
+                    this.prestigeArenaModeSelection.css("display", "none");
+                    this.prestigeArenaTypeSelection.css("display", "none");
                     this.prestigeArenaMiniGameSelection.css("display", "none");
                     this.prestigeArenaImpostorCountSelection.css("display", "none");
                     this.hidePrestigeArenaBattleSelections();
@@ -570,6 +606,7 @@ export class Application {
                 if (!visible) {
                     this.prestigeArenaModeSelection.css("display", "none");
                     this.prestigeArenaTypeSelection.css("display", "none");
+                    this.prestigeArenaTeamCountSelection.css("display", "none");
                     this.prestigeArenaImpostorCountSelection.css("display", "none");
                     this.hidePrestigeArenaBattleSelections();
                 }
@@ -592,6 +629,7 @@ export class Application {
                 if (!visible) {
                     this.prestigeArenaModeSelection.css("display", "none");
                     this.prestigeArenaTypeSelection.css("display", "none");
+                    this.prestigeArenaTeamCountSelection.css("display", "none");
                     this.prestigeArenaMiniGameSelection.css("display", "none");
                     this.hidePrestigeArenaBattleSelections();
                 }
@@ -608,6 +646,13 @@ export class Application {
                 this.togglePrestigeArenaBattleSelection(
                     this.prestigeArenaBattleTypeSelection,
                     this.prestigeArenaBattleTypeRow,
+                );
+            });
+            this.prestigeArenaBattleTeamCountRow.on("click", () => {
+                if (!this.canEditPrestigeArenaLiveOptions()) return;
+                this.togglePrestigeArenaBattleSelection(
+                    this.prestigeArenaBattleTeamCountSelection,
+                    this.prestigeArenaBattleTeamCountRow,
                 );
             });
             this.prestigeArenaBattleMiniGameRow.on("click", () => {
@@ -632,18 +677,22 @@ export class Application {
                         [
                             "#create-mode",
                             "#create-type",
+                            "#create-team-count",
                             "#create-minigame",
                             "#create-impostors",
                             "#create-mode-selection",
                             "#create-type-selection",
+                            "#create-team-count-selection",
                             "#create-minigame-selection",
                             "#create-impostors-selection",
                             "#modal-battle-window .battle-mode",
                             "#modal-battle-window .battle-type",
+                            "#modal-battle-window .battle-team-count",
                             "#modal-battle-window .battle-minigame",
                             "#modal-battle-window .battle-impostors",
                             "#battle-mode-selection",
                             "#battle-type-selection",
+                            "#battle-team-count-selection",
                             "#battle-minigame-selection",
                             "#battle-impostors-selection",
                         ].join(","),
@@ -653,6 +702,7 @@ export class Application {
                 }
                 this.prestigeArenaModeSelection.css("display", "none");
                 this.prestigeArenaTypeSelection.css("display", "none");
+                this.prestigeArenaTeamCountSelection.css("display", "none");
                 this.prestigeArenaMiniGameSelection.css("display", "none");
                 this.prestigeArenaImpostorCountSelection.css("display", "none");
                 this.hidePrestigeArenaBattleSelections();
@@ -1319,6 +1369,7 @@ export class Application {
         if (!preserveSelections) {
             this.prestigeArenaModeSelection.css("display", "none");
             this.prestigeArenaTypeSelection.css("display", "none");
+            this.prestigeArenaTeamCountSelection.css("display", "none");
             this.prestigeArenaMiniGameSelection.css("display", "none");
             this.prestigeArenaImpostorCountSelection.css("display", "none");
             this.hidePrestigeArenaBattleSelections();
@@ -1339,6 +1390,9 @@ export class Application {
     hidePrestigeArenaBattleSelections() {
         this.prestigeArenaBattleModeSelection.removeClass("is-open").css("display", "");
         this.prestigeArenaBattleTypeSelection.removeClass("is-open").css("display", "");
+        this.prestigeArenaBattleTeamCountSelection
+            .removeClass("is-open")
+            .css("display", "");
         this.prestigeArenaBattleMiniGameSelection
             .removeClass("is-open")
             .css("display", "");
@@ -1354,6 +1408,7 @@ export class Application {
         const visible = selection.hasClass("is-open");
         this.prestigeArenaModeSelection.css("display", "none");
         this.prestigeArenaTypeSelection.css("display", "none");
+        this.prestigeArenaTeamCountSelection.css("display", "none");
         this.prestigeArenaMiniGameSelection.css("display", "none");
         this.prestigeArenaImpostorCountSelection.css("display", "none");
         this.hidePrestigeArenaBattleSelections();
@@ -1458,10 +1513,12 @@ export class Application {
     populatePrestigeArenaModes() {
         this.prestigeArenaModeSelection.empty();
         this.prestigeArenaTypeSelection.empty();
+        this.prestigeArenaTeamCountSelection.empty();
         this.prestigeArenaMiniGameSelection.empty();
         this.prestigeArenaImpostorCountSelection.empty();
         this.prestigeArenaBattleModeSelection.empty();
         this.prestigeArenaBattleTypeSelection.empty();
+        this.prestigeArenaBattleTeamCountSelection.empty();
         this.prestigeArenaBattleMiniGameSelection.empty();
         this.prestigeArenaBattleImpostorCountSelection.empty();
         const modes = this.siteInfo.info.modes || [];
@@ -1474,6 +1531,7 @@ export class Application {
             "valentine",
             "inferno",
             "woods",
+            "capture_the_flag",
         ]);
         const gameModeStyles = this.siteInfo.getGameModeStyles();
         const deathmatchArenaModes = modes.filter((m) =>
@@ -1496,7 +1554,13 @@ export class Application {
             return deathmatchArenaModes.length ? deathmatchArenaModes : arenaModes;
         };
         const getTeamModesForMiniGame = (miniGame: PrivateLobbyMiniGame) =>
-            this.isBattleRoyaleMiniGame(miniGame) ? [1, 2, 4] : [1, 2, 4, 10, 15];
+            this.isBattleRoyaleMiniGame(miniGame)
+                ? [1, 2, 4]
+                : miniGame === "capture_the_flag" ||
+                    miniGame === "king_of_the_hill" ||
+                    miniGame === "domination"
+                  ? [2, 4, 10, 15]
+                  : [1, 2, 4, 10, 15];
         const mapStyleByName = new Map<
             string,
             {
@@ -1672,14 +1736,62 @@ export class Application {
             this.setPrestigeArenaImpostorCount(count, syncRoom);
         };
 
+        const applyTeamCountSelection = (teamCount: number, syncRoom = true) => {
+            if (
+                syncRoom &&
+                this.teamMenu.active &&
+                this.teamMenu.arena &&
+                !this.teamMenu.isLeader
+            ) {
+                return;
+            }
+            const normalizedTeamCount = normalizeArenaTeamCount(teamCount);
+            if (syncRoom && this.teamMenu.active && this.teamMenu.arena) {
+                this.teamMenu.setRoomProperty("teamCount", normalizedTeamCount);
+            } else {
+                this.teamMenu.roomData.teamCount = normalizedTeamCount;
+            }
+            this.prestigeArenaTeamCountLabel.text(
+                this.getArenaTeamCountDisplayName(normalizedTeamCount),
+            );
+            this.prestigeArenaBattleTeamCountLabel.text(
+                this.getArenaTeamCountDisplayName(normalizedTeamCount),
+            );
+            this.prestigeArenaTeamCountLabel.css(
+                "background-image",
+                `url(${this.getArenaTeamCountIcon()})`,
+            );
+            this.prestigeArenaBattleTeamCountLabel.css(
+                "background-image",
+                `url(${this.getArenaTeamCountIcon()})`,
+            );
+            this.prestigeArenaTeamCountSelection
+                .add(this.prestigeArenaBattleTeamCountSelection)
+                .find(".selection-button-team-count")
+                .each((_idx, el) => {
+                    const selected =
+                        Number($(el).attr("data-team-count")) === normalizedTeamCount;
+                    $(el).toggleClass("selected", selected);
+                    $(el).attr("aria-pressed", String(selected));
+                });
+            applySelection(
+                this.prestigeArenaSelectedMap,
+                this.prestigeArenaSelectedTeamMode,
+                syncRoom,
+            );
+            this.renderPrestigeArenaTeams();
+        };
+
         const renderModeAndTypeOptions = (miniGame: PrivateLobbyMiniGame) => {
             arenaModes = getArenaModesForMiniGame(miniGame);
             const maps = Array.from(new Set(arenaModes.map((m) => m.mapName)));
             const teamModes = getTeamModesForMiniGame(miniGame);
             this.prestigeArenaModeSelection.empty();
             this.prestigeArenaTypeSelection.empty();
+            this.prestigeArenaTeamCountSelection.empty();
             this.prestigeArenaBattleModeSelection.empty();
             this.prestigeArenaBattleTypeSelection.empty();
+            this.prestigeArenaBattleTeamCountSelection.empty();
 
             for (let i = 0; i < maps.length; i++) {
                 const mapName = maps[i];
@@ -1702,6 +1814,7 @@ export class Application {
                     btn.on("click", () => {
                         applySelection(mapName, this.prestigeArenaSelectedTeamMode);
                         this.prestigeArenaModeSelection.css("display", "none");
+                        this.prestigeArenaTeamCountSelection.css("display", "none");
                         this.prestigeArenaImpostorCountSelection.css("display", "none");
                         this.hidePrestigeArenaBattleSelections();
                     });
@@ -1727,6 +1840,7 @@ export class Application {
                     btn.on("click", () => {
                         applySelection(this.prestigeArenaSelectedMap, teamMode);
                         this.prestigeArenaTypeSelection.css("display", "none");
+                        this.prestigeArenaTeamCountSelection.css("display", "none");
                         this.prestigeArenaImpostorCountSelection.css("display", "none");
                         this.hidePrestigeArenaBattleSelections();
                     });
@@ -1734,6 +1848,44 @@ export class Application {
                 };
                 this.prestigeArenaTypeSelection.append(createButton());
                 this.prestigeArenaBattleTypeSelection.append(createButton());
+            }
+
+            if (miniGame === "pvp") {
+                for (const teamCount of ArenaTeamCounts) {
+                    const createButton = () => {
+                        const btn = $("<div>", {
+                            class: `selection-button-team-count${
+                                normalizeArenaTeamCount(
+                                    this.teamMenu.roomData.teamCount ||
+                                        DefaultArenaTeamCount,
+                                ) === teamCount
+                                    ? " selected"
+                                    : ""
+                            }`,
+                            "data-team-count": String(teamCount),
+                            role: "button",
+                            "aria-pressed": String(
+                                normalizeArenaTeamCount(
+                                    this.teamMenu.roomData.teamCount ||
+                                        DefaultArenaTeamCount,
+                                ) === teamCount,
+                            ),
+                            text: this.getArenaTeamCountDisplayName(teamCount),
+                        });
+                        btn.on("click", () => {
+                            applyTeamCountSelection(teamCount);
+                            this.prestigeArenaTeamCountSelection.css("display", "none");
+                            this.prestigeArenaImpostorCountSelection.css(
+                                "display",
+                                "none",
+                            );
+                            this.hidePrestigeArenaBattleSelections();
+                        });
+                        return btn;
+                    };
+                    this.prestigeArenaTeamCountSelection.append(createButton());
+                    this.prestigeArenaBattleTeamCountSelection.append(createButton());
+                }
             }
         };
 
@@ -1751,6 +1903,7 @@ export class Application {
                 btn.on("click", () => {
                     applyMiniGameSelection(miniGame);
                     this.prestigeArenaMiniGameSelection.css("display", "none");
+                    this.prestigeArenaTeamCountSelection.css("display", "none");
                     this.prestigeArenaImpostorCountSelection.css("display", "none");
                     this.hidePrestigeArenaBattleSelections();
                 });
@@ -1771,6 +1924,7 @@ export class Application {
                 });
                 btn.on("click", () => {
                     applyImpostorCountSelection(count);
+                    this.prestigeArenaTeamCountSelection.css("display", "none");
                     this.prestigeArenaImpostorCountSelection.css("display", "none");
                     this.hidePrestigeArenaBattleSelections();
                 });
@@ -1807,6 +1961,10 @@ export class Application {
                 this.prestigeArenaSelectedImpostorCount,
             false,
         );
+        applyTeamCountSelection(
+            this.teamMenu.roomData.teamCount || DefaultArenaTeamCount,
+            false,
+        );
         this.syncPrestigeArenaCreateOptions();
     }
 
@@ -1820,10 +1978,16 @@ export class Application {
         const mode = this.siteInfo.info.modes?.[modeIdx];
         if (!mode) return;
         this.prestigeArenaBattleModeLabel.text(this.getModeDisplayName(mode.mapName));
+        const miniGame =
+            this.teamMenu.roomData.miniGame || this.prestigeArenaSelectedMiniGame;
         this.prestigeArenaBattleTypeLabel.text(
-            this.getArenaTeamModeDisplayName(
-                mode.teamMode,
-                this.teamMenu.roomData.miniGame || this.prestigeArenaSelectedMiniGame,
+            this.getArenaTeamModeDisplayName(mode.teamMode, miniGame),
+        );
+        this.prestigeArenaBattleTeamCountLabel.text(
+            this.getArenaTeamCountDisplayName(
+                normalizeArenaTeamCount(
+                    this.teamMenu.roomData.teamCount || DefaultArenaTeamCount,
+                ),
             ),
         );
         this.prestigeArenaBattleTypeLabel.css(
@@ -1964,6 +2128,7 @@ export class Application {
         const miniGame = this.prestigeArenaSelectedMiniGame;
         const isAmongUs = miniGame === "among_us";
         const isBattleRoyale = this.isBattleRoyaleMiniGame(miniGame);
+        const canSelectTeamCount = miniGame === "pvp";
         const impostorCount = normalizeAmongUsImpostorCount(
             this.teamMenu.roomData.amongUsImpostorCount ||
                 this.prestigeArenaSelectedImpostorCount,
@@ -1985,6 +2150,8 @@ export class Application {
             });
         this.prestigeArenaImpostorCountGroup.toggleClass("hide", !isAmongUs);
         this.prestigeArenaBattleImpostorCountRow.toggleClass("hide", !isAmongUs);
+        $(".create-team-count-group").toggleClass("hide", !canSelectTeamCount);
+        this.prestigeArenaBattleTeamCountRow.toggleClass("hide", !canSelectTeamCount);
         this.prestigeArenaCreatePane.toggleClass("arena-among-us", isAmongUs);
         this.prestigeArenaBattlePane.toggleClass("arena-among-us", isAmongUs);
         this.prestigeArenaCreatePane.toggleClass("arena-battle-royale", isBattleRoyale);
@@ -1992,6 +2159,12 @@ export class Application {
         if (!isAmongUs) {
             this.prestigeArenaImpostorCountSelection.css("display", "none");
             this.prestigeArenaBattleImpostorCountSelection
+                .removeClass("is-open")
+                .css("display", "");
+        }
+        if (!canSelectTeamCount) {
+            this.prestigeArenaTeamCountSelection.css("display", "none");
+            this.prestigeArenaBattleTeamCountSelection
                 .removeClass("is-open")
                 .css("display", "");
         }
@@ -2135,7 +2308,7 @@ export class Application {
             this.prestigeArenaWrapper.removeClass("arena-large-teams");
             this.prestigeArenaBattlePane.removeClass("arena-large-teams");
             this.prestigeArenaTeamsBoard.removeClass(
-                "arena-large-teams arena-single-team arena-battle-royale-summary",
+                "arena-large-teams arena-single-team arena-battle-royale-summary arena-capture-the-flag",
             );
             this.prestigeArenaSpectatorsBoard.addClass("hide");
             return;
@@ -2179,11 +2352,12 @@ export class Application {
             this.prestigeArenaWrapper.removeClass("arena-large-teams");
             this.prestigeArenaBattlePane.removeClass("arena-large-teams");
             this.prestigeArenaTeamsBoard
-                .removeClass("arena-large-teams arena-single-team")
+                .removeClass("arena-large-teams arena-single-team arena-capture-the-flag")
                 .addClass("arena-battle-royale-summary");
             this.prestigeArenaTeamBList.empty();
             this.prestigeArenaSpectatorList.empty();
-            $(".arena-team-b").addClass("hide");
+            this.prestigeArenaTeamsBoard.find(".arena-team-column").addClass("hide");
+            this.prestigeArenaTeamsBoard.find(".arena-team-a").removeClass("hide");
             this.prestigeArenaSpectatorsBoard.addClass("hide");
             this.prestigeArenaBrTeamBoard.toggleClass("hide", teamSize <= 1);
             this.setPrestigeArenaMobilePanel("spectators");
@@ -2437,6 +2611,16 @@ export class Application {
         }
         this.prestigeArenaTeamsBoard.removeClass("arena-battle-royale-summary");
         this.prestigeArenaBrTeamBoard.addClass("hide").empty();
+        const activeTeams: ArenaTeam[] = singleTeam
+            ? ["A"]
+            : miniGameDef.id === "pvp"
+              ? ArenaTeamIds.slice(
+                    0,
+                    normalizeArenaTeamCount(
+                        this.teamMenu.roomData.teamCount || DefaultArenaTeamCount,
+                    ),
+                )
+              : ["A", "B"];
         const largeTeams = teamSize >= 10;
         const largeTeamColumns = largeTeams ? 2 : 1;
         const largeTeamRows = largeTeams
@@ -2446,15 +2630,26 @@ export class Application {
         this.prestigeArenaBattlePane.toggleClass("arena-large-teams", largeTeams);
         this.prestigeArenaTeamsBoard.toggleClass("arena-large-teams", largeTeams);
         this.prestigeArenaTeamsBoard.toggleClass("arena-single-team", singleTeam);
+        this.prestigeArenaTeamsBoard.toggleClass(
+            "arena-capture-the-flag",
+            miniGameDef.id === "capture_the_flag" ||
+                miniGameDef.id === "king_of_the_hill" ||
+                miniGameDef.id === "domination",
+        );
         this.prestigeArenaTeamsBoard.css({
+            "--arena-team-board-columns": String(Math.min(activeTeams.length, 2)),
             "--arena-single-team-columns": String(Math.min(teamSize, 5)),
             "--arena-team-columns": String(largeTeamColumns),
             "--arena-team-rows": String(largeTeamRows),
         });
         this.applyBattleModeStyleByIdx(this.teamMenu.roomData.gameModeIdx);
         this.applyBattleMiniGameStyle(this.teamMenu.roomData.miniGame);
-        const teamA = this.teamMenu.players.filter((p) => p.team === "A" && !p.spectator);
-        const teamB = this.teamMenu.players.filter((p) => p.team === "B" && !p.spectator);
+        const playersByTeam = new Map(
+            activeTeams.map((team) => [
+                team,
+                this.teamMenu.players.filter((p) => p.team === team && !p.spectator),
+            ]),
+        );
         const spectators = this.teamMenu.players.filter(
             (p) => p.spectator || (!p.team && this.teamMenu.arena),
         );
@@ -2479,7 +2674,7 @@ export class Application {
                 ? `${helpers.getClanTagHtml(clanName, clanTagColor || "")} ${helpers.htmlEscape(playerName)}`
                 : helpers.htmlEscape(playerName);
 
-        const buildJoinButton = (target: "A" | "B" | "spectator", label: string) => {
+        const buildJoinButton = (target: ArenaTeam | "spectator", label: string) => {
             const selected = localTarget === target;
             const lockedForPlayer = teamsLocked && !canManage;
             const button = $("<button>", {
@@ -2519,7 +2714,7 @@ export class Application {
         const renderHeading = (
             titleEl: JQuery<HTMLElement>,
             title: string,
-            target: "A" | "B" | "spectator",
+            target: ArenaTeam | "spectator",
             count: number,
             capacity?: number,
             label = "Join",
@@ -2538,20 +2733,54 @@ export class Application {
             titleEl.append(buildJoinButton(target, label));
         };
 
-        renderHeading(
-            $("#arena-team-a-title"),
-            miniGameDef.teamNames.A,
-            "A",
-            teamA.length,
-            teamSize,
-        );
-        $(".arena-team-b").toggleClass("hide", singleTeam);
-        if (!singleTeam) {
+        const getTeamColumn = (team: ArenaTeam) => {
+            const lowerTeam = team.toLowerCase();
+            let column = this.prestigeArenaTeamsBoard.find(`.arena-team-${lowerTeam}`);
+            if (!column.length) {
+                column = $("<div>", {
+                    class: `arena-team-column arena-team-${lowerTeam}`,
+                })
+                    .append(
+                        $("<div>", {
+                            id: `arena-team-${lowerTeam}-title`,
+                            class: "arena-team-title",
+                        }),
+                    )
+                    .append(
+                        $("<div>", {
+                            id: `arena-team-${lowerTeam}-list`,
+                            class: "arena-team-list",
+                        }),
+                    );
+                this.prestigeArenaTeamsBoard.append(column);
+            }
+            column.removeClass("hide");
+            return {
+                column,
+                title: column.find(".arena-team-title"),
+                list: column.find(".arena-team-list"),
+            };
+        };
+
+        this.prestigeArenaTeamsBoard.find(".arena-team-column").addClass("hide");
+        const teamColumns = new Map<
+            ArenaTeam,
+            {
+                column: JQuery<HTMLElement>;
+                title: JQuery<HTMLElement>;
+                list: JQuery<HTMLElement>;
+            }
+        >();
+        for (const team of activeTeams) {
+            const elements = getTeamColumn(team);
+            elements.list.empty();
+            teamColumns.set(team, elements);
+            const teamPlayers = playersByTeam.get(team) || [];
             renderHeading(
-                $("#arena-team-b-title"),
-                miniGameDef.teamNames.B,
-                "B",
-                teamB.length,
+                elements.title,
+                miniGameDef.teamNames[team] || `Team ${team}`,
+                team,
+                teamPlayers.length,
                 teamSize,
             );
         }
@@ -2566,8 +2795,8 @@ export class Application {
 
         const buildSlot = (
             list: JQuery<HTMLElement>,
-            player: (typeof teamA)[number] | undefined,
-            target: "A" | "B",
+            player: (typeof this.teamMenu.players)[number] | undefined,
+            target: ArenaTeam,
         ) => {
             const slot = $("<div>", {
                 class: `arena-team-slot${player ? "" : " empty"}`,
@@ -2635,9 +2864,12 @@ export class Application {
         };
 
         for (let i = 0; i < teamSize; i++) {
-            buildSlot(this.prestigeArenaTeamAList, teamA[i], "A");
-            if (!singleTeam) {
-                buildSlot(this.prestigeArenaTeamBList, teamB[i], "B");
+            for (const team of activeTeams) {
+                const teamPlayers = playersByTeam.get(team) || [];
+                const list = teamColumns.get(team)?.list;
+                if (list) {
+                    buildSlot(list, teamPlayers[i], team);
+                }
             }
         }
         this.prestigeArenaTeamsBoard.removeClass("hide");
@@ -2719,37 +2951,38 @@ export class Application {
         }
         this.prestigeArenaSpectatorsBoard.removeClass("hide");
 
-        const dropTargets = singleTeam
-            ? $(".arena-team-a, #arena-spectators-board")
-            : $(".arena-team-a, .arena-team-b, #arena-spectators-board");
+        const dropTargets = this.prestigeArenaTeamsBoard
+            .find(".arena-team-column:not(.hide)")
+            .add("#arena-spectators-board");
         dropTargets.toggleClass("arena-drop-enabled", hostCanAssign);
+        dropTargets.off(".arenaAssign");
         if (hostCanAssign) {
+            $(".arena-team-slot[draggable=true], .arena-spectator-item[draggable=true]")
+                .off(".arenaAssign")
+                .on("dragstart.arenaAssign", (e) => {
+                    const playerId = $(e.currentTarget).attr("data-playerid") || "";
+                    e.originalEvent?.dataTransfer?.setData("text/plain", playerId);
+                    e.originalEvent?.dataTransfer?.setData(
+                        "application/x-player-id",
+                        playerId,
+                    );
+                    e.originalEvent?.dataTransfer?.setDragImage(e.currentTarget, 12, 12);
+                    $(e.currentTarget).addClass("dragging");
+                });
             $(
                 ".arena-team-slot[draggable=true], .arena-spectator-item[draggable=true]",
-            ).on("dragstart", (e) => {
-                const playerId = $(e.currentTarget).attr("data-playerid") || "";
-                e.originalEvent?.dataTransfer?.setData("text/plain", playerId);
-                e.originalEvent?.dataTransfer?.setData(
-                    "application/x-player-id",
-                    playerId,
-                );
-                e.originalEvent?.dataTransfer?.setDragImage(e.currentTarget, 12, 12);
-                $(e.currentTarget).addClass("dragging");
-            });
-            $(
-                ".arena-team-slot[draggable=true], .arena-spectator-item[draggable=true]",
-            ).on("dragend", (e) => {
+            ).on("dragend.arenaAssign", (e) => {
                 $(e.currentTarget).removeClass("dragging");
                 dropTargets.removeClass("drag-over");
             });
-            dropTargets.on("dragover", (e) => {
+            dropTargets.on("dragover.arenaAssign", (e) => {
                 e.preventDefault();
                 $(e.currentTarget).addClass("drag-over");
             });
-            dropTargets.on("dragleave", (e) => {
+            dropTargets.on("dragleave.arenaAssign", (e) => {
                 $(e.currentTarget).removeClass("drag-over");
             });
-            dropTargets.on("drop", (e) => {
+            dropTargets.on("drop.arenaAssign", (e) => {
                 e.preventDefault();
                 dropTargets.removeClass("drag-over");
                 const playerId = Number(
@@ -2759,13 +2992,14 @@ export class Application {
                 if (!Number.isFinite(playerId)) return;
 
                 const targetEl = $(e.currentTarget);
-                const id = e.currentTarget.id;
+                const teamTarget = targetEl
+                    .find(".arena-team-slot")
+                    .first()
+                    .attr("data-team-target") as ArenaTeam | undefined;
                 const target =
-                    id === "arena-team-a-list" || targetEl.hasClass("arena-team-a")
-                        ? "A"
-                        : id === "arena-team-b-list" || targetEl.hasClass("arena-team-b")
-                          ? "B"
-                          : "spectator";
+                    teamTarget && activeTeams.includes(teamTarget)
+                        ? teamTarget
+                        : "spectator";
                 this.teamMenu.swapPlayerTeam(playerId, target);
             });
         }
@@ -2799,6 +3033,7 @@ export class Application {
         this.setPrestigeArenaMobilePanel("spectators");
         this.prestigeArenaModeSelection.css("display", "none");
         this.prestigeArenaTypeSelection.css("display", "none");
+        this.prestigeArenaTeamCountSelection.css("display", "none");
         this.prestigeArenaMiniGameSelection.css("display", "none");
         this.prestigeArenaImpostorCountSelection.css("display", "none");
         this.hidePrestigeArenaBattleSelections();
@@ -3008,7 +3243,7 @@ export class Application {
         let source = (rawUrlOrCode || "").trim();
         let arena = fallbackArena;
         let roomUrl = "";
-        let preferredTeam: "A" | "B" | undefined;
+        let preferredTeam: ArenaTeam | undefined;
         let spectator: boolean | undefined;
         let teamCode: string | undefined;
 
@@ -3048,11 +3283,12 @@ export class Application {
                     spectator = false;
                 } else if (suffix === "S" || suffix === "SPEC") {
                     spectator = true;
-                } else if (suffix === "A" || suffix === "TEAM_A") {
-                    preferredTeam = "A";
-                    spectator = false;
-                } else if (suffix === "B" || suffix === "TEAM_B") {
-                    preferredTeam = "B";
+                } else if (
+                    ArenaTeamIds.some(
+                        (team) => suffix === team || suffix === `TEAM_${team}`,
+                    )
+                ) {
+                    preferredTeam = suffix[suffix.length - 1] as ArenaTeam;
                     spectator = false;
                 }
             }
@@ -3112,7 +3348,7 @@ export class Application {
         url?: string,
         arena = false,
         joinPrefs?: {
-            preferredTeam?: "A" | "B";
+            preferredTeam?: ArenaTeam;
             spectator?: boolean;
             teamCode?: string;
         },
@@ -3137,6 +3373,8 @@ export class Application {
                 }
                 this.teamMenu.connect(true, "", true, { spectator: true });
                 this.teamMenu.roomData.miniGame = this.prestigeArenaSelectedMiniGame;
+                this.teamMenu.roomData.teamCount =
+                    this.teamMenu.roomData.teamCount || DefaultArenaTeamCount;
                 this.teamMenu.roomData.amongUsImpostorCount =
                     this.prestigeArenaSelectedImpostorCount;
                 this.refreshUi();

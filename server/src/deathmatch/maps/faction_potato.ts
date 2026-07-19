@@ -3,6 +3,7 @@ import { Main, type PartialMapDef } from "../../../../shared/defs/maps/baseDefs"
 import { Faction } from "../../../../shared/defs/maps/factionDefs";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { util } from "../../../../shared/utils/util";
+import { DeatchmatchMain } from "./main";
 
 const switchToSmallMap = false;
 
@@ -284,3 +285,5 @@ FactionPotato["lootTable"] = {
         { name: "pkp", count: 1, weight: 1 },
     ],
 };
+
+Object.assign(FactionPotato.lootTable, structuredClone(DeatchmatchMain.lootTable));

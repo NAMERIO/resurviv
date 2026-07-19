@@ -3,6 +3,7 @@ import { Cobalt } from "../../../../shared/defs/maps/cobaltDefs";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { util } from "../../../../shared/utils/util";
 import { loadAirstrike } from "../helpers";
+import { DeatchmatchMain } from "./main";
 
 const switchToSmallMap = false;
 
@@ -186,3 +187,5 @@ DeatchmatchCobalt.lootTable = {
         { name: "pkp", count: 1, weight: 1 },
     ],
 };
+
+Object.assign(DeatchmatchCobalt.lootTable, structuredClone(DeatchmatchMain.lootTable));

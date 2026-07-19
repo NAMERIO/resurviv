@@ -111,6 +111,7 @@ export class ApiServer {
             "valentine",
             "inferno",
             "woods",
+            "capture_the_flag",
         ];
 
         for (const mapName of forcedPrivateMaps) {

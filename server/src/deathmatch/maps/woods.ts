@@ -3,6 +3,7 @@ import { Woods } from "../../../../shared/defs/maps/woodsDefs";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { util } from "../../../../shared/utils/util";
 import { loadAirstrike } from "../helpers";
+import { DeatchmatchMain } from "./main";
 
 const switchToSmallMap = false;
 
@@ -138,3 +139,5 @@ DeatchmatchWoods["lootTable"] = {
     ],
     tier_hatchet: [{ name: "usas", count: 1, weight: 2 }],
 };
+
+Object.assign(DeatchmatchWoods.lootTable, structuredClone(DeatchmatchMain.lootTable));

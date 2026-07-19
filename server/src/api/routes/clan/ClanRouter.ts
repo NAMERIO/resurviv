@@ -1220,6 +1220,13 @@ ClanRouter.post("/create", validateParams(zCreateClanRequest), async (c) => {
         );
     }
 
+    if (Config.lockClanJoins) {
+        return c.json<CreateClanResponse>(
+            { success: false, error: "clan_joins_locked" },
+            400,
+        );
+    }
+
     const { validName, originalWasInvalid } = validateUserName(name);
     if (originalWasInvalid) {
         return c.json<CreateClanResponse>({ success: false, error: "invalid_name" }, 400);
@@ -1295,6 +1302,13 @@ ClanRouter.post("/join", validateParams(zJoinClanRequest), async (c) => {
         );
     }
 
+    if (Config.lockClanJoins) {
+        return c.json<JoinClanResponse>(
+            { success: false, error: "clan_joins_locked" },
+            400,
+        );
+    }
+
     const lastLeave = await db.query.clanLeaveHistoryTable.findFirst({
         where: eq(clanLeaveHistoryTable.userId, user.id),
         orderBy: desc(clanLeaveHistoryTable.leftAt),
@@ -1353,6 +1367,13 @@ ClanRouter.post("/request_join", validateParams(zRequestJoinClanRequest), async 
     if (existingMembership) {
         return c.json<RequestJoinClanResponse>(
             { success: false, error: "already_in_clan" },
+            400,
+        );
+    }
+
+    if (Config.lockClanJoins) {
+        return c.json<RequestJoinClanResponse>(
+            { success: false, error: "clan_joins_locked" },
             400,
         );
     }
@@ -2485,6 +2506,7 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
         totalCount,
         page,
         totalPages: Math.ceil(totalCount / limit),
+        clansLocked: Config.lockClanJoins,
     });
 });
 

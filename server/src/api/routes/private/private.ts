@@ -45,6 +45,7 @@ import {
     zSetClanCgpValueBody,
     zSetClientThemeBody,
     zSetGameModeBody,
+    zSetLockClanJoinsBody,
     zSetPauseClanStatsBody,
     zTopRankPlayersBody,
     zUpdateRegionBody,
@@ -854,6 +855,22 @@ export const PrivateRouter = new Hono<Context>()
         return c.json(
             {
                 message: `Clan stat tracking is now ${enabled ? "paused" : "enabled"}`,
+            },
+            200,
+        );
+    })
+    .post("/set_lock_clan_joins", validateParams(zSetLockClanJoinsBody), (c) => {
+        const { locked } = c.req.valid("json");
+
+        Config.lockClanJoins = locked;
+
+        saveConfig(serverConfigPath, {
+            lockClanJoins: locked,
+        });
+
+        return c.json(
+            {
+                message: `Clan joining is now ${locked ? "locked" : "unlocked"}`,
             },
             200,
         );

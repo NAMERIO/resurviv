@@ -12,6 +12,7 @@
     "./src/**/*.js",
     "../shared/",
     "./atlas-builder/**/*.ts",
+    "./animation-maker/**/*.ts",
     "./building-editor/**/*.ts",
     "./building-maker/**/*.ts",
     "./loot-table-maker/**/*.ts",

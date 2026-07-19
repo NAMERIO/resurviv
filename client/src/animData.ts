@@ -158,6 +158,19 @@ interface Effect<K extends AnimKeys = AnimKeys> {
     args?: Parameters<Player[K]>[1];
 }
 
+export interface AnimImage {
+    sprite: string;
+    attach: "body" | "handL" | "handR";
+    pos: Vec2;
+    rot: number;
+    scale: Vec2;
+    tint?: number;
+    alpha?: number;
+    startTime?: number;
+    endTime?: number;
+    onTop?: boolean;
+}
+
 export const Animations: Record<
     string,
     {
@@ -166,11 +179,55 @@ export const Animations: Record<
             bones: Partial<Record<Bones, Pose>>;
         }>;
         effects: Effect[];
+        images?: AnimImage[];
     }
 > = {
     none: {
         keyframes: [],
         effects: [],
+    },
+    bazooka_reload: {
+        keyframes: [
+            frame(0, {
+                [Bones.HandL]: new Pose(v2.create(20, 10)),
+                [Bones.HandR]: new Pose(v2.create(2, 22)),
+                [Bones.FootL]: new Pose(v2.create(0, 0)),
+                [Bones.FootR]: new Pose(v2.create(0, 0)),
+            }),
+            frame(0.44, {
+                [Bones.HandL]: new Pose(v2.create(16.17, -12.23)),
+                [Bones.HandR]: new Pose(v2.create(2, 22)),
+                [Bones.FootL]: new Pose(v2.create(0, 0)),
+                [Bones.FootR]: new Pose(v2.create(0, 0)),
+            }),
+            frame(1.01, {
+                [Bones.HandL]: new Pose(v2.create(40.49, 14.86)),
+                [Bones.HandR]: new Pose(v2.create(2, 22)),
+                [Bones.FootL]: new Pose(v2.create(0, 0)),
+                [Bones.FootR]: new Pose(v2.create(0, 0)),
+            }),
+            frame(1.41, {
+                [Bones.HandL]: new Pose(v2.create(37.71, 15.9)),
+                [Bones.HandR]: new Pose(v2.create(2, 22)),
+                [Bones.FootL]: new Pose(v2.create(0, 0)),
+                [Bones.FootR]: new Pose(v2.create(0, 0)),
+            }),
+        ],
+        effects: [],
+        images: [
+            {
+                sprite: "proj-bazooka-tip.img",
+                attach: "handL",
+                pos: v2.create(5.74, -0.73),
+                rot: 1.5432,
+                scale: v2.create(0.25, 0.25),
+                tint: 0xffffff,
+                alpha: 1,
+                startTime: 0.44,
+                endTime: 3,
+                onTop: false,
+            },
+        ],
     },
     fists: {
         keyframes: [

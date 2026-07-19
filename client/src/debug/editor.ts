@@ -1,4 +1,5 @@
 import $ from "jquery";
+import type * as PIXI from "pixi.js-legacy";
 import { type FolderApi, Pane, type TabPageApi } from "tweakpane";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { RoleDefs } from "../../../shared/defs/gameObjects/roleDefs";
@@ -15,6 +16,7 @@ import {
     debugRenderConfig,
     type debugToolsConfig,
 } from "../config";
+import { helpers } from "../helpers";
 import { type InputHandler, Key, MouseButton } from "../input";
 
 const availableLoot = Object.entries(GameObjectDefs)
@@ -54,6 +56,8 @@ export class Editor {
     pane: Pane;
 
     zoomBind: ReturnType<Pane["addBinding"]>;
+    kothHillXBind!: ReturnType<Pane["addBinding"]>;
+    kothHillYBind!: ReturnType<Pane["addBinding"]>;
 
     enabled = false;
 
@@ -64,6 +68,8 @@ export class Editor {
     drawExplosionDecal = false;
     explosionDecalPos = v2.create(0, 0);
     lastExplosionDecalPos: Vec2 | null = null;
+    draggingKothHill = false;
+    lastMouseWorldPos = v2.create(0, 0);
 
     printLootStats = false;
 
@@ -212,6 +218,47 @@ export class Editor {
                 this.loadNewMap = true;
                 this.sendMsg = true;
                 input.refresh();
+            });
+        }
+
+        // KOTH hill placement
+        {
+            const folder = tools.addFolder({
+                title: "KOTH Hill",
+                expanded: false,
+            });
+            const enabled = folder.addBinding(this.toolParams, "kothHillEditor", {
+                label: "Enabled",
+            });
+            const xBind = folder.addBinding(this.toolParams, "kothHillX", {
+                label: "X",
+                step: 0.01,
+            });
+            const yBind = folder.addBinding(this.toolParams, "kothHillY", {
+                label: "Y",
+                step: 0.01,
+            });
+            this.kothHillXBind = xBind;
+            this.kothHillYBind = yBind;
+            const refresh = () => {
+                xBind.refresh();
+                yBind.refresh();
+            };
+
+            enabled.on("change", () => {
+                this.config.set("debugTools", this.toolParams);
+            });
+            xBind.on("change", () => this.config.set("debugTools", this.toolParams));
+            yBind.on("change", () => this.config.set("debugTools", this.toolParams));
+
+            folder.addButton({ title: "Use Mouse" }).on("click", () => {
+                this.toolParams.kothHillEditor = true;
+                this.setKothHillPos(this.lastMouseWorldPos);
+                this.config.set("debugTools", this.toolParams);
+                refresh();
+            });
+            folder.addButton({ title: "Copy Vec2" }).on("click", () => {
+                helpers.copyTextToClipboard(this.getKothHillLocationText());
             });
         }
 
@@ -392,6 +439,7 @@ export class Editor {
     }
 
     m_update(input: InputHandler, camera: Camera) {
+        this.lastMouseWorldPos = camera.m_screenToPoint(input.mousePos);
         let zoom = this.toolParams.zoom;
         if (input.keyPressed(Key.Plus)) {
             zoom -= 8;
@@ -426,12 +474,80 @@ export class Editor {
         }
         if (input.mouseReleased(MouseButton.Left)) {
             this.lastExplosionDecalPos = null;
+            if (this.draggingKothHill) {
+                this.draggingKothHill = false;
+                this.config.set("debugTools", this.toolParams);
+            }
+        }
+
+        if (this.toolParams.kothHillEditor) {
+            if (input.mousePressed(MouseButton.Left)) {
+                this.draggingKothHill = true;
+            }
+            if (this.draggingKothHill && input.mouseDown(MouseButton.Left)) {
+                this.setKothHillPos(this.lastMouseWorldPos);
+                this.kothHillXBind.refresh();
+                this.kothHillYBind.refresh();
+            }
         }
 
         $("#ui-leaderboard-wrapper,#ui-right-center,#ui-kill-leader-container").css(
             "display",
             !this.enabled ? "block" : "none",
         );
+    }
+
+    getKothHillLocationText() {
+        return `v2.create(${this.toolParams.kothHillX.toFixed(2)}, ${this.toolParams.kothHillY.toFixed(2)}),`;
+    }
+
+    private setKothHillPos(pos: Vec2) {
+        this.toolParams.kothHillX = Number(pos.x.toFixed(2));
+        this.toolParams.kothHillY = Number(pos.y.toFixed(2));
+    }
+
+    m_render(gfx: PIXI.Graphics, camera: Camera) {
+        if (!this.enabled || !this.toolParams.kothHillEditor) return;
+
+        const pos = v2.create(this.toolParams.kothHillX, this.toolParams.kothHillY);
+        const center = camera.m_pointToScreen(pos);
+        const width = camera.m_scaleToScreen(16);
+        const height = camera.m_scaleToScreen(24);
+        const x = center.x - width / 2;
+        const y = center.y - height / 2;
+        const crossSize = math.max(10, camera.m_scaleToScreen(0.8));
+        const flagHeight = math.max(18, camera.m_scaleToScreen(1.5));
+
+        gfx.lineStyle(2, 0xffd34d, 0.95);
+        gfx.beginFill(0xffd34d, 0.16);
+        gfx.drawRect(x, y, width, height);
+        gfx.endFill();
+
+        gfx.lineStyle(3, 0x111111, 0.9);
+        gfx.moveTo(center.x - crossSize, center.y);
+        gfx.lineTo(center.x + crossSize, center.y);
+        gfx.moveTo(center.x, center.y - crossSize);
+        gfx.lineTo(center.x, center.y + crossSize);
+
+        gfx.lineStyle(2, 0xffffff, 0.95);
+        gfx.moveTo(center.x - crossSize, center.y);
+        gfx.lineTo(center.x + crossSize, center.y);
+        gfx.moveTo(center.x, center.y - crossSize);
+        gfx.lineTo(center.x, center.y + crossSize);
+
+        gfx.lineStyle(2, 0x111111, 0.9);
+        gfx.moveTo(center.x, center.y);
+        gfx.lineTo(center.x, center.y - flagHeight);
+        gfx.beginFill(0x9a9a9a, 0.95);
+        gfx.drawPolygon([
+            center.x,
+            center.y - flagHeight,
+            center.x + flagHeight * 0.75,
+            center.y - flagHeight * 0.82,
+            center.x,
+            center.y - flagHeight * 0.58,
+        ]);
+        gfx.endFill();
     }
 
     getMsg() {

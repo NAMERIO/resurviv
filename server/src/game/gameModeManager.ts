@@ -162,6 +162,62 @@ export class GameModeManager {
 
     /** true if game needs to end */
     handleGameEnd(): boolean {
+        if (this.game.dominationManager.enabled) {
+            if (!this.game.started) return false;
+            if (this.game.dominationManager.hasReachedScoreLimit()) {
+                const winner = this.game.dominationManager.getWinningTeamId();
+                if (winner) return this.game.dominationManager.endWithWinner(winner);
+            }
+            if (
+                this.game.gas.finalCloseStarted ||
+                this.game.startedTime >=
+                    (this.game.dominationManager.settings?.matchDuration ?? 600)
+            ) {
+                return this.game.dominationManager.endWithWinner(
+                    this.game.dominationManager.getWinningTeamId(),
+                );
+            }
+            return false;
+        }
+
+        if (this.game.kingOfTheHillManager.enabled) {
+            if (!this.game.started) return false;
+            if (this.game.kingOfTheHillManager.hasReachedScoreLimit()) {
+                const winningTeamId = this.game.kingOfTheHillManager.getWinningTeamId();
+                if (winningTeamId) {
+                    return this.game.kingOfTheHillManager.endWithWinner(winningTeamId);
+                }
+            }
+            if (
+                this.game.gas.finalCloseStarted ||
+                this.game.startedTime >=
+                    (this.game.kingOfTheHillManager.settings?.matchDuration ?? 600)
+            ) {
+                const winningTeamId = this.game.kingOfTheHillManager.getWinningTeamId();
+                return this.game.kingOfTheHillManager.endWithWinner(winningTeamId);
+            }
+            return false;
+        }
+
+        if (this.game.captureTheFlagManager.enabled) {
+            if (!this.game.started) return false;
+            if (this.game.captureTheFlagManager.hasReachedScoreLimit()) {
+                const winningTeamId = this.game.captureTheFlagManager.getWinningTeamId();
+                if (winningTeamId) {
+                    return this.game.captureTheFlagManager.endWithWinner(winningTeamId);
+                }
+            }
+            if (
+                this.game.gas.finalCloseStarted ||
+                this.game.startedTime >=
+                    (this.game.captureTheFlagManager.settings?.matchDuration ?? 600)
+            ) {
+                const winningTeamId = this.game.captureTheFlagManager.getWinningTeamId();
+                return this.game.captureTheFlagManager.endWithWinner(winningTeamId);
+            }
+            return false;
+        }
+
         const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
         if (hideAndSeekSettings) {
             if (!this.game.started) return false;
@@ -307,6 +363,30 @@ export class GameModeManager {
         if (this.game.arenaPrivate && this.game.arenaStartLockTimer > 0) {
             return false;
         }
+        if (
+            this.game.captureTheFlagManager.enabled ||
+            this.game.kingOfTheHillManager.enabled ||
+            this.game.dominationManager.enabled
+        ) {
+            let redAlive = false;
+            let blueAlive = false;
+            for (const player of this.game.playerBarn.livingPlayers) {
+                if (player.disconnected || player.spectatorOnly) continue;
+                if (
+                    player.arenaTeam === "A" ||
+                    (!player.arenaTeam && player.teamId === 1)
+                ) {
+                    redAlive = true;
+                } else if (
+                    player.arenaTeam === "B" ||
+                    (!player.arenaTeam && player.teamId === 2)
+                ) {
+                    blueAlive = true;
+                }
+                if (redAlive && blueAlive) return true;
+            }
+            return false;
+        }
         if (this.game.map.amongUsMode) {
             return this.game.trueAliveCount >= this.game.amongUsImpostorCount * 2 + 1;
         }
@@ -317,6 +397,31 @@ export class GameModeManager {
     }
 
     updateAliveCounts(aliveCounts: number[]): void {
+        if (
+            this.game.captureTheFlagManager.enabled ||
+            this.game.kingOfTheHillManager.enabled ||
+            this.game.dominationManager.enabled
+        ) {
+            let redAlive = 0;
+            let blueAlive = 0;
+            for (const player of this.game.playerBarn.livingPlayers) {
+                if (player.disconnected || player.spectatorOnly) continue;
+                if (
+                    player.arenaTeam === "A" ||
+                    (!player.arenaTeam && player.teamId === 1)
+                ) {
+                    redAlive++;
+                } else if (
+                    player.arenaTeam === "B" ||
+                    (!player.arenaTeam && player.teamId === 2)
+                ) {
+                    blueAlive++;
+                }
+            }
+            aliveCounts.push(redAlive, blueAlive);
+            return;
+        }
+
         switch (this.mode) {
             case GameMode.Solo:
             case GameMode.Team:
@@ -480,6 +585,25 @@ export class GameModeManager {
         }));
     }
     handlePlayerDeath(player: Player, params: DamageParams): void {
+        if (this.game.captureTheFlagManager.enabled) {
+            this.game.captureTheFlagManager.onPlayerDeath(player);
+            player.kill(params);
+            player.captureTheFlagRespawnTicker = 5;
+            return;
+        }
+
+        if (this.game.kingOfTheHillManager.enabled) {
+            player.kill(params);
+            player.captureTheFlagRespawnTicker = 5;
+            return;
+        }
+
+        if (this.game.dominationManager.enabled) {
+            player.kill(params);
+            player.captureTheFlagRespawnTicker = 5;
+            return;
+        }
+
         if (this.isSolo) {
             player.kill(params);
         } else {

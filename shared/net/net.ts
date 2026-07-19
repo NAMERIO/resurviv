@@ -367,6 +367,9 @@ export enum MsgType {
     AmongUsMeetingVote,
     AmongUsMeetingChat,
     AmongUsMeetingChatSend,
+    CaptureTheFlag,
+    KingOfTheHill,
+    Domination,
 }
 
 export enum PickupMsgType {
@@ -393,7 +396,13 @@ export {
     AmongUsMeetingVoteMsg,
 } from "./amongUsMeetingMsg";
 export { ArenaCountdownMsg } from "./arenaCountdownMsg";
+export {
+    CaptureTheFlagEvent,
+    CaptureTheFlagFlagStatus,
+    CaptureTheFlagMsg,
+} from "./captureTheFlagMsg";
 export { DisconnectMsg } from "./disconnectMsg";
+export { DominationMsg, type DominationPointNetState } from "./dominationMsg";
 export { DropItemMsg } from "./dropItemMsg";
 export { EditMsg } from "./editMsg";
 export { EmoteMsg } from "./emoteMsg";
@@ -402,6 +411,7 @@ export { InputMsg } from "./inputMsg";
 export { JoinedMsg } from "./joinedMsg";
 export { JoinMsg } from "./joinMsg";
 export { KillMsg } from "./killMsg";
+export { KingOfTheHillMsg, KingOfTheHillPhase } from "./kingOfTheHillMsg";
 export { LeaderboardMsg } from "./leaderboardMsg";
 export { MapMsg } from "./mapMsg";
 export { PerkModeRoleSelectMsg } from "./perkModeRoleSelectMsg";

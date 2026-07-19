@@ -21,7 +21,11 @@ function mpaRouteRedirectPlugin(): Plugin {
         const url = req.url || "";
         const [pathname, query] = url.split("?");
 
-        if (pathname === "/building-maker" || pathname === "/loot-table-maker") {
+        if (
+            pathname === "/animation-maker" ||
+            pathname === "/building-maker" ||
+            pathname === "/loot-table-maker"
+        ) {
             res.statusCode = 302;
             res.setHeader("Location", `${pathname}/${query ? `?${query}` : ""}`);
             res.end();
@@ -120,18 +124,14 @@ export default defineConfig(({ mode }) => {
                         import.meta.dirname,
                         "building-maker/index.html",
                     ),
+                    "animation-maker": resolve(
+                        import.meta.dirname,
+                        "animation-maker/index.html",
+                    ),
                     "loot-table-maker": resolve(
                         import.meta.dirname,
                         "loot-table-maker/index.html",
                     ),
-                    ...(isDev
-                        ? {
-                              "building-editor": resolve(
-                                  import.meta.dirname,
-                                  "building-editor/index.html",
-                              ),
-                          }
-                        : {}),
                 },
                 output: {
                     assetFileNames(assetInfo) {

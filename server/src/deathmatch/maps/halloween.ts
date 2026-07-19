@@ -3,6 +3,7 @@ import { Main } from "../../../../shared/defs/maps/baseDefs";
 import { Halloween } from "../../../../shared/defs/maps/halloweenDefs";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { util } from "../../../../shared/utils/util";
+import { DeatchmatchMain } from "./main";
 
 const switchToSmallMap = false;
 
@@ -165,3 +166,5 @@ const mapDef = {
 };
 
 export const DeatchmatchHalloween = util.mergeDeep({}, Halloween, mapDef) as MapDef;
+
+Object.assign(DeatchmatchHalloween.lootTable, structuredClone(DeatchmatchMain.lootTable));

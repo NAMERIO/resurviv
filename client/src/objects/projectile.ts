@@ -154,7 +154,9 @@ class Projectile implements AbstractObject {
 
             const imgDef = itemDef.worldImg;
             this.imgScale = imgDef.scale;
-            this.rot = 0;
+            this.rot = itemDef.throwPhysics.alignToVelocity
+                ? Math.PI * 0.5 - Math.atan2(this.dir.y, this.dir.x)
+                : 0;
             this.rotVel = itemDef.throwPhysics.spinVel;
             if (itemDef.throwPhysics.randomizeSpinDir && Math.random() < 0.5) {
                 this.rotVel *= -1;

@@ -2,6 +2,7 @@ import type { MapDef } from "../../../../shared/defs/mapDefs";
 import { Main } from "../../../../shared/defs/maps/baseDefs";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { util } from "../../../../shared/utils/util";
+import { DeatchmatchMain } from "./main";
 
 const switchToSmallMap = false;
 
@@ -298,3 +299,5 @@ DeatchmatchPerks["lootTable"] = {
         { name: "painkiller", count: 1, weight: 5 },
     ],
 };
+
+Object.assign(DeatchmatchPerks.lootTable, structuredClone(DeatchmatchMain.lootTable));

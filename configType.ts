@@ -150,6 +150,14 @@ export interface ConfigType {
     pauseClanStats: boolean;
 
     /**
+     * Locks all clan joining.
+     *
+     * When enabled, players can still leave clans, but direct joins and join
+     * requests are rejected until clan joining is unlocked again.
+     */
+    lockClanJoins: boolean;
+
+    /**
      * Clan GP scoring values. Kill CGP is awarded per kill and can be modified
      * by survival/matchup multipliers. Win CGP is awarded per win.
      */

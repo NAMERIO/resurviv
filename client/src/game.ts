@@ -234,6 +234,8 @@ export class Game {
     m_hideAndSeekHunterReleaseWasActive = false;
     m_infectedRespawnLastSecond = -1;
     m_infectedRespawnWasActive = false;
+    m_captureTheFlagRespawnLastSecond = -1;
+    m_captureTheFlagRespawnWasActive = false;
     m_miniGameWinCountdownLastSecond = -1;
     m_amongUsEmergencyMeetingSeq = 0;
     m_amongUsMeeting: net.AmongUsMeetingStateMsg | null = null;
@@ -287,6 +289,7 @@ export class Game {
     seqSendTime!: number;
     pings!: number[];
     m_arenaPrivate = false;
+    m_privateMiniGame = "";
     debugPingTime!: number;
     lastUpdateTime!: number;
     updateIntervals!: number[];
@@ -515,6 +518,7 @@ export class Game {
         this.m_amongUsVisionGradient = createAmongUsVisionGradient();
         const pixiContainers = [
             this.m_map.display.ground,
+            this.m_uiManager.captureTheFlagZoneOverlay,
             this.m_renderer.layers[0],
             this.m_renderer.ground,
             this.m_renderer.layers[1],
@@ -1198,6 +1202,7 @@ export class Game {
             this.m_gas,
             this.m_playerBarn,
             this.m_camera,
+            this.m_renderer,
             this.teamMode,
             this.m_map.factionMode,
             this.m_amongUsCompletedTasks,
@@ -1334,6 +1339,7 @@ export class Game {
         this.renderHideAndSeekBlindOverlay(dt);
         this.renderHideAndSeekHunterReleaseAnnouncement();
         this.renderInfectedRespawnAnnouncement();
+        this.renderCaptureTheFlagRespawnAnnouncement();
         this.renderMiniGameWinCountdownAnnouncement();
         this.m_uiManager.m_render(
             this.m_activePlayer.m_pos,
@@ -1342,12 +1348,15 @@ export class Game {
             this.m_planeBarn,
         );
         this.m_emoteBarn.m_render(this.m_camera);
-        if (IS_DEV) {
+        if (IS_DEV || this.editor) {
             this.m_debugDisplay.clear();
-            if (debug.enabled) {
+            if (IS_DEV && debug.enabled) {
                 debugLines.m_render(this.m_camera, this.m_debugDisplay);
             }
-            debugLines.flush();
+            this.editor?.m_render(this.m_debugDisplay, this.m_camera);
+            if (IS_DEV) {
+                debugLines.flush();
+            }
         }
     }
 
@@ -3457,6 +3466,25 @@ export class Game {
         this.m_infectedRespawnWasActive = false;
     }
 
+    renderCaptureTheFlagRespawnAnnouncement() {
+        const timeLeft = this.m_activePlayer.m_localData.m_captureTheFlagRespawnTime;
+        if (timeLeft > 0) {
+            const seconds = Math.ceil(timeLeft);
+            if (seconds !== this.m_captureTheFlagRespawnLastSecond) {
+                this.m_uiManager.displayAnnouncement(`Respawn: ${seconds}s`, 1500);
+                this.m_captureTheFlagRespawnLastSecond = seconds;
+            }
+            this.m_captureTheFlagRespawnWasActive = true;
+            return;
+        }
+
+        if (this.m_captureTheFlagRespawnWasActive) {
+            this.m_uiManager.displayAnnouncement("Respawned", 1500);
+        }
+        this.m_captureTheFlagRespawnLastSecond = -1;
+        this.m_captureTheFlagRespawnWasActive = false;
+    }
+
     renderMiniGameWinCountdownAnnouncement() {
         const localData = this.m_activePlayer.m_localData;
         const timeLeft = localData.m_miniGameWinCountdownTime;
@@ -3534,6 +3562,11 @@ export class Game {
             smokeBarn: this.m_smokeBarn,
             decalBarn: this.m_decalBarn,
         };
+        if (this.m_map.getMapDef().gameMode.captureTheFlag) {
+            this.m_uiManager.setWaitingForPlayers(!msg.started);
+        } else if (msg.started) {
+            this.m_uiManager.setWaitingForPlayers(false);
+        }
         // Update active playerId
         if (msg.activePlayerIdDirty) {
             this.m_activeId = msg.activePlayerId;
@@ -3711,6 +3744,7 @@ export class Game {
                 this.onJoin();
                 this.teamMode = msg.teamMode;
                 this.m_arenaPrivate = !!msg.arenaPrivate;
+                this.m_privateMiniGame = msg.miniGame;
                 this.m_localId = msg.playerId;
                 this.m_playerBarn.localPlayerId = this.m_localId;
                 this.m_validateAlpha = true;
@@ -3761,6 +3795,56 @@ export class Game {
                     msg.go ? "GO!" : `${msg.seconds}`,
                     msg.go ? "#58d06f" : "#ffd166",
                 );
+                break;
+            }
+            case net.MsgType.CaptureTheFlag: {
+                const msg = new net.CaptureTheFlagMsg();
+                msg.deserialize(stream);
+                if (!this.m_map.getMapDef().gameMode.captureTheFlag) {
+                    break;
+                }
+                this.m_uiManager.setCaptureTheFlagState(msg);
+                const localTeamId = this.m_playerBarn.getPlayerInfo(
+                    this.m_localId,
+                ).teamId;
+                if (msg.event !== net.CaptureTheFlagEvent.None) {
+                    const ourFlag = msg.flagTeamId === localTeamId;
+                    const teamName = msg.flagTeamId === 1 ? "Red" : "Blue";
+                    const text =
+                        msg.event === net.CaptureTheFlagEvent.Taken
+                            ? ourFlag
+                                ? "Our Flag Taken"
+                                : "Enemy Flag Taken"
+                            : msg.event === net.CaptureTheFlagEvent.Dropped
+                              ? `${teamName} Flag Dropped`
+                              : msg.event === net.CaptureTheFlagEvent.Returned
+                                ? `${teamName} Flag Returned`
+                                : msg.event === net.CaptureTheFlagEvent.Captured
+                                  ? `${msg.actorTeamId === 1 ? "Red" : "Blue"} Flag Captured`
+                                  : "";
+                    if (text) {
+                        this.m_ui2Manager.addKillFeedMessage(
+                            text,
+                            msg.actorTeamId === 1 ? "#ff6666" : "#66b7ff",
+                        );
+                    }
+                }
+                break;
+            }
+            case net.MsgType.KingOfTheHill: {
+                const msg = new net.KingOfTheHillMsg();
+                msg.deserialize(stream);
+                if (!this.m_map.getMapDef().gameMode.captureTheFlag) {
+                    break;
+                }
+                this.m_uiManager.setKingOfTheHillState(msg);
+                break;
+            }
+            case net.MsgType.Domination: {
+                const msg = new net.DominationMsg();
+                msg.deserialize(stream);
+                if (!this.m_map.getMapDef().gameMode.captureTheFlag) break;
+                this.m_uiManager.setDominationState(msg);
                 break;
             }
             case net.MsgType.AmongUsMeetingState: {

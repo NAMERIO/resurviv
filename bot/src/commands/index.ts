@@ -12,6 +12,7 @@ import {
     zSetClanCgpValueBody,
     zSetClientThemeBody,
     zSetGameModeBody,
+    zSetLockClanJoinsBody,
     zSetPauseClanStatsBody,
 } from "../../../server/src/utils/types";
 import {
@@ -494,6 +495,20 @@ const commands = {
             {
                 name: "enabled",
                 description: "If clan stat tracking is paused",
+                required: true,
+                type: ApplicationCommandOptionType.Boolean,
+            },
+        ],
+    }),
+    [Command.SetLockClanJoins]: createCommand({
+        name: Command.SetLockClanJoins,
+        description: "Lock or unlock all clan joins and join requests",
+        optionValidator: zSetLockClanJoinsBody,
+        isPrivateRoute: true,
+        options: [
+            {
+                name: "locked",
+                description: "If clan joining is locked",
                 required: true,
                 type: ApplicationCommandOptionType.Boolean,
             },

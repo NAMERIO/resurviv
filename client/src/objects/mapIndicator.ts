@@ -80,7 +80,11 @@ export class MapIndicatorBarn {
         indicator.equipped = data.equipped;
 
         const objDef = GameObjectDefs[indicator.type] as RoleDef;
-        const scale = (device.uiLayout == device.UiLayout.Sm ? 0.15 : 0.2) * 1.25;
+        const ctfIndicator =
+            indicator.type === "ctf_flag_red" || indicator.type === "ctf_flag_blue";
+        const scale =
+            (device.uiLayout == device.UiLayout.Sm ? 0.15 : 0.2) *
+            (ctfIndicator ? 2.2 : 1.25);
         const zOrder = indicator.equipped ? 655350 : 1;
 
         const mapSprite = indicator.mapSprite;
@@ -88,18 +92,22 @@ export class MapIndicatorBarn {
         mapSprite.scale = scale;
         mapSprite.alpha = 1;
         mapSprite.zOrder = zOrder;
-        mapSprite.visible = true;
+        mapSprite.visible = ctfIndicator ? indicator.equipped : true;
         mapSprite.sprite.texture = PIXI.Texture.from(objDef.mapIndicator?.sprite!);
 
         mapSprite.sprite.tint = objDef.mapIndicator?.tint ?? 0xffffff;
         if (objDef.mapIndicator?.pulse) {
             const pulseSprite = indicator.pulseSprite;
             pulseSprite.pos = v2.copy(indicator.pos);
-            pulseSprite.scale = 1;
+            pulseSprite.scale = ctfIndicator ? scale * 1.35 : 1;
             pulseSprite.zOrder = zOrder - 1;
-            pulseSprite.visible = true;
-            pulseSprite.sprite.texture = PIXI.Texture.from("part-pulse-01.img");
-            pulseSprite.sprite.tint = objDef.mapIndicator.pulseTint;
+            pulseSprite.visible = ctfIndicator ? indicator.equipped : true;
+            pulseSprite.sprite.texture = PIXI.Texture.from(
+                ctfIndicator ? objDef.mapIndicator.sprite : "part-pulse-01.img",
+            );
+            pulseSprite.sprite.tint = ctfIndicator
+                ? 0xffffff
+                : objDef.mapIndicator.pulseTint;
         }
     }
 
@@ -114,6 +122,12 @@ export class MapIndicatorBarn {
 
             // Ease up and down
             indicator.pulseScale = indicator.pulseTicker * indicator.pulseScaleMax;
+            if (indicator.type === "ctf_flag_red" || indicator.type === "ctf_flag_blue") {
+                const scale = (device.uiLayout == device.UiLayout.Sm ? 0.15 : 0.2) * 2.2;
+                indicator.pulseSprite.scale = scale * 1.35;
+                indicator.pulseSprite.visible = indicator.equipped;
+                continue;
+            }
             if (
                 indicator.pulseScale >= indicator.pulseScaleMax ||
                 indicator.pulseTicker <= indicator.pulseScaleMin

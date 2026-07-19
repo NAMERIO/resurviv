@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js-legacy";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import type { ObstacleDef } from "../../../shared/defs/mapObjectsTyping";
+import { CaptureTheFlagFlagStatus } from "../../../shared/net/captureTheFlagMsg";
 import type { ObjectData, ObjectType } from "../../../shared/net/objectSerializeFns";
 import type { Collider } from "../../../shared/utils/coldet";
 import { collider } from "../../../shared/utils/collider";
@@ -26,6 +27,47 @@ interface ObstacleSprite extends PIXI.Sprite {
     posOffset: Vec2;
 }
 
+interface CaptureTheFlagTimerState {
+    status: CaptureTheFlagFlagStatus;
+    pos: Vec2;
+    returnTime: number;
+    returnDuration: number;
+    receivedAt: number;
+}
+
+const captureTheFlagTimerState: Record<
+    "ctf_flag_red" | "ctf_flag_blue",
+    CaptureTheFlagTimerState
+> = {
+    ctf_flag_red: {
+        status: CaptureTheFlagFlagStatus.AtBase,
+        pos: v2.create(0, 0),
+        returnTime: 0,
+        returnDuration: 0,
+        receivedAt: 0,
+    },
+    ctf_flag_blue: {
+        status: CaptureTheFlagFlagStatus.AtBase,
+        pos: v2.create(0, 0),
+        returnTime: 0,
+        returnDuration: 0,
+        receivedAt: 0,
+    },
+};
+
+export function setCaptureTheFlagTimerState(
+    red: Omit<CaptureTheFlagTimerState, "receivedAt">,
+    blue: Omit<CaptureTheFlagTimerState, "receivedAt">,
+) {
+    const receivedAt = performance.now() / 1000;
+    captureTheFlagTimerState.ctf_flag_red = { ...red, pos: v2.copy(red.pos), receivedAt };
+    captureTheFlagTimerState.ctf_flag_blue = {
+        ...blue,
+        pos: v2.copy(blue.pos),
+        receivedAt,
+    };
+}
+
 export class Obstacle implements AbstractObject {
     __id!: number;
     __type!: ObjectType.Obstacle;
@@ -34,6 +76,9 @@ export class Obstacle implements AbstractObject {
     sprite = new PIXI.Sprite() as ObstacleSprite;
     amongUsTaskGlow = new PIXI.Graphics();
     amongUsTaskGlowEnabled = false;
+    captureTheFlagTimerContainer = new PIXI.Container();
+    captureTheFlagTimerGfx = new PIXI.Graphics();
+    captureTheFlagTimerText = new PIXI.Text();
 
     isNew!: boolean;
     smokeEmitter!: Emitter | null;
@@ -106,6 +151,19 @@ export class Obstacle implements AbstractObject {
     constructor() {
         this.sprite.anchor.set(0.5, 0.5);
         this.sprite.visible = false;
+        this.captureTheFlagTimerContainer.visible = false;
+        this.captureTheFlagTimerContainer.addChild(this.captureTheFlagTimerGfx);
+        this.captureTheFlagTimerText.anchor.set(0.5);
+        this.captureTheFlagTimerText.style = {
+            fontFamily: "Roboto Condensed, Arial, sans-serif",
+            fontWeight: "bold",
+            fontSize: 20,
+            align: "center",
+            fill: 0xffffff,
+            stroke: 0,
+            strokeThickness: 3,
+        };
+        this.captureTheFlagTimerContainer.addChild(this.captureTheFlagTimerText);
     }
 
     m_init() {
@@ -124,6 +182,11 @@ export class Obstacle implements AbstractObject {
         this.amongUsTaskGlow.clear();
         this.amongUsTaskGlow.visible = false;
         this.amongUsTaskGlow.parent?.removeChild(this.amongUsTaskGlow);
+        this.captureTheFlagTimerGfx.clear();
+        this.captureTheFlagTimerContainer.visible = false;
+        this.captureTheFlagTimerContainer.parent?.removeChild(
+            this.captureTheFlagTimerContainer,
+        );
         if (this.door?.casingSprite) {
             this.door.casingSprite.destroy();
             this.door.casingSprite = null;
@@ -489,6 +552,15 @@ export class Obstacle implements AbstractObject {
                 renderer.addPIXIObj(this.amongUsTaskGlow, layer, zOrd + 2, zIdx + 1);
             }
 
+            if (this.type === "ctf_flag_red" || this.type === "ctf_flag_blue") {
+                renderer.addPIXIObj(
+                    this.captureTheFlagTimerContainer,
+                    layer,
+                    zOrd + 3,
+                    zIdx + 2,
+                );
+            }
+
             if (this.isDoor && this.door.casingSprite) {
                 renderer.addPIXIObj(this.door.casingSprite, layer, zOrd + 1, zIdx);
             }
@@ -520,6 +592,7 @@ export class Obstacle implements AbstractObject {
             this.sprite.scale.x *= -1;
         }
         this.sprite.rotation = -rot + this.imgRot;
+        this.renderCaptureTheFlagTimer(camera, screenPos);
 
         if (this.isDoor && this.door?.casingSprite) {
             const casingPos = camera.m_pointToScreen(
@@ -566,5 +639,50 @@ export class Obstacle implements AbstractObject {
             //     debugLines.addCollider(aabb, 0x00ff00, 0.2);
             // }
         }
+    }
+
+    private renderCaptureTheFlagTimer(camera: Camera, screenPos: Vec2) {
+        if (
+            this.dead ||
+            (this.type !== "ctf_flag_red" && this.type !== "ctf_flag_blue")
+        ) {
+            this.captureTheFlagTimerContainer.visible = false;
+            return;
+        }
+
+        const state = captureTheFlagTimerState[this.type];
+        const elapsed = performance.now() / 1000 - state.receivedAt;
+        const remaining = math.max(0, state.returnTime - elapsed);
+        const duration = math.max(state.returnDuration, 0.001);
+        const isDropped =
+            state.status === CaptureTheFlagFlagStatus.Dropped &&
+            remaining > 0 &&
+            v2.distance(this.pos, state.pos) < 1.5;
+
+        if (!isDropped) {
+            this.captureTheFlagTimerContainer.visible = false;
+            return;
+        }
+
+        const timerScale = math.clamp(camera.m_zoom / 1.4, 0.65, 1);
+        const radius = 18;
+        const progress = math.clamp(1 - remaining / duration, 0, 1);
+        const start = -Math.PI * 0.5;
+        const end = start + progress * Math.PI * 2;
+
+        this.captureTheFlagTimerGfx.clear();
+        this.captureTheFlagTimerGfx.beginFill(0, 0.55);
+        this.captureTheFlagTimerGfx.drawCircle(0, 0, 24);
+        this.captureTheFlagTimerGfx.endFill();
+        this.captureTheFlagTimerGfx.lineStyle(5, 0xffffff, 0.95);
+        this.captureTheFlagTimerGfx.arc(0, 0, radius, start, end, false);
+
+        this.captureTheFlagTimerText.text = remaining.toFixed(1);
+        this.captureTheFlagTimerContainer.position.set(
+            screenPos.x,
+            screenPos.y - camera.m_scaleToScreen(2.5),
+        );
+        this.captureTheFlagTimerContainer.scale.set(timerScale);
+        this.captureTheFlagTimerContainer.visible = true;
     }
 }
