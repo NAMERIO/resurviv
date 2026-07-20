@@ -422,7 +422,7 @@ const _allowedOutfits = [
     // "outfitILavaYou",
     // "outfitKingGalaxy",
     // "outfitJuleVerny",
-    // "outfitGhoulFire",
+    //"outfitGhoulFire",
     // "outfitHotMagma",
     // "outfitAhoy",
     // "outfitH2Oh",
