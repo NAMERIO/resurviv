@@ -2162,7 +2162,8 @@ const SkinDefs: Record<string, OutfitDef> = {
         name: "Toxic Fire",
         noDropOnDeath: true,
 
-        rarity: 5,
+        rarity: 4,
+        lore: "For those who wield the green fire.",
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-toxic-fire.img",
@@ -3360,7 +3361,8 @@ const SkinDefs: Record<string, OutfitDef> = {
         name: "Igris",
         noDropOnDeath: true,
 
-        rarity: 4,
+        rarity: 5,
+        lore: "For those who fight with absolute loyalty.",
 
         skinImg: {
             baseTint: 0xffffff,
@@ -3457,8 +3459,8 @@ const SkinDefs: Record<string, OutfitDef> = {
         name: "Cyber Punk",
         noDropOnDeath: true,
 
-        rarity: 5,
-        lore: "Created by Life",
+        rarity: 3,
+        lore: "For those who rule the digital network.",
 
         skinImg: {
             baseTint: 0xffffff,
@@ -3480,8 +3482,8 @@ const SkinDefs: Record<string, OutfitDef> = {
         name: "Bugcat",
         noDropOnDeath: true,
 
-        rarity: 5,
-        lore: "Created by Life",
+        rarity: 3,
+        lore: "For those who fight with pure cuteness.",
 
         skinImg: {
             baseTint: 0xffffff,
@@ -3499,12 +3501,31 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
+     outfitPython: defineOutfitSkin("outfitBase", {
+        name: "Python",
+        rarity: 3,
+        lore: "For those who blend seamlessly.",
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-python.img",
+            handTint: 0xeeff5d,
+            handSprite: "player-hands-python.img",
+            footTint: 0xeeff5d,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xbc8737,
+            backpackSprite: "player-back-python.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitKeyLime.img",
+            tint: 0xffffff,
+        },
+    }),
     outfitPeru: defineOutfitSkin("outfitBase", {
-        name: "Peru",
+        name: "For those who fight with Yoosepe.",
         noDropOnDeath: true,
 
         rarity: 5,
-        lore: "Created by Life",
+        lore: "For those who wield the green fire.",
 
         skinImg: {
             baseTint: 0xffffff,
@@ -3526,8 +3547,8 @@ const SkinDefs: Record<string, OutfitDef> = {
         name: "Buzz Buzz",
         noDropOnDeath: true,
 
-        rarity: 5,
-        lore: "Created by Life",
+        rarity: 4,
+        lore: "For those who sting and stay sweet.",
 
         skinImg: {
             baseTint: 0xffffff,
@@ -3551,8 +3572,8 @@ const SkinDefs: Record<string, OutfitDef> = {
         name: "Void Core",
         noDropOnDeath: true,
 
-        rarity: 5,
-        lore: "Created by Life",
+        rarity: 2,
+        lore: "For those who channel Ikou's cosmic energy.",
 
         skinImg: {
             baseTint: 0xffffff,
@@ -3575,7 +3596,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         noDropOnDeath: true,
 
         rarity: 5,
-        lore: "Created by Life",
+        lore: "For those who serve the shadow king.",
 
         skinImg: {
             baseTint: 0xffffff,
@@ -3596,12 +3617,86 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
+    outfitAuresis: defineOutfitSkin("outfitBase", {
+        name: "Auresis",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        lore: "For those who turn everything they strike into pure gold.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-auresis.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-auresis.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-auresis.img",
+            frontSpritePos: { x: -5, y: 0 },
+            frontSprite: "player-accessory-auresis.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitDiamondy.img",
+            tint: 0xffffff,
+        },
+    }),
+    
+    outfitUrbanGlitch: defineOutfitSkin("outfitBase", {
+        name: "Urban Glitch",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "For those who break the game.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-urban-glitch.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-urban-glitch.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-urban-glitch.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitDiamondy.img",
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitSolarAegis: defineOutfitSkin("outfitBase", {
+        name: "Solar Aegis",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "For those who block the dark with blinding light.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-solar-aegis.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-solar-aegis.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-solar-aegis.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitDiamondy.img",
+            tint: 0xffffff,
+        },
+    }),
+
     outfitArchaicCrown: defineOutfitSkin("outfitBase", {
         name: "Archaic Crown",
         noDropOnDeath: true,
 
         rarity: 5,
-        lore: "Created by Life",
+        lore: "For those who rule the server alongside Archaic.",
 
         skinImg: {
             baseTint: 0xffffff,

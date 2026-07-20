@@ -282,7 +282,11 @@ const _allowedOutfits = [
     // "outfitDragonTails",
     // "outfitGreenTeaRex",
     // "outfitToxicFire,"
-    "outfitBase",
+    //"outfitBase",
+    //"outfitAuresis",
+    //"outfitPython",
+    //"outfitUrbanGlitch",
+    //"outfitSolarAegis",
     //"outfitCyberpunk",
     //"outfitBugcat",
     //"outfitPeru",
