@@ -3775,7 +3775,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             frontSprite: "player-accessory-spartan.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitDiamondy.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
