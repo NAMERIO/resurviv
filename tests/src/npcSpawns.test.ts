@@ -1,5 +1,8 @@
 import { expect, test } from "vitest";
-import { DamageType, TeamMode } from "../../shared/gameConfig";
+import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
+import type { ExplosionDef } from "../../shared/defs/gameObjects/explosionsDefs";
+import type { ChestDef, HelmetDef } from "../../shared/defs/gameObjects/gearDefs";
+import { DamageType, GameConfig, TeamMode } from "../../shared/gameConfig";
 import { EditMsg } from "../../shared/net/editMsg";
 import { KillMsg } from "../../shared/net/killMsg";
 import { MsgStream } from "../../shared/net/net";
@@ -34,6 +37,18 @@ test("NPC death messages preserve the damage reason", () => {
     expect(received.damageType).toBe(DamageType.Npc);
     expect(received.mapSourceType).toBe("skitter");
     expect(received.killed).toBe(true);
+});
+
+test("a direct Mothrship cannon blast is lethal through normal maximum armor", () => {
+    const explosion = GameObjectDefs.explosion_motherShip as ExplosionDef;
+    const chest = GameObjectDefs.chest03 as ChestDef;
+    const helmet = GameObjectDefs.helmet03 as HelmetDef;
+    const damageAfterArmor =
+        explosion.damage *
+        (1 - chest.damageReduction) *
+        (1 - helmet.damageReduction * 0.3);
+
+    expect(damageAfterArmor).toBeGreaterThanOrEqual(GameConfig.player.health);
 });
 
 test("map NPC counts create every configured NPC", async () => {

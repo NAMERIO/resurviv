@@ -376,7 +376,7 @@ export const ExplosionDefs: Record<string, ExplosionDef> = {
     },
     explosion_motherShip: {
         type: "explosion",
-        damage: 100,
+        damage: 250,
         obstacleDamage: 0,
         rad: { min: 4, max: 10 },
         shrapnelCount: 0,
