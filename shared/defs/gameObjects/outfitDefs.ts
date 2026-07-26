@@ -3501,7 +3501,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
-     outfitPython: defineOutfitSkin("outfitBase", {
+    outfitPython: defineOutfitSkin("outfitBase", {
         name: "Python",
         rarity: 3,
         lore: "For those who blend seamlessly.",
@@ -3520,22 +3520,23 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
-    outfitPeru: defineOutfitSkin("outfitBase", {
-        name: "For those who fight with Yoosepe.",
+
+    outfitEnergyWave: defineOutfitSkin("outfitBase", {
+        name: "Energy Wave",
         noDropOnDeath: true,
 
-        rarity: 5,
-        lore: "For those who wield the green fire.",
+        rarity: 2,
+        lore: "Created by catjo44.",
 
         skinImg: {
             baseTint: 0xffffff,
-            baseSprite: "player-base-peru.img",
+            baseSprite: "player-base-energy-wave.img",
             handTint: 0xffffff,
-            handSprite: "player-hands-peru.img",
+            handSprite: "player-hands-energy-wave.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
-            backpackSprite: "player-back-peru.img",
+            backpackSprite: "player-back-energy-wave.img",
         },
         lootImg: {
             sprite: "loot-shirt-outfitDiamondy.img",
@@ -3695,7 +3696,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         name: "Riot Plaid",
         noDropOnDeath: true,
 
-        rarity: 3,
+        rarity: 2,
         lore: "For those who get spawn killed a lot.",
 
         skinImg: {
@@ -3733,6 +3734,31 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-archaiccrown.img",
             frontSpritePos: { x: 0, y: 0 },
             frontSprite: "player-accessory-archaiccrown.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitDiamondy.img",
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitSpartan: defineOutfitSkin("outfitBase", {
+        name: "Spartan",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        lore: "For those who fight with honor and valor.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-spartan.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-spartan.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-spartan.img",
+            frontSpritePos: { x: 0, y: -.75 },
+            frontSprite: "player-accessory-spartan.img",
         },
         lootImg: {
             sprite: "loot-shirt-outfitDiamondy.img",

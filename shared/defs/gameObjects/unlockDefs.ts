@@ -291,6 +291,8 @@ const _allowedOutfits = [
     //"outfitCyberpunk",
     //"outfitBugcat",
     //"outfitPeru",
+    //"outfitSpartan",
+    //"outfitEnergyWave",
     //"outfitBee",
     //"outfitVoidcore",
     //"outfitBeru",
