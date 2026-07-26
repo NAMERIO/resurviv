@@ -3558,6 +3558,29 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
+    outfitPeru: defineOutfitSkin("outfitBase", {
+        name: "Peru",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "For those who fight with Yoosepe.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-peru.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-peru.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-peru.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
     outfitBee: defineOutfitSkin("outfitBase", {
         name: "Buzz Buzz",
         noDropOnDeath: true,
