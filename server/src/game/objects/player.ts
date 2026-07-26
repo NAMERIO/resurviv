@@ -973,6 +973,7 @@ export class PlayerBarn {
             player.weapsDirty = false;
             player.spectatorCountDirty = false;
             player.streakDirty = false;
+            player.contactDirty = false;
             player.nitroLaceDirty = false;
             player.hideAndSeekBlindDirty = false;
             player.activeIdDirty = false;
@@ -1625,11 +1626,13 @@ export class Player extends BaseGameObject {
     isTarget = false;
     infectedEffect = false;
     playerTransparent = false;
-    contactPhaseTicker = 0;
+    contactDirty = true;
     biteEffect = false;
     biteEffectTicker = 0;
     poisonSource?: GameObject;
     poisonSourceTeamId?: number;
+    contactSmokeEmitterIds = new Set<number>();
+    contactSmokeTicker = 0;
     nitroLaceEffect = false;
     nitroLaceDuration = 0;
     nitroLaceMaxDuration = 10;
@@ -1641,6 +1644,9 @@ export class Player extends BaseGameObject {
     get nitroLacePercentage(): number {
         if (this.nitroLaceMaxDuration <= 0) return 0;
         return (this.nitroLaceDuration / this.nitroLaceMaxDuration) * 100;
+    }
+    get contactPercentage(): number {
+        return this.infectedEffect ? 100 : 0;
     }
     // if hit by snowball or potato, slowed down for "x" seconds
     healEffectTicker = 0;
@@ -3291,15 +3297,7 @@ export class Player extends BaseGameObject {
             }
         }
 
-        if (this.infectedEffect) {
-            const moveInterval = NpcDefs.skitter.moveInterval ?? [0.5, 1];
-            this.contactPhaseTicker -= dt;
-            if (this.contactPhaseTicker <= 0) {
-                this.playerTransparent = !this.playerTransparent;
-                this.contactPhaseTicker = util.random(moveInterval[0], moveInterval[1]);
-                this.setDirty();
-            }
-        } else if (this.playerTransparent) {
+        if (!this.infectedEffect && this.playerTransparent) {
             this.playerTransparent = false;
             this.setDirty();
         }
@@ -3966,6 +3964,7 @@ export class Player extends BaseGameObject {
         let insideNoZoomRegion = true;
         let insideSmoke = false;
         let poisonSmoke: Smoke | undefined;
+        let contactSmoke: Smoke | undefined;
         // building player is currently inside of
         let occupiedBuilding: Building | undefined;
 
@@ -4064,6 +4063,9 @@ export class Player extends BaseGameObject {
                         poisonSmoke = obj;
                         continue;
                     }
+                    if (obj.isContact) {
+                        contactSmoke = obj;
+                    }
                     insideSmoke = true;
                 }
             }
@@ -4111,6 +4113,28 @@ export class Player extends BaseGameObject {
         }
         if (oldPoisonEffect !== this.poisonEffect) {
             this.setDirty();
+        }
+
+        if (contactSmoke) {
+            if (!this.contactSmokeEmitterIds.has(contactSmoke.emitterId)) {
+                this.contactSmokeEmitterIds.add(contactSmoke.emitterId);
+                this.applyContactedEffect(false);
+            }
+
+            this.contactSmokeTicker -= dt;
+            if (this.contactSmokeTicker <= 0) {
+                this.contactSmokeTicker = GameConfig.player.poisonTickRate;
+                this.damage({
+                    amount: GameConfig.player.poisonDamage,
+                    damageType: GameConfig.DamageType.Gas,
+                    dir: this.dir,
+                    gameSourceType: "skitternade",
+                    source: contactSmoke.source,
+                    sourceTeamId: contactSmoke.sourceTeamId,
+                });
+            }
+        } else {
+            this.contactSmokeTicker = 0;
         }
 
         if (this.insideZoomRegion) {
@@ -4452,6 +4476,8 @@ export class Player extends BaseGameObject {
                 streakReady: player.streakReady,
                 activeStreakActive: player.streakActive,
                 activeStreakTimeLeft: player.streakActiveTimer,
+                contactDirty: true,
+                contactPercentage: player.contactPercentage,
                 nitroLaceDirty: true,
                 nitroLacePercentage: player.nitroLacePercentage,
                 hideAndSeekBlindDirty: true,
@@ -5145,13 +5171,15 @@ export class Player extends BaseGameObject {
         this.isTarget = false;
         this.infectedEffect = false;
         this.playerTransparent = false;
-        this.contactPhaseTicker = 0;
+        this.contactDirty = true;
         this.biteEffect = false;
         this.biteEffectTicker = 0;
         this.poisonTicker = 0;
         this.poisonDuration = 0;
         this.poisonSource = undefined;
         this.poisonSourceTeamId = undefined;
+        this.contactSmokeEmitterIds.clear();
+        this.contactSmokeTicker = 0;
         this.boostDirty = true;
         this.inventoryDirty = true;
         this.setDirty();
@@ -7528,12 +7556,19 @@ export class Player extends BaseGameObject {
         }
     }
 
-    applyContactedEffect() {
-        if (this.infectedEffect) return;
-        const moveInterval = NpcDefs.skitter.moveInterval ?? [0.5, 1];
+    applyContactedEffect(phasePlayer = true) {
         this.infectedEffect = true;
+        this.contactDirty = true;
+        // Keep the player's phase state stable until Contacted is cleared on death.
+        this.playerTransparent = phasePlayer;
+        this.setDirty();
+    }
+
+    clearContactedEffect() {
+        if (!this.infectedEffect && !this.playerTransparent) return;
+        this.infectedEffect = false;
         this.playerTransparent = false;
-        this.contactPhaseTicker = util.random(moveInterval[0], moveInterval[1]);
+        this.contactDirty = true;
         this.setDirty();
     }
 

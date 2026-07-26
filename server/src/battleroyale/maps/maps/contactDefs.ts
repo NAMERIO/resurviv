@@ -32,6 +32,52 @@ const mapDef: PartialMapDef = {
             playerGhillie: 0x83af50,
         },
     },
+    /* STRIP_FROM_PROD_CLIENT:START */
+    lootTable: {
+        tier_contact: [
+            { name: "bandage", count: 5, weight: 2 },
+            { name: "soda", count: 2, weight: 2 },
+            { name: "healthkit", count: 1, weight: 1 },
+            { name: "painkiller", count: 1, weight: 1 },
+            { name: "skitternade", count: 1, weight: 5 },
+            { name: "m870", count: 1, weight: 5 },
+            { name: "helmet02", count: 1, weight: 3 },
+            { name: "chest02", count: 1, weight: 3 },
+            { name: "4xscope", count: 1, weight: 3 },
+            { name: "spas12", count: 1, weight: 1 },
+            { name: "skitter", count: 1, weight: 1, npc: true },
+        ],
+    },
+    mapGen: {
+        densitySpawns: [
+            {
+                ...Main.mapGen.densitySpawns[0],
+                crate_egg: 30,
+            },
+        ],
+        fixedSpawns: [
+            {
+                ...Main.mapGen.fixedSpawns[0],
+                crop_circle_01: 1,
+                crop_circle_02: 1,
+                crop_circle_03: 1,
+            },
+        ],
+        spawnReplacements: [
+            {
+                ...Main.mapGen.spawnReplacements[0],
+                tree_01: "tree_19",
+                bush_01: "bush_13",
+                bush_04: "bush_13b",
+                cache_06: "cache_contact",
+                stone_03: "stone_03h",
+                chest_03: "chest_03i",
+                bunker_structure_04: "bunker_structure_04d",
+                bunker_structure_05: "bunker_structure_05d",
+            },
+        ],
+    },
+    /* STRIP_FROM_PROD_CLIENT:END */
     gameMode: {
         maxPlayers: 80,
         killLeaderEnabled: true,

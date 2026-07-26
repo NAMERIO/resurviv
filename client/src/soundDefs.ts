@@ -1031,7 +1031,7 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
         egg_hit_01: {
             path: "audio/hits/egg_hit_01.mp3",
             volume: 1,
-            preload: false,
+            canCoalesce: true,
         },
         player_bullet_hit_01: {
             path: "audio/hits/player_bullet_hit_01.mp3",
@@ -1241,7 +1241,6 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
         egg_break_01: {
             path: "audio/sfx/egg_break_01.mp3",
             volume: 1,
-            preload: false,
         },
         footstep_grass_01: {
             path: "audio/sfx/footstep_grass_01.mp3",

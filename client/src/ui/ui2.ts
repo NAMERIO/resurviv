@@ -223,6 +223,7 @@ class UiState {
     health = GameConfig.player.health as number;
     boost = 0;
     downed = false;
+    contact = 0;
     loading: number = 0;
 }
 
@@ -295,6 +296,9 @@ export class UiManager2 {
         health: {
             inner: domElemById("ui-health-actual"),
             depleted: domElemById("ui-health-depleted"),
+        },
+        contact: {
+            bar: domElemById("contact-bar-img") as HTMLImageElement,
         },
         boost: {
             div: domElemById("ui-boost-counter"),
@@ -832,6 +836,7 @@ export class UiManager2 {
             : math.max(activePlayer.m_localData.m_health, 1);
         state.boost = activePlayer.m_localData.m_boost;
         state.downed = activePlayer.m_netData.m_downed;
+        state.contact = activePlayer.m_localData.m_contactPercentage;
 
         // Interaction
         let interactionType = InteractionType.None;
@@ -1462,6 +1467,9 @@ export class UiManager2 {
                 dom.boost.bars[i].style.width = `${widthT * 100}%`;
             }
             dom.boost.div.style.opacity = String(state.boost == 0 ? 0 : 1);
+        }
+        if (patch.contact) {
+            dom.contact.bar.style.clipPath = `inset(0 ${100 - state.contact}% 0 0)`;
         }
         if (patch.interaction.type) {
             dom.interaction.div.style.display =

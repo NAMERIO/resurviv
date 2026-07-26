@@ -3696,6 +3696,7 @@ img {
 }
 
 #ui-health-counter {
+  position: relative;
   background: rgba(0, 0, 0, 0.4);
   border-radius: 5px;
   width: 400px;
@@ -3719,6 +3720,23 @@ img {
 #ui-health-container {
   width: 400px;
   position: relative;
+}
+
+.ui-bar-contact {
+  position: absolute;
+  width: 102%;
+  left: -1%;
+  top: -4.5px;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.ui-bar-contact img {
+  width: 100%;
+  position: absolute;
+  height: 50px;
+  clip-path: inset(0 100% 0 0);
 }
 
 #ui-health-counter .ui-bar-danger {
@@ -6199,6 +6217,7 @@ span.ui-stats-header-value {
   }
 
   #ui-health-counter {
+    position: relative;
     background: rgba(0, 0, 0, 0.4);
     border-radius: 5px;
     width: 200px;
@@ -6222,6 +6241,14 @@ span.ui-stats-header-value {
   #ui-health-container {
     width: 200px;
     position: relative;
+  }
+
+  .ui-bar-contact {
+    top: -1px;
+  }
+
+  .ui-bar-contact img {
+    height: 43px;
   }
 
   #ui-health-counter .ui-bar-danger {

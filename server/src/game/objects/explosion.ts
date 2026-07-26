@@ -51,6 +51,17 @@ export class ExplosionBarn {
             return;
         }
 
+        if (explosion.type === "explosion_skitternade") {
+            this.game.smokeBarn.addEmitter(
+                explosion.pos,
+                explosion.layer,
+                "contact",
+                explosion.damageParams.source,
+                explosion.damageParams.sourceTeamId,
+            );
+            return;
+        }
+
         if (explosion.type === "explosion_poison_gas") {
             this.game.smokeBarn.addEmitter(
                 explosion.pos,

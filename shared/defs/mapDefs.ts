@@ -245,6 +245,7 @@ export interface MapDef {
             count: number;
             weight: number;
             preload?: boolean;
+            npc?: boolean;
         }>
     >;
     mapGen: {

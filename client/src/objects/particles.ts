@@ -782,6 +782,30 @@ const ParticleDefs: Record<string, ParticleDef> = {
             return util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.95, 1)));
         },
     },
+    eggParticle: {
+        image: [
+            "egg-particle-1.img",
+            "egg-particle-2.img",
+            "egg-particle-3.img",
+            "egg-particle-4.img",
+        ],
+        life: 0.5,
+        drag: new Range(1, 10),
+        rotVel: 0,
+        scale: {
+            start: new Range(0.3, 0.4),
+            end: new Range(0.01, 0.02),
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 1,
+            end: 0,
+            lerp: new Range(0.95, 1),
+        },
+        color: function () {
+            return util.rgbToInt(util.hsvToRgb(0.97, 0, util.random(0.95, 0.97)));
+        },
+    },
     depositBoxGreyBreak: {
         image: ["part-plate-01.img"],
         life: new Range(0.5, 1),

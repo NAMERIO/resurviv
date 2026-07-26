@@ -205,6 +205,7 @@ export interface ObjectsFullData {
         interior: number;
         isFoam: boolean;
         isPoison: boolean;
+        isContact: boolean;
     };
     [ObjectType.Airdrop]: {
         pos: Vec2;
@@ -718,6 +719,7 @@ export const ObjectSerializeFns: {
             s.writeBits(data.interior, 6);
             s.writeBoolean(data.isFoam);
             s.writeBoolean(data.isPoison);
+            s.writeBoolean(data.isContact);
         },
         /* STRIP_FROM_PROD_CLIENT:END */
 
@@ -730,6 +732,7 @@ export const ObjectSerializeFns: {
             data.interior = s.readBits(6);
             data.isFoam = s.readBoolean();
             data.isPoison = s.readBoolean();
+            data.isContact = s.readBoolean();
         },
     },
     [ObjectType.Airdrop]: {

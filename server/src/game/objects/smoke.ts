@@ -28,7 +28,7 @@ const SPEED_MIN = 0.1;
 const SPAWN_MIN_SPEED = 3;
 const SPAWN_MAX_SPEED = 5;
 
-type SmokeType = "normal" | "foam" | "poison";
+type SmokeType = "normal" | "foam" | "poison" | "contact";
 
 class SmokeEmitter {
     active = true;
@@ -42,6 +42,7 @@ class SmokeEmitter {
         public layer: number,
         public interior: number,
         public smokeType: SmokeType,
+        public emitterId: number,
         public source?: GameObject,
         public sourceTeamId?: number,
     ) {}
@@ -54,6 +55,7 @@ class SmokeEmitter {
                 this.layer,
                 this.interior,
                 this.smokeType,
+                this.emitterId,
                 this.source,
                 this.sourceTeamId,
             );
@@ -73,6 +75,7 @@ export class SmokeBarn {
     smokes: Smoke[] = [];
 
     emitters: SmokeEmitter[] = [];
+    nextEmitterId = 1;
 
     constructor(readonly game: Game) {}
 
@@ -152,6 +155,7 @@ export class SmokeBarn {
             layer,
             interior,
             smokeType,
+            this.nextEmitterId++,
             source,
             sourceTeamId,
         );
@@ -164,6 +168,7 @@ export class SmokeBarn {
         layer: number,
         interior: number,
         smokeType: SmokeType = "normal",
+        emitterId = 0,
         source?: GameObject,
         sourceTeamId?: number,
     ) {
@@ -173,6 +178,7 @@ export class SmokeBarn {
             layer,
             interior,
             smokeType,
+            emitterId,
             source,
             sourceTeamId,
         );
@@ -192,6 +198,8 @@ export class Smoke extends BaseGameObject {
     interior: number;
     isFoam: boolean;
     isPoison: boolean;
+    isContact: boolean;
+    emitterId: number;
     source?: GameObject;
     sourceTeamId?: number;
 
@@ -205,6 +213,7 @@ export class Smoke extends BaseGameObject {
         layer: number,
         interior: number,
         smokeType: SmokeType = "normal",
+        emitterId = 0,
         source?: GameObject,
         sourceTeamId?: number,
     ) {
@@ -213,6 +222,8 @@ export class Smoke extends BaseGameObject {
         this.interior = interior;
         this.isFoam = smokeType === "foam";
         this.isPoison = smokeType === "poison";
+        this.isContact = smokeType === "contact";
+        this.emitterId = emitterId;
         this.source = source;
         this.sourceTeamId = sourceTeamId;
         this.life = this.isPoison ? POISON_LIFE_TIME : LIFE_TIME;

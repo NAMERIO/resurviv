@@ -436,6 +436,7 @@ export class Player implements AbstractObject {
         m_streakTimeLeft: number;
         m_streakDamageDealt: number;
         m_streakNextThreshold: number;
+        m_contactPercentage: number;
         m_nitroLaceActive: boolean;
         m_nitroLacePercentage: number;
         m_hideAndSeekBlindTime: number;
@@ -513,10 +514,11 @@ export class Player implements AbstractObject {
         this.bodyContainer.addChild(this.handRContainer);
         this.bodyContainer.addChild(this.visorSprite);
         this.bodyContainer.addChild(this.helmetSprite);
-        this.bodyContainer.addChild(this.slimeSprite);
-        this.bodyContainer.addChild(this.aimSprite);
         this.bodyContainer.addChild(this.phoenixSprite);
         this.bodyContainer.addChild(this.pyroSprite);
+        // Contact slime must cover worn equipment and player accessory effects.
+        this.bodyContainer.addChild(this.slimeSprite);
+        this.bodyContainer.addChild(this.aimSprite);
 
         this.container.addChild(this.bodyContainer);
 
@@ -621,6 +623,7 @@ export class Player implements AbstractObject {
             m_streakTimeLeft: 0,
             m_streakDamageDealt: 0,
             m_streakNextThreshold: 300,
+            m_contactPercentage: 0,
             m_nitroLaceActive: false,
             m_nitroLacePercentage: 0,
             m_hideAndSeekBlindTime: 0,
@@ -813,6 +816,10 @@ export class Player implements AbstractObject {
             this.m_localData.m_streakTimeLeft = data.activeStreakTimeLeft ?? 0;
             this.m_localData.m_streakDamageDealt = data.streakDamageDealt ?? 0;
             this.m_localData.m_streakNextThreshold = data.streakNextThreshold ?? 300;
+        }
+
+        if (data.contactDirty) {
+            this.m_localData.m_contactPercentage = data.contactPercentage ?? 0;
         }
 
         if (data.nitroLaceDirty) {
@@ -1403,7 +1410,7 @@ export class Player implements AbstractObject {
 
         this.bodyContainer.alpha =
             this.m_netData.m_infectedEffect && this.m_netData.m_playerTransparent
-                ? 0.2
+                ? 0.65
                 : 1;
 
         // Only play swaps for local players.
@@ -2000,10 +2007,10 @@ export class Player implements AbstractObject {
             this.patchSprite.visible = false;
         }
 
-        if (this.m_netData.m_infectedEffect) {
+        if (map.contactMode && this.m_netData.m_infectedEffect) {
             this.slimeSprite.texture = PIXI.Texture.from("slime.img");
             this.slimeSprite.visible = true;
-            this.slimeSprite.scale.set(0.5, 0.5);
+            this.slimeSprite.scale.set(0.75, 0.75);
             this.slimeSprite.tint = 0x9bff99;
         } else {
             this.slimeSprite.visible = false;
