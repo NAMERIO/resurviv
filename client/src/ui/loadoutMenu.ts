@@ -8,7 +8,7 @@ import { ExplosionDefs } from "../../../shared/defs/gameObjects/explosionsDefs";
 import type { AmmoDef } from "../../../shared/defs/gameObjects/gearDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
 import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
-import { OutfitDefs } from "../../../shared/defs/gameObjects/outfitDefs";
+import { type OutfitDef, OutfitDefs } from "../../../shared/defs/gameObjects/outfitDefs";
 import type { ThrowableDef } from "../../../shared/defs/gameObjects/throwableDefs";
 import {
     privateOutfits,
@@ -27,7 +27,7 @@ import {
     setCustomCrosshairImage,
 } from "../crosshair";
 import { device } from "../device";
-import { helpers } from "../helpers";
+import { createOutfitSkinPreview, helpers } from "../helpers";
 import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
 import type { LoadoutDisplay } from "./opponentDisplay";
@@ -1713,14 +1713,20 @@ export class LoadoutMenu {
                 "data-img": `url(${svg})`,
                 draggable,
             });
+            const outfitDef =
+                GameObjectDefs[item.type].type == "outfit"
+                    ? (GameObjectDefs[item.type] as OutfitDef)
+                    : undefined;
             innerDiv.append(
-                $("<div/>", {
-                    class: "customize-item-sprite",
-                    css: {
-                        "background-image": `url(${svg})`,
-                        transform,
-                    },
-                }),
+                outfitDef?.lootImg.skinLootImg
+                    ? createOutfitSkinPreview(outfitDef, 1.2, "customize-item-sprite")
+                    : $("<div/>", {
+                          class: "customize-item-sprite",
+                          css: {
+                              "background-image": `url(${svg})`,
+                              transform,
+                          },
+                      }),
             );
             innerDiv.append(helpers.getItemRarityStyleMarkup(item.type, itemRarity));
             outerDiv.append(innerDiv);

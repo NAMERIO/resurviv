@@ -2720,6 +2720,18 @@ const SkinDefs: Record<string, MeleeDef> = {
             sprite: "loot-melee-bayonet-woodland.img",
         },
     }),
+    guthook_woodland: defineMeleeSkin("bayonet", {
+        name: "Guthook Woodland",
+        rarity: Rarity.Mythic,
+        lore: "Created by SigmaSanty1",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-gutHookWoodland.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-gutHookWoodland.img",
+        },
+    }),
     huntsman_rugged: defineMeleeSkin("huntsman", {
         name: "Huntsman Rugged",
         rarity: Rarity.Rare,

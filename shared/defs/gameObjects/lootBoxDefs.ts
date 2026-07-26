@@ -163,7 +163,6 @@ export const lootBoxDefs = {
             [Rarity.Mythic]: [
                 "outfitChromesis",
                 "death_confetti",
-                "death_billionaire",
                 "bayonet_woodland",
                 "emote_fabulorn",
                 "emote_sushi_roll",
@@ -233,7 +232,6 @@ export const lootBoxDefs = {
                 "outfitBlueLava",
                 "bayonet_woodland",
                 "death_confetti",
-                "death_billionaire",
                 "emote_fabulorn",
                 "emote_sushi_roll",
             ],

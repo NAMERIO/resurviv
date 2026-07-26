@@ -18,6 +18,8 @@ export interface OutfitDef {
         aboveHand?: Boolean;
     };
     lootImg: {
+        /** Use the existing player skin sprites instead of a separate loot sprite. */
+        skinLootImg?: boolean;
         sprite: string;
         tint: number;
         border: string;
@@ -36,6 +38,18 @@ export interface OutfitDef {
     baseScale?: number;
     ghillie?: boolean;
     moveEmitter?: string;
+}
+
+export function getOutfitLootImg(def: OutfitDef): OutfitDef["lootImg"] {
+    if (!def.lootImg.skinLootImg) {
+        return def.lootImg;
+    }
+
+    return {
+        ...def.lootImg,
+        sprite: def.skinImg.baseSprite,
+        tint: def.skinImg.baseTint,
+    };
 }
 
 function defineOutfitSkin(baseType: string, params: DeepPartial<OutfitDef>): OutfitDef {
@@ -3473,7 +3487,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-cyberpunk.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitDiamondy.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -3496,7 +3510,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-bugcat.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitDiamondy.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -3516,7 +3530,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-python.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitKeyLime.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -3539,7 +3553,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-energy-wave.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitDiamondy.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -3564,7 +3578,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             frontSprite: "player-accessory-bee.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitDiamondy.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -3587,7 +3601,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-voidcore.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitDiamondy.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -3613,7 +3627,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             frontSprite: "player-accessory-beru.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitDiamondy.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -3639,7 +3653,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             frontSprite: "player-accessory-auresis.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitDiamondy.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -3663,7 +3677,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-urban-glitch.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitDiamondy.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -3687,7 +3701,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-solar-aegis.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitDiamondy.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -3711,7 +3725,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-riot-plaid.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitDiamondy.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -3736,7 +3750,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             frontSprite: "player-accessory-archaiccrown.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitDiamondy.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
