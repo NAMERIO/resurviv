@@ -3729,6 +3729,7 @@ img {
   top: -4.5px;
   height: 100%;
   z-index: 0;
+  opacity: 0.6;
   pointer-events: none;
 }
 

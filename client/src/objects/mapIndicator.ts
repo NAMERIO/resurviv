@@ -83,9 +83,10 @@ export class MapIndicatorBarn {
         const objDef = GameObjectDefs[indicator.type] as RoleDef | PingDef;
         const ctfIndicator =
             indicator.type === "ctf_flag_red" || indicator.type === "ctf_flag_blue";
+        const motherShipIndicator = indicator.type === "motherShip";
         const scale =
             (device.uiLayout == device.UiLayout.Sm ? 0.15 : 0.2) *
-            (ctfIndicator ? 2.2 : 1.25);
+            (ctfIndicator ? 2.2 : motherShipIndicator ? 1.8 : 1.25);
         const zOrder = indicator.equipped ? 655350 : 1;
 
         const mapSprite = indicator.mapSprite;

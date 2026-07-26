@@ -83,7 +83,7 @@ const mapDef: PartialMapDef = {
         killLeaderEnabled: true,
         contactMode: true,
         npcSpawns: {
-            motherShip: 3,
+            motherShip: 1,
         },
     },
 };
