@@ -3691,6 +3691,30 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
+    outfitRiotPlaid: defineOutfitSkin("outfitBase", {
+        name: "Riot Plaid",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "For those who get spawn killed a lot.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-riot-plaid.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-riot-plaid.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-riot-plaid.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitDiamondy.img",
+            tint: 0xffffff,
+        },
+    }),
+
     outfitArchaicCrown: defineOutfitSkin("outfitBase", {
         name: "Archaic Crown",
         noDropOnDeath: true,
