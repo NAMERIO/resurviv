@@ -1631,7 +1631,6 @@ export class Player extends BaseGameObject {
     biteEffectTicker = 0;
     poisonSource?: GameObject;
     poisonSourceTeamId?: number;
-    contactSmokeEmitterIds = new Set<number>();
     contactSmokeTicker = 0;
     nitroLaceEffect = false;
     nitroLaceDuration = 0;
@@ -4116,9 +4115,8 @@ export class Player extends BaseGameObject {
         }
 
         if (contactSmoke) {
-            if (!this.contactSmokeEmitterIds.has(contactSmoke.emitterId)) {
-                this.contactSmokeEmitterIds.add(contactSmoke.emitterId);
-                this.applyContactedEffect(false);
+            if (this.infectedEffect) {
+                this.clearContactedEffect();
             }
 
             this.contactSmokeTicker -= dt;
@@ -5178,7 +5176,6 @@ export class Player extends BaseGameObject {
         this.poisonDuration = 0;
         this.poisonSource = undefined;
         this.poisonSourceTeamId = undefined;
-        this.contactSmokeEmitterIds.clear();
         this.contactSmokeTicker = 0;
         this.boostDirty = true;
         this.inventoryDirty = true;

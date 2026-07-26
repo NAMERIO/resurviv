@@ -400,7 +400,7 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
                 right: {
                     sprite: "proj-skitternade.img",
                     pos: { x: 3, y: 4.2 },
-                    scale: 0.12,
+                    scale: 0.16,
                 },
                 left: { sprite: "none" },
             },
@@ -408,7 +408,7 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
                 right: {
                     sprite: "proj-skitternade.img",
                     pos: { x: 3, y: 4.2 },
-                    scale: 0.12,
+                    scale: 0.16,
                 },
                 left: { sprite: "none" },
             },

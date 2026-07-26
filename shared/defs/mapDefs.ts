@@ -20,6 +20,7 @@ import { WoodsSummer as BattleRoyaleWoodsSummer } from "../../server/src/battler
 import { DeathmatchAmongUs } from "../../server/src/deathmatch/gameModes/amongUs/map";
 import { DeathmatchAprilFools } from "../../server/src/deathmatch/maps/aprilFools";
 import { DeatchmatchCobalt } from "../../server/src/deathmatch/maps/cobalt";
+import { DeathmatchContact } from "../../server/src/deathmatch/maps/contact";
 import { DeatchmatchDesert } from "../../server/src/deathmatch/maps/desert";
 import { FactionPotato } from "../../server/src/deathmatch/maps/faction_potato";
 import { gun_game } from "../../server/src/deathmatch/maps/gun_game";
@@ -101,6 +102,7 @@ export const MapDefs = {
     br_savannah: BattleRoyaleSavannah,
     cobalt: DeatchmatchCobalt,
     br_cobalt: BattleRoyaleCobalt,
+    contact: DeathmatchContact,
     turkey: Turkey,
     br_turkey: BattleRoyaleTurkey,
     birthday: Birthday,

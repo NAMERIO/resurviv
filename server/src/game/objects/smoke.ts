@@ -250,9 +250,13 @@ export class Smoke extends BaseGameObject {
         }
 
         if (!v2.eq(posOld, this.pos) || !math.eqAbs(radOld, this.rad)) {
+            this.game.map.clampToMapBounds(this.pos, this.rad);
+            this.bounds = collider.createAabbExtents(
+                v2.create(0, 0),
+                v2.create(this.rad, this.rad),
+            );
             this.setPartDirty();
             this.game.grid.updateObject(this);
-            this.game.map.clampToMapBounds(this.pos, this.rad);
         }
 
         if (this.life <= 0) {
