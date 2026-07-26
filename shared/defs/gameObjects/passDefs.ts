@@ -18,7 +18,7 @@ export type PassRewardDef =
           gp: number;
       };
 
-export const CurrentPassType = "pass_survivr2";
+export const CurrentPassType = "pass_survivr3";
 
 export const PassDefs: Record<string, PassDef> = {
     pass_survivr1: {
@@ -310,6 +310,75 @@ export const PassDefs: Record<string, PassDef> = {
                 level: 80,
                 item: "outfitBlueMecha",
                 gp: 300,
+            },
+        ],
+    },
+    pass_survivr3: {
+        type: "pass",
+        premiumPrice: 1500,
+        unlockAllPrice: 3000,
+        xp: [
+            50, 50, 50, 50, 50, 50, 50, 50, 75, 75, 75, 75, 75, 75, 100, 100, 100, 125,
+            125, 150, 75, 75, 75,
+        ],
+        items: [],
+        premiumItems: [
+            {
+                level: 2,
+                item: "emote_wilted_rose",
+            },
+            {
+                level: 3,
+                gp: 100,
+            },
+            {
+                level: 5,
+                item: "outfitVoidcore",
+            },
+            {
+                level: 6,
+                gp: 120,
+            },
+            {
+                level: 7,
+                item: "outfitPython",
+            },
+            {
+                level: 9,
+                item: "outfitBee",
+            },
+            {
+                level: 10,
+                gp: 130,
+            },
+            {
+                level: 12,
+                item: "emote_son",
+            },
+            // Level 14: Guthook (not implemented yet).
+            {
+                level: 15,
+                gp: 140,
+            },
+            {
+                level: 17,
+                item: "fist_fritterPunch",
+            },
+            {
+                level: 20,
+                item: "outfitToxicFire",
+            },
+            {
+                level: 30,
+                item: "death_billionaire",
+            },
+            {
+                level: 65,
+                gp: 150,
+            },
+            {
+                level: 80,
+                item: "outfitBeru",
             },
         ],
     },
