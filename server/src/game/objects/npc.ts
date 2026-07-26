@@ -175,6 +175,8 @@ export class Npc extends BaseGameObject {
                 if (this.cannonTicker <= 0) {
                     const targetPos = v2.copy(target.pos);
                     const targetLayer = target.layer;
+                    this.targetPos = v2.copy(targetPos);
+                    this.setPartDirty();
                     this.clearCannonTarget(false);
                     this.cannonProjectile = this.fireCannon(targetPos, targetLayer);
                     if (!this.cannonProjectile) this.clearCannonMarker();

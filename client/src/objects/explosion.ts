@@ -200,15 +200,6 @@ class Explosion {
             const sound =
                 surface.type == "water" ? def.burst.sound.water : def.burst.sound.grass;
 
-            if (this.type === "explosion_motherShip") {
-                audioManager.playGroup("mothership_shoot", {
-                    soundPos: this.pos,
-                    fallOff: 3,
-                    layer: this.layer,
-                    filter: "muffled",
-                });
-            }
-
             let detune = 0;
             if (def.burst.sound.detune != undefined) {
                 detune = def.burst.sound.detune;
