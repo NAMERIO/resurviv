@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
-import { TeamMode } from "../../shared/gameConfig";
+import { DamageType, TeamMode } from "../../shared/gameConfig";
 import { EditMsg } from "../../shared/net/editMsg";
+import { KillMsg } from "../../shared/net/killMsg";
 import { MsgStream } from "../../shared/net/net";
 import { coldet } from "../../shared/utils/coldet";
 import { createGame } from "./gameTestHelpers";
@@ -16,6 +17,23 @@ test("editor NPC spawn message preserves the NPC type", () => {
     received.deserialize(stream.getStream());
 
     expect(received.spawnNpcType).toBe("motherShip");
+});
+
+test("NPC death messages preserve the damage reason", () => {
+    const stream = new MsgStream(new ArrayBuffer(256));
+    const sent = new KillMsg();
+    sent.damageType = DamageType.Npc;
+    sent.mapSourceType = "skitter";
+    sent.killed = true;
+    sent.serialize(stream.getStream());
+
+    stream.stream.index = 0;
+    const received = new KillMsg();
+    received.deserialize(stream.getStream());
+
+    expect(received.damageType).toBe(DamageType.Npc);
+    expect(received.mapSourceType).toBe("skitter");
+    expect(received.killed).toBe(true);
 });
 
 test("map NPC counts create every configured NPC", async () => {

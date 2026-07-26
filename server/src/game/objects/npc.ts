@@ -268,7 +268,7 @@ export class Npc extends BaseGameObject {
             targetLayer,
             v2.mul(dir, def.throwPhysics.speed),
             Math.min(def.fuseTime, distance / def.throwPhysics.speed),
-            GameConfig.DamageType.Player,
+            GameConfig.DamageType.Npc,
             dir,
             "motherShip_cannon_shot",
         );
@@ -317,7 +317,7 @@ export class Npc extends BaseGameObject {
             if (this.biteTicker <= 0) {
                 target.damage({
                     amount: skitterDamage,
-                    damageType: GameConfig.DamageType.Player,
+                    damageType: GameConfig.DamageType.Npc,
                     mapSourceType: "skitter",
                     dir: v2.directionNormalized(target.pos, this.pos),
                     source: this,

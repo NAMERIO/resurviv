@@ -1811,6 +1811,13 @@ export class UiManager2 {
                 );
                 return `Phoenix ${killTxt} ${targetName}`;
             }
+            case DamageType.Npc: {
+                const killName = this.localization.translate(`game-${sourceType}`);
+                const killTxt = this.localization.translate(
+                    downed ? "game-knocked-out" : "game-killed",
+                );
+                return `${killName} ${killTxt} ${targetName}`;
+            }
             default:
                 return "";
         }
@@ -1940,7 +1947,14 @@ export class UiManager2 {
                 killerTxt = "Burning Effect";
             } else if (damageType == GameConfig.DamageType.Phoenix) {
                 killerTxt = "Phoenix";
+            } else if (damageType == GameConfig.DamageType.Npc) {
+                killerTxt = this.localization.translate(`game-${sourceType}`);
             }
+        }
+        if (damageType == GameConfig.DamageType.Npc) {
+            return `${killerTxt} ${this.localization.translate(
+                "game-knocked-out",
+            )} ${youTxt}`;
         }
         let damageTxt = this.localization.translate(`game-${sourceType}`);
         if (killerName && damageType == GameConfig.DamageType.Airstrike) {
