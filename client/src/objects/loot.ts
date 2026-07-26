@@ -3,6 +3,10 @@ import { GameObjectDefs, type LootDef } from "../../../shared/defs/gameObjectDef
 import type { AmmoDef } from "../../../shared/defs/gameObjects/gearDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
 import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
+import {
+    getOutfitLootImg,
+    type OutfitDef,
+} from "../../../shared/defs/gameObjects/outfitDefs";
 import type { XPDef } from "../../../shared/defs/gameObjects/xpDefs";
 import { GameConfig } from "../../../shared/gameConfig";
 import type { ObjectData, ObjectType } from "../../../shared/net/objectSerializeFns";
@@ -29,6 +33,12 @@ export class Loot implements AbstractObject {
     playDropSfx = false;
     container = new PIXI.Sprite();
     sprite = new PIXI.Sprite();
+    skinContainer = new PIXI.Container();
+    skinBackpackSprite = new PIXI.Sprite();
+    skinBodySprite = new PIXI.Sprite();
+    skinAccessorySprite = new PIXI.Sprite();
+    skinHandLSprite = new PIXI.Sprite();
+    skinHandRSprite = new PIXI.Sprite();
     emitter: Emitter | null = null;
 
     updatedData!: boolean;
@@ -55,6 +65,20 @@ export class Loot implements AbstractObject {
         this.sprite.anchor.set(0.5, 0.5);
         this.sprite.scale.set(0.8, 0.8);
         this.container.addChild(this.sprite);
+
+        const skinSprites = [
+            this.skinBackpackSprite,
+            this.skinBodySprite,
+            this.skinAccessorySprite,
+            this.skinHandLSprite,
+            this.skinHandRSprite,
+        ];
+        for (const sprite of skinSprites) {
+            sprite.anchor.set(0.5, 0.5);
+            this.skinContainer.addChild(sprite);
+        }
+        this.skinContainer.visible = false;
+        this.container.addChild(this.skinContainer);
     }
 
     m_init() {
@@ -107,6 +131,8 @@ export class Loot implements AbstractObject {
 
         if (isNew) {
             const itemDef = GameObjectDefs[this.type] as LootDef;
+            const outfitDef = itemDef.type === "outfit" ? (itemDef as OutfitDef) : null;
+            const lootImg = outfitDef ? getOutfitLootImg(outfitDef) : itemDef.lootImg;
             this.ticker = 0;
 
             // Don't play the pop-in effect if this is an old piece of loot
@@ -124,25 +150,86 @@ export class Loot implements AbstractObject {
 
             this.rad =
                 GameConfig.lootRadius[itemDef.type as keyof typeof GameConfig.lootRadius];
-            this.imgScale = itemDef.lootImg?.scale * 1.25;
+            this.imgScale = lootImg.scale * 1.25;
 
             const innerScale =
-                (itemDef as { lootImg: { innerScale?: number } }).lootImg.innerScale ||
-                0.8;
+                (
+                    lootImg as typeof lootImg & {
+                        innerScale?: number;
+                    }
+                ).innerScale || 0.8;
             this.sprite.scale.set(innerScale, innerScale);
-            this.sprite.texture = PIXI.Texture.from(itemDef.lootImg?.sprite);
-            this.sprite.tint = itemDef.lootImg?.tint;
-            this.container.texture = itemDef.lootImg.border
-                ? PIXI.Texture.from(itemDef.lootImg.border)
+            this.sprite.texture = PIXI.Texture.from(lootImg.sprite);
+            this.sprite.tint = lootImg.tint;
+            this.sprite.visible = !outfitDef?.lootImg.skinLootImg;
+            this.container.texture = lootImg.border
+                ? PIXI.Texture.from(lootImg.border)
                 : PIXI.Texture.EMPTY;
+
+            this.skinContainer.visible = false;
+            this.skinAccessorySprite.visible = false;
+            if (outfitDef?.lootImg.skinLootImg) {
+                const playerBodyScale = 0.25;
+                const skinLootScale = 0.82;
+                const scaleRatio = (innerScale / playerBodyScale) * skinLootScale;
+                const outfitImg = outfitDef.skinImg;
+
+                this.skinContainer.scale.set(scaleRatio);
+                this.skinContainer.rotation = Math.PI * 0.5;
+                this.skinContainer.position.set(0, 1.5);
+                this.skinContainer.visible = true;
+
+                this.skinBackpackSprite.texture = PIXI.Texture.from(
+                    outfitImg.backpackSprite,
+                );
+                this.skinBackpackSprite.position.set(-10.25, 0);
+                this.skinBackpackSprite.scale.set(0.215);
+                this.skinBackpackSprite.tint = outfitImg.backpackTint;
+                this.skinBackpackSprite.visible = true;
+
+                this.skinBodySprite.texture = PIXI.Texture.from(outfitImg.baseSprite);
+                this.skinBodySprite.position.set(0, 0);
+                this.skinBodySprite.scale.set(playerBodyScale);
+                this.skinBodySprite.tint = outfitImg.baseTint;
+                this.skinBodySprite.visible = true;
+
+                this.skinHandLSprite.texture = PIXI.Texture.from(outfitImg.handSprite);
+                this.skinHandLSprite.position.set(14, -12.25);
+                this.skinHandLSprite.scale.set(0.175);
+                this.skinHandLSprite.tint = outfitImg.handTint;
+                this.skinHandLSprite.visible = true;
+
+                this.skinHandRSprite.texture = PIXI.Texture.from(outfitImg.handSprite);
+                this.skinHandRSprite.position.set(14, 12.25);
+                this.skinHandRSprite.scale.set(0.175);
+                this.skinHandRSprite.tint = outfitImg.handTint;
+                this.skinHandRSprite.visible = true;
+
+                if (outfitImg.frontSprite) {
+                    const frontPos = outfitImg.frontSpritePos ?? { x: 0, y: 0 };
+                    this.skinAccessorySprite.texture = PIXI.Texture.from(
+                        outfitImg.frontSprite,
+                    );
+                    this.skinAccessorySprite.position.set(frontPos.x, frontPos.y);
+                    this.skinAccessorySprite.scale.set(0.27);
+                    this.skinAccessorySprite.tint = 0xffffff;
+                    this.skinAccessorySprite.visible = true;
+                }
+
+                this.skinContainer.setChildIndex(
+                    this.skinAccessorySprite,
+                    outfitImg.aboveHand ? this.skinContainer.children.length - 1 : 2,
+                );
+            }
+
             if (this.isPreloadedGun) {
                 this.container.texture = PIXI.Texture.from("loot-circle-outer-06.img");
             }
             const ammo = GameObjectDefs[(itemDef as GunDef).ammo] as AmmoDef;
             if (ammo) {
                 this.container.tint = ammo.lootImg.tintDark!;
-            } else if (itemDef.lootImg.borderTint) {
-                this.container.tint = itemDef.lootImg.borderTint;
+            } else if (lootImg.borderTint) {
+                this.container.tint = lootImg.borderTint;
             } else {
                 this.container.tint = 0;
             }

@@ -1,13 +1,227 @@
 import $ from "jquery";
 import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
 import type { MeleeDef } from "../../shared/defs/gameObjects/meleeDefs";
-import type { OutfitDef } from "../../shared/defs/gameObjects/outfitDefs";
+import {
+    getOutfitLootImg,
+    type OutfitDef,
+    OutfitDefs,
+} from "../../shared/defs/gameObjects/outfitDefs";
 import { MapDefs } from "../../shared/defs/mapDefs";
 import { Rarity } from "../../shared/gameConfig";
 import * as net from "../../shared/net/net";
 import { device } from "./device";
 
 const truncateCanvas = document.createElement("canvas");
+const outfitSkinLootImageCache = new Map<string, string>();
+const outfitSkinLootImagePromises = new Map<string, Promise<string>>();
+
+interface OutfitSkinImageLayer {
+    sprite: string;
+    tint: number;
+    scale: number;
+    x: number;
+    y: number;
+}
+
+function getSvgDimensions(svg: string) {
+    const document = new DOMParser().parseFromString(svg, "image/svg+xml");
+    const root = document.documentElement;
+    const viewBox = root
+        .getAttribute("viewBox")
+        ?.trim()
+        .split(/[\s,]+/)
+        .map(Number);
+    const parseDimension = (value: string | null) =>
+        value ? Number.parseFloat(value) : undefined;
+
+    return {
+        width:
+            parseDimension(root.getAttribute("width")) ??
+            (viewBox?.length === 4 ? viewBox[2] : 140),
+        height:
+            parseDimension(root.getAttribute("height")) ??
+            (viewBox?.length === 4 ? viewBox[3] : 140),
+    };
+}
+
+function getOutfitSkinLayers(def: OutfitDef): OutfitSkinImageLayer[] {
+    const img = def.skinImg;
+    const accessory = img.frontSprite
+        ? [
+              {
+                  sprite: img.frontSprite,
+                  tint: 0xffffff,
+                  scale: 0.27,
+                  x: img.frontSpritePos?.x ?? 0,
+                  y: img.frontSpritePos?.y ?? 0,
+              },
+          ]
+        : [];
+    const hands = [
+        {
+            sprite: img.handSprite,
+            tint: img.handTint,
+            scale: 0.175,
+            x: 14,
+            y: -12.25,
+        },
+        {
+            sprite: img.handSprite,
+            tint: img.handTint,
+            scale: 0.175,
+            x: 14,
+            y: 12.25,
+        },
+    ];
+
+    return [
+        {
+            sprite: img.backpackSprite,
+            tint: img.backpackTint,
+            scale: 0.215,
+            x: -10.25,
+            y: 0,
+        },
+        {
+            sprite: img.baseSprite,
+            tint: img.baseTint,
+            scale: 0.25,
+            x: 0,
+            y: 0,
+        },
+        ...(img.aboveHand ? hands : accessory),
+        ...(img.aboveHand ? accessory : hands),
+    ];
+}
+
+export function createOutfitSkinPreview(
+    def: OutfitDef,
+    previewScale = 1.1,
+    className = "",
+) {
+    const preview = $("<div/>", {
+        class: className,
+        "aria-hidden": "true",
+        css: {
+            height: "100%",
+            overflow: "hidden",
+            position: "relative",
+            transform: "translateY(3px) rotate(90deg)",
+            width: "100%",
+        },
+    });
+
+    for (const [zIndex, layerDef] of getOutfitSkinLayers(def).entries()) {
+        const imagePath = `img/player/${layerDef.sprite.slice(0, -4)}.svg`;
+        const layer = $("<span/>", {
+            css: {
+                display: "block",
+                left: `calc(50% + ${layerDef.x * previewScale}px)`,
+                lineHeight: 0,
+                position: "absolute",
+                top: `calc(50% + ${layerDef.y * previewScale}px)`,
+                transform: `translate(-50%, -50%) scale(${
+                    layerDef.scale * previewScale
+                })`,
+                transformOrigin: "center",
+                zIndex,
+            },
+        });
+        layer.append(
+            $("<img/>", {
+                alt: "",
+                draggable: false,
+                src: imagePath,
+                css: {
+                    display: "block",
+                    height: "auto",
+                    maxWidth: "none",
+                    width: "auto",
+                },
+            }),
+        );
+
+        if (layerDef.tint !== 0xffffff) {
+            const tintColor = `#${layerDef.tint.toString(16).padStart(6, "0")}`;
+            layer.append(
+                $("<span/>", {
+                    css: {
+                        backgroundColor: tintColor,
+                        inset: 0,
+                        mask: `url("${imagePath}") center / 100% 100% no-repeat`,
+                        mixBlendMode: "multiply",
+                        position: "absolute",
+                    },
+                }),
+            );
+        }
+
+        preview.append(layer);
+    }
+
+    return preview;
+}
+
+async function buildOutfitSkinLootImage(def: OutfitDef) {
+    const layers = getOutfitSkinLayers(def);
+    const sources = await Promise.all(
+        layers.map(async (layer) => {
+            const path = `img/player/${layer.sprite.slice(0, -4)}.svg`;
+            const response = await fetch(path);
+            if (!response.ok) {
+                throw new Error(`Failed loading skin sprite ${path}`);
+            }
+            return response.text();
+        }),
+    );
+
+    const filters: string[] = [];
+    const images = layers.map((layer, index) => {
+        const source = sources[index];
+        const { width, height } = getSvgDimensions(source);
+        const filterId = `skin-loot-tint-${index}`;
+        if (layer.tint !== 0xffffff) {
+            const tint = `#${layer.tint.toString(16).padStart(6, "0")}`;
+            filters.push(
+                `<filter id="${filterId}" color-interpolation-filters="sRGB"><feFlood flood-color="${tint}" result="tint"/><feBlend in="SourceGraphic" in2="tint" mode="multiply" result="tinted"/><feComposite in="tinted" in2="SourceAlpha" operator="in"/></filter>`,
+            );
+        }
+
+        const scaledWidth = width * layer.scale;
+        const scaledHeight = height * layer.scale;
+        const sourceUrl = `data:image/svg+xml,${encodeURIComponent(source)}`;
+        const filter = layer.tint === 0xffffff ? "" : ` filter="url(#${filterId})"`;
+        return `<image href="${sourceUrl}" x="${layer.x - scaledWidth / 2}" y="${layer.y - scaledHeight / 2}" width="${scaledWidth}" height="${scaledHeight}"${filter}/>`;
+    });
+
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="-44 -44 88 88"><defs>${filters.join("")}</defs><g transform="translate(0 3) rotate(90)">${images.join("")}</g></svg>`;
+    return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+function queueOutfitSkinLootImage(type: string, def: OutfitDef) {
+    const existing = outfitSkinLootImagePromises.get(type);
+    if (existing) return existing;
+
+    const promise = buildOutfitSkinLootImage(def)
+        .then((image) => {
+            outfitSkinLootImageCache.set(type, image);
+            return image;
+        })
+        .catch((error) => {
+            console.error(`Failed generating skin loot image for ${type}`, error);
+            return "";
+        });
+    outfitSkinLootImagePromises.set(type, promise);
+    return promise;
+}
+
+if (typeof window !== "undefined") {
+    for (const [type, def] of Object.entries(OutfitDefs)) {
+        if (def.lootImg.skinLootImg) {
+            queueOutfitSkinLootImage(type, def);
+        }
+    }
+}
 
 const rarityVisuals: Record<
     Rarity,
@@ -288,7 +502,16 @@ export const helpers = {
             case "crosshair":
                 return `img/crosshairs/${def.texture.slice(0, -4)}.svg`;
             case "outfit": {
-                const lootImg = (def as OutfitDef).lootImg;
+                const outfitDef = def as OutfitDef;
+                const lootImg = getOutfitLootImg(outfitDef);
+                if (outfitDef.lootImg.skinLootImg) {
+                    queueOutfitSkinLootImage(gameType, outfitDef);
+                    return (
+                        outfitSkinLootImageCache.get(gameType) ??
+                        `img/player/${lootImg.sprite.slice(0, -4)}.svg`
+                    );
+                }
+
                 if (lootImg.sprite !== "loot-shirt-01.img") {
                     return `img/loot/${lootImg.sprite.slice(0, -4)}.svg`;
                 }
