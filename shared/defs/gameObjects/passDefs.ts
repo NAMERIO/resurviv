@@ -18,7 +18,7 @@ export type PassRewardDef =
           gp: number;
       };
 
-export const CurrentPassType = "pass_survivr3";
+export const CurrentPassType = "pass_survivr2";
 
 export const PassDefs: Record<string, PassDef> = {
     pass_survivr1: {
