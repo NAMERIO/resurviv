@@ -17,6 +17,7 @@ export const debugToolsConfig = {
     mapSeed: 0,
 
     loot: "",
+    npc: "motherShip",
     role: "",
 
     noClip: false,

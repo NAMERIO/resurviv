@@ -1,7 +1,22 @@
 import { expect, test } from "vitest";
 import { TeamMode } from "../../shared/gameConfig";
+import { EditMsg } from "../../shared/net/editMsg";
+import { MsgStream } from "../../shared/net/net";
 import { coldet } from "../../shared/utils/coldet";
 import { createGame } from "./gameTestHelpers";
+
+test("editor NPC spawn message preserves the NPC type", () => {
+    const stream = new MsgStream(new ArrayBuffer(256));
+    const sent = new EditMsg();
+    sent.spawnNpcType = "motherShip";
+    sent.serialize(stream.getStream());
+
+    stream.stream.index = 0;
+    const received = new EditMsg();
+    received.deserialize(stream.getStream());
+
+    expect(received.spawnNpcType).toBe("motherShip");
+});
 
 test("map NPC counts create every configured NPC", async () => {
     const game = await createGame(TeamMode.Solo, "br_contact");

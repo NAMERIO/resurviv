@@ -159,6 +159,11 @@ export class Npc implements AbstractObject {
         const def = NpcDefs[this.type];
         if (!def) return;
 
+        if (isNew) {
+            ctx.resourceManager?.loadAtlas("contact");
+            this.targetSprite.texture = PIXI.Texture.from("map-target.img");
+        }
+
         this.posOld = isNew ? v2.copy(data.pos) : v2.copy(this.pos);
         this.pos = v2.copy(data.pos);
         this.rot = data.ori;

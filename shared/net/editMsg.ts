@@ -13,6 +13,7 @@ export class EditMsg implements AbstractMsg {
     newMapSeed = 0;
 
     spawnLootType = "";
+    spawnNpcType = "";
     promoteToRole = false;
     promoteToRoleType = "";
 
@@ -48,6 +49,7 @@ export class EditMsg implements AbstractMsg {
         }
 
         s.writeGameType(this.spawnLootType);
+        s.writeMapType(this.spawnNpcType);
         s.writeBoolean(this.promoteToRole);
         if (this.promoteToRole) {
             s.writeGameType(this.promoteToRoleType);
@@ -90,6 +92,7 @@ export class EditMsg implements AbstractMsg {
         }
 
         this.spawnLootType = s.readGameType();
+        this.spawnNpcType = s.readMapType();
         this.promoteToRole = s.readBoolean();
         if (this.promoteToRole) {
             this.promoteToRoleType = s.readGameType();

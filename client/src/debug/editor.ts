@@ -3,6 +3,7 @@ import type * as PIXI from "pixi.js-legacy";
 import { type FolderApi, Pane, type TabPageApi } from "tweakpane";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { RoleDefs } from "../../../shared/defs/gameObjects/roleDefs";
+import { NpcDefs } from "../../../shared/defs/npcDefs";
 import { EditMsg } from "../../../shared/net/editMsg";
 import { math } from "../../../shared/utils/math";
 import { util } from "../../../shared/utils/util";
@@ -37,6 +38,14 @@ const availableRoles = Object.entries(RoleDefs)
 
 availableRoles["None"] = "";
 
+const availableNpcs = Object.keys(NpcDefs).reduce(
+    (obj, type) => {
+        obj[type] = type;
+        return obj;
+    },
+    {} as Record<string, string>,
+);
+
 function camelCaseToText(str: string) {
     return str
         .replace(/([A-Z])/g, " $1")
@@ -63,6 +72,7 @@ export class Editor {
 
     loadNewMap = false;
     spawnLoot = false;
+    spawnNpc = false;
     promoteToRole = false;
     toggleLayer = false;
     drawExplosionDecal = false;
@@ -80,6 +90,7 @@ export class Editor {
         this.config.addModifiedListener(this.onConfigModified.bind(this));
 
         this.toolParams = this.config.get("debugTools")!;
+        this.toolParams.npc ||= "motherShip";
         this.toolParams.role = "";
 
         this.renderParams = this.config.get("debugRenderer")!;
@@ -185,6 +196,27 @@ export class Editor {
                 opt.value = loot;
                 dataList.appendChild(opt);
             }
+        }
+
+        // NPCs
+        {
+            const folder = tools.addFolder({
+                title: "NPC",
+                expanded: false,
+            });
+            folder.addBinding(this.toolParams, "npc", {
+                options: availableNpcs,
+                label: "Type",
+            });
+            folder.on("change", () => {
+                this.config.set("debugTools", this.toolParams);
+            });
+            folder.addButton({ title: "Spawn at Player" }).on("click", () => {
+                if (!NpcDefs[this.toolParams.npc]) return;
+
+                this.spawnNpc = true;
+                this.sendMsg = true;
+            });
         }
 
         // Map
@@ -564,6 +596,9 @@ export class Editor {
         if (availableLoot.includes(this.toolParams.loot)) {
             msg.spawnLootType = this.spawnLoot ? this.toolParams.loot : "";
         }
+        if (NpcDefs[this.toolParams.npc]) {
+            msg.spawnNpcType = this.spawnNpc ? this.toolParams.npc : "";
+        }
         msg.promoteToRole = this.promoteToRole;
         msg.promoteToRoleType = this.toolParams.role;
 
@@ -586,6 +621,7 @@ export class Editor {
 
     postSerialization() {
         this.spawnLoot = false;
+        this.spawnNpc = false;
         this.promoteToRole = false;
         this.loadNewMap = false;
 

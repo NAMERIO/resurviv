@@ -2000,7 +2000,7 @@ export class Player implements AbstractObject {
             this.patchSprite.visible = false;
         }
 
-        if (map.contactMode && this.m_netData.m_infectedEffect) {
+        if (this.m_netData.m_infectedEffect) {
             this.slimeSprite.texture = PIXI.Texture.from("slime.img");
             this.slimeSprite.visible = true;
             this.slimeSprite.scale.set(0.5, 0.5);
