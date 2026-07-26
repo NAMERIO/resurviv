@@ -13,8 +13,8 @@ const BACKPACK_LEVEL = 3;
 util.mergeDeep(Config, {
     clientTheme: "perks",
     modes: [
-        { mapName: "contact", teamMode: TeamMode.Duo, enabled: true },
-        { mapName: "br_contact", teamMode: TeamMode.Duo, enabled: true },
+        { mapName: "perks", teamMode: TeamMode.Duo, enabled: true },
+        { mapName: "br_main", teamMode: TeamMode.Duo, enabled: true },
     ],
     br_modes: [{ mapName: "br_contact", teamMode: TeamMode.Duo, enabled: true }],
     debug: {
