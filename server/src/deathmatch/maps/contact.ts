@@ -23,6 +23,7 @@ export const DeathmatchContact = util.mergeDeep(structuredClone(DeatchmatchMain)
         atlases,
     },
     biome: structuredClone(BattleRoyaleContact.biome),
+    /* STRIP_FROM_PROD_CLIENT:START */
     mapGen: {
         randomSpawns: [
             {
@@ -47,10 +48,13 @@ export const DeathmatchContact = util.mergeDeep(structuredClone(DeatchmatchMain)
         ],
         spawnReplacements: structuredClone(BattleRoyaleContact.mapGen.spawnReplacements),
     },
+    /* STRIP_FROM_PROD_CLIENT:END */
     gameMode: structuredClone(BattleRoyaleContact.gameMode),
 }) as MapDef;
 
+/* STRIP_FROM_PROD_CLIENT:START */
 DeathmatchContact.lootTable = {
     ...structuredClone(DeatchmatchMain.lootTable),
     tier_contact: structuredClone(BattleRoyaleContact.lootTable.tier_contact),
 };
+/* STRIP_FROM_PROD_CLIENT:END */
