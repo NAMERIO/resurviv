@@ -112,7 +112,7 @@ export class Npc implements AbstractObject {
         this.gunSprite.anchor.set(0.5, 0.5);
         this.gunSprite.visible = false;
         this.sprite.addChild(this.gunSprite);
-        this.targetSprite.texture = PIXI.Texture.from("map-target.img");
+        this.targetSprite.texture = PIXI.Texture.EMPTY;
         this.targetSprite.anchor.set(0.5, 0.5);
         this.targetSprite.tint = 0xffffff;
         this.targetSprite.visible = false;

@@ -51,6 +51,18 @@ test("a direct Mothrship cannon blast is lethal through normal maximum armor", (
     expect(damageAfterArmor).toBeGreaterThanOrEqual(GameConfig.player.health);
 });
 
+test("NPC AI remains active while the game is waiting for players", async () => {
+    const game = await createGame(TeamMode.Solo, "br_contact");
+    const motherShips = game.npcBarn.npcs.filter((npc) => npc.type === "motherShip");
+    const positions = motherShips.map((npc) => ({ ...npc.pos }));
+
+    expect(game.started).toBe(false);
+    game.npcBarn.update(30);
+
+    expect(game.npcBarn.npcs.length).toBeGreaterThan(motherShips.length);
+    expect(motherShips.map((npc) => npc.pos)).not.toEqual(positions);
+});
+
 test("map NPC counts create every configured NPC", async () => {
     const game = await createGame(TeamMode.Solo, "br_contact");
     const configuredCount = game.map.mapDef.gameMode.npcSpawns?.motherShip ?? 0;

@@ -65,8 +65,6 @@ export class NpcBarn {
     }
 
     update(dt: number) {
-        if (!this.game.started) return;
-
         for (let i = 0; i < this.npcs.length; i++) {
             const npc = this.npcs[i];
             if (npc.destroyed) {
