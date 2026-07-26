@@ -355,7 +355,10 @@ export const PassDefs: Record<string, PassDef> = {
                 level: 12,
                 item: "emote_son",
             },
-            // Level 14: Guthook (not implemented yet).
+            {
+                level: 14,
+                item: "guthook_woodland",
+            },
             {
                 level: 15,
                 gp: 140,

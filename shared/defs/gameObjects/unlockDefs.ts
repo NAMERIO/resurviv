@@ -263,6 +263,7 @@ const _allowedMeleeSkins = [
     // "karambit_drowned",
     // "bayonet_rugged",
     // "bayonet_woodland",
+    // "guthook_woodland",
     // "huntsman_rugged",
     // "huntsman_burnished",
     // "bowie_vintage",
