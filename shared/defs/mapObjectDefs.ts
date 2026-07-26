@@ -2,6 +2,7 @@ import { collider } from "../utils/collider";
 import { util } from "../utils/util";
 import { v2 } from "../utils/v2";
 import { AmongUsSecurityCameraDefs } from "./amongUsSecurityCameraDefs";
+import { NpcDefs } from "./npcDefs";
 import type {
     BuildingDef,
     LootSpawnDef,
@@ -36472,4 +36473,5 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
         ],
     },
+    ...NpcDefs,
 };

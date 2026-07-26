@@ -17,6 +17,7 @@ export interface ExplosionDef {
     healTeam?: boolean;
     healAmount?: number;
     blindDuration?: number;
+    playerDamageOnly?: boolean;
 }
 
 export const ExplosionDefs: Record<string, ExplosionDef> = {
@@ -372,5 +373,16 @@ export const ExplosionDefs: Record<string, ExplosionDef> = {
         decalType: "",
         healTeam: true,
         healAmount: 7,
+    },
+    explosion_motherShip: {
+        type: "explosion",
+        damage: 100,
+        obstacleDamage: 0,
+        rad: { min: 4, max: 10 },
+        shrapnelCount: 0,
+        shrapnelType: "shrapnel_bomb_iron",
+        explosionEffectType: "motherShip_cannon",
+        decalType: "decal_bomb_iron_explosion",
+        playerDamageOnly: true,
     },
 };

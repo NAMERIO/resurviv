@@ -481,6 +481,7 @@ export class Game {
             [ObjectType.Projectile]: this.m_projectileBarn.projectilePool,
             [ObjectType.Smoke]: this.m_smokeBarn.m_smokePool,
             [ObjectType.Airdrop]: this.m_airdropBarn.airdropPool,
+            [ObjectType.Npc]: this.m_map.m_npcPool,
         };
 
         this.m_objectCreator = new Creator();

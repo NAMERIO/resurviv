@@ -1,6 +1,7 @@
 import type { Atlas } from "../../shared/defs/mapDefs";
 import { BeachAtlas } from "./defs/beach";
 import { CobaltAtlas } from "./defs/cobalt";
+import { ContactAtlas } from "./defs/contact";
 import { DesertAtlas } from "./defs/desert";
 import { FactionAtlas } from "./defs/faction";
 import { GradientAtlas } from "./defs/gradient";
@@ -52,6 +53,7 @@ export const Atlases: Record<Atlas, AtlasDef> = {
     valentine: ValentineAtlas,
     inferno: InfernoAtlas,
     beach: BeachAtlas,
+    contact: ContactAtlas,
     april_fools: MainAtlas,
 };
 export type AtlasRes = "high" | "low";

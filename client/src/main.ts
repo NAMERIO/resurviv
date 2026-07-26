@@ -223,6 +223,7 @@ export class Application {
         br_turkey: "Turkey",
         br_birthday: "Birthday",
         br_beach: "Beach",
+        br_contact: "Contact",
         woods: "Woods",
         potato: "Potato",
         desert: "Desert",

@@ -92,6 +92,8 @@ export class Projectile extends BaseGameObject {
 
     vel: Vec2;
     velZ: number;
+    linearFlight = false;
+    linearTargetPos?: Vec2;
     dead = false;
 
     obstacleBellowId = 0;
@@ -202,17 +204,20 @@ export class Projectile extends BaseGameObject {
         //
         // Velocity
         //
-        if (!def.forceMaxThrowDistance) {
+        if (!this.linearFlight && !def.forceMaxThrowDistance) {
             // velocity needs to stay constant to reach max throw dist
             this.vel = v2.mul(this.vel, 1 / (1 + dt * (this.posZ != 0 ? 1.2 : 2)));
         }
         const posOld = v2.copy(this.pos);
-        this.pos = v2.add(this.pos, v2.mul(this.vel, dt));
+        this.pos =
+            this.linearFlight && this.linearTargetPos && this.fuseTime <= dt
+                ? v2.copy(this.linearTargetPos)
+                : v2.add(this.pos, v2.mul(this.vel, dt));
 
         //
         // Height / posZ
         //
-        if (!def.throwPhysics.ignoreGravity) {
+        if (!this.linearFlight && !def.throwPhysics.ignoreGravity) {
             this.velZ -= gravity * dt;
         }
         this.posZ += this.velZ * dt;
@@ -237,11 +242,17 @@ export class Projectile extends BaseGameObject {
         //
         // Collision and changing layers on stair
         //
-        const objs = this.game.grid.intersectGameObject(this);
+        const objs = [
+            ...new Set([
+                ...this.game.grid.intersectGameObject(this),
+                ...this.game.grid.intersectLineSegment(posOld, this.pos),
+            ]),
+        ];
 
         for (const obj of objs) {
             if (
                 obj.__type === ObjectType.Obstacle &&
+                !this.linearFlight &&
                 util.sameLayer(this.layer, obj.layer) &&
                 !obj.dead
             ) {
@@ -263,15 +274,21 @@ export class Projectile extends BaseGameObject {
                             damage = 999;
                         }
 
-                        obj.damage({
-                            amount: damage,
-                            damageType: this.damageType,
-                            gameSourceType: this.type,
-                            weaponSourceType: this.weaponSourceType,
-                            source: this.game.objectRegister.getById(this.playerId),
-                            mapSourceType: "",
-                            dir: this.dir,
-                        });
+                        const explosionDef = GameObjectDefs[def.explosionType];
+                        const playerDamageOnly =
+                            explosionDef?.type === "explosion" &&
+                            explosionDef.playerDamageOnly;
+                        if (!playerDamageOnly) {
+                            obj.damage({
+                                amount: damage,
+                                damageType: this.damageType,
+                                gameSourceType: this.type,
+                                weaponSourceType: this.weaponSourceType,
+                                source: this.game.objectRegister.getById(this.playerId),
+                                mapSourceType: "",
+                                dir: this.dir,
+                            });
+                        }
 
                         if (obj.dead || !obj.collidable) continue;
 
@@ -305,6 +322,30 @@ export class Projectile extends BaseGameObject {
                     }
                 }
             } else if (
+                obj.__type === ObjectType.Npc &&
+                def.playerCollision &&
+                obj.collidable &&
+                !obj.dead &&
+                util.sameLayer(this.layer, obj.layer)
+            ) {
+                const intersection = collider.intersectCircle(
+                    obj.collider,
+                    this.pos,
+                    this.rad,
+                );
+                const lineIntersection = collider.intersectSegment(
+                    obj.collider,
+                    posOld,
+                    this.pos,
+                );
+
+                if (intersection || lineIntersection) {
+                    if (lineIntersection) {
+                        this.pos = v2.copy(lineIntersection.point);
+                    }
+                    this.explode();
+                }
+            } else if (
                 obj.__type === ObjectType.Player &&
                 def.playerCollision &&
                 !obj.dead &&
@@ -333,7 +374,7 @@ export class Projectile extends BaseGameObject {
 
             this.game.grid.updateObject(this);
 
-            if (this.posZ === 0 && def.explodeOnImpact) {
+            if (this.posZ === 0 && def.explodeOnImpact && !this.linearFlight) {
                 this.explode();
             }
 

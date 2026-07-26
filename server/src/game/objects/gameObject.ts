@@ -14,6 +14,7 @@ import type { Building } from "./building";
 import type { DeadBody } from "./deadBody";
 import type { Decal } from "./decal";
 import type { Loot } from "./loot";
+import type { Npc } from "./npc";
 import type { Obstacle } from "./obstacle";
 import type { Player } from "./player";
 import type { Projectile } from "./projectile";
@@ -30,7 +31,8 @@ export type GameObject =
     | Decal
     | Projectile
     | Smoke
-    | Airdrop;
+    | Airdrop
+    | Npc;
 
 export interface DamageParams {
     amount?: number;
@@ -88,6 +90,7 @@ export class ObjectRegister {
         preAllocIds(ObjectType.Projectile, 128);
         preAllocIds(ObjectType.Smoke, 64);
         preAllocIds(ObjectType.Airdrop, 64);
+        preAllocIds(ObjectType.Npc, 128);
     }
 
     getById(id: number) {

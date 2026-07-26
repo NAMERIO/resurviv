@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js-legacy";
 import highResAtlasDefs from "virtual-atlases-high";
 import lowResAtlasDefs from "virtual-atlases-low";
-import { type Atlas, MapDefs } from "../../shared/defs/mapDefs";
+import { type Atlas, type MapDef, MapDefs } from "../../shared/defs/mapDefs";
 import type { AudioManager } from "./audioManager";
 import type { ConfigManager } from "./config";
 import { device } from "./device";
@@ -182,7 +182,7 @@ export class ResourceManager {
     loadMapAssets(mapName: string) {
         console.log("Load map", mapName);
 
-        const mapDef = MapDefs[mapName as keyof typeof MapDefs];
+        const mapDef = MapDefs[mapName as keyof typeof MapDefs] as MapDef | undefined;
         if (!mapDef) {
             throw new Error(`Failed loading mapDef ${this.mapName}`);
         }
@@ -190,7 +190,13 @@ export class ResourceManager {
         //
         // Textures
         //
-        const atlasList = mapDef.assets.atlases;
+        const atlasList = [...mapDef.assets.atlases];
+        const hasNpcSpawns = Object.values(mapDef.gameMode.npcSpawns ?? {}).some(
+            (count) => count > 0,
+        );
+        if (hasNpcSpawns && !atlasList.includes("contact")) {
+            atlasList.push("contact");
+        }
 
         // Unload all atlases that aren't in the new list
         const keys = Object.keys(this.atlases) as Atlas[];

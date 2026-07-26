@@ -35,6 +35,7 @@ import { UnlockDefs } from "../../../../shared/defs/gameObjects/unlockDefs";
 import { MapObjectDefs } from "../../../../shared/defs/mapObjectDefs";
 import type { ObstacleDef, StructureDef } from "../../../../shared/defs/mapObjectsTyping";
 import type { ArenaTeam } from "../../../../shared/defs/miniGame";
+import { NpcDefs } from "../../../../shared/defs/npcDefs";
 import { MapId } from "../../../../shared/defs/types/misc";
 import {
     type Action,
@@ -1621,6 +1622,12 @@ export class Player extends BaseGameObject {
     poisonEffect = false;
     poisonTicker = 0;
     poisonDuration = 0;
+    isTarget = false;
+    infectedEffect = false;
+    playerTransparent = false;
+    contactPhaseTicker = 0;
+    biteEffect = false;
+    biteEffectTicker = 0;
     poisonSource?: GameObject;
     poisonSourceTeamId?: number;
     nitroLaceEffect = false;
@@ -3275,6 +3282,28 @@ export class Player extends BaseGameObject {
             }
         }
 
+        if (this.biteEffectTicker > 0) {
+            this.biteEffectTicker -= dt;
+            if (this.biteEffectTicker <= 0) {
+                this.biteEffectTicker = 0;
+                this.biteEffect = false;
+                this.setDirty();
+            }
+        }
+
+        if (this.infectedEffect) {
+            const moveInterval = NpcDefs.skitter.moveInterval ?? [0.5, 1];
+            this.contactPhaseTicker -= dt;
+            if (this.contactPhaseTicker <= 0) {
+                this.playerTransparent = !this.playerTransparent;
+                this.contactPhaseTicker = util.random(moveInterval[0], moveInterval[1]);
+                this.setDirty();
+            }
+        } else if (this.playerTransparent) {
+            this.playerTransparent = false;
+            this.setDirty();
+        }
+
         //
         // Emote cooldown
         //
@@ -3724,6 +3753,19 @@ export class Player extends BaseGameObject {
                     if (obj.isTree && hasTreeClimbing) continue;
                     if (obj.isSkin) continue;
 
+                    collision = collider.intersectCircle(
+                        obj.collider,
+                        this.pos,
+                        this.rad,
+                    );
+                } else if (obj.__type === ObjectType.Npc) {
+                    if (
+                        obj.dead ||
+                        !obj.collidable ||
+                        !util.sameLayer(obj.layer, this.layer)
+                    ) {
+                        continue;
+                    }
                     collision = collider.intersectCircle(
                         obj.collider,
                         this.pos,
@@ -4783,6 +4825,9 @@ export class Player extends BaseGameObject {
         }
 
         let finalDamage = params.amount!;
+        if (this.infectedEffect) {
+            finalDamage *= 1.2;
+        }
         if (
             params.isExplosion &&
             params.gameSourceType === "mine" &&
@@ -5097,6 +5142,12 @@ export class Player extends BaseGameObject {
         this.animSeq++;
         this.healEffect = false;
         this.poisonEffect = false;
+        this.isTarget = false;
+        this.infectedEffect = false;
+        this.playerTransparent = false;
+        this.contactPhaseTicker = 0;
+        this.biteEffect = false;
+        this.biteEffectTicker = 0;
         this.poisonTicker = 0;
         this.poisonDuration = 0;
         this.poisonSource = undefined;
@@ -7473,6 +7524,15 @@ export class Player extends BaseGameObject {
         }
     }
 
+    applyContactedEffect() {
+        if (this.infectedEffect) return;
+        const moveInterval = NpcDefs.skitter.moveInterval ?? [0.5, 1];
+        this.infectedEffect = true;
+        this.playerTransparent = false;
+        this.contactPhaseTicker = util.random(moveInterval[0], moveInterval[1]);
+        this.setDirty();
+    }
+
     recalculateSpeed(hasTreeClimbing: boolean): void {
         if (this.debug.speedEnabled) {
             this.speed = this.debug.speed;
@@ -7568,6 +7628,10 @@ export class Player extends BaseGameObject {
         const infectedSettings = getInfectedSettings(this.game.miniGame);
         if (infectedSettings && this.arenaTeam === infectedSettings.zombieTeam) {
             this.speed *= infectedSettings.zombieSpeedMultiplier;
+        }
+
+        if (this.infectedEffect) {
+            this.speed *= 1.2;
         }
 
         this.speed = math.clamp(this.speed, 1, 10000);

@@ -43,6 +43,7 @@ import { type GameObject, ObjectRegister } from "./objects/gameObject";
 import { Gas } from "./objects/gas";
 import { LootBarn } from "./objects/loot";
 import { MapIndicatorBarn } from "./objects/mapIndicator";
+import { NpcBarn } from "./objects/npc";
 import { PlaneBarn } from "./objects/plane";
 import { PlayerBarn } from "./objects/player";
 import { ProjectileBarn } from "./objects/projectile";
@@ -159,6 +160,7 @@ export class Game {
     explosionBarn: ExplosionBarn;
     planeBarn: PlaneBarn;
     mapIndicatorBarn: MapIndicatorBarn;
+    npcBarn: NpcBarn;
 
     map: GameMap;
     gas: Gas;
@@ -221,6 +223,7 @@ export class Game {
         this.mapIndicatorBarn = new MapIndicatorBarn();
 
         this.gas = new Gas(this);
+        this.npcBarn = new NpcBarn(this);
 
         this.captureTheFlagManager = new CaptureTheFlagManager(this);
         this.kingOfTheHillManager = new KingOfTheHillManager(this);
@@ -275,6 +278,7 @@ export class Game {
     async init() {
         await this.pluginManager.loadPlugins();
         this.map.init();
+        this.npcBarn.init();
         this.captureTheFlagManager.init();
         this.kingOfTheHillManager.init();
         this.dominationManager.init();
@@ -341,6 +345,10 @@ export class Game {
 
         this.profiler.addSample("players");
         this.playerBarn.update(dt);
+        this.profiler.endSample();
+
+        this.profiler.addSample("npcs");
+        this.npcBarn.update(dt);
         this.profiler.endSample();
 
         this.profiler.addSample("captureTheFlag");
