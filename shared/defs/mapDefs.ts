@@ -2,6 +2,7 @@ import { Main as BattleRoyaleMain } from "../../server/src/battleroyale/maps/map
 import { Beach as BattleRoyaleBeach } from "../../server/src/battleroyale/maps/maps/beachDefs";
 import { Birthday as BattleRoyaleBirthday } from "../../server/src/battleroyale/maps/maps/birthdayDefs";
 import { Cobalt as BattleRoyaleCobalt } from "../../server/src/battleroyale/maps/maps/cobaltDefs";
+import { Contact as BattleRoyaleContact } from "../../server/src/battleroyale/maps/maps/contactDefs";
 import { Desert as BattleRoyaleDesert } from "../../server/src/battleroyale/maps/maps/desertDefs";
 import { Faction as BattleRoyaleFaction } from "../../server/src/battleroyale/maps/maps/factionDefs";
 import { Halloween as BattleRoyaleHalloween } from "../../server/src/battleroyale/maps/maps/halloweenDefs";
@@ -19,6 +20,7 @@ import { WoodsSummer as BattleRoyaleWoodsSummer } from "../../server/src/battler
 import { DeathmatchAmongUs } from "../../server/src/deathmatch/gameModes/amongUs/map";
 import { DeathmatchAprilFools } from "../../server/src/deathmatch/maps/aprilFools";
 import { DeatchmatchCobalt } from "../../server/src/deathmatch/maps/cobalt";
+import { DeathmatchContact } from "../../server/src/deathmatch/maps/contact";
 import { DeatchmatchDesert } from "../../server/src/deathmatch/maps/desert";
 import { FactionPotato } from "../../server/src/deathmatch/maps/faction_potato";
 import { gun_game } from "../../server/src/deathmatch/maps/gun_game";
@@ -62,7 +64,8 @@ export type Atlas =
     | "perks"
     | "valentine"
     | "inferno"
-    | "beach";
+    | "beach"
+    | "contact";
 
 export const MapDefs = {
     main: DeatchmatchMain,
@@ -99,6 +102,7 @@ export const MapDefs = {
     br_savannah: BattleRoyaleSavannah,
     cobalt: DeatchmatchCobalt,
     br_cobalt: BattleRoyaleCobalt,
+    contact: DeathmatchContact,
     turkey: Turkey,
     br_turkey: BattleRoyaleTurkey,
     birthday: Birthday,
@@ -108,6 +112,7 @@ export const MapDefs = {
     inferno: DeathmatchInferno,
     beach: Beach,
     br_beach: BattleRoyaleBeach,
+    br_contact: BattleRoyaleContact,
 
     /* STRIP_FROM_PROD_CLIENT:START */
     test_normal: testNormal,
@@ -174,6 +179,8 @@ export interface MapDef {
         turkeyMode?: boolean;
         spookyKillSounds?: boolean;
         infernoMode?: boolean;
+        contactMode?: boolean;
+        npcSpawns?: Record<string, number>;
         amongUsMode?: boolean;
         amongUsVisionRadius?: number;
         amongUsSpawnOffsets?: Vec2[];
@@ -240,6 +247,7 @@ export interface MapDef {
             count: number;
             weight: number;
             preload?: boolean;
+            npc?: boolean;
         }>
     >;
     mapGen: {

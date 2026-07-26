@@ -24,6 +24,7 @@ export enum DamageType {
     Airstrike,
     Burning,
     Phoenix,
+    Npc,
 }
 
 export enum Action {
@@ -132,7 +133,7 @@ export const GameConfig = {
     // the protocol we originated from was 78
     // remember to bump this every time a serialization function is changed
     // or a definition item added, removed or moved
-    protocolVersion: 1024,
+    protocolVersion: 1031,
     Input,
     EmoteSlot,
     WeaponSlot,
@@ -436,6 +437,7 @@ export const GameConfig = {
         mine: [3, 6, 9, 12],
         frag: [3, 6, 9, 12],
         smoke: [3, 6, 9, 12],
+        skitternade: [10, 20, 30, 40],
         poison_gas: [3, 6, 9, 12],
         flashbang: [2, 4, 6, 8],
         strobe: [2, 3, 4, 5],

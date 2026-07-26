@@ -16,6 +16,7 @@ import type { RoleDef } from "../../../shared/defs/gameObjects/roleDefs";
 import type { ThrowableDef } from "../../../shared/defs/gameObjects/throwableDefs";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import type { ObstacleDef } from "../../../shared/defs/mapObjectsTyping";
+import { NpcDefs } from "../../../shared/defs/npcDefs";
 import {
     Action,
     Anim,
@@ -252,6 +253,8 @@ export class Player implements AbstractObject {
     footRSubmergeSprite = createSprite();
     bodyEffectSprite = createSprite();
     patchSprite = createSprite();
+    slimeSprite = createSprite();
+    aimSprite = createSprite();
     frontSprite = createSprite();
     handLContainer = new PIXI.Container();
     handRContainer = new PIXI.Container();
@@ -329,6 +332,8 @@ export class Player implements AbstractObject {
     downed = false;
     wasDowned = false;
     bleedTicker = 0;
+    biteTicker = 0;
+    biteTickerSound = 0;
     submersion = 0;
     gunRecoilL = 0;
     gunRecoilR = 0;
@@ -394,6 +399,10 @@ export class Player implements AbstractObject {
         m_burnEffect: boolean;
         m_nitroLaceEffect: boolean;
         m_poisonEffect: boolean;
+        m_isTarget: boolean;
+        m_infectedEffect: boolean;
+        m_playerTransparent: boolean;
+        m_biteEffect: boolean;
         m_frozen: boolean;
         m_frozenOri: number;
         m_hasteType: Exclude<HasteType, HasteType.Count>;
@@ -427,6 +436,7 @@ export class Player implements AbstractObject {
         m_streakTimeLeft: number;
         m_streakDamageDealt: number;
         m_streakNextThreshold: number;
+        m_contactPercentage: number;
         m_nitroLaceActive: boolean;
         m_nitroLacePercentage: number;
         m_hideAndSeekBlindTime: number;
@@ -506,6 +516,9 @@ export class Player implements AbstractObject {
         this.bodyContainer.addChild(this.helmetSprite);
         this.bodyContainer.addChild(this.phoenixSprite);
         this.bodyContainer.addChild(this.pyroSprite);
+        // Contact slime must cover worn equipment and player accessory effects.
+        this.bodyContainer.addChild(this.slimeSprite);
+        this.bodyContainer.addChild(this.aimSprite);
 
         this.container.addChild(this.bodyContainer);
 
@@ -579,6 +592,10 @@ export class Player implements AbstractObject {
             m_burnEffect: false,
             m_nitroLaceEffect: false,
             m_poisonEffect: false,
+            m_isTarget: false,
+            m_infectedEffect: false,
+            m_playerTransparent: false,
+            m_biteEffect: false,
             m_frozen: false,
             m_frozenOri: 0,
             m_hasteType: HasteType.None,
@@ -606,6 +623,7 @@ export class Player implements AbstractObject {
             m_streakTimeLeft: 0,
             m_streakDamageDealt: 0,
             m_streakNextThreshold: 300,
+            m_contactPercentage: 0,
             m_nitroLaceActive: false,
             m_nitroLacePercentage: 0,
             m_hideAndSeekBlindTime: 0,
@@ -696,6 +714,10 @@ export class Player implements AbstractObject {
             this.m_netData.m_burnEffect = data.burnEffect;
             this.m_netData.m_nitroLaceEffect = data.nitroLaceEffect;
             this.m_netData.m_poisonEffect = data.poisonEffect;
+            this.m_netData.m_isTarget = data.isTarget;
+            this.m_netData.m_infectedEffect = data.infectedEffect;
+            this.m_netData.m_playerTransparent = data.playerTransparent;
+            this.m_netData.m_biteEffect = data.biteEffect;
             this.m_netData.m_frozen = data.frozen;
             this.m_netData.m_frozenOri = data.frozenOri;
             this.m_netData.m_hasteType = data.hasteType;
@@ -794,6 +816,10 @@ export class Player implements AbstractObject {
             this.m_localData.m_streakTimeLeft = data.activeStreakTimeLeft ?? 0;
             this.m_localData.m_streakDamageDealt = data.streakDamageDealt ?? 0;
             this.m_localData.m_streakNextThreshold = data.streakNextThreshold ?? 300;
+        }
+
+        if (data.contactDirty) {
+            this.m_localData.m_contactPercentage = data.contactPercentage ?? 0;
         }
 
         if (data.nitroLaceDirty) {
@@ -1349,6 +1375,43 @@ export class Player implements AbstractObject {
                 });
             }
         }
+
+        this.biteTicker -= dt;
+        const playerBitten = !this.m_netData.m_dead && this.m_netData.m_biteEffect;
+        if (playerBitten && this.biteTicker < 0) {
+            const vel = v2.rotate(
+                v2.mul(this.m_dir, -1),
+                ((Math.random() - 0.5) * Math.PI) / 3,
+            );
+            vel.y *= -1;
+            particleBarn.addParticle(
+                "bite",
+                this.renderLayer,
+                v2.create(0, 0),
+                v2.mul(vel, camera.m_ppu),
+                1,
+                Math.random() * Math.PI * 2,
+                this.container,
+                this.renderZOrd + 1,
+            );
+        }
+
+        this.biteTickerSound -= dt;
+        if (playerBitten && this.biteTickerSound < 0) {
+            this.biteTickerSound = GameConfig.player.bleedTickRate * 0.5;
+            audioManager.playSound("skitter_bite_01", {
+                channel: "hits",
+                soundPos: this.m_pos,
+                fallOff: 3,
+                layer: this.layer,
+                filter: "muffled",
+            });
+        }
+
+        this.bodyContainer.alpha =
+            this.m_netData.m_infectedEffect && this.m_netData.m_playerTransparent
+                ? 0.65
+                : 1;
 
         // Only play swaps for local players.
         this.gunSwitchCooldown -= dt;
@@ -1942,6 +2005,24 @@ export class Player implements AbstractObject {
             this.patchSprite.visible = true;
         } else {
             this.patchSprite.visible = false;
+        }
+
+        if (map.contactMode && this.m_netData.m_infectedEffect) {
+            this.slimeSprite.texture = PIXI.Texture.from("slime.img");
+            this.slimeSprite.visible = true;
+            this.slimeSprite.scale.set(0.75, 0.75);
+            this.slimeSprite.tint = 0x9bff99;
+        } else {
+            this.slimeSprite.visible = false;
+        }
+
+        if (map.contactMode && this.m_netData.m_isTarget) {
+            this.aimSprite.texture = PIXI.Texture.from("map-target.img");
+            this.aimSprite.visible = true;
+            this.aimSprite.scale.set(0.5, 0.5);
+            this.aimSprite.tint = 0xffffff;
+        } else {
+            this.aimSprite.visible = false;
         }
 
         // Hands
@@ -2972,6 +3053,45 @@ export class Player implements AbstractObject {
                     }
                     if (res) {
                         const def = MapObjectDefs[obstacle.type] as ObstacleDef;
+                        const closestPt = v2.add(
+                            meleeCol.pos,
+                            v2.mul(v2.neg(res.dir), meleeCol.rad - res.pen),
+                        );
+                        const vel = v2.rotate(
+                            v2.mul(res.dir, 7.5),
+                            ((Math.random() - 0.5) * Math.PI) / 3,
+                        );
+                        hits.push({
+                            pen: res.pen,
+                            prio: 1,
+                            pos: closestPt,
+                            vel,
+                            layer: this.renderLayer,
+                            zOrd: this.renderZOrd,
+                            particle: def.hitParticle,
+                            sound: def.sound.punch,
+                            soundFn: "playGroup",
+                        });
+                    }
+                }
+            }
+            const npcs = animCtx.map?.m_npcPool.m_getPool()!;
+            for (let i = 0; i < npcs.length; i++) {
+                const npc = npcs[i];
+                const def = NpcDefs[npc.type];
+                if (
+                    npc.active &&
+                    !npc.dead &&
+                    def.destructible &&
+                    def.height >= GameConfig.player.meleeHeight &&
+                    util.sameLayer(npc.layer, this.layer & 1)
+                ) {
+                    const res = collider.intersectCircle(
+                        npc.collider,
+                        meleeCol.pos,
+                        meleeCol.rad,
+                    );
+                    if (res) {
                         const closestPt = v2.add(
                             meleeCol.pos,
                             v2.mul(v2.neg(res.dir), meleeCol.rad - res.pen),

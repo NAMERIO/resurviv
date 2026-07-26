@@ -6,6 +6,7 @@ import {
 import { PerkProperties } from "../../../../shared/defs/gameObjects/perkDefs";
 import { MapObjectDefs } from "../../../../shared/defs/mapObjectDefs";
 import type { ObstacleDef } from "../../../../shared/defs/mapObjectsTyping";
+import type { NpcDef } from "../../../../shared/defs/npcDefs";
 import { type DamageType, GameConfig } from "../../../../shared/gameConfig";
 import { Constants } from "../../../../shared/net/net";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
@@ -16,6 +17,7 @@ import { util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import type { Game } from "../game";
 import type { DamageParams, GameObject } from "./gameObject";
+import type { Npc } from "./npc";
 import type { Obstacle } from "./obstacle";
 import type { Player } from "./player";
 
@@ -24,7 +26,7 @@ import type { Player } from "./player";
 
 interface BulletCollision {
     type: "obstacle" | "player" | "pan" | "lasr_swrd";
-    obj?: Player | Obstacle;
+    obj?: Player | Obstacle | Npc;
     obstacleType?: string;
     collidable: boolean;
     point: Vec2;
@@ -473,6 +475,28 @@ export class Bullet {
                         dist: v2.lengthSqr(v2.sub(res.point, this.startPos)),
                     });
                 }
+            } else if (obj.__type === ObjectType.Npc) {
+                if (
+                    obj.dead ||
+                    !util.sameLayer(obj.layer, this.layer) ||
+                    obj.height < GameConfig.bullet.height ||
+                    obj.__id === this.reflectObjId
+                ) {
+                    continue;
+                }
+
+                const res = collider.intersectSegment(obj.collider, posOld, this.pos);
+                if (res) {
+                    collisions.push({
+                        type: "obstacle",
+                        obj,
+                        obstacleType: obj.type,
+                        collidable: obj.collidable,
+                        point: res.point,
+                        normal: res.normal,
+                        dist: v2.lengthSqr(v2.sub(res.point, this.startPos)),
+                    });
+                }
             } else if (obj.__type === ObjectType.Player) {
                 if (
                     !(
@@ -657,7 +681,7 @@ export class Bullet {
             const col = collisions[i];
 
             if (col.type == "obstacle") {
-                const mapDef = MapObjectDefs[col.obstacleType!] as ObstacleDef;
+                const mapDef = MapObjectDefs[col.obstacleType!] as ObstacleDef | NpcDef;
                 this.player?.punishHideAndSeekWrongPropHit();
 
                 const def = GameObjectDefs[this.bulletType] as BulletDef;

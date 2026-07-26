@@ -21,6 +21,7 @@ import { debugLines } from "./debug/debugLines";
 import { device } from "./device";
 import { Building } from "./objects/building";
 import type { DecalBarn } from "./objects/decal";
+import { Npc } from "./objects/npc";
 import { Pool } from "./objects/objectPool";
 import { Obstacle } from "./objects/obstacle";
 import type { Emitter, ParticleBarn } from "./objects/particles";
@@ -113,6 +114,7 @@ export class Map {
     perkMode = false;
     turkeyMode = false;
     infernoMode = false;
+    contactMode = false;
     seed = 0;
     width = 0;
     height = 0;
@@ -139,6 +141,7 @@ export class Map {
     m_obstaclePool = new Pool(Obstacle);
     m_buildingPool = new Pool(Building);
     m_structurePool = new Pool(Structure);
+    m_npcPool = new Pool(Npc);
     deadObstacleIds: number[] = [];
     deadCeilingIds: number[] = [];
     solvedPuzzleIds: number[] = [];
@@ -161,6 +164,9 @@ export class Map {
         const buildings = this.m_buildingPool.m_getPool();
         for (let i = 0; i < buildings.length; i++) {
             buildings[i].m_free();
+        }
+        for (const npc of this.m_npcPool.m_getPool()) {
+            npc.m_free();
         }
         this.mapTexture?.destroy(true);
         this.display.ground.destroy({
@@ -192,6 +198,11 @@ export class Map {
         this.perkMode = !!this.mapDef.gameMode.perkMode;
         this.turkeyMode = !!this.mapDef.gameMode.turkeyMode;
         this.infernoMode = !!this.mapDef.gameMode.infernoMode;
+        this.contactMode =
+            !!this.mapDef.gameMode.contactMode ||
+            Object.values(this.mapDef.gameMode.npcSpawns ?? {}).some(
+                (count) => count > 0,
+            );
         this.seed = mapMsg.seed;
         this.width = mapMsg.width;
         this.height = mapMsg.height;
@@ -291,6 +302,12 @@ export class Map {
                 structure.update(dt, this, activePlayer, ambience);
                 structure.render(camera, debug, activePlayer.layer);
             }
+        }
+
+        for (const npc of this.m_npcPool.m_getPool()) {
+            if (!npc.active) continue;
+            npc.update(dt, this, particleBarn, audioManager, activePlayer, renderer);
+            npc.render(camera);
         }
 
         if (this.cameraEmitter) {

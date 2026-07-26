@@ -4,6 +4,7 @@ import { BulletDefs } from "../../../shared/defs/gameObjects/bulletDefs";
 import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import type { ObstacleDef } from "../../../shared/defs/mapObjectsTyping";
+import { type NpcDef, NpcDefs } from "../../../shared/defs/npcDefs";
 import { GameConfig } from "../../../shared/gameConfig";
 import type { Bullet } from "../../../shared/net/updateMsg";
 import { coldet } from "../../../shared/utils/coldet";
@@ -287,6 +288,32 @@ export class BulletBarn {
                         }
                     }
                 }
+                const npcs = map.m_npcPool.m_getPool();
+                for (let i = 0; i < npcs.length; i++) {
+                    const npc = npcs[i];
+                    if (
+                        npc.active &&
+                        !npc.dead &&
+                        util.sameLayer(npc.layer, b.layer) &&
+                        NpcDefs[npc.type].height >= GameConfig.bullet.height &&
+                        (b.reflectCount <= 0 || npc.__id !== b.reflectObjId)
+                    ) {
+                        const res = collider.intersectSegment(
+                            npc.collider,
+                            posOld,
+                            b.pos,
+                        );
+                        if (res) {
+                            colObjs.push({
+                                type: "obstacle",
+                                obstacleType: npc.type,
+                                collidable: NpcDefs[npc.type].collidable,
+                                point: res.point,
+                                normal: res.normal,
+                            });
+                        }
+                    }
+                }
                 for (let C = 0; C < players.length; C++) {
                     const player = players[C];
                     if (
@@ -441,7 +468,9 @@ export class BulletBarn {
                 for (let i = 0; i < colObjs.length; i++) {
                     const col = colObjs[i];
                     if (col.type == "obstacle") {
-                        const mapDef = MapObjectDefs[col?.obstacleType!] as ObstacleDef;
+                        const mapDef = MapObjectDefs[col?.obstacleType!] as
+                            | ObstacleDef
+                            | NpcDef;
                         const bulletDef = BulletDefs[b.bulletType];
                         const reflectOnHit =
                             !!bulletDef.reflectOnAnyObstacle || !!mapDef.reflectBullets;

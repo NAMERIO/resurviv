@@ -20,6 +20,8 @@ describe.for(maps)("Map %s", (map) => {
                 itemsSet.add(item.name);
                 if (item.name.startsWith("tier_")) {
                     expect(item.name).toBeValidLootTier();
+                } else if (item.npc) {
+                    expect(item.name).toBeValidMapObj("npc");
                 } else if (item.name !== "") {
                     expect(item.name).toBeValidLoot();
                 }

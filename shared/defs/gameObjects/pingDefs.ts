@@ -11,6 +11,12 @@ export interface PingDef {
     mapEvent?: boolean;
     worldDisplay?: boolean;
     tint?: number;
+    mapIndicator?: {
+        sprite: string;
+        tint: number;
+        pulse: boolean;
+        pulseTint: number;
+    };
 }
 
 export const PingDefs: Record<string, PingDef> = {
@@ -134,5 +140,18 @@ export const PingDefs: Record<string, PingDef> = {
         mapEvent: true,
         worldDisplay: false,
         tint: 0xd8ff,
+    },
+    motherShip: {
+        type: "ping",
+        texture: "player-king-woods.img",
+        mapTexture: "ping-map-woods-king.img",
+        sound: "helmet03_forest_pickup_01",
+        pingMap: true,
+        mapIndicator: {
+            sprite: "ping-map-motherShip.img",
+            tint: 0xffffff,
+            pulse: true,
+            pulseTint: 0x00ff00,
+        },
     },
 };

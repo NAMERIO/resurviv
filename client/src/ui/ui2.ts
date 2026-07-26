@@ -223,6 +223,7 @@ class UiState {
     health = GameConfig.player.health as number;
     boost = 0;
     downed = false;
+    contact = 0;
     loading: number = 0;
 }
 
@@ -295,6 +296,9 @@ export class UiManager2 {
         health: {
             inner: domElemById("ui-health-actual"),
             depleted: domElemById("ui-health-depleted"),
+        },
+        contact: {
+            bar: domElemById("contact-bar-img") as HTMLImageElement,
         },
         boost: {
             div: domElemById("ui-boost-counter"),
@@ -832,6 +836,7 @@ export class UiManager2 {
             : math.max(activePlayer.m_localData.m_health, 1);
         state.boost = activePlayer.m_localData.m_boost;
         state.downed = activePlayer.m_netData.m_downed;
+        state.contact = activePlayer.m_localData.m_contactPercentage;
 
         // Interaction
         let interactionType = InteractionType.None;
@@ -1463,6 +1468,9 @@ export class UiManager2 {
             }
             dom.boost.div.style.opacity = String(state.boost == 0 ? 0 : 1);
         }
+        if (patch.contact) {
+            dom.contact.bar.style.clipPath = `inset(0 ${100 - state.contact}% 0 0)`;
+        }
         if (patch.interaction.type) {
             dom.interaction.div.style.display =
                 state.interaction.type == InteractionType.None ? "none" : "flex";
@@ -1754,12 +1762,15 @@ export class UiManager2 {
                 return `${targetName} ${killTxt}`;
             }
             case DamageType.Gas: {
-                if (sourceType == "poison_gas" && killerName) {
+                if (
+                    (sourceType == "poison_gas" || sourceType == "skitternade") &&
+                    killerName
+                ) {
                     return `${killerName} ${this.localization.translate(
                         downed ? "game-knocked-out" : "game-killed",
                     )} ${targetName} ${this.localization.translate(
                         "game-with",
-                    )} ${this.localization.translate("game-poison_gas")}`;
+                    )} ${this.localization.translate(`game-${sourceType}`)}`;
                 }
                 let killName;
                 let killTxt;
@@ -1810,6 +1821,13 @@ export class UiManager2 {
                     downed ? "game-knocked-out" : "game-killed",
                 );
                 return `Phoenix ${killTxt} ${targetName}`;
+            }
+            case DamageType.Npc: {
+                const killName = this.localization.translate(`game-${sourceType}`);
+                const killTxt = this.localization.translate(
+                    downed ? "game-knocked-out" : "game-killed",
+                );
+                return `${killName} ${killTxt} ${targetName}`;
             }
             default:
                 return "";
@@ -1940,7 +1958,14 @@ export class UiManager2 {
                 killerTxt = "Burning Effect";
             } else if (damageType == GameConfig.DamageType.Phoenix) {
                 killerTxt = "Phoenix";
+            } else if (damageType == GameConfig.DamageType.Npc) {
+                killerTxt = this.localization.translate(`game-${sourceType}`);
             }
+        }
+        if (damageType == GameConfig.DamageType.Npc) {
+            return `${killerTxt} ${this.localization.translate(
+                "game-knocked-out",
+            )} ${youTxt}`;
         }
         let damageTxt = this.localization.translate(`game-${sourceType}`);
         if (killerName && damageType == GameConfig.DamageType.Airstrike) {

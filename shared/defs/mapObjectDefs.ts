@@ -2,6 +2,7 @@ import { collider } from "../utils/collider";
 import { util } from "../utils/util";
 import { v2 } from "../utils/v2";
 import { AmongUsSecurityCameraDefs } from "./amongUsSecurityCameraDefs";
+import { NpcDefs } from "./npcDefs";
 import type {
     BuildingDef,
     LootSpawnDef,
@@ -11097,13 +11098,33 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             residue: "map-bush-res-06.img",
         },
     }),
-    bush_13: createBush({
+    bush_13_valentine: createBush({
         collision: collider.createCircle(v2.create(0, 0), 2.5),
         map: { display: true, color: 14853306, scale: 1 },
         img: {
             sprite: "map-bush-13.img",
             residue: "map-bush-res-13.img",
         },
+    }),
+    bush_13: createBush({
+        img: { sprite: "map-bush-13.img" },
+        map: { display: true, color: 0x24201c },
+    }),
+    bush_13b: createBush({
+        hitParticle: "leafRiver",
+        explodeParticle: "leafRiver",
+        terrain: {
+            grass: true,
+            river: { centerWeight: 0.3 },
+            riverShore: true,
+        },
+        sound: { enter: "bush_enter_02" },
+        img: { sprite: "map-bush-13b.img" },
+        map: { display: true, color: 0x24201c },
+    }),
+    bush_13c: createBush({
+        img: { sprite: "map-bush-13c.img" },
+        map: { display: true, color: 0x24201c },
     }),
     bush_14b: createBush({
         collision: collider.createCircle(v2.create(0, 0), 2.5),
@@ -11450,6 +11471,26 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         img: { sprite: "map-couch-03.img" },
     }),
     crate_01: createCrate({}),
+    crate_egg: createCrate({
+        health: 120,
+        loot: [tierLoot("tier_contact", 3, 3)],
+        collision: collider.createCircle(v2.create(0, 0), 1.2),
+        map: { display: false },
+        terrain: { grass: true, beach: false },
+        img: {
+            sprite: "map-crate-egg.img",
+            residue: "map-contact-egg-res-01.img",
+            scale: 0.5,
+        },
+        sound: {
+            bullet: "egg_hit_01",
+            punch: "egg_hit_01",
+            explode: "egg_break_01",
+            enter: "none",
+        },
+        hitParticle: "eggParticle",
+        explodeParticle: "eggParticle",
+    }),
     ctf_flag_red: {
         type: "obstacle",
         obstacleType: "ctf_flag",
@@ -13346,6 +13387,12 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         loot: [tierLoot("tier_surviv", 2, 3), autoLoot("groza", 1)],
     }),
     stone_03: createRiverStone({}),
+    stone_03h: createRiverStone({
+        img: {
+            sprite: "map-stone-11.img",
+            residue: "map-stone-res-11.img",
+        },
+    }),
     stone_03tw: createRiverStone({
         img: {
             sprite: "map-stone-03tw.img",
@@ -13806,6 +13853,10 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         explodeParticle: ["woodPlank", "clothBreak"],
     }),
     tree_01: createTree({}),
+    tree_19: createTree({
+        img: { sprite: "map-tree-19.img" },
+        map: { display: true, color: 0x24201c },
+    }),
     tree_01cb: createTree({
         scale: {
             createMin: 1.1,
@@ -18098,6 +18149,24 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         ],
         map: { displayType: "bush_07" },
     }),
+    cache_contact: createCache({
+        mapObjects: [
+            {
+                type: "bush_13c",
+                pos: v2.create(0, 0),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "loot_tier_leaf_pile",
+                pos: v2.create(0, 0),
+                scale: 1,
+                ori: 0,
+                inheritOri: false,
+            },
+        ],
+        map: { displayType: "bush_13c" },
+    }),
     cache_06bh: createCache({
         mapObjects: [
             {
@@ -19536,6 +19605,10 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         groundTintLt: 0x3e4954,
         groundTintDk: 0x2e363f,
     }),
+    logging_complex_01ct: createLoggingComplex({
+        groundTintLt: 0x35416b,
+        groundTintDk: 0x293354,
+    }),
     logging_complex_02su: createLoggingComplex2({ groundTintDk: 0x4e7d13 }),
     logging_complex_02x: createLoggingComplex2({ groundTintDk: 0x9e9e9e }),
     logging_complex_03: createLoggingComplex3({}),
@@ -19629,6 +19702,28 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             {
                 bound: collider.createAabbExtents(v2.create(0, 2), v2.create(5, 50.5)),
                 color: 0x2e363f,
+                roughness: 0.1,
+                offsetDist: 1,
+            },
+        ],
+    }),
+    desert_town_02ct: createDesertTown2({
+        mapGroundPatches: [
+            {
+                bound: collider.createAabbExtents(v2.create(0, -3), v2.create(45, 55)),
+                color: 0x35416b,
+                roughness: 0.1,
+                offsetDist: 1,
+            },
+            {
+                bound: collider.createAabbExtents(v2.create(0, 0), v2.create(46, 10)),
+                color: 0x293354,
+                roughness: 0.1,
+                offsetDist: 1,
+            },
+            {
+                bound: collider.createAabbExtents(v2.create(0, 2), v2.create(5, 50.5)),
+                color: 0x293354,
                 roughness: 0.1,
                 offsetDist: 1,
             },
@@ -36472,4 +36567,310 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
         ],
     },
+    crop_circle_01: {
+        type: "building",
+        ori: 0,
+        map: {
+            display: true,
+            shapes: [
+                {
+                    collider: collider.createAabbExtents(
+                        v2.create(0, 0),
+                        v2.create(12, 16),
+                    ),
+                    color: 0x212a46,
+                },
+            ],
+        },
+        terrain: { grass: true, beach: false },
+        floor: {
+            surfaces: [
+                {
+                    type: "grass",
+                    collision: [
+                        collider.createAabbExtents(
+                            v2.create(0, 0),
+                            v2.create(12, 16),
+                        ),
+                    ],
+                },
+            ],
+            imgs: [
+                {
+                    sprite: "map-crop-circle-01.img",
+                    pos: v2.create(0, 0),
+                    scale: 0.3,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+            ],
+        },
+        ceiling: { zoomRegions: [], vision: {}, imgs: [] },
+        mapObjects: [
+            {
+                type: "crate_egg",
+                pos: v2.create(0, 6),
+                scale: 1,
+                ori: 0,
+            },
+        ],
+    },
+    crop_circle_02: {
+        type: "building",
+        ori: 0,
+        map: {
+            display: true,
+            shapes: [
+                {
+                    collider: collider.createAabbExtents(
+                        v2.create(0, 0),
+                        v2.create(12, 11),
+                    ),
+                    color: 0x212a46,
+                },
+            ],
+        },
+        terrain: { grass: true, beach: false },
+        floor: {
+            surfaces: [
+                {
+                    type: "grass",
+                    collision: [
+                        collider.createAabbExtents(
+                            v2.create(0, 0),
+                            v2.create(12, 11),
+                        ),
+                    ],
+                },
+            ],
+            imgs: [
+                {
+                    sprite: "map-crop-circle-02.img",
+                    pos: v2.create(0, 0),
+                    scale: 0.3,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+            ],
+        },
+        ceiling: { zoomRegions: [], vision: {}, imgs: [] },
+        mapObjects: [
+            {
+                type: "crate_egg",
+                pos: v2.create(0, 0),
+                scale: 1,
+                ori: 0,
+            },
+        ],
+    },
+    crop_circle_03: {
+        type: "building",
+        ori: 0,
+        map: {
+            display: true,
+            shapes: [
+                {
+                    collider: collider.createAabbExtents(
+                        v2.create(0, 0),
+                        v2.create(8, 12),
+                    ),
+                    color: 0x212a46,
+                },
+            ],
+        },
+        terrain: { grass: true, beach: false },
+        floor: {
+            surfaces: [
+                {
+                    type: "grass",
+                    collision: [
+                        collider.createAabbExtents(
+                            v2.create(0, 0),
+                            v2.create(8, 12),
+                        ),
+                    ],
+                },
+            ],
+            imgs: [
+                {
+                    sprite: "map-crop-circle-03.img",
+                    pos: v2.create(0, 0),
+                    scale: 0.3,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+            ],
+        },
+        ceiling: { zoomRegions: [], vision: {}, imgs: [] },
+        mapObjects: [
+            {
+                type: "crate_egg",
+                pos: v2.create(0, -3),
+                scale: 1,
+                ori: 0,
+            },
+        ],
+    },
+    ...NpcDefs,
 };
+
+// Contact variants reuse the original geometry and object layouts while applying
+// the event-specific art, map colors, terrain rules, and linked layer names.
+MapObjectDefs.chest_03i = createRiverChest({
+    img: { sprite: "map-chest-03i.img" },
+    loot: [tierLoot("tier_chest", 3, 5), autoLoot("outfitWaterElem", 1)],
+});
+
+const conchCompartment = MapObjectDefs.bunker_conch_compartment_01 as BuildingDef;
+MapObjectDefs.bunker_conch_compartment_05 = util.mergeDeep({}, conchCompartment, {
+    floor: {
+        imgs: [
+            {
+                sprite: "map-bunker-conch-compartment-floor-03e.img",
+                pos: v2.create(-3, -0.75),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
+            },
+            {
+                sprite: "map-bunker-conch-compartment-floor-03f.img",
+                pos: v2.create(9.75, -17.5),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
+            },
+        ],
+    },
+}) as BuildingDef;
+
+const conchSublevel = MapObjectDefs.bunker_conch_sublevel_01 as BuildingDef;
+MapObjectDefs.bunker_conch_sublevel_05 = util.mergeDeep({}, conchSublevel, {
+    floor: {
+        imgs: [
+            {
+                sprite: "map-bunker-conch-chamber-floor-01e.img",
+                pos: v2.create(4, 5),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
+            },
+            {
+                sprite: "map-bunker-conch-chamber-floor-02e.img",
+                pos: v2.create(34.86, -29.9),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
+            },
+        ],
+    },
+    mapObjects: conchSublevel.mapObjects.map((obj, idx, objects) =>
+        idx === objects.length - 1 ? { ...obj, type: "bunker_conch_compartment_05" } : obj,
+    ),
+}) as BuildingDef;
+
+MapObjectDefs.bunker_structure_04d = util.mergeDeep(
+    {},
+    MapObjectDefs.bunker_structure_04,
+    {
+        terrain: {
+            grass: false,
+            waterEdge: {
+                dir: v2.create(-1, 0),
+                distMin: 15,
+                distMax: 16,
+            },
+        },
+        layers: [
+            { type: "bunker_conch_01", pos: v2.create(0, 0), ori: 0 },
+            { type: "bunker_conch_sublevel_05", pos: v2.create(0, 0), ori: 0 },
+        ],
+    },
+) as StructureDef;
+
+const crossing = MapObjectDefs.bunker_crossing_01 as BuildingDef;
+MapObjectDefs.bunker_crossing_05 = util.mergeDeep({}, crossing, {
+    map: {
+        display: true,
+        shapes: [
+            {
+                collider: collider.createAabbExtents(v2.create(0, 0), v2.create(5, 5)),
+                color: 0x562cff,
+            },
+        ],
+    },
+    floor: {
+        surfaces: [],
+        imgs: [
+            {
+                sprite: "map-bunker-crossing-floor-01e.img",
+                pos: v2.create(0, 0),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
+            },
+        ],
+    },
+}) as BuildingDef;
+
+const crossingCompartment = MapObjectDefs.bunker_crossing_compartment_01 as BuildingDef;
+MapObjectDefs.bunker_crossing_compartment_01d = util.mergeDeep(
+    {},
+    crossingCompartment,
+    {
+        floor: {
+            imgs: [
+                {
+                    sprite: "map-bunker-crossing-compartment-floor-02e.img",
+                    pos: v2.create(-22.5, -10),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+                {
+                    sprite: "map-bunker-crossing-compartment-floor-01e.img",
+                    pos: v2.create(4, 3),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+            ],
+        },
+    },
+) as BuildingDef;
+
+const crossingSublevel = MapObjectDefs.bunker_crossing_sublevel_01 as BuildingDef;
+const crossingFloorImgs = crossingSublevel.floor.imgs.map((img, idx) =>
+    idx === 1 || idx === 6
+        ? { ...img, sprite: "map-bunker-crossing-chamber-floor-02e.img" }
+        : img,
+);
+MapObjectDefs.bunker_crossing_sublevel_01d = util.mergeDeep({}, crossingSublevel, {
+    floor: { imgs: crossingFloorImgs },
+    mapObjects: crossingSublevel.mapObjects.map((obj, idx, objects) =>
+        idx === objects.length - 1
+            ? { ...obj, type: "bunker_crossing_compartment_01d" }
+            : obj,
+    ),
+}) as BuildingDef;
+
+MapObjectDefs.bunker_structure_05d = util.mergeDeep(
+    {},
+    MapObjectDefs.bunker_structure_05,
+    {
+        map: { color: 0x684dd1 },
+        terrain: {
+            grass: true,
+            beach: false,
+            bridge: { nearbyWidthMult: 1.2 },
+            spawnPriority: 100,
+        },
+        layers: [
+            { type: "bunker_crossing_05", pos: v2.create(0, 0), ori: 0 },
+            {
+                type: "bunker_crossing_sublevel_01d",
+                pos: v2.create(0, 0),
+                ori: 0,
+            },
+        ],
+    },
+) as StructureDef;

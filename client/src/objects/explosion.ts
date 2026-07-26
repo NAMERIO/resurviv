@@ -362,6 +362,20 @@ export interface ExplotionDef {
 }
 
 const ExplosionEffectDefs: Record<string, ExplotionDef> = {
+    motherShip_cannon: {
+        burst: {
+            particle: "explosionMotherShip",
+            scale: 1.25,
+            sound: {
+                grass: "explosion_01",
+                water: "explosion_02",
+            },
+        },
+        rippleCount: 12,
+        shakeStr: 0.25,
+        shakeDur: 0.4,
+        lifetime: 2,
+    },
     frag: {
         burst: {
             particle: "explosionBurst",

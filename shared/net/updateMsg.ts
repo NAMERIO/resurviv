@@ -67,6 +67,11 @@ function serializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
         }
     }
 
+    s.writeBoolean(data.contactDirty);
+    if (data.contactDirty) {
+        s.writeFloat(data.contactPercentage, 0, 100, 8);
+    }
+
     s.writeBoolean(data.nitroLaceDirty);
     if (data.nitroLaceDirty) {
         s.writeFloat(data.nitroLacePercentage, 0, 100, 8);
@@ -151,6 +156,10 @@ function deserializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
         } else {
             data.activeStreakTimeLeft = 0;
         }
+    }
+    data.contactDirty = s.readBoolean();
+    if (data.contactDirty) {
+        data.contactPercentage = s.readFloat(0, 100, 8);
     }
     data.nitroLaceDirty = s.readBoolean();
     if (data.nitroLaceDirty) {
@@ -948,6 +957,8 @@ export interface LocalDataWithDirty extends LocalData {
     streakReady: boolean;
     activeStreakActive: boolean;
     activeStreakTimeLeft: number;
+    contactDirty: boolean;
+    contactPercentage: number;
     nitroLaceDirty: boolean;
     nitroLacePercentage: number;
     hideAndSeekBlindDirty: boolean;

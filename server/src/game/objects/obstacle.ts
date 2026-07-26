@@ -496,6 +496,15 @@ export class Obstacle extends BaseGameObject {
                     const item = this.game.lootBarn.getLootTable(lootTierOrItem.tier!);
                     if (!item) continue;
 
+                    if (item.npc) {
+                        this.game.npcBarn.addNpc(
+                            item.name,
+                            v2.add(lootPos, v2.mul(v2.randomUnit(), 0.2)),
+                            this.layer,
+                        );
+                        continue;
+                    }
+
                     this.game.lootBarn.addLoot(
                         item.name,
                         v2.add(lootPos, v2.mul(v2.randomUnit(), 0.2)),

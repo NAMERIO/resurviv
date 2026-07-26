@@ -1344,6 +1344,27 @@ export class WeaponManager {
                         });
                     }
                 }
+            } else if (obj.__type === ObjectType.Npc) {
+                if (
+                    !obj.dead &&
+                    obj.height >= GameConfig.player.meleeHeight &&
+                    util.sameLayer(obj.layer, this.player.layer & 1)
+                ) {
+                    const collision = collider.intersectCircle(
+                        obj.collider,
+                        coll.pos,
+                        coll.rad,
+                    );
+                    if (collision) {
+                        hits.push({
+                            obj,
+                            pen: collision.pen,
+                            prio: 1,
+                            pos: v2.copy(obj.pos),
+                            dir: collision.dir,
+                        });
+                    }
+                }
             } else if (obj.__type === ObjectType.Player) {
                 const player = obj;
                 if (
@@ -1429,6 +1450,15 @@ export class WeaponManager {
                     weaponSourceType: this.activeWeapon,
                 });
                 if (obj.interactable) obj.interact(this.player);
+            } else if (obj.__type === ObjectType.Npc) {
+                obj.damage({
+                    amount: meleeDef.damage * meleeDef.obstacleDamage,
+                    gameSourceType: this.activeWeapon,
+                    damageType: GameConfig.DamageType.Player,
+                    source: this.player,
+                    dir: v2.neg(hit.dir),
+                    weaponSourceType: this.activeWeapon,
+                });
             } else if (obj.__type === ObjectType.Player) {
                 const meleeDamage =
                     isAmongUsMiniGame(this.player.game.miniGame) &&

@@ -902,6 +902,14 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
             path: "audio/ui/stow_weapon_01.mp3",
             volume: 1,
         },
+        mothership_mov_01: {
+            path: "audio/sfx/mothership_mov_01.mp3",
+            volume: 1,
+        },
+        mothership_reload_01: {
+            path: "audio/sfx/mothership_reload_01.mp3",
+            volume: 1,
+        },
     },
     hits: {
         stone_bullet_hit_01: {
@@ -1023,7 +1031,7 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
         egg_hit_01: {
             path: "audio/hits/egg_hit_01.mp3",
             volume: 1,
-            preload: false,
+            canCoalesce: true,
         },
         player_bullet_hit_01: {
             path: "audio/hits/player_bullet_hit_01.mp3",
@@ -1117,6 +1125,17 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
         lasr_hit_01: {
             path: "audio/hits/lasr_hit_01.mp3",
             volume: 1.0,
+        },
+        skitter_bite_01: {
+            path: "audio/hits/skitter_bite_01.mp3",
+            volume: 2,
+            canCoalesce: true,
+        },
+        skitter_hit_01: {
+            path: "audio/hits/skitter_hit_01.mp3",
+            volume: 3,
+            canCoalesce: true,
+            maxInstances: 3,
         },
     },
     sfx: {
@@ -1222,7 +1241,6 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
         egg_break_01: {
             path: "audio/sfx/egg_break_01.mp3",
             volume: 1,
-            preload: false,
         },
         footstep_grass_01: {
             path: "audio/sfx/footstep_grass_01.mp3",
@@ -1640,6 +1658,18 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
             volume: 1,
             preload: false,
         },
+        footstep_skitter_01: {
+            path: "audio/sfx/footstep_skitter_01.mp3",
+            volume: 1,
+        },
+        mothership_shoot_01: {
+            path: "audio/sfx/mothership_shoot_01.mp3",
+            volume: 1,
+        },
+        skitter_destroy_01: {
+            path: "audio/sfx/skitter_destroy_01.mp3",
+            volume: 1,
+        },
     },
     ambient: {
         ambient_wind_01: {
@@ -1995,6 +2025,14 @@ const Groups: Record<string, { channel: string; sounds: string[] }> = {
         channel: "sfx",
         sounds: ["footstep_carpet_01"],
     },
+    footstep_skitter: {
+        channel: "sfx",
+        sounds: ["footstep_skitter_01"],
+    },
+    mothership_shoot: {
+        channel: "sfx",
+        sounds: ["mothership_shoot_01"],
+    },
     player_bullet_hit: {
         channel: "hits",
         sounds: ["player_bullet_hit_01"],
@@ -2090,6 +2128,10 @@ const Groups: Record<string, { channel: string; sounds: string[] }> = {
     tree_bullet: {
         channel: "hits",
         sounds: ["wood_bullet_hit_01"],
+    },
+    skitter_hit: {
+        channel: "hits",
+        sounds: ["skitter_hit_01"],
     },
     egg_hit: {
         channel: "hits",

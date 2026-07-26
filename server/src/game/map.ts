@@ -211,6 +211,7 @@ export class GameMap {
     potatoMode: boolean;
     sniperMode: boolean;
     amongUsMode: boolean;
+    contactMode: boolean;
 
     mapStream = new MsgStream(new ArrayBuffer(1 << 16));
 
@@ -305,6 +306,11 @@ export class GameMap {
         this.potatoMode = !!this.mapDef.gameMode.potatoMode;
         this.sniperMode = !!this.mapDef.gameMode.sniperMode;
         this.amongUsMode = !!this.mapDef.gameMode.amongUsMode;
+        this.contactMode =
+            !!this.mapDef.gameMode.contactMode ||
+            Object.values(this.mapDef.gameMode.npcSpawns ?? {}).some(
+                (count) => count > 0,
+            );
 
         this.center = v2.create(this.width / 2, this.height / 2);
         this.grassInset = mapConfig.grassInset;

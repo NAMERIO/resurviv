@@ -183,6 +183,7 @@ function createAmongUsVisionGradient() {
 export interface Ctx {
     audioManager: AudioManager;
     renderer: Renderer;
+    resourceManager?: ResourceManager;
     particleBarn: ParticleBarn;
     map: Map;
     smokeBarn: SmokeBarn;
@@ -481,6 +482,7 @@ export class Game {
             [ObjectType.Projectile]: this.m_projectileBarn.projectilePool,
             [ObjectType.Smoke]: this.m_smokeBarn.m_smokePool,
             [ObjectType.Airdrop]: this.m_airdropBarn.airdropPool,
+            [ObjectType.Npc]: this.m_map.m_npcPool,
         };
 
         this.m_objectCreator = new Creator();
@@ -3557,6 +3559,7 @@ export class Game {
         const ctx: Ctx = {
             audioManager: this.m_audioManager,
             renderer: this.m_renderer,
+            resourceManager: this.m_resourceManager,
             particleBarn: this.m_particleBarn,
             map: this.m_map,
             smokeBarn: this.m_smokeBarn,

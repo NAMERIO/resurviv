@@ -461,6 +461,54 @@ const ParticleDefs: Record<string, ParticleDef> = {
             return util.rgbToInt(util.hsvToRgb(0xff0000, 1, util.random(0.45, 0.8)));
         },
     },
+    bite: {
+        image: [
+            "blood-particle-1.img",
+            "blood-particle-2.img",
+            "blood-particle-3.img",
+            "blood-particle-4.img",
+            "blood-particle-5.img",
+            "blood-particle-6.img",
+        ],
+        life: 1,
+        drag: 1,
+        rotVel: 0,
+        scale: {
+            start: new Range(0.4, 0.5),
+            end: new Range(0.07, 0.1),
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 1,
+            end: 0,
+            lerp: new Range(0.75, 1),
+        },
+        color: 0xffffff,
+    },
+    skitterBlood: {
+        image: [
+            "blood-skitter-particle-1.img",
+            "blood-skitter-particle-2.img",
+            "blood-skitter-particle-3.img",
+            "blood-skitter-particle-4.img",
+            "blood-skitter-particle-5.img",
+            "blood-skitter-particle-6.img",
+        ],
+        life: new Range(0.5, 1),
+        drag: 1,
+        rotVel: new Range(0, Math.PI * 3),
+        scale: {
+            start: new Range(0.4, 0.5),
+            end: new Range(0.07, 0.1),
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 1,
+            end: 0,
+            lerp: new Range(0.9, 1),
+        },
+        color: 0xffffff,
+    },
     barrelPlank: {
         image: ["part-plank-01.img"],
         life: new Range(1, 1.5),
@@ -732,6 +780,30 @@ const ParticleDefs: Record<string, ParticleDef> = {
         },
         color: function () {
             return util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.95, 1)));
+        },
+    },
+    eggParticle: {
+        image: [
+            "egg-particle-1.img",
+            "egg-particle-2.img",
+            "egg-particle-3.img",
+            "egg-particle-4.img",
+        ],
+        life: 0.5,
+        drag: new Range(1, 10),
+        rotVel: 0,
+        scale: {
+            start: new Range(0.3, 0.4),
+            end: new Range(0.01, 0.02),
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 1,
+            end: 0,
+            lerp: new Range(0.95, 1),
+        },
+        color: function () {
+            return util.rgbToInt(util.hsvToRgb(0.97, 0, util.random(0.95, 0.97)));
         },
     },
     depositBoxGreyBreak: {
@@ -2411,6 +2483,23 @@ const ParticleDefs: Record<string, ParticleDef> = {
             lerp: new Range(0.75, 1),
         },
         color: 0xffffff,
+    },
+    explosionMotherShip: {
+        image: ["part-lightning-burst-01.img"],
+        life: 0.5,
+        drag: 0,
+        rotVel: 0,
+        scale: {
+            start: 1,
+            end: 4,
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 1,
+            end: 0,
+            lerp: new Range(0.75, 1),
+        },
+        color: 0x9bff99,
     },
     explosionPotato: {
         image: ["part-frag-burst-01.img"],

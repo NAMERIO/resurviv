@@ -10,6 +10,7 @@ export enum MapId {
     Halloween = 6,
     Cobalt = 7,
     Birthday = 8,
+    Contact = 17,
     Perks = 18,
     Valentine = 19,
     Inferno = 20,

@@ -51,6 +51,17 @@ export class ExplosionBarn {
             return;
         }
 
+        if (explosion.type === "explosion_skitternade") {
+            this.game.smokeBarn.addEmitter(
+                explosion.pos,
+                explosion.layer,
+                "contact",
+                explosion.damageParams.source,
+                explosion.damageParams.sourceTeamId,
+            );
+            return;
+        }
+
         if (explosion.type === "explosion_poison_gas") {
             this.game.smokeBarn.addEmitter(
                 explosion.pos,
@@ -99,10 +110,18 @@ export class ExplosionBarn {
                     : util.sameLayer(obj.layer, explosion.layer);
                 if (!sameExplosionLayer) continue;
                 if ((obj as { dead?: boolean }).dead) continue;
+                if (
+                    explosion.type === "explosion_motherShip" &&
+                    obj.__type === ObjectType.Player &&
+                    obj.indoors
+                ) {
+                    continue;
+                }
                 if (obj.__type === ObjectType.Obstacle && obj.height <= 0.25) continue;
                 if (
                     obj.__type === ObjectType.Player ||
                     obj.__type === ObjectType.Obstacle ||
+                    obj.__type === ObjectType.Npc ||
                     obj.__type === ObjectType.Loot
                 ) {
                     // check if the object hitbox collides with a line from the explosion center to the explosion max distance
@@ -168,6 +187,10 @@ export class ExplosionBarn {
         const obj = collision.obj;
         const def = GameObjectDefs[explosion.type] as ExplosionDef;
 
+        if (def.playerDamageOnly && obj.__type !== ObjectType.Player) {
+            return;
+        }
+
         if (
             explosion.type === "explosion_flashbang" &&
             obj.__type !== ObjectType.Player
@@ -183,7 +206,11 @@ export class ExplosionBarn {
             return;
         }
 
-        if (obj.__type !== ObjectType.Player && obj.__type !== ObjectType.Obstacle) {
+        if (
+            obj.__type !== ObjectType.Player &&
+            obj.__type !== ObjectType.Obstacle &&
+            obj.__type !== ObjectType.Npc
+        ) {
             return;
         }
 
@@ -300,7 +327,7 @@ export class ExplosionBarn {
             }
         }
 
-        if (obj.__type === ObjectType.Obstacle) {
+        if (obj.__type === ObjectType.Obstacle || obj.__type === ObjectType.Npc) {
             damage *= def.obstacleDamage;
         }
 

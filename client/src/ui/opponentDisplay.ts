@@ -89,6 +89,7 @@ export class LoadoutDisplay {
             [ObjectType.Decal]: this.decalBarn.decalPool,
             [ObjectType.Loot]: this.lootBarn.lootPool,
             [ObjectType.Smoke]: this.smokeBarn.m_smokePool,
+            [ObjectType.Npc]: this.map.m_npcPool,
         };
 
         this.objectCreator = new Creator();
@@ -193,6 +194,8 @@ export class LoadoutDisplay {
             streakReady: false,
             activeStreakActive: false,
             activeStreakTimeLeft: 0,
+            contactDirty: false,
+            contactPercentage: 0,
             nitroLaceDirty: false,
             nitroLacePercentage: 0,
             hideAndSeekBlindDirty: false,
@@ -391,6 +394,10 @@ export class LoadoutDisplay {
             burnEffect: false,
             nitroLaceEffect: false,
             poisonEffect: false,
+            isTarget: false,
+            infectedEffect: false,
+            playerTransparent: false,
+            biteEffect: false,
             frozen: false,
             frozenOri: 0,
             hasteType: 0,
@@ -450,6 +457,8 @@ export class LoadoutDisplay {
                 streakReady: false,
                 activeStreakActive: false,
                 activeStreakTimeLeft: 0,
+                contactDirty: false,
+                contactPercentage: 0,
                 nitroLaceDirty: false,
                 nitroLacePercentage: 0,
                 hideAndSeekBlindDirty: false,

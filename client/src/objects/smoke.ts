@@ -23,6 +23,7 @@ class Smoke implements AbstractObject {
     m_interior!: number;
     m_isFoam!: boolean;
     m_isPoison!: boolean;
+    m_isContact!: boolean;
 
     m_init() {}
     m_free() {
@@ -44,6 +45,7 @@ class Smoke implements AbstractObject {
             this.m_interior = data.interior;
             this.m_isFoam = data.isFoam;
             this.m_isPoison = data.isPoison;
+            this.m_isContact = data.isContact;
         }
 
         if (isNew) {
@@ -55,6 +57,7 @@ class Smoke implements AbstractObject {
                 this.m_interior,
                 this.m_isFoam,
                 this.m_isPoison,
+                this.m_isContact,
             );
         }
         this.m_particle!.posTarget = v2.copy(this.m_pos);
@@ -99,6 +102,7 @@ export class SmokeParticle {
     interior!: number;
     isFoam!: boolean;
     isPoison!: boolean;
+    isContact!: boolean;
     poisonDots: Array<{
         sprite: PIXI.Sprite;
         offset: Vec2;
@@ -120,6 +124,7 @@ export class SmokeParticle {
         interior: number,
         isFoam: boolean = false,
         isPoison: boolean = false,
+        isContact: boolean = false,
     ) {
         this.pos = v2.copy(pos);
         this.posTarget = v2.copy(this.pos);
@@ -132,6 +137,7 @@ export class SmokeParticle {
         this.fadeDuration = util.random(0.5, 0.75);
         this.isFoam = isFoam;
         this.isPoison = isPoison;
+        this.isContact = isContact;
         for (const dot of this.poisonDots) {
             dot.sprite.visible = false;
         }
@@ -163,7 +169,9 @@ export class SmokeParticle {
             const smokeImg =
                 smokeParticles[Math.floor(Math.random() * smokeParticles.length)];
             this.sprite.texture = PIXI.Texture.from(smokeImg);
-            this.tint = util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.9, 0.95)));
+            this.tint = isContact
+                ? 0x9bff99
+                : util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.9, 0.95)));
         }
         this.layer = layer;
         this.interior = interior;

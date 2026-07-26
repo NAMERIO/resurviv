@@ -35,6 +35,7 @@ import { UnlockDefs } from "../../../../shared/defs/gameObjects/unlockDefs";
 import { MapObjectDefs } from "../../../../shared/defs/mapObjectDefs";
 import type { ObstacleDef, StructureDef } from "../../../../shared/defs/mapObjectsTyping";
 import type { ArenaTeam } from "../../../../shared/defs/miniGame";
+import { NpcDefs } from "../../../../shared/defs/npcDefs";
 import { MapId } from "../../../../shared/defs/types/misc";
 import {
     type Action,
@@ -972,6 +973,7 @@ export class PlayerBarn {
             player.weapsDirty = false;
             player.spectatorCountDirty = false;
             player.streakDirty = false;
+            player.contactDirty = false;
             player.nitroLaceDirty = false;
             player.hideAndSeekBlindDirty = false;
             player.activeIdDirty = false;
@@ -1621,8 +1623,15 @@ export class Player extends BaseGameObject {
     poisonEffect = false;
     poisonTicker = 0;
     poisonDuration = 0;
+    isTarget = false;
+    infectedEffect = false;
+    playerTransparent = false;
+    contactDirty = true;
+    biteEffect = false;
+    biteEffectTicker = 0;
     poisonSource?: GameObject;
     poisonSourceTeamId?: number;
+    contactSmokeTicker = 0;
     nitroLaceEffect = false;
     nitroLaceDuration = 0;
     nitroLaceMaxDuration = 10;
@@ -1634,6 +1643,9 @@ export class Player extends BaseGameObject {
     get nitroLacePercentage(): number {
         if (this.nitroLaceMaxDuration <= 0) return 0;
         return (this.nitroLaceDuration / this.nitroLaceMaxDuration) * 100;
+    }
+    get contactPercentage(): number {
+        return this.infectedEffect ? 100 : 0;
     }
     // if hit by snowball or potato, slowed down for "x" seconds
     healEffectTicker = 0;
@@ -3275,6 +3287,20 @@ export class Player extends BaseGameObject {
             }
         }
 
+        if (this.biteEffectTicker > 0) {
+            this.biteEffectTicker -= dt;
+            if (this.biteEffectTicker <= 0) {
+                this.biteEffectTicker = 0;
+                this.biteEffect = false;
+                this.setDirty();
+            }
+        }
+
+        if (!this.infectedEffect && this.playerTransparent) {
+            this.playerTransparent = false;
+            this.setDirty();
+        }
+
         //
         // Emote cooldown
         //
@@ -3729,6 +3755,19 @@ export class Player extends BaseGameObject {
                         this.pos,
                         this.rad,
                     );
+                } else if (obj.__type === ObjectType.Npc) {
+                    if (
+                        obj.dead ||
+                        !obj.collidable ||
+                        !util.sameLayer(obj.layer, this.layer)
+                    ) {
+                        continue;
+                    }
+                    collision = collider.intersectCircle(
+                        obj.collider,
+                        this.pos,
+                        this.rad,
+                    );
                 } else {
                     continue;
                 }
@@ -3924,6 +3963,7 @@ export class Player extends BaseGameObject {
         let insideNoZoomRegion = true;
         let insideSmoke = false;
         let poisonSmoke: Smoke | undefined;
+        let contactSmoke: Smoke | undefined;
         // building player is currently inside of
         let occupiedBuilding: Building | undefined;
 
@@ -4022,6 +4062,9 @@ export class Player extends BaseGameObject {
                         poisonSmoke = obj;
                         continue;
                     }
+                    if (obj.isContact) {
+                        contactSmoke = obj;
+                    }
                     insideSmoke = true;
                 }
             }
@@ -4069,6 +4112,27 @@ export class Player extends BaseGameObject {
         }
         if (oldPoisonEffect !== this.poisonEffect) {
             this.setDirty();
+        }
+
+        if (contactSmoke) {
+            if (this.infectedEffect) {
+                this.clearContactedEffect();
+            }
+
+            this.contactSmokeTicker -= dt;
+            if (this.contactSmokeTicker <= 0) {
+                this.contactSmokeTicker = GameConfig.player.poisonTickRate;
+                this.damage({
+                    amount: GameConfig.player.poisonDamage,
+                    damageType: GameConfig.DamageType.Gas,
+                    dir: this.dir,
+                    gameSourceType: "skitternade",
+                    source: contactSmoke.source,
+                    sourceTeamId: contactSmoke.sourceTeamId,
+                });
+            }
+        } else {
+            this.contactSmokeTicker = 0;
         }
 
         if (this.insideZoomRegion) {
@@ -4410,6 +4474,8 @@ export class Player extends BaseGameObject {
                 streakReady: player.streakReady,
                 activeStreakActive: player.streakActive,
                 activeStreakTimeLeft: player.streakActiveTimer,
+                contactDirty: true,
+                contactPercentage: player.contactPercentage,
                 nitroLaceDirty: true,
                 nitroLacePercentage: player.nitroLacePercentage,
                 hideAndSeekBlindDirty: true,
@@ -4783,6 +4849,9 @@ export class Player extends BaseGameObject {
         }
 
         let finalDamage = params.amount!;
+        if (this.infectedEffect) {
+            finalDamage *= 1.2;
+        }
         if (
             params.isExplosion &&
             params.gameSourceType === "mine" &&
@@ -5097,10 +5166,17 @@ export class Player extends BaseGameObject {
         this.animSeq++;
         this.healEffect = false;
         this.poisonEffect = false;
+        this.isTarget = false;
+        this.infectedEffect = false;
+        this.playerTransparent = false;
+        this.contactDirty = true;
+        this.biteEffect = false;
+        this.biteEffectTicker = 0;
         this.poisonTicker = 0;
         this.poisonDuration = 0;
         this.poisonSource = undefined;
         this.poisonSourceTeamId = undefined;
+        this.contactSmokeTicker = 0;
         this.boostDirty = true;
         this.inventoryDirty = true;
         this.setDirty();
@@ -7245,6 +7321,10 @@ export class Player extends BaseGameObject {
             }
         }
 
+        if (msg.spawnNpcType && NpcDefs[msg.spawnNpcType]) {
+            this.game.npcBarn.addNpc(msg.spawnNpcType, this.pos, this.layer);
+        }
+
         if (msg.promoteToRole) {
             if (msg.promoteToRoleType) {
                 const def = GameObjectDefs[msg.promoteToRoleType];
@@ -7473,6 +7553,22 @@ export class Player extends BaseGameObject {
         }
     }
 
+    applyContactedEffect(phasePlayer = true) {
+        this.infectedEffect = true;
+        this.contactDirty = true;
+        // Keep the player's phase state stable until Contacted is cleared on death.
+        this.playerTransparent = phasePlayer;
+        this.setDirty();
+    }
+
+    clearContactedEffect() {
+        if (!this.infectedEffect && !this.playerTransparent) return;
+        this.infectedEffect = false;
+        this.playerTransparent = false;
+        this.contactDirty = true;
+        this.setDirty();
+    }
+
     recalculateSpeed(hasTreeClimbing: boolean): void {
         if (this.debug.speedEnabled) {
             this.speed = this.debug.speed;
@@ -7568,6 +7664,10 @@ export class Player extends BaseGameObject {
         const infectedSettings = getInfectedSettings(this.game.miniGame);
         if (infectedSettings && this.arenaTeam === infectedSettings.zombieTeam) {
             this.speed *= infectedSettings.zombieSpeedMultiplier;
+        }
+
+        if (this.infectedEffect) {
+            this.speed *= 1.2;
         }
 
         this.speed = math.clamp(this.speed, 1, 10000);

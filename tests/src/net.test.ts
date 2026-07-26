@@ -185,6 +185,21 @@ test("Update Msg", () => {
         curWeapIdx: 0,
         spectatorCountDirty: true,
         spectatorCount: util.randomInt(0, 255),
+        streakDirty: false,
+        contactDirty: true,
+        contactPercentage: 100,
+        nitroLaceDirty: false,
+        hideAndSeekBlindDirty: false,
+        hideAndSeekHunterReleaseTime: 0,
+        hideAndSeekHunterReleaseSeeker: false,
+        infectedRespawnTime: 0,
+        captureTheFlagRespawnTime: 0,
+        miniGameWinCountdownTime: 0,
+        miniGameWinCountdownProps: false,
+        amongUsKillCooldownTime: 0,
+        amongUsEmergencyCallCooldownTime: 0,
+        amongUsEmergencyCallsRemaining: 0,
+        amongUsEmergencyMeetingSeq: 0,
     };
 
     inMsg.gasDirty = true;

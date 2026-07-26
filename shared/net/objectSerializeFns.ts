@@ -15,6 +15,7 @@ export enum ObjectType {
     Projectile,
     Smoke,
     Airdrop,
+    Npc,
 }
 
 export type ObjectData<T extends ObjectType> = ObjectsFullData[T] & ObjectsPartialData[T];
@@ -67,6 +68,15 @@ export interface ObjectsPartialData {
         fallT: number;
         landed: boolean;
     };
+    [ObjectType.Npc]: {
+        pos: Vec2;
+        ori: number;
+        scale: number;
+        state: string;
+        invisibleTicker: boolean;
+        targetActive: boolean;
+        targetPos: Vec2;
+    };
 }
 
 export interface ObjectsFullData {
@@ -93,6 +103,10 @@ export interface ObjectsFullData {
         burnEffect: boolean;
         nitroLaceEffect: boolean;
         poisonEffect: boolean;
+        isTarget: boolean;
+        infectedEffect: boolean;
+        playerTransparent: boolean;
+        biteEffect: boolean;
 
         frozen: boolean;
         frozenOri: number;
@@ -191,9 +205,18 @@ export interface ObjectsFullData {
         interior: number;
         isFoam: boolean;
         isPoison: boolean;
+        isContact: boolean;
     };
     [ObjectType.Airdrop]: {
         pos: Vec2;
+    };
+    [ObjectType.Npc]: {
+        healthT: number;
+        type: string;
+        obstacleType: string;
+        layer: number;
+        dead: boolean;
+        teamId: number;
     };
 }
 
@@ -244,6 +267,10 @@ export const ObjectSerializeFns: {
             s.writeBoolean(data.burnEffect);
             s.writeBoolean(data.nitroLaceEffect);
             s.writeBoolean(data.poisonEffect);
+            s.writeBoolean(data.isTarget);
+            s.writeBoolean(data.infectedEffect);
+            s.writeBoolean(data.playerTransparent);
+            s.writeBoolean(data.biteEffect);
 
             s.writeBoolean(data.frozen);
             if (data.frozen) {
@@ -324,6 +351,10 @@ export const ObjectSerializeFns: {
             data.burnEffect = s.readBoolean();
             data.nitroLaceEffect = s.readBoolean();
             data.poisonEffect = s.readBoolean();
+            data.isTarget = s.readBoolean();
+            data.infectedEffect = s.readBoolean();
+            data.playerTransparent = s.readBoolean();
+            data.biteEffect = s.readBoolean();
 
             data.frozen = s.readBoolean();
             data.frozenOri = data.frozen ? s.readBits(2) : 0;
@@ -688,6 +719,7 @@ export const ObjectSerializeFns: {
             s.writeBits(data.interior, 6);
             s.writeBoolean(data.isFoam);
             s.writeBoolean(data.isPoison);
+            s.writeBoolean(data.isContact);
         },
         /* STRIP_FROM_PROD_CLIENT:END */
 
@@ -700,6 +732,7 @@ export const ObjectSerializeFns: {
             data.interior = s.readBits(6);
             data.isFoam = s.readBoolean();
             data.isPoison = s.readBoolean();
+            data.isContact = s.readBoolean();
         },
     },
     [ObjectType.Airdrop]: {
@@ -720,6 +753,54 @@ export const ObjectSerializeFns: {
         },
         deserializeFull: (s, data) => {
             data.pos = s.readMapPos();
+        },
+    },
+    [ObjectType.Npc]: {
+        serializedFullSize: 8,
+        /* STRIP_FROM_PROD_CLIENT:START */
+        serializePart: (s, data) => {
+            s.writeMapPos(data.pos);
+            s.writeFloat(data.ori, -4, 4, 8);
+            s.writeFloat(
+                data.scale,
+                Constants.MapObjectMinScale,
+                Constants.MapObjectMaxScale,
+                8,
+            );
+            s.writeString(data.state, 8);
+            s.writeBoolean(data.invisibleTicker);
+            s.writeBoolean(data.targetActive);
+            if (data.targetActive) s.writeMapPos(data.targetPos);
+        },
+        serializeFull: (s, data) => {
+            s.writeFloat(data.healthT, 0, 1, 8);
+            s.writeMapType(data.type);
+            s.writeString(data.obstacleType, 8);
+            s.writeBits(data.layer, 2);
+            s.writeBoolean(data.dead);
+            s.writeUint8(data.teamId);
+        },
+        /* STRIP_FROM_PROD_CLIENT:END */
+        deserializePart: (s, data) => {
+            data.pos = s.readMapPos();
+            data.ori = s.readFloat(-4, 4, 8);
+            data.scale = s.readFloat(
+                Constants.MapObjectMinScale,
+                Constants.MapObjectMaxScale,
+                8,
+            );
+            data.state = s.readString(8);
+            data.invisibleTicker = s.readBoolean();
+            data.targetActive = s.readBoolean();
+            if (data.targetActive) data.targetPos = s.readMapPos();
+        },
+        deserializeFull: (s, data) => {
+            data.healthT = s.readFloat(0, 1, 8);
+            data.type = s.readMapType();
+            data.obstacleType = s.readString(8);
+            data.layer = s.readBits(2);
+            data.dead = s.readBoolean();
+            data.teamId = s.readUint8();
         },
     },
     // * to please ts

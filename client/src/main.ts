@@ -223,6 +223,8 @@ export class Application {
         br_turkey: "Turkey",
         br_birthday: "Birthday",
         br_beach: "Beach",
+        br_contact: "Contact",
+        contact: "Contact",
         woods: "Woods",
         potato: "Potato",
         desert: "Desert",
@@ -1531,6 +1533,7 @@ export class Application {
             "valentine",
             "inferno",
             "woods",
+            "contact",
             "capture_the_flag",
         ]);
         const gameModeStyles = this.siteInfo.getGameModeStyles();

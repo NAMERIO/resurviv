@@ -136,6 +136,14 @@ class Projectile implements AbstractObject {
                 this.container.visible = false;
                 return;
             }
+            if (this.type === "motherShip_cannon_shot") {
+                ctx.audioManager.playSound("mothership_shoot_01", {
+                    channel: "sfx",
+                    soundPos: this.pos,
+                    layer: this.layer,
+                    rangeMult: 1.75,
+                });
+            }
             if (itemDef.trail) {
                 if (itemDef.trail.sprite) {
                     const newTrail = PIXI.Sprite.from(itemDef.trail.sprite);
