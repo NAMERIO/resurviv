@@ -35,7 +35,7 @@ import { discordPresence } from "./discordPresence";
 import { EmoteBarn } from "./emote";
 import { Gas } from "./gas";
 import { helpers } from "./helpers";
-import { type InputHandler, Key } from "./input";
+import { GamepadButton, type InputHandler, Key } from "./input";
 import type { InputBinds, InputBindUi } from "./inputBinds";
 import type { SoundHandle } from "./lib/createJS";
 import { Map } from "./map";
@@ -722,7 +722,10 @@ export class Game {
             this.m_camera.m_targetZoom,
         );
         this.m_audioManager.cameraPos = v2.copy(this.m_camera.m_pos);
-        if (this.m_input.keyPressed(Key.Escape)) {
+        if (
+            this.m_input.keyPressed(Key.Escape) ||
+            this.m_input.gamepadPressed(GamepadButton.Start)
+        ) {
             this.m_uiManager.toggleEscMenu();
         }
         // Large Map
@@ -811,6 +814,34 @@ export class Game {
                     GameConfig.player.throwableMaxMouseDist;
                 inputMsg.toMouseLen = toTouchLenAdjusted;
                 inputMsg.toMouseDir = aimDir;
+            } else if (this.m_input.usingGamepad) {
+                const gameplayBlocked = this.m_input.isGameplayInputBlocked();
+                inputMsg.touchMoveActive = true;
+                inputMsg.touchMoveDir = v2.normalizeSafe(
+                    this.m_input.gamepadMove,
+                    v2.create(1, 0),
+                );
+                inputMsg.touchMoveLen = gameplayBlocked
+                    ? 0
+                    : Math.round(this.m_input.gamepadMoveMagnitude * 255);
+
+                if (this.m_input.gamepadAimEngaged) {
+                    const activeWeaponDef =
+                        GameObjectDefs[this.m_activePlayer.m_netData.m_activeWeapon];
+                    const throwableEquipped = activeWeaponDef?.type == "throwable";
+                    const aimMagnitude =
+                        throwableEquipped && activeWeaponDef.forceMaxThrowDistance
+                            ? 1
+                            : this.m_input.gamepadAimMagnitude;
+                    const maxAimDistance = throwableEquipped
+                        ? GameConfig.player.throwableMaxMouseDist * 1.8
+                        : GameConfig.player.throwableMaxMouseDist;
+                    inputMsg.toMouseDir = v2.copy(this.m_input.gamepadAimDir);
+                    inputMsg.toMouseLen = aimMagnitude * maxAimDistance;
+                } else {
+                    inputMsg.toMouseDir = v2.copy(this.m_prevInputMsg.toMouseDir);
+                    inputMsg.toMouseLen = this.m_prevInputMsg.toMouseLen;
+                }
             } else {
                 // Only use arrow keys if they are unbound
                 inputMsg.moveLeft =
@@ -1021,11 +1052,18 @@ export class Game {
         this.m_spectateCooldown -= dt;
         const specBegin = this.m_uiManager.specBegin;
         const specNext = (this.m_uiManager.specNext ||=
-            this.m_spectating && this.m_input.keyPressed(Key.Right));
+            this.m_spectating &&
+            (this.m_input.keyPressed(Key.Right) ||
+                this.m_inputBinds.isGamepadBindPressed(Input.EquipNextWeap)));
         const specPrev = (this.m_uiManager.specPrev ||=
-            this.m_spectating && this.m_input.keyPressed(Key.Left));
+            this.m_spectating &&
+            (this.m_input.keyPressed(Key.Left) ||
+                this.m_inputBinds.isGamepadBindPressed(Input.EquipPrevWeap)));
         const specForce =
-            this.m_input.keyPressed(Key.Right) || this.m_input.keyPressed(Key.Left);
+            this.m_input.keyPressed(Key.Right) ||
+            this.m_input.keyPressed(Key.Left) ||
+            this.m_inputBinds.isGamepadBindPressed(Input.EquipNextWeap) ||
+            this.m_inputBinds.isGamepadBindPressed(Input.EquipPrevWeap);
 
         if (
             specBegin ||
@@ -1242,6 +1280,7 @@ export class Game {
             this.m_map,
             this.m_camera,
             this.m_renderer,
+            this.m_spectating,
         );
         this.m_renderer.m_update(dt, this.m_camera, this.m_map);
 

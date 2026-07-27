@@ -2533,10 +2533,17 @@ export class Player implements AbstractObject {
             !isSpectating &&
             !displayingStats
         ) {
-            this.bodyContainer.rotation = Math.atan2(
-                mouseY - window.innerHeight / 2,
-                mouseX - window.innerWidth / 2,
-            );
+            this.bodyContainer.rotation = inputManager.usingGamepad
+                ? inputManager.gamepadAimEngaged
+                    ? -Math.atan2(
+                          inputManager.gamepadAimDir.y,
+                          inputManager.gamepadAimDir.x,
+                      )
+                    : -Math.atan2(this.m_visualDir.y, this.m_visualDir.x)
+                : Math.atan2(
+                      mouseY - window.innerHeight / 2,
+                      mouseX - window.innerWidth / 2,
+                  );
         } else {
             this.bodyContainer.rotation = -Math.atan2(
                 this.m_visualDir.y,

@@ -862,6 +862,14 @@ export class EmoteBarn {
         const playerBarn = this.playerBarn;
         const camera = this.camera;
         let mousePos = v2.create(input.mousePos.x, input.mousePos.y);
+        if (input.usingGamepad && input.gamepadAimEngaged) {
+            const aimDistance =
+                Math.min(camera.m_screenWidth, camera.m_screenHeight) * 0.35;
+            mousePos = v2.create(
+                camera.m_screenWidth * 0.5 + input.gamepadAimDir.x * aimDistance,
+                camera.m_screenHeight * 0.5 - input.gamepadAimDir.y * aimDistance,
+            );
+        }
 
         if (input.lostFocus) {
             this.inputReset();

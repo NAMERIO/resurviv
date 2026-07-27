@@ -1830,15 +1830,6 @@ a:active {
   color: #fff;
 }
 
-#ui-modal-keybind-list > .ui-keybind-container > .btn-game-menu {
-  width: 50%;
-}
-
-#ui-modal-keybind-list > .ui-keybind-container > .btn-keybind-display {
-  width: 50%;
-  text-indent: 22px;
-}
-
 #ui-modal-keybind-share {
   display: none;
   background-color: rgba(0, 0, 0, 0.5);
@@ -1872,16 +1863,21 @@ a:active {
 
 .ui-keybind-container {
   display: flex;
+  gap: 4px;
+  align-items: stretch;
 }
 
 .ui-keybind-container > .btn-keybind-desc {
   font-size: 14px;
   width: 55%;
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+  box-sizing: border-box;
 }
 
 .ui-keybind-container > .btn-keybind-desc-selected {
   font-size: 14px;
-  width: 55%;
   animation: pulseKeybind 1.25s linear infinite;
 }
 
@@ -1890,6 +1886,39 @@ a:active {
   line-height: 50px;
   text-align: center;
   width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-keybind-header {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  padding: 4px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: rgba(0, 0, 0, 0.85);
+}
+
+.ui-keybind-header > div:first-child {
+  width: 55%;
+}
+
+.ui-keybind-header > div:not(:first-child) {
+  width: 45%;
+}
+
+.ui-keybind-container.controller-enabled > .btn-keybind-desc,
+.ui-keybind-header.controller-enabled > div:first-child {
+  width: 34%;
+}
+
+.ui-keybind-container.controller-enabled > .btn-keybind-display,
+.ui-keybind-header.controller-enabled > div:not(:first-child) {
+  width: 33%;
 }
 
 @keyframes pulseKeybind {

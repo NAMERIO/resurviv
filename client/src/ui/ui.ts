@@ -413,6 +413,9 @@ export class UiManager {
         this.aimLineButton.on("touchstart", () => {
             touch.toggleAimLine();
         });
+        $("#btn-game-controller-aim-guide").on("click", () => {
+            touch.toggleControllerAimGuide();
+        });
         this.onTouchScreen = (e: Event) => {
             if ((e.target as HTMLElement)?.id == "cvs") {
                 this.toggleEscMenu(true);
@@ -672,6 +675,7 @@ export class UiManager {
         this.moveStyleButton.off("touchstart");
         this.aimStyleButton.off("touchstart");
         this.aimLineButton.off("touchstart");
+        $("#btn-game-controller-aim-guide").off("click");
         $(document).off("touchstart", this.onTouchScreen);
         this.bigmapClose.off("touchend");
         this.bigmapClose.off("mousedown");

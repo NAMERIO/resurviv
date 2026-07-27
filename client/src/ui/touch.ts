@@ -48,6 +48,7 @@ export class Touch {
     moveStyle = "locked";
     aimStyle = "locked";
     touchAimLine = true;
+    controllerAimGuide = true;
 
     touchPads: [Pad, Pad];
 
@@ -119,6 +120,7 @@ export class Touch {
         this.setMoveStyle(moveStyle);
         this.setAimStyle(aimStyle);
         this.setTouchAimLine(!!config.get("touchAimLine"));
+        this.setControllerAimGuide(!!config.get("controllerAimGuide"));
         this.init();
     }
 
@@ -257,6 +259,7 @@ export class Touch {
         map: Map,
         camera: Camera,
         renderer: Renderer,
+        isSpectating: boolean,
     ) {
         for (let i = 0; i < this.touchPads.length; i++) {
             const pad = this.touchPads[i];
@@ -272,7 +275,7 @@ export class Touch {
             pad.touchSprite.visible = device.touch && this.display;
         }
 
-        this.lineSprites.update(this, activePlayer, map, camera, renderer);
+        this.lineSprites.update(this, activePlayer, map, camera, renderer, isSpectating);
     }
 
     isLeftSideTouch(posX: number, camera: Camera) {
@@ -350,6 +353,20 @@ export class Touch {
             elem.classList.remove("aim-line-on-icon");
             elem.classList.add("aim-line-off-icon");
         }
+    }
+
+    toggleControllerAimGuide() {
+        this.setControllerAimGuide(!this.controllerAimGuide);
+    }
+
+    setControllerAimGuide(isOn: boolean) {
+        this.controllerAimGuide = isOn;
+        if (this.config.get("controllerAimGuide") != isOn) {
+            this.config.set("controllerAimGuide", isOn);
+        }
+        const elem = document.getElementById("btn-game-controller-aim-guide");
+        elem?.classList.toggle("locked-on-icon", isOn);
+        elem?.classList.toggle("locked-off-icon", !isOn);
     }
 
     init() {
@@ -570,9 +587,13 @@ export class Touch {
 class LineSprites {
     container = new PIXI.Container();
     dots: PIXI.Sprite[] = [];
+    endpoint: PIXI.Sprite;
 
     constructor() {
         this.container.visible = false;
+        this.endpoint = this.createDot();
+        this.endpoint.tint = 0x50afab;
+        this.container.addChild(this.endpoint);
     }
 
     createDot() {
@@ -593,8 +614,16 @@ class LineSprites {
         map: Map,
         camera: Camera,
         renderer: Renderer,
+        isSpectating: boolean,
     ) {
-        const visible = device.touch && touch.touchingAim && touch.touchAimLine;
+        const controllerVisible =
+            touch.input.usingGamepad &&
+            touch.input.gamepadAimActive &&
+            touch.controllerAimGuide &&
+            !isSpectating;
+        const visible =
+            (device.touch && touch.touchingAim && touch.touchAimLine) ||
+            controllerVisible;
 
         if (visible) {
             const curWeap = activePlayer.m_netData.m_activeWeapon;
@@ -605,6 +634,11 @@ class LineSprites {
             if (curWeapDef.type == "gun") {
                 const bulletDist = BulletDefs[curWeapDef.bulletType].distance;
                 maxRange = curWeapDef.barrelLength + bulletDist;
+            } else if (controllerVisible) {
+                const aimMagnitude = curWeapDef.forceMaxThrowDistance
+                    ? 1
+                    : touch.input.gamepadAimMagnitude;
+                maxRange = aimMagnitude * GameConfig.player.throwableMaxMouseDist * 1.8;
             }
 
             // Clamp max range to be within the camera radius
@@ -613,7 +647,10 @@ class LineSprites {
             maxRange = math.min(maxRange, cameraRad);
 
             const start = v2.copy(activePlayer.m_pos);
-            let end = v2.add(start, v2.mul(activePlayer.m_dir, maxRange));
+            const aimDir = controllerVisible
+                ? touch.input.gamepadAimDir
+                : activePlayer.m_dir;
+            let end = v2.add(start, v2.mul(aimDir, maxRange));
 
             // Compute the nearest intersecting obstacle
             const obstacles = map.m_obstaclePool.m_getPool();
@@ -654,25 +691,25 @@ class LineSprites {
             }
 
             // Position dots
+            const scale = (1.0 / 32.0) * 0.375;
             for (let i = 0; i < this.dots.length; i++) {
                 const dot = this.dots[i];
                 const offset = startOffset + i * increment;
-                const pos = v2.add(
-                    activePlayer.m_pos,
-                    v2.mul(activePlayer.m_dir, offset),
-                );
-                const scale = (1.0 / 32.0) * 0.375;
+                const pos = v2.add(activePlayer.m_pos, v2.mul(aimDir, offset));
                 dot.position.set(pos.x, pos.y);
                 dot.scale.set(scale, scale);
                 dot.visible = i < dotCount;
             }
+            this.endpoint.position.set(end.x, end.y);
+            this.endpoint.scale.set(scale * 2.5, scale * 2.5);
+            this.endpoint.visible = controllerVisible;
 
             const p0 = camera.m_pointToScreen(v2.create(0, 0));
             const p1 = camera.m_pointToScreen(v2.create(1, 1));
             const R = v2.sub(p1, p0);
             this.container.position.set(p0.x, p0.y);
             this.container.scale.set(R.x, R.y);
-            this.container.alpha = 0.3;
+            this.container.alpha = controllerVisible ? 0.5 : 0.3;
             renderer.addPIXIObj(this.container, activePlayer.layer, 19, 0);
         }
         this.container.visible = visible;

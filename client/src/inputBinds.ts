@@ -4,6 +4,8 @@ import { Input as GameInput, type Input } from "../../shared/gameConfig";
 import { BitStream } from "../../shared/lib/bitBuffer";
 import type { ConfigManager } from "./config";
 import {
+    GamepadButton,
+    getGamepadButtonName,
     type InputHandler,
     InputType,
     InputValue,
@@ -76,8 +78,34 @@ const BindDisplayOrder = Object.keys(BindDefs)
     )
     .concat(GameInput.UseNitroLace, GameInput.ActivateStreak);
 
+// Standard Gamepad layout (Xbox names; PlayStation equivalents share these indices).
+const GamepadBindDefaults: Partial<Record<Input, GamepadButton>> = {
+    [GameInput.Fire]: GamepadButton.RightTrigger,
+    [GameInput.Reload]: GamepadButton.X,
+    [GameInput.Cancel]: GamepadButton.B,
+    [GameInput.Interact]: GamepadButton.A,
+    [GameInput.EquipMelee]: GamepadButton.LeftTrigger,
+    [GameInput.EquipNextWeap]: GamepadButton.RightBumper,
+    [GameInput.EquipOtherGun]: GamepadButton.LeftBumper,
+    [GameInput.StowWeapons]: GamepadButton.LeftStick,
+    [GameInput.UseBandage]: GamepadButton.DpadUp,
+    [GameInput.UseHealthKit]: GamepadButton.DpadRight,
+    [GameInput.UseSoda]: GamepadButton.DpadDown,
+    [GameInput.UsePainkiller]: GamepadButton.DpadLeft,
+    [GameInput.ToggleMap]: GamepadButton.Back,
+    [GameInput.TeamPingSingle]: GamepadButton.RightStick,
+};
+
+const FixedGamepadLabels: Partial<Record<Input, string>> = {
+    [GameInput.MoveLeft]: "Left Stick",
+    [GameInput.MoveRight]: "Left Stick",
+    [GameInput.MoveUp]: "Left Stick",
+    [GameInput.MoveDown]: "Left Stick",
+};
+
 export class InputBinds {
     binds: Array<InputValue | null> = [];
+    gamepadBinds: Array<GamepadButton | null> = [];
     boundKeys: Record<number, boolean | null> = {};
     menuHovered = false;
 
@@ -91,15 +119,22 @@ export class InputBinds {
     }
 
     toArray() {
-        const buf = new ArrayBuffer(this.binds.length * 2 + 1);
+        const buf = new ArrayBuffer(GameInput.Count * 3 + 8);
         const stream = new BitStream(buf);
-        stream.writeUint8(1);
-        for (let i = 0; i < this.binds.length; i++) {
+        stream.writeUint8(6);
+        for (let i = 0; i < GameInput.Count; i++) {
             const bind = this.binds[i];
             const type = bind ? bind.type : 0;
             const code = bind ? bind.code : 0;
             stream.writeBits(type & 3, 2);
             stream.writeUint8(code & 255);
+        }
+        for (let i = 0; i < GameInput.Count; i++) {
+            const bind = this.gamepadBinds[i];
+            stream.writeBoolean(bind !== null && bind !== undefined);
+            if (bind !== null && bind !== undefined) {
+                stream.writeBits(bind, 5);
+            }
         }
         // Append crc
         const data = new Uint8Array(buf, 0, stream.byteIndex);
@@ -130,15 +165,33 @@ export class InputBinds {
         const stream = new BitStream(arrayBuf);
         const version = stream.readUint8();
         this.clearAllBinds();
-        for (let idx = 0; stream.length - stream.index >= 10; ) {
-            const bind = idx++;
+        const keyboardBindCount =
+            version >= 2
+                ? GameInput.Count
+                : Math.floor((stream.length - stream.index) / 10);
+        for (
+            let bind = 0;
+            bind < keyboardBindCount && stream.length - stream.index >= 10;
+            bind++
+        ) {
             const type = stream.readBits(2);
             const code = stream.readUint8();
             if (bind >= 0 && bind < GameInput.Count && type != InputType.None) {
                 this.setBind(bind, type != 0 ? new InputValue(type, code) : null);
             }
         }
-        if (version < 1) {
+        if (version >= 2) {
+            for (
+                let bind = 0;
+                bind < GameInput.Count && stream.length - stream.index >= 1;
+                bind++
+            ) {
+                if (stream.readBoolean() && stream.length - stream.index >= 5) {
+                    this.setGamepadBind(bind, stream.readBits(5) as GamepadButton);
+                }
+            }
+        }
+        if (version < 6) {
             this.upgradeBinds(version);
             this.saveBinds();
         }
@@ -170,7 +223,7 @@ export class InputBinds {
         }
     }
 
-    upgradeBinds(_version: number) {
+    upgradeBinds(version: number) {
         const newBinds: GameInput[] = [];
 
         // Set default inputs for the new binds, as long as those
@@ -189,11 +242,54 @@ export class InputBinds {
                 this.setBind(bind, input);
             }
         }
+
+        if (version < 2) {
+            this.loadDefaultGamepadBinds();
+        } else if (version < 3) {
+            const newGamepadDefaults: Array<[Input, GamepadButton]> = [
+                [GameInput.ToggleMap, GamepadButton.Back],
+                [GameInput.TeamPingSingle, GamepadButton.RightStick],
+            ];
+            for (const [bind, button] of newGamepadDefaults) {
+                if (
+                    this.gamepadBinds[bind] === null &&
+                    !this.gamepadBinds.includes(button)
+                ) {
+                    this.gamepadBinds[bind] = button;
+                }
+            }
+        }
+        if (
+            version < 4 &&
+            this.gamepadBinds[GameInput.EquipOtherGun] == GamepadButton.Y &&
+            this.gamepadBinds[GameInput.StowWeapons] == GamepadButton.LeftStick
+        ) {
+            this.gamepadBinds[GameInput.EquipOtherGun] = GamepadButton.LeftStick;
+            this.gamepadBinds[GameInput.StowWeapons] = null;
+        }
+        if (
+            version < 5 &&
+            this.gamepadBinds[GameInput.EquipOtherGun] == GamepadButton.LeftStick &&
+            this.gamepadBinds[GameInput.StowWeapons] === null &&
+            !this.gamepadBinds.includes(GamepadButton.Y)
+        ) {
+            this.gamepadBinds[GameInput.EquipOtherGun] = GamepadButton.Y;
+            this.gamepadBinds[GameInput.StowWeapons] = GamepadButton.LeftStick;
+        }
+        if (
+            version < 6 &&
+            this.gamepadBinds[GameInput.EquipOtherGun] == GamepadButton.Y &&
+            this.gamepadBinds[GameInput.EquipPrevWeap] == GamepadButton.LeftBumper
+        ) {
+            this.gamepadBinds[GameInput.EquipOtherGun] = GamepadButton.LeftBumper;
+            this.gamepadBinds[GameInput.EquipPrevWeap] = null;
+        }
     }
 
     clearAllBinds() {
         for (let i = 0; i < GameInput.Count; i++) {
             this.binds[i] = null;
+            this.gamepadBinds[i] = null;
         }
         this.boundKeys = {};
     }
@@ -217,6 +313,21 @@ export class InputBinds {
         }
     }
 
+    setGamepadBind(bind: number, button: GamepadButton | null) {
+        if (button !== null) {
+            for (let i = 0; i < this.gamepadBinds.length; i++) {
+                if (this.gamepadBinds[i] == button) {
+                    this.gamepadBinds[i] = null;
+                }
+            }
+        }
+        this.gamepadBinds[bind] = button;
+    }
+
+    getGamepadBind(bind: Input) {
+        return this.gamepadBinds[bind];
+    }
+
     getBind(bind: number) {
         return this.binds[bind];
     }
@@ -231,17 +342,79 @@ export class InputBinds {
 
     isBindPressed(bind: Input) {
         const b = this.binds[bind];
-        return !this.preventMenuBind(b) && b && this.input.isInputValuePressed(b);
+        return (
+            (!this.preventMenuBind(b) && !!b && this.input.isInputValuePressed(b)) ||
+            this.isGamepadBindPressed(bind)
+        );
     }
 
     isBindReleased(bind: Input) {
         const b = this.binds[bind];
-        return !this.preventMenuBind(b) && b && this.input.isInputValueReleased(b);
+        return (
+            (!this.preventMenuBind(b) && !!b && this.input.isInputValueReleased(b)) ||
+            this.isGamepadBindReleased(bind)
+        );
     }
 
     isBindDown(bind: Input) {
         const b = this.binds[bind];
-        return !this.preventMenuBind(b) && b && this.input.isInputValueDown(b);
+        return (
+            (!this.preventMenuBind(b) && !!b && this.input.isInputValueDown(b)) ||
+            this.isGamepadBindDown(bind)
+        );
+    }
+
+    isGamepadBindPressed(bind: Input) {
+        if (this.input.isGameplayInputBlocked()) {
+            return false;
+        }
+        return this.getGamepadButtonsForAction(bind).some((button) =>
+            this.input.gamepadPressed(button),
+        );
+    }
+
+    isGamepadBindReleased(bind: Input) {
+        if (this.input.isGameplayInputBlocked()) {
+            return false;
+        }
+        return this.getGamepadButtonsForAction(bind).some((button) =>
+            this.input.gamepadReleased(button),
+        );
+    }
+
+    isGamepadBindDown(bind: Input) {
+        if (this.input.isGameplayInputBlocked()) {
+            return false;
+        }
+        return this.getGamepadButtonsForAction(bind).some((button) =>
+            this.input.gamepadDown(button),
+        );
+    }
+
+    getGamepadButtonsForAction(bind: Input) {
+        const buttons: GamepadButton[] = [];
+        const button = this.gamepadBinds[bind];
+        if (button !== null && button !== undefined) {
+            buttons.push(button);
+        }
+        // The melee trigger both equips the melee weapon and uses it.
+        if (bind == GameInput.Fire) {
+            const meleeButton = this.gamepadBinds[GameInput.EquipMelee];
+            if (
+                meleeButton !== null &&
+                meleeButton !== undefined &&
+                !buttons.includes(meleeButton)
+            ) {
+                buttons.push(meleeButton);
+            }
+        }
+        return buttons;
+    }
+
+    loadDefaultGamepadBinds() {
+        for (let i = 0; i < GameInput.Count; i++) {
+            this.gamepadBinds[i] = GamepadBindDefaults[i as Input] ?? null;
+        }
     }
 
     loadDefaultBinds() {
@@ -252,6 +425,7 @@ export class InputBinds {
             const def = BindDefs[key as unknown as keyof typeof BindDefs];
             this.setBind(parseInt(key), def.defaultValue);
         }
+        this.loadDefaultGamepadBinds();
     }
 }
 
@@ -268,20 +442,64 @@ export class InputBindUi {
             this.inputBinds.saveBinds();
             this.refresh();
         });
+        window.addEventListener("controllerconnectionchange", () => {
+            this.cancelBind();
+            this.refresh();
+        });
     }
 
     cancelBind() {
         this.input.captureNextInput(null);
+        this.input.captureNextGamepad(null);
+        $(".btn-keybind-desc-selected").removeClass("btn-keybind-desc-selected");
     }
 
     refresh() {
         const binds = this.inputBinds.binds;
         const container = $(".js-keybind-list");
+        const controllerConnected = this.input.gamepadConnected;
         container.empty();
+        const header = $("<div/>", {
+            class:
+                "ui-keybind-container ui-keybind-header" +
+                (controllerConnected ? " controller-enabled" : ""),
+        })
+            .append($("<div/>", { text: "Action" }))
+            .append($("<div/>", { text: "Keyboard / Mouse" }));
+        if (controllerConnected) {
+            header.append($("<div/>", { text: "Controller" }));
+        }
+        container.append(header);
+        const appendFixedRow = (action: string, keyboard: string, controller: string) => {
+            container.append(
+                $("<div/>", {
+                    class: "ui-keybind-container controller-enabled",
+                })
+                    .append($("<div/>", { class: "btn-keybind-desc", text: action }))
+                    .append(
+                        $("<div/>", {
+                            class: "btn-game-menu btn-keybind-display btn-disabled",
+                            text: keyboard,
+                        }),
+                    )
+                    .append(
+                        $("<div/>", {
+                            class: "btn-game-menu btn-keybind-display btn-disabled",
+                            text: controller,
+                        }),
+                    ),
+            );
+        };
+        if (controllerConnected) {
+            appendFixedRow("Aim", "Mouse", "Right Stick");
+            appendFixedRow("Pause Menu", "ESC", "Menu / Options");
+        }
         for (let i = 0; i < BindDisplayOrder.length; i++) {
-            const bindIdx = BindDisplayOrder[i];
+            const bindIdx = BindDisplayOrder[i] as Input;
             const bindDef = BindDefs[bindIdx as keyof typeof BindDefs];
             const bind = binds[bindIdx];
+            const gamepadBind = this.inputBinds.getGamepadBind(bindIdx);
+            const fixedGamepadLabel = FixedGamepadLabels[bindIdx];
             const nameKey =
                 "bind-" +
                 bindDef.name
@@ -289,68 +507,126 @@ export class InputBindUi {
                     .replace(/[^a-z0-9]+/g, "-")
                     .replace(/-+/g, "-")
                     .replace(/^-|-$/g, "");
-            const btn = $("<a/>", {
-                class: "btn-game-menu btn-darken btn-keybind-desc",
+            const label = $("<div/>", {
+                class: "btn-keybind-desc",
                 text: this.localization.translate(nameKey) || bindDef.name,
             });
-            const val = $("<div/>", {
-                class: "btn-keybind-display",
+            const keyboardBtn = $("<a/>", {
+                class: "btn-game-menu btn-darken btn-keybind-display",
+                "data-bind": bindIdx,
+                "data-device": "keyboard",
                 text: bind
                     ? this.localization.translate(bind.toString()) || bind.toString()
-                    : "",
+                    : "Unbound",
             });
-            btn.on("click", (event) => {
-                const targetElem = $(event.target);
-                targetElem.addClass("btn-keybind-desc-selected");
-                this.input.captureNextInput((event, inputValue) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    const disallowKeys: number[] = [
-                        Key.Control,
-                        Key.Shift,
-                        Key.Alt,
-                        Key.Windows,
-                        Key.ContextMenu,
-                        Key.F1,
-                        Key.F2,
-                        Key.F3,
-                        Key.F4,
-                        Key.F5,
-                        Key.F6,
-                        Key.F7,
-                        Key.F8,
-                        Key.F9,
-                        Key.F10,
-                        Key.F11,
-                        Key.F12,
-                    ];
-                    if (
-                        inputValue.type == InputType.Key &&
-                        disallowKeys.includes(inputValue.code)
-                    ) {
-                        return false;
-                    }
-                    targetElem.removeClass("btn-keybind-desc-selected");
-                    if (!inputValue.equals(inputKey(Key.Escape))) {
-                        let bindValue: InputValue | null = inputValue;
-                        if (inputValue.equals(inputKey(Key.Backspace))) {
-                            bindValue = null;
-                        }
-                        this.inputBinds.setBind(bindIdx, bindValue);
-                        this.inputBinds.saveBinds();
-                        this.refresh();
-                    }
-                    return true;
-                });
+            const gamepadBtn = $(fixedGamepadLabel ? "<div/>" : "<a/>", {
+                class:
+                    "btn-game-menu btn-darken btn-keybind-display" +
+                    (fixedGamepadLabel ? " btn-disabled" : ""),
+                "data-bind": bindIdx,
+                "data-device": "controller",
+                text: fixedGamepadLabel
+                    ? fixedGamepadLabel
+                    : gamepadBind === null || gamepadBind === undefined
+                      ? "Unbound"
+                      : getGamepadButtonName(gamepadBind),
             });
-            container.append(
-                $("<div/>", {
-                    class: "ui-keybind-container",
-                })
-                    .append(btn)
-                    .append(val),
-            );
+            keyboardBtn.on("click", () => this.beginKeyboardBind(bindIdx));
+            if (!fixedGamepadLabel) {
+                gamepadBtn.on("click", () => this.beginGamepadBind(bindIdx));
+            }
+            const row = $("<div/>", {
+                class:
+                    "ui-keybind-container" +
+                    (controllerConnected ? " controller-enabled" : ""),
+            })
+                .append(label)
+                .append(keyboardBtn);
+            if (controllerConnected) {
+                row.append(gamepadBtn);
+            }
+            container.append(row);
         }
         $("#keybind-link").html(this.inputBinds.toBase64());
+    }
+
+    beginKeyboardBind(bindIdx: Input) {
+        this.cancelBind();
+        const selector = `.btn-keybind-display[data-bind="${bindIdx}"][data-device="keyboard"]`;
+        $(selector).addClass("btn-keybind-desc-selected");
+        this.input.captureNextInput((event, inputValue) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const disallowKeys: number[] = [
+                Key.Control,
+                Key.Shift,
+                Key.Alt,
+                Key.Windows,
+                Key.ContextMenu,
+                Key.F1,
+                Key.F2,
+                Key.F3,
+                Key.F4,
+                Key.F5,
+                Key.F6,
+                Key.F7,
+                Key.F8,
+                Key.F9,
+                Key.F10,
+                Key.F11,
+                Key.F12,
+            ];
+            if (
+                inputValue.type == InputType.Key &&
+                disallowKeys.includes(inputValue.code)
+            ) {
+                return false;
+            }
+            $(selector).removeClass("btn-keybind-desc-selected");
+            if (!inputValue.equals(inputKey(Key.Escape))) {
+                const bindValue = inputValue.equals(inputKey(Key.Backspace))
+                    ? null
+                    : inputValue;
+                this.inputBinds.setBind(bindIdx, bindValue);
+                this.inputBinds.saveBinds();
+                this.refresh();
+            }
+            return true;
+        });
+    }
+
+    beginGamepadBind(bindIdx: Input) {
+        this.cancelBind();
+        const selector = `.btn-keybind-display[data-bind="${bindIdx}"][data-device="controller"]`;
+        $(selector).addClass("btn-keybind-desc-selected");
+        this.input.captureNextInput((event, inputValue) => {
+            if (
+                !inputValue.equals(inputKey(Key.Escape)) &&
+                !inputValue.equals(inputKey(Key.Backspace))
+            ) {
+                return false;
+            }
+            event.preventDefault();
+            event.stopPropagation();
+            $(selector).removeClass("btn-keybind-desc-selected");
+            if (inputValue.equals(inputKey(Key.Backspace))) {
+                this.inputBinds.setGamepadBind(bindIdx, null);
+                this.inputBinds.saveBinds();
+                this.refresh();
+            }
+            this.input.captureNextGamepad(null);
+            return true;
+        });
+        this.input.captureNextGamepad((button) => {
+            if (button == GamepadButton.Start || button == GamepadButton.Home) {
+                this.beginGamepadBind(bindIdx);
+                return;
+            }
+            $(selector).removeClass("btn-keybind-desc-selected");
+            this.input.captureNextInput(null);
+            this.inputBinds.setGamepadBind(bindIdx, button);
+            this.inputBinds.saveBinds();
+            this.refresh();
+        });
     }
 }
