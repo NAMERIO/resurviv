@@ -22,7 +22,7 @@ img {
 }
 
 #game-area-wrapper {
-  cursor: crosshair;
+  cursor: var(--game-cursor, crosshair);
   left: 0;
   position: absolute !important;
   top: 0;
@@ -32,6 +32,20 @@ img {
   padding: 0;
   overflow: hidden;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+body[data-input-method="controller"] #game-area-wrapper {
+  cursor: none !important;
+}
+
+.controller-only {
+  display: none !important;
+}
+
+@media (min-width: 851px) {
+  body[data-controller-connected="true"] .controller-only {
+    display: block !important;
+  }
 }
 
 #game-touch-area {
@@ -403,6 +417,7 @@ img {
 
 .ui-game-tab-settings-desktop {
   height: 340px;
+  overflow-y: auto;
 }
 
 #ui-game-tab-keybinds {

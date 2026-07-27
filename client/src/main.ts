@@ -67,6 +67,9 @@ export class Application {
     masterSliders = $<HTMLInputElement>(".sl-master-volume");
     soundSliders = $<HTMLInputElement>(".sl-sound-volume");
     musicSliders = $<HTMLInputElement>(".sl-music-volume");
+    controllerDeadZoneSliders = $<HTMLInputElement>(".sl-controller-dead-zone");
+    controllerAimSliders = $<HTMLInputElement>(".sl-controller-aim");
+    controllerScopedSliders = $<HTMLInputElement>(".sl-controller-scoped");
     serverWarning = $("#server-warning");
     languageSelect = $<HTMLSelectElement>(".language-select");
     startMenuWrapper = $("#start-menu-wrapper");
@@ -414,6 +417,12 @@ export class Application {
             $(this.musicSliders).on("mousedown", (e) => {
                 e.stopPropagation();
             });
+            this.controllerDeadZoneSliders
+                .add(this.controllerAimSliders)
+                .add(this.controllerScopedSliders)
+                .on("mousedown", (e) => {
+                    e.stopPropagation();
+                });
             this.masterSliders.on("input", (t) => {
                 const r = Number($(t.target).val()) / 100;
                 this.audioManager.setMasterVolume(r);
@@ -428,6 +437,21 @@ export class Application {
                 const r = Number($(t.target).val()) / 100;
                 this.audioManager.setMusicVolume(r);
                 this.config.set("musicVolume", r);
+            });
+            this.controllerDeadZoneSliders.on("input", (t) => {
+                this.config.set("controllerDeadZone", Number($(t.target).val()) / 100);
+            });
+            this.controllerAimSliders.on("input", (t) => {
+                this.config.set(
+                    "controllerAimSensitivity",
+                    Number($(t.target).val()) / 100,
+                );
+            });
+            this.controllerScopedSliders.on("input", (t) => {
+                this.config.set(
+                    "controllerScopedSensitivity",
+                    Number($(t.target).val()) / 100,
+                );
             });
             $(".modal-settings-item")
                 .children("input")
@@ -1261,6 +1285,28 @@ export class Application {
         const musicVolume = this.config.get("musicVolume")!;
         this.musicSliders.val(musicVolume * 100);
         this.audioManager.setMusicVolume(musicVolume);
+
+        const controllerDeadZone = this.config.get("controllerDeadZone")!;
+        this.controllerDeadZoneSliders.val(controllerDeadZone * 100);
+        $(".controller-dead-zone-value").text(`${Math.round(controllerDeadZone * 100)}%`);
+
+        const controllerAimSensitivity = this.config.get("controllerAimSensitivity")!;
+        this.controllerAimSliders.val(controllerAimSensitivity * 100);
+        $(".controller-aim-value").text(`${Math.round(controllerAimSensitivity * 100)}%`);
+
+        const controllerScopedSensitivity = this.config.get(
+            "controllerScopedSensitivity",
+        )!;
+        this.controllerScopedSliders.val(controllerScopedSensitivity * 100);
+        $(".controller-scoped-value").text(
+            `${Math.round(controllerScopedSensitivity * 100)}%`,
+        );
+
+        if (key === "controllerAimGuide" || key === undefined) {
+            this.game?.m_touch?.setControllerAimGuide(
+                this.config.get("controllerAimGuide")!,
+            );
+        }
 
         if (key == "language") {
             const language = this.config.get("language")!;
@@ -3743,6 +3789,18 @@ export class Application {
         this.resourceManager!.update(dt);
         this.audioManager.update(dt);
         this.ambience.update(dt, this.audioManager, !this.active);
+
+        if (this.input) {
+            const scopedAim =
+                this.game?.m_activePlayer?.m_localData.m_scope &&
+                this.game.m_activePlayer.m_localData.m_scope != "1xscope";
+            this.input.updateGamepad(dt, {
+                deadZone: this.config.get("controllerDeadZone")!,
+                aimSensitivity:
+                    this.config.get("controllerAimSensitivity")! *
+                    (scopedAim ? this.config.get("controllerScopedSensitivity")! : 1),
+            });
+        }
 
         // Game update
         if (this.game?.initialized && this.game.m_playing) {

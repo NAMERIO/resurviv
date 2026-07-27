@@ -156,6 +156,20 @@ function getCursorCSS(crosshairDef: Crosshair) {
     return `${getBaseURL(crosshairDef)} ${dims.width / 2} ${dims.height / 2}, crosshair`;
 }
 
+function getCursorStyle(crosshairDef: Crosshair) {
+    if (crosshairDef.type === "crosshair_custom_image") {
+        const customImageUrl = getCustomCrosshairImage();
+        if (customImageUrl) {
+            const dims = getCrosshairDims(crosshairDef);
+            return `url("${customImageUrl}") ${dims.width / 2} ${dims.height / 2}, crosshair`;
+        }
+        return "crosshair";
+    }
+
+    const objDef = CrosshairDefs[crosshairDef.type];
+    return objDef?.cursor || (objDef ? getCursorCSS(crosshairDef) : "crosshair");
+}
+
 export const crosshair = {
     getCursorURL: function (crosshairDef: Crosshair) {
         if (crosshairDef.type === "crosshair_custom_image") {
@@ -165,22 +179,7 @@ export const crosshair = {
         return getBaseURL(crosshairDef);
     },
     setElemCrosshair: function (elem: JQuery<HTMLElement>, crosshairDef: Crosshair) {
-        let cursor = "crosshair";
-
-        if (crosshairDef.type === "crosshair_custom_image") {
-            const customImageUrl = getCustomCrosshairImage();
-            if (customImageUrl) {
-                const dims = getCrosshairDims(crosshairDef);
-                cursor = `url("${customImageUrl}") ${dims.width / 2} ${dims.height / 2}, crosshair`;
-            } else {
-                cursor = "crosshair";
-            }
-        } else {
-            const objDef = CrosshairDefs[crosshairDef.type];
-            if (objDef) {
-                cursor = objDef.cursor ? objDef.cursor : getCursorCSS(crosshairDef);
-            }
-        }
+        const cursor = getCursorStyle(crosshairDef);
         if (elem[0]) {
             (elem[0] as HTMLElement).style.setProperty("cursor", cursor, "important");
         } else {
@@ -192,12 +191,15 @@ export const crosshair = {
     setGameCrosshair: function (crosshairDef: Crosshair) {
         const gameArea = $("#game-area-wrapper");
         if (gameArea.length > 0) {
-            crosshair.setElemCrosshair(gameArea, crosshairDef);
+            gameArea[0].style.setProperty("--game-cursor", getCursorStyle(crosshairDef));
         } else {
             setTimeout(() => {
                 const retryArea = $("#game-area-wrapper");
                 if (retryArea.length > 0) {
-                    crosshair.setElemCrosshair(retryArea, crosshairDef);
+                    retryArea[0].style.setProperty(
+                        "--game-cursor",
+                        getCursorStyle(crosshairDef),
+                    );
                 }
             }, 100);
         }

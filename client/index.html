@@ -138,6 +138,7 @@
                 </div>
               </div>
               <a id="btn-game-aim-line" class="btn-game-menu btn-darken locked-on-icon" data-l10n="game-aim-line">Aim Line</a>
+              <a id="btn-game-controller-aim-guide" class="btn-game-menu btn-darken locked-on-icon hide-on-mobile controller-only">Controller Aim Guide</a>
               <a id="btn-game-sound" class="btn-sound-toggle btn-game-menu btn-darken audio-on-icon" data-l10n="game-sound">Sound</a>
               <div class="slider-container ui-slider-container">
                 <p class="slider-text" data-l10n="index-master-volume">Master Volume</p>
@@ -2389,6 +2390,21 @@
             </div>
             <div class="modal-settings-item">
               <input id="showClanTags" type="checkbox"><p class="modal-settings-checkbox-text" data-l10n="index-show-clan-tags">Show clan tags in-game</p>
+            </div>
+            <div class="modal-settings-item slider-container hide-on-mobile controller-only">
+              <p class="modal-slider-text">Controller Stick Dead Zone (<span class="controller-dead-zone-value">18%</span>)</p>
+              <input type="range" min="5" max="40" value="18" class="slider sl-controller-dead-zone">
+            </div>
+            <div class="modal-settings-item slider-container hide-on-mobile controller-only">
+              <p class="modal-slider-text">Controller Aim Sensitivity (<span class="controller-aim-value">100%</span>)</p>
+              <input type="range" min="50" max="200" value="100" class="slider sl-controller-aim">
+            </div>
+            <div class="modal-settings-item slider-container hide-on-mobile controller-only">
+              <p class="modal-slider-text">Controller Scoped Sensitivity (<span class="controller-scoped-value">70%</span>)</p>
+              <input type="range" min="25" max="150" value="70" class="slider sl-controller-scoped">
+            </div>
+            <div class="modal-settings-item hide-on-mobile controller-only">
+              <input id="controllerAimGuide" type="checkbox"><p class="modal-settings-checkbox-text">Show controller aim guide</p>
             </div>
             <div class="modal-settings-item slider-container main-volume-slider">
               <p class="modal-slider-text" data-l10n="index-master-volume">Master Volume</p>
