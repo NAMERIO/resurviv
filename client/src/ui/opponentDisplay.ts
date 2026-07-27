@@ -413,13 +413,19 @@ export class LoadoutDisplay {
             loadingBlaster: 0,
             gunLoaded: false,
         };
+        const weaponSlot =
+            this.view === "secondary"
+                ? GameConfig.WeaponSlot.Secondary
+                : GameConfig.WeaponSlot.Primary;
+        const activeWeaponSkin = this.loadout.gun_skins[weaponSlot] || "";
+        const activeWeaponSkinDef = GameObjectDefs[activeWeaponSkin] as
+            | GunSkinDef
+            | undefined;
         obj.activeWeaponSkin =
-            this.loadout.gun_skins.find((skinType) => {
-                const skinDef = GameObjectDefs[skinType] as GunSkinDef | undefined;
-                return (
-                    skinDef?.type === "gun_skin" && skinDef.gunType === obj.activeWeapon
-                );
-            }) || "";
+            activeWeaponSkinDef?.type === "gun_skin" &&
+            activeWeaponSkinDef.gunType === obj.activeWeapon
+                ? activeWeaponSkin
+                : "";
 
         this.objectCreator.m_updateObjFull(ObjectType.Player, 98, obj, ctx);
 

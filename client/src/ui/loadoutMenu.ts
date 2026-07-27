@@ -15,7 +15,7 @@ import {
     privateOutfits,
     type UnlockDef,
 } from "../../../shared/defs/gameObjects/unlockDefs";
-import { EmoteSlot, Rarity } from "../../../shared/gameConfig";
+import { EmoteSlot, GameConfig, Rarity } from "../../../shared/gameConfig";
 import type { ItemStatus } from "../../../shared/utils/loadout";
 import { type Crosshair, type Loadout, loadout } from "../../../shared/utils/loadout";
 import { util } from "../../../shared/utils/util";
@@ -512,6 +512,7 @@ export class LoadoutMenu {
                 this.setGunSkin(
                     this.selectedItem.type,
                     String(option.data("skin") || ""),
+                    this.getSelectedWeaponSlot(),
                 );
             });
             this.modalCustomizeItemName.on("click", () => {
@@ -1392,41 +1393,48 @@ export class LoadoutMenu {
         $("#weapon-skin-options").empty();
     }
 
-    getEquippedGunSkin(gunType: string) {
-        return (
-            (this.loadout.gun_skins ?? []).find((skinType) => {
-                const skinDef = GameObjectDefs[skinType] as GunSkinDef | undefined;
-                return skinDef?.type === "gun_skin" && skinDef.gunType === gunType;
-            }) || ""
-        );
+    getSelectedWeaponSlot() {
+        return this.selectedItem.loadoutType === "secondary"
+            ? GameConfig.WeaponSlot.Secondary
+            : GameConfig.WeaponSlot.Primary;
     }
 
-    setGunSkin(gunType: string, skinType: string) {
+    getEquippedGunSkin(gunType: string, slot: number) {
+        const skinType = (this.loadout.gun_skins ?? [])[slot] || "";
+        const skinDef = GameObjectDefs[skinType] as GunSkinDef | undefined;
+        return skinDef?.type === "gun_skin" && skinDef.gunType === gunType
+            ? skinType
+            : "";
+    }
+
+    setGunSkin(gunType: string, skinType: string, slot: number) {
         const gunDef = GameObjectDefs[gunType];
         if (gunDef?.type !== "gun") return;
 
-        this.loadout.gun_skins = (this.loadout.gun_skins ?? []).filter((equippedSkin) => {
-            const equippedDef = GameObjectDefs[equippedSkin] as GunSkinDef | undefined;
-            return equippedDef?.type !== "gun_skin" || equippedDef.gunType !== gunType;
-        });
+        const equippedSkins = [...(this.loadout.gun_skins ?? [])];
+        while (equippedSkins.length < 2) {
+            equippedSkins.push("");
+        }
+        equippedSkins[slot] = "";
 
         const skinDef = GameObjectDefs[skinType] as GunSkinDef | undefined;
         if (skinDef?.type === "gun_skin" && skinDef.gunType === gunType) {
-            this.loadout.gun_skins.push(skinType);
+            equippedSkins[slot] = skinType;
         }
+        this.loadout.gun_skins = equippedSkins.slice(0, 2);
 
         this.loadout = loadout.validate(this.loadout);
         this.config.set("loadout", this.loadout);
         if (this.loadoutDisplay?.initialized) {
             this.loadoutDisplay.setLoadout(this.loadout);
         }
-        this.populateGunSkinOptions(gunType);
+        this.populateGunSkinOptions(gunType, slot);
     }
 
-    populateGunSkinOptions(gunType: string) {
+    populateGunSkinOptions(gunType: string, slot: number) {
         const options = $("#weapon-skin-options");
         options.empty();
-        const equippedSkin = this.getEquippedGunSkin(gunType);
+        const equippedSkin = this.getEquippedGunSkin(gunType, slot);
         const gunDef = GameObjectDefs[gunType] as GunDef;
         const appendOption = (
             skinType: string,
@@ -1599,7 +1607,7 @@ export class LoadoutMenu {
             );
             const headshotPct = Math.round(gunDef.headshotMult * 100);
             $("#weapon-detail-headshot").html(`${headshotPct}%`);
-            this.populateGunSkinOptions(type);
+            this.populateGunSkinOptions(type, this.getSelectedWeaponSlot());
         } else if (def.type === "melee") {
             const meleeDef = def as MeleeDef;
 

@@ -19,7 +19,7 @@ export class JoinMsg implements AbstractMsg {
         death_effect: "",
         perk: "",
         streak: "",
-        gun_skins: [] as string[],
+        gun_skins: ["", ""] as string[],
         emotes: [] as string[],
     };
 
@@ -45,7 +45,10 @@ export class JoinMsg implements AbstractMsg {
         s.writeGameType(this.loadout.perk);
         s.writeString(this.loadout.streak);
         s.writeArray(this.loadout.gun_skins, 8, (skin) => {
-            s.writeGameType(skin);
+            s.writeBoolean(!!skin);
+            if (skin) {
+                s.writeGameType(skin);
+            }
         });
 
         s.writeArray(this.loadout.emotes, 8, (emote) => {
@@ -74,7 +77,7 @@ export class JoinMsg implements AbstractMsg {
         this.loadout.perk = s.readGameType();
         this.loadout.streak = s.readString();
         this.loadout.gun_skins = s.readArray(8, () => {
-            return s.readGameType();
+            return s.readBoolean() ? s.readGameType() : "";
         });
 
         this.loadout.emotes = s.readArray(8, () => {

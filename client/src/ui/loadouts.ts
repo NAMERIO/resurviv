@@ -112,17 +112,27 @@ const loadout = {
             emotes: [] as string[],
         };
 
-        const equippedGunTypes = new Set<string>();
         const gunSkins = Array.isArray(mergedLoadout.gun_skins)
             ? mergedLoadout.gun_skins
             : [];
-        for (const skinType of gunSkins) {
-            const skinDef = GameObjectDefs[skinType];
-            if (skinDef?.type !== "gun_skin" || equippedGunTypes.has(skinDef.gunType)) {
-                continue;
-            }
-            equippedGunTypes.add(skinDef.gunType);
-            validatedLoadout.gun_skins.push(skinType);
+        const equippedGuns = [validatedLoadout.primary, validatedLoadout.secondary];
+        const hasSlotLayout = gunSkins.length === equippedGuns.length;
+        for (let slot = 0; slot < equippedGuns.length; slot++) {
+            const skinType = hasSlotLayout
+                ? gunSkins[slot]
+                : gunSkins.find((legacySkinType) => {
+                      const skinDef = GameObjectDefs[legacySkinType];
+                      return (
+                          skinDef?.type === "gun_skin" &&
+                          skinDef.gunType === equippedGuns[slot]
+                      );
+                  });
+            const skinDef = GameObjectDefs[skinType || ""];
+            validatedLoadout.gun_skins.push(
+                skinDef?.type === "gun_skin" && skinDef.gunType === equippedGuns[slot]
+                    ? skinType!
+                    : "",
+            );
         }
 
         const defaultEmotes = GameConfig.defaultEmoteLoadout.slice();
