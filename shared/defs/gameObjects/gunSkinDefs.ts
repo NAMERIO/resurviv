@@ -9,6 +9,7 @@ export interface GunSkinDef {
     worldImg: {
         sprite: string;
         onLoadComplete?: string;
+        tint?: number;
     };
 }
 

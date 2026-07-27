@@ -46,6 +46,38 @@ function emoteSlotToDomElem(e: Exclude<EmoteSlot, EmoteSlot.Count>) {
     return $(`#${domId}`);
 }
 
+function getWeaponSkinTintFilter(tint: number) {
+    if (tint === 0xffffff) return "";
+
+    const filterId = `weapon-skin-tint-${tint.toString(16).padStart(6, "0")}`;
+    if (!document.getElementById(filterId)) {
+        const svgNamespace = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(svgNamespace, "svg");
+        const filter = document.createElementNS(svgNamespace, "filter");
+        const colorMatrix = document.createElementNS(svgNamespace, "feColorMatrix");
+        const red = ((tint >> 16) & 0xff) / 0xff;
+        const green = ((tint >> 8) & 0xff) / 0xff;
+        const blue = (tint & 0xff) / 0xff;
+
+        svg.setAttribute("aria-hidden", "true");
+        svg.style.position = "absolute";
+        svg.style.width = "0";
+        svg.style.height = "0";
+        filter.id = filterId;
+        filter.setAttribute("color-interpolation-filters", "sRGB");
+        colorMatrix.setAttribute("type", "matrix");
+        colorMatrix.setAttribute(
+            "values",
+            `${red} 0 0 0 0 0 ${green} 0 0 0 0 0 ${blue} 0 0 0 0 0 1 0`,
+        );
+        filter.appendChild(colorMatrix);
+        svg.appendChild(filter);
+        document.body.appendChild(svg);
+    }
+
+    return `url(#${filterId})`;
+}
+
 function itemSort(sortFn: (a: Item, b: Item) => void) {
     return function (a: Item, b: Item) {
         // Always put stock items at the front of the list;
@@ -1440,8 +1472,19 @@ export class LoadoutMenu {
             skinType: string,
             worldSprite: string,
             accessibleName: string,
+            tint: number,
             rarity?: Rarity,
         ) => {
+            const image = $("<div/>", {
+                class: "weapon-skin-option-image",
+                css: {
+                    "background-image": `url(img/guns/${worldSprite.replace(
+                        /\.img$/,
+                        "",
+                    )}.svg)`,
+                    filter: getWeaponSkinTintFilter(tint),
+                },
+            });
             const option = $("<button/>", {
                 type: "button",
                 class:
@@ -1451,17 +1494,7 @@ export class LoadoutMenu {
                 "data-skin": skinType,
                 "aria-label": accessibleName,
                 title: accessibleName,
-            }).append(
-                $("<div/>", {
-                    class: "weapon-skin-option-image",
-                    css: {
-                        "background-image": `url(img/guns/${worldSprite.replace(
-                            /\.img$/,
-                            "",
-                        )}.svg)`,
-                    },
-                }),
-            );
+            }).append(image);
             if (rarity !== undefined) {
                 option.css(
                     "--gun-skin-rarity-color",
@@ -1471,7 +1504,7 @@ export class LoadoutMenu {
             options.append(option);
         };
 
-        appendOption("", gunDef.worldImg.sprite, "Default");
+        appendOption("", gunDef.worldImg.sprite, "Default", gunDef.worldImg.tint);
 
         const seen = new Set<string>();
         for (const item of this.items) {
@@ -1490,6 +1523,7 @@ export class LoadoutMenu {
                 this.localization.translate(`game-${item.type}`) ||
                     skinDef.name ||
                     "Gun skin",
+                skinDef.worldImg.tint ?? 0xffffff,
                 skinDef.rarity,
             );
         }

@@ -155,7 +155,7 @@ class Gun {
         this.gunBarrel.position.set(0, 0);
         this.gunBarrel.scale.set((imgDef.scale.x * 0.5) / t, (imgDef.scale.y * 0.5) / t);
 
-        this.gunBarrel.tint = skinImg ? 0xffffff : imgDef.tint;
+        this.gunBarrel.tint = skinImg?.tint ?? (skinImg ? 0xffffff : imgDef.tint);
         this.gunBarrel.visible = true;
         if (imgDef.magImg) {
             const magDef = imgDef.magImg;
