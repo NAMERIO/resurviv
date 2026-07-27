@@ -23,6 +23,7 @@ import {
     SCOPE_LEVELS,
 } from "../../../../shared/defs/gameObjects/gearDefs";
 import type { GunDef } from "../../../../shared/defs/gameObjects/gunDefs";
+import type { GunSkinDef } from "../../../../shared/defs/gameObjects/gunSkinDefs";
 import type { MeleeDef } from "../../../../shared/defs/gameObjects/meleeDefs";
 import type { OutfitDef } from "../../../../shared/defs/gameObjects/outfitDefs";
 import { PerkProperties } from "../../../../shared/defs/gameObjects/perkDefs";
@@ -1397,6 +1398,16 @@ export class Player extends BaseGameObject {
 
     getNetActiveWeapon(): string {
         return this.getDisplayWeaponType(this.curWeapIdx) || this.activeWeapon;
+    }
+
+    get activeWeaponSkin(): string {
+        const activeWeapon = this.getNetActiveWeapon();
+        return (
+            this.loadout.gun_skins.find((skinType) => {
+                const skinDef = GameObjectDefs[skinType] as GunSkinDef | undefined;
+                return skinDef?.type === "gun_skin" && skinDef.gunType === activeWeapon;
+            }) || ""
+        );
     }
 
     getNetWeapons(): WeaponManager["weapons"] {
@@ -2821,6 +2832,7 @@ export class Player extends BaseGameObject {
         death_effect: "death_basic",
         streak: "streak_rapid_fire",
         perk: "quick_reload",
+        gun_skins: [] as string[],
         emotes: [...GameConfig.defaultEmoteLoadout],
     };
 
@@ -7050,6 +7062,17 @@ export class Player extends BaseGameObject {
         }
         if (isItemInLoadout(loadout.death_effect, "death_effect")) {
             this.loadout.death_effect = loadout.death_effect;
+        }
+
+        const gunSkins = [...(loadout.gun_skins || [])];
+        this.loadout.gun_skins = [];
+        const equippedGunTypes = new Set<string>();
+        for (const skinType of gunSkins) {
+            if (!isItemInLoadout(skinType, "gun_skin")) continue;
+            const skinDef = GameObjectDefs[skinType] as GunSkinDef;
+            if (equippedGunTypes.has(skinDef.gunType)) continue;
+            equippedGunTypes.add(skinDef.gunType);
+            this.loadout.gun_skins.push(skinType);
         }
 
         const emotes = loadout.emotes;

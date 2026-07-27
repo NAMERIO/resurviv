@@ -1,8 +1,5 @@
 import { allowedGuns } from "../../deathmatch/loadoutItems";
 import { CrosshairDefs } from "./crosshairDefs";
-import { DeathEffectDefs } from "./deathEffectDefs";
-import { HealEffectDefs } from "./healEffectDefs";
-import { PassDefs } from "./passDefs";
 
 export const privateOutfits = [
     "outfitToilet",
@@ -20,6 +17,7 @@ export const privateOutfits = [
 const _allowedHealEffects = ["heal_basic", "boost_basic"];
 const _allowedDeathEffects = ["death_none", "death_basic"];
 const _allowedStreaks = ["streak_rapid_fire", "streak_heavy_hitter", "streak_juggernaut"];
+const _allowedGunSkins = ["mosin_gilded"];
 const _featuredBundleUnlocks = [
     "outfitDemo",
     "outfitTank",
@@ -92,7 +90,6 @@ const _featuredBundleUnlocks = [
     "outfitLasrDisk",
     "outfitBeachCamo",
     "outfitForest",
-    "outfitGingerbread",
     "outfitVenom",
     "outfitChritstmasTree",
     "outfitYinYang",
@@ -737,6 +734,7 @@ export const UnlockDefs: Record<UnlockDefKey, UnlockDef> = {
                 ),
                 // ...PassDefs.pass_survivr1.items.map((item) => item.item),
                 ...allowedGuns,
+                ..._allowedGunSkins,
             ]),
         ],
     },

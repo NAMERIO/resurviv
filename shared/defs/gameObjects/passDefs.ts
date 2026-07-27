@@ -321,7 +321,12 @@ export const PassDefs: Record<string, PassDef> = {
             50, 50, 50, 50, 50, 50, 50, 50, 75, 75, 75, 75, 75, 75, 100, 100, 100, 125,
             125, 150, 75, 75, 75,
         ],
-        items: [],
+        items: [
+            {
+                level: 65,
+                item: "mosin_gilded",
+            },
+        ],
         premiumItems: [
             {
                 level: 2,

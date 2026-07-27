@@ -3,6 +3,7 @@ import { Rarity } from "../gameConfig";
 
 const supportedMarketTypes = new Set([
     "outfit",
+    "gun_skin",
     "melee",
     "emote",
     "heal_effect",

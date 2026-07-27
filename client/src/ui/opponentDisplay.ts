@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js-legacy";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import type { DeathEffectDef } from "../../../shared/defs/gameObjects/deathEffectDefs";
+import type { GunSkinDef } from "../../../shared/defs/gameObjects/gunSkinDefs";
 import type { OutfitDef } from "../../../shared/defs/gameObjects/outfitDefs";
 import { type Action, type Anim, GameConfig } from "../../../shared/gameConfig";
 import type { MapMsg } from "../../../shared/net/mapMsg";
@@ -381,6 +382,7 @@ export class LoadoutDisplay {
                     : this.view === "secondary"
                       ? this.loadout.secondary
                       : this.loadout.primary,
+            activeWeaponSkin: "",
             layer: 0,
             dead: false,
             downed: false,
@@ -411,6 +413,13 @@ export class LoadoutDisplay {
             loadingBlaster: 0,
             gunLoaded: false,
         };
+        obj.activeWeaponSkin =
+            this.loadout.gun_skins.find((skinType) => {
+                const skinDef = GameObjectDefs[skinType] as GunSkinDef | undefined;
+                return (
+                    skinDef?.type === "gun_skin" && skinDef.gunType === obj.activeWeapon
+                );
+            }) || "";
 
         this.objectCreator.m_updateObjFull(ObjectType.Player, 98, obj, ctx);
 
@@ -517,7 +526,8 @@ export class LoadoutDisplay {
         const screenPos = v2.add(screenAabb.min, screenExt);
         const modalOffset = v2.sub(modalPos, screenPos);
         const viewWidth = screenExt.x - modalOffset.x - modalExt.x;
-        const offsetX = math.clamp(viewWidth * 0.5, 2.5, 6);
+        const playerPreviewNudgeX = 0.8;
+        const offsetX = math.clamp(viewWidth * 0.5, 2.5, 6) + playerPreviewNudgeX;
         const offsetY = 0.33;
         const offset = v2.create(
             modalOffset.x + modalExt.x + offsetX,

@@ -19,6 +19,7 @@ export interface Loadout {
     melee: string;
     perk: string;
     streak: string;
+    gun_skins: string[];
     emotes: string[];
     crosshair: Crosshair;
 }
@@ -61,6 +62,7 @@ const loadout = {
                 },
                 emotes: [],
                 streak: DefaultStreakType,
+                gun_skins: [],
             },
             ...userLoadout,
         } as Loadout;
@@ -81,6 +83,7 @@ const loadout = {
             streak: DamageStreakDefs[mergedLoadout.streak]
                 ? mergedLoadout.streak
                 : DefaultStreakType,
+            gun_skins: [],
             crosshair: {
                 type:
                     mergedLoadout.crosshair.type === "crosshair_custom_image"
@@ -108,6 +111,19 @@ const loadout = {
             },
             emotes: [] as string[],
         };
+
+        const equippedGunTypes = new Set<string>();
+        const gunSkins = Array.isArray(mergedLoadout.gun_skins)
+            ? mergedLoadout.gun_skins
+            : [];
+        for (const skinType of gunSkins) {
+            const skinDef = GameObjectDefs[skinType];
+            if (skinDef?.type !== "gun_skin" || equippedGunTypes.has(skinDef.gunType)) {
+                continue;
+            }
+            equippedGunTypes.add(skinDef.gunType);
+            validatedLoadout.gun_skins.push(skinType);
+        }
 
         const defaultEmotes = GameConfig.defaultEmoteLoadout.slice();
         for (let i = 0; i < GameConfig.EmoteSlot.Count; i++) {

@@ -15,6 +15,7 @@ import {
     type ScopeDef,
 } from "./gameObjects/gearDefs";
 import { type GunDef, GunDefs } from "./gameObjects/gunDefs";
+import { type GunSkinDef, GunSkinDefs } from "./gameObjects/gunSkinDefs";
 import { type HealEffectDef, HealEffectDefs } from "./gameObjects/healEffectDefs";
 import { type MeleeDef, MeleeDefs } from "./gameObjects/meleeDefs";
 import { type OutfitDef, OutfitDefs } from "./gameObjects/outfitDefs";
@@ -43,6 +44,7 @@ export type GameObjectDef =
     | ChestDef
     | ScopeDef
     | GunDef
+    | GunSkinDef
     | MeleeDef
     | OutfitDef
     | QuestDef
@@ -79,6 +81,7 @@ const ObjectDefsList: Array<Record<string, GameObjectDef>> = [
     ExplosionDefs,
     GearDefs,
     GunDefs,
+    GunSkinDefs,
     MeleeDefs,
     OutfitDefs,
     QuestDefs,

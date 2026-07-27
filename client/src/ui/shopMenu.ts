@@ -73,6 +73,7 @@ const marketListingDurationMs = 24 * 60 * 60 * 1000;
 
 const supportedMarketTypes = new Set([
     "outfit",
+    "gun_skin",
     "melee",
     "emote",
     "heal_effect",
@@ -91,6 +92,7 @@ const rarityL10n: Record<number, string> = {
 
 const categoryL10n: Record<string, string> = {
     outfit: "market-type-outfit",
+    gun_skin: "market-type-gunSkin",
     melee: "market-type-melee",
     emote: "market-type-emote",
     heal_effect: "market-type-heal",
@@ -909,7 +911,9 @@ export class ShopMenu {
                 ? ""
                 : this.marketType === "death_effect"
                   ? "url(img/emotes/tombstone.svg)"
-                  : `url(img/gui/loadout-${this.marketType.replace("_effect", "")}.svg)`,
+                  : this.marketType === "gun_skin"
+                    ? "url(img/loot/loot-weapon-mosin.svg)"
+                    : `url(img/gui/loadout-${this.marketType.replace("_effect", "")}.svg)`,
         );
         $("#market-type-selected").toggleClass(
             "right-market-btn-img",

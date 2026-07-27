@@ -4,13 +4,14 @@
 
 #modal-content-left {
   width: 760px !important;
-  left: -10% !important;
+  left: -20% !important;
 }
 
 #modal-content-right-crosshair,
 #modal-content-right-emote,
-#modal-content-right-weapon {
-  margin-right: -100px;
+#modal-content-right-weapon,
+#modal-content-right-weapon-skin {
+  margin-right: -2px;
 }
 
 @media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
@@ -20,7 +21,8 @@
 
   #modal-content-right-crosshair,
   #modal-content-right-emote,
-  #modal-content-right-weapon {
+  #modal-content-right-weapon,
+  #modal-content-right-weapon-skin {
     margin-right: -83px !important;
   }
 }

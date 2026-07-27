@@ -1,6 +1,5 @@
 import $ from "jquery";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
-import type { EmoteDef } from "../../../shared/defs/gameObjects/emoteDefs";
 import type { OutfitDef } from "../../../shared/defs/gameObjects/outfitDefs";
 import {
     CurrentPassType,
@@ -64,13 +63,17 @@ function createPassRewardImage(
     skinScale: number,
 ) {
     const outfitDef = getPassRewardSkinPreviewDef(reward);
+    const itemDef = "item" in reward ? GameObjectDefs[reward.item] : undefined;
+    const isGunSkin = itemDef?.type === "gun_skin";
     return outfitDef
         ? createOutfitSkinPreview(outfitDef, skinScale, className)
         : $("<div/>", {
-              class: className,
+              class: `${className}${isGunSkin ? " pass-gun-skin-image" : ""}`,
               css: {
                   "background-image": `url(${getPassRewardImage(reward)})`,
-                  transform: getPassRewardTransform(reward),
+                  transform: isGunSkin
+                      ? "rotate(45deg) scale(0.82)"
+                      : getPassRewardTransform(reward),
               },
           });
 }
@@ -1138,7 +1141,15 @@ export class Pass {
 
     setPassUnlockImage(reward: PassRewardDef | null) {
         const item = reward && "item" in reward ? reward.item : "";
-        const emoteDef = item ? (GameObjectDefs[item] as EmoteDef) : undefined;
+        const itemDef = item ? GameObjectDefs[item] : undefined;
+        const itemCategory =
+            itemDef?.type === "gun_skin"
+                ? this.loadoutMenu.getCategory("gun")
+                : itemDef
+                  ? this.loadoutMenu.getCategory(itemDef.type)
+                  : null;
+        const loadoutType =
+            itemDef?.type === "gun_skin" ? "gun_skin" : itemCategory?.loadoutType;
         const outfitDef = reward ? getPassRewardSkinPreviewDef(reward) : null;
         const unlockImagePath = reward
             ? getPassRewardImage(reward)
@@ -1151,18 +1162,15 @@ export class Pass {
             transform: `translate(-50%, -50%) ${unlockImageTransform}`,
         });
         const unlockImage = $("#pass-progress-unlock-image").empty();
+        unlockImage.toggleClass("pass-gun-skin-image", itemDef?.type === "gun_skin");
         unlockImage.css({
             "background-image": outfitDef ? "none" : unlockImageUrl,
         });
         if (outfitDef) {
             unlockImage.append(createOutfitSkinPreview(outfitDef, 1.15));
         }
-        const unlockTypeTitle = emoteDef
-            ? this.localization
-                  .translate(
-                      `loadout-title-${this.loadoutMenu.getCategory(emoteDef.type)!.loadoutType}`,
-                  )
-                  .toUpperCase()
+        const unlockTypeTitle = loadoutType
+            ? this.localization.translate(`loadout-title-${loadoutType}`).toUpperCase()
             : reward && "gp" in reward
               ? "CURRENCY"
               : "";
@@ -1172,11 +1180,14 @@ export class Pass {
         tooltipElem
             .find(".tooltip-pass-desc")
             .html(reward ? getPassRewardName(reward) : "");
-        const unlockTypeImageUrl = emoteDef
-            ? `url(${this.loadoutMenu.getCategory(emoteDef.type)!.categoryImage})`
-            : reward && "gp" in reward
-              ? "url(img/loot/loot-golde-potato.svg)"
-              : "";
+        const unlockTypeImageUrl =
+            itemDef?.type === "gun_skin"
+                ? "url(img/loot/loot-weapon-mosin.svg)"
+                : itemCategory
+                  ? `url(${itemCategory.categoryImage})`
+                  : reward && "gp" in reward
+                    ? "url(img/loot/loot-golde-potato.svg)"
+                    : "";
         $("#pass-progress-unlock-type-image").css({
             "background-image": unlockTypeImageUrl,
         });

@@ -7,6 +7,7 @@ import { EmoteCategory, type EmoteDef } from "../../../shared/defs/gameObjects/e
 import { ExplosionDefs } from "../../../shared/defs/gameObjects/explosionsDefs";
 import type { AmmoDef } from "../../../shared/defs/gameObjects/gearDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
+import type { GunSkinDef } from "../../../shared/defs/gameObjects/gunSkinDefs";
 import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
 import { type OutfitDef, OutfitDefs } from "../../../shared/defs/gameObjects/outfitDefs";
 import type { ThrowableDef } from "../../../shared/defs/gameObjects/throwableDefs";
@@ -114,29 +115,25 @@ const loadoutGunSectionByType = new Map<string, string>(
     ),
 );
 
-function darkenColor(color: number, amount: number) {
-    const scale = Math.max(0, Math.min(1, 1 - amount));
-    const r = Math.round(((color >> 16) & 255) * scale);
-    const g = Math.round(((color >> 8) & 255) * scale);
-    const b = Math.round((color & 255) * scale);
-    return (r << 16) | (g << 8) | b;
-}
-
 function getLoadoutTileVisuals(itemType: string, rarity: number) {
     const def = GameObjectDefs[itemType];
     const rarityVisuals = helpers.getRarityVisuals(rarity);
     if (def?.type == "gun") {
         const gunDef = def as GunDef;
         const ammoDef = GameObjectDefs[gunDef.ammo] as AmmoDef | undefined;
-        if (ammoDef?.type == "ammo") {
-            const ammoColor = ammoDef.lootImg.tintDark ?? ammoDef.lootImg.tint;
-            return {
-                backgroundColor: helpers.colorToHexString(darkenColor(ammoColor, 0.45)),
-                border: rarityVisuals.border,
-            };
-        }
+        return {
+            backgroundColor: "rgba(28, 28, 28, 0.72)",
+            border:
+                ammoDef?.type == "ammo"
+                    ? helpers.colorToHexString(ammoDef.lootImg.tint)
+                    : rarityVisuals.border,
+            borderWidth: 4,
+        };
     }
-    return rarityVisuals;
+    return {
+        ...rarityVisuals,
+        borderWidth: 2,
+    };
 }
 
 export interface Item {
@@ -509,6 +506,13 @@ export class LoadoutMenu {
             this.itemSort = $("#modal-customize-sort");
             this.itemSort.on("change", (e) => {
                 this.sortItems(e.target.value);
+            });
+            $("#weapon-skin-options").on("click", ".weapon-skin-option", (e) => {
+                const option = $(e.currentTarget);
+                this.setGunSkin(
+                    this.selectedItem.type,
+                    String(option.data("skin") || ""),
+                );
             });
             this.modalCustomizeItemName.on("click", () => {
                 const _elements = document.getElementsByClassName(
@@ -1271,7 +1275,10 @@ export class LoadoutMenu {
         if (["primary", "secondary"].includes(this.selectedItem.loadoutType!)) {
             this.populateWeaponStats(this.selectedItem.type);
         } else {
-            $("#modal-content-right-weapon").css("display", "none");
+            $("#modal-content-right-weapon, #modal-content-right-weapon-skin").css(
+                "display",
+                "none",
+            );
             this.clearWeaponStats();
         }
 
@@ -1382,6 +1389,102 @@ export class LoadoutMenu {
         $(".weapon-stat-bar-inner").css("width", "0%");
         $(".weapon-stat-value").html("");
         $(".weapon-detail-value").html("");
+        $("#weapon-skin-options").empty();
+    }
+
+    getEquippedGunSkin(gunType: string) {
+        return (
+            (this.loadout.gun_skins ?? []).find((skinType) => {
+                const skinDef = GameObjectDefs[skinType] as GunSkinDef | undefined;
+                return skinDef?.type === "gun_skin" && skinDef.gunType === gunType;
+            }) || ""
+        );
+    }
+
+    setGunSkin(gunType: string, skinType: string) {
+        const gunDef = GameObjectDefs[gunType];
+        if (gunDef?.type !== "gun") return;
+
+        this.loadout.gun_skins = (this.loadout.gun_skins ?? []).filter((equippedSkin) => {
+            const equippedDef = GameObjectDefs[equippedSkin] as GunSkinDef | undefined;
+            return equippedDef?.type !== "gun_skin" || equippedDef.gunType !== gunType;
+        });
+
+        const skinDef = GameObjectDefs[skinType] as GunSkinDef | undefined;
+        if (skinDef?.type === "gun_skin" && skinDef.gunType === gunType) {
+            this.loadout.gun_skins.push(skinType);
+        }
+
+        this.loadout = loadout.validate(this.loadout);
+        this.config.set("loadout", this.loadout);
+        if (this.loadoutDisplay?.initialized) {
+            this.loadoutDisplay.setLoadout(this.loadout);
+        }
+        this.populateGunSkinOptions(gunType);
+    }
+
+    populateGunSkinOptions(gunType: string) {
+        const options = $("#weapon-skin-options");
+        options.empty();
+        const equippedSkin = this.getEquippedGunSkin(gunType);
+        const gunDef = GameObjectDefs[gunType] as GunDef;
+        const appendOption = (
+            skinType: string,
+            worldSprite: string,
+            accessibleName: string,
+            rarity?: Rarity,
+        ) => {
+            const option = $("<button/>", {
+                type: "button",
+                class:
+                    "weapon-skin-option" +
+                    (rarity !== undefined ? " has-rarity" : "") +
+                    (equippedSkin === skinType ? " selected" : ""),
+                "data-skin": skinType,
+                "aria-label": accessibleName,
+                title: accessibleName,
+            }).append(
+                $("<div/>", {
+                    class: "weapon-skin-option-image",
+                    css: {
+                        "background-image": `url(img/guns/${worldSprite.replace(
+                            /\.img$/,
+                            "",
+                        )}.svg)`,
+                    },
+                }),
+            );
+            if (rarity !== undefined) {
+                option.css(
+                    "--gun-skin-rarity-color",
+                    helpers.getRarityVisuals(rarity).border,
+                );
+            }
+            options.append(option);
+        };
+
+        appendOption("", gunDef.worldImg.sprite, "Default");
+
+        const seen = new Set<string>();
+        for (const item of this.items) {
+            const skinDef = GameObjectDefs[item.type] as GunSkinDef | undefined;
+            if (
+                skinDef?.type !== "gun_skin" ||
+                skinDef.gunType !== gunType ||
+                seen.has(item.type)
+            ) {
+                continue;
+            }
+            seen.add(item.type);
+            appendOption(
+                item.type,
+                skinDef.worldImg.sprite,
+                this.localization.translate(`game-${item.type}`) ||
+                    skinDef.name ||
+                    "Gun skin",
+                skinDef.rarity,
+            );
+        }
     }
 
     populateWeaponStats(type: string) {
@@ -1496,6 +1599,7 @@ export class LoadoutMenu {
             );
             const headshotPct = Math.round(gunDef.headshotMult * 100);
             $("#weapon-detail-headshot").html(`${headshotPct}%`);
+            this.populateGunSkinOptions(type);
         } else if (def.type === "melee") {
             const meleeDef = def as MeleeDef;
 
@@ -1617,6 +1721,10 @@ export class LoadoutMenu {
         );
         const isWeaponCat = ["primary", "secondary"].includes(category.loadoutType);
         $("#modal-content-right-weapon").css("display", isWeaponCat ? "block" : "none");
+        $("#modal-content-right-weapon-skin").css(
+            "display",
+            isWeaponCat ? "block" : "none",
+        );
         if (isWeaponCat) {
             this.clearWeaponStats();
         }
@@ -1706,7 +1814,7 @@ export class LoadoutMenu {
                 class: "customize-item-image",
                 css: {
                     "background-color": tileVisuals.backgroundColor,
-                    border: `2px solid ${tileVisuals.border}`,
+                    border: `${tileVisuals.borderWidth}px solid ${tileVisuals.border}`,
                     "border-radius": "0",
                     "box-shadow": "inset 0 0 0 1px rgba(0,0,0,0.35)",
                 },

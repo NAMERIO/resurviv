@@ -299,6 +299,7 @@ class Bot {
         joinMsg.loadout = {
             melee: melees[util.randomInt(0, melees.length - 1)],
             outfit: outfits[util.randomInt(0, outfits.length - 1)],
+            gun_skins: [],
             heal: "heal_basic",
             boost: "boost_basic",
             perk: "quick_reload",

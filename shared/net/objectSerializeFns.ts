@@ -88,6 +88,7 @@ export interface ObjectsFullData {
         helmet: string;
         chest: string;
         activeWeapon: string;
+        activeWeaponSkin: string;
         layer: number;
         dead: boolean;
         downed: boolean;
@@ -230,7 +231,7 @@ export const ObjectSerializeFns: {
     };
 } = {
     [ObjectType.Player]: {
-        serializedFullSize: 32,
+        serializedFullSize: 34,
         /* STRIP_FROM_PROD_CLIENT:START */
         serializePart: (s, data) => {
             s.writeMapPos(data.pos);
@@ -251,6 +252,7 @@ export const ObjectSerializeFns: {
             s.writeGameType(data.helmet);
             s.writeGameType(data.chest);
             s.writeGameType(netActiveWeapon);
+            s.writeGameType(data.activeWeaponSkin);
 
             s.writeBits(data.layer, 2);
             s.writeBoolean(data.dead);
@@ -335,6 +337,7 @@ export const ObjectSerializeFns: {
             data.helmet = s.readGameType();
             data.chest = s.readGameType();
             data.activeWeapon = s.readGameType();
+            data.activeWeaponSkin = s.readGameType();
 
             data.layer = s.readBits(2);
             data.dead = s.readBoolean();

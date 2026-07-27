@@ -10,6 +10,7 @@ import type {
     HelmetDef,
 } from "./../../../shared/defs/gameObjects/gearDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
+import type { GunSkinDef } from "../../../shared/defs/gameObjects/gunSkinDefs";
 import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
 import type { OutfitDef } from "../../../shared/defs/gameObjects/outfitDefs";
 import type { RoleDef } from "../../../shared/defs/gameObjects/roleDefs";
@@ -136,18 +137,25 @@ class Gun {
         this.container.visible = vis;
     }
 
-    setType(type: string, t: number, loaded = false) {
+    setType(type: string, skinType: string, t: number, loaded = false) {
         const gunDef = GameObjectDefs[type] as GunDef;
         const imgDef = gunDef.worldImg;
+        const skinDef = GameObjectDefs[skinType] as GunSkinDef | undefined;
+        const skinImg =
+            skinDef?.type === "gun_skin" && skinDef.gunType === type
+                ? skinDef.worldImg
+                : undefined;
         this.gunBarrel.texture = PIXI.Texture.from(
-            loaded && imgDef.onLoadComplete ? imgDef.onLoadComplete : imgDef.sprite,
+            loaded && (skinImg?.onLoadComplete || imgDef.onLoadComplete)
+                ? skinImg?.onLoadComplete || imgDef.onLoadComplete!
+                : skinImg?.sprite || imgDef.sprite,
         );
 
         this.gunBarrel.anchor.set(0.5, 1);
         this.gunBarrel.position.set(0, 0);
         this.gunBarrel.scale.set((imgDef.scale.x * 0.5) / t, (imgDef.scale.y * 0.5) / t);
 
-        this.gunBarrel.tint = imgDef.tint;
+        this.gunBarrel.tint = skinImg ? 0xffffff : imgDef.tint;
         this.gunBarrel.visible = true;
         if (imgDef.magImg) {
             const magDef = imgDef.magImg;
@@ -387,6 +395,7 @@ export class Player implements AbstractObject {
         m_helmet: string;
         m_chest: string;
         m_activeWeapon: string;
+        m_activeWeaponSkin: string;
         m_layer: number;
         m_dead: boolean;
         m_downed: boolean;
@@ -580,6 +589,7 @@ export class Player implements AbstractObject {
             m_helmet: "",
             m_chest: "",
             m_activeWeapon: "fists",
+            m_activeWeaponSkin: "",
             m_layer: 0,
             m_dead: false,
             m_downed: false,
@@ -701,6 +711,7 @@ export class Player implements AbstractObject {
             this.m_netData.m_helmet = data.helmet;
             this.m_netData.m_chest = data.chest;
             this.m_netData.m_activeWeapon = data.activeWeapon;
+            this.m_netData.m_activeWeaponSkin = data.activeWeaponSkin;
             this.m_netData.m_layer = data.layer;
             this.m_netData.m_dead = data.dead;
             this.m_netData.m_downed = data.downed;
@@ -2194,6 +2205,7 @@ export class Player implements AbstractObject {
         if (weapDef.type == "gun") {
             this.gunRSprites.setType(
                 this.m_netData.m_activeWeapon,
+                this.m_netData.m_activeWeaponSkin,
                 bodyScale,
                 this.m_netData.m_gunLoaded,
             );
@@ -2201,6 +2213,7 @@ export class Player implements AbstractObject {
             if (weapDef.isDual) {
                 this.gunLSprites.setType(
                     this.m_netData.m_activeWeapon,
+                    this.m_netData.m_activeWeaponSkin,
                     bodyScale,
                     this.m_netData.m_gunLoaded,
                 );

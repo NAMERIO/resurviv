@@ -33,6 +33,7 @@ export const loadoutSchema = z.object({
     secondary: z.string(),
     perk: z.string(),
     streak: z.string(),
+    gun_skins: z.array(z.string()).default([]),
     crosshair: z.object({
         type: z.string(),
         color: z.number(),
@@ -80,6 +81,7 @@ export const loadout = {
                 },
                 emotes: [],
                 streak: DefaultStreakType,
+                gun_skins: [],
             },
             ...userLoadout,
         } as Loadout;
@@ -100,6 +102,7 @@ export const loadout = {
             streak: DamageStreakDefs[mergedLoadout.streak]
                 ? mergedLoadout.streak
                 : DefaultStreakType,
+            gun_skins: [],
             crosshair: {
                 type:
                     mergedLoadout.crosshair.type === "crosshair_custom_image"
@@ -118,6 +121,19 @@ export const loadout = {
             },
             emotes: [] as string[],
         };
+
+        const equippedGunTypes = new Set<string>();
+        const gunSkins = Array.isArray(mergedLoadout.gun_skins)
+            ? mergedLoadout.gun_skins
+            : [];
+        for (const skinType of gunSkins) {
+            const skinDef = GameObjectDefs[skinType];
+            if (skinDef?.type !== "gun_skin" || equippedGunTypes.has(skinDef.gunType)) {
+                continue;
+            }
+            equippedGunTypes.add(skinDef.gunType);
+            validatedLoadout.gun_skins.push(skinType);
+        }
 
         const defaultEmotes = GameConfig.defaultEmoteLoadout.slice();
         for (let i = 0; i < GameConfig.EmoteSlot.Count; i++) {
@@ -162,6 +178,9 @@ export const loadout = {
         itemsToCheck.forEach((item) => {
             newLoadout[item] = checkTypeExists(newLoadout[item]);
         });
+        newLoadout.gun_skins = (newLoadout.gun_skins || [])
+            .map((skin) => checkTypeExists(skin))
+            .filter(Boolean);
 
         // streak uses DamageStreakDefs keys, not GameObjectDefs
         if (!newLoadout.streak || !DamageStreakDefs[newLoadout.streak]) {

@@ -1,5 +1,6 @@
 import $ from "jquery";
 import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
+import type { GunSkinDef } from "../../shared/defs/gameObjects/gunSkinDefs";
 import type { MeleeDef } from "../../shared/defs/gameObjects/meleeDefs";
 import {
     getOutfitLootImg,
@@ -345,6 +346,8 @@ export const helpers = {
             switch (def?.type) {
                 case "outfit":
                     return "item-outfit";
+                case "gun_skin":
+                    return "item-gun-skin";
                 case "melee":
                     return "item-melee";
                 case "emote":
@@ -479,6 +482,8 @@ export const helpers = {
         const def = GameObjectDefs[gameType] as any;
         const defType = def ? def.type : "";
         switch (defType) {
+            case "gun_skin":
+                return `img/guns/${def.worldImg.sprite.slice(0, -4)}.svg`;
             case "gun":
             case "melee":
             case "throwable":
@@ -528,9 +533,12 @@ export const helpers = {
         }
     },
     getCssTransformFromGameType: function (gameType: string) {
-        const def = GameObjectDefs[gameType] as MeleeDef;
+        const def = GameObjectDefs[gameType] as MeleeDef | GunSkinDef;
+        if (def?.type === "gun_skin") {
+            return "rotate(45deg) scale(0.72)";
+        }
         let transform = "";
-        if (def?.lootImg) {
+        if (def?.type === "melee" && def.lootImg) {
             transform = `rotate(${def.lootImg.rot || 0}rad) scaleX(${
                 def.lootImg.mirror ? -1 : 1
             })`;

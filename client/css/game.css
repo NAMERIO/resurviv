@@ -417,7 +417,14 @@ body[data-input-method="controller"] #game-area-wrapper {
 
 .ui-game-tab-settings-desktop {
   height: 340px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
   overflow-y: auto;
+}
+
+.ui-game-tab-settings-desktop::-webkit-scrollbar,
+#ui-game-tab-keybinds > #ui-keybind-list::-webkit-scrollbar {
+  display: none;
 }
 
 #ui-game-tab-keybinds {
@@ -431,8 +438,11 @@ body[data-input-method="controller"] #game-area-wrapper {
 
 #ui-game-tab-keybinds > #ui-keybind-list {
   height: 295px;
+  -ms-overflow-style: none;
+  overflow-x: hidden;
   overflow-y: scroll;
   pointer-events: all;
+  scrollbar-width: none;
 }
 
 #ui-map-container {

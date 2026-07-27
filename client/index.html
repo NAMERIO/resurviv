@@ -1923,6 +1923,7 @@
                   <select id="market-type-select" class="index-play-select market-mobile-filter-select">
                     <option value="all" data-l10n="market-all">All</option>
                     <option value="outfit" data-l10n="market-type-outfit">Outfit</option>
+                    <option value="gun_skin" data-l10n="market-type-gunSkin">Gun Skin</option>
                     <option value="melee" data-l10n="market-type-melee">Melee</option>
                     <option value="emote" data-l10n="market-type-emote">Emote</option>
                     <option value="heal_effect" data-l10n="market-type-heal">Heal</option>
@@ -1940,6 +1941,7 @@
                   <div>
                     <div class="right-market-btn btn-darken" id="all" data-l10n="market-all">All</div>
                     <div class="right-market-btn right-market-btn-img btn-darken" id="outfit" data-l10n="market-type-outfit" style="background-image: url(img/gui/loadout-outfit.svg);"></div>
+                    <div class="right-market-btn right-market-btn-img btn-darken" id="gun_skin" data-l10n="market-type-gunSkin" style="background-image: url(img/loot/loot-weapon-mosin.svg);"></div>
                     <div class="right-market-btn right-market-btn-img btn-darken" id="melee" data-l10n="market-type-melee" style="background-image: url(img/gui/loadout-melee.svg);"></div>
                     <div class="right-market-btn right-market-btn-img btn-darken" id="emote" data-l10n="market-type-emote" style="background-image: url(img/gui/loadout-emote.svg);"></div>
                     <div class="right-market-btn right-market-btn-img btn-darken" id="heal_effect" data-l10n="market-type-heal" style="background-image: url(img/gui/loadout-heal.svg);"></div>
@@ -2357,6 +2359,14 @@
                   <span class="weapon-detail-value" id="weapon-detail-headshot"></span>
                 </div>
               </div>
+            </div>
+          </div>
+          <!-- Weapon Skin Panel -->
+          <div id="modal-content-right-weapon-skin" class="modal-content-right modal-content-shadow">
+            <div class="modal-spacer"></div>
+            <div id="weapon-skin-picker">
+              <div id="weapon-skin-picker-label">Gun Skin</div>
+              <div id="weapon-skin-options" aria-label="Gun skin choices"></div>
             </div>
           </div>
         </div>
