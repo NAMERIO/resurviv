@@ -7841,6 +7841,50 @@ a:active {
   }
 }
 
+@media (max-width: 850px) and (orientation: landscape) and (max-height: 520px) {
+  #modal-customize-wrapper {
+    left: 50%;
+    top: 84px;
+    width: 940px;
+    height: 400px;
+    max-height: calc(100vh - 24px);
+    transform: translateX(-50%) scale(0.52);
+    transform-origin: top center;
+  }
+
+  #modal-content-left {
+    top: -150px;
+    width: 760px !important;
+    height: calc((100vh - 24px) / 0.52);
+    max-height: calc((100vh - 24px) / 0.52);
+    transform: none;
+  }
+
+  .modal-content-right {
+    width: 330px;
+    max-height: calc((100vh - 24px) / 0.52);
+    transform: none;
+  }
+
+  #modal-content-right-weapon,
+  #modal-content-right-weapon-skin {
+    right: 0;
+    left: auto;
+    bottom: auto;
+    margin-right: -2px !important;
+  }
+
+  #modal-content-right-weapon {
+    top: -150px;
+    height: 438px;
+  }
+
+  #modal-content-right-weapon-skin {
+    top: 330px;
+    height: 230px;
+  }
+}
+
 @media (max-width: 420px), (max-height: 620px) {
   #modal-prestige-arena #modal-prestige-wrapper,
   #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell,
@@ -10232,6 +10276,32 @@ input [type="image"]:focus {
   #modal-content-right-weapon-skin {
     top: 472px;
     bottom: auto;
+  }
+}
+
+@media (min-width: 851px) and (max-width: 1100px) and (max-height: 520px) {
+  #modal-customize-wrapper {
+    left: 50%;
+    top: 92px;
+    transform: translateX(-50%) scale(0.55);
+    transform-origin: top center;
+  }
+
+  #modal-content-left {
+    height: calc((100vh - 24px) / 0.55);
+    max-height: calc((100vh - 24px) / 0.55);
+  }
+
+  .modal-content-right {
+    max-height: calc((100vh - 24px) / 0.55);
+  }
+
+  #modal-content-right-weapon {
+    top: -150px;
+  }
+
+  #modal-content-right-weapon-skin {
+    top: 330px;
   }
 }
 
