@@ -685,6 +685,7 @@ const _allowedEmotes = [
     "emote_send_some_potis",
     "emote_tiny_turtle",
     "emote_tongues_out",
+    "emote_tuff",
     "emote_was_a_lovely_cow",
     // "emote_wilted_rose",
     "emote_wth",

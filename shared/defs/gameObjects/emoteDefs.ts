@@ -2545,6 +2545,16 @@ export const EmotesDefs: Record<string, EmoteDef> = {
         teamOnly: false,
         category: EmoteCategory.Faces,
     },
+    emote_tuff: {
+        type: "emote",
+        name: "Tuff",
+        rarity: Rarity.Common,
+        texture: "emote-tuff.img",
+        sound: "emote_01",
+        channel: "ui",
+        teamOnly: false,
+        category: EmoteCategory.Other,
+    },
     emote_was_a_lovely_cow: {
         type: "emote",
         name: "Was A Lovely Cow",
