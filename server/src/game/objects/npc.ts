@@ -24,6 +24,8 @@ const cannonRange = GameConfig.scopeZoomRadius.desktop["2xscope"];
 const skitterDamage = 5;
 const skitterDoorwayOffset = 0.75;
 const skitterDoorwayReach = 0.75;
+const maxLivingSkitters = 10;
+const skitterRespawnDelay = 15;
 
 interface BuildingLocation {
     building: Building;
@@ -40,6 +42,7 @@ interface DoorRoute {
 
 export class NpcBarn {
     npcs: Npc[] = [];
+    private pendingSkitterRespawns: number[] = [];
 
     constructor(readonly game: Game) {}
 
@@ -76,6 +79,14 @@ export class NpcBarn {
     }
 
     addNpc(type: string, pos: Vec2, layer = 0) {
+        if (
+            type === "skitter" &&
+            this.getLivingSkitterCount() + this.pendingSkitterRespawns.length >=
+                maxLivingSkitters
+        ) {
+            return undefined;
+        }
+
         const npc = new Npc(this.game, type, pos, layer);
         this.npcs.push(npc);
         this.game.objectRegister.register(npc);
@@ -83,6 +94,8 @@ export class NpcBarn {
     }
 
     update(dt: number) {
+        this.updateSkitterRespawns(dt);
+
         for (let i = 0; i < this.npcs.length; i++) {
             const npc = this.npcs[i];
             if (npc.destroyed) {
@@ -91,6 +104,42 @@ export class NpcBarn {
                 continue;
             }
             npc.update(dt);
+        }
+    }
+
+    scheduleSkitterRespawn() {
+        const hasLivingMotherShip = this.npcs.some(
+            (npc) => npc.type === "motherShip" && !npc.dead && !npc.destroyed,
+        );
+        if (!hasLivingMotherShip) return;
+        this.pendingSkitterRespawns.push(skitterRespawnDelay);
+    }
+
+    getLivingSkitterCount() {
+        return this.npcs.reduce(
+            (count, npc) =>
+                count + (npc.type === "skitter" && !npc.dead && !npc.destroyed ? 1 : 0),
+            0,
+        );
+    }
+
+    private updateSkitterRespawns(dt: number) {
+        for (let i = this.pendingSkitterRespawns.length - 1; i >= 0; i--) {
+            this.pendingSkitterRespawns[i] -= dt;
+            if (this.pendingSkitterRespawns[i] > 0) continue;
+
+            this.pendingSkitterRespawns.splice(i, 1);
+            const motherShips = this.npcs.filter(
+                (npc) => npc.type === "motherShip" && !npc.dead && !npc.destroyed,
+            );
+            if (!motherShips.length) continue;
+
+            const motherShip = motherShips[util.randomInt(0, motherShips.length - 1)];
+            this.addNpc(
+                "skitter",
+                v2.add(motherShip.pos, util.randomPointInCircle(3)),
+                motherShip.layer,
+            );
         }
     }
 }
@@ -736,6 +785,9 @@ export class Npc extends BaseGameObject {
         if (this.health <= 0) {
             this.dead = true;
             this.state = "dead";
+            if (this.type === "skitter") {
+                this.game.npcBarn.scheduleSkitterRespawn();
+            }
         }
         this.setDirty();
     }
