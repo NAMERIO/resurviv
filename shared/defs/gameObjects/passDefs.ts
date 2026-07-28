@@ -18,7 +18,7 @@ export type PassRewardDef =
           gp: number;
       };
 
-export const CurrentPassType = "pass_survivr2";
+export const CurrentPassType = "pass_survivr3";
 
 export const PassDefs: Record<string, PassDef> = {
     pass_survivr1: {
@@ -322,12 +322,107 @@ export const PassDefs: Record<string, PassDef> = {
             125, 150, 75, 75, 75,
         ],
         items: [
-
+            {
+                level: 2,
+                item: "outfitWhiteDay",
+            },
+            {
+                level: 3,
+                item: "fist_milkshaked",
+            },
+            {
+                level: 4,
+                item: "emote_chimpion",
+            },
+            {
+                level: 5,
+                gp: 25,
+            },
+            {
+                level: 6,
+                item: "outfitUrbanGlitch",
+            },
+            {
+                level: 7,
+                item: "emote_son",
+            },
+            {
+                level: 8,
+                item: "fist_vitaminC",
+            },
+            {
+                level: 9,
+                item: "outfitPython",
+            },
+            {
+                level: 10,
+                gp: 50,
+            },
+            {
+                level: 11,
+                item: "emote_stop",
+            },
+            {
+                level: 12,
+                item: "outfitCyberpunk",
+            },
+            {
+                level: 13,
+                item: "fist_watermelon",
+            },
+            {
+                level: 14,
+                item: "emote_tuff",
+            },
+            {
+                level: 15,
+                gp: 50,
+            },
+            {
+                level: 16,
+                item: "outfitEnergyWave",
+            },
+            {
+                level: 17,
+                item: "fist_cocoNut",
+            },
+            {
+                level: 19,
+                item: "outfitSolarAegis",
+            },
+            {
+                level: 20,
+                gp: 75,
+            },
+            {
+                level: 21,
+                item: "karambit_drowned",
+            },
+            {
+                level: 30,
+                item: "outfitAuresis",
+            },
+            {
+                level: 40,
+                item: "fist_inkyBusiness",
+            },
+            {
+                level: 50,
+                gp: 200,
+            },
+            {
+                level: 65,
+                item: "mosin_gilded",
+            },
+            {
+                level: 80,
+                item: "outfitIgris",
+            },
         ],
         premiumItems: [
             {
                 level: 2,
-                item: "emote_wilted_rose",
+                item: "emote_sad_boffy",
             },
             {
                 level: 3,
@@ -355,7 +450,7 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 12,
-                item: "emote_son",
+                item: "emote_wilted_rose"
             },
             {
                 level: 14,
@@ -375,6 +470,10 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 30,
+                gp: 145
+            },
+            {
+                level: 40,
                 item: "death_billionaire",
             },
             {
