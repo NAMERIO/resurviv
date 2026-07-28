@@ -10,6 +10,7 @@ const mapDef: PartialMapDef = {
         icon: "img/loot/loot-contact.svg",
         buttonCss: "btn-mode-contact",
         buttonText: "index-play-mode-contact",
+        backgroundImg: "img/main_splash_contact.png",
     },
     assets: {
         audio: [

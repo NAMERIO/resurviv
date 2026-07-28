@@ -11,7 +11,7 @@ export const Config = getConfig(isProd, serverConfigPath);
 const BACKPACK_LEVEL = 3;
 
 util.mergeDeep(Config, {
-    clientTheme: "perks",
+    clientTheme: "contact",
     modes: [
         { mapName: "contact", teamMode: TeamMode.Duo, enabled: true },
     ],
