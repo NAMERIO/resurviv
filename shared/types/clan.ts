@@ -3,7 +3,7 @@ import { ALL_GAME_MODE_STATUS, GameModeStatus } from "./stats";
 
 // Clan constants
 export const ClanConstants = {
-    MaxMembers: 20,
+    MaxMembers: 10,
     NameMinLen: 2,
     NameMaxLen: 16,
     DiscordInviteMaxLen: 120,
