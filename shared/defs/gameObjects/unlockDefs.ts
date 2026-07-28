@@ -21,7 +21,13 @@ const _allowedStreaks = ["streak_rapid_fire", "streak_heavy_hitter", "streak_jug
 //     "mosin_gilded"
 // ];
 const _featuredBundleUnlocks = [
+    "outfitAero",
+    "outfitBugcat",
+    "outfitBlush",
     "outfitDemo",
+    "outfitVitaminD",
+    "outfitToxicFire",
+    "outfitRiotPlaid",
     "outfitTank",
     "outfitMedic",
     "outfitScout",
@@ -277,7 +283,7 @@ const _allowedOutfits = [
     // "outfitMaxAttack",
     // "outfitMultiTusking",
     // "outfitChromesis",
-    // "outfitDiamond",
+    //"outfitDiamond",
     // "outfitVillageNinja",
     // "outfitDragonTails",
     // "outfitGreenTeaRex",
@@ -296,6 +302,7 @@ const _allowedOutfits = [
     // "outfitVoidcore",
     // "outfitBeru",
     // "outfitArchaicCrown",
+    // "outfitPlaqueDoctor",
     // "outfitCupcake",
     // "outfitBlush",
     // "outfitTopOnePercent",
