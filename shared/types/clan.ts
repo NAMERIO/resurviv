@@ -9,7 +9,7 @@ export const ClanConstants = {
     DiscordInviteMaxLen: 120,
     MessageMaxLen: 300,
     RejoinCooldownMs: 0, // none cooldown for now
-    CurrentSeason: 2,
+    CurrentSeason: 3,
     CgpPerKill: 0.25,
     CgpPerWin: 5,
     CgpScale: 10000,
