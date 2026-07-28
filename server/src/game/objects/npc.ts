@@ -5,11 +5,14 @@ import { GameConfig } from "../../../../shared/gameConfig";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
 import { type AABB, type Collider, coldet } from "../../../../shared/utils/coldet";
 import { collider } from "../../../../shared/utils/collider";
+import { math } from "../../../../shared/utils/math";
 import { util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import type { Game } from "../game";
+import type { Building } from "./building";
 import { BaseGameObject, type DamageParams } from "./gameObject";
 import type { MapIndicator } from "./mapIndicator";
+import type { Obstacle } from "./obstacle";
 import type { Player } from "./player";
 import type { Projectile } from "./projectile";
 
@@ -19,6 +22,21 @@ const secondStageSpawnInterval = 15;
 const cannonChargeTime = 2;
 const cannonRange = GameConfig.scopeZoomRadius.desktop["2xscope"];
 const skitterDamage = 5;
+const skitterDoorwayOffset = 0.75;
+const skitterDoorwayReach = 0.75;
+
+interface BuildingLocation {
+    building: Building;
+    region: AABB;
+}
+
+interface DoorRoute {
+    door: Obstacle;
+    bounds: AABB;
+    inside: Vec2;
+    outside: Vec2;
+    edgeDistance: number;
+}
 
 export class NpcBarn {
     npcs: Npc[] = [];
@@ -109,6 +127,10 @@ export class Npc extends BaseGameObject {
     private phaseTicker = 0;
     private enteredSecondStage = false;
     private mapIndicator?: MapIndicator;
+    private navigationBuilding?: Building;
+    private navigationDoor?: Obstacle;
+    private navigationEntering = false;
+    private navigationCrossingDoor = false;
 
     constructor(game: Game, type: string, pos: Vec2, layer: number) {
         super(game, pos);
@@ -331,8 +353,9 @@ export class Npc extends BaseGameObject {
             return;
         }
 
-        this.ori = Math.atan2(target.pos.y - this.pos.y, target.pos.x - this.pos.x);
-        this.moveToward(target.pos, NpcDefs.skitter.movementSpeed, dt, true);
+        const moveTarget = this.getSkitterMoveTarget(target);
+        this.ori = Math.atan2(moveTarget.y - this.pos.y, moveTarget.x - this.pos.x);
+        this.moveToward(moveTarget, NpcDefs.skitter.movementSpeed, dt, true);
     }
 
     private findClosestPlayer() {
@@ -400,6 +423,294 @@ export class Npc extends BaseGameObject {
             );
             this.updateCollider();
         }
+    }
+
+    private getSkitterMoveTarget(target: Player) {
+        const currentLocation = this.findBuildingAt(this.pos, this.layer);
+        const targetLocation = this.findBuildingAt(target.pos, target.layer);
+
+        if (currentLocation?.building === targetLocation?.building) {
+            this.clearBuildingNavigation();
+            return target.pos;
+        }
+
+        const entering = !currentLocation && !!targetLocation;
+        const routeLocation = currentLocation ?? targetLocation;
+        if (!routeLocation) {
+            this.clearBuildingNavigation();
+            return target.pos;
+        }
+
+        if (
+            this.navigationBuilding !== routeLocation.building ||
+            this.navigationEntering !== entering ||
+            !this.isUsableNavigationDoor(this.navigationDoor, routeLocation.building)
+        ) {
+            this.navigationBuilding = routeLocation.building;
+            this.navigationEntering = entering;
+            this.navigationDoor = this.selectNavigationDoor(
+                routeLocation.building,
+                entering,
+            )?.door;
+            this.navigationCrossingDoor = false;
+        } else if (!this.navigationDoor?.door?.open) {
+            const openDoor = this.selectNavigationDoor(
+                routeLocation.building,
+                entering,
+                true,
+            );
+            if (openDoor) {
+                this.navigationDoor = openDoor.door;
+                this.navigationCrossingDoor = false;
+            }
+        }
+
+        const route = this.navigationDoor
+            ? this.getDoorRoute(this.navigationDoor, routeLocation.building)
+            : undefined;
+        if (!route) return target.pos;
+
+        if (entering) {
+            if (!this.navigationCrossingDoor) {
+                if (v2.distance(this.pos, route.outside) <= skitterDoorwayReach) {
+                    this.navigationCrossingDoor = true;
+                } else {
+                    return this.pathAroundBuilding(this.pos, route.outside, route.bounds)
+                        .waypoint;
+                }
+            }
+            return route.inside;
+        }
+
+        if (!this.navigationCrossingDoor) {
+            if (v2.distance(this.pos, route.inside) <= skitterDoorwayReach) {
+                this.navigationCrossingDoor = true;
+            } else {
+                return route.inside;
+            }
+        }
+        return route.outside;
+    }
+
+    private findBuildingAt(pos: Vec2, layer: number): BuildingLocation | undefined {
+        for (const building of this.game.map.buildings) {
+            if (building.layer !== layer || building.ceilingDead) continue;
+            for (const region of building.zoomRegions) {
+                if (
+                    region.zoomIn &&
+                    coldet.testCircleAabb(pos, 0.05, region.zoomIn.min, region.zoomIn.max)
+                ) {
+                    return { building, region: region.zoomIn };
+                }
+            }
+        }
+        return undefined;
+    }
+
+    private selectNavigationDoor(
+        building: Building,
+        entering: boolean,
+        openOnly = false,
+    ) {
+        const routes: DoorRoute[] = [];
+        for (const object of building.childObjects) {
+            if (
+                object.__type !== ObjectType.Obstacle ||
+                !this.isUsableNavigationDoor(object, building) ||
+                (openOnly && !object.door?.open)
+            ) {
+                continue;
+            }
+            const route = this.getDoorRoute(object, building);
+            if (route) routes.push(route);
+        }
+        if (!routes.length) return undefined;
+
+        const exteriorRoutes = routes.filter((route) => route.edgeDistance <= 5);
+        const candidates = exteriorRoutes.length ? exteriorRoutes : routes;
+        let bestRoute: DoorRoute | undefined;
+        let bestScore = Infinity;
+        for (const route of candidates) {
+            const destination = entering ? route.outside : route.inside;
+            const travelDistance = entering
+                ? this.pathAroundBuilding(this.pos, destination, route.bounds).distance
+                : v2.distance(this.pos, destination);
+            const door = route.door.door;
+            const closedPenalty = door?.open ? 0 : 8;
+            const lockedPenalty = door?.locked || !door?.canUse ? 100 : 0;
+            const score = travelDistance + closedPenalty + lockedPenalty;
+            if (score < bestScore) {
+                bestScore = score;
+                bestRoute = route;
+            }
+        }
+        return bestRoute;
+    }
+
+    private isUsableNavigationDoor(
+        door: Obstacle | undefined,
+        building: Building,
+    ): door is Obstacle {
+        return !!(
+            door &&
+            !door.dead &&
+            !door.destroyed &&
+            door.isDoor &&
+            door.door &&
+            door.collidable &&
+            door.parentBuilding === building &&
+            util.sameLayer(door.layer, this.layer)
+        );
+    }
+
+    private getDoorRoute(door: Obstacle, building: Building): DoorRoute | undefined {
+        const rad = this.colliderRadius();
+        const doorState = door.door;
+        if (!doorState) return undefined;
+        const doorwayCenter = v2.add(
+            doorState.closedPos,
+            v2.rotate(
+                v2.mul(doorState.hinge, door.scale),
+                math.oriToRad(doorState.closedOri),
+            ),
+        );
+        let best:
+            | {
+                  bounds: AABB;
+                  direction: Vec2;
+                  edgeDistance: number;
+              }
+            | undefined;
+
+        for (const region of building.zoomRegions) {
+            const bounds = region.zoomIn;
+            if (!bounds) continue;
+
+            const edges = [
+                {
+                    distance: Math.abs(doorwayCenter.x - bounds.min.x),
+                    direction: v2.create(-1, 0),
+                },
+                {
+                    distance: Math.abs(bounds.max.x - doorwayCenter.x),
+                    direction: v2.create(1, 0),
+                },
+                {
+                    distance: Math.abs(doorwayCenter.y - bounds.min.y),
+                    direction: v2.create(0, -1),
+                },
+                {
+                    distance: Math.abs(bounds.max.y - doorwayCenter.y),
+                    direction: v2.create(0, 1),
+                },
+            ];
+            const edge = edges.reduce((closest, candidate) =>
+                candidate.distance < closest.distance ? candidate : closest,
+            );
+            if (!best || edge.distance < best.edgeDistance) {
+                best = {
+                    bounds,
+                    direction: edge.direction,
+                    edgeDistance: edge.distance,
+                };
+            }
+        }
+        if (!best) return undefined;
+
+        const crossingOffset = rad + skitterDoorwayOffset;
+        return {
+            door,
+            bounds: collider.createAabb(
+                v2.sub(best.bounds.min, v2.create(crossingOffset)),
+                v2.add(best.bounds.max, v2.create(crossingOffset)),
+            ),
+            outside: v2.add(
+                doorwayCenter,
+                v2.mul(best.direction, best.edgeDistance + crossingOffset),
+            ),
+            inside: v2.sub(doorwayCenter, v2.mul(best.direction, crossingOffset)),
+            edgeDistance: best.edgeDistance,
+        };
+    }
+
+    private pathAroundBuilding(start: Vec2, end: Vec2, bounds: AABB) {
+        const directDistance = v2.distance(start, end);
+        if (!this.segmentCrossesAabbInterior(start, end, bounds)) {
+            return { waypoint: end, distance: directDistance };
+        }
+
+        const nodes = [
+            start,
+            v2.create(bounds.min.x, bounds.min.y),
+            v2.create(bounds.max.x, bounds.min.y),
+            v2.create(bounds.max.x, bounds.max.y),
+            v2.create(bounds.min.x, bounds.max.y),
+            end,
+        ];
+        const distances = nodes.map(() => Infinity);
+        const previous = nodes.map(() => -1);
+        const visited = nodes.map(() => false);
+        distances[0] = 0;
+
+        for (let step = 0; step < nodes.length; step++) {
+            let current = -1;
+            for (let i = 0; i < nodes.length; i++) {
+                if (
+                    !visited[i] &&
+                    (current === -1 || distances[i] < distances[current])
+                ) {
+                    current = i;
+                }
+            }
+            if (current === -1 || distances[current] === Infinity) break;
+            visited[current] = true;
+
+            for (let next = 0; next < nodes.length; next++) {
+                if (
+                    next === current ||
+                    visited[next] ||
+                    this.segmentCrossesAabbInterior(nodes[current], nodes[next], bounds)
+                ) {
+                    continue;
+                }
+                const distance =
+                    distances[current] + v2.distance(nodes[current], nodes[next]);
+                if (distance < distances[next]) {
+                    distances[next] = distance;
+                    previous[next] = current;
+                }
+            }
+        }
+
+        const endIndex = nodes.length - 1;
+        if (distances[endIndex] === Infinity) {
+            return { waypoint: end, distance: directDistance };
+        }
+
+        let waypointIndex = endIndex;
+        while (previous[waypointIndex] > 0) {
+            waypointIndex = previous[waypointIndex];
+        }
+        return {
+            waypoint: nodes[waypointIndex],
+            distance: distances[endIndex],
+        };
+    }
+
+    private segmentCrossesAabbInterior(start: Vec2, end: Vec2, bounds: AABB) {
+        const epsilon = 0.05;
+        return !!coldet.intersectSegmentAabb(
+            start,
+            end,
+            v2.add(bounds.min, v2.create(epsilon)),
+            v2.sub(bounds.max, v2.create(epsilon)),
+        );
+    }
+
+    private clearBuildingNavigation() {
+        this.navigationBuilding = undefined;
+        this.navigationDoor = undefined;
+        this.navigationCrossingDoor = false;
     }
 
     private colliderRadius() {
