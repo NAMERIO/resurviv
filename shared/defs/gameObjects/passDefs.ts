@@ -450,7 +450,7 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 12,
-                item: "emote_wilted_rose"
+                item: "emote_wilted_rose",
             },
             {
                 level: 14,
@@ -470,7 +470,7 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 30,
-                gp: 145
+                gp: 145,
             },
             {
                 level: 40,

@@ -3704,7 +3704,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
-    
+
     outfitUrbanGlitch: defineOutfitSkin("outfitBase", {
         name: "Urban Glitch",
         noDropOnDeath: true,
@@ -3777,7 +3777,6 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
-
     outfitRiotPlaid: defineOutfitSkin("outfitBase", {
         name: "Riot Plaid",
         noDropOnDeath: true,
@@ -3818,7 +3817,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-archaiccrown.img",
-            frontSpritePos: { x: 0, y: -.4 },
+            frontSpritePos: { x: 0, y: -0.4 },
             frontSprite: "player-accessory-archaiccrown.img",
         },
         lootImg: {
@@ -3844,7 +3843,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-cupcake.img",
-            frontSpritePos: { x: -.75, y: 0 },
+            frontSpritePos: { x: -0.75, y: 0 },
             frontSprite: "player-accessory-cupcake.img",
         },
         lootImg: {
@@ -3869,7 +3868,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-spartan.img",
-            frontSpritePos: { x: -2, y: .75 },
+            frontSpritePos: { x: -2, y: 0.75 },
             frontSprite: "player-accessory-spartan.img",
         },
         lootImg: {

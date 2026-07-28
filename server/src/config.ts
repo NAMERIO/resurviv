@@ -12,9 +12,7 @@ const BACKPACK_LEVEL = 3;
 
 util.mergeDeep(Config, {
     clientTheme: "contact",
-    modes: [
-        { mapName: "contact", teamMode: TeamMode.Duo, enabled: true },
-    ],
+    modes: [{ mapName: "contact", teamMode: TeamMode.Duo, enabled: true }],
     br_modes: [{ mapName: "br_contact", teamMode: TeamMode.Duo, enabled: true }],
     debug: {
         spawnMode: process.env.NODE_ENV === "production" ? "default" : "fixed",
