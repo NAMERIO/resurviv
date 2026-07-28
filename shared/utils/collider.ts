@@ -10,6 +10,7 @@ export const collider = {
     Type: {
         Circle: 0 as const,
         Aabb: 1 as const,
+        Polygon: 2 as const,
     },
 
     createCircle(pos: Vec2, rad: number) {
@@ -35,6 +36,13 @@ export const collider = {
         return collider.createAabb(min, max);
     },
 
+    createPolygon(points: Vec2[]) {
+        return {
+            type: collider.Type.Polygon,
+            points: points.map(v2.copy),
+        };
+    },
+
     createBounding(colliders: Collider[]) {
         if (colliders.length === 1) {
             return collider.copy(colliders[0]);
@@ -52,17 +60,39 @@ export const collider = {
         if (c.type === collider.Type.Aabb) {
             return collider.createAabb(c.min, c.max);
         }
+        if (c.type === collider.Type.Polygon) {
+            const min = v2.create(Infinity, Infinity);
+            const max = v2.create(-Infinity, -Infinity);
+            for (const point of c.points) {
+                min.x = math.min(min.x, point.x);
+                min.y = math.min(min.y, point.y);
+                max.x = math.max(max.x, point.x);
+                max.y = math.max(max.y, point.y);
+            }
+            return collider.createAabb(min, max);
+        }
         const aabb = coldet.circleToAabb(c.pos, c.rad);
         return collider.createAabb(aabb.min, aabb.max);
     },
 
     copy(c: Collider) {
-        return c.type === collider.Type.Circle
-            ? collider.createCircle(c.pos, c.rad)
-            : collider.createAabb(c.min, c.max);
+        if (c.type === collider.Type.Circle) {
+            return collider.createCircle(c.pos, c.rad);
+        }
+        if (c.type === collider.Type.Polygon) {
+            return collider.createPolygon(c.points);
+        }
+        return collider.createAabb(c.min, c.max);
     },
 
     transform(col: Collider, pos: Vec2, rot: number, scale: number) {
+        if (col.type === collider.Type.Polygon) {
+            return collider.createPolygon(
+                col.points.map((point) =>
+                    v2.add(v2.rotate(v2.mul(point, scale), rot), pos),
+                ),
+            );
+        }
         if (col.type === collider.Type.Aabb) {
             const e = v2.mul(v2.sub(col.max, col.min), 0.5);
             const c = v2.add(col.min, e);
@@ -103,6 +133,9 @@ export const collider = {
     },
 
     intersectCircle(col: Collider, pos: Vec2, rad: number) {
+        if (col.type === collider.Type.Polygon) {
+            return coldet.intersectPolygonCircle(col.points, pos, rad);
+        }
         if (col.type === collider.Type.Aabb) {
             return coldet.intersectAabbCircle(col.min, col.max, pos, rad);
         }
@@ -110,6 +143,12 @@ export const collider = {
     },
 
     intersectAabb(col: Collider, min: Vec2, max: Vec2) {
+        if (col.type === collider.Type.Polygon) {
+            return coldet.intersectPolygonPolygon(
+                col.points,
+                coldet.aabbPoints(min, max),
+            );
+        }
         if (col.type === collider.Type.Aabb) {
             return coldet.intersectAabbAabb(col.min, col.max, min, max);
         }
@@ -117,6 +156,9 @@ export const collider = {
     },
 
     intersectSegment(col: Collider, a: Vec2, b: Vec2) {
+        if (col.type === collider.Type.Polygon) {
+            return coldet.intersectSegmentPolygon(a, b, col.points);
+        }
         if (col.type === collider.Type.Aabb) {
             return coldet.intersectSegmentAabb(a, b, col.min, col.max);
         }
@@ -124,6 +166,33 @@ export const collider = {
     },
 
     intersect(colA: Collider, colB: Collider) {
+        if (colA.type === collider.Type.Polygon) {
+            if (colB.type === collider.Type.Polygon) {
+                return coldet.intersectPolygonPolygon(colA.points, colB.points);
+            }
+            if (colB.type === collider.Type.Aabb) {
+                return coldet.intersectPolygonPolygon(
+                    colA.points,
+                    coldet.aabbPoints(colB.min, colB.max),
+                );
+            }
+            return coldet.intersectPolygonCircle(colA.points, colB.pos, colB.rad);
+        }
+        if (colB.type === collider.Type.Polygon) {
+            if (colA.type === collider.Type.Aabb) {
+                return coldet.intersectPolygonPolygon(
+                    coldet.aabbPoints(colA.min, colA.max),
+                    colB.points,
+                );
+            }
+            const result = coldet.intersectPolygonCircle(colB.points, colA.pos, colA.rad);
+            return result
+                ? {
+                      dir: v2.mul(result.dir, -1),
+                      pen: result.pen,
+                  }
+                : null;
+        }
         if (colB.type === collider.Type.Aabb) {
             return collider.intersectAabb(colA, colB.min, colB.max);
         }

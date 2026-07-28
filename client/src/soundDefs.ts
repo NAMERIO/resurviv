@@ -1670,6 +1670,23 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
             path: "audio/sfx/skitter_destroy_01.mp3",
             volume: 1,
         },
+        sports_car_engine_start: {
+            path: "audio/vehicles/sports_car_engine_start.mp3",
+            volume: 0.9,
+        },
+        sports_car_engine_loop: {
+            path: "audio/vehicles/sports_car_engine_loop.mp3",
+            volume: 0.55,
+            maxInstances: 12,
+        },
+        sports_car_engine_stop: {
+            path: "audio/vehicles/sports_car_engine_stop.mp3",
+            volume: 0.8,
+        },
+        sports_car_brake: {
+            path: "audio/vehicles/sports_car_brake.mp3",
+            volume: 0.8,
+        },
     },
     ambient: {
         ambient_wind_01: {

@@ -1433,10 +1433,7 @@ export class GameMap {
             }
 
             if (def.type === "obstacle" && !def.terrain.riverShore) {
-                const aabb =
-                    def.collision.type === collider.Type.Aabb
-                        ? def.collision
-                        : coldet.circleToAabb(def.collision.pos, def.collision.rad);
+                const aabb = collider.toAabb(def.collision);
 
                 const points = collider.getPoints(
                     collider.transform(aabb, pos, rot, scale) as AABB,
@@ -1806,10 +1803,11 @@ export class GameMap {
 
             let width = river.getWaterWidth(t);
             if (def.type === "obstacle") {
-                let circle =
+                const collisionAabb = collider.toAabb(def.collision);
+                const circle =
                     def.collision.type === collider.Type.Circle
                         ? def.collision
-                        : coldet.aabbToCircle(def.collision.min, def.collision.max);
+                        : coldet.aabbToCircle(collisionAabb.min, collisionAabb.max);
                 width -= circle.rad + 1;
             }
             if (def.terrain?.riverShore) {

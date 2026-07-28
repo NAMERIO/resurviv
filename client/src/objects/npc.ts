@@ -62,6 +62,18 @@ const SpriteAnimDefs = {
         speed: 30,
         play: true,
     },
+    vehicle_idle: {
+        sprites: [] as string[],
+        loop: false,
+        speed: 0,
+        play: false,
+    },
+    vehicle_drive: {
+        sprites: [] as string[],
+        loop: false,
+        speed: 0,
+        play: false,
+    },
     none: {
         sprites: [] as string[],
         loop: false,
@@ -83,6 +95,8 @@ export class Npc implements AbstractObject {
     targetSprite = new PIXI.Sprite();
     soundLoadingInstance: SoundHandle | null = null;
     soundChargeLoading: SoundHandle | null = null;
+    engineSoundInstance: SoundHandle | null = null;
+    brakeSoundCooldown = 0;
 
     isNew = false;
     exploded = false;
@@ -94,9 +108,17 @@ export class Npc implements AbstractObject {
     teamId = 0;
     posOld = v2.create(0, 0);
     pos = v2.create(0, 0);
+    visualPos = v2.create(0, 0);
+    visualPosOld = v2.create(0, 0);
     rot = 0;
     visualRot = 0;
+    vehicleVisualRot = 0;
+    vehicleVisualRotOld = 0;
+    vehicleInterpTicker = 0;
     scale = 1;
+    speed = 0;
+    driftIntensity = 0;
+    driftSmokeTicker = 0;
     imgScale = 1;
     collider!: Collider;
     state: string | null = null;
@@ -129,6 +151,10 @@ export class Npc implements AbstractObject {
         this.stepDistance = 0;
         this.soundLoadingInstance = null;
         this.soundChargeLoading = null;
+        this.engineSoundInstance = null;
+        this.brakeSoundCooldown = 0;
+        this.driftSmokeTicker = 0;
+        this.vehicleInterpTicker = 0;
     }
 
     m_free() {
@@ -137,8 +163,10 @@ export class Npc implements AbstractObject {
         this.targetSprite.visible = false;
         this.soundLoadingInstance?.stop();
         this.soundChargeLoading?.stop();
+        this.engineSoundInstance?.stop();
         this.soundLoadingInstance = null;
         this.soundChargeLoading = null;
+        this.engineSoundInstance = null;
     }
 
     m_updateData(
@@ -158,16 +186,25 @@ export class Npc implements AbstractObject {
 
         const def = NpcDefs[this.type];
         if (!def) return;
+        const isVehicle = !!def.vehicle;
 
-        if (isNew) {
+        if (isNew && !isVehicle) {
             ctx.resourceManager?.loadAtlas("contact");
             this.targetSprite.texture = PIXI.Texture.from("map-target.img");
         }
 
+        if (isVehicle && !isNew) {
+            this.visualPosOld = v2.copy(this.visualPos);
+            this.vehicleVisualRotOld = this.vehicleVisualRot;
+            this.vehicleInterpTicker = 0;
+        }
         this.posOld = isNew ? v2.copy(data.pos) : v2.copy(this.pos);
         this.pos = v2.copy(data.pos);
         this.rot = data.ori;
         this.scale = data.scale;
+        const previousSpeed = this.speed;
+        this.speed = data.speed;
+        this.driftIntensity = data.driftIntensity;
         this.imgScale = def.img.scale;
         this.collider = collider.transform(def.collision, this.pos, this.rot, this.scale);
         this.invisibleTicker = data.invisibleTicker;
@@ -180,18 +217,60 @@ export class Npc implements AbstractObject {
             this.isNew = true;
             this.exploded = ctx.map.deadObstacleIds.includes(this.__id);
             this.visualRot = this.rot;
+            this.visualPos = v2.copy(this.pos);
+            this.visualPosOld = v2.copy(this.pos);
+            this.vehicleVisualRot = this.rot;
+            this.vehicleVisualRotOld = this.rot;
         }
 
+        const wasDriving = this.state === "drive";
         const state = def.states.find((candidate) => candidate.name === data.state);
         if (data.state !== this.state) {
             this.setState(def, state?.animation ?? "none");
             this.state = data.state;
+            if (isVehicle) {
+                if (data.state === "drive" && !wasDriving) {
+                    ctx.audioManager.playSound(def.vehicle?.sound.start ?? "", {
+                        channel: "sfx",
+                        soundPos: this.pos,
+                        layer: this.layer,
+                    });
+                } else if (data.state !== "drive" && wasDriving) {
+                    this.engineSoundInstance?.stop();
+                    this.engineSoundInstance = null;
+                    ctx.audioManager.playSound(def.vehicle?.sound.stop ?? "", {
+                        channel: "sfx",
+                        soundPos: this.pos,
+                        layer: this.layer,
+                    });
+                }
+            }
+        }
+        if (
+            isVehicle &&
+            data.state === "drive" &&
+            this.brakeSoundCooldown <= 0 &&
+            Math.abs(previousSpeed) > 2 &&
+            Math.sign(previousSpeed) === Math.sign(this.speed) &&
+            Math.abs(previousSpeed) - Math.abs(this.speed) > 0.45
+        ) {
+            ctx.audioManager.playSound(def.vehicle?.sound.brake ?? "", {
+                channel: "sfx",
+                soundPos: this.pos,
+                layer: this.layer,
+                volumeScale: 0.55,
+            });
+            this.brakeSoundCooldown = 0.45;
         }
     }
 
     private setState(def: NpcDef, animationName: keyof typeof SpriteAnimDefs) {
         const animation = SpriteAnimDefs[animationName];
-        const sprites = this.dead ? [def.img.residue] : animation.sprites;
+        const sprites = this.dead
+            ? [def.img.residue]
+            : def.vehicle
+              ? [def.img.sprite]
+              : animation.sprites;
         this.sprite.stop();
         this.sprite.textures =
             sprites.length > 0
@@ -214,6 +293,14 @@ export class Npc implements AbstractObject {
         }
     }
 
+    getInteraction() {
+        if (!NpcDefs[this.type]?.vehicle || this.dead) return null;
+        return {
+            action: this.state === "drive" ? "game-exit" : "game-drive",
+            object: "game-sports-car",
+        };
+    }
+
     update(
         dt: number,
         map: Map,
@@ -221,7 +308,9 @@ export class Npc implements AbstractObject {
         audioManager: AudioManager,
         activePlayer: Player,
         renderer: Renderer,
+        camera: Camera,
     ) {
+        this.brakeSoundCooldown = Math.max(0, this.brakeSoundCooldown - dt);
         const def = NpcDefs[this.type];
         if (!def) return;
 
@@ -270,6 +359,68 @@ export class Npc implements AbstractObject {
                     layer: this.layer,
                     filter: "muffled",
                 });
+            }
+        } else if (def.vehicle) {
+            this.vehicleInterpTicker += dt;
+            const locallyDriven =
+                activePlayer.m_netData.m_vehicleId === this.__id && !activePlayer.isNew;
+            if (locallyDriven) {
+                this.visualPos = v2.copy(activePlayer.m_visualPos);
+            } else if (camera.m_interpEnabled) {
+                const interpolationT = math.clamp(
+                    this.vehicleInterpTicker / Math.max(camera.m_interpInterval, 0.001),
+                    0,
+                    1,
+                );
+                this.visualPos = v2.lerp(interpolationT, this.visualPosOld, this.pos);
+            } else {
+                this.visualPos = v2.copy(this.pos);
+            }
+            const rotationT = camera.m_interpEnabled
+                ? math.clamp(
+                      this.vehicleInterpTicker / Math.max(camera.m_interpInterval, 0.001),
+                      0,
+                      1,
+                  )
+                : 1;
+            this.vehicleVisualRot =
+                this.vehicleVisualRotOld +
+                math.angleDiff(this.vehicleVisualRotOld, this.rot) * rotationT;
+            this.updateDriftSmoke(dt, particleBarn, def);
+
+            const driving = this.state === "drive" && !this.dead;
+            if (
+                driving &&
+                (!this.engineSoundInstance ||
+                    !audioManager.isSoundPlaying(this.engineSoundInstance))
+            ) {
+                this.engineSoundInstance = audioManager.playSound(
+                    def.vehicle?.sound.loop ?? "",
+                    {
+                        channel: "sfx",
+                        soundPos: this.pos,
+                        layer: this.layer,
+                        loop: true,
+                        volumeScale: 0.7,
+                    },
+                );
+            }
+            if (this.engineSoundInstance) {
+                audioManager.updateSound(this.engineSoundInstance, "sfx", this.pos, {
+                    layer: this.layer,
+                    rangeMult: 1.25,
+                    volumeScale: driving ? 0.7 : 0,
+                });
+                const speedT = math.clamp(
+                    Math.abs(this.speed) / (def.vehicle?.maxForwardSpeed ?? 26),
+                    0,
+                    1,
+                );
+                this.engineSoundInstance.detune = -180 + speedT * 720;
+            }
+            if (!driving && this.engineSoundInstance) {
+                this.engineSoundInstance.stop();
+                this.engineSoundInstance = null;
             }
         }
 
@@ -349,11 +500,18 @@ export class Npc implements AbstractObject {
     }
 
     render(camera: Camera) {
-        const screenPos = camera.m_pointToScreen(this.pos);
+        const isVehicle = !!NpcDefs[this.type]?.vehicle;
+        const renderPos = isVehicle ? this.visualPos : this.pos;
+        const screenPos = camera.m_pointToScreen(renderPos);
         const screenScale = camera.m_pixels(this.scale * this.imgScale);
         this.sprite.position.set(screenPos.x, screenPos.y);
         this.sprite.scale.set(screenScale, screenScale);
-        this.sprite.rotation = this.type === "motherShip" ? -this.visualRot : -this.rot;
+        this.sprite.rotation =
+            this.type === "motherShip"
+                ? -this.visualRot
+                : isVehicle
+                  ? -this.vehicleVisualRot + Math.PI * 0.5
+                  : -this.rot;
 
         if (this.targetActive) {
             const targetScreenPos = camera.m_pointToScreen(this.targetPos);
@@ -361,6 +519,48 @@ export class Npc implements AbstractObject {
             this.targetSprite.position.set(targetScreenPos.x, targetScreenPos.y);
             this.targetSprite.scale.set(targetScreenScale, targetScreenScale);
             this.targetSprite.rotation = 0;
+        }
+    }
+
+    private updateDriftSmoke(dt: number, particleBarn: ParticleBarn, def: NpcDef) {
+        const drift = def.vehicle?.drift;
+        if (
+            !drift ||
+            this.dead ||
+            this.state !== "drive" ||
+            this.driftIntensity < drift.smokeThreshold ||
+            Math.abs(this.speed) < drift.minSpeed
+        ) {
+            this.driftSmokeTicker = 0;
+            return;
+        }
+
+        this.driftSmokeTicker -= dt;
+        if (this.driftSmokeTicker > 0) return;
+        this.driftSmokeTicker = math.lerp(this.driftIntensity, 0.09, 0.025);
+
+        const forward = v2.create(
+            Math.cos(this.vehicleVisualRot),
+            Math.sin(this.vehicleVisualRot),
+        );
+        const side = v2.perp(forward);
+        const rearCenter = v2.add(this.visualPos, v2.mul(forward, -2.45));
+        for (const sideOffset of [-1.15, 1.15]) {
+            const pos = v2.add(rearCenter, v2.mul(side, sideOffset));
+            const velocity = v2.add(
+                v2.mul(forward, -util.random(0.35, 0.9)),
+                v2.mul(side, util.random(-0.45, 0.45)),
+            );
+            particleBarn.addParticle(
+                "vehicleTireSmoke",
+                this.layer,
+                pos,
+                velocity,
+                0.75 + this.driftIntensity * 0.45,
+                util.random(0, Math.PI * 2),
+                null,
+                21,
+            );
         }
     }
 }

@@ -2,6 +2,7 @@ import * as PIXI from "pixi.js-legacy";
 import highResAtlasDefs from "virtual-atlases-high";
 import lowResAtlasDefs from "virtual-atlases-low";
 import { type Atlas, type MapDef, MapDefs } from "../../shared/defs/mapDefs";
+import { NpcDefs } from "../../shared/defs/npcDefs";
 import type { AudioManager } from "./audioManager";
 import type { ConfigManager } from "./config";
 import { device } from "./device";
@@ -191,10 +192,10 @@ export class ResourceManager {
         // Textures
         //
         const atlasList = [...mapDef.assets.atlases];
-        const hasNpcSpawns = Object.values(mapDef.gameMode.npcSpawns ?? {}).some(
-            (count) => count > 0,
+        const needsContactNpcAtlas = Object.entries(mapDef.gameMode.npcSpawns ?? {}).some(
+            ([type, count]) => count > 0 && !NpcDefs[type]?.vehicle,
         );
-        if (hasNpcSpawns && !atlasList.includes("contact")) {
+        if (needsContactNpcAtlas && !atlasList.includes("contact")) {
             atlasList.push("contact");
         }
 

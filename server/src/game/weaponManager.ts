@@ -316,6 +316,10 @@ export class WeaponManager {
         if (player.downed) {
             return;
         }
+        if (player.vehicle) {
+            this.cancelVehicleCombat();
+            return;
+        }
         this.bufferInput = false;
 
         if (player.shootDisabledTimer > 0) {
@@ -393,6 +397,27 @@ export class WeaponManager {
 
         if (!this.bufferInput) {
             player.shootStart = false;
+        }
+    }
+
+    cancelVehicleCombat() {
+        this.player.shootStart = false;
+        this.player.shootHold = false;
+        this.bufferInput = false;
+        this.bursts.length = 0;
+        this.meleeAttacks.length = 0;
+        this.loadingBlasterCharge = 0;
+        this.wasHolding = false;
+        this.cookingThrowable = false;
+        this.autoThrowFast = false;
+        this.autoShootFast = false;
+        this.autoPunchFast = false;
+        if (
+            this.player.animType === GameConfig.Anim.Cook ||
+            this.player.animType === GameConfig.Anim.Throw ||
+            this.player.animType === GameConfig.Anim.Melee
+        ) {
+            this.player.cancelAnim();
         }
     }
 
@@ -841,6 +866,7 @@ export class WeaponManager {
     }
 
     fireWeapon(offHand: boolean, forceFire?: boolean) {
+        if (this.player.vehicle) return;
         const itemDef = GameObjectDefs[this.activeWeapon] as GunDef;
 
         const weapon = this.weapons[this.curWeapIdx];

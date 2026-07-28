@@ -1,0 +1,136 @@
+import type { Collider } from "../utils/coldet";
+import { collider } from "../utils/collider";
+import { v2 } from "../utils/v2";
+
+export interface VehicleDef {
+    readonly type: "vehicle";
+    name: string;
+    sprite: string;
+    scale: number;
+    collision: Collider;
+    maxForwardSpeed: number;
+    maxReverseSpeed: number;
+    acceleration: number;
+    braking: number;
+    coastingDrag: number;
+    interactionRad: number;
+    impact: {
+        minBreakSpeed: number;
+    };
+    handling: {
+        wheelBase: number;
+        lowSpeedSteerAngle: number;
+        highSpeedSteerAngle: number;
+        steeringResponse: number;
+        steeringReturn: number;
+        corneringGrip: number;
+    };
+    drift: {
+        minSpeed: number;
+        handbrakeDrag: number;
+        handbrakeTurnMultiplier: number;
+        handbrakeTraction: number;
+        recoveryTraction: number;
+        smokeThreshold: number;
+    };
+    sound: {
+        start: string;
+        loop: string;
+        stop: string;
+        brake: string;
+    };
+}
+
+const sportsCarBase: Omit<VehicleDef, "name" | "sprite" | "collision"> = {
+    type: "vehicle",
+    scale: 0.55,
+    maxForwardSpeed: 26,
+    maxReverseSpeed: 9,
+    acceleration: 10.5,
+    braking: 18,
+    coastingDrag: 2.4,
+    interactionRad: 1.5,
+    impact: {
+        minBreakSpeed: 1,
+    },
+    handling: {
+        wheelBase: 4.1,
+        lowSpeedSteerAngle: 0.58,
+        highSpeedSteerAngle: 0.34,
+        steeringResponse: 14,
+        steeringReturn: 14,
+        corneringGrip: 48,
+    },
+    drift: {
+        minSpeed: 4.5,
+        handbrakeDrag: 5.5,
+        handbrakeTurnMultiplier: 0.92,
+        handbrakeTraction: 3.2,
+        recoveryTraction: 34,
+        smokeThreshold: 0.22,
+    },
+    sound: {
+        start: "sports_car_engine_start",
+        loop: "sports_car_engine_loop",
+        stop: "sports_car_engine_stop",
+        brake: "sports_car_brake",
+    },
+};
+
+function defineSportsCar(name: string, sprite: string, collision: Collider): VehicleDef {
+    return {
+        ...sportsCarBase,
+        name,
+        sprite,
+        collision,
+    };
+}
+
+export const VehicleDefs: Record<string, VehicleDef> = {
+    sportsCar01: defineSportsCar(
+        "Sports Car 01",
+        "map-vehicle-sports-car-01.img",
+        collider.createPolygon([
+            v2.create(3.54, -0.52),
+            v2.create(2.3, -1.75),
+            v2.create(-2.65, -1.62),
+            v2.create(-3.78, -0.58),
+            v2.create(-3.78, 0.52),
+            v2.create(-2.65, 1.62),
+            v2.create(2.3, 1.75),
+            v2.create(3.54, 0.52),
+        ]),
+    ),
+    sportsCar03: defineSportsCar(
+        "Sports Car 03",
+        "map-vehicle-sports-car-03.img",
+        collider.createPolygon([
+            v2.create(0.99, 1.71),
+            v2.create(3.01, 1.13),
+            v2.create(3.49, -0.14),
+            v2.create(3.08, -1.16),
+            v2.create(1.06, -1.64),
+            v2.create(-2.43, -1.44),
+            v2.create(-3.28, -0.99),
+            v2.create(-3.42, 0.75),
+            v2.create(-3.11, 1.23),
+            v2.create(-2.29, 1.5),
+        ]),
+    ),
+    sportsCar04: defineSportsCar(
+        "Sports Car 04",
+        "map-vehicle-sports-car-04.img",
+        collider.createPolygon([
+            v2.create(2.84, 1.54),
+            v2.create(3.49, 1.13),
+            v2.create(3.69, -0.44),
+            v2.create(3.18, -1.33),
+            v2.create(2.26, -1.64),
+            v2.create(-3.15, -1.47),
+            v2.create(-3.69, -0.38),
+            v2.create(-3.52, 0.99),
+            v2.create(-2.6, 1.71),
+            v2.create(0.99, 1.78),
+        ]),
+    ),
+};

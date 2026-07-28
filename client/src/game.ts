@@ -863,6 +863,8 @@ export class Game {
                 inputMsg.toMouseDir = v2.copy(toMouseDir);
                 inputMsg.toMouseLen = toMouseLen;
             }
+            const drivingVehicle = this.m_activePlayer.m_localData.m_vehicleId !== 0;
+            inputMsg.vehicleBrake = drivingVehicle && this.m_input.keyDown(Key.Space);
             inputMsg.touchMoveDir = v2.normalizeSafe(
                 inputMsg.touchMoveDir,
                 v2.create(1, 0),
@@ -878,6 +880,10 @@ export class Game {
                 this.m_inputBinds.isBindPressed(Input.Fire) || this.m_touch.shotDetected;
             inputMsg.shootHold =
                 this.m_inputBinds.isBindDown(Input.Fire) || this.m_touch.shotDetected;
+            if (this.m_activePlayer.m_localData.m_vehicleId !== 0) {
+                inputMsg.shootStart = false;
+                inputMsg.shootHold = false;
+            }
             inputMsg.portrait =
                 this.m_camera.m_screenWidth < this.m_camera.m_screenHeight;
             const checkInputs = [
@@ -900,6 +906,9 @@ export class Game {
             ];
             for (let i = 0; i < checkInputs.length; i++) {
                 const input = checkInputs[i];
+                if (drivingVehicle && input === Input.EquipOtherGun) {
+                    continue;
+                }
                 if (this.m_inputBinds.isBindPressed(input)) {
                     inputMsg.addInput(input);
                 }

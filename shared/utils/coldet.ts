@@ -14,7 +14,12 @@ export interface AABB {
     max: Vec2;
 }
 
-export type Collider = Circle | AABB;
+export interface Polygon {
+    type: 2;
+    points: Vec2[];
+}
+
+export type Collider = Circle | AABB | Polygon;
 
 export const coldet = {
     circleToAabb(pos: Vec2, rad: number): AABB {
@@ -178,7 +183,175 @@ export const coldet = {
         return false;
     },
 
+    pointInPolygon(pos: Vec2, points: Vec2[]) {
+        let inside = false;
+        for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+            const a = points[i];
+            const b = points[j];
+            if (
+                a.y > pos.y !== b.y > pos.y &&
+                pos.x < ((b.x - a.x) * (pos.y - a.y)) / (b.y - a.y) + a.x
+            ) {
+                inside = !inside;
+            }
+        }
+        return inside;
+    },
+
+    closestPointOnSegment(pos: Vec2, a: Vec2, b: Vec2) {
+        const ab = v2.sub(b, a);
+        const lengthSqr = v2.lengthSqr(ab);
+        if (lengthSqr <= 0.000001) return v2.copy(a);
+        const t = math.clamp(v2.dot(v2.sub(pos, a), ab) / lengthSqr, 0, 1);
+        return v2.add(a, v2.mul(ab, t));
+    },
+
+    intersectPolygonCircle(points: Vec2[], pos: Vec2, rad: number) {
+        let closest = points[0];
+        let closestDistanceSqr = Infinity;
+        for (let i = 0; i < points.length; i++) {
+            const point = coldet.closestPointOnSegment(
+                pos,
+                points[i],
+                points[(i + 1) % points.length],
+            );
+            const distanceSqr = v2.lengthSqr(v2.sub(pos, point));
+            if (distanceSqr < closestDistanceSqr) {
+                closest = point;
+                closestDistanceSqr = distanceSqr;
+            }
+        }
+
+        const inside = coldet.pointInPolygon(pos, points);
+        const distance = Math.sqrt(closestDistanceSqr);
+        if (!inside && distance >= rad) return null;
+
+        const fallback = v2.normalizeSafe(
+            v2.sub(pos, coldet.polygonCenter(points)),
+            v2.create(1, 0),
+        );
+        const dir = inside
+            ? v2.normalizeSafe(v2.sub(closest, pos), fallback)
+            : v2.normalizeSafe(v2.sub(pos, closest), fallback);
+        return {
+            dir,
+            pen: inside ? rad + distance : rad - distance,
+        };
+    },
+
+    polygonCenter(points: Vec2[]) {
+        const center = v2.create(0, 0);
+        for (const point of points) {
+            center.x += point.x;
+            center.y += point.y;
+        }
+        return v2.div(center, points.length);
+    },
+
+    aabbPoints(min: Vec2, max: Vec2) {
+        return [
+            v2.create(min.x, min.y),
+            v2.create(max.x, min.y),
+            v2.create(max.x, max.y),
+            v2.create(min.x, max.y),
+        ];
+    },
+
+    intersectPolygonPolygon(pointsA: Vec2[], pointsB: Vec2[]) {
+        let minimumOverlap = Infinity;
+        let minimumAxis = v2.create(1, 0);
+
+        for (const points of [pointsA, pointsB]) {
+            for (let i = 0; i < points.length; i++) {
+                const edge = v2.sub(points[(i + 1) % points.length], points[i]);
+                const axis = v2.normalizeSafe(v2.perp(edge), v2.create(1, 0));
+                let minA = Infinity;
+                let maxA = -Infinity;
+                let minB = Infinity;
+                let maxB = -Infinity;
+
+                for (const point of pointsA) {
+                    const projection = v2.dot(point, axis);
+                    minA = math.min(minA, projection);
+                    maxA = math.max(maxA, projection);
+                }
+                for (const point of pointsB) {
+                    const projection = v2.dot(point, axis);
+                    minB = math.min(minB, projection);
+                    maxB = math.max(maxB, projection);
+                }
+
+                const overlap = math.min(maxA, maxB) - math.max(minA, minB);
+                if (overlap <= 0) return null;
+                if (overlap < minimumOverlap) {
+                    minimumOverlap = overlap;
+                    minimumAxis = axis;
+                }
+            }
+        }
+
+        const centerDirection = v2.sub(
+            coldet.polygonCenter(pointsB),
+            coldet.polygonCenter(pointsA),
+        );
+        if (v2.dot(centerDirection, minimumAxis) < 0) {
+            minimumAxis = v2.mul(minimumAxis, -1);
+        }
+        return { dir: minimumAxis, pen: minimumOverlap };
+    },
+
+    intersectSegmentPolygon(start: Vec2, end: Vec2, points: Vec2[]) {
+        let closest:
+            | {
+                  point: Vec2;
+                  normal: Vec2;
+                  distanceSqr: number;
+              }
+            | undefined;
+        const center = coldet.polygonCenter(points);
+
+        for (let i = 0; i < points.length; i++) {
+            const a = points[i];
+            const b = points[(i + 1) % points.length];
+            const hit = coldet.intersectSegmentSegment(start, end, a, b);
+            if (!hit) continue;
+            const distanceSqr = v2.lengthSqr(v2.sub(hit.point, start));
+            if (closest && distanceSqr >= closest.distanceSqr) continue;
+
+            const edge = v2.sub(b, a);
+            let normal = v2.normalizeSafe(v2.perp(edge), v2.create(1, 0));
+            const edgeCenter = v2.mul(v2.add(a, b), 0.5);
+            if (v2.dot(normal, v2.sub(edgeCenter, center)) < 0) {
+                normal = v2.mul(normal, -1);
+            }
+            closest = { point: hit.point, normal, distanceSqr };
+        }
+
+        return closest ? { point: closest.point, normal: closest.normal } : null;
+    },
+
     test(coll1: Collider, coll2: Collider): boolean {
+        if (coll1.type === 2) {
+            if (coll2.type === 2) {
+                return !!coldet.intersectPolygonPolygon(coll1.points, coll2.points);
+            }
+            if (coll2.type === 1) {
+                return !!coldet.intersectPolygonPolygon(
+                    coll1.points,
+                    coldet.aabbPoints(coll2.min, coll2.max),
+                );
+            }
+            return !!coldet.intersectPolygonCircle(coll1.points, coll2.pos, coll2.rad);
+        }
+        if (coll2.type === 2) {
+            if (coll1.type === 1) {
+                return !!coldet.intersectPolygonPolygon(
+                    coldet.aabbPoints(coll1.min, coll1.max),
+                    coll2.points,
+                );
+            }
+            return !!coldet.intersectPolygonCircle(coll2.points, coll1.pos, coll1.rad);
+        }
         if (coll1.type === 0) {
             if (coll2.type === 0) {
                 return coldet.testCircleCircle(

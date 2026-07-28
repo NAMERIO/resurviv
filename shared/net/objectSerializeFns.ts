@@ -24,6 +24,7 @@ export interface ObjectsPartialData {
     [ObjectType.Player]: {
         pos: Vec2;
         dir: Vec2;
+        vehicleId: number;
     };
     [ObjectType.Obstacle]: {
         pos: Vec2;
@@ -72,6 +73,8 @@ export interface ObjectsPartialData {
         pos: Vec2;
         ori: number;
         scale: number;
+        speed: number;
+        driftIntensity: number;
         state: string;
         invisibleTicker: boolean;
         targetActive: boolean;
@@ -236,6 +239,10 @@ export const ObjectSerializeFns: {
         serializePart: (s, data) => {
             s.writeMapPos(data.pos);
             s.writeUnitVec(data.dir, 8);
+            s.writeBoolean(data.vehicleId !== 0);
+            if (data.vehicleId !== 0) {
+                s.writeUint16(data.vehicleId);
+            }
         },
         serializeFull: (s, data) => {
             const serverPlayerData = data as unknown as {
@@ -329,6 +336,7 @@ export const ObjectSerializeFns: {
         deserializePart: (s, data) => {
             data.pos = s.readMapPos();
             data.dir = s.readUnitVec(8);
+            data.vehicleId = s.readBoolean() ? s.readUint16() : 0;
         },
         deserializeFull: (s, data) => {
             data.outfit = s.readGameType();
@@ -770,6 +778,8 @@ export const ObjectSerializeFns: {
                 Constants.MapObjectMaxScale,
                 8,
             );
+            s.writeFloat(data.speed, -32, 32, 9);
+            s.writeFloat(data.driftIntensity, 0, 1, 7);
             s.writeString(data.state, 8);
             s.writeBoolean(data.invisibleTicker);
             s.writeBoolean(data.targetActive);
@@ -792,6 +802,8 @@ export const ObjectSerializeFns: {
                 Constants.MapObjectMaxScale,
                 8,
             );
+            data.speed = s.readFloat(-32, 32, 9);
+            data.driftIntensity = s.readFloat(0, 1, 7);
             data.state = s.readString(8);
             data.invisibleTicker = s.readBoolean();
             data.targetActive = s.readBoolean();

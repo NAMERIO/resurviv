@@ -37,3 +37,7 @@ Emoji icons supplied by EmojiOne
 "Contract icon" by Delapouite is licensed under CC BY 3.0
 "Thumb up icon" by Delapouite is licensed under CC BY 3.0
 "Pig icon" by Skoll is licensed under CC BY 3.0
+"Free Top Down Car Sprites" by Unlucky Studio is licensed under CC0
+https://opengameart.org/content/free-top-down-car-sprites-by-unlucky-studio
+"Car Sound Effects Pack (Low Quality)" by GGBotNet is licensed under CC0
+https://opengameart.org/content/car-sound-effects-pack-low-quality

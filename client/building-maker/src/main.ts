@@ -1615,6 +1615,20 @@ function drawBuildingLocalCollider(item: EditorItem, localCollider: Collider) {
         ctx.stroke();
         return;
     }
+    if (localCollider.type === 2) {
+        const points = localCollider.points.map((point) =>
+            worldToScreen(buildingLocalToWorld(item, point, buildingOri)),
+        );
+        ctx.beginPath();
+        points.forEach((point, idx) => {
+            if (idx === 0) ctx.moveTo(point.x, point.y);
+            else ctx.lineTo(point.x, point.y);
+        });
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        return;
+    }
 
     const min = localCollider.min;
     const max = localCollider.max;
@@ -1721,6 +1735,18 @@ function drawCollider(col: Collider) {
         const radius = col.rad * PPU * camera.zoom;
         ctx.beginPath();
         ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        return;
+    }
+    if (col.type === 2) {
+        ctx.beginPath();
+        col.points.forEach((point, idx) => {
+            const screen = worldToScreen(point);
+            if (idx === 0) ctx.moveTo(screen.x, screen.y);
+            else ctx.lineTo(screen.x, screen.y);
+        });
+        ctx.closePath();
         ctx.fill();
         ctx.stroke();
         return;

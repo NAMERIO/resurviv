@@ -2589,6 +2589,31 @@ const ParticleDefs: Record<string, ParticleDef> = {
             return util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.9, 0.95)));
         },
     },
+    vehicleTireSmoke: {
+        image: ["part-smoke-02.img", "part-smoke-03.img"],
+        zOrd: 21,
+        life: new Range(0.65, 1.05),
+        drag: new Range(1.6, 2.2),
+        rotVel: new Range(-Math.PI * 0.35, Math.PI * 0.35),
+        scale: {
+            start: new Range(0.12, 0.18),
+            end: new Range(0.42, 0.62),
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 0.52,
+            end: 0,
+            lerp: new Range(0.15, 1),
+        },
+        alphaIn: {
+            start: 0,
+            end: 0.52,
+            lerp: new Range(0, 0.12),
+        },
+        color: function () {
+            return util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.72, 0.86)));
+        },
+    },
     airdropCrate01: {
         image: ["part-airdrop-01.img"],
         life: new Range(0.85, 1.15),

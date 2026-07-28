@@ -428,6 +428,13 @@ export class PlaneBarn {
                     airdropPos = coll.pos;
                     rad = coll.rad;
                     break;
+                case collider.Type.Polygon: {
+                    const bounds = collider.toAabb(coll);
+                    const extent = v2.mul(v2.sub(bounds.max, bounds.min), 0.5);
+                    airdropPos = v2.add(bounds.min, extent);
+                    rad = math.max(extent.x, extent.y);
+                    break;
+                }
             }
 
             this.game.map.clampToMapBounds(airdropPos, rad);
