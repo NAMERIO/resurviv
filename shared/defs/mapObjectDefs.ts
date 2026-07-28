@@ -14920,7 +14920,15 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         ori: 0,
         floor: {
             surfaces: [],
-            imgs: [],
+            imgs: [
+                {
+                    sprite: "park_floor.img",
+                    pos: v2.create(-4.3, -21.106),
+                    scale: 1.3,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+            ],
         },
         ceiling: {
             zoomRegions: [],
