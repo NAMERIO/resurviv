@@ -3389,9 +3389,10 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-igris.img",
             frontSpritePos: { x: 0, y: 0 },
             frontSprite: "player-accessory-igris.img",
+            aboveHand: true,
         },
         lootImg: {
-            sprite: "loot-outfit-igris.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
