@@ -103,7 +103,9 @@ export const DeatchmatchCobalt: MapDef = util.mergeDeep(structuredClone(Cobalt),
     },
 });
 
+/* STRIP_FROM_PROD_CLIENT:START */
 delete DeatchmatchCobalt.mapGen.fixedSpawns[0].club_complex_01;
+/* STRIP_FROM_PROD_CLIENT:END */
 
 DeatchmatchCobalt.lootTable = {
     tier_ring_case: [
