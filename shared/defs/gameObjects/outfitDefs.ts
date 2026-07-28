@@ -2191,7 +2191,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             frontSprite: "player-accessory-toxic-fire.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitDiamondy.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -3709,8 +3709,8 @@ const SkinDefs: Record<string, OutfitDef> = {
         name: "Solar Aegis",
         noDropOnDeath: true,
 
-        rarity: 4,
-        lore: "For those who block the dark with blinding light.",
+        rarity: 3,
+        lore: "A little bit of Blush to calm the quiet.",
 
         skinImg: {
             baseTint: 0xffffff,
@@ -3728,6 +3728,31 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+
+    outfitBlush: defineOutfitSkin("outfitBase", {
+        name: "Blush",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "A little bit of Blush to calm the quiet",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-blush.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-blush.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-blush.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
 
     outfitRiotPlaid: defineOutfitSkin("outfitBase", {
         name: "Riot Plaid",
@@ -3769,8 +3794,34 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-archaiccrown.img",
-            frontSpritePos: { x: 0, y: 0 },
+            frontSpritePos: { x: 0, y: -.4 },
             frontSprite: "player-accessory-archaiccrown.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitCupcake: defineOutfitSkin("outfitBase", {
+        name: "Cupcake",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        lore: "Cupcake doesn't bite.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            aboveHand: true,
+            baseSprite: "player-base-cupcake.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-cupcake.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-cupcake.img",
+            frontSpritePos: { x: -.75, y: 0 },
+            frontSprite: "player-accessory-cupcake.img",
         },
         lootImg: {
             skinLootImg: true,
@@ -3783,7 +3834,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         noDropOnDeath: true,
 
         rarity: 5,
-        lore: "For those who fight with honor and valor.",
+        lore: "For those who fight with honor and valor under Archaic!.",
 
         skinImg: {
             baseTint: 0xffffff,
@@ -3794,7 +3845,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-spartan.img",
-            frontSpritePos: { x: 0, y: -.75 },
+            frontSpritePos: { x: -2, y: .75 },
             frontSprite: "player-accessory-spartan.img",
         },
         lootImg: {
@@ -4843,7 +4894,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     outfitVitaminD: defineOutfitSkin("outfitBase", {
         name: "Vitamin D",
         noDropOnDeath: true,
-        rarity: 4,
+        rarity: 3,
         lore: "",
         skinImg: {
             baseTint: 0xffffff,
@@ -4857,7 +4908,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             frontSprite: "player-accessory-Vitamin-D.img",
         },
         lootImg: {
-            sprite: "loot-snowman-outfit.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
