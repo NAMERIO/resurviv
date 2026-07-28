@@ -2658,6 +2658,29 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
+    outfitAero: defineOutfitSkin("outfitBase", {
+        name: "Aero",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "Stealth Runner.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-aero.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-aero.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-aero.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
     outfitBengal: defineOutfitSkin("outfitBase", {
         name: "Bengal",
         noDropOnDeath: true,
@@ -3711,7 +3734,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         noDropOnDeath: true,
 
         rarity: 3,
-        lore: "A little bit of Blush to calm the quiet.",
+        lore: "To shine the way.",
 
         skinImg: {
             baseTint: 0xffffff,
@@ -3734,7 +3757,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         name: "Blush",
         noDropOnDeath: true,
 
-        rarity: 3,
+        rarity: 2,
         lore: "A little bit of Blush to calm the quiet",
 
         skinImg: {
