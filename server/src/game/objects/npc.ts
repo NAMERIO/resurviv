@@ -18,14 +18,13 @@ import type { Projectile } from "./projectile";
 
 const spriteUnitsPerGameUnit = 16;
 const secondStageTime = 4 * 60;
-const secondStageSpawnInterval = 15;
+const secondStageAttackInterval = 15;
 const cannonChargeTime = 2;
 const cannonRange = GameConfig.scopeZoomRadius.desktop["2xscope"];
 const skitterDamage = 5;
 const skitterDoorwayOffset = 0.75;
 const skitterDoorwayReach = 0.75;
 const maxLivingSkitters = 10;
-const skitterRespawnDelay = 15;
 const motherShipPatrolAngularSpeed = 0.02;
 const motherShipPatrolRadialSpeed = 0.045;
 const motherShipPatrolMaxRadius = 32;
@@ -50,7 +49,6 @@ interface DoorRoute {
 
 export class NpcBarn {
     npcs: Npc[] = [];
-    private pendingSkitterRespawns: number[] = [];
 
     constructor(readonly game: Game) {}
 
@@ -90,8 +88,7 @@ export class NpcBarn {
         if (
             type === "skitter" &&
             !options.bypassSkitterCap &&
-            this.getLivingSkitterCount() + this.pendingSkitterRespawns.length >=
-                maxLivingSkitters
+            this.getLivingSkitterCount() >= maxLivingSkitters
         ) {
             return undefined;
         }
@@ -103,8 +100,6 @@ export class NpcBarn {
     }
 
     update(dt: number) {
-        this.updateSkitterRespawns(dt);
-
         for (let i = 0; i < this.npcs.length; i++) {
             const npc = this.npcs[i];
             if (npc.destroyed) {
@@ -116,42 +111,12 @@ export class NpcBarn {
         }
     }
 
-    scheduleSkitterRespawn() {
-        const hasLivingMotherShip = this.npcs.some(
-            (npc) => npc.type === "motherShip" && !npc.dead && !npc.destroyed,
-        );
-        if (!hasLivingMotherShip) return;
-        this.pendingSkitterRespawns.push(skitterRespawnDelay);
-    }
-
     getLivingSkitterCount() {
         return this.npcs.reduce(
             (count, npc) =>
                 count + (npc.type === "skitter" && !npc.dead && !npc.destroyed ? 1 : 0),
             0,
         );
-    }
-
-    private updateSkitterRespawns(dt: number) {
-        if (this.game.playerBarn.livingPlayers.length === 0) return;
-
-        for (let i = this.pendingSkitterRespawns.length - 1; i >= 0; i--) {
-            this.pendingSkitterRespawns[i] -= dt;
-            if (this.pendingSkitterRespawns[i] > 0) continue;
-
-            this.pendingSkitterRespawns.splice(i, 1);
-            const motherShips = this.npcs.filter(
-                (npc) => npc.type === "motherShip" && !npc.dead && !npc.destroyed,
-            );
-            if (!motherShips.length) continue;
-
-            const motherShip = motherShips[util.randomInt(0, motherShips.length - 1)];
-            this.addNpc(
-                "skitter",
-                v2.add(motherShip.pos, util.randomPointInCircle(3)),
-                motherShip.layer,
-            );
-        }
     }
 }
 
@@ -178,7 +143,7 @@ export class Npc extends BaseGameObject {
     destructible: boolean;
     height: number;
 
-    private spawnTicker = 0;
+    private attackTicker = 0;
     private cannonTicker = 0;
     private cannonReady = false;
     private cannonTarget?: Player;
@@ -210,7 +175,7 @@ export class Npc extends BaseGameObject {
             collider.transform(def.collision, v2.create(0, 0), this.ori, this.scale),
         );
         this.collider = collider.transform(def.collision, this.pos, this.ori, this.scale);
-        this.spawnTicker = def.spawnInterval ?? 0;
+        this.attackTicker = def.attackInterval ?? 0;
         if (def.moveInterval) {
             this.phaseTicker = util.random(def.moveInterval[0], def.moveInterval[1]);
         }
@@ -261,7 +226,11 @@ export class Npc extends BaseGameObject {
                     this.setPartDirty();
                     this.clearCannonTarget(false);
                     this.cannonProjectile = this.fireCannon(targetPos, targetLayer);
-                    if (!this.cannonProjectile) this.clearCannonMarker();
+                    if (this.cannonProjectile) {
+                        this.spawnSkitters(def);
+                    } else {
+                        this.clearCannonMarker();
+                    }
                 }
             }
         }
@@ -272,13 +241,12 @@ export class Npc extends BaseGameObject {
 
         if (this.game.playerBarn.livingPlayers.length === 0) return;
 
-        this.spawnTicker -= dt;
-        if (this.spawnTicker > 0) return;
+        this.attackTicker -= dt;
+        if (this.attackTicker > 0) return;
 
-        this.spawnTicker = this.enteredSecondStage
-            ? secondStageSpawnInterval
-            : (def.spawnInterval ?? 25);
-        this.spawnSkitters(def);
+        this.attackTicker = this.enteredSecondStage
+            ? secondStageAttackInterval
+            : (def.attackInterval ?? 25);
         if (!this.cannonTarget && !this.cannonProjectile) {
             this.cannonReady = true;
             this.acquireCannonTarget();
@@ -808,9 +776,6 @@ export class Npc extends BaseGameObject {
         if (this.health <= 0) {
             this.dead = true;
             this.state = "dead";
-            if (this.type === "skitter") {
-                this.game.npcBarn.scheduleSkitterRespawn();
-            }
         }
         this.setDirty();
     }

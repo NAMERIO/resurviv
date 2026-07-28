@@ -438,7 +438,7 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 7,
-                item: "outfitPython",
+                item: "outfitArchaicCrown",
             },
             {
                 level: 9,

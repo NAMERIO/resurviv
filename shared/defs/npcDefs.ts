@@ -45,7 +45,7 @@ export interface NpcDef {
         explode: string;
         enter: string;
     };
-    spawnInterval?: number;
+    attackInterval?: number;
     spawnType?: string;
     minSpawn?: number;
     maxSpawn?: number;
@@ -90,10 +90,10 @@ export const NpcDefs: Record<string, NpcDef> = {
             explode: "crate_break_02",
             enter: "none",
         },
-        spawnInterval: 25,
+        attackInterval: 25,
         spawnType: "skitter",
-        maxSpawn: 3,
-        minSpawn: 1,
+        maxSpawn: 4,
+        minSpawn: 4,
         timeForFusion: 250,
         hasGun: true,
         gunImg: {
