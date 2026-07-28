@@ -1421,7 +1421,7 @@ export class Player implements AbstractObject {
 
         this.bodyContainer.alpha =
             this.m_netData.m_infectedEffect && this.m_netData.m_playerTransparent
-                ? 0.65
+                ? 0.85
                 : 1;
 
         // Only play swaps for local players.

@@ -7351,7 +7351,9 @@ export class Player extends BaseGameObject {
         }
 
         if (msg.spawnNpcType && NpcDefs[msg.spawnNpcType]) {
-            this.game.npcBarn.addNpc(msg.spawnNpcType, this.pos, this.layer);
+            this.game.npcBarn.addNpc(msg.spawnNpcType, this.pos, this.layer, {
+                bypassSkitterCap: true,
+            });
         }
 
         if (msg.promoteToRole) {

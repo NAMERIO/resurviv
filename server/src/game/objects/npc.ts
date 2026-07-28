@@ -26,6 +26,14 @@ const skitterDoorwayOffset = 0.75;
 const skitterDoorwayReach = 0.75;
 const maxLivingSkitters = 10;
 const skitterRespawnDelay = 15;
+const motherShipPatrolAngularSpeed = 0.02;
+const motherShipPatrolRadialSpeed = 0.045;
+const motherShipPatrolMaxRadius = 32;
+const motherShipPatrolMinRadius = 6;
+
+interface AddNpcOptions {
+    bypassSkitterCap?: boolean;
+}
 
 interface BuildingLocation {
     building: Building;
@@ -78,9 +86,10 @@ export class NpcBarn {
         return spawnPos;
     }
 
-    addNpc(type: string, pos: Vec2, layer = 0) {
+    addNpc(type: string, pos: Vec2, layer = 0, options: AddNpcOptions = {}) {
         if (
             type === "skitter" &&
+            !options.bypassSkitterCap &&
             this.getLivingSkitterCount() + this.pendingSkitterRespawns.length >=
                 maxLivingSkitters
         ) {
@@ -124,6 +133,8 @@ export class NpcBarn {
     }
 
     private updateSkitterRespawns(dt: number) {
+        if (this.game.playerBarn.livingPlayers.length === 0) return;
+
         for (let i = this.pendingSkitterRespawns.length - 1; i >= 0; i--) {
             this.pendingSkitterRespawns[i] -= dt;
             if (this.pendingSkitterRespawns[i] > 0) continue;
@@ -175,6 +186,7 @@ export class Npc extends BaseGameObject {
     private biteTicker = 0;
     private phaseTicker = 0;
     private enteredSecondStage = false;
+    private motherShipPatrolTime = 0;
     private mapIndicator?: MapIndicator;
     private navigationBuilding?: Building;
     private navigationDoor?: Obstacle;
@@ -221,6 +233,7 @@ export class Npc extends BaseGameObject {
     private updateMotherShip(dt: number) {
         const def = NpcDefs.motherShip;
 
+        this.motherShipPatrolTime += dt;
         this.moveToward(this.getMotherShipMoveTarget(), def.movementSpeed, dt, false);
 
         if (this.cannonProjectile?.destroyed) {
@@ -257,6 +270,8 @@ export class Npc extends BaseGameObject {
             this.acquireCannonTarget();
         }
 
+        if (this.game.playerBarn.livingPlayers.length === 0) return;
+
         this.spawnTicker -= dt;
         if (this.spawnTicker > 0) return;
 
@@ -272,20 +287,28 @@ export class Npc extends BaseGameObject {
 
     private getMotherShipMoveTarget() {
         const motherShips = this.game.npcBarn.npcs.filter(
-            (npc) => npc.type === "motherShip" && !npc.dead,
+            (npc) => npc.type === "motherShip" && !npc.dead && !npc.destroyed,
         );
-        if (motherShips.length <= 1) return this.game.gas.posNew;
-
-        const index = motherShips.indexOf(this);
-        const spacing = this.colliderRadius() * 2 + 2;
-        const formationRadius = spacing / (2 * Math.sin(Math.PI / motherShips.length));
-        const angle = (index / motherShips.length) * Math.PI * 2;
+        const index = Math.max(motherShips.indexOf(this), 0);
+        const formationAngle =
+            motherShips.length > 0 ? (index / motherShips.length) * Math.PI * 2 : 0;
+        const patrolRadius = Math.max(
+            motherShipPatrolMinRadius,
+            Math.min(motherShipPatrolMaxRadius, this.game.gas.radNew * 0.2),
+        );
+        const radius =
+            patrolRadius *
+            (0.75 +
+                Math.sin(
+                    this.motherShipPatrolTime * motherShipPatrolRadialSpeed +
+                        formationAngle,
+                ) *
+                    0.2);
+        const angle =
+            formationAngle + this.motherShipPatrolTime * motherShipPatrolAngularSpeed;
         return v2.add(
             this.game.gas.posNew,
-            v2.create(
-                Math.cos(angle) * formationRadius,
-                Math.sin(angle) * formationRadius,
-            ),
+            v2.create(Math.cos(angle) * radius, Math.sin(angle) * radius),
         );
     }
 

@@ -1608,7 +1608,7 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
         throwPhysics: {
             playerVelMult: 0.6,
             velZ: 0,
-            speed: 20,
+            speed: 50,
             spinVel: Math.PI,
             spinDrag: 1,
             randomizeSpinDir: true,

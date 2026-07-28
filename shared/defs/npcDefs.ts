@@ -79,7 +79,7 @@ export const NpcDefs: Record<string, NpcDef> = {
             { name: "fusion", animation: "fusion_motherShip" },
             { name: "cannon", animation: "load_motherShip" },
         ],
-        movementSpeed: 10,
+        movementSpeed: 14,
         movementPattern: "circle",
         initialState: "base",
         mapIndicator: true,
