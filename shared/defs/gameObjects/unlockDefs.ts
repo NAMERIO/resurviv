@@ -642,7 +642,7 @@ const _allowedEmotes = [
     "emote_pwn",
     "emote_qq",
     "emote_shockface",
-    "emote_stop",
+    // "emote_stop",
     // "emote_starstruck",
     "emote_wait",
     "emote_bagged",
