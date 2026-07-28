@@ -121,7 +121,6 @@ const mapDef: PartialMapDef = {
                 silo_01: 2,
                 cache_06: 1,
                 house_red_01: 1,
-                club_complex_01: 1,
                 barrel_01: 10,
                 crate_01: 18,
                 crate_30: 4,
@@ -136,6 +135,10 @@ const mapDef: PartialMapDef = {
             },
         ],
         randomSpawns: [
+            {
+                spawns: ["club_complex_01", "Memorial_Park"],
+                choose: 1,
+            },
             {
                 spawns: ["logging_complex_01i", "desert_town_02i"],
                 choose: 2,

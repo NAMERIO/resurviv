@@ -17,12 +17,9 @@ export const DesertAtlas: AtlasDef = {
 
         "map/map-crate-18.svg",
 
-        "map/map-bunker-statue-chamber-floor-01.svg",
-        "map/map-statue-03.svg",
         "map/map-statue-04.svg",
         "map/map-complex-warehouse-floor-05.svg",
         "map/map-crate-22.svg",
-        "map/map-crate-02f.svg",
         "map/map-case-meteor-01.svg",
         "map/map-case-meteor-res-01.svg",
 

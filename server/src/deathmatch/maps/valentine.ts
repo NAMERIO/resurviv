@@ -99,6 +99,10 @@ const mapDef = {
 
         randomSpawns: [
             {
+                spawns: ["club_complex_01", "Memorial_Park"],
+                choose: 1,
+            },
+            {
                 spawns: ["logging_complex_01v", "desert_town_02v"],
                 choose: 2,
             },
@@ -148,7 +152,6 @@ const mapDef = {
                 outhouse_01: 2,
                 tree_01: 10,
                 house_red_01: 1,
-                club_complex_01: 1,
             },
         ],
         spawnReplacements: [

@@ -28,11 +28,15 @@ export const SharedAtlas: AtlasDef = {
         "map/map-bunker-generic-floor-01.svg",
         "map/map-bunker-generic-floor-02.svg",
         "map/map-bunker-generic-floor-03.svg",
+        "map/map-bunker-statue-chamber-floor-01.svg",
         "map/map-bunker-vent-01.svg",
         "map/map-bunker-vent-02.svg",
         "map/map-bunker-vent-03.svg",
 
         "map/map-building-porch-01.svg",
+        "map/map-statue-03.svg",
+        "map/map-stone-07.svg",
+        "map/map-stone-res-07.svg",
 
         // generic obstacles, residues, decals etc
 
@@ -117,6 +121,7 @@ export const SharedAtlas: AtlasDef = {
         "map/map-crate-14.svg",
         "map/map-crate-14a.svg",
         "map/map-crate-20.svg",
+        "map/map-crate-02f.svg",
         "map/map-crate-mil-01.svg",
         "map/map-crate-mil-02.svg",
         "map/map-crate-mil-03.svg",

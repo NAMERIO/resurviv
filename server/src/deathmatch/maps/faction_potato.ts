@@ -184,7 +184,12 @@ const mapDef: PartialMapDef = {
                 tree_02: 1,
             },
         ],
-        randomSpawns: [],
+        randomSpawns: [
+            {
+                spawns: ["club_complex_01", "Memorial_Park"],
+                choose: 1,
+            },
+        ],
         spawnReplacements: [
             {
                 bush_01: "bush_01f",

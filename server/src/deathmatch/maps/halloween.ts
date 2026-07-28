@@ -160,7 +160,12 @@ const mapDef = {
                 cache_pumpkin_02: 40,
             },
         ],
-        randomSpawns: [],
+        randomSpawns: [
+            {
+                spawns: ["club_complex_01", "Memorial_Park"],
+                choose: 1,
+            },
+        ],
     },
     /* STRIP_FROM_PROD_CLIENT:END */
 };

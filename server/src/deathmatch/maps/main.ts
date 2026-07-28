@@ -106,13 +106,17 @@ export const mapDef: PartialMapDef = {
                 house_red_02: 1,
             },
         ],
-        importantSpawns: ["logging_complex_01tw", "club_complex_01"],
+        importantSpawns: ["logging_complex_01tw", "club_complex_01", "Memorial_Park"],
         customSpawnRules: {
             locationSpawns: [],
         },
         randomSpawns: [
             {
-                spawns: ["logging_complex_01tw", "club_complex_01"],
+                spawns: ["logging_complex_01tw"],
+                choose: 1,
+            },
+            {
+                spawns: ["club_complex_01", "Memorial_Park"],
                 choose: 1,
             },
             {

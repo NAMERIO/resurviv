@@ -88,6 +88,11 @@ export const DeatchmatchWoods: MapDef = util.mergeDeep(structuredClone(Woods), {
     },
 });
 
+DeatchmatchWoods.mapGen.randomSpawns.push({
+    spawns: ["club_complex_01", "Memorial_Park"],
+    choose: 1,
+});
+
 DeatchmatchWoods["lootTable"] = {
     tier_mansion_floor: [{ name: "outfitCasanova", count: 1, weight: 1 }],
     tier_vault_floor: [{ name: "outfitJester", count: 1, weight: 1 }],

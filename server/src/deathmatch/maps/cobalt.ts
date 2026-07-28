@@ -60,6 +60,10 @@ export const DeatchmatchCobalt: MapDef = util.mergeDeep(structuredClone(Cobalt),
             : {},
         randomSpawns: [
             {
+                spawns: ["club_complex_01", "Memorial_Park"],
+                choose: 1,
+            },
+            {
                 spawns: ["logging_complex_01c", "desert_town_02c"],
                 choose: 2,
             },
@@ -98,6 +102,8 @@ export const DeatchmatchCobalt: MapDef = util.mergeDeep(structuredClone(Cobalt),
         ],
     },
 });
+
+delete DeatchmatchCobalt.mapGen.fixedSpawns[0].club_complex_01;
 
 DeatchmatchCobalt.lootTable = {
     tier_ring_case: [

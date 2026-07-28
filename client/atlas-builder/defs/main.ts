@@ -16,7 +16,6 @@ export const MainAtlas: AtlasDef = {
 
         "map/lasr_swrds_tree_01.svg",
 
-        "map/map-statue-03.svg",
         "map/map-statue-04.svg",
 
         "map/map-stone-03tw.svg",

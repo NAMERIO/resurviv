@@ -64,7 +64,6 @@ export const Resurviv_Cobalt: MapDef = util.mergeDeep(structuredClone(Cobalt), {
             : {},
         fixedSpawns: [
             {
-                club_complex_01: 1,
                 mansion_structure_01: 1,
                 // small is spawn count for solos and duos, large is spawn count for squads
                 warehouse_01: { odds: 0.5 },
@@ -95,6 +94,10 @@ export const Resurviv_Cobalt: MapDef = util.mergeDeep(structuredClone(Cobalt), {
             },
         ],
         randomSpawns: [
+            {
+                spawns: ["club_complex_01", "Memorial_Park"],
+                choose: 1,
+            },
             {
                 spawns: [
                     "mansion_structure_01",

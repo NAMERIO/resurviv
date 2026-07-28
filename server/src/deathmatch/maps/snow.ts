@@ -197,6 +197,10 @@ const mapDef = {
         },
         randomSpawns: [
             {
+                spawns: ["club_complex_01", "Memorial_Park"],
+                choose: 1,
+            },
+            {
                 spawns: ["logging_complex_01sn", "desert_town_01sn"],
                 choose: 1,
             },

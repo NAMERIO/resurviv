@@ -62,7 +62,6 @@ export const gun_game: MapDef = util.mergeDeep(structuredClone(Main), {
             : {},
         fixedSpawns: [
             {
-                club_complex_01: 1,
                 // small is spawn count for solos and duos, large is spawn count for squads
                 warehouse_01: { odds: 0.5 },
                 house_red_01: config.mapSize === "large" ? 1 : { odds: 0.5 },
@@ -93,6 +92,10 @@ export const gun_game: MapDef = util.mergeDeep(structuredClone(Main), {
             },
         ],
         randomSpawns: [
+            {
+                spawns: ["club_complex_01", "Memorial_Park"],
+                choose: 1,
+            },
             {
                 spawns: [
                     "mansion_structure_01",
