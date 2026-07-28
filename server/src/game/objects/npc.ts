@@ -310,7 +310,7 @@ export class Npc extends BaseGameObject {
 
         this.biteTicker -= dt;
         const target = this.findClosestPlayer();
-        if (!target || target.indoors) return;
+        if (!target) return;
 
         const distance = v2.distance(this.pos, target.pos);
         if (distance <= this.colliderRadius() + target.rad + 0.25) {
@@ -361,20 +361,13 @@ export class Npc extends BaseGameObject {
 
         const speed = movementSpeed / spriteUnitsPerGameUnit;
         const movement = v2.mul(delta, Math.min(speed * dt, distance) / distance);
-        const oldPos = v2.copy(this.pos);
         const nextPos = v2.add(this.pos, movement);
 
-        if (collide && this.isInsideBuilding(nextPos)) return;
         v2.set(this.pos, nextPos);
         this.updateCollider();
 
         if (collide) {
             this.resolveCollisions();
-            if (this.isInsideBuilding(this.pos)) {
-                v2.set(this.pos, oldPos);
-                this.updateCollider();
-                return;
-            }
         }
 
         this.setPartDirty();
@@ -407,22 +400,6 @@ export class Npc extends BaseGameObject {
             );
             this.updateCollider();
         }
-    }
-
-    private isInsideBuilding(pos: Vec2) {
-        const rad = this.colliderRadius();
-        for (const building of this.game.map.buildings) {
-            if (building.layer !== this.layer) continue;
-            for (const region of building.zoomRegions) {
-                if (
-                    region.zoomIn &&
-                    coldet.testCircleAabb(pos, rad, region.zoomIn.min, region.zoomIn.max)
-                ) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     private colliderRadius() {
