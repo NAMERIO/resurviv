@@ -370,6 +370,7 @@ const _allowedOutfits = [
     // "outfitMecha",
     // "outfitTree",
     // "outfitIgris",
+    //"outfitAero",
     // "outfitSpeedo",
     // "outfitBlueLava",
     // "outfitInfernoCamo",
