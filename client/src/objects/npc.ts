@@ -1,5 +1,6 @@
 import * as PIXI from "pixi.js-legacy";
 import { type NpcDef, NpcDefs } from "../../../shared/defs/npcDefs";
+import { getVehicleGear } from "../../../shared/defs/vehicleDefs";
 import type { ObjectData, ObjectType } from "../../../shared/net/objectSerializeFns";
 import type { Collider } from "../../../shared/utils/coldet";
 import { collider } from "../../../shared/utils/collider";
@@ -87,7 +88,9 @@ const motherShipAimTurnSpeed = Math.PI * 2;
 const vehicleSkidLifetime = 3;
 const vehicleSkidSampleInterval = 0.025;
 const vehicleSkidMaxSegmentDistance = 2.5;
-const vehicleTireTrackHalfWidth = 1.05;
+const vehicleSkidTrackHalfWidth = 1.05;
+const vehicleFrontTireTrackHalfWidth = 1.48;
+const vehicleFrontTireAxleOffset = 2.05;
 
 interface VehicleSkidSegment {
     start: Vec2;
@@ -104,10 +107,13 @@ export class Npc implements AbstractObject {
     gunSprite = new PIXI.Sprite();
     targetSprite = new PIXI.Sprite();
     skidGraphics = new PIXI.Graphics();
+    frontTireGraphics = [new PIXI.Graphics(), new PIXI.Graphics()];
     soundLoadingInstance: SoundHandle | null = null;
     soundChargeLoading: SoundHandle | null = null;
     engineSoundInstance: SoundHandle | null = null;
+    driftSoundInstance: SoundHandle | null = null;
     brakeSoundCooldown = 0;
+    burbleSoundCooldown = 0;
 
     isNew = false;
     exploded = false;
@@ -128,7 +134,11 @@ export class Npc implements AbstractObject {
     vehicleInterpTicker = 0;
     scale = 1;
     speed = 0;
+    gear = 0;
     driftIntensity = 0;
+    steering = 0;
+    visualSteering = 0;
+    visualSteeringOld = 0;
     driftSmokeTicker = 0;
     skidSampleTicker = 0;
     skidSegments: VehicleSkidSegment[] = [];
@@ -152,6 +162,14 @@ export class Npc implements AbstractObject {
         this.targetSprite.anchor.set(0.5, 0.5);
         this.targetSprite.tint = 0xffffff;
         this.targetSprite.visible = false;
+        for (const tire of this.frontTireGraphics) {
+            tire.beginFill(0x0b0c0e);
+            tire.drawRoundedRect(-0.65, -0.24, 1.3, 0.48, 0.2);
+            tire.endFill();
+            tire.lineStyle(0.045, 0x565960, 0.9);
+            tire.drawRoundedRect(-0.55, -0.16, 1.1, 0.32, 0.13);
+            tire.visible = false;
+        }
     }
 
     m_init() {
@@ -166,13 +184,22 @@ export class Npc implements AbstractObject {
         this.soundLoadingInstance = null;
         this.soundChargeLoading = null;
         this.engineSoundInstance = null;
+        this.driftSoundInstance = null;
         this.brakeSoundCooldown = 0;
+        this.burbleSoundCooldown = 0;
+        this.gear = 0;
         this.driftSmokeTicker = 0;
+        this.steering = 0;
+        this.visualSteering = 0;
+        this.visualSteeringOld = 0;
         this.skidSampleTicker = 0;
         this.skidSegments.length = 0;
         this.skidLastTirePositions = null;
         this.skidGraphics.clear();
         this.skidGraphics.visible = false;
+        for (const tire of this.frontTireGraphics) {
+            tire.visible = false;
+        }
         this.vehicleInterpTicker = 0;
     }
 
@@ -182,14 +209,21 @@ export class Npc implements AbstractObject {
         this.targetSprite.visible = false;
         this.skidGraphics.clear();
         this.skidGraphics.visible = false;
+        for (const tire of this.frontTireGraphics) {
+            tire.visible = false;
+        }
         this.skidSegments.length = 0;
         this.skidLastTirePositions = null;
         this.soundLoadingInstance?.stop();
         this.soundChargeLoading?.stop();
         this.engineSoundInstance?.stop();
+        this.driftSoundInstance?.stop();
         this.soundLoadingInstance = null;
         this.soundChargeLoading = null;
         this.engineSoundInstance = null;
+        this.driftSoundInstance = null;
+        this.burbleSoundCooldown = 0;
+        this.gear = 0;
     }
 
     m_updateData(
@@ -219,6 +253,7 @@ export class Npc implements AbstractObject {
         if (isVehicle && !isNew) {
             this.visualPosOld = v2.copy(this.visualPos);
             this.vehicleVisualRotOld = this.vehicleVisualRot;
+            this.visualSteeringOld = this.visualSteering;
             this.vehicleInterpTicker = 0;
         }
         this.posOld = isNew ? v2.copy(data.pos) : v2.copy(this.pos);
@@ -226,8 +261,11 @@ export class Npc implements AbstractObject {
         this.rot = data.ori;
         this.scale = data.scale;
         const previousSpeed = this.speed;
+        const previousGear = this.gear;
         this.speed = data.speed;
         this.driftIntensity = data.driftIntensity;
+        this.steering = data.steering;
+        this.gear = isVehicle ? getVehicleGear(def.vehicle!, math.max(this.speed, 0)) : 0;
         this.imgScale = def.img.scale;
         this.collider = collider.transform(def.collision, this.pos, this.rot, this.scale);
         this.invisibleTicker = data.invisibleTicker;
@@ -244,6 +282,8 @@ export class Npc implements AbstractObject {
             this.visualPosOld = v2.copy(this.pos);
             this.vehicleVisualRot = this.rot;
             this.vehicleVisualRotOld = this.rot;
+            this.visualSteering = this.steering;
+            this.visualSteeringOld = this.steering;
         }
 
         const wasDriving = this.state === "drive";
@@ -285,6 +325,25 @@ export class Npc implements AbstractObject {
             });
             this.brakeSoundCooldown = 0.45;
         }
+        if (
+            isVehicle &&
+            !isNew &&
+            data.state === "drive" &&
+            previousGear > 0 &&
+            this.gear > previousGear
+        ) {
+            this.emitExhaustEffect(ctx, def, true);
+        } else if (
+            isVehicle &&
+            !isNew &&
+            data.state === "drive" &&
+            this.speed > 3.5 &&
+            previousSpeed - this.speed > 0.08 &&
+            this.burbleSoundCooldown <= 0
+        ) {
+            this.emitExhaustEffect(ctx, def, false);
+            this.burbleSoundCooldown = util.random(0.48, 0.72);
+        }
     }
 
     private setState(def: NpcDef, animationName: keyof typeof SpriteAnimDefs) {
@@ -317,9 +376,11 @@ export class Npc implements AbstractObject {
     }
 
     getInteraction() {
-        if (!NpcDefs[this.type]?.vehicle || this.dead) return null;
+        if (!NpcDefs[this.type]?.vehicle || this.dead || this.state === "drive") {
+            return null;
+        }
         return {
-            action: this.state === "drive" ? "game-exit" : "game-drive",
+            action: "game-drive",
             object: "game-sports-car",
         };
     }
@@ -334,6 +395,7 @@ export class Npc implements AbstractObject {
         camera: Camera,
     ) {
         this.brakeSoundCooldown = Math.max(0, this.brakeSoundCooldown - dt);
+        this.burbleSoundCooldown = Math.max(0, this.burbleSoundCooldown - dt);
         const def = NpcDefs[this.type];
         if (!def) return;
 
@@ -409,10 +471,20 @@ export class Npc implements AbstractObject {
             this.vehicleVisualRot =
                 this.vehicleVisualRotOld +
                 math.angleDiff(this.vehicleVisualRotOld, this.rot) * rotationT;
+            this.visualSteering = math.lerp(
+                rotationT,
+                this.visualSteeringOld,
+                this.steering,
+            );
             this.updateDriftSmoke(dt, particleBarn, def);
             this.updateSkidMarks(dt, camera, renderer, def);
+            this.updateFrontTires(camera, renderer, def);
 
             const driving = this.state === "drive" && !this.dead;
+            const drifting =
+                driving &&
+                this.driftIntensity >= def.vehicle.drift.smokeThreshold &&
+                Math.abs(this.speed) >= def.vehicle.drift.minSpeed;
             if (
                 driving &&
                 (!this.engineSoundInstance ||
@@ -440,11 +512,57 @@ export class Npc implements AbstractObject {
                     0,
                     1,
                 );
-                this.engineSoundInstance.detune = -180 + speedT * 720;
+                const vehicle = def.vehicle;
+                if (vehicle && this.speed > 0 && this.gear > 0) {
+                    const gearMinSpeed =
+                        this.gear === 1
+                            ? 0
+                            : vehicle.transmission.gearSpeeds[this.gear - 2];
+                    const gearMaxSpeed =
+                        vehicle.transmission.gearSpeeds[this.gear - 1] ??
+                        vehicle.maxForwardSpeed;
+                    const rpmT = math.clamp(
+                        (this.speed - gearMinSpeed) /
+                            math.max(gearMaxSpeed - gearMinSpeed, 0.01),
+                        0,
+                        1,
+                    );
+                    this.engineSoundInstance.detune = -260 + rpmT * 760;
+                } else {
+                    this.engineSoundInstance.detune = -180 + speedT * 420;
+                }
             }
             if (!driving && this.engineSoundInstance) {
                 this.engineSoundInstance.stop();
                 this.engineSoundInstance = null;
+            }
+            if (
+                drifting &&
+                (!this.driftSoundInstance ||
+                    !audioManager.isSoundPlaying(this.driftSoundInstance))
+            ) {
+                this.driftSoundInstance = audioManager.playSound(
+                    def.vehicle.sound.drift,
+                    {
+                        channel: "sfx",
+                        soundPos: this.pos,
+                        layer: this.layer,
+                        loop: true,
+                        loopEnd: 1.154,
+                        volumeScale: 0.68,
+                    },
+                );
+            }
+            if (this.driftSoundInstance) {
+                audioManager.updateSound(this.driftSoundInstance, "sfx", this.pos, {
+                    layer: this.layer,
+                    rangeMult: 1.2,
+                    volumeScale: drifting ? 0.68 : 0,
+                });
+            }
+            if (!drifting && this.driftSoundInstance) {
+                this.driftSoundInstance.stop();
+                this.driftSoundInstance = null;
             }
         }
 
@@ -625,8 +743,8 @@ export class Npc implements AbstractObject {
                         v2.mul(forward, forwardOffset),
                     );
                     for (const sideOffset of [
-                        -vehicleTireTrackHalfWidth,
-                        vehicleTireTrackHalfWidth,
+                        -vehicleSkidTrackHalfWidth,
+                        vehicleSkidTrackHalfWidth,
                     ]) {
                         tirePositions.push(v2.add(axleCenter, v2.mul(side, sideOffset)));
                     }
@@ -673,5 +791,116 @@ export class Npc implements AbstractObject {
             this.skidGraphics.lineTo(end.x, end.y);
         }
         renderer.addPIXIObj(this.skidGraphics, this.layer, 20, this.__id);
+    }
+
+    private updateFrontTires(camera: Camera, renderer: Renderer, def: NpcDef) {
+        const vehicle = def.vehicle;
+        const visible =
+            !!vehicle &&
+            !this.dead &&
+            this.state === "drive" &&
+            Math.abs(this.visualSteering) > 0.02;
+        for (const tire of this.frontTireGraphics) {
+            tire.visible = visible;
+        }
+        if (!visible || !vehicle) return;
+
+        const forward = v2.create(
+            Math.cos(this.vehicleVisualRot),
+            Math.sin(this.vehicleVisualRot),
+        );
+        const side = v2.perp(forward);
+        const frontAxleCenter = v2.add(
+            this.visualPos,
+            v2.mul(forward, vehicleFrontTireAxleOffset),
+        );
+        const speedT = math.clamp(Math.abs(this.speed) / vehicle.maxForwardSpeed, 0, 1);
+        const maxSteerAngle = math.lerp(
+            speedT,
+            vehicle.handling.lowSpeedSteerAngle,
+            vehicle.handling.highSpeedSteerAngle,
+        );
+        const tireRotation = -(
+            this.vehicleVisualRot +
+            this.visualSteering * maxSteerAngle
+        );
+        const tireScale = camera.m_scaleToScreen(1);
+
+        for (let i = 0; i < this.frontTireGraphics.length; i++) {
+            const sideOffset =
+                i === 0
+                    ? -vehicleFrontTireTrackHalfWidth
+                    : vehicleFrontTireTrackHalfWidth;
+            const tirePos = camera.m_pointToScreen(
+                v2.add(frontAxleCenter, v2.mul(side, sideOffset)),
+            );
+            const tire = this.frontTireGraphics[i];
+            tire.position.set(tirePos.x, tirePos.y);
+            tire.scale.set(tireScale, tireScale);
+            tire.rotation = tireRotation;
+            renderer.addPIXIObj(tire, this.layer, 21.5, this.__id * 2 + i);
+        }
+    }
+
+    private emitExhaustEffect(ctx: Ctx, def: NpcDef, shifting: boolean) {
+        const vehicle = def.vehicle;
+        if (!vehicle) return;
+
+        const forward = v2.create(Math.cos(this.rot), Math.sin(this.rot));
+        const side = v2.perp(forward);
+        const rearCenter = v2.add(this.pos, v2.mul(forward, -3));
+        const exhaustOffsets = shifting
+            ? [-0.52, 0.52]
+            : [Math.random() < 0.5 ? -0.52 : 0.52];
+
+        for (const sideOffset of exhaustOffsets) {
+            const pos = v2.add(rearCenter, v2.mul(side, sideOffset));
+            const velocity = v2.add(
+                v2.mul(forward, util.random(-3.2, -2.2)),
+                v2.mul(side, util.random(-0.3, 0.3)),
+            );
+            ctx.particleBarn.addParticle(
+                "vehicleExhaustFlame",
+                this.layer,
+                pos,
+                velocity,
+                shifting ? 1 : 0.72,
+                -this.rot,
+                null,
+                21,
+            );
+            if (shifting) {
+                ctx.particleBarn.addParticle(
+                    "vehicleTireSmoke",
+                    this.layer,
+                    pos,
+                    v2.mul(forward, -0.8),
+                    0.42,
+                    util.random(0, Math.PI * 2),
+                    null,
+                    21,
+                );
+            }
+        }
+
+        if (shifting) {
+            ctx.audioManager.playSound(vehicle.sound.shift, {
+                channel: "sfx",
+                soundPos: this.pos,
+                layer: this.layer,
+                fallOff: 2,
+                rangeMult: 1.15,
+                volumeScale: 0.75,
+            });
+        } else {
+            ctx.audioManager.playGroup(vehicle.sound.burble, {
+                soundPos: this.pos,
+                layer: this.layer,
+                fallOff: 2,
+                rangeMult: 1.1,
+                volumeScale: 0.5,
+                detune: util.random(-140, 90),
+            });
+        }
     }
 }

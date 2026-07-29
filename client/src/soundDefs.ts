@@ -1687,6 +1687,26 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
             path: "audio/vehicles/sports_car_brake.mp3",
             volume: 0.8,
         },
+        sports_car_drift: {
+            path: "audio/vehicles/sports_car_drift.mp3",
+            volume: 0.85,
+            maxInstances: 12,
+        },
+        sports_car_exhaust_pop: {
+            path: "audio/vehicles/sports_car_exhaust_pop.mp3",
+            volume: 0.9,
+            maxInstances: 8,
+        },
+        sports_car_burble_01: {
+            path: "audio/vehicles/sports_car_burble_01.mp3",
+            volume: 0.7,
+            maxInstances: 6,
+        },
+        sports_car_burble_02: {
+            path: "audio/vehicles/sports_car_burble_02.mp3",
+            volume: 0.7,
+            maxInstances: 6,
+        },
     },
     ambient: {
         ambient_wind_01: {
@@ -1990,6 +2010,10 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
     },
 };
 const Groups: Record<string, { channel: string; sounds: string[] }> = {
+    sports_car_burble: {
+        channel: "sfx",
+        sounds: ["sports_car_burble_01", "sports_car_burble_02"],
+    },
     footstep_grass: {
         channel: "sfx",
         sounds: ["footstep_grass_01", "footstep_grass_02"],

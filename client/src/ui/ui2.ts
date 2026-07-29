@@ -847,7 +847,11 @@ export class UiManager2 {
         const amongUsMode = !!map.getMapDef().gameMode.amongUsMode;
         const amongUsRole = playerBarn.getPlayerInfo(activePlayer.__id).amongUsRole || "";
 
-        if (!spectating && activePlayer.canInteract(map)) {
+        if (
+            !spectating &&
+            activePlayer.canInteract(map) &&
+            activePlayer.m_localData.m_vehicleId === 0
+        ) {
             if (amongUsMode) {
                 const deadBody = deadBodyBarn.getReportableDeadBody(
                     activePlayer.m_netData.m_pos,
@@ -914,8 +918,7 @@ export class UiManager2 {
                         !npc.active ||
                         npc.dead ||
                         !NpcDefs[npc.type]?.vehicle ||
-                        (npc.state === "drive" &&
-                            npc.__id !== activePlayer.m_localData.m_vehicleId) ||
+                        npc.state === "drive" ||
                         !util.sameLayer(npc.layer, activePlayer.layer)
                     ) {
                         continue;

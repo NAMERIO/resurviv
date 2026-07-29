@@ -19,6 +19,7 @@ interface Options {
     ignoreMinAllowable?: boolean;
     rangeMult?: number;
     offset?: number;
+    loopEnd?: number;
     ambient?: boolean;
     detune?: number;
     volumeScale?: number;
@@ -198,6 +199,7 @@ export class AudioManager {
         options.ignoreMinAllowable = options.ignoreMinAllowable || false;
         options.rangeMult = options.rangeMult || 1;
         options.offset = options.offset || 0;
+        options.loopEnd = options.loopEnd || 0;
         options.ambient = options.channel == "ambient" || options.channel == "music";
         options.detune = options.detune || 0;
         options.volumeScale = options.volumeScale || 1;
@@ -242,6 +244,7 @@ export class AudioManager {
                         pan: stereoNorm,
                         delay: options.delay,
                         offset: options.offset,
+                        loopEnd: options.loopEnd,
                         ambient: options.ambient,
                         detune: options.detune,
                     });
@@ -255,6 +258,7 @@ export class AudioManager {
                     volume: options.startSilent ? 0 : clipVolume,
                     delay: options.delay,
                     offset: options.offset,
+                    loopEnd: options.loopEnd,
                     ambient: options.ambient,
                     detune: options.detune,
                 });

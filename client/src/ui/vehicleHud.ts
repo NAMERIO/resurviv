@@ -1,3 +1,4 @@
+import { getVehicleGear, VehicleDefs } from "../../../shared/defs/vehicleDefs";
 import { math } from "../../../shared/utils/math";
 
 const MAX_DISPLAY_SPEED = 300;
@@ -31,19 +32,28 @@ export class VehicleHud {
         this.displayedSpeed += (speedKph - this.displayedSpeed) * smoothing;
 
         const speedT = math.clamp(this.displayedSpeed / MAX_DISPLAY_SPEED, 0, 1);
-        const rpm = 900 + speedT * 6_400;
-        const rpmT = math.clamp(rpm / 8_000, 0, 1);
+        const vehicle = VehicleDefs.sportsCar01;
+        const gear = getVehicleGear(vehicle, gameSpeed);
+        let gearRpmT = speedT;
+        if (gear > 0) {
+            const gearMinSpeed =
+                gear === 1 ? 0 : vehicle.transmission.gearSpeeds[gear - 2];
+            const gearMaxSpeed =
+                vehicle.transmission.gearSpeeds[gear - 1] ?? vehicle.maxForwardSpeed;
+            gearRpmT = math.clamp(
+                (gameSpeed - gearMinSpeed) / math.max(gearMaxSpeed - gearMinSpeed, 0.01),
+                0,
+                1,
+            );
+        }
+        const rpm = 1_100 + gearRpmT * 6_400;
+        const gaugeRpmT = math.clamp(rpm / 8_000, 0, 1);
 
         this.speedNeedle.style.transform = `rotate(${-132 + speedT * 264}deg)`;
-        this.rpmNeedle.style.transform = `rotate(${-132 + rpmT * 264}deg)`;
+        this.rpmNeedle.style.transform = `rotate(${-132 + gaugeRpmT * 264}deg)`;
         this.speedValue.textContent = `${Math.round(this.displayedSpeed)}`;
         this.rpmValue.textContent = `${(rpm / 1_000).toFixed(1)}`;
-        this.gearValue.textContent = this.getGear(gameSpeed, speedT);
-    }
-
-    private getGear(gameSpeed: number, speedT: number) {
-        if (gameSpeed < -0.1) return "R";
-        if (Math.abs(gameSpeed) < 0.1) return "N";
-        return `${Math.min(5, Math.max(1, Math.ceil(speedT * 5)))}`;
+        this.gearValue.textContent =
+            gameSpeed < -0.1 ? "R" : Math.abs(gameSpeed) < 0.1 ? "N" : `${gear}`;
     }
 }

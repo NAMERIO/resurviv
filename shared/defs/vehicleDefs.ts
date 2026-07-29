@@ -14,6 +14,12 @@ export interface VehicleDef {
     braking: number;
     coastingDrag: number;
     interactionRad: number;
+    transmission: {
+        gearSpeeds: number[];
+        highSpeedAccelerationMultiplier: number;
+        shiftDuration: number;
+        shiftAccelerationMultiplier: number;
+    };
     impact: {
         minBreakSpeed: number;
     };
@@ -27,7 +33,7 @@ export interface VehicleDef {
     };
     drift: {
         minSpeed: number;
-        handbrakeDrag: number;
+        handbrakeEntrySpeedLoss: number;
         handbrakeTurnMultiplier: number;
         handbrakeTraction: number;
         recoveryTraction: number;
@@ -38,6 +44,9 @@ export interface VehicleDef {
         loop: string;
         stop: string;
         brake: string;
+        drift: string;
+        shift: string;
+        burble: string;
     };
 }
 
@@ -46,10 +55,16 @@ const sportsCarBase: Omit<VehicleDef, "name" | "sprite" | "collision"> = {
     scale: 0.55,
     maxForwardSpeed: 26,
     maxReverseSpeed: 9,
-    acceleration: 10.5,
+    acceleration: 8.5,
     braking: 18,
     coastingDrag: 2.4,
     interactionRad: 1.5,
+    transmission: {
+        gearSpeeds: [5.5, 10.2, 14.7, 19.5, 26],
+        highSpeedAccelerationMultiplier: 0.22,
+        shiftDuration: 0.13,
+        shiftAccelerationMultiplier: 0.12,
+    },
     impact: {
         minBreakSpeed: 1,
     },
@@ -63,7 +78,7 @@ const sportsCarBase: Omit<VehicleDef, "name" | "sprite" | "collision"> = {
     },
     drift: {
         minSpeed: 4.5,
-        handbrakeDrag: 5.5,
+        handbrakeEntrySpeedLoss: 1.2,
         handbrakeTurnMultiplier: 0.92,
         handbrakeTraction: 3.2,
         recoveryTraction: 34,
@@ -74,8 +89,19 @@ const sportsCarBase: Omit<VehicleDef, "name" | "sprite" | "collision"> = {
         loop: "sports_car_engine_loop",
         stop: "sports_car_engine_stop",
         brake: "sports_car_brake",
+        drift: "sports_car_drift",
+        shift: "sports_car_exhaust_pop",
+        burble: "sports_car_burble",
     },
 };
+
+export function getVehicleGear(vehicle: VehicleDef, speed: number) {
+    if (speed <= 0.15) return 0;
+    const gearIndex = vehicle.transmission.gearSpeeds.findIndex(
+        (gearSpeed) => speed <= gearSpeed,
+    );
+    return gearIndex === -1 ? vehicle.transmission.gearSpeeds.length : gearIndex + 1;
+}
 
 function defineSportsCar(name: string, sprite: string, collision: Collider): VehicleDef {
     return {

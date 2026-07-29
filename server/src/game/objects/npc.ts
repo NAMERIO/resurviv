@@ -1,6 +1,7 @@
 import { GameObjectDefs } from "../../../../shared/defs/gameObjectDefs";
 import type { ThrowableDef } from "../../../../shared/defs/gameObjects/throwableDefs";
 import { type NpcDef, NpcDefs } from "../../../../shared/defs/npcDefs";
+import { getVehicleGear } from "../../../../shared/defs/vehicleDefs";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
 import { type AABB, type Collider, coldet } from "../../../../shared/utils/coldet";
@@ -135,7 +136,10 @@ export class Npc extends BaseGameObject {
     driftIntensity = 0;
     travelDir = v2.create(1, 0);
     steering = 0;
+    gear = 0;
+    shiftTicker = 0;
     reverseEngageTicker = 0;
+    handbrakeEngaged = false;
     state: string;
     invisibleTicker = false;
     targetActive = false;
@@ -217,13 +221,34 @@ export class Npc extends BaseGameObject {
         const vehicle = NpcDefs[this.type].vehicle;
         if (!vehicle || !this.driver) return v2.create(0, 0);
 
+        this.shiftTicker = math.max(0, this.shiftTicker - dt);
+        const currentGear = getVehicleGear(vehicle, math.max(this.speed, 0));
+        if (currentGear > this.gear && this.gear > 0) {
+            this.shiftTicker = vehicle.transmission.shiftDuration;
+        }
+        this.gear = currentGear;
+
         if (input.accelerate) {
             this.reverseEngageTicker = 0;
+            const speedT = math.clamp(this.speed / vehicle.maxForwardSpeed, 0, 1);
+            const accelerationTaper = math.lerp(
+                speedT,
+                1,
+                vehicle.transmission.highSpeedAccelerationMultiplier,
+            );
+            const shiftMultiplier =
+                this.shiftTicker > 0
+                    ? vehicle.transmission.shiftAccelerationMultiplier
+                    : 1;
             this.speed =
                 this.speed < 0
                     ? math.min(0, this.speed + vehicle.braking * dt)
                     : math.min(
-                          this.speed + vehicle.acceleration * dt,
+                          this.speed +
+                              vehicle.acceleration *
+                                  accelerationTaper *
+                                  shiftMultiplier *
+                                  dt,
                           vehicle.maxForwardSpeed,
                       );
         } else if (input.brake) {
@@ -249,13 +274,14 @@ export class Npc extends BaseGameObject {
             this.reverseEngageTicker = 0;
             this.applyVehicleDrag(dt);
         }
-        if (input.handbrake) {
-            const handbrakeDrag = vehicle.drift.handbrakeDrag * dt;
+        if (input.handbrake && !this.handbrakeEngaged) {
+            const handbrakeSpeedLoss = vehicle.drift.handbrakeEntrySpeedLoss;
             this.speed =
-                Math.abs(this.speed) <= handbrakeDrag
+                Math.abs(this.speed) <= handbrakeSpeedLoss
                     ? 0
-                    : this.speed - math.sign(this.speed) * handbrakeDrag;
+                    : this.speed - math.sign(this.speed) * handbrakeSpeedLoss;
         }
+        this.handbrakeEngaged = input.handbrake;
 
         const steerInput = Number(input.steerLeft) - Number(input.steerRight);
         const steeringRate =
@@ -352,7 +378,10 @@ export class Npc extends BaseGameObject {
         this.driftIntensity = 0;
         this.travelDir = v2.create(Math.cos(this.ori), Math.sin(this.ori));
         this.steering = 0;
+        this.gear = 0;
+        this.shiftTicker = 0;
         this.reverseEngageTicker = 0;
+        this.handbrakeEngaged = false;
         this.setState("drive");
         player.setPartDirty();
         player.game.grid.updateObject(player);
@@ -367,7 +396,10 @@ export class Npc extends BaseGameObject {
         this.speed = 0;
         this.driftIntensity = 0;
         this.steering = 0;
+        this.gear = 0;
+        this.shiftTicker = 0;
         this.reverseEngageTicker = 0;
+        this.handbrakeEngaged = false;
         this.setState("idle");
         this.setPartDirty();
 
