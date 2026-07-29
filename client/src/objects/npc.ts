@@ -5,7 +5,7 @@ import type { Collider } from "../../../shared/utils/coldet";
 import { collider } from "../../../shared/utils/collider";
 import { math } from "../../../shared/utils/math";
 import { util } from "../../../shared/utils/util";
-import { v2 } from "../../../shared/utils/v2";
+import { type Vec2, v2 } from "../../../shared/utils/v2";
 import type { AudioManager } from "../audioManager";
 import type { Camera } from "../camera";
 import type { Ctx } from "../game";
@@ -84,6 +84,16 @@ const SpriteAnimDefs = {
 
 const motherShipTravelSpinSpeed = 0.25;
 const motherShipAimTurnSpeed = Math.PI * 2;
+const vehicleSkidLifetime = 3;
+const vehicleSkidSampleInterval = 0.025;
+const vehicleSkidMaxSegmentDistance = 2.5;
+const vehicleTireTrackHalfWidth = 1.05;
+
+interface VehicleSkidSegment {
+    start: Vec2;
+    end: Vec2;
+    age: number;
+}
 
 export class Npc implements AbstractObject {
     __id!: number;
@@ -93,6 +103,7 @@ export class Npc implements AbstractObject {
     sprite = new PIXI.AnimatedSprite([PIXI.Texture.EMPTY]);
     gunSprite = new PIXI.Sprite();
     targetSprite = new PIXI.Sprite();
+    skidGraphics = new PIXI.Graphics();
     soundLoadingInstance: SoundHandle | null = null;
     soundChargeLoading: SoundHandle | null = null;
     engineSoundInstance: SoundHandle | null = null;
@@ -119,6 +130,9 @@ export class Npc implements AbstractObject {
     speed = 0;
     driftIntensity = 0;
     driftSmokeTicker = 0;
+    skidSampleTicker = 0;
+    skidSegments: VehicleSkidSegment[] = [];
+    skidLastTirePositions: Vec2[] | null = null;
     imgScale = 1;
     collider!: Collider;
     state: string | null = null;
@@ -154,6 +168,11 @@ export class Npc implements AbstractObject {
         this.engineSoundInstance = null;
         this.brakeSoundCooldown = 0;
         this.driftSmokeTicker = 0;
+        this.skidSampleTicker = 0;
+        this.skidSegments.length = 0;
+        this.skidLastTirePositions = null;
+        this.skidGraphics.clear();
+        this.skidGraphics.visible = false;
         this.vehicleInterpTicker = 0;
     }
 
@@ -161,6 +180,10 @@ export class Npc implements AbstractObject {
         this.sprite.visible = false;
         this.gunSprite.visible = false;
         this.targetSprite.visible = false;
+        this.skidGraphics.clear();
+        this.skidGraphics.visible = false;
+        this.skidSegments.length = 0;
+        this.skidLastTirePositions = null;
         this.soundLoadingInstance?.stop();
         this.soundChargeLoading?.stop();
         this.engineSoundInstance?.stop();
@@ -387,6 +410,7 @@ export class Npc implements AbstractObject {
                 this.vehicleVisualRotOld +
                 math.angleDiff(this.vehicleVisualRotOld, this.rot) * rotationT;
             this.updateDriftSmoke(dt, particleBarn, def);
+            this.updateSkidMarks(dt, camera, renderer, def);
 
             const driving = this.state === "drive" && !this.dead;
             if (
@@ -562,5 +586,92 @@ export class Npc implements AbstractObject {
                 21,
             );
         }
+    }
+
+    private updateSkidMarks(dt: number, camera: Camera, renderer: Renderer, def: NpcDef) {
+        for (const segment of this.skidSegments) {
+            segment.age += dt;
+        }
+        this.skidSegments = this.skidSegments.filter(
+            (segment) => segment.age < vehicleSkidLifetime,
+        );
+
+        const drift = def.vehicle?.drift;
+        const drifting =
+            !!drift &&
+            !this.dead &&
+            this.state === "drive" &&
+            this.driftIntensity >= drift.smokeThreshold &&
+            Math.abs(this.speed) >= drift.minSpeed;
+
+        if (!drifting) {
+            this.skidSampleTicker = 0;
+            this.skidLastTirePositions = null;
+        } else {
+            this.skidSampleTicker -= dt;
+            if (this.skidSampleTicker <= 0) {
+                this.skidSampleTicker = vehicleSkidSampleInterval;
+                const forward = v2.create(
+                    Math.cos(this.vehicleVisualRot),
+                    Math.sin(this.vehicleVisualRot),
+                );
+                const side = v2.perp(forward);
+                const halfWheelBase = def.vehicle!.handling.wheelBase * 0.5;
+                const tirePositions: Vec2[] = [];
+
+                for (const forwardOffset of [halfWheelBase, -halfWheelBase]) {
+                    const axleCenter = v2.add(
+                        this.visualPos,
+                        v2.mul(forward, forwardOffset),
+                    );
+                    for (const sideOffset of [
+                        -vehicleTireTrackHalfWidth,
+                        vehicleTireTrackHalfWidth,
+                    ]) {
+                        tirePositions.push(v2.add(axleCenter, v2.mul(side, sideOffset)));
+                    }
+                }
+
+                if (this.skidLastTirePositions) {
+                    for (let i = 0; i < tirePositions.length; i++) {
+                        const start = this.skidLastTirePositions[i];
+                        const end = tirePositions[i];
+                        const distance = v2.length(v2.sub(end, start));
+                        if (
+                            distance >= 0.01 &&
+                            distance <= vehicleSkidMaxSegmentDistance
+                        ) {
+                            this.skidSegments.push({
+                                start: v2.copy(start),
+                                end: v2.copy(end),
+                                age: 0,
+                            });
+                        }
+                    }
+                }
+                this.skidLastTirePositions = tirePositions;
+            }
+        }
+
+        this.skidGraphics.clear();
+        this.skidGraphics.visible = this.skidSegments.length > 0;
+        if (!this.skidGraphics.visible) return;
+
+        const lineWidth = Math.max(camera.m_scaleToScreen(0.42), 6);
+        for (const segment of this.skidSegments) {
+            const fadeT = math.clamp((vehicleSkidLifetime - segment.age) / 0.65, 0, 1);
+            const start = camera.m_pointToScreen(segment.start);
+            const end = camera.m_pointToScreen(segment.end);
+            this.skidGraphics.lineStyle({
+                width: lineWidth,
+                color: 0x151515,
+                alpha: 0.48 * fadeT,
+                cap: PIXI.LINE_CAP.ROUND,
+                join: PIXI.LINE_JOIN.ROUND,
+            });
+            this.skidGraphics.moveTo(start.x, start.y);
+            this.skidGraphics.lineTo(end.x, end.y);
+        }
+        renderer.addPIXIObj(this.skidGraphics, this.layer, 20, this.__id);
     }
 }
