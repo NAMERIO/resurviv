@@ -1688,7 +1688,7 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
             volume: 0.8,
         },
         sports_car_drift: {
-            path: "audio/vehicles/sports_car_drift.mp3",
+            path: "audio/vehicles/sports-car-drift.mp3",
             volume: 0.85,
             maxInstances: 12,
         },

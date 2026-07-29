@@ -93,7 +93,6 @@ export class SoundInstance {
         loop: boolean,
         delay: number,
         offset: number,
-        loopEnd: number,
         ambient: boolean,
         detune: number,
     ) {
@@ -108,9 +107,6 @@ export class SoundInstance {
         this.sourceNode.connect(this.gainNode);
         this.pannerNode.connect(this.destination);
         this.sourceNode.loop = loop;
-        if (loop && loopEnd > 0 && loopEnd < buffer.duration) {
-            this.sourceNode.loopEnd = loopEnd;
-        }
         if (isIOS) {
             this.gainNode.gain.value = volume;
         } else {
@@ -401,7 +397,6 @@ interface Params {
     pan: number;
     delay: number;
     offset: number;
-    loopEnd: number;
     detune: number;
     ambient: boolean;
 }
@@ -641,7 +636,6 @@ class WebAudioEngine {
         const loop = !!params.loop;
         const delay = params.delay ? params.delay * 0.001 : 0.0; // passed in ms
         const offset = params.offset ? params.offset : 0.0;
-        const loopEnd = params.loopEnd ? params.loopEnd : 0.0;
         const ambient = params.ambient || false;
         const detune = params.detune || 0.0;
 
@@ -743,7 +737,6 @@ class WebAudioEngine {
             loop,
             delay,
             offset,
-            loopEnd,
             ambient,
             detune,
         );

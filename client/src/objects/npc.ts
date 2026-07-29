@@ -547,8 +547,6 @@ export class Npc implements AbstractObject {
                         channel: "sfx",
                         soundPos: this.pos,
                         layer: this.layer,
-                        loop: true,
-                        loopEnd: 1.154,
                         volumeScale: 0.68,
                     },
                 );
