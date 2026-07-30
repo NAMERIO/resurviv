@@ -7501,6 +7501,176 @@ span.ui-stats-header-value {
   }
 }
 
+/* Vehicle dashboard */
+#ui-vehicle-hud {
+  --vehicle-red: #ff3b30;
+  align-items: center;
+  bottom: 92px;
+  display: flex;
+  gap: 8px;
+  left: 50%;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  transform: translate(-50%, 18px) scale(0.9);
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  visibility: hidden;
+  z-index: 8;
+}
+
+#ui-vehicle-hud.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+  visibility: visible;
+}
+
+.vehicle-gauge {
+  background:
+    radial-gradient(circle at 50% 58%, #202329 0 12%, #090a0d 13% 55%, transparent 56%),
+    conic-gradient(from 228deg, #28303a 0 73%, var(--vehicle-red) 73% 86%, #28303a 86%);
+  border: 3px solid #8f969f;
+  border-radius: 50%;
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 3px #252a31,
+    inset 0 0 20px #000;
+  height: 118px;
+  position: relative;
+  width: 118px;
+}
+
+.vehicle-gauge-ring {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  inset: 9px;
+  position: absolute;
+}
+
+.vehicle-gauge-ticks {
+  background: repeating-conic-gradient(
+    from 228deg,
+    rgba(255, 255, 255, 0.85) 0 1deg,
+    transparent 1deg 13.2deg
+  );
+  border-radius: 50%;
+  inset: 13px;
+  mask: radial-gradient(circle, transparent 0 75%, #000 76%);
+  position: absolute;
+}
+
+.vehicle-gauge-label {
+  color: #aeb6c0;
+  font-size: 10px;
+  font-weight: 700;
+  left: 0;
+  letter-spacing: 1.7px;
+  position: absolute;
+  right: 0;
+  text-align: center;
+  top: 26px;
+}
+
+.vehicle-gauge-needle {
+  background: linear-gradient(90deg, transparent 0 13%, #ff665e 14% 100%);
+  border-radius: 2px;
+  bottom: 57px;
+  box-shadow: 0 0 6px rgba(255, 59, 48, 0.7);
+  height: 3px;
+  left: 13px;
+  position: absolute;
+  transform: rotate(-132deg);
+  transform-origin: 46px 50%;
+  transition: transform 70ms linear;
+  width: 48px;
+}
+
+.vehicle-gauge-hub {
+  background: radial-gradient(circle at 35% 30%, #c7ccd2, #3a3f46 44%, #0b0c0e 48%);
+  border: 1px solid #111;
+  border-radius: 50%;
+  height: 15px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 15px;
+}
+
+.vehicle-gauge-readout {
+  background: #07090a;
+  border: 1px solid #39414a;
+  border-radius: 3px;
+  bottom: 15px;
+  color: #f4f7f9;
+  left: 50%;
+  min-width: 55px;
+  padding: 1px 4px 2px;
+  position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.vehicle-gauge-readout strong {
+  display: block;
+  font-size: 19px;
+  line-height: 18px;
+}
+
+.vehicle-gauge-readout span {
+  color: #8f9aa5;
+  display: block;
+  font-size: 7px;
+  letter-spacing: 0.8px;
+}
+
+.vehicle-gear {
+  align-items: center;
+  background: linear-gradient(#161a1f, #050607);
+  border: 2px solid #737b84;
+  border-radius: 8px;
+  box-shadow:
+    0 5px 14px rgba(0, 0, 0, 0.6),
+    inset 0 0 8px #000;
+  color: #ff493f;
+  display: flex;
+  font-family: monospace;
+  font-size: 30px;
+  font-weight: 700;
+  height: 50px;
+  justify-content: center;
+  text-shadow: 0 0 8px rgba(255, 59, 48, 0.7);
+  width: 43px;
+}
+
+.vehicle-control-hint {
+  background: rgba(8, 10, 13, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  bottom: -27px;
+  color: #d8dde2;
+  font-size: 11px;
+  left: 50%;
+  letter-spacing: 0.35px;
+  padding: 3px 10px;
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+@media (max-height: 720px), (max-width: 900px) {
+  #ui-vehicle-hud {
+    bottom: 76px;
+    transform: translate(-50%, 18px) scale(0.76);
+    transform-origin: center bottom;
+  }
+
+  #ui-vehicle-hud.is-visible {
+    transform: translate(-50%, 0) scale(0.76);
+  }
+}
+
 @media (max-height: 768px), (max-width: 1300px) {
   #ui-streak-wrapper {
     transform: scale(0.8);

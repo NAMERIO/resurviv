@@ -17,6 +17,7 @@ import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
 import type { RoleDef } from "../../../shared/defs/gameObjects/roleDefs";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import type { ObstacleDef } from "../../../shared/defs/mapObjectsTyping";
+import { NpcDefs } from "../../../shared/defs/npcDefs";
 import {
     Action,
     DamageType,
@@ -35,6 +36,7 @@ import type { InputBinds } from "../inputBinds";
 import type { Map } from "../map";
 import type { DeadBody, DeadBodyBarn } from "../objects/deadBody";
 import type { Loot, LootBarn } from "../objects/loot";
+import type { Npc } from "../objects/npc";
 import type { Obstacle } from "../objects/obstacle";
 import type { Player, PlayerBarn } from "../objects/player";
 import type { Localization } from "./localization";
@@ -840,12 +842,16 @@ export class UiManager2 {
 
         // Interaction
         let interactionType = InteractionType.None;
-        let interactionObject: Obstacle | Loot | Player | DeadBody | null = null;
+        let interactionObject: Obstacle | Npc | Loot | Player | DeadBody | null = null;
         let interactionUsable = true;
         const amongUsMode = !!map.getMapDef().gameMode.amongUsMode;
         const amongUsRole = playerBarn.getPlayerInfo(activePlayer.__id).amongUsRole || "";
 
-        if (!spectating && activePlayer.canInteract(map)) {
+        if (
+            !spectating &&
+            activePlayer.canInteract(map) &&
+            activePlayer.m_localData.m_vehicleId === 0
+        ) {
             if (amongUsMode) {
                 const deadBody = deadBodyBarn.getReportableDeadBody(
                     activePlayer.m_netData.m_pos,
@@ -901,6 +907,36 @@ export class UiManager2 {
                 interactionType = InteractionType.Object;
                 interactionObject = closestObj;
                 interactionUsable = true;
+            }
+
+            // Drivable vehicles
+            if (interactionType === InteractionType.None) {
+                let closestVehicle: Npc | null = null;
+                let closestVehicleDistance = Infinity;
+                for (const npc of map.m_npcPool.m_getPool()) {
+                    if (
+                        !npc.active ||
+                        npc.dead ||
+                        !NpcDefs[npc.type]?.vehicle ||
+                        npc.state === "drive" ||
+                        !util.sameLayer(npc.layer, activePlayer.layer)
+                    ) {
+                        continue;
+                    }
+                    const distance = v2.distance(npc.pos, activePlayer.m_netData.m_pos);
+                    if (
+                        distance <= 4.75 + activePlayer.m_rad &&
+                        distance < closestVehicleDistance
+                    ) {
+                        closestVehicle = npc;
+                        closestVehicleDistance = distance;
+                    }
+                }
+                if (closestVehicle) {
+                    interactionType = InteractionType.Object;
+                    interactionObject = closestVehicle;
+                    interactionUsable = true;
+                }
             }
 
             // Loot
@@ -1992,7 +2028,7 @@ export class UiManager2 {
 
     getInteractionText(
         type: InteractionType,
-        object: Obstacle | Loot | Player | DeadBody,
+        object: Obstacle | Npc | Loot | Player | DeadBody,
         player: Player,
     ) {
         switch (type) {
@@ -2013,7 +2049,7 @@ export class UiManager2 {
             case InteractionType.Report:
                 return this.localization.translate("game-report-body");
             case InteractionType.Object: {
-                const x = (object as Obstacle).getInteraction()!;
+                const x = (object as Obstacle | Npc).getInteraction()!;
                 return `${this.localization.translate(
                     x.action,
                 )} ${this.localization.translate(x.object)}`;

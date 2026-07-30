@@ -35710,33 +35710,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             ],
             imgs: [],
         },
-        ceiling: {
-            zoomRegions: [
-                {
-                    zoomIn: collider.createAabbExtents(
-                        v2.create(0, -15),
-                        v2.create(200, 117.313),
-                    ),
-                    noZoom: true,
-                },
-            ],
-            imgs: [
-                {
-                    sprite: "map-building-barn-ceiling-01.img",
-                    pos: v2.create(-102, 24),
-                    scale: 1,
-                    alpha: 1,
-                    tint: 0xffffff,
-                },
-                {
-                    sprite: "map-building-barn-ceiling-02.img",
-                    pos: v2.create(-102, 39),
-                    scale: 0.667,
-                    alpha: 1,
-                    tint: 0xffffff,
-                },
-            ],
-        },
+        ceiling: { zoomRegions: [], imgs: [] },
         mapObjects: [
             {
                 type: "bank_01",
@@ -35775,7 +35749,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 ori: 2,
             },
             {
-                type: "mansion_01",
+                type: "mansion_structure_01",
                 pos: v2.create(62, 32),
                 scale: 1,
                 ori: 0,

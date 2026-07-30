@@ -306,7 +306,15 @@ export class Map {
 
         for (const npc of this.m_npcPool.m_getPool()) {
             if (!npc.active) continue;
-            npc.update(dt, this, particleBarn, audioManager, activePlayer, renderer);
+            npc.update(
+                dt,
+                this,
+                particleBarn,
+                audioManager,
+                activePlayer,
+                renderer,
+                camera,
+            );
             npc.render(camera);
         }
 

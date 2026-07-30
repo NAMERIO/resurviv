@@ -214,6 +214,18 @@ export class SoundHandle {
         this.instance.pan = value;
     }
 
+    get detune() {
+        this.check();
+        return this.instance.sourceNode?.detune.value ?? 0;
+    }
+
+    set detune(value) {
+        this.check(true);
+        if (this.instance.sourceNode?.detune) {
+            this.instance.sourceNode.detune.value = value;
+        }
+    }
+
     get playState() {
         this.check();
         return this.instance.playState;

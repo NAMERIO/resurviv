@@ -1,6 +1,7 @@
 import { GameObjectDefs } from "../../../../shared/defs/gameObjectDefs";
 import type { ThrowableDef } from "../../../../shared/defs/gameObjects/throwableDefs";
 import { type NpcDef, NpcDefs } from "../../../../shared/defs/npcDefs";
+import { getVehicleGear } from "../../../../shared/defs/vehicleDefs";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
 import { type AABB, type Collider, coldet } from "../../../../shared/utils/coldet";
@@ -29,6 +30,7 @@ const motherShipPatrolAngularSpeed = 0.02;
 const motherShipPatrolRadialSpeed = 0.045;
 const motherShipPatrolMaxRadius = 32;
 const motherShipPatrolMinRadius = 6;
+const vehicleReverseEngageDelay = 0.15;
 
 interface AddNpcOptions {
     bypassSkitterCap?: boolean;
@@ -130,6 +132,14 @@ export class Npc extends BaseGameObject {
     obstacleType = "";
     ori = 0;
     scale = 1;
+    speed = 0;
+    driftIntensity = 0;
+    travelDir = v2.create(1, 0);
+    steering = 0;
+    gear = 0;
+    shiftTicker = 0;
+    reverseEngageTicker = 0;
+    handbrakeEngaged = false;
     state: string;
     invisibleTicker = false;
     targetActive = false;
@@ -142,6 +152,7 @@ export class Npc extends BaseGameObject {
     collidable: boolean;
     destructible: boolean;
     height: number;
+    driver?: Player;
 
     private attackTicker = 0;
     private cannonTicker = 0;
@@ -192,7 +203,256 @@ export class Npc extends BaseGameObject {
             this.updateMotherShip(dt);
         } else if (this.type === "skitter") {
             this.updateSkitter(dt);
+        } else if (NpcDefs[this.type].vehicle && !this.driver) {
+            this.applyVehicleDrag(dt);
         }
+    }
+
+    drive(
+        dt: number,
+        input: {
+            accelerate: boolean;
+            brake: boolean;
+            steerLeft: boolean;
+            steerRight: boolean;
+            handbrake: boolean;
+        },
+    ) {
+        const vehicle = NpcDefs[this.type].vehicle;
+        if (!vehicle || !this.driver) return v2.create(0, 0);
+
+        this.shiftTicker = math.max(0, this.shiftTicker - dt);
+        const currentGear = getVehicleGear(vehicle, math.max(this.speed, 0));
+        if (currentGear > this.gear && this.gear > 0) {
+            this.shiftTicker = vehicle.transmission.shiftDuration;
+        }
+        this.gear = currentGear;
+
+        if (input.accelerate) {
+            this.reverseEngageTicker = 0;
+            const speedT = math.clamp(this.speed / vehicle.maxForwardSpeed, 0, 1);
+            const accelerationTaper = math.lerp(
+                speedT,
+                1,
+                vehicle.transmission.highSpeedAccelerationMultiplier,
+            );
+            const shiftMultiplier =
+                this.shiftTicker > 0
+                    ? vehicle.transmission.shiftAccelerationMultiplier
+                    : 1;
+            this.speed =
+                this.speed < 0
+                    ? math.min(0, this.speed + vehicle.braking * dt)
+                    : math.min(
+                          this.speed +
+                              vehicle.acceleration *
+                                  accelerationTaper *
+                                  shiftMultiplier *
+                                  dt,
+                          vehicle.maxForwardSpeed,
+                      );
+        } else if (input.brake) {
+            if (this.speed > 0) {
+                // S is the brake while moving forward and cannot skip through zero.
+                this.speed = math.max(0, this.speed - vehicle.braking * dt);
+                this.reverseEngageTicker = 0;
+            } else {
+                const previousReverseTime = math.max(
+                    0,
+                    this.reverseEngageTicker - vehicleReverseEngageDelay,
+                );
+                this.reverseEngageTicker += dt;
+                const reverseTime =
+                    math.max(0, this.reverseEngageTicker - vehicleReverseEngageDelay) -
+                    previousReverseTime;
+                this.speed = math.max(
+                    this.speed - vehicle.acceleration * reverseTime,
+                    -vehicle.maxReverseSpeed,
+                );
+            }
+        } else {
+            this.reverseEngageTicker = 0;
+            this.applyVehicleDrag(dt);
+        }
+        if (input.handbrake && !this.handbrakeEngaged) {
+            const handbrakeSpeedLoss = vehicle.drift.handbrakeEntrySpeedLoss;
+            this.speed =
+                Math.abs(this.speed) <= handbrakeSpeedLoss
+                    ? 0
+                    : this.speed - math.sign(this.speed) * handbrakeSpeedLoss;
+        }
+        this.handbrakeEngaged = input.handbrake;
+
+        const steerInput = Number(input.steerLeft) - Number(input.steerRight);
+        const steeringRate =
+            steerInput === 0
+                ? vehicle.handling.steeringReturn
+                : vehicle.handling.steeringResponse;
+        this.steering += math.clamp(
+            steerInput - this.steering,
+            -steeringRate * dt,
+            steeringRate * dt,
+        );
+
+        if (Math.abs(this.speed) > 0.15 && Math.abs(this.steering) > 0.001) {
+            const speedT = math.clamp(
+                Math.abs(this.speed) / vehicle.maxForwardSpeed,
+                0,
+                1,
+            );
+            const maxSteerAngle = math.lerp(
+                speedT,
+                vehicle.handling.lowSpeedSteerAngle,
+                vehicle.handling.highSpeedSteerAngle,
+            );
+            const steerAngle = this.steering * maxSteerAngle;
+            const yawRate =
+                (this.speed / vehicle.handling.wheelBase) * Math.tan(steerAngle);
+            const driftTurnMultiplier = input.handbrake
+                ? vehicle.drift.handbrakeTurnMultiplier
+                : 1;
+            this.ori += yawRate * driftTurnMultiplier * dt;
+            this.ori = math.fmod(this.ori + Math.PI, Math.PI * 2) - Math.PI;
+        }
+
+        const direction = v2.mul(
+            v2.create(Math.cos(this.ori), Math.sin(this.ori)),
+            math.sign(this.speed || 1),
+        );
+        if (Math.abs(this.speed) <= 0.15) {
+            this.travelDir = v2.copy(direction);
+            this.driftIntensity = 0;
+        } else {
+            const traction = input.handbrake
+                ? vehicle.drift.handbrakeTraction
+                : math.max(
+                      vehicle.drift.recoveryTraction,
+                      vehicle.handling.corneringGrip * (1 - this.driftIntensity * 0.35),
+                  );
+            const tractionT = 1 - Math.exp(-traction * dt);
+            this.travelDir = v2.normalizeSafe(
+                v2.lerp(tractionT, this.travelDir, direction),
+                direction,
+            );
+            const slipAngle = Math.acos(
+                math.clamp(v2.dot(this.travelDir, direction), -1, 1),
+            );
+            const slipIntensity = math.clamp(slipAngle / (Math.PI * 0.3), 0, 1);
+            const handbrakeSmoke =
+                input.handbrake && Math.abs(this.speed) >= vehicle.drift.minSpeed
+                    ? 0.3
+                    : 0;
+            this.driftIntensity = math.max(slipIntensity, handbrakeSmoke);
+        }
+
+        this.setPartDirty();
+        return v2.copy(this.travelDir);
+    }
+
+    private applyVehicleDrag(dt: number) {
+        const vehicle = NpcDefs[this.type].vehicle;
+        if (!vehicle || this.speed === 0) return;
+        const drag = vehicle.coastingDrag * dt;
+        this.speed =
+            Math.abs(this.speed) <= drag ? 0 : this.speed - math.sign(this.speed) * drag;
+        this.driftIntensity = math.max(0, this.driftIntensity - dt * 2.5);
+        this.setPartDirty();
+    }
+
+    interact(player: Player) {
+        const vehicle = NpcDefs[this.type].vehicle;
+        if (!vehicle || this.dead) return;
+
+        if (this.driver === player) {
+            this.dismount(player);
+            return;
+        }
+        if (this.driver || player.vehicle || player.dead || player.downed) return;
+
+        this.driver = player;
+        player.vehicle = this;
+        player.cancelAction();
+        player.weaponManager.cancelVehicleCombat();
+        v2.set(player.pos, this.pos);
+        this.speed = 0;
+        this.driftIntensity = 0;
+        this.travelDir = v2.create(Math.cos(this.ori), Math.sin(this.ori));
+        this.steering = 0;
+        this.gear = 0;
+        this.shiftTicker = 0;
+        this.reverseEngageTicker = 0;
+        this.handbrakeEngaged = false;
+        this.setState("drive");
+        player.setPartDirty();
+        player.game.grid.updateObject(player);
+    }
+
+    dismount(player: Player, reposition = true) {
+        if (this.driver !== player) return;
+
+        this.driver = undefined;
+        player.vehicle = undefined;
+        player.vehicleBrake = false;
+        this.speed = 0;
+        this.driftIntensity = 0;
+        this.steering = 0;
+        this.gear = 0;
+        this.shiftTicker = 0;
+        this.reverseEngageTicker = 0;
+        this.handbrakeEngaged = false;
+        this.setState("idle");
+        this.setPartDirty();
+
+        if (reposition) {
+            const exitDir = v2.create(-Math.sin(this.ori), Math.cos(this.ori));
+            v2.set(
+                player.pos,
+                v2.add(
+                    this.pos,
+                    v2.mul(exitDir, this.collisionRadius() + player.rad + 0.5),
+                ),
+            );
+            player.game.map.clampToMapBounds(player.pos, player.rad);
+            player.setPartDirty();
+            player.game.grid.updateObject(player);
+        }
+    }
+
+    syncToDriver(pos: Vec2) {
+        if (!this.driver) return;
+        v2.set(this.pos, pos);
+        this.updateCollider();
+        this.setPartDirty();
+        this.game.grid.updateObject(this);
+    }
+
+    syncDrivenCollider(pos: Vec2) {
+        if (!this.driver) return;
+        v2.set(this.pos, pos);
+        this.updateCollider();
+    }
+
+    breakObstacleOnImpact(obstacle: Obstacle) {
+        const vehicle = NpcDefs[this.type].vehicle;
+        if (
+            !vehicle ||
+            !this.driver ||
+            obstacle.dead ||
+            !obstacle.destructible ||
+            Math.abs(this.speed) < vehicle.impact.minBreakSpeed
+        ) {
+            return false;
+        }
+
+        obstacle.damage({
+            amount: obstacle.health,
+            damageType: GameConfig.DamageType.Npc,
+            dir: v2.copy(this.travelDir),
+            mapSourceType: this.type,
+            source: this.driver,
+            sourceTeamId: this.driver.teamId,
+        });
+        return obstacle.dead;
     }
 
     private updateMotherShip(dt: number) {
@@ -375,7 +635,7 @@ export class Npc extends BaseGameObject {
         if (!target) return;
 
         const distance = v2.distance(this.pos, target.pos);
-        if (distance <= this.colliderRadius() + target.rad + 0.25) {
+        if (distance <= this.collisionRadius() + target.rad + 0.25) {
             if (this.biteTicker <= 0) {
                 target.damage({
                     amount: skitterDamage,
@@ -402,7 +662,13 @@ export class Npc extends BaseGameObject {
         let closest: Player | undefined;
         let closestDistance = Infinity;
         for (const player of this.game.playerBarn.livingPlayers) {
-            if (player.dead || player.downed) continue;
+            if (
+                player.dead ||
+                player.downed ||
+                !util.sameLayer(player.layer, this.layer)
+            ) {
+                continue;
+            }
             const distance = v2.lengthSqr(v2.sub(player.pos, this.pos));
             if (distance < closestDistance) {
                 closest = player;
@@ -440,7 +706,7 @@ export class Npc extends BaseGameObject {
 
     private resolveCollisions() {
         const objects = this.game.grid.intersectCollider(this.collider);
-        const rad = this.colliderRadius();
+        const rad = this.collisionRadius();
         for (const object of objects) {
             const collidableObstacle =
                 object.__type === ObjectType.Obstacle &&
@@ -604,7 +870,7 @@ export class Npc extends BaseGameObject {
     }
 
     private getDoorRoute(door: Obstacle, building: Building): DoorRoute | undefined {
-        const rad = this.colliderRadius();
+        const rad = this.collisionRadius();
         const doorState = door.door;
         if (!doorState) return undefined;
         const doorwayCenter = v2.add(
@@ -753,9 +1019,25 @@ export class Npc extends BaseGameObject {
         this.navigationCrossingDoor = false;
     }
 
-    private colliderRadius() {
+    collisionRadius() {
         const collision = NpcDefs[this.type].collision;
-        return collision.type === collider.Type.Circle ? collision.rad * this.scale : 1;
+        if (collision.type === collider.Type.Circle) {
+            return collision.rad * this.scale;
+        }
+        if (collision.type === collider.Type.Polygon) {
+            return (
+                Math.max(...collision.points.map((point) => v2.length(point))) *
+                this.scale
+            );
+        }
+        return (
+            Math.max(
+                Math.abs(collision.min.x),
+                Math.abs(collision.min.y),
+                Math.abs(collision.max.x),
+                Math.abs(collision.max.y),
+            ) * this.scale
+        );
     }
 
     private updateCollider() {

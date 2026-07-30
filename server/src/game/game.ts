@@ -583,7 +583,6 @@ export class Game {
                 msg.deserialize(stream);
                 break;
             case net.MsgType.Edit:
-                if (!Config.debug.allowEditMsg) break;
                 msg = new net.EditMsg();
                 msg.deserialize(stream);
                 break;

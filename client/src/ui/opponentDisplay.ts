@@ -211,6 +211,8 @@ export class LoadoutDisplay {
             amongUsEmergencyCallCooldownTime: 0,
             amongUsEmergencyCallsRemaining: 1,
             amongUsEmergencyMeetingSeq: 0,
+            vehicleId: 0,
+            vehicleSpeed: 0,
         });
 
         this.activePlayer.layer = this.activePlayer.m_netData.m_layer;
@@ -410,6 +412,7 @@ export class LoadoutDisplay {
             wearingLasrSwrd: false,
             pos: v2.create(50, 50),
             dir: v2.create(0, -1),
+            vehicleId: 0,
             loadingBlaster: 0,
             gunLoaded: false,
         };
@@ -488,6 +491,8 @@ export class LoadoutDisplay {
                 amongUsEmergencyCallCooldownTime: 0,
                 amongUsEmergencyCallsRemaining: 1,
                 amongUsEmergencyMeetingSeq: 0,
+                vehicleId: 0,
+                vehicleSpeed: 0,
             });
         }
     }

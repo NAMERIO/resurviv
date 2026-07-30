@@ -163,6 +163,42 @@ export function createOutfitSkinPreview(
     return preview;
 }
 
+export function createLootPreview(
+    gameType: string,
+    className = "",
+    options: {
+        outfitScale?: number;
+        gunSkinScale?: number;
+    } = {},
+) {
+    const def = GameObjectDefs[gameType];
+    if (def?.type === "outfit" && (def as OutfitDef).lootImg.skinLootImg) {
+        return createOutfitSkinPreview(
+            def as OutfitDef,
+            options.outfitScale,
+            className,
+        );
+    }
+
+    const isGunSkin = def?.type === "gun_skin";
+    const transform =
+        isGunSkin && options.gunSkinScale !== undefined
+            ? `rotate(45deg) scale(${options.gunSkinScale})`
+            : helpers.getCssTransformFromGameType(gameType);
+    return $("<div/>", {
+        class: `${className}${isGunSkin ? " loot-preview-gun-skin" : ""}`,
+        css: {
+            "background-image": `url(${helpers.getSvgFromGameType(gameType)})`,
+            "background-position": "center",
+            "background-repeat": "no-repeat",
+            ...(isGunSkin ? { "background-size": "contain" } : {}),
+            height: "100%",
+            transform,
+            width: "100%",
+        },
+    });
+}
+
 async function buildOutfitSkinLootImage(def: OutfitDef) {
     const layers = getOutfitSkinLayers(def);
     const sources = await Promise.all(

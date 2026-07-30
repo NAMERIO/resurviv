@@ -43,6 +43,9 @@ export const SharedAtlas: AtlasDef = {
 
         "map/map-airdrop-01.svg",
         "map/map-airdrop-02.svg",
+        "map/map-vehicle-sports-car-01.png",
+        "map/map-vehicle-sports-car-03.png",
+        "map/map-vehicle-sports-car-04.png",
 
         "map/map-barrel-01.svg",
         "map/map-barrel-02.svg",

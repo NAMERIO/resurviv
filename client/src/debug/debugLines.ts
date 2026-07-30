@@ -100,8 +100,17 @@ class DebugLines {
 
         if (col.type == collider.Type.Aabb) {
             this.addAabb(col.min, col.max, color, fill);
-        } else {
+        } else if (col.type === collider.Type.Circle) {
             this.addCircle(col.pos, col.rad, color, fill);
+        } else {
+            for (let i = 0; i < col.points.length; i++) {
+                this.addLine(
+                    col.points[i],
+                    col.points[(i + 1) % col.points.length],
+                    color,
+                    fill,
+                );
+            }
         }
     }
 

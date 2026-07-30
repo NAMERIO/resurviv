@@ -2589,6 +2589,52 @@ const ParticleDefs: Record<string, ParticleDef> = {
             return util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.9, 0.95)));
         },
     },
+    vehicleTireSmoke: {
+        image: ["part-smoke-02.img", "part-smoke-03.img"],
+        zOrd: 21,
+        life: new Range(0.65, 1.05),
+        drag: new Range(1.6, 2.2),
+        rotVel: new Range(-Math.PI * 0.35, Math.PI * 0.35),
+        scale: {
+            start: new Range(0.12, 0.18),
+            end: new Range(0.42, 0.62),
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 0.52,
+            end: 0,
+            lerp: new Range(0.15, 1),
+        },
+        alphaIn: {
+            start: 0,
+            end: 0.52,
+            lerp: new Range(0, 0.12),
+        },
+        color: function () {
+            return util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.72, 0.86)));
+        },
+    },
+    vehicleExhaustFlame: {
+        image: ["part-fire-01.img", "part-fire-02.img", "part-fire-03.img"],
+        zOrd: 21,
+        life: new Range(0.1, 0.17),
+        drag: new Range(5, 8),
+        rotVel: new Range(-Math.PI * 0.3, Math.PI * 0.3),
+        scale: {
+            start: new Range(0.2, 0.29),
+            end: new Range(0.035, 0.07),
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 0.95,
+            end: 0,
+            lerp: new Range(0.28, 1),
+        },
+        color: function () {
+            return util.rgbToInt(util.hsvToRgb(util.random(0.055, 0.105), 0.96, 1));
+        },
+        ignoreValueAdjust: true,
+    },
     airdropCrate01: {
         image: ["part-airdrop-01.img"],
         life: new Range(0.85, 1.15),

@@ -389,6 +389,7 @@ export class Player implements AbstractObject {
     m_netData!: {
         m_pos: Vec2;
         m_dir: Vec2;
+        m_vehicleId: number;
         m_outfit: string;
         m_meleeSkin: string;
         m_backpack: string;
@@ -459,6 +460,8 @@ export class Player implements AbstractObject {
         m_amongUsEmergencyCallCooldownTime: number;
         m_amongUsEmergencyCallsRemaining: number;
         m_amongUsEmergencyMeetingSeq: number;
+        m_vehicleId: number;
+        m_vehicleSpeed: number;
     };
 
     throwableStatePrev!: string;
@@ -583,6 +586,7 @@ export class Player implements AbstractObject {
         this.m_netData = {
             m_pos: v2.create(0, 0),
             m_dir: v2.create(1, 0),
+            m_vehicleId: 0,
             m_outfit: "",
             m_meleeSkin: "",
             m_backpack: "",
@@ -647,6 +651,8 @@ export class Player implements AbstractObject {
             m_amongUsEmergencyCallCooldownTime: 0,
             m_amongUsEmergencyCallsRemaining: 1,
             m_amongUsEmergencyMeetingSeq: 0,
+            m_vehicleId: 0,
+            m_vehicleSpeed: 0,
         };
 
         this.playAnim(Anim.None, -1);
@@ -699,6 +705,7 @@ export class Player implements AbstractObject {
 
         this.m_netData.m_pos = v2.copy(data.pos);
         this.m_netData.m_dir = v2.copy(data.dir);
+        this.m_netData.m_vehicleId = data.vehicleId;
 
         if (fullUpdate) {
             const actionChanged = data.actionSeq !== this.m_action.seq;
@@ -861,6 +868,8 @@ export class Player implements AbstractObject {
             data.amongUsEmergencyCallsRemaining ?? 1;
         this.m_localData.m_amongUsEmergencyMeetingSeq =
             data.amongUsEmergencyMeetingSeq ?? 0;
+        this.m_localData.m_vehicleId = data.vehicleId ?? 0;
+        this.m_localData.m_vehicleSpeed = data.vehicleSpeed ?? 0;
 
         // Zoom more quickly when changing scopes
         if (this.m_localData.m_scope != scopeOld) {
@@ -1838,8 +1847,12 @@ export class Player implements AbstractObject {
         const screenScale = camera.m_pixels(1);
         this.container.position.set(screenPos.x, screenPos.y);
         this.container.scale.set(screenScale, screenScale);
-        this.container.visible = !this.m_netData.m_dead;
+        const inVehicle = this.m_netData.m_vehicleId !== 0;
+        this.container.visible = !this.m_netData.m_dead && !inVehicle;
         this.bodyContainer.visible = !this.propDisguiseActive;
+        if (inVehicle) {
+            this.auraContainer.visible = false;
+        }
         this.container.alpha = (this.localInvisiblePreview ? 0.45 : 1) * visionAlpha;
         this.auraContainer.position.set(screenPos.x, screenPos.y);
         this.auraContainer.scale.set(screenScale, screenScale);

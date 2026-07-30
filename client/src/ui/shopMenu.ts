@@ -17,7 +17,7 @@ import {
 } from "../../../shared/utils/marketPricing";
 import type { Account } from "../account";
 import { googleH5Ads } from "../ads/googleH5Ads";
-import { helpers } from "../helpers";
+import { createLootPreview, helpers } from "../helpers";
 import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
 
@@ -482,6 +482,13 @@ export class ShopMenu {
                 this.renderSocialGpRewards();
             });
             return false;
+        });
+    }
+
+    createMarketItemSprite(item: Pick<Listing, "type" | "image" | "transform">) {
+        return createLootPreview(item.type, "market-item-sprite", {
+            outfitScale: 1.2,
+            gunSkinScale: 0.82,
         });
     }
 
@@ -1123,15 +1130,7 @@ export class ShopMenu {
                 "box-shadow": "inset 0 0 0 1px rgba(0,0,0,0.35)",
             },
         });
-        image.append(
-            $("<div/>", {
-                class: "market-item-sprite",
-                css: {
-                    "background-image": `url(${item.image})`,
-                    transform: item.transform,
-                },
-            }),
-        );
+        image.append(this.createMarketItemSprite(item));
         image.append(helpers.getItemRarityStyleMarkup(item.type, item.rarity));
         const info = $("<div/>", {
             class: [
@@ -1364,13 +1363,7 @@ export class ShopMenu {
                 "box-shadow": "inset 0 0 0 1px rgba(0,0,0,0.35)",
             },
         }).append(
-            $("<div/>", {
-                class: "market-item-sprite",
-                css: {
-                    "background-image": `url(${item.image})`,
-                    transform: item.transform,
-                },
-            }),
+            this.createMarketItemSprite(item),
             helpers.getItemRarityStyleMarkup(item.type, item.rarity),
         );
         const info = $("<div/>", {
@@ -1620,13 +1613,7 @@ export class ShopMenu {
                 border: `2px solid ${rarityVisuals.border}`,
             })
             .append(
-                $("<div/>", {
-                    class: "market-item-sprite",
-                    css: {
-                        "background-image": `url(${item.image})`,
-                        transform: item.transform,
-                    },
-                }),
+                this.createMarketItemSprite(item),
                 helpers.getItemRarityStyleMarkup(item.type, item.rarity),
             );
         for (const activity of item.activities) {
@@ -2461,15 +2448,9 @@ export class ShopMenu {
             "box-shadow": "inset 0 0 0 1px rgba(0,0,0,0.35)",
         });
         modal.find("#market-item-sell-img .market-item-sprite").remove();
-        modal.find("#market-item-sell-img").prepend(
-            $("<div/>", {
-                class: "market-item-sprite",
-                css: {
-                    "background-image": `url(${item.image})`,
-                    transform: item.transform,
-                },
-            }),
-        );
+        modal
+            .find("#market-item-sell-img")
+            .prepend(this.createMarketItemSprite(item));
         const rarityBadge = $(helpers.getItemRarityStyleMarkup(item.type, item.rarity));
         modal
             .find("#market-item-sell-type")

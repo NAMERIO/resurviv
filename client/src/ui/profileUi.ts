@@ -1,12 +1,10 @@
 import $ from "jquery";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
-import type { OutfitDef } from "../../../shared/defs/gameObjects/outfitDefs";
 import type { GpGift, SkinGift } from "../../../shared/types/user";
-import loadout from "../../../shared/utils/loadout";
 import type { Account } from "../account";
 import { api } from "../api";
 import { device } from "../device";
-import { createOutfitSkinPreview, helpers } from "../helpers";
+import { createLootPreview, helpers } from "../helpers";
 import { proxy } from "../proxy";
 import { SDK } from "../sdk/sdk";
 import type { LoadoutMenu } from "./loadoutMenu";
@@ -554,28 +552,8 @@ export class ProfileUi {
         this.updateLoadoutPreview();
     }
 
-    onItemsUpdated(items: Array<{ status: number }>) {
-        let unconfirmedItemCount = 0;
-        let unackedItemCount = 0;
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            if (item.status < loadout.ItemStatus.Confirmed) {
-                unconfirmedItemCount++;
-            }
-            if (item.status < loadout.ItemStatus.Ackd) {
-                unackedItemCount++;
-            }
-        }
-        items.filter((e) => {
-            return e.status < loadout.ItemStatus.Confirmed;
-        });
-        items.filter((e) => {
-            return e.status < loadout.ItemStatus.Ackd;
-        });
-        const displayAlert = unconfirmedItemCount > 0 || unackedItemCount > 0;
-        $(".account-alert-main").css({
-            display: displayAlert ? "block" : "none",
-        });
+    onItemsUpdated(_items: Array<{ status: number }>) {
+        this.loadoutMenu.updateMainItemAlert();
     }
 
     waitOnLogin(cb: () => void) {
@@ -620,28 +598,16 @@ export class ProfileUi {
 
     updateLoadoutPreview() {
         const outfitType = this.account.loadout.outfit;
-        const outfitDef = GameObjectDefs[outfitType] as OutfitDef | undefined;
         const preview = $("#animated-loadout .character-skin-preview");
-
-        if (outfitDef?.lootImg.skinLootImg) {
-            preview
-                .empty()
-                .css({
-                    "background-image": "none",
-                    transform: "none",
-                })
-                .append(createOutfitSkinPreview(outfitDef, 1.8));
-            return;
-        }
-
-        const outfitImage =
-            helpers.getSvgFromGameType(outfitType) || "img/loot/loot-shirt-01.svg";
-        const outfitTransform = helpers.getCssTransformFromGameType(outfitType);
-
         preview.empty().css({
-            "background-image": `url(${outfitImage})`,
-            transform: outfitTransform,
+            "background-image": "none",
+            transform: "none",
         });
+        preview.append(
+            createLootPreview(outfitType, "", {
+                outfitScale: 1.8,
+            }),
+        );
     }
 
     render() {

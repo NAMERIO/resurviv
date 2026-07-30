@@ -2,6 +2,7 @@ import type { Collider } from "../utils/coldet";
 import { collider } from "../utils/collider";
 import { v2 } from "../utils/v2";
 import type { TerrainSpawnDef } from "./mapObjectsTyping";
+import { type VehicleDef, VehicleDefs } from "./vehicleDefs";
 
 export interface NpcImageDef {
     sprite: string;
@@ -19,6 +20,8 @@ export interface NpcStateDef {
         | "fusion_motherShip"
         | "load_motherShip"
         | "skitter_base"
+        | "vehicle_idle"
+        | "vehicle_drive"
         | "none";
 }
 
@@ -53,6 +56,45 @@ export interface NpcDef {
     hasGun?: boolean;
     moveInterval?: [number, number];
     gunImg?: NpcImageDef;
+    vehicle?: VehicleDef;
+}
+
+function defineVehicleNpc(vehicle: VehicleDef): NpcDef {
+    return {
+        type: "npc",
+        collision: vehicle.collision,
+        height: 0.75,
+        collidable: true,
+        destructible: false,
+        reflectBullets: false,
+        health: 250,
+        hitParticle: "metalSpark",
+        explodeParticle: "metalSpark",
+        img: {
+            sprite: vehicle.sprite,
+            residue: vehicle.sprite,
+            scale: vehicle.scale,
+            alpha: 1,
+            tint: 0xffffff,
+            zIdx: 22,
+        },
+        states: [
+            { name: "idle", animation: "vehicle_idle" },
+            { name: "drive", animation: "vehicle_drive" },
+        ],
+        movementSpeed: 0,
+        movementPattern: "target",
+        initialState: "idle",
+        mapIndicator: false,
+        terrain: { grass: true, beach: false, riverShore: false },
+        sound: {
+            bullet: "metal_bullet_hit",
+            punch: "metal_punch_hit",
+            explode: "none",
+            enter: "none",
+        },
+        vehicle,
+    };
 }
 
 export const NpcDefs: Record<string, NpcDef> = {
@@ -140,4 +182,7 @@ export const NpcDefs: Record<string, NpcDef> = {
         },
         moveInterval: [0.5, 1],
     },
+    sportsCar01: defineVehicleNpc(VehicleDefs.sportsCar01),
+    sportsCar03: defineVehicleNpc(VehicleDefs.sportsCar03),
+    sportsCar04: defineVehicleNpc(VehicleDefs.sportsCar04),
 };

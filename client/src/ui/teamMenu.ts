@@ -25,7 +25,7 @@ import { api } from "../api";
 import type { AudioManager } from "../audioManager";
 import type { ConfigManager } from "../config";
 import { device } from "../device";
-import { helpers } from "../helpers";
+import { createLootPreview, helpers } from "../helpers";
 import type { PingTest } from "../pingTest";
 import { SDK } from "../sdk/sdk";
 import type { SiteInfo } from "../siteInfo";
@@ -1704,21 +1704,23 @@ export class TeamMenu {
                         }),
                     );
                 }
-                const outfitImage =
-                    helpers.getSvgFromGameType(playerStatus.outfit) ||
-                    "img/loot/loot-shirt-01.svg";
-                const outfitTransform = helpers.getCssTransformFromGameType(
+                const avatar = $("<div/>", {
+                    class: "team-menu-avatar",
+                    css: {
+                        "background-image": "none",
+                        position: "relative",
+                    },
+                });
+                const outfitPreview = createLootPreview(
                     playerStatus.outfit,
-                );
-                member.append(
-                    $("<div/>", {
-                        class: "team-menu-avatar",
-                        css: {
-                            "background-image": `url(${outfitImage})`,
-                            transform: outfitTransform,
-                        },
-                    }),
-                );
+                    "team-menu-avatar-preview",
+                    { outfitScale: 2.25 },
+                ).css({
+                    "background-size": "contain",
+                    inset: 0,
+                    position: "absolute",
+                });
+                member.append(avatar.append(outfitPreview));
                 let n: JQuery<HTMLInputElement> | null = null;
                 let c = null;
                 if (this.editingName && playerStatus.self) {

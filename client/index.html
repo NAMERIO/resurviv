@@ -112,6 +112,31 @@
         </div>
       </div>
       <div id="ui-game" class="click-through">
+        <div id="ui-vehicle-hud" aria-hidden="true">
+          <div class="vehicle-gauge vehicle-gauge-speed">
+            <div class="vehicle-gauge-ring"></div>
+            <div class="vehicle-gauge-ticks"></div>
+            <div class="vehicle-gauge-label">SPEED</div>
+            <div id="vehicle-speed-needle" class="vehicle-gauge-needle"></div>
+            <div class="vehicle-gauge-hub"></div>
+            <div class="vehicle-gauge-readout">
+              <strong id="vehicle-speed-value">0</strong>
+              <span>KM/H</span>
+            </div>
+          </div>
+          <div id="vehicle-gear-value" class="vehicle-gear">N</div>
+          <div class="vehicle-gauge vehicle-gauge-rpm">
+            <div class="vehicle-gauge-ring"></div>
+            <div class="vehicle-gauge-ticks"></div>
+            <div class="vehicle-gauge-label">TACH</div>
+            <div id="vehicle-rpm-needle" class="vehicle-gauge-needle"></div>
+            <div class="vehicle-gauge-hub"></div>
+            <div class="vehicle-gauge-readout">
+              <strong id="vehicle-rpm-value">0.9</strong>
+              <span>×1000 RPM</span>
+            </div>
+          </div>
+        </div>
         <div id="tablet-console"></div>
         <div id="ui-center">
           <div id="ui-game-menu">

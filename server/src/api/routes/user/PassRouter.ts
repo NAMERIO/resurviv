@@ -585,7 +585,8 @@ PassRouter.post(
 PassRouter.post("/buy_full_pass", validateParams(zBuyFullPassRequest), async (c) => {
     const user = c.get("user")!;
     const passDef = PassDefs[passType];
-    const price = passDef.unlockAllPrice ?? 3000;
+    const premiumPrice = passDef.premiumPrice ?? 1500;
+    const unlockAllPrice = passDef.unlockAllPrice ?? 3000;
     const now = Date.now();
 
     try {
@@ -594,6 +595,9 @@ PassRouter.post("/buy_full_pass", validateParams(zBuyFullPassRequest), async (c)
             const maxLevel = passUtil.getPassMaxLevel();
             const { level } = passUtil.getPassLevelAndXp(pass.passType, pass.totalXp);
             const ownsPremiumPass = !!pass.unlocks?.[premiumPassUnlockType];
+            const price = ownsPremiumPass
+                ? Math.max(0, unlockAllPrice - premiumPrice)
+                : unlockAllPrice;
             if (ownsPremiumPass && level >= maxLevel) {
                 return {
                     ok: false as const,

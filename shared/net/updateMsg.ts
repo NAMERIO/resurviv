@@ -92,6 +92,11 @@ function serializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     s.writeFloat(data.amongUsEmergencyCallCooldownTime, 0, 15, 8);
     s.writeUint8(data.amongUsEmergencyCallsRemaining);
     s.writeUint8(data.amongUsEmergencyMeetingSeq);
+    s.writeBoolean(data.vehicleId !== 0);
+    if (data.vehicleId !== 0) {
+        s.writeUint16(data.vehicleId);
+        s.writeFloat(data.vehicleSpeed, -32, 32, 9);
+    }
 
     s.writeAlignToNextByte();
 }
@@ -179,6 +184,8 @@ function deserializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     data.amongUsEmergencyCallCooldownTime = s.readFloat(0, 15, 8);
     data.amongUsEmergencyCallsRemaining = s.readUint8();
     data.amongUsEmergencyMeetingSeq = s.readUint8();
+    data.vehicleId = s.readBoolean() ? s.readUint16() : 0;
+    data.vehicleSpeed = data.vehicleId ? s.readFloat(-32, 32, 9) : 0;
     s.readAlignToNextByte();
 }
 
@@ -973,6 +980,8 @@ export interface LocalDataWithDirty extends LocalData {
     amongUsEmergencyCallCooldownTime: number;
     amongUsEmergencyCallsRemaining: number;
     amongUsEmergencyMeetingSeq: number;
+    vehicleId: number;
+    vehicleSpeed: number;
 }
 
 // the non-optional properties are used by both server and client

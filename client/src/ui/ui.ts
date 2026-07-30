@@ -43,6 +43,7 @@ import type { Localization } from "./localization";
 import { PieTimer } from "./pieTimer";
 import type { Touch } from "./touch";
 import type { UiManager2 } from "./ui2";
+import { VehicleHud } from "./vehicleHud";
 
 function humanizeTime(time: number) {
     const hours = Math.floor(time / 3600);
@@ -114,6 +115,7 @@ type CaptureTheFlagScoreState = {
 };
 export class UiManager {
     m_pieTimer = new PieTimer();
+    vehicleHud = new VehicleHud();
     gameElem = $("#ui-game");
     statsMain = $("#ui-stats");
     statsElem = $("#ui-stats-bg");
@@ -1310,6 +1312,11 @@ export class UiManager {
         completedAmongUsTasks: ReadonlySet<AmongUsTaskId>,
     ) {
         const localPlayer = player;
+        this.vehicleHud.update(
+            dt,
+            localPlayer.m_localData.m_vehicleId,
+            localPlayer.m_localData.m_vehicleSpeed,
+        );
 
         if (this.weapsDirty) {
             this.resetWeapSlotStyling();

@@ -8,6 +8,7 @@ export class InputMsg implements AbstractMsg {
     moveRight = false;
     moveUp = false;
     moveDown = false;
+    vehicleBrake = false;
     shootStart = false;
     shootHold = false;
     portrait = false;
@@ -33,6 +34,7 @@ export class InputMsg implements AbstractMsg {
         s.writeBoolean(this.moveRight);
         s.writeBoolean(this.moveUp);
         s.writeBoolean(this.moveDown);
+        s.writeBoolean(this.vehicleBrake);
 
         s.writeBoolean(this.shootStart);
         s.writeBoolean(this.shootHold);
@@ -61,6 +63,7 @@ export class InputMsg implements AbstractMsg {
         this.moveRight = s.readBoolean();
         this.moveUp = s.readBoolean();
         this.moveDown = s.readBoolean();
+        this.vehicleBrake = s.readBoolean();
 
         this.shootStart = s.readBoolean();
         this.shootHold = s.readBoolean();

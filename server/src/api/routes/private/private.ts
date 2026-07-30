@@ -33,12 +33,14 @@ import {
 } from "../../../../../shared/types/stats";
 import { passUtil } from "../../../../../shared/utils/passUtil";
 import { Config, serverConfigPath } from "../../../config";
+import { logIpToDiscord } from "../../../utils/ipLogging";
 import { isBehindProxy } from "../../../utils/serverHelpers";
 import {
     type SaveGameBody,
     zAddClanWarCgpBody,
     zListFeaturedYoutubersBody,
     zListGameModesBody,
+    zLogPlayerJoinBody,
     zRemoveFeaturedYoutuberBody,
     zSetBattlePassEndBody,
     zSetBattleRoyaleModeBody,
@@ -719,6 +721,11 @@ export const PrivateRouter = new Hono<Context>()
         const { regionId, data } = c.req.valid("json");
 
         server.updateRegion(regionId, data);
+        return c.json({}, 200);
+    })
+    .post("/log_player_join", validateParams(zLogPlayerJoinBody), (c) => {
+        const { name, encodedIp, region } = c.req.valid("json");
+        void logIpToDiscord(name, encodedIp, region);
         return c.json({}, 200);
     })
     .post("/set_game_mode", validateParams(zSetGameModeBody), (c) => {

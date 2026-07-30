@@ -66,8 +66,7 @@ import {
 import { Config } from "../../config";
 import { isItemInLoadout, onPlayerJoin, onPlayerKill } from "../../plugins/deathmatch";
 import { IDAllocator } from "../../utils/IDAllocator";
-import { logIpToDiscord } from "../../utils/ipLogging";
-import { validateUserName } from "../../utils/serverHelpers";
+import { apiPrivateRouter, validateUserName } from "../../utils/serverHelpers";
 import type { Game, JoinTokenData } from "../game";
 import { Group, Team } from "../group";
 import { InventoryManager } from "../inventoryManager";
@@ -92,6 +91,7 @@ import type { Decal } from "./decal";
 import { BaseGameObject, type DamageParams, type GameObject } from "./gameObject";
 import type { Loot } from "./loot";
 import type { MapIndicator } from "./mapIndicator";
+import type { Npc } from "./npc";
 import type { Obstacle } from "./obstacle";
 import type { Smoke } from "./smoke";
 
@@ -1214,6 +1214,15 @@ export class Player extends BaseGameObject {
     dirOld = v2.create(1, 0);
     // direction received from the last inputMsg
     dirNew = v2.create(1, 0);
+    vehicle?: Npc;
+
+    get vehicleId() {
+        return this.vehicle?.__id ?? 0;
+    }
+
+    get vehicleSpeed() {
+        return this.vehicle?.speed ?? 0;
+    }
 
     pushBack: Vec2 = v2.create(0, 0);
     pushBackTime: number = 0;
@@ -1436,6 +1445,7 @@ export class Player extends BaseGameObject {
     }
 
     disconnect(reason?: string) {
+        this.vehicle?.dismount(this, false);
         this.disconnected = true;
         this.game.closeSocket(this.socketId, reason);
     }
@@ -3713,12 +3723,32 @@ export class Player extends BaseGameObject {
             }
         }
 
+        if (this.vehicle) {
+            v2.set(
+                movement,
+                this.vehicle.drive(dt, {
+                    accelerate:
+                        this.moveUp || (this.touchMoveActive && this.touchMoveLen > 24),
+                    brake: this.moveDown,
+                    steerLeft: this.moveLeft,
+                    steerRight: this.moveRight,
+                    handbrake: this.vehicleBrake,
+                }),
+            );
+        }
+
         this.posOld = v2.copy(this.pos);
 
         const hasTreeClimbing = this.hasPerk("tree_climbing");
+        const movementCollisionRad = this.vehicle
+            ? this.vehicle.collisionRadius()
+            : this.rad;
 
         let steps: number;
-        if (movement.x !== 0 || movement.y !== 0) {
+        if (this.vehicle) {
+            this.speed = Math.abs(this.vehicle.speed);
+            steps = Math.round(math.max(this.speed * dt + 5, 5));
+        } else if (movement.x !== 0 || movement.y !== 0) {
             this.recalculateSpeed(hasTreeClimbing);
             steps = Math.round(math.max(this.speed * dt + 5, 5));
         } else {
@@ -3730,8 +3760,11 @@ export class Player extends BaseGameObject {
         const speedToAdd = (this.speed / steps) * dt;
 
         const broadphaseRadius = math.max(
-            GameConfig.player.maxVisualRadius * this.scale,
-            this.getMovementBlockCircle().rad,
+            math.max(
+                GameConfig.player.maxVisualRadius * this.scale,
+                this.getMovementBlockCircle().rad,
+            ),
+            movementCollisionRad,
         );
         const circle = collider.createCircle(
             this.pos,
@@ -3740,6 +3773,7 @@ export class Player extends BaseGameObject {
 
         const objs = this.game.grid.intersectCollider(circle);
         const syncSkinObstacles = () => {
+            this.vehicle?.syncDrivenCollider(this.pos);
             if (this.obstacleOutfit) {
                 this.obstacleOutfit.pos = v2.copy(this.pos);
                 this.obstacleOutfit.updateCollider();
@@ -3767,29 +3801,40 @@ export class Player extends BaseGameObject {
                     if (obj.isTree && hasTreeClimbing) continue;
                     if (obj.isSkin) continue;
 
-                    collision = collider.intersectCircle(
-                        obj.collider,
-                        this.pos,
-                        this.rad,
-                    );
+                    collision = this.vehicle
+                        ? collider.intersect(obj.collider, this.vehicle.collider)
+                        : collider.intersectCircle(
+                              obj.collider,
+                              this.pos,
+                              movementCollisionRad,
+                          );
                 } else if (obj.__type === ObjectType.Npc) {
                     if (
+                        obj === this.vehicle ||
                         obj.dead ||
                         !obj.collidable ||
                         !util.sameLayer(obj.layer, this.layer)
                     ) {
                         continue;
                     }
-                    collision = collider.intersectCircle(
-                        obj.collider,
-                        this.pos,
-                        this.rad,
-                    );
+                    collision = this.vehicle
+                        ? collider.intersect(obj.collider, this.vehicle.collider)
+                        : collider.intersectCircle(
+                              obj.collider,
+                              this.pos,
+                              movementCollisionRad,
+                          );
                 } else {
                     continue;
                 }
 
                 if (collision) {
+                    if (
+                        obj.__type === ObjectType.Obstacle &&
+                        this.vehicle?.breakObstacleOnImpact(obj)
+                    ) {
+                        continue;
+                    }
                     v2.set(
                         this.pos,
                         v2.add(this.pos, v2.mul(collision.dir, collision.pen + 0.001)),
@@ -3813,7 +3858,21 @@ export class Player extends BaseGameObject {
                     | ReturnType<typeof collider.intersectCircle> = null;
                 let collisionDirMult = 1;
 
-                if (this.propDisguise && obj.propDisguise) {
+                if (this.vehicle) {
+                    if (obj.propDisguise) {
+                        collision = collider.intersect(
+                            obj.propDisguise.collider,
+                            this.vehicle.collider,
+                        );
+                    } else {
+                        collision = collider.intersectCircle(
+                            this.vehicle.collider,
+                            obj.pos,
+                            obj.rad,
+                        );
+                        collisionDirMult = -1;
+                    }
+                } else if (this.propDisguise && obj.propDisguise) {
                     continue;
                 }
                 if (this.propDisguise) {
@@ -4215,7 +4274,8 @@ export class Player extends BaseGameObject {
         //
         // Final position calculation: clamp to map bounds and set dirty if changed
         //
-        this.game.map.clampToMapBounds(this.pos, this.rad);
+        this.game.map.clampToMapBounds(this.pos, movementCollisionRad);
+        this.vehicle?.syncToDriver(this.pos);
 
         if (!v2.eq(this.pos, this.posOld)) {
             this.setPartDirty();
@@ -4507,6 +4567,8 @@ export class Player extends BaseGameObject {
                 amongUsEmergencyCallCooldownTime: player.amongUsEmergencyCallCooldownTime,
                 amongUsEmergencyCallsRemaining: player.amongUsEmergencyCallsRemaining,
                 amongUsEmergencyMeetingSeq: player.amongUsEmergencyMeetingSeq,
+                vehicleId: player.vehicleId,
+                vehicleSpeed: player.vehicleSpeed,
             };
             this.startedSpectating = false;
         } else {
@@ -5160,6 +5222,7 @@ export class Player extends BaseGameObject {
     kill(params: DamageParams): void {
         if (this.dead) return;
         if (this.handleInfectedFatalDamage(params)) return;
+        this.vehicle?.dismount(this, false);
         if (this.downed) this.downed = false;
         this.dead = true;
         const isCaptureTheFlagDeath =
@@ -5904,6 +5967,7 @@ export class Player extends BaseGameObject {
     moveRight = false;
     moveUp = false;
     moveDown = false;
+    vehicleBrake = false;
     shootStart = false;
     shootHold = false;
     portrait = false;
@@ -5940,6 +6004,7 @@ export class Player extends BaseGameObject {
             this.moveRight = false;
             this.moveUp = false;
             this.moveDown = false;
+            this.vehicleBrake = false;
             this.touchMoveActive = false;
             this.touchMoveDir = v2.create(0, 0);
             this.touchMoveLen = 0;
@@ -5952,6 +6017,7 @@ export class Player extends BaseGameObject {
             this.moveRight = false;
             this.moveUp = false;
             this.moveDown = false;
+            this.vehicleBrake = false;
             this.touchMoveActive = false;
             this.touchMoveDir = v2.create(0, 0);
             this.touchMoveLen = 0;
@@ -5966,6 +6032,7 @@ export class Player extends BaseGameObject {
         this.moveRight = msg.moveRight;
         this.moveUp = msg.moveUp;
         this.moveDown = msg.moveDown;
+        this.vehicleBrake = msg.vehicleBrake && !!this.vehicle;
         if (this.hideAndSeekHunterReleaseLocked) {
             this.moveLeft = false;
             this.moveRight = false;
@@ -5988,9 +6055,9 @@ export class Player extends BaseGameObject {
         }
         this.toMouseLen = msg.toMouseLen;
 
-        this.shootHold = msg.shootHold;
+        this.shootHold = msg.shootHold && !this.vehicle;
 
-        if (msg.shootStart) {
+        if (msg.shootStart && !this.vehicle) {
             this.shootStart = true;
         }
 
@@ -6064,6 +6131,12 @@ export class Player extends BaseGameObject {
                     }
                     break;
                 case GameConfig.Input.Interact: {
+                    const vehicle = this.getInteractableVehicle();
+                    if (vehicle) {
+                        this.interactWith(vehicle);
+                        break;
+                    }
+
                     const deadBody = this.getReportableDeadBody();
                     if (
                         deadBody &&
@@ -6115,6 +6188,12 @@ export class Player extends BaseGameObject {
                     break;
                 }
                 case GameConfig.Input.Use: {
+                    const vehicle = this.getInteractableVehicle();
+                    if (vehicle) {
+                        this.interactWith(vehicle);
+                        break;
+                    }
+
                     const deadBody = this.getReportableDeadBody();
                     if (
                         deadBody &&
@@ -6283,12 +6362,48 @@ export class Player extends BaseGameObject {
         return obstacles.sort((a, b) => a.pen - b.pen).map((o) => o.obstacle);
     }
 
+    getInteractableVehicle(): Npc | undefined {
+        if (this.vehicle) return this.vehicle;
+
+        const objects = this.game.grid.intersectCollider(
+            collider.createCircle(this.pos, this.rad + 6),
+        );
+        let closest: Npc | undefined;
+        let closestDistance = Infinity;
+
+        for (const object of objects) {
+            if (object.__type !== ObjectType.Npc) continue;
+            const vehicle = NpcDefs[object.type].vehicle;
+            if (
+                !vehicle ||
+                object.dead ||
+                object.driver ||
+                !util.sameLayer(object.layer, this.layer)
+            ) {
+                continue;
+            }
+            const distance = v2.distance(this.pos, object.pos);
+            if (
+                distance <=
+                    object.collisionRadius() + vehicle.interactionRad + this.rad &&
+                distance < closestDistance
+            ) {
+                closest = object;
+                closestDistance = distance;
+            }
+        }
+        return closest;
+    }
+
     interactWith(obj: GameObject): void {
         switch (obj.__type) {
             case ObjectType.Loot:
                 this.pickupLoot(obj);
                 break;
             case ObjectType.Obstacle:
+                obj.interact(this);
+                break;
+            case ObjectType.Npc:
                 obj.interact(this);
                 break;
         }
@@ -6656,7 +6771,9 @@ export class Player extends BaseGameObject {
                 }
 
                 const perkSlotType = this.perks.find(
-                    (p) => p.droppable || p.replaceOnDeath === "halloween_mystery",
+                    (p) =>
+                        !p.isFromRole &&
+                        (p.droppable || p.replaceOnDeath === "halloween_mystery"),
                 )?.type;
                 if (perkSlotType) {
                     amountLeft = 1;
@@ -6680,7 +6797,6 @@ export class Player extends BaseGameObject {
 
         const lootToAddDef = GameObjectDefs[lootToAdd] as LootDef;
         if (
-            def.type !== "perk" &&
             amountLeft > 0 &&
             lootToAdd !== "" &&
             // if obj you tried picking up can't be picked up and needs to be dropped, "noDrop" is irrelevant
@@ -6961,7 +7077,10 @@ export class Player extends BaseGameObject {
                 break;
             case "perk": {
                 const perkSlotType = this.perks.find(
-                    (p) => (p.droppable || battleRoyaleMode) && p.type === dropMsg.item,
+                    (p) =>
+                        !p.isFromRole &&
+                        (p.droppable || battleRoyaleMode) &&
+                        p.type === dropMsg.item,
                 )?.type;
                 if (perkSlotType && perkSlotType === dropMsg.item) {
                     this.dropLoot(dropMsg.item);
@@ -7288,7 +7407,10 @@ export class Player extends BaseGameObject {
     }
 
     processEditMsg(msg: net.EditMsg) {
-        if (!Config.debug.allowEditMsg || !this.canUseDeveloper) return;
+        const isLocalServer = Config.gameServer.thisRegion === "local";
+        if (!isLocalServer && !this.canUseDeveloper) {
+            return;
+        }
 
         if (msg.loadNewMap) {
             this.game.map.regenerate(msg.newMapSeed);
@@ -7720,8 +7842,15 @@ export class Player extends BaseGameObject {
                 gameId: game.id,
             };
 
-            // we don't await
-            logIpToDiscord(logData.username, logData.encodedIp);
+            void apiPrivateRouter.log_player_join.$post({
+                json: {
+                    name: logData.username,
+                    encodedIp: logData.encodedIp,
+                    region: logData.region,
+                },
+            }).catch((err) => {
+                game.logger.error(`Failed to send player join log to API:`, err);
+            });
         } catch (err) {
             game.logger.error(`Failed to fetch API save game:`, err);
         }

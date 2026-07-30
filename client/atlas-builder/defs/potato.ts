@@ -11,6 +11,9 @@ export const PotatoAtlas: AtlasDef = {
         "map/map-potato-03.svg",
         "map/map-potato-res-01.svg",
 
+        "map/map-tree-07sp.svg",
+        "map/map-tree-08sp.svg",
+
         "map/map-egg-01.svg",
         "map/map-egg-02.svg",
         "map/map-egg-03.svg",
