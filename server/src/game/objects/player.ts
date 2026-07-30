@@ -6772,7 +6772,9 @@ export class Player extends BaseGameObject {
                 }
 
                 const perkSlotType = this.perks.find(
-                    (p) => p.droppable || p.replaceOnDeath === "halloween_mystery",
+                    (p) =>
+                        !p.isFromRole &&
+                        (p.droppable || p.replaceOnDeath === "halloween_mystery"),
                 )?.type;
                 if (perkSlotType) {
                     amountLeft = 1;
@@ -6796,7 +6798,6 @@ export class Player extends BaseGameObject {
 
         const lootToAddDef = GameObjectDefs[lootToAdd] as LootDef;
         if (
-            def.type !== "perk" &&
             amountLeft > 0 &&
             lootToAdd !== "" &&
             // if obj you tried picking up can't be picked up and needs to be dropped, "noDrop" is irrelevant
@@ -7077,7 +7078,10 @@ export class Player extends BaseGameObject {
                 break;
             case "perk": {
                 const perkSlotType = this.perks.find(
-                    (p) => (p.droppable || battleRoyaleMode) && p.type === dropMsg.item,
+                    (p) =>
+                        !p.isFromRole &&
+                        (p.droppable || battleRoyaleMode) &&
+                        p.type === dropMsg.item,
                 )?.type;
                 if (perkSlotType && perkSlotType === dropMsg.item) {
                     this.dropLoot(dropMsg.item);
