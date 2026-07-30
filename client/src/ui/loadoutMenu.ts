@@ -9,7 +9,7 @@ import type { AmmoDef } from "../../../shared/defs/gameObjects/gearDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
 import type { GunSkinDef } from "../../../shared/defs/gameObjects/gunSkinDefs";
 import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
-import { type OutfitDef, OutfitDefs } from "../../../shared/defs/gameObjects/outfitDefs";
+import { OutfitDefs } from "../../../shared/defs/gameObjects/outfitDefs";
 import type { ThrowableDef } from "../../../shared/defs/gameObjects/throwableDefs";
 import {
     privateOutfits,
@@ -28,7 +28,7 @@ import {
     setCustomCrosshairImage,
 } from "../crosshair";
 import { device } from "../device";
-import { createOutfitSkinPreview, helpers } from "../helpers";
+import { createLootPreview, helpers } from "../helpers";
 import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
 import type { LoadoutDisplay } from "./opponentDisplay";
@@ -1821,7 +1821,6 @@ export class LoadoutMenu {
             const itemRarity = objDef.rarity || Rarity.Stock;
             const tileVisuals = getLoadoutTileVisuals(item.type, itemRarity);
             const svg = helpers.getSvgFromGameType(item.type);
-            const transform = helpers.getCssTransformFromGameType(item.type);
             const itemIdx = this.selectedCatItems.length;
 
             const itemInfo: ItemInfo = {
@@ -1863,20 +1862,10 @@ export class LoadoutMenu {
                 "data-img": `url(${svg})`,
                 draggable,
             });
-            const outfitDef =
-                GameObjectDefs[item.type].type == "outfit"
-                    ? (GameObjectDefs[item.type] as OutfitDef)
-                    : undefined;
             innerDiv.append(
-                outfitDef?.lootImg.skinLootImg
-                    ? createOutfitSkinPreview(outfitDef, 1.2, "customize-item-sprite")
-                    : $("<div/>", {
-                          class: "customize-item-sprite",
-                          css: {
-                              "background-image": `url(${svg})`,
-                              transform,
-                          },
-                      }),
+                createLootPreview(item.type, "customize-item-sprite", {
+                    outfitScale: 1.2,
+                }),
             );
             innerDiv.append(helpers.getItemRarityStyleMarkup(item.type, itemRarity));
             outerDiv.append(innerDiv);

@@ -11,7 +11,7 @@ import { math } from "../../../shared/utils/math";
 import { passUtil } from "../../../shared/utils/passUtil";
 import type { Account } from "../account";
 import { googleH5Ads } from "../ads/googleH5Ads";
-import { createOutfitSkinPreview, helpers } from "../helpers";
+import { createLootPreview, createOutfitSkinPreview, helpers } from "../helpers";
 import type { LoadoutMenu } from "./loadoutMenu";
 import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
@@ -62,20 +62,19 @@ function createPassRewardImage(
     className: string,
     skinScale: number,
 ) {
-    const outfitDef = getPassRewardSkinPreviewDef(reward);
-    const itemDef = "item" in reward ? GameObjectDefs[reward.item] : undefined;
-    const isGunSkin = itemDef?.type === "gun_skin";
-    return outfitDef
-        ? createOutfitSkinPreview(outfitDef, skinScale, className)
-        : $("<div/>", {
-              class: `${className}${isGunSkin ? " pass-gun-skin-image" : ""}`,
-              css: {
-                  "background-image": `url(${getPassRewardImage(reward)})`,
-                  transform: isGunSkin
-                      ? "rotate(45deg) scale(0.82)"
-                      : getPassRewardTransform(reward),
-              },
-          });
+    if (!("item" in reward)) {
+        return $("<div/>", {
+            class: className,
+            css: {
+                "background-image": `url(${getPassRewardImage(reward)})`,
+                transform: getPassRewardTransform(reward),
+            },
+        });
+    }
+    return createLootPreview(reward.item, className, {
+        outfitScale: skinScale,
+        gunSkinScale: 0.82,
+    });
 }
 
 function getPassRewardItemId(reward: PassRewardDef) {
