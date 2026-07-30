@@ -7408,7 +7408,10 @@ export class Player extends BaseGameObject {
     }
 
     processEditMsg(msg: net.EditMsg) {
-        if (!Config.debug.allowEditMsg || !this.canUseDeveloper) return;
+        const isLocalServer = Config.gameServer.thisRegion === "local";
+        if (!isLocalServer && !this.canUseDeveloper) {
+            return;
+        }
 
         if (msg.loadNewMap) {
             this.game.map.regenerate(msg.newMapSeed);
