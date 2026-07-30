@@ -963,6 +963,9 @@ export class Pass {
         const passLevel =
             (this.pass.data as { level?: number }).level ?? this.pass.currentLevel;
         const ownsPremiumPass = hasPremiumPassUnlock(this.pass.data);
+        const fullPassPrice = ownsPremiumPass
+            ? Math.max(0, unlockAllPrice - premiumPrice)
+            : unlockAllPrice;
         const ownsAllItems = ownsPremiumPass && passLevel >= passUtil.getPassMaxLevel();
         $("#premium-pass-confirm-yes")
             .toggleClass("btn-disabled", ownsPremiumPass)
@@ -974,7 +977,7 @@ export class Pass {
             .text(ownsAllItems ? "All Items Unlocked" : "Unlock All Items");
         $("#premium-pass-price").text(String(premiumPrice));
         $("#premium-pass-price-footer").text(String(premiumPrice));
-        $("#unlock-all-pass-price-footer").text(String(unlockAllPrice));
+        $("#unlock-all-pass-price-footer").text(String(fullPassPrice));
         this.premiumPassModal.show(true);
     }
 
