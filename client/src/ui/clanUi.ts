@@ -6,6 +6,7 @@ import {
     type CancelClanJoinRequestResponse,
     ClanConstants,
     type ClanDetail,
+    type ClanFont,
     type ClanInfo,
     type ClanJoinRequest,
     type ClanLeaderboardEntry,
@@ -14,6 +15,7 @@ import {
     type ClanMember,
     type ClanMemberRole,
     type ClanMessage,
+    type ClanRegion,
     type CreateClanResponse,
     type DeleteClanMessageResponse,
     type EditClanMessageResponse,
@@ -38,6 +40,36 @@ import type { Account } from "../account";
 import { api } from "../api";
 import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
+
+const clanRegionLabels = new Map<ClanRegion, string>();
+
+function getClanRegionLabel(region: ClanRegion) {
+    return clanRegionLabels.get(region) || region.toUpperCase();
+}
+
+const clanFontFamilies: Record<ClanFont, string> = {
+    default: "",
+    serif: "Georgia, 'Times New Roman', serif",
+    mono: "'Courier New', monospace",
+    rounded: "'Trebuchet MS', Arial, sans-serif",
+    cursive: "'Comic Sans MS', cursive",
+};
+
+function applyClanNameStyle(element: JQuery<HTMLElement>, clan: ClanInfo) {
+    return element.css({
+        color: clan.tagColor || "",
+        "font-family": clanFontFamilies[clan.font] || "",
+        "font-weight": clan.bold ? "bold" : "normal",
+    });
+}
+
+function createClanRegionBadge(region: ClanRegion) {
+    return $("<span/>", {
+        class: "clan-region-badge",
+        text: `• ${getClanRegionLabel(region)}`,
+        title: `Region: ${getClanRegionLabel(region)}`,
+    });
+}
 
 function clanRequest<T>(
     url: string,
@@ -242,6 +274,7 @@ export class ClanUi {
             this.stopClanMessagePolling();
         });
 
+        this.populateClanRegionSelects();
         this.initUi();
         this.loadAvailableIcons();
         this.renderSeasonSelects();
@@ -250,6 +283,23 @@ export class ClanUi {
         });
         if (this.account.loggedIn) {
             this.loadMyClan();
+        }
+    }
+
+    populateClanRegionSelects() {
+        const createSelect = $("#clan-create-region-select").empty();
+        const settingsSelect = $("#clan-region-select").empty();
+        const filterSelect = $("#clan-region-filter").empty().append(
+            $("<option/>", { value: "", text: "All Regions" }),
+        );
+
+        for (const [region, data] of Object.entries(GAME_REGIONS)) {
+            const translated = this.localization.translate(data.l10n);
+            const label = translated || region.toUpperCase();
+            clanRegionLabels.set(region, label);
+            for (const select of [createSelect, settingsSelect, filterSelect]) {
+                select.append($("<option/>", { value: region, text: label }));
+            }
         }
     }
 
@@ -305,6 +355,15 @@ export class ClanUi {
         $("#clan-main-tag-color-input").on("change", () => {
             const tagColor = ($("#clan-main-tag-color-input").val() as string) || "";
             this.updateClan({ tagColor });
+        });
+        $("#clan-font-select").on("change", () => {
+            this.updateClan({ font: $("#clan-font-select").val() as ClanFont });
+        });
+        $("#clan-bold-toggle").on("change", () => {
+            this.updateClan({ bold: $("#clan-bold-toggle").prop("checked") });
+        });
+        $("#clan-region-select").on("change", () => {
+            this.updateClan({ region: $("#clan-region-select").val() as ClanRegion });
         });
         $("#btn-clan-save-discord").on("click", () => {
             this.saveClanDiscordSetting();
@@ -381,6 +440,13 @@ export class ClanUi {
             if (e.key === "Enter") {
                 this.loadClanList(1);
             }
+        });
+        $("#clan-edit-name-input, #clan-font-select, #clan-tag-color-input, #clan-bold-toggle").on(
+            "input change",
+            () => this.updateSettingsNameInputStyle(),
+        );
+        $("#clan-region-filter").on("change", () => {
+            this.loadClanList(1);
         });
         $("#clan-leaderboard-type").on("change", () => {
             this.updateLeaderboardModeVisibility();
@@ -711,7 +777,7 @@ export class ClanUi {
                 `url(${getClanIconUrl(this.currentClan.icon)})`,
             );
             $("#clan-my-name").text(this.currentClan.name);
-            $("#clan-my-name").css("color", this.currentClan.tagColor || "");
+            applyClanNameStyle($("#clan-my-name"), this.currentClan);
             $("#clan-my-members").text(
                 `${this.currentClan.memberCount} / ${this.currentClan.maxMembers} Members`,
             );
@@ -764,6 +830,9 @@ export class ClanUi {
     createClan() {
         const name = ($("#clan-create-name-input").val() as string).trim();
         const tagColor = ($("#clan-create-tag-color-input").val() as string) || "";
+        const region = $("#clan-create-region-select").val() as ClanRegion;
+        const font = $("#clan-create-font-select").val() as ClanFont;
+        const bold = $("#clan-create-bold-toggle").prop("checked");
         const discordInviteUrl = (
             ($("#clan-create-discord-input").val() as string) || ""
         ).trim();
@@ -811,6 +880,9 @@ export class ClanUi {
                 name,
                 icon: this.selectedIcon,
                 tagColor,
+                region,
+                font,
+                bold,
                 discordInviteUrl,
             },
             (err, res) => {
@@ -827,6 +899,7 @@ export class ClanUi {
                         invalid_name: "Invalid clan name.",
                         invalid_discord_url:
                             "Discord invite must be a discord.gg or discord.com/invite link.",
+                        invalid_region: "Select a valid game region.",
                         already_in_clan: "You are already in a clan.",
                         clan_joins_locked: "Clan creation is locked.",
                         server_error: "Server error. Please try again.",
@@ -848,6 +921,7 @@ export class ClanUi {
 
     loadClanList(page: number) {
         const search = (($("#clan-search-input").val() as string) || "").trim();
+        const region = ($("#clan-region-filter").val() as ClanRegion | "") || undefined;
 
         clanRequest<ListClansResponse>(
             "/api/clan/list",
@@ -855,6 +929,7 @@ export class ClanUi {
                 page,
                 limit: 20,
                 search: search || undefined,
+                region,
             },
             (err, res) => {
                 if (err || !res) {
@@ -913,7 +988,13 @@ export class ClanUi {
                 $("<div/>", {
                     class: "clan-list-info",
                 }).append(
-                    $("<div/>", { class: "clan-list-name", text: clan.name }),
+                    $("<div/>", { class: "clan-list-name-row" }).append(
+                        applyClanNameStyle(
+                            $("<div/>", { class: "clan-list-name", text: clan.name }),
+                            clan,
+                        ),
+                        createClanRegionBadge(clan.region),
+                    ),
                     $("<div/>", {
                         class: "clan-list-members",
                         text: `${clan.memberCount}/${clan.maxMembers} members`,
@@ -1439,13 +1520,14 @@ export class ClanUi {
             clan.isCurrentSeason ? "Current Season" : `Season ${clan.season} History`,
         );
         $("#clan-detail-name").text(clan.name);
-        $("#clan-detail-name").css("color", clan.tagColor || "");
+        applyClanNameStyle($("#clan-detail-name"), clan);
         $("#clan-detail-members-count").text(
             `${clan.memberCount} / ${clan.maxMembers} Members`,
         );
         $("#clan-members-count").text(`${clan.memberCount} / ${clan.maxMembers}`);
         const owner = clan.members?.find((m) => m.isOwner)?.username || "Unknown";
         $("#clan-detail-owner").text(`Owner: ${owner}`);
+        $("#clan-detail-region").text(`Region: ${getClanRegionLabel(clan.region)}`);
         const createdDate = new Date(clan.createdAt).toLocaleDateString();
         $("#clan-detail-created").text(`Created: ${createdDate}`);
         $("#clan-detail-lock-status").text(clan.isLocked ? "Locked" : "Open");
@@ -1467,6 +1549,10 @@ export class ClanUi {
             $("#clan-detail-discord-link").hide().attr("href", "#");
         }
         $("#clan-edit-name-input").val(clan.name);
+        $("#clan-font-select").val(clan.font);
+        $("#clan-bold-toggle").prop("checked", clan.bold);
+        $("#clan-region-select").val(clan.region);
+        this.updateSettingsNameInputStyle();
         $("#clan-edit-discord-input").val(clan.discordInviteUrl || "");
         $("#clan-lock-toggle").prop("checked", clan.isLocked);
         $("#clan-detail-cgp").text(formatCgp(clan.totalCgp));
@@ -2963,10 +3049,14 @@ export class ClanUi {
             );
 
             const nameRow = $("<div/>", { class: "clan-leaderboard-name-row" }).append(
-                $("<div/>", {
-                    class: "clan-leaderboard-name",
-                    text: entry.clan.name,
-                }),
+                applyClanNameStyle(
+                    $("<div/>", {
+                        class: "clan-leaderboard-name",
+                        text: entry.clan.name,
+                    }),
+                    entry.clan,
+                ),
+                createClanRegionBadge(entry.clan.region),
             );
             if (entry.clan.playoffQualified) {
                 nameRow.append(
@@ -3061,6 +3151,9 @@ export class ClanUi {
         name?: string;
         icon?: string;
         tagColor?: string;
+        region?: ClanRegion;
+        font?: ClanFont;
+        bold?: boolean;
         discordInviteUrl?: string;
         isLocked?: boolean;
     }) {
@@ -3077,6 +3170,7 @@ export class ClanUi {
                     invalid_name: "Invalid clan name.",
                     invalid_discord_url:
                         "Discord invite must be a discord.gg or discord.com/invite link.",
+                    invalid_region: "Select a valid game region.",
                     server_error: "Server error. Please try again.",
                 };
                 this.showError(errorMessages[res?.error || "server_error"]);
@@ -3088,6 +3182,15 @@ export class ClanUi {
             this.renderClanRequests(res.clan);
             this.setClanPageTab(this.clanPageTab);
             this.updateMainCard();
+        });
+    }
+
+    updateSettingsNameInputStyle() {
+        $("#clan-edit-name-input").css({
+            color: ($("#clan-tag-color-input").val() as string) || "",
+            "font-family":
+                clanFontFamilies[$("#clan-font-select").val() as ClanFont] || "",
+            "font-weight": $("#clan-bold-toggle").prop("checked") ? "bold" : "normal",
         });
     }
 }

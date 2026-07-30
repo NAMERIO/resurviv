@@ -13,7 +13,7 @@ import {
     uuid,
 } from "drizzle-orm/pg-core";
 import { TeamMode } from "../../../../shared/gameConfig";
-import type { ClanMemberRole } from "../../../../shared/types/clan";
+import type { ClanFont, ClanMemberRole, ClanRegion } from "../../../../shared/types/clan";
 import { GameModeStatus } from "../../../../shared/types/stats";
 import { ItemStatus, type Loadout, loadout } from "../../../../shared/utils/loadout";
 
@@ -526,6 +526,9 @@ export const clansTable = pgTable("clans", {
     slug: text("slug").notNull().unique(),
     icon: text("icon").notNull(), // Emote type for clan icon
     tagColor: text("tag_color").notNull().default(""),
+    region: text("region").$type<ClanRegion>().notNull().default(""),
+    font: text("font").$type<ClanFont>().notNull().default("default"),
+    bold: boolean("bold").notNull().default(true),
     discordInviteUrl: text("discord_invite_url").notNull().default(""),
     isLocked: boolean("is_locked").notNull().default(false),
     ownerId: text("owner_id")

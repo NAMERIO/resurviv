@@ -88,6 +88,15 @@ const CLAN_SYSTEM_AUTHOR_NAME = "Big Brother";
 const CLAN_SYSTEM_AUTHOR_SLUG = "big-brother";
 const CLAN_SYSTEM_AUTHOR_ICON = "emote_police";
 
+function getDefaultClanRegion() {
+    return Object.keys(Config.regions)[0] || "";
+}
+
+function getValidClanRegion(region: string | undefined) {
+    const selectedRegion = region || getDefaultClanRegion();
+    return selectedRegion in Config.regions ? selectedRegion : null;
+}
+
 const getRequestedSeason = (season?: number): number =>
     season ?? ClanConstants.CurrentSeason;
 
@@ -1006,6 +1015,9 @@ async function getClanInfo(
         name: clan.name,
         icon: clan.icon,
         tagColor: clan.tagColor,
+        region: getValidClanRegion(clan.region) || getDefaultClanRegion(),
+        font: clan.font,
+        bold: clan.bold,
         discordInviteUrl: clan.discordInviteUrl,
         ownerId: clan.ownerId,
         memberCount: memberCountResult[0]?.count || 0,
@@ -1207,7 +1219,8 @@ ClanRouter.post("/my_clan", async (c) => {
 
 ClanRouter.post("/create", validateParams(zCreateClanRequest), async (c) => {
     const user = c.get("user")!;
-    const { name, icon, tagColor, discordInviteUrl } = c.req.valid("json");
+    const { name, icon, tagColor, region, font, bold, discordInviteUrl } =
+        c.req.valid("json");
 
     const existingMembership = await db.query.clanMembersTable.findFirst({
         where: eq(clanMembersTable.userId, user.id),
@@ -1248,6 +1261,13 @@ ClanRouter.post("/create", validateParams(zCreateClanRequest), async (c) => {
             400,
         );
     }
+    const validRegion = getValidClanRegion(region);
+    if (validRegion === null) {
+        return c.json<CreateClanResponse>(
+            { success: false, error: "invalid_region" },
+            400,
+        );
+    }
 
     const [newClan] = await db
         .insert(clansTable)
@@ -1256,6 +1276,9 @@ ClanRouter.post("/create", validateParams(zCreateClanRequest), async (c) => {
             slug,
             icon,
             tagColor: sanitizeClanTagColor(tagColor),
+            region: validRegion,
+            font,
+            bold,
             discordInviteUrl: sanitizedDiscordInviteUrl,
             ownerId: user.id,
         })
@@ -1842,7 +1865,8 @@ ClanRouter.post(
 
 ClanRouter.post("/update", validateParams(zUpdateClanRequest), async (c) => {
     const user = c.get("user")!;
-    const { name, icon, tagColor, discordInviteUrl, isLocked } = c.req.valid("json");
+    const { name, icon, tagColor, region, font, bold, discordInviteUrl, isLocked } =
+        c.req.valid("json");
 
     const membership = await db.query.clanMembersTable.findFirst({
         where: eq(clanMembersTable.userId, user.id),
@@ -1865,6 +1889,9 @@ ClanRouter.post("/update", validateParams(zUpdateClanRequest), async (c) => {
         slug: string;
         icon: string;
         tagColor: string;
+        region: typeof clan.region;
+        font: typeof clan.font;
+        bold: boolean;
         discordInviteUrl: string;
         isLocked: boolean;
     }> = {};
@@ -1904,6 +1931,27 @@ ClanRouter.post("/update", validateParams(zUpdateClanRequest), async (c) => {
         if (sanitizedTagColor !== clan.tagColor) {
             updates.tagColor = sanitizedTagColor;
         }
+    }
+
+    if (region !== undefined) {
+        const validRegion = getValidClanRegion(region);
+        if (validRegion === null) {
+            return c.json<UpdateClanResponse>(
+                { success: false, error: "invalid_region" },
+                400,
+            );
+        }
+        if (validRegion !== clan.region) {
+            updates.region = validRegion;
+        }
+    }
+
+    if (font !== undefined && font !== clan.font) {
+        updates.font = font;
+    }
+
+    if (bold !== undefined && bold !== clan.bold) {
+        updates.bold = bold;
     }
 
     if (discordInviteUrl !== undefined) {
@@ -2406,14 +2454,18 @@ ClanRouter.post(
 
 ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
     const user = c.get("user")!;
-    const { page, limit, search } = c.req.valid("json");
+    const { page, limit, search, region } = c.req.valid("json");
 
     const offset = (page - 1) * limit;
+    const listFilter = and(
+        search ? sql`${clansTable.name} ILIKE ${`%${search}%`}` : undefined,
+        region ? eq(clansTable.region, region) : undefined,
+    );
 
     const totalCountResult = await db
         .select({ count: count() })
         .from(clansTable)
-        .where(search ? sql`${clansTable.name} ILIKE ${`%${search}%`}` : undefined);
+        .where(listFilter);
 
     const totalCount = totalCountResult[0]?.count || 0;
 
@@ -2423,6 +2475,9 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
             name: clansTable.name,
             icon: clansTable.icon,
             tagColor: clansTable.tagColor,
+            region: clansTable.region,
+            font: clansTable.font,
+            bold: clansTable.bold,
             discordInviteUrl: clansTable.discordInviteUrl,
             isLocked: clansTable.isLocked,
             ownerId: clansTable.ownerId,
@@ -2458,7 +2513,7 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
             )`,
         })
         .from(clansTable)
-        .where(search ? sql`${clansTable.name} ILIKE ${`%${search}%`}` : undefined)
+        .where(listFilter)
         .orderBy(sql`(
             SELECT COUNT(*) FROM clan_members 
             WHERE clan_members.clan_id = clans.id
@@ -2483,6 +2538,9 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
             name: c.name,
             icon: c.icon,
             tagColor: c.tagColor,
+            region: getValidClanRegion(c.region) || getDefaultClanRegion(),
+            font: c.font,
+            bold: c.bold,
             discordInviteUrl: c.discordInviteUrl,
             ownerId: c.ownerId,
             memberCount: toStatNumber(c.memberCount),
@@ -2556,6 +2614,9 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
             name: clansTable.name,
             icon: clansTable.icon,
             tagColor: clansTable.tagColor,
+            region: clansTable.region,
+            font: clansTable.font,
+            bold: clansTable.bold,
             discordInviteUrl: clansTable.discordInviteUrl,
             isLocked: clansTable.isLocked,
             ownerId: clansTable.ownerId,
@@ -2609,6 +2670,9 @@ ClanRouter.post("/leaderboard", validateParams(zClanLeaderboardRequest), async (
                 name: c.name,
                 icon: c.icon,
                 tagColor: c.tagColor,
+                region: getValidClanRegion(c.region) || getDefaultClanRegion(),
+                font: c.font,
+                bold: c.bold,
                 discordInviteUrl: c.discordInviteUrl,
                 ownerId: c.ownerId,
                 memberCount: toStatNumber(c.memberCount),

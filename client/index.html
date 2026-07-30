@@ -2637,6 +2637,18 @@
                         <span>Tag Color</span>
                         <input type="color" id="clan-create-tag-color-input" class="clan-tag-color-inline" value="#ffffff" title="Tag Color" />
                       </div>
+                      <select id="clan-create-font-select" class="clan-style-select" title="Clan name font">
+                        <option value="default">Default Font</option>
+                        <option value="serif">Serif</option>
+                        <option value="mono">Monospace</option>
+                        <option value="rounded">Rounded</option>
+                        <option value="cursive">Cursive</option>
+                      </select>
+                      <label class="clan-font-bold-control">
+                        <input id="clan-create-bold-toggle" type="checkbox" checked />
+                        <span>Bold clan name</span>
+                      </label>
+                      <select id="clan-create-region-select" class="clan-style-select" title="Clan region"></select>
                       <div class="clan-discord-input-row">
                         <span class="clan-discord-icon"></span>
                         <input type="text" id="clan-create-discord-input" class="clan-discord-input" placeholder="Discord invite link (optional)" maxlength="120" />
@@ -2703,6 +2715,9 @@
                   <input type="text" id="clan-search-input" class="clan-invite-input" placeholder="Search clans..." />
                   <div id="btn-clan-search" class="clan-search-btn"></div>
                 </div>
+                <select id="clan-region-filter" class="clan-style-select" title="Filter clans by region">
+                  <option value="">All Regions</option>
+                </select>
                 <div id="clan-list-container" class="clan-list-container"></div>
               </div>
             </div>
@@ -2769,6 +2784,7 @@
                   </div>
                   <div id="clan-detail-members-count" class="clan-detail-meta">0 / 10 Members</div>
                   <div id="clan-detail-owner" class="clan-detail-meta">Owner: Unknown</div>
+                  <div id="clan-detail-region" class="clan-detail-meta">Region: Global</div>
                   <div id="clan-detail-lock-status" class="clan-detail-meta">Open</div>
                   <div id="clan-detail-created" class="clan-detail-meta">Created: N/A</div>
                   <div id="clan-detail-discord-row" class="clan-discord-row" style="display: none;">
@@ -2817,39 +2833,66 @@
                 </div>
                 <div class="clan-settings-grid">
                   <div class="clan-settings-card">
-                    <div class="clan-settings-label">Icon</div>
-                    <div class="clan-settings-icon-row">
+                    <div class="clan-settings-section-title">Identity</div>
+                    <div class="clan-settings-identity">
                       <div id="btn-clan-edit-icon" class="clan-detail-icon" style="background-image: url(img/gui/player-gui.svg);" title="Change Icon"></div>
+                      <div class="clan-settings-fields">
+                        <label class="clan-settings-field">
+                          <span>Clan name</span>
+                          <div class="clan-settings-field-row">
+                            <input type="text" id="clan-edit-name-input" class="clan-name-input" placeholder="Clan Name" maxlength="16" />
+                            <div id="btn-clan-save-name" class="clan-btn clan-btn-green clan-btn-small">Save</div>
+                          </div>
+                        </label>
+                        <div class="clan-settings-appearance-row">
+                          <label class="clan-settings-field">
+                            <span>Font</span>
+                            <select id="clan-font-select" class="clan-style-select">
+                              <option value="default">Default</option>
+                              <option value="serif">Serif</option>
+                              <option value="mono">Monospace</option>
+                              <option value="rounded">Rounded</option>
+                              <option value="cursive">Cursive</option>
+                            </select>
+                          </label>
+                          <label class="clan-settings-field clan-settings-color-field">
+                            <span>Color</span>
+                            <input type="color" id="clan-tag-color-input" class="clan-tag-color-inline" value="#ffffff" title="Tag Color" />
+                          </label>
+                          <label class="clan-font-bold-control clan-settings-bold-field">
+                            <input id="clan-bold-toggle" type="checkbox" checked />
+                            <span>Bold</span>
+                          </label>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div class="clan-settings-card">
-                    <div class="clan-settings-label">Name</div>
-                    <div class="clan-settings-field-row">
-                      <input type="text" id="clan-edit-name-input" class="clan-name-input" placeholder="Clan Name" maxlength="16" />
-                      <div id="btn-clan-save-name" class="clan-btn clan-btn-green clan-btn-small">Save</div>
+                    <div class="clan-settings-section-title">Community</div>
+                    <div class="clan-settings-community-grid">
+                      <label class="clan-settings-field">
+                        <span>Region</span>
+                        <select id="clan-region-select" class="clan-style-select"></select>
+                      </label>
+                      <label class="clan-settings-field">
+                        <span>Discord invite</span>
+                        <div id="clan-detail-discord-edit" class="clan-discord-edit">
+                          <span class="clan-discord-icon"></span>
+                          <input type="text" id="clan-edit-discord-input" class="clan-discord-input" placeholder="Optional invite link" maxlength="120" />
+                          <div id="btn-clan-save-discord" class="clan-btn clan-btn-green clan-btn-small">Save</div>
+                        </div>
+                      </label>
                     </div>
-                  </div>
-                  <div class="clan-settings-card">
-                    <div class="clan-settings-label">Tag Color</div>
-                    <input type="color" id="clan-tag-color-input" class="clan-tag-color-inline" value="#ffffff" title="Tag Color" />
-                  </div>
-                  <div class="clan-settings-card">
-                    <div class="clan-settings-label">Discord</div>
-                    <div id="clan-detail-discord-edit" class="clan-discord-edit">
-                      <span class="clan-discord-icon"></span>
-                      <input type="text" id="clan-edit-discord-input" class="clan-discord-input" placeholder="Discord invite link" maxlength="120" />
-                      <div id="btn-clan-save-discord" class="clan-btn clan-btn-green clan-btn-small">Save</div>
-                    </div>
-                  </div>
-                  <div class="clan-settings-card">
-                    <div class="clan-settings-label">Access</div>
-                    <label id="clan-lock-control" class="clan-lock-control">
+                    <label id="clan-lock-control" class="clan-lock-control clan-settings-lock-row">
                       <input id="clan-lock-toggle" type="checkbox" />
-                      <span>Lock Clan</span>
+                      <span><strong>Require join approval</strong><small>Players must request permission before joining.</small></span>
                     </label>
                   </div>
-                  <div class="clan-settings-card clan-settings-danger">
-                    <div class="clan-settings-label">Danger Zone</div>
+                  <div class="clan-settings-card clan-settings-card-wide clan-settings-danger">
+                    <div>
+                      <div class="clan-settings-section-title">Danger Zone</div>
+                      <div class="clan-settings-help">Permanently deletes the clan and all of its history.</div>
+                    </div>
                     <div id="btn-clan-delete" class="clan-btn clan-btn-red" style="display: none;">Delete Clan</div>
                   </div>
                 </div>

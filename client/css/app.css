@@ -12811,6 +12811,13 @@ input [type="image"]:focus {
   min-width: 0;
 }
 
+.clan-list-name-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
 .clan-list-name {
   font-size: 18px;
   font-weight: bold;
@@ -12821,6 +12828,39 @@ input [type="image"]:focus {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.clan-region-badge {
+  flex: 0 0 auto;
+  color: #969b91;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 14px;
+  text-shadow: none;
+  text-transform: uppercase;
+}
+
+.clan-style-select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 9px;
+  border: 2px solid #282828;
+  border-radius: 4px;
+  background: #3f3f3f;
+  color: #fff;
+  font-size: 14px;
+}
+
+.clan-font-bold-control {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #d4d4d4;
+  font-size: 13px;
+  cursor: pointer;
+}
+
 
 .clan-list-members {
   font-size: 14px;
@@ -13102,6 +13142,102 @@ input [type="image"]:focus {
   font-weight: bold;
 }
 
+.clan-settings-card-wide {
+  grid-column: 1 / -1;
+}
+
+.clan-settings-section-title {
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.clan-settings-help {
+  margin-top: 3px;
+  color: #969b91;
+  font-size: 12px;
+}
+
+.clan-settings-identity {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+}
+
+.clan-settings-identity #btn-clan-edit-icon {
+  width: 54px;
+  height: 54px;
+}
+
+.clan-settings-fields,
+.clan-settings-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.clan-settings-field > span {
+  color: #aaa;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.clan-settings-appearance-row {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) 58px 72px;
+  align-items: end;
+  gap: 10px;
+}
+
+.clan-settings-color-field .clan-tag-color-inline {
+  width: 44px;
+  height: 36px;
+}
+
+.clan-settings-bold-field {
+  min-height: 36px;
+}
+
+.clan-settings-community-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+#clan-detail-discord-edit {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: none;
+  margin-top: 0;
+}
+
+#clan-edit-discord-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  background-color: #333;
+  border-color: #555;
+}
+
+.clan-settings-lock-row {
+  margin-top: 2px;
+}
+
+.clan-settings-lock-row > span {
+  display: grid;
+  gap: 2px;
+}
+
+.clan-settings-lock-row small {
+  color: #969b91;
+  font-size: 11px;
+  font-weight: normal;
+}
+
 .clan-settings-icon-row,
 .clan-settings-name-row,
 .clan-settings-field-row {
@@ -13130,12 +13266,38 @@ input [type="image"]:focus {
 }
 
 .clan-settings-danger {
-  align-content: start;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .clan-settings-danger .clan-btn {
   width: fit-content;
   min-width: 150px;
+}
+
+@media (max-width: 900px) {
+  .clan-settings-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .clan-settings-identity,
+  .clan-settings-community-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .clan-settings-identity #btn-clan-edit-icon {
+    justify-self: center;
+  }
+
+  .clan-settings-appearance-row {
+    grid-template-columns: minmax(0, 1fr) 58px 72px;
+  }
+
+  .clan-settings-danger {
+    align-items: stretch;
+    flex-direction: column;
+  }
 }
 
 #btn-clan-edit-icon {

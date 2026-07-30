@@ -17,11 +17,17 @@ export const ClanConstants = {
 } as const;
 
 export const ClanTagColorRegex = /^(|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|[a-zA-Z]+)$/;
+export type ClanRegion = string;
+export const ClanFonts = ["default", "serif", "mono", "rounded", "cursive"] as const;
+export type ClanFont = (typeof ClanFonts)[number];
 
 export const zCreateClanRequest = z.object({
     name: z.string().trim().min(ClanConstants.NameMinLen).max(ClanConstants.NameMaxLen),
     icon: z.string().min(1),
     tagColor: z.string().trim().regex(ClanTagColorRegex).optional().default(""),
+    region: z.string().trim().min(1).max(32).optional(),
+    font: z.enum(ClanFonts).optional().default("default"),
+    bold: z.boolean().optional().default(true),
     discordInviteUrl: z
         .string()
         .trim()
@@ -83,6 +89,9 @@ export const zUpdateClanRequest = z.object({
         .optional(),
     icon: z.string().min(1).optional(),
     tagColor: z.string().trim().regex(ClanTagColorRegex).optional(),
+    region: z.string().trim().min(1).max(32).optional(),
+    font: z.enum(ClanFonts).optional(),
+    bold: z.boolean().optional(),
     discordInviteUrl: z.string().trim().max(ClanConstants.DiscordInviteMaxLen).optional(),
     isLocked: z.boolean().optional(),
 });
@@ -181,6 +190,7 @@ export const zListClansRequest = z.object({
     page: z.number().int().min(1).default(1),
     limit: z.number().int().min(1).max(50).default(20),
     search: z.string().optional(),
+    region: z.string().trim().min(1).max(32).optional(),
 });
 export type ListClansRequest = z.infer<typeof zListClansRequest>;
 
@@ -222,6 +232,9 @@ export type ClanInfo = {
     name: string;
     icon: string;
     tagColor: string;
+    region: ClanRegion;
+    font: ClanFont;
+    bold: boolean;
     discordInviteUrl: string;
     ownerId: string;
     memberCount: number;
@@ -271,6 +284,7 @@ export type CreateClanResponse =
               | "name_taken"
               | "invalid_name"
               | "invalid_discord_url"
+              | "invalid_region"
               | "already_in_clan"
               | "clan_joins_locked"
               | "server_error";
@@ -357,6 +371,7 @@ export type UpdateClanResponse =
               | "name_taken"
               | "invalid_name"
               | "invalid_discord_url"
+              | "invalid_region"
               | "server_error";
       };
 
