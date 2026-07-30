@@ -35749,7 +35749,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 ori: 2,
             },
             {
-                type: "mansion_01",
+                type: "mansion_structure_01",
                 pos: v2.create(62, 32),
                 scale: 1,
                 ori: 0,
