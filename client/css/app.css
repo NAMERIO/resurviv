@@ -12887,6 +12887,23 @@ input [type="image"]:focus {
   text-transform: uppercase;
 }
 
+@keyframes clan-gradient-shift {
+  from {
+    background-position: 0% 50%;
+  }
+
+  to {
+    background-position: 200% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [style*="clan-gradient-shift"],
+  .clan-gradient-animated {
+    animation: none !important;
+  }
+}
+
 .clan-style-select {
   box-sizing: border-box;
   width: 100%;

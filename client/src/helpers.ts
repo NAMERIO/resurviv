@@ -430,7 +430,7 @@ export const helpers = {
         }
         const [start, end] = tagColor.split(",", 2);
         if (end) {
-            return `<span style="display:inline-block;background-image:linear-gradient(90deg,${this.htmlEscape(start)},${this.htmlEscape(end)});background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-fill-color:transparent;text-shadow:none">${escapedTag}</span>`;
+            return `<span style="display:inline-block;background-image:linear-gradient(90deg,${this.htmlEscape(start)},${this.htmlEscape(end)},${this.htmlEscape(start)});background-size:200% 100%;background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-fill-color:transparent;text-shadow:none;animation:clan-gradient-shift 9s linear infinite">${escapedTag}</span>`;
         }
         return `<span style="color:${this.htmlEscape(tagColor)}">${escapedTag}</span>`;
     },

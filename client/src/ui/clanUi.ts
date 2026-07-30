@@ -61,8 +61,10 @@ function applyClanNameStyle(element: JQuery<HTMLElement>, clan: ClanInfo) {
     return element.css({
         color: hasGradient ? "transparent" : start,
         "background-image": hasGradient
-            ? `linear-gradient(90deg, ${start}, ${end})`
+            ? `linear-gradient(90deg, ${start}, ${end}, ${start})`
             : "none",
+        "background-size": hasGradient ? "200% 100%" : "",
+        animation: hasGradient ? "clan-gradient-shift 9s linear infinite" : "",
         "background-clip": hasGradient ? "text" : "border-box",
         "-webkit-background-clip": hasGradient ? "text" : "border-box",
         "-webkit-text-fill-color": hasGradient ? "transparent" : start,
@@ -3240,8 +3242,10 @@ export class ClanUi {
         $("#clan-edit-name-input").css({
             color: hasGradient ? "transparent" : start,
             "background-image": hasGradient
-                ? `linear-gradient(90deg, ${start}, ${end})`
+                ? `linear-gradient(90deg, ${start}, ${end}, ${start})`
                 : "none",
+            "background-size": hasGradient ? "200% 100%" : "",
+            animation: hasGradient ? "clan-gradient-shift 9s linear infinite" : "",
             "background-clip": hasGradient ? "text" : "border-box",
             "-webkit-background-clip": hasGradient ? "text" : "border-box",
             "-webkit-text-fill-color": hasGradient ? "transparent" : start,
