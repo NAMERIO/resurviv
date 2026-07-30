@@ -2017,12 +2017,9 @@ export class ShopMenu {
             },
         });
         image.append(
-            $("<div/>", {
-                class: "iap-item-sprite",
-                css: {
-                    "background-image": `url(${helpers.getSvgFromGameType(itemType)})`,
-                    transform: helpers.getCssTransformFromGameType(itemType),
-                },
+            createLootPreview(itemType, "iap-item-sprite", {
+                outfitScale: 0.8,
+                gunSkinScale: 0.82,
             }),
         );
         image.append(helpers.getItemRarityStyleMarkup(itemType, rarity));
