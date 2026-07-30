@@ -12916,6 +12916,31 @@ input [type="image"]:focus {
   font-size: 14px;
 }
 
+#clan-font-select option[value="default"],
+#clan-create-font-select option[value="default"] {
+  font-family: "Roboto Condensed", Arial, sans-serif;
+}
+
+#clan-font-select option[value="bungee"],
+#clan-create-font-select option[value="bungee"] {
+  font-family: "Clan Bungee", sans-serif;
+}
+
+#clan-font-select option[value="orbitron"],
+#clan-create-font-select option[value="orbitron"] {
+  font-family: "Clan Orbitron", sans-serif;
+}
+
+#clan-font-select option[value="bebas"],
+#clan-create-font-select option[value="bebas"] {
+  font-family: "Clan Bebas Neue", sans-serif;
+}
+
+#clan-font-select option[value="pixel"],
+#clan-create-font-select option[value="pixel"] {
+  font-family: "Clan Press Start", monospace;
+}
+
 .clan-font-bold-control {
   display: flex;
   align-items: center;
@@ -21408,4 +21433,28 @@ div.roulette {
   #btn-team-leave {
     grid-column: 1 / -1;
   }
+}
+@font-face {
+  font-family: "Clan Bungee";
+  src: url("../fonts/Bungee-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Clan Orbitron";
+  src: url("../fonts/Orbitron-Variable.ttf") format("truetype");
+  font-display: swap;
+  font-weight: 400 900;
+}
+
+@font-face {
+  font-family: "Clan Bebas Neue";
+  src: url("../fonts/BebasNeue-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Clan Press Start";
+  src: url("../fonts/PressStart2P-Regular.ttf") format("truetype");
+  font-display: swap;
 }

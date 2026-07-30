@@ -21,7 +21,17 @@ export const ClanTagColorRegex = new RegExp(
     `^(?:${ClanTagColorPart})(?:,${ClanTagColorPart})?$|^$`,
 );
 export type ClanRegion = string;
-export const ClanFonts = ["default", "serif", "mono", "rounded", "cursive"] as const;
+export const ClanFonts = [
+    "default",
+    "bungee",
+    "orbitron",
+    "bebas",
+    "pixel",
+    "serif",
+    "mono",
+    "rounded",
+    "cursive",
+] as const;
 export type ClanFont = (typeof ClanFonts)[number];
 
 export const zCreateClanRequest = z.object({

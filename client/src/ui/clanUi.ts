@@ -48,11 +48,15 @@ function getClanRegionLabel(region: ClanRegion) {
 }
 
 const clanFontFamilies: Record<ClanFont, string> = {
-    default: "",
-    serif: "Georgia, 'Times New Roman', serif",
-    mono: "'Courier New', monospace",
-    rounded: "'Trebuchet MS', Arial, sans-serif",
-    cursive: "'Comic Sans MS', cursive",
+    default: "'Roboto Condensed', Arial, sans-serif",
+    bungee: "'Clan Bungee', sans-serif",
+    orbitron: "'Clan Orbitron', sans-serif",
+    bebas: "'Clan Bebas Neue', sans-serif",
+    pixel: "'Clan Press Start', monospace",
+    serif: "'Roboto Condensed', Arial, sans-serif",
+    mono: "'Roboto Condensed', Arial, sans-serif",
+    rounded: "'Roboto Condensed', Arial, sans-serif",
+    cursive: "'Roboto Condensed', Arial, sans-serif",
 };
 
 function applyClanNameStyle(element: JQuery<HTMLElement>, clan: ClanInfo) {
@@ -288,6 +292,7 @@ export class ClanUi {
 
         this.populateClanRegionSelects();
         this.initUi();
+        this.updateFontSelectStyle("#clan-create-font-select");
         this.loadAvailableIcons();
         this.renderSeasonSelects();
         this.account.addEventListener("login", () => {
@@ -391,7 +396,11 @@ export class ClanUi {
             );
         });
         $("#clan-font-select").on("change", () => {
+            this.updateFontSelectStyle("#clan-font-select");
             this.updateClan({ font: $("#clan-font-select").val() as ClanFont });
+        });
+        $("#clan-create-font-select").on("change", () => {
+            this.updateFontSelectStyle("#clan-create-font-select");
         });
         $("#clan-bold-toggle").on("change", () => {
             this.updateClan({ bold: $("#clan-bold-toggle").prop("checked") });
@@ -1586,6 +1595,7 @@ export class ClanUi {
         }
         $("#clan-edit-name-input").val(clan.name);
         $("#clan-font-select").val(clan.font);
+        this.updateFontSelectStyle("#clan-font-select");
         $("#clan-bold-toggle").prop("checked", clan.bold);
         $("#clan-region-select").val(clan.region);
         this.updateSettingsNameInputStyle();
@@ -3254,6 +3264,11 @@ export class ClanUi {
                 clanFontFamilies[$("#clan-font-select").val() as ClanFont] || "",
             "font-weight": $("#clan-bold-toggle").prop("checked") ? "bold" : "normal",
         });
+    }
+
+    updateFontSelectStyle(selector: string) {
+        const font = $(selector).val() as ClanFont;
+        $(selector).css("font-family", clanFontFamilies[font] || clanFontFamilies.default);
     }
 }
 
