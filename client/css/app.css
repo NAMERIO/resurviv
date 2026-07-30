@@ -12283,9 +12283,9 @@ input [type="image"]:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 38px;
+  min-height: 38px;
   margin-top: 8px;
-  padding: 0 10px;
+  padding: 7px 10px;
   background-color: rgba(255, 255, 255, 0.08);
   border-radius: 5px;
   color: #c4c4c4;
@@ -12295,6 +12295,53 @@ input [type="image"]:focus {
 
 .clan-create-color-row .clan-tag-color-inline {
   margin-bottom: 0;
+}
+
+.clan-gradient-color-pair {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.clan-color-controls {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.clan-color-mode-toggle {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background: #292929;
+}
+
+.clan-color-mode-toggle label {
+  cursor: pointer;
+}
+
+.clan-color-mode-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.clan-color-mode-toggle span {
+  display: block;
+  padding: 6px 8px;
+  color: #aaa;
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.clan-color-mode-toggle input:checked + span {
+  background: #5865f2;
+  color: #fff;
+}
+
+.clan-gradient-color-pair .clan-tag-color-inline {
+  width: 34px;
 }
 
 .clan-discord-input-row,
@@ -13185,13 +13232,13 @@ input [type="image"]:focus {
 
 .clan-settings-appearance-row {
   display: grid;
-  grid-template-columns: minmax(130px, 1fr) 58px 72px;
+  grid-template-columns: minmax(120px, 1fr) minmax(170px, auto) 72px;
   align-items: end;
   gap: 10px;
 }
 
 .clan-settings-color-field .clan-tag-color-inline {
-  width: 44px;
+  width: 28px;
   height: 36px;
 }
 
@@ -13291,7 +13338,7 @@ input [type="image"]:focus {
   }
 
   .clan-settings-appearance-row {
-    grid-template-columns: minmax(0, 1fr) 58px 72px;
+    grid-template-columns: minmax(120px, 1fr) minmax(170px, auto) 72px;
   }
 
   .clan-settings-danger {

@@ -16,7 +16,10 @@ export const ClanConstants = {
     PlayoffClanCount: 4,
 } as const;
 
-export const ClanTagColorRegex = /^(|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|[a-zA-Z]+)$/;
+const ClanTagColorPart = "(?:#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|[a-zA-Z]+)";
+export const ClanTagColorRegex = new RegExp(
+    `^(?:${ClanTagColorPart})(?:,${ClanTagColorPart})?$|^$`,
+);
 export type ClanRegion = string;
 export const ClanFonts = ["default", "serif", "mono", "rounded", "cursive"] as const;
 export type ClanFont = (typeof ClanFonts)[number];

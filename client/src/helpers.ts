@@ -428,6 +428,10 @@ export const helpers = {
         if (!tagColor) {
             return escapedTag;
         }
+        const [start, end] = tagColor.split(",", 2);
+        if (end) {
+            return `<span style="display:inline-block;background-image:linear-gradient(90deg,${this.htmlEscape(start)},${this.htmlEscape(end)});background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-fill-color:transparent;text-shadow:none">${escapedTag}</span>`;
+        }
         return `<span style="color:${this.htmlEscape(tagColor)}">${escapedTag}</span>`;
     },
     truncateString: function (str: string, font: string, maxWidthPixels: number) {

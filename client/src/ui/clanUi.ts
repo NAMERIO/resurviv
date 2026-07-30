@@ -56,8 +56,18 @@ const clanFontFamilies: Record<ClanFont, string> = {
 };
 
 function applyClanNameStyle(element: JQuery<HTMLElement>, clan: ClanInfo) {
+    const [start, end] = getClanTagColors(clan.tagColor);
+    const hasGradient = start !== end;
     return element.css({
-        color: clan.tagColor || "",
+        color: hasGradient ? "transparent" : start,
+        "background-image": hasGradient
+            ? `linear-gradient(90deg, ${start}, ${end})`
+            : "none",
+        "background-clip": hasGradient ? "text" : "border-box",
+        "-webkit-background-clip": hasGradient ? "text" : "border-box",
+        "-webkit-text-fill-color": hasGradient ? "transparent" : start,
+        "text-shadow": hasGradient ? "none" : "",
+        display: hasGradient ? "inline-block" : "",
         "font-family": clanFontFamilies[clan.font] || "",
         "font-weight": clan.bold ? "bold" : "normal",
     });
@@ -348,13 +358,35 @@ export class ClanUi {
         $("#btn-clan-save-name").on("click", () => {
             this.saveClanNameSetting();
         });
-        $("#clan-tag-color-input").on("change", () => {
-            const tagColor = ($("#clan-tag-color-input").val() as string) || "";
-            this.updateClan({ tagColor });
+        $("#clan-tag-color-input, #clan-tag-color-input-2").on("change", () => {
+            this.updateClan({
+                tagColor: makeClanTagColor(
+                    "#clan-tag-color-input",
+                    "#clan-tag-color-input-2",
+                    "clan-color-mode",
+                ),
+            });
         });
-        $("#clan-main-tag-color-input").on("change", () => {
-            const tagColor = ($("#clan-main-tag-color-input").val() as string) || "";
-            this.updateClan({ tagColor });
+        $('input[name="clan-color-mode"]').on("change", () => {
+            const isGradient =
+                $('input[name="clan-color-mode"]:checked').val() === "gradient";
+            $("#clan-tag-color-input-2").toggle(isGradient);
+            this.updateSettingsNameInputStyle();
+            if (!isGradient) {
+                this.updateClan({
+                    tagColor: makeClanTagColor(
+                        "#clan-tag-color-input",
+                        "#clan-tag-color-input-2",
+                        "clan-color-mode",
+                    ),
+                });
+            }
+        });
+        $('input[name="clan-create-color-mode"]').on("change", () => {
+            $("#clan-create-tag-color-input-2").toggle(
+                $('input[name="clan-create-color-mode"]:checked').val() ===
+                    "gradient",
+            );
         });
         $("#clan-font-select").on("change", () => {
             this.updateClan({ font: $("#clan-font-select").val() as ClanFont });
@@ -441,7 +473,7 @@ export class ClanUi {
                 this.loadClanList(1);
             }
         });
-        $("#clan-edit-name-input, #clan-font-select, #clan-tag-color-input, #clan-bold-toggle").on(
+        $("#clan-edit-name-input, #clan-font-select, #clan-tag-color-input, #clan-tag-color-input-2, #clan-bold-toggle").on(
             "input change",
             () => this.updateSettingsNameInputStyle(),
         );
@@ -618,6 +650,9 @@ export class ClanUi {
         this.selectedIcon = "emote_surviv";
         $("#clan-create-name-input").val("");
         $("#clan-create-tag-color-input").val("#ffffff");
+        $("#clan-create-tag-color-input-2").val("#ffffff");
+        $('input[name="clan-create-color-mode"][value="solid"]').prop("checked", true);
+        $("#clan-create-tag-color-input-2").hide();
         $("#clan-create-icon-preview").css(
             "background-image",
             `url(${getClanIconUrl(this.selectedIcon)})`,
@@ -792,13 +827,9 @@ export class ClanUi {
             );
 
             if (isOwner) {
-                $("#clan-main-tag-color-input")
-                    .val(normalizeColorInputValue(this.currentClan.tagColor))
-                    .show();
                 $("#btn-clan-leave-main").hide();
                 $("#btn-clan-delete-main").show();
             } else {
-                $("#clan-main-tag-color-input").hide();
                 $("#btn-clan-leave-main").show();
                 $("#btn-clan-delete-main").hide();
             }
@@ -806,7 +837,6 @@ export class ClanUi {
             $("#clan-create-card").show();
             $("#clan-my-card").hide();
             $("#btn-clan-create-submit").show();
-            $("#clan-main-tag-color-input").hide();
             $("#btn-clan-my-clan").addClass("disabled").css("opacity", "0.5");
         }
         this.updateCreateClanLockState();
@@ -829,7 +859,11 @@ export class ClanUi {
 
     createClan() {
         const name = ($("#clan-create-name-input").val() as string).trim();
-        const tagColor = ($("#clan-create-tag-color-input").val() as string) || "";
+        const tagColor = makeClanTagColor(
+            "#clan-create-tag-color-input",
+            "#clan-create-tag-color-input-2",
+            "clan-create-color-mode",
+        );
         const region = $("#clan-create-region-select").val() as ClanRegion;
         const font = $("#clan-create-font-select").val() as ClanFont;
         const bold = $("#clan-create-bold-toggle").prop("checked");
@@ -1570,13 +1604,22 @@ export class ClanUi {
         if (isOwner && clan.isCurrentSeason) {
             $("#btn-clan-edit-icon").show();
             $("#clan-tag-color-input").show();
-            $("#clan-tag-color-input").val(normalizeColorInputValue(clan.tagColor));
+            const [start, end] = getClanTagColors(clan.tagColor);
+            const hasGradient = clan.tagColor.includes(",");
+            $("#clan-tag-color-input").val(start);
+            $("#clan-tag-color-input-2").val(end).toggle(hasGradient);
+            $(
+                `input[name="clan-color-mode"][value="${
+                    hasGradient ? "gradient" : "solid"
+                }"]`,
+            ).prop("checked", true);
             $("#clan-lock-control").show();
             $("#btn-clan-page-settings-tab").show();
             $("#btn-clan-page-requests-tab").show();
         } else {
             $("#btn-clan-edit-icon").hide();
             $("#clan-tag-color-input").hide();
+            $("#clan-tag-color-input-2").hide();
             $("#clan-lock-control").hide();
             $("#btn-clan-page-settings-tab").hide();
             $("#btn-clan-page-requests-tab").hide();
@@ -3186,11 +3229,45 @@ export class ClanUi {
     }
 
     updateSettingsNameInputStyle() {
+        const [start, end] = getClanTagColors(
+            makeClanTagColor(
+                "#clan-tag-color-input",
+                "#clan-tag-color-input-2",
+                "clan-color-mode",
+            ),
+        );
+        const hasGradient = start !== end;
         $("#clan-edit-name-input").css({
-            color: ($("#clan-tag-color-input").val() as string) || "",
+            color: hasGradient ? "transparent" : start,
+            "background-image": hasGradient
+                ? `linear-gradient(90deg, ${start}, ${end})`
+                : "none",
+            "background-clip": hasGradient ? "text" : "border-box",
+            "-webkit-background-clip": hasGradient ? "text" : "border-box",
+            "-webkit-text-fill-color": hasGradient ? "transparent" : start,
+            "text-shadow": hasGradient ? "none" : "",
             "font-family":
                 clanFontFamilies[$("#clan-font-select").val() as ClanFont] || "",
             "font-weight": $("#clan-bold-toggle").prop("checked") ? "bold" : "normal",
         });
     }
+}
+
+function getClanTagColors(color?: string | null): [string, string] {
+    const [start, end] = (color || "").split(",", 2);
+    const normalizedStart = normalizeColorInputValue(start);
+    return [normalizedStart, normalizeColorInputValue(end || start)];
+}
+
+function makeClanTagColor(
+    startSelector: string,
+    endSelector: string,
+    modeName?: string,
+) {
+    const start = ($(startSelector).val() as string) || "#ffffff";
+    const end = ($(endSelector).val() as string) || start;
+    if (modeName && $(`input[name="${modeName}"]:checked`).val() !== "gradient") {
+        return start;
+    }
+    return start === end ? start : `${start},${end}`;
 }
