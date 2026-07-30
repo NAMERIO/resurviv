@@ -1804,8 +1804,9 @@ const SkinDefs: Record<string, OutfitDef> = {
 
     // ============ GENERATED OUTFITS ============
     outfitWhiteDay: defineOutfitSkin("outfitBase", {
+        noDropOnDeath: true,
         name: "Marshmallow Suit",
-        rarity: 0,
+        rarity: 1,
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-outfitWhiteDay.img",
@@ -2680,6 +2681,53 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+
+    outfitHazard: defineOutfitSkin("outfitBase", {
+        name: "Hazard",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "For those who serve as a walking warning label.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-hazard.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-hazard.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-hazard.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitMummy: defineOutfitSkin("outfitBase", {
+        name: "Mummy",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "For those who rise again after every loss.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-mummy.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-mummy.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-mummy.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
 
     outfitBengal: defineOutfitSkin("outfitBase", {
         name: "Bengal",
@@ -3819,6 +3867,32 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-archaiccrown.img",
             frontSpritePos: { x: 0, y: -0.4 },
             frontSprite: "player-accessory-archaiccrown.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitPlaqueDoctor: defineOutfitSkin("outfitBase", {
+        name: "Plaque Doctor",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        lore: "The doctor of the plague.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            aboveHand: true,
+            baseSprite: "player-base-plaque-doctor.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-plaque-doctor.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-plaque-doctor.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-plaque-doctor.img",
         },
         lootImg: {
             skinLootImg: true,
