@@ -662,7 +662,13 @@ export class Npc extends BaseGameObject {
         let closest: Player | undefined;
         let closestDistance = Infinity;
         for (const player of this.game.playerBarn.livingPlayers) {
-            if (player.dead || player.downed) continue;
+            if (
+                player.dead ||
+                player.downed ||
+                !util.sameLayer(player.layer, this.layer)
+            ) {
+                continue;
+            }
             const distance = v2.lengthSqr(v2.sub(player.pos, this.pos));
             if (distance < closestDistance) {
                 closest = player;
