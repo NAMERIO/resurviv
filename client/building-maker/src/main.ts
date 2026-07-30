@@ -1,11 +1,13 @@
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import type { MapObjectDef, ObstacleDef } from "../../../shared/defs/mapObjectsTyping";
+import type { NpcDef } from "../../../shared/defs/npcDefs";
 import type { BuildingDef, FloorImage } from "../../../shared/defs/types/building";
 import { GameConfig } from "../../../shared/gameConfig";
 import type { AABB, Circle, Collider } from "../../../shared/utils/coldet";
 import { collider } from "../../../shared/utils/collider";
 import { generateTerrain } from "../../../shared/utils/terrainGen";
 import { type Vec2, v2 } from "../../../shared/utils/v2";
+import { ContactAtlas } from "../../atlas-builder/defs/contact";
 import { SharedAtlas } from "../../atlas-builder/defs/shared";
 import "./styles.css";
 
@@ -41,6 +43,12 @@ const editorMapConfig = {
 } as const;
 const gameUndergroundColor = editorMapColors.underground;
 const editorMap = createEditorMapEnvironment();
+const spriteSourcePaths = new Map(
+    [...SharedAtlas.images, ...ContactAtlas.images].map((sourcePath) => [
+        sourcePathToGameSprite(sourcePath),
+        `/img/${sourcePath}`,
+    ]),
+);
 
 const layerOrder = [
     "basementFloor",
@@ -664,6 +672,22 @@ function buildPalette(): PaletteEntry[] {
                 fallbackWidth: 2,
                 fallbackHeight: 2,
             });
+        } else if (def.type === "npc") {
+            const npc = def as NpcDef;
+            const collisionSize = fallbackSizeFromCollider(npc.collision);
+            entries.push({
+                id: `npc-${name}`,
+                name,
+                category: "objects",
+                kind: "object",
+                layer: "objects",
+                type: name,
+                sprite: npc.img.sprite,
+                assetScale: npc.img.scale,
+                fallbackWidth: collisionSize.width,
+                fallbackHeight: collisionSize.height,
+                localCollider: npc.collision,
+            });
         } else if (def.type === "building") {
             const building = def as BuildingDef;
             const previewSprite =
@@ -997,6 +1021,8 @@ function getImage(sprite?: string): ImageState | null {
 function spriteToPath(sprite?: string): string {
     if (!sprite || sprite === "none") return "";
     if (sprite.startsWith("/") || sprite.startsWith("http")) return sprite;
+    const atlasSource = spriteSourcePaths.get(sprite);
+    if (atlasSource) return atlasSource;
     if (sprite.endsWith(".svg") || sprite.endsWith(".png")) {
         return sprite.includes("/") ? `/${sprite}` : `/img/map/${sprite}`;
     }
