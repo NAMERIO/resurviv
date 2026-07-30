@@ -30,7 +30,7 @@ const mapDef: PartialMapDef = {
             grass: 0x2d385d,
             underground: 0x1b0d03,
             playerSubmerge: 0x2b8ca4,
-            playerGhillie: 0x83af50,
+            playerGhillie: 0x2d385d,
         },
     },
     /* STRIP_FROM_PROD_CLIENT:START */
