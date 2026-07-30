@@ -66,8 +66,7 @@ import {
 import { Config } from "../../config";
 import { isItemInLoadout, onPlayerJoin, onPlayerKill } from "../../plugins/deathmatch";
 import { IDAllocator } from "../../utils/IDAllocator";
-import { logIpToDiscord } from "../../utils/ipLogging";
-import { validateUserName } from "../../utils/serverHelpers";
+import { apiPrivateRouter, validateUserName } from "../../utils/serverHelpers";
 import type { Game, JoinTokenData } from "../game";
 import { Group, Team } from "../group";
 import { InventoryManager } from "../inventoryManager";
@@ -7843,8 +7842,15 @@ export class Player extends BaseGameObject {
                 gameId: game.id,
             };
 
-            // we don't await
-            logIpToDiscord(logData.username, logData.encodedIp);
+            void apiPrivateRouter.log_player_join.$post({
+                json: {
+                    name: logData.username,
+                    encodedIp: logData.encodedIp,
+                    region: logData.region,
+                },
+            }).catch((err) => {
+                game.logger.error(`Failed to send player join log to API:`, err);
+            });
         } catch (err) {
             game.logger.error(`Failed to fetch API save game:`, err);
         }

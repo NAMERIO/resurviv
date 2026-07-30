@@ -28,6 +28,12 @@ export const zUpdateRegionBody = z.object({
 });
 export type UpdateRegionBody = z.infer<typeof zUpdateRegionBody>;
 
+export const zLogPlayerJoinBody = z.object({
+    name: z.string(),
+    encodedIp: z.string(),
+    region: z.string(),
+});
+
 export const zSetGameModeBody = z.object({
     index: z.number(),
     mode_type: z.enum(["deathmatch", "br"]).default("deathmatch"),

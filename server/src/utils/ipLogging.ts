@@ -4,14 +4,16 @@ import { defaultLogger } from "./logger";
 const IP_WEBHOOK = Config.webhooks?.ipLog;
 const TEAM_CREATION_WEBHOOK = Config.webhooks?.teamCreation;
 
-const REGION = Config.gameServer.thisRegion.toUpperCase();
-
-export function logIpToDiscord(name: string, ip?: string) {
+export function logIpToDiscord(
+    name: string,
+    ip?: string,
+    region = Config.gameServer.thisRegion,
+) {
     if (process.env.NODE_ENV !== "production") return;
     if (!ip) return;
     if (!IP_WEBHOOK) return;
     const formattedName = name.replaceAll("@", "(at)");
-    const message = `[${REGION}] ${formattedName} joined the game. ${ip}`;
+    const message = `[${region.toUpperCase()}] ${formattedName} joined the game. ${ip}`;
 
     return fetch(IP_WEBHOOK, {
         method: "POST",
