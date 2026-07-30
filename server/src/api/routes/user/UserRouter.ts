@@ -1600,7 +1600,7 @@ UserRouter.post("/set_item_status", validateParams(zSetItemStatusRequest), async
     await db
         .update(itemsTable)
         .set({
-            status: status,
+            status: sql`GREATEST(${itemsTable.status}, ${status})`,
         })
         .where(and(eq(itemsTable.userId, user.id), inArray(itemsTable.type, itemTypes)));
 

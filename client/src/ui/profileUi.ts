@@ -1,7 +1,6 @@
 import $ from "jquery";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import type { GpGift, SkinGift } from "../../../shared/types/user";
-import loadout from "../../../shared/utils/loadout";
 import type { Account } from "../account";
 import { api } from "../api";
 import { device } from "../device";
@@ -553,28 +552,8 @@ export class ProfileUi {
         this.updateLoadoutPreview();
     }
 
-    onItemsUpdated(items: Array<{ status: number }>) {
-        let unconfirmedItemCount = 0;
-        let unackedItemCount = 0;
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            if (item.status < loadout.ItemStatus.Confirmed) {
-                unconfirmedItemCount++;
-            }
-            if (item.status < loadout.ItemStatus.Ackd) {
-                unackedItemCount++;
-            }
-        }
-        items.filter((e) => {
-            return e.status < loadout.ItemStatus.Confirmed;
-        });
-        items.filter((e) => {
-            return e.status < loadout.ItemStatus.Ackd;
-        });
-        const displayAlert = unconfirmedItemCount > 0 || unackedItemCount > 0;
-        $(".account-alert-main").css({
-            display: displayAlert ? "block" : "none",
-        });
+    onItemsUpdated(_items: Array<{ status: number }>) {
+        this.loadoutMenu.updateMainItemAlert();
     }
 
     waitOnLogin(cb: () => void) {

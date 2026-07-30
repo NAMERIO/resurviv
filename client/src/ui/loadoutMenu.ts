@@ -2054,6 +2054,21 @@ export class LoadoutMenu {
                 .find(".account-alert-cat")
                 .css("display", unackdItems.length > 0 ? "block" : "none");
         }
+        this.updateMainItemAlert();
+    }
+
+    updateMainItemAlert() {
+        const hasVisibleAlert = this.localAckItems.some((item) => {
+            const gameTypeDef = GameObjectDefs[item.type];
+            return this.categories.some(
+                (category) =>
+                    this.isCategoryVisible(category) &&
+                    gameTypeDef?.type === category.gameType,
+            );
+        });
+        $(
+            "#loadout-alert-main, #animated-loadout .account-loadout-link .account-alert-main",
+        ).css("display", hasVisibleAlert ? "block" : "none");
     }
 
     setEmoteDraggable(selector: JQuery<HTMLElement>, that: LoadoutMenu) {
