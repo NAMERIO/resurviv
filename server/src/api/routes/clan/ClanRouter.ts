@@ -2457,8 +2457,11 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
     const { page, limit, search, region } = c.req.valid("json");
 
     const offset = (page - 1) * limit;
+    const normalizedSearch = search?.trim().replace(/\s+/g, " ");
     const listFilter = and(
-        search ? sql`${clansTable.name} ILIKE ${`%${search}%`}` : undefined,
+        normalizedSearch
+            ? sql`regexp_replace(trim(${clansTable.name}), '[[:space:]]+', ' ', 'g') ILIKE ${`%${normalizedSearch}%`}`
+            : undefined,
         region ? eq(clansTable.region, region) : undefined,
     );
 
