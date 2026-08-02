@@ -75,6 +75,7 @@ export class Editor {
     spawnNpc = false;
     promoteToRole = false;
     toggleLayer = false;
+    fakeKill = false;
     drawExplosionDecal = false;
     explosionDecalPos = v2.create(0, 0);
     lastExplosionDecalPos: Vec2 | null = null;
@@ -311,6 +312,17 @@ export class Editor {
             button.on("click", () => {
                 this.sendMsg = true;
                 this.promoteToRole = true;
+            });
+        }
+
+        {
+            const folder = tools.addFolder({
+                title: "Kill",
+                expanded: false,
+            });
+            folder.addButton({ title: "Kill" }).on("click", () => {
+                this.fakeKill = true;
+                this.sendMsg = true;
             });
         }
 
@@ -613,6 +625,7 @@ export class Editor {
         msg.shootFast = this.toolParams.shootFast;
         msg.punchFast = this.toolParams.punchFast;
         msg.moveObjs = this.toolParams.moveObjs;
+        msg.fakeKill = this.fakeKill;
         msg.drawExplosionDecal = this.drawExplosionDecal;
         msg.explosionDecalPos = this.explosionDecalPos;
 
@@ -628,6 +641,7 @@ export class Editor {
         this.printLootStats = false;
 
         this.toggleLayer = false;
+        this.fakeKill = false;
         this.drawExplosionDecal = false;
         this.sendMsg = false;
     }
