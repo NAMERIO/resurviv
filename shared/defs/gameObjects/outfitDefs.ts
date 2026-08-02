@@ -2709,7 +2709,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         name: "Mummy",
         noDropOnDeath: true,
 
-        rarity: 3,
+        rarity: 4,
         lore: "For those who rise again after every loss.",
 
         skinImg: {
@@ -3780,7 +3780,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     outfitSolarAegis: defineOutfitSkin("outfitBase", {
         name: "Solar Aegis",
         noDropOnDeath: true,
-
+        
         rarity: 3,
         lore: "To shine the way.",
 
@@ -3794,6 +3794,107 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-solar-aegis.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitAutumnSweater: defineOutfitSkin("outfitBase", {
+        name: "Autumn Sweater",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "For those who stay warm when autumn chills the battlefield.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-autumn-sweater.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-autumn-sweater.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-autumn-sweater.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitCandy: defineOutfitSkin("outfitBase", {
+        name: "Sweet Tooth",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "For those who kill with a sugar rush.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-candy.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-candy.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-candy.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-candy.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitGhost: defineOutfitSkin("outfitBase", {
+        name: "Ghost",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "For those who haunt the battlefield.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-ghost.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-ghost.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-ghost.img",
+            frontSpritePos: { x: -2, y: -1.8 },
+            frontSprite: "player-accessory-ghost.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitGobble: defineOutfitSkin("outfitBase", {
+        name: "Gobble",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "For those who gobble up the competition before feast day.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-gobble.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-gobble.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-gobble.img",
+            frontSpritePos: { x: -2, y: 0 },
+            frontSprite: "player-accessory-gobble.img",
         },
         lootImg: {
             skinLootImg: true,
@@ -3818,6 +3919,54 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-blush.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitPie: defineOutfitSkin("outfitBase", {
+        name: "Cherry Pie",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "For those who always serve up a slice of victory.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-pie.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-pie.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-pie.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitAutumnForest: defineOutfitSkin("outfitBase", {
+        name: "Autumn Forest",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "For those who blend seamlessly into the falling leaves.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-autumn-forest.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-autumn-forest.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-autumn-forest.img",
         },
         lootImg: {
             skinLootImg: true,
@@ -3875,7 +4024,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     }),
 
     outfitPlaqueDoctor: defineOutfitSkin("outfitBase", {
-        name: "Plaque Doctor",
+        name: "Plague Doctor",
         noDropOnDeath: true,
 
         rarity: 5,
@@ -3891,8 +4040,32 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-plaque-doctor.img",
-            frontSpritePos: { x: 0, y: 0 },
+            frontSpritePos: { x: 4, y: 0 },
             frontSprite: "player-accessory-plaque-doctor.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitForestPlaid: defineOutfitSkin("outfitBase", {
+        name: "Forest Plaid",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "For those who chop through the competition like a true lumberjack.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            aboveHand: true,
+            baseSprite: "player-base-forest-plaid.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-forest-plaid.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-forest-plaid.img",
         },
         lootImg: {
             skinLootImg: true,
