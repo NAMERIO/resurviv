@@ -29,6 +29,8 @@ export class EditMsg implements AbstractMsg {
     punchFast = false;
     moveObjs = false;
 
+    fakeKill = false;
+
     drawExplosionDecal = false;
     explosionDecalPos = v2.create(0, 0);
 
@@ -65,6 +67,8 @@ export class EditMsg implements AbstractMsg {
         s.writeBoolean(this.shootFast);
         s.writeBoolean(this.punchFast);
         s.writeBoolean(this.moveObjs);
+
+        s.writeBoolean(this.fakeKill);
 
         s.writeBoolean(this.drawExplosionDecal);
         if (this.drawExplosionDecal) {
@@ -108,6 +112,8 @@ export class EditMsg implements AbstractMsg {
         this.shootFast = s.readBoolean();
         this.punchFast = s.readBoolean();
         this.moveObjs = s.readBoolean();
+
+        this.fakeKill = s.readBoolean();
 
         this.drawExplosionDecal = s.readBoolean();
         if (this.drawExplosionDecal) {

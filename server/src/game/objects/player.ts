@@ -7445,6 +7445,47 @@ export class Player extends BaseGameObject {
 
         this.debug.moveObjMode.enabled = msg.moveObjs;
 
+        if (msg.fakeKill) {
+            const targets = this.game.playerBarn.livingPlayers.filter(
+                (player) => player !== this,
+            );
+            const target = targets.length
+                ? targets[util.randomInt(0, targets.length - 1)]
+                : undefined;
+
+            if (target) {
+                this.killedIds.push(target.matchDataId);
+                this.kills++;
+
+                const leaderboardKey = this.getLeaderboardKey();
+                const leaderboardEntry = this.game.leaderboard.get(leaderboardKey);
+                if (leaderboardEntry) {
+                    this.game.leaderboard.set(leaderboardKey, {
+                        ...leaderboardEntry,
+                        kills: leaderboardEntry.kills + 1,
+                    });
+                }
+
+                if (!isBattleRoyaleMapName(this.game.mapName)) {
+                    this.game.broadcastMsg(
+                        net.MsgType.Leaderboard,
+                        this.getKillsLeaderboardMsg(),
+                    );
+                }
+
+                const killMsg = new net.KillMsg();
+                killMsg.damageType = GameConfig.DamageType.Player;
+                killMsg.itemSourceType = this.activeWeapon;
+                killMsg.targetId = target.__id;
+                killMsg.killerId = this.__id;
+                killMsg.killCreditId = this.__id;
+                killMsg.killerKills = this.kills;
+                killMsg.killed = true;
+                killMsg.fakeKill = true;
+                this.game.broadcastMsg(net.MsgType.Kill, killMsg);
+            }
+        }
+
         if (msg.drawExplosionDecal) {
             this.game.decalBarn.addDecal(
                 "decal_frag_explosion",
