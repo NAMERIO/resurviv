@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gt, lt, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, lt, notInArray, or, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import slugify from "slugify";
 import {
@@ -2457,9 +2457,21 @@ ClanRouter.post("/list", validateParams(zListClansRequest), async (c) => {
     const { page, limit, search, region } = c.req.valid("json");
 
     const offset = (page - 1) * limit;
+    const normalizedSearch = search?.trim().replace(/\s+/g, " ");
+    const defaultRegion = getDefaultClanRegion();
+    const regionFilter = region
+        ? region === defaultRegion
+            ? or(
+                  eq(clansTable.region, region),
+                  notInArray(clansTable.region, Object.keys(Config.regions)),
+              )
+            : eq(clansTable.region, region)
+        : undefined;
     const listFilter = and(
-        search ? sql`${clansTable.name} ILIKE ${`%${search}%`}` : undefined,
-        region ? eq(clansTable.region, region) : undefined,
+        normalizedSearch
+            ? sql`regexp_replace(trim(${clansTable.name}), '[[:space:]]+', ' ', 'g') ILIKE ${`%${normalizedSearch}%`}`
+            : undefined,
+        regionFilter,
     );
 
     const totalCountResult = await db

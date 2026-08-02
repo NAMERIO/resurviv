@@ -22,6 +22,7 @@ dist/
 
 # Node modules
 node_modules/
+.pnpm-store/
 
 user-data/
 .idea/
