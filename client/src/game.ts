@@ -4055,7 +4055,7 @@ export class Game {
                     discordPresence.updateKills(msg.killerKills);
                 }
 
-                if (!this.m_map.getMapDef().gameMode.amongUsMode) {
+                if (!this.m_map.getMapDef().gameMode.amongUsMode && !msg.fakeKill) {
                     const killText = this.m_ui2Manager.getKillFeedText(
                         targetName,
                         killfeedKillerInfo.teamId ? killfeedKillerName : "",
