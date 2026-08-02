@@ -7454,24 +7454,15 @@ export class Player extends BaseGameObject {
                 : undefined;
 
             if (target) {
+                const fakeKillDamage = 100;
                 this.killedIds.push(target.matchDataId);
                 this.kills++;
-
-                const leaderboardKey = this.getLeaderboardKey();
-                const leaderboardEntry = this.game.leaderboard.get(leaderboardKey);
-                if (leaderboardEntry) {
-                    this.game.leaderboard.set(leaderboardKey, {
-                        ...leaderboardEntry,
-                        kills: leaderboardEntry.kills + 1,
-                    });
-                }
-
-                if (!isBattleRoyaleMapName(this.game.mapName)) {
-                    this.game.broadcastMsg(
-                        net.MsgType.Leaderboard,
-                        this.getKillsLeaderboardMsg(),
-                    );
-                }
+                this.damageDealt += fakeKillDamage;
+                this.trackWeaponStat(
+                    this.weaponDamageDealt,
+                    this.activeWeapon,
+                    fakeKillDamage,
+                );
 
                 const killMsg = new net.KillMsg();
                 killMsg.damageType = GameConfig.DamageType.Player;
