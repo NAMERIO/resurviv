@@ -21,8 +21,17 @@ const _allowedStreaks = ["streak_rapid_fire", "streak_heavy_hitter", "streak_jug
 //     "mosin_gilded"
 // ];
 const _featuredBundleUnlocks = [
+    "outfitPeru",
+    "outfitSacredGeometry",
+    "outfitPaintSplat",
+    "outfitGoldenWaffle",
     "outfitAero",
     "outfitBugcat",
+    "outfitDonut",
+    "outfitStoneIdol",
+    "outfitMissingTexture",
+    "outfitVikingHelm",
+    "outfitMondrian",
     "outfitBlush",
     "outfitDemo",
     "outfitVitaminD",
@@ -306,7 +315,15 @@ const _allowedOutfits = [
     // "outfitForestPlaid",
     // "outfitVitaminD"
     // "outfitCupcake",
+    // "outfitPaintSplat",
+    // "outfitGoldenWaffle",
+    // "outfitSacredGeometry",
     // "outfitCandy",
+    // "outfitDonut",
+    // "outfitStoneIdol",
+    // "outfitMissingTexture",
+    // "outfitVikingHelm",
+    // "outfitMondrian",
     // "outfitBlush",
     // "outfitAutumnForest",
     // "outfitPie",

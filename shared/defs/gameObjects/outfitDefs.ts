@@ -3801,6 +3801,152 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
+    outfitPaintSplat: defineOutfitSkin("outfitBase", {
+        name: "Paint Splat",
+        noDropOnDeath: true,
+        
+        rarity: 3,
+        lore: "For those who fight with a splash of color.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-paint-splat.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-paint-splat.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-paint-splat.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitSacredGeometry: defineOutfitSkin("outfitBase", {
+        name: "Sacred Geometry",
+        noDropOnDeath: true,
+        
+        rarity: 4,
+        lore: "For those who see the hidden patterns in the battlefield.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-sacred-geometry.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-sacred-geometry.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-sacred-geometry.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitGoldenWaffle: defineOutfitSkin("outfitBase", {
+        name: "Golden Waffle",
+        noDropOnDeath: true,
+        
+        rarity: 3,
+        lore: "For those who serve up sweet, golden destruction every morning.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-golden-waffle.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-golden-waffle.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-golden-waffle.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitDonut: defineOutfitSkin("outfitBase", {
+        name: "Donut",
+        noDropOnDeath: true,
+        
+        rarity: 3,
+        lore: "For those who leave a trail of sweet defeat behind.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-donut.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-donut.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-donut.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitStoneIdol: defineOutfitSkin("outfitBase", {
+        name: "Stone Idol",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "For those who command the power of the ancient stones.",
+
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-stone-idol.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-stone-idol.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-stone-idol.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitMissingTexture: defineOutfitSkin("outfitBase", {
+        name: "Missing Texture",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "For those whose power renders the arena unrenderable.",
+
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-missing-texture.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-missing-texture.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-missing-texture.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
     outfitAutumnSweater: defineOutfitSkin("outfitBase", {
         name: "Autumn Sweater",
         noDropOnDeath: true,
@@ -3844,6 +3990,31 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-candy.img",
             frontSpritePos: { x: 0, y: 0 },
             frontSprite: "player-accessory-candy.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitVikingHelm: defineOutfitSkin("outfitBase", {
+        name: "Viking Helm",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "For those who fight with the spirit of the vikings.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-viking-helm.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-viking-helm.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-viking-helm.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-viking-helm.img",
         },
         lootImg: {
             skinLootImg: true,
@@ -3943,6 +4114,30 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-pie.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitMondrian: defineOutfitSkin("outfitBase", {
+        name: "Mondrian Grid",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "Fo those who turn every battle into a masterpiece of modern art.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-mondrian.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-mondrian.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-mondrian.img",
         },
         lootImg: {
             skinLootImg: true,
