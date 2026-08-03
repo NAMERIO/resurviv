@@ -4145,6 +4145,31 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
+    outfitFishBowl: defineOutfitSkin("outfitBase", {
+        name: "Fish Bowl",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "For those who swim in the sea of competition.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-fish-bowl.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-fish-bowl.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-fish-bowl.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    
     outfitAutumnForest: defineOutfitSkin("outfitBase", {
         name: "Autumn Forest",
         noDropOnDeath: true,
