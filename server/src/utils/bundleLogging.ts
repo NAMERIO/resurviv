@@ -157,15 +157,20 @@ export async function renderBundleCard(offers: FeaturedBundleOffer[]) {
         ctx.fillText(`${offer.discountPercent}% OFF`, 0, 7);
         ctx.restore();
 
-        if (potato) ctx.drawImage(potato, x + width / 2 - 72, 632, 34, 43);
         const priceGradient = ctx.createLinearGradient(0, 630, 0, 678);
         priceGradient.addColorStop(0, "#f4f4d1");
         priceGradient.addColorStop(0.55, "#ced200");
         priceGradient.addColorStop(1, "#cbb814");
         ctx.fillStyle = priceGradient;
         ctx.font = "bold 39px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText(offer.price.toLocaleString(), x + width / 2 + 20, 670);
+        const priceText = offer.price.toLocaleString();
+        const iconWidth = potato ? 34 : 0;
+        const iconGap = potato ? 18 : 0;
+        const priceWidth = ctx.measureText(priceText).width;
+        const priceStart = x + (width - iconWidth - iconGap - priceWidth) / 2;
+        if (potato) ctx.drawImage(potato, priceStart, 632, iconWidth, 43);
+        ctx.textAlign = "left";
+        ctx.fillText(priceText, priceStart + iconWidth + iconGap, 670);
     }
     return canvas.toBuffer("image/png");
 }
