@@ -15,6 +15,7 @@ import {
 } from "../../../shared/types/api";
 import { Config } from "../config";
 import { GIT_VERSION } from "../utils/gitRevision";
+import { startBundleRotationLogging } from "../utils/bundleLogging";
 import { getFindGamePlayerData } from "../utils/playerData";
 import {
     getHonoIp,
@@ -293,6 +294,7 @@ const honoServer = serve({
     port: Config.apiServer.port,
 });
 injectWebSocket(honoServer);
+startBundleRotationLogging();
 
 // run clean up scripts every midnight
 new Cron("0 0 * * *", async () => {

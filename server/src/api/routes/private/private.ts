@@ -33,6 +33,7 @@ import {
 } from "../../../../../shared/types/stats";
 import { passUtil } from "../../../../../shared/utils/passUtil";
 import { Config, serverConfigPath } from "../../../config";
+import { sendCurrentBundleRotation } from "../../../utils/bundleLogging";
 import { logIpToDiscord } from "../../../utils/ipLogging";
 import { isBehindProxy } from "../../../utils/serverHelpers";
 import {
@@ -42,6 +43,7 @@ import {
     zListGameModesBody,
     zLogPlayerJoinBody,
     zRemoveFeaturedYoutuberBody,
+    zSendFeaturedBundlesBody,
     zSetBattlePassEndBody,
     zSetBattleRoyaleModeBody,
     zSetClanCgpValueBody,
@@ -728,6 +730,27 @@ export const PrivateRouter = new Hono<Context>()
         void logIpToDiscord(name, encodedIp, region);
         return c.json({}, 200);
     })
+    .post(
+        "/send_featured_bundles",
+        validateParams(zSendFeaturedBundlesBody),
+        async (c) => {
+            try {
+                await sendCurrentBundleRotation();
+                return c.json({ message: "Sent the current featured bundles." }, 200);
+            } catch (error) {
+                server.logger.error("Failed to manually send featured bundles", error);
+                return c.json(
+                    {
+                        message:
+                            error instanceof Error
+                                ? `Could not send featured bundles: ${error.message}`
+                                : "Could not send featured bundles.",
+                    },
+                    200,
+                );
+            }
+        },
+    )
     .post("/set_game_mode", validateParams(zSetGameModeBody), (c) => {
         const {
             index,

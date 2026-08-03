@@ -82,6 +82,8 @@ export const zSetClanCgpValueBody = z.object({
 
 export const zListFeaturedYoutubersBody = z.object({});
 
+export const zSendFeaturedBundlesBody = z.object({});
+
 export const zRemoveFeaturedYoutuberBody = z.object({
     name: z.string().trim().min(1),
 });

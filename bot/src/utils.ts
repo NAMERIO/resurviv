@@ -54,6 +54,7 @@ export const enum Command {
     SetClientTheme = "set_client_theme",
     FuturedYoutubers = "futured-youtubers",
     RemoveFuturedYoutubers = "remove-futured-youtubers",
+    SendFeaturedBundles = "send_featured_bundles",
 }
 
 export const honoClient = hc<PrivateRouteApp>(API_URL, {

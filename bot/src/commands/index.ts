@@ -7,6 +7,7 @@ import {
     zAddClanWarCgpBody,
     zListFeaturedYoutubersBody,
     zRemoveFeaturedYoutuberBody,
+    zSendFeaturedBundlesBody,
     zSetBattlePassEndBody,
     zSetBattleRoyaleModeBody,
     zSetClanCgpValueBody,
@@ -565,6 +566,14 @@ const commands = {
                 type: ApplicationCommandOptionType.String,
             },
         ],
+    }),
+    [Command.SendFeaturedBundles]: createCommand({
+        name: Command.SendFeaturedBundles,
+        description: "Send the current featured bundles to the shop webhook",
+        optionValidator: zSendFeaturedBundlesBody,
+        isPrivateRoute: true,
+        ownerOnly: true,
+        options: [],
     }),
 } as unknown as Record<
     Exclude<

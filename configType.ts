@@ -288,6 +288,11 @@ export interface ConfigType {
         mapGeneration?: string;
 
         /**
+         * Webhook URL to announce each new featured bundle rotation.
+         */
+        bundleRotation?: string;
+
+        /**
          * Webhook URL to log shop and market purchases.
          */
         shopLogs?: string;
