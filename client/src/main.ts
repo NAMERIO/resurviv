@@ -1172,7 +1172,9 @@ export class Application {
     setConfigFromDOM() {
         const playerName = helpers.sanitizeNameInput(this.nameInput.val() as string);
         this.config.set("playerName", playerName);
-        discordPresence.setHome(playerName);
+        discordPresence.setHome(
+            (this.account.loggedIn && this.account.profile.username) || playerName,
+        );
         const region = this.serverSelect.find(":selected").val();
         this.config.set("region", region as string);
         const gameModeIdx = this.getSelectedGameModeIdx();
@@ -1193,7 +1195,9 @@ export class Application {
 
         const playerName = this.config.get("playerName")!;
         this.nameInput.val(playerName);
-        discordPresence.setHome(playerName);
+        discordPresence.setHome(
+            (this.account.loggedIn && this.account.profile.username) || playerName,
+        );
         this.serverSelect.find("option").each((_i, ele) => {
             const spellSyncLang = SDK.isSpellSync && window.spellSync.language;
             const configRegion = this.config.get("region");

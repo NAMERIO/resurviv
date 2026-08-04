@@ -2,8 +2,17 @@ import pkg from "discord-rpc";
 
 const { Client, register } = pkg;
 type Presence = Parameters<InstanceType<typeof Client>["setActivity"]>[0];
+type PresenceWithButtons = Presence & {
+    buttons: Array<{ label: string; url: string }>;
+};
 
 const DISCORD_CLIENT_ID = "1365016387374026772";
+const GAME_BUTTONS = [
+    {
+        label: "Play This Game",
+        url: "https://resurviv.biz",
+    },
+];
 
 export interface PresenceData {
     region?: string;
@@ -53,13 +62,14 @@ export function updateMatchPresence(data: PresenceData): void {
     const details = buildDetails(currentPresence);
     const state = buildState(currentPresence);
 
-    const activity: Presence = {
+    const activity: PresenceWithButtons = {
         details,
         state,
         largeImageKey: "icon_app",
         largeImageText: "Resurviv",
         smallImageKey: "loadout_kill_icon",
         smallImageText: `${currentPresence.kills ?? 0} Kills`,
+        buttons: GAME_BUTTONS,
         startTimestamp: sessionStartTimestamp,
         instance: false,
     };
@@ -88,9 +98,10 @@ export function setIdlePresence(playerName?: string): void {
             state: homePlayerName,
             largeImageKey: "icon_app",
             largeImageText: "Resurviv",
+            buttons: GAME_BUTTONS,
             startTimestamp: sessionStartTimestamp,
             instance: false,
-        })
+        } as PresenceWithButtons)
         .catch((err: unknown) => {
             console.error("[Discord RPC] Failed to set idle activity", err);
         });
