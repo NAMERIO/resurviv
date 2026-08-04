@@ -13,7 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const VITE_DEV_URL = process.env.VITE_DEV_URL || "http://127.0.0.1:3000";
-const PROD_CLIENT_PATH = path.join(__dirname, "../../client/dist/index.html");
+const PROD_CLIENT_URL = process.env.SURVEV_PROD_URL || "https://resurviv.biz";
 const IS_DEV = !app.isPackaged;
 
 let mainWindow: BrowserWindow | null = null;
@@ -22,7 +22,7 @@ function createWindow(): void {
     mainWindow = new BrowserWindow({
         width: 1280,
         height: 720,
-        title: "Survev",
+        title: "Resurviv.biz",
         icon: path.join(__dirname, "../../client/public/img/favicon.png"),
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
@@ -36,7 +36,7 @@ function createWindow(): void {
     if (IS_DEV) {
         mainWindow.loadURL(VITE_DEV_URL);
     } else {
-        mainWindow.loadFile(PROD_CLIENT_PATH);
+        mainWindow.loadURL(PROD_CLIENT_URL);
     }
 
     mainWindow.on("closed", () => {
