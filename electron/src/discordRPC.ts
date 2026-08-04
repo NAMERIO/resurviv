@@ -83,8 +83,8 @@ export function setIdlePresence(): void {
 
     rpcClient
         .setActivity({
-            details: "In Lobby",
-            state: "Waiting for a match",
+            details: "Home Page",
+            state: "Choosing a game mode",
             largeImageKey: "icon_app",
             largeImageText: "Survev",
             instance: false,

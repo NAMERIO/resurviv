@@ -7,14 +7,17 @@
   "files": ["dist/**/*", "node_modules/**/*"],
   "win": {
     "target": "nsis",
-    "icon": "../client/public/img/favicon.png"
+    "icon": "../client/public/img/favicon.png",
+    "artifactName": "Survev-Windows.${ext}"
   },
   "mac": {
     "target": "dmg",
-    "icon": "../client/public/img/favicon.png"
+    "icon": "../client/public/img/favicon.png",
+    "artifactName": "Survev-macOS.${ext}"
   },
   "linux": {
     "target": "AppImage",
-    "icon": "../client/public/img/favicon.png"
+    "icon": "../client/public/img/favicon.png",
+    "artifactName": "Survev-Linux.${ext}"
   }
 }

@@ -1,0 +1,75 @@
+name: Electron Release
+
+on:
+  push:
+    tags:
+      - "desktop-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Windows
+            os: windows-latest
+            command: pnpm run package -- --win --x64
+            asset: Survev-Windows.exe
+          - platform: macOS
+            os: macos-latest
+            command: pnpm run package -- --mac --universal
+            asset: Survev-macOS.dmg
+          - platform: Linux
+            os: ubuntu-latest
+            command: pnpm run package -- --linux --x64
+            asset: Survev-Linux.AppImage
+    runs-on: ${{ matrix.os }}
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install Electron dependencies
+        run: pnpm install --frozen-lockfile --filter survev-desktop
+
+      - name: Build installer
+        run: ${{ matrix.command }}
+        working-directory: electron
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}
+          path: electron/release/${{ matrix.asset }}
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download installers
+        uses: actions/download-artifact@v5
+        with:
+          path: installers
+          merge-multiple: true
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: installers/*
+          generate_release_notes: true
+          make_latest: true

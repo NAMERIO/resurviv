@@ -8,6 +8,9 @@
     "dev": "pnpm -r run dev",
     "dev:server": "cd server && pnpm dev",
     "dev:client": "cd client && pnpm dev",
+    "dev:electron": "pnpm --filter survev-desktop dev",
+    "build:electron": "pnpm --filter survev-desktop build",
+    "package:electron": "pnpm --filter survev-desktop package",
     "build": "cd server && pnpm build && cd ../client && pnpm build",
     "stressTest": "cd server && pnpm stressTest",
     "lint": "biome check --write",
@@ -32,6 +35,7 @@
   },
   "workspaces": [
     "client",
+    "electron",
     "server",
     "shared"
   ],

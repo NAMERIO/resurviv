@@ -292,3 +292,33 @@ Save and enable the unit:
 ```sh
 sudo systemctl enable --now survev-bot
 ```
+
+### Electron setup (optional)
+
+Set the production website URL in `electron/src/main.ts`.
+
+Update the version in `electron/package.json`, then commit and push the changes:
+
+```sh
+git add electron client .github/workflows/electron-release.yml package.json pnpm-lock.yaml pnpm-workspace.yaml
+git commit -m "release: desktop app"
+git push origin master
+```
+
+Create and push a tag matching the Electron version:
+
+```sh
+git tag desktop-v0.1.0
+git push origin desktop-v0.1.0
+```
+
+Wait for the **Electron Release** workflow in GitHub Actions to finish. Then update
+the production client to show the download buttons:
+
+```sh
+cd /opt/resurviv
+git pull --ff-only
+pnpm install --frozen-lockfile
+pnpm build
+sudo systemctl reload nginx
+```

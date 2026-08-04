@@ -2,6 +2,7 @@ packages:
   - server/
   - shared/
   - client/
+  - electron/
   - bot/
   - tests/
   - '!**dist/**'

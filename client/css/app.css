@@ -21458,3 +21458,88 @@ div.roulette {
   src: url("../fonts/PressStart2P-Regular.ttf") format("truetype");
   font-display: swap;
 }
+#desktop-downloads {
+  box-sizing: border-box;
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  background: rgba(17, 24, 32, 0.82);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.desktop-downloads-title {
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.desktop-download-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.desktop-download-button {
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  flex: 1;
+  gap: 6px;
+  justify-content: center;
+  min-width: 0;
+  padding: 8px 5px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 5px;
+  background: linear-gradient(#536171, #3b4652);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.05;
+  text-decoration: none;
+  transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
+}
+
+.desktop-download-button small {
+  display: block;
+  margin-bottom: 2px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 8px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.desktop-download-icon {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.desktop-download-windows {
+  background: linear-gradient(#168eea, #0873c2);
+}
+
+.desktop-download-macos {
+  background: linear-gradient(#68727d, #424a53);
+}
+
+.desktop-download-linux {
+  background: linear-gradient(#e79528, #bd6716);
+}
+
+.desktop-download-button:hover,
+.desktop-download-button:focus {
+  color: #fff;
+  filter: brightness(1.12);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.32);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.desktop-download-button:active {
+  box-shadow: none;
+  transform: translateY(1px);
+}
