@@ -71,6 +71,9 @@ function syncCurrentScreen(): void {
 }
 
 function installPresenceFallbacks(): void {
+    const desktopDownloads = document.getElementById("desktop-downloads");
+    if (desktopDownloads) desktopDownloads.style.display = "none";
+
     syncDisplayedPlayerName();
     syncCurrentScreen();
 

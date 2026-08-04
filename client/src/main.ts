@@ -330,6 +330,9 @@ export class Application {
     tryLoad() {
         if (this.domContentLoaded && this.configLoaded && !this.initialized) {
             this.initialized = true;
+            if (window.discordRPC?.isElectron) {
+                $("#desktop-downloads").css("display", "none");
+            }
             // this should be this.config.config.teamAutofill = true???
             // this.config.teamAutoFill = true;
             if (device.mobile) {
