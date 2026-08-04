@@ -381,7 +381,10 @@ export class Npc implements AbstractObject {
         }
         return {
             action: "game-drive",
-            object: "game-sports-car",
+            object:
+                this.type === "motherShip"
+                    ? "game-alien-mothership"
+                    : "game-sports-car",
         };
     }
 
@@ -400,13 +403,13 @@ export class Npc implements AbstractObject {
         if (!def) return;
 
         if (this.type === "motherShip") {
+            const locallyDriven =
+                activePlayer.m_netData.m_vehicleId === this.__id &&
+                !activePlayer.isNew;
+            this.visualPos = locallyDriven
+                ? v2.copy(activePlayer.m_visualPos)
+                : v2.copy(this.pos);
             if (this.state === "drive") {
-                const locallyDriven =
-                    activePlayer.m_netData.m_vehicleId === this.__id &&
-                    !activePlayer.isNew;
-                this.visualPos = locallyDriven
-                    ? v2.copy(activePlayer.m_visualPos)
-                    : v2.copy(this.pos);
                 this.visualRot = this.rot;
                 this.vehicleVisualRot = this.rot;
             } else if (this.state === "cannon" && this.targetActive) {

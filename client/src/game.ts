@@ -1262,7 +1262,7 @@ export class Game {
             this.m_map,
             this.m_inputBinds,
             this.m_amongUsCompletedTasks,
-            IS_DEV || this.canUseDeveloper(),
+            this.canUseDeveloper(),
         );
         if (this.editor?.enabled && this.editor.toolParams.explosionDecalBrush) {
             this.m_emoteBarn.inputReset();
