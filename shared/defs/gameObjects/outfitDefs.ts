@@ -3677,6 +3677,29 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
+    outfitBase: defineOutfitSkin("outfitBase", {
+        name: "Basic Outfit",
+        noDropOnDeath: true,
+
+        rarity: 0,
+        lore: "Pure and simple.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-base.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-base.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-base.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
     outfitBee: defineOutfitSkin("outfitBase", {
         name: "Buzz Buzz",
         noDropOnDeath: true,
@@ -4075,7 +4098,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         name: "Gobble",
         noDropOnDeath: true,
 
-        rarity: 4,
+        rarity: 5,
         lore: "For those who gobble up the competition before feast day.",
 
         skinImg: {

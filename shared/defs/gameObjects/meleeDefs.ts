@@ -2527,6 +2527,150 @@ const SkinDefs: Record<string, MeleeDef> = {
             spriteR: "player-fists-tiger-seed-r.img",
         },
     }),
+    fist_CandyCorn: defineMeleeSkin("fists", {
+        name: "Candy Corn",
+        rarity: Rarity.Uncommon,
+        lore: "Sweet tooth.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-tiger-seed-fists.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-candy-corn-l.img",
+            spriteR: "player-fists-candy-corn-r.img",
+        },
+    }),
+
+    fist_TurkeyLeg: defineMeleeSkin("fists", {
+        name: "Turkey Legs",
+        rarity: Rarity.Rare,
+        lore: "The meat munchers.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-tiger-seed-fists.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-turkey-leg-l.img",
+            spriteR: "player-fists-turkey-leg-r.img",
+        },
+    }),
+
+    fist_MapleLeaves: defineMeleeSkin("fists", {
+        name: "Maple Leaves",
+        rarity: Rarity.Epic,
+        lore: "For those who let their enemies fall like autumn leaves.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-tiger-seed-fists.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-maple-leaves-l.img",
+            spriteR: "player-fists-maple-leaves-r.img",
+        },
+    }),
+
+    fist_Pumpkin: defineMeleeSkin("fists", {
+        name: "Pumpkin",
+        rarity: Rarity.Rare,
+        lore: "For those ready to smash the competition this autumn.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-tiger-seed-fists.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-pumpkin-l.img",
+            spriteR: "player-fists-pumpkin-r.img",
+        },
+    }),
+
+     fist_Skeleton: defineMeleeSkin("fists", {
+        name: "Skeleton Knuckles",
+        rarity: Rarity.Epic,
+        lore: "For those who want to drop their opponents down to the bare bone.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-tiger-seed-fists.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-skeleton-l.img",
+            spriteR: "player-fists-skeleton-r.img",
+        },
+    }),
+
+    fist_Acorn: defineMeleeSkin("fists", {
+        name: "Acorn Fists",
+        rarity: Rarity.Rare,
+        lore: "For those ready to go nuts on the battlefield.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-tiger-seed-fists.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-acorn-l.img",
+            spriteR: "player-fists-acorn-r.img",
+        },
+    }),
+
+    fist_OvenMitts: defineMeleeSkin("fists", {
+        name: "Oven Mitts",
+        rarity: Rarity.Rare,
+        lore: "For handling heat on and off the battlefield.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-tiger-seed-fists.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-oven-mitts-l.img",
+            spriteR: "player-fists-oven-mitts-r.img",
+        },
+    }),
+
+    fist_Pinecone: defineMeleeSkin("fists", {
+        name: "Pinecones",
+        rarity: Rarity.Rare,
+        lore: "For those who like their strikes extra prickly.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-tiger-seed-fists.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-pinecone-l.img",
+            spriteR: "player-fists-pinecone-r.img",
+        },
+    }),
+
     fist_tropicana: defineMeleeSkin("fists", {
         name: "Tropicana",
         rarity: Rarity.Rare,
@@ -2711,17 +2855,20 @@ const SkinDefs: Record<string, MeleeDef> = {
             sprite: "loot-melee-bayonet-rugged.img",
         },
     }),
-    bayonet_woodland: defineMeleeSkin("bayonet", {
-        name: "Bayonet Woodland",
+
+    bone_knife: defineMeleeSkin("bayonet", {
+        name: "Bone Knife",
         rarity: Rarity.Mythic,
+        lore: "For those who prefer a primal touch to their combat style.",
         noPotatoSwap: false,
         lootImg: {
-            sprite: "loot-melee-bayonet-woodland.img",
+            sprite: "bone-knife.img",
         },
         worldImg: {
-            sprite: "loot-melee-bayonet-woodland.img",
+            sprite: "bone-knife.img",
         },
     }),
+    
     guthook_woodland: defineMeleeSkin("bayonet", {
         name: "Guthook Woodland",
         rarity: Rarity.Mythic,
