@@ -285,6 +285,7 @@ const _allowedMeleeSkins = [
     // "lasr_swrd",
     // "lasr_swrd_02",
     // "lasr_swrd_03",
+    "katana_living_galaxy",
     // "fist_Checkmate",
 ];
 const _allowedOutfits = [
@@ -432,6 +433,7 @@ const _allowedOutfits = [
     // "outfitPurpleMecha",
     // "outfitRosePetals",
     "outfitViper",
+    "outfitLivingGalaxy",
     // "outfitFullCircle",
     // "outfitPleasingPart",
     // "outfitItJustMist",

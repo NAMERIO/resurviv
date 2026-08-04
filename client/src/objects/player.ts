@@ -112,6 +112,53 @@ function createSprite() {
     return sprite;
 }
 
+const galaxyFragmentShader = `
+varying vec2 vTextureCoord;
+uniform sampler2D uSampler;
+uniform sampler2D uGalaxy;
+uniform float uTime;
+uniform vec2 uWorldOffset;
+uniform vec2 uSampleOffset;
+uniform float uOutline;
+uniform float uOutlineWidth;
+
+void main() {
+    float alpha = texture2D(uSampler, vTextureCoord).a;
+    vec2 drift = vec2(uTime * 2.0, uTime * -1.15);
+    vec2 rawUv = (gl_FragCoord.xy + uWorldOffset + uSampleOffset + drift) / 512.0;
+    // Mirror each repeat so both sides of every boundary sample the same edge.
+    // The inset also keeps linear filtering and mipmaps away from the tile border.
+    vec2 galaxyUv = 1.0 - abs(fract(rawUv * 0.5) * 2.0 - 1.0);
+    galaxyUv = mix(vec2(0.5 / 512.0), vec2(511.5 / 512.0), galaxyUv);
+    vec3 color = texture2D(uGalaxy, galaxyUv).rgb;
+    vec2 edgeStep = vec2(uOutlineWidth);
+    float innerAlpha = texture2D(uSampler, vTextureCoord + vec2(edgeStep.x, 0.0)).a;
+    innerAlpha = min(innerAlpha, texture2D(uSampler, vTextureCoord - vec2(edgeStep.x, 0.0)).a);
+    innerAlpha = min(innerAlpha, texture2D(uSampler, vTextureCoord + vec2(0.0, edgeStep.y)).a);
+    innerAlpha = min(innerAlpha, texture2D(uSampler, vTextureCoord - vec2(0.0, edgeStep.y)).a);
+    vec2 diagonalStep = edgeStep * 0.7071;
+    innerAlpha = min(innerAlpha, texture2D(uSampler, vTextureCoord + diagonalStep).a);
+    innerAlpha = min(innerAlpha, texture2D(uSampler, vTextureCoord - diagonalStep).a);
+    innerAlpha = min(innerAlpha, texture2D(uSampler, vTextureCoord + vec2(diagonalStep.x, -diagonalStep.y)).a);
+    innerAlpha = min(innerAlpha, texture2D(uSampler, vTextureCoord + vec2(-diagonalStep.x, diagonalStep.y)).a);
+    float outlinedInterior = smoothstep(0.2, 0.9, innerAlpha);
+    color *= mix(1.0, outlinedInterior, uOutline);
+    gl_FragColor = vec4(color * alpha, alpha);
+}`;
+
+function createGalaxyFilter(sampleOffset = v2.create(0, 0), outlineWidth = 0) {
+    const texture = PIXI.Texture.from("/img/galaxy-outfit-texture.png");
+    texture.baseTexture.wrapMode = PIXI.WRAP_MODES.REPEAT;
+    return new PIXI.Filter(undefined, galaxyFragmentShader, {
+        uGalaxy: texture,
+        uTime: 0,
+        uWorldOffset: new Float32Array(2),
+        uSampleOffset: new Float32Array([sampleOffset.x, sampleOffset.y]),
+        uOutline: outlineWidth > 0 ? 1 : 0,
+        uOutlineWidth: outlineWidth,
+    });
+}
+
 const desktopZoomRads = Object.values(GameConfig.scopeZoomRadius.desktop);
 const mobileZoomRads = Object.values(GameConfig.scopeZoomRadius.mobile);
 const amongUsVisionFadeDistance = 8;
@@ -264,6 +311,10 @@ export class Player implements AbstractObject {
     slimeSprite = createSprite();
     aimSprite = createSprite();
     frontSprite = createSprite();
+    galaxyFilter: PIXI.Filter | null = null;
+    handGalaxyFilter: PIXI.Filter | null = null;
+    backpackGalaxyFilter: PIXI.Filter | null = null;
+    meleeGalaxyFilter: PIXI.Filter | null = null;
     handLContainer = new PIXI.Container();
     handRContainer = new PIXI.Container();
 
@@ -1119,6 +1170,33 @@ export class Player implements AbstractObject {
         this.m_pos = v2.copy(this.m_netData.m_pos);
         this.m_dir = v2.copy(this.m_netData.m_dir);
         this.layer = this.m_netData.m_layer;
+
+        if (this.galaxyFilter) {
+            this.galaxyFilter.uniforms.uTime += dt;
+            const offset = this.galaxyFilter.uniforms.uWorldOffset as Float32Array;
+            offset[0] = this.m_pos.x * 10;
+            offset[1] = this.m_pos.y * 10;
+        }
+        if (this.meleeGalaxyFilter) {
+            this.meleeGalaxyFilter.uniforms.uTime += dt;
+            const offset = this.meleeGalaxyFilter.uniforms
+                .uWorldOffset as Float32Array;
+            offset[0] = this.m_pos.x * 10;
+            offset[1] = this.m_pos.y * 10;
+        }
+        if (this.backpackGalaxyFilter) {
+            this.backpackGalaxyFilter.uniforms.uTime += dt;
+            const offset = this.backpackGalaxyFilter.uniforms
+                .uWorldOffset as Float32Array;
+            offset[0] = this.m_pos.x * 10;
+            offset[1] = this.m_pos.y * 10;
+        }
+        if (this.handGalaxyFilter) {
+            this.handGalaxyFilter.uniforms.uTime += dt;
+            const offset = this.handGalaxyFilter.uniforms.uWorldOffset as Float32Array;
+            offset[0] = this.m_pos.x * 10;
+            offset[1] = this.m_pos.y * 10;
+        }
         this.downed = this.m_netData.m_downed;
         this.m_rad = this.m_netData.m_scale * GameConfig.player.radius;
         if (localStorage.getItem("remove-alguien-client") === "true") {
@@ -1990,6 +2068,34 @@ export class Player implements AbstractObject {
         const outfitImg = outfitDef.skinImg;
         const bodyScale = this.m_bodyRad / GameConfig.player.radius;
 
+        const galaxySprites = [
+            this.bodySprite,
+            this.footLSprite,
+            this.footRSprite,
+        ];
+        if (outfitDef.galaxyEffect) {
+            this.galaxyFilter ??= createGalaxyFilter();
+            // Match the roughly 11px strokes in the original 78px hand and
+            // 149px backpack SVGs (half of a centered stroke lies inside).
+            this.handGalaxyFilter ??= createGalaxyFilter(v2.create(0, 0), 0.071);
+            this.backpackGalaxyFilter ??= createGalaxyFilter(
+                v2.create(0, 0),
+                0.037,
+            );
+            for (const sprite of galaxySprites) sprite.filters = [this.galaxyFilter];
+            this.handLSprite.filters = [this.handGalaxyFilter];
+            this.handRSprite.filters = [this.handGalaxyFilter];
+            this.backpackSprite.filters = [this.backpackGalaxyFilter];
+        } else {
+            for (const sprite of galaxySprites) sprite.filters = null;
+            this.handLSprite.filters = null;
+            this.handRSprite.filters = null;
+            this.backpackSprite.filters = null;
+            this.galaxyFilter = null;
+            this.handGalaxyFilter = null;
+            this.backpackGalaxyFilter = null;
+        }
+
         this.bodySprite.texture = PIXI.Texture.from(outfitImg.baseSprite);
         this.bodySprite.tint = outfitDef.ghillie
             ? map.getMapDef().biome.colors.playerGhillie
@@ -2070,6 +2176,9 @@ export class Player implements AbstractObject {
         if (meleeHandSprites && !outfitDef.ghillie) {
             setHandSprite(this.handLSprite, meleeHandSprites.spriteL, 0xffffff);
             setHandSprite(this.handRSprite, meleeHandSprites.spriteR, 0xffffff);
+            // A separately equipped fist skin should retain its own artwork.
+            this.handLSprite.filters = null;
+            this.handRSprite.filters = null;
         } else {
             setHandSprite(this.handLSprite, outfitImg.handSprite, handTint);
             setHandSprite(this.handRSprite, outfitImg.handSprite, handTint);
@@ -2215,6 +2324,15 @@ export class Player implements AbstractObject {
             | GunDef
             | MeleeDef
             | ThrowableDef;
+        if (weapDef.type === "melee" && weapDef.galaxyEffect) {
+            // Use the same texture as the outfit, but a distant section so the
+            // held weapon reads as a matching item instead of part of the torso.
+            this.meleeGalaxyFilter ??= createGalaxyFilter(v2.create(173, 271));
+            this.meleeSprite.filters = [this.meleeGalaxyFilter];
+        } else {
+            this.meleeSprite.filters = null;
+            this.meleeGalaxyFilter = null;
+        }
         if (weapDef.type == "gun") {
             this.gunRSprites.setType(
                 this.m_netData.m_activeWeapon,

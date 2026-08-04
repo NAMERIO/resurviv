@@ -38,6 +38,8 @@ export interface OutfitDef {
     baseScale?: number;
     ghillie?: boolean;
     moveEmitter?: string;
+    /** Render a procedural, world-shifting star field inside the player sprites. */
+    galaxyEffect?: boolean;
 }
 
 export function getOutfitLootImg(def: OutfitDef): OutfitDef["lootImg"] {
@@ -3486,6 +3488,28 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-king-galaxy.img",
             frontSpritePos: { x: 0, y: 0 },
             frontSprite: "player-accessory-king-galaxy.img",
+        },
+        lootImg: {
+            sprite: "loot-king-galaxy-outfit.img",
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitLivingGalaxy: defineOutfitSkin("outfitBase", {
+        name: "Living Galaxy",
+        noDropOnDeath: true,
+        rarity: 5,
+        lore: "A window into a sky that never stands still.",
+        galaxyEffect: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-king-galaxy.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-king-galaxy.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-king-galaxy.img",
         },
         lootImg: {
             sprite: "loot-king-galaxy-outfit.img",

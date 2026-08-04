@@ -78,6 +78,8 @@ export interface MeleeDef {
         x: number;
         y: number;
     };
+    /** Fill the equipped melee silhouette with the shared moving galaxy material. */
+    galaxyEffect?: boolean;
 }
 
 export interface Img {
@@ -2834,6 +2836,21 @@ const SkinDefs: Record<string, MeleeDef> = {
         lootImg: { sprite: "loot-melee-katana-orchid.img" },
         worldImg: {
             sprite: "loot-melee-katana-orchid.img",
+        },
+    }),
+    katana_living_galaxy: defineMeleeSkin("katana", {
+        name: "Living Galaxy Katana",
+        rarity: 5,
+        lore: "Its edge cuts across the night sky.",
+        noDropOnDeath: true,
+        galaxyEffect: true,
+        lootImg: {
+            sprite: "loot-melee-katana-orchid.img",
+            tint: 0x9b6cff,
+        },
+        worldImg: {
+            sprite: "loot-melee-katana.img",
+            tint: 0xffffff,
         },
     }),
     sledgehammer: defineMeleeSkin("stonehammer", {
