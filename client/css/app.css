@@ -15497,7 +15497,7 @@ input [type="image"]:focus {
 }
 
 #iap-modal .iap-screen .iap-container .iap-gp {
-  height: 420px;
+  height: 520px;
   width: 300px;
   flex: 0 0 300px;
   position: relative;
@@ -21461,12 +21461,17 @@ div.roulette {
 #desktop-downloads {
   box-sizing: border-box;
   margin-top: 12px;
+  width: 300px;
   padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 7px;
-  background: rgba(17, 24, 32, 0.82);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.5);
   text-align: center;
+}
+
+.shop-earn-gp-card #free-gp-offer {
+  margin: 12px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  width: 100%;
 }
 
 .desktop-downloads-title {
@@ -21490,56 +21495,44 @@ div.roulette {
   gap: 6px;
   justify-content: center;
   min-width: 0;
-  padding: 8px 5px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 5px;
-  background: linear-gradient(#536171, #3b4652);
-  color: #fff;
-  font-size: 13px;
+  padding: 9px 5px;
+  border: 0;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
   font-weight: 700;
   line-height: 1.05;
   text-decoration: none;
-  transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
-}
-
-.desktop-download-button small {
-  display: block;
-  margin-bottom: 2px;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 8px;
-  font-weight: 400;
-  white-space: nowrap;
+  transition: filter 120ms ease;
 }
 
 .desktop-download-icon {
-  flex: 0 0 20px;
-  width: 20px;
-  height: 20px;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
   fill: currentColor;
-}
-
-.desktop-download-windows {
-  background: linear-gradient(#168eea, #0873c2);
-}
-
-.desktop-download-macos {
-  background: linear-gradient(#68727d, #424a53);
-}
-
-.desktop-download-linux {
-  background: linear-gradient(#e79528, #bd6716);
 }
 
 .desktop-download-button:hover,
 .desktop-download-button:focus {
-  color: #fff;
-  filter: brightness(1.12);
-  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.32);
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+  filter: brightness(0.7);
   outline: none;
-  transform: translateY(-1px);
 }
 
 .desktop-download-button:active {
-  box-shadow: none;
-  transform: translateY(1px);
+  filter: brightness(0.55);
+}
+
+#home-social-links {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+#home-social-links .btn-social {
+  margin: 0;
 }
