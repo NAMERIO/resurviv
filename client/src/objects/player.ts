@@ -2077,10 +2077,10 @@ export class Player implements AbstractObject {
             this.galaxyFilter ??= createGalaxyFilter();
             // Match the roughly 11px strokes in the original 78px hand and
             // 149px backpack SVGs (half of a centered stroke lies inside).
-            this.handGalaxyFilter ??= createGalaxyFilter(v2.create(0, 0), 0.071);
+            this.handGalaxyFilter ??= createGalaxyFilter(v2.create(0, 0), 0.11);
             this.backpackGalaxyFilter ??= createGalaxyFilter(
                 v2.create(0, 0),
-                0.037,
+                0.045,
             );
             for (const sprite of galaxySprites) sprite.filters = [this.galaxyFilter];
             this.handLSprite.filters = [this.handGalaxyFilter];
