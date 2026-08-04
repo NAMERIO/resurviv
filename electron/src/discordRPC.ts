@@ -8,7 +8,6 @@ const DISCORD_CLIENT_ID = "1365016387374026772";
 export interface PresenceData {
     region?: string;
     kills?: number;
-    matchStartTimestamp?: number;
     gameMode?: string;
     playersAlive?: number;
     playersTotal?: number;
@@ -18,6 +17,7 @@ let rpcClient: InstanceType<typeof Client> | null = null;
 let connected = false;
 let currentPresence: PresenceData = {};
 let homePlayerName = "Guest";
+const sessionStartTimestamp = new Date();
 
 export async function initDiscordRPC(): Promise<void> {
     register(DISCORD_CLIENT_ID);
@@ -60,12 +60,9 @@ export function updateMatchPresence(data: PresenceData): void {
         largeImageText: "Resurviv",
         smallImageKey: "loadout_kill_icon",
         smallImageText: `${currentPresence.kills ?? 0} Kills`,
+        startTimestamp: sessionStartTimestamp,
         instance: false,
     };
-
-    if (currentPresence.matchStartTimestamp) {
-        activity.startTimestamp = new Date(currentPresence.matchStartTimestamp);
-    }
 
     if (currentPresence.playersAlive != null && currentPresence.playersTotal != null) {
         activity.partySize = currentPresence.playersAlive;
@@ -91,6 +88,7 @@ export function setIdlePresence(playerName?: string): void {
             state: homePlayerName,
             largeImageKey: "icon_app",
             largeImageText: "Resurviv",
+            startTimestamp: sessionStartTimestamp,
             instance: false,
         })
         .catch((err: unknown) => {

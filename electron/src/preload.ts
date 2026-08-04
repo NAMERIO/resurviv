@@ -3,7 +3,6 @@ const { contextBridge, ipcRenderer } = require("electron") as typeof import("ele
 interface RendererPresenceData {
     region?: string;
     kills?: number;
-    matchStartTimestamp?: number;
     gameMode?: string;
     playersAlive?: number;
     playersTotal?: number;

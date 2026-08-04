@@ -1,7 +1,6 @@
 interface DiscordRPCPresenceData {
     region?: string;
     kills?: number;
-    matchStartTimestamp?: number;
     gameMode?: string;
     playersAlive?: number;
     playersTotal?: number;

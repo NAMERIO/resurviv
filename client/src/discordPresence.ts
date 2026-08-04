@@ -18,7 +18,6 @@ export const discordPresence = {
         window.discordRPC!.matchStart({
             ...data,
             kills: data.kills ?? 0,
-            matchStartTimestamp: Date.now(),
         });
     },
     updateKills(kills: number): void {

@@ -603,6 +603,8 @@ export class Game {
     }
 
     free() {
+        discordPresence.matchEnd();
+
         if (this.m_ws) {
             this.m_ws.onmessage = function () {};
             this.m_ws.close();

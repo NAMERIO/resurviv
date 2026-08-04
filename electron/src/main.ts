@@ -57,10 +57,7 @@ function registerIPC(): void {
 
     ipcMain.on("discord:match-start", (_event: IpcMainEvent, data: PresenceData) => {
         console.log("[IPC] match-start", data);
-        updateMatchPresence({
-            ...data,
-            matchStartTimestamp: data.matchStartTimestamp ?? Date.now(),
-        });
+        updateMatchPresence(data);
     });
 
     ipcMain.on(
