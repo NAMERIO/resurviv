@@ -442,6 +442,7 @@ const _allowedOutfits = [
     // "outfitMagmatic",
     // "outfitPurpleMecha",
     // "outfitRosePetals",
+    " outfitBase",
     "outfitViper",
     // "outfitLivingGalaxy",
     // "outfitFullCircle",
