@@ -159,6 +159,7 @@ export class Npc extends BaseGameObject {
     private cannonReady = false;
     private cannonTarget?: Player;
     private cannonProjectile?: Projectile;
+    private driverCannonCooldown = 0;
     private biteTicker = 0;
     private phaseTicker = 0;
     private enteredSecondStage = false;
@@ -200,7 +201,8 @@ export class Npc extends BaseGameObject {
         if (this.dead) return;
 
         if (this.type === "motherShip") {
-            this.updateMotherShip(dt);
+            if (this.driver) this.updateDrivenMotherShip(dt);
+            else this.updateMotherShip(dt);
         } else if (this.type === "skitter") {
             this.updateSkitter(dt);
         } else if (NpcDefs[this.type].vehicle && !this.driver) {
@@ -220,6 +222,32 @@ export class Npc extends BaseGameObject {
     ) {
         const vehicle = NpcDefs[this.type].vehicle;
         if (!vehicle || !this.driver) return v2.create(0, 0);
+
+        if (this.type === "motherShip") {
+            const movement = v2.create(
+                Number(input.steerRight) - Number(input.steerLeft),
+                Number(input.accelerate) - Number(input.brake),
+            );
+            const moving = movement.x !== 0 || movement.y !== 0;
+            this.speed = moving ? vehicle.maxForwardSpeed : 0;
+            const aimDir = this.driver.dirNew;
+            this.ori = Math.atan2(aimDir.y, aimDir.x);
+            if (this.targetActive) {
+                const targetDistance = math.clamp(
+                    this.driver.toMouseLen,
+                    2,
+                    cannonRange,
+                );
+                this.targetPos = v2.add(this.pos, v2.mul(aimDir, targetDistance));
+                this.speed = 0;
+                this.travelDir = v2.create(0, 0);
+                this.setPartDirty();
+                return this.travelDir;
+            }
+            this.travelDir = moving ? v2.normalize(movement) : v2.create(0, 0);
+            this.setPartDirty();
+            return this.travelDir;
+        }
 
         this.shiftTicker = math.max(0, this.shiftTicker - dt);
         const currentGear = getVehicleGear(vehicle, math.max(this.speed, 0));
@@ -367,12 +395,20 @@ export class Npc extends BaseGameObject {
             this.dismount(player);
             return;
         }
-        if (this.driver || player.vehicle || player.dead || player.downed) return;
+        if (
+            this.driver ||
+            player.vehicle ||
+            player.dead ||
+            player.downed ||
+            (vehicle.developerOnly && !player.canUseDeveloper)
+        ) {
+            return;
+        }
 
         this.driver = player;
         player.vehicle = this;
         player.cancelAction();
-        player.weaponManager.cancelVehicleCombat();
+        if (!vehicle.allowDriverWeapons) player.weaponManager.cancelVehicleCombat();
         v2.set(player.pos, this.pos);
         this.speed = 0;
         this.driftIntensity = 0;
@@ -382,6 +418,7 @@ export class Npc extends BaseGameObject {
         this.shiftTicker = 0;
         this.reverseEngageTicker = 0;
         this.handbrakeEngaged = false;
+        if (this.type === "motherShip") this.clearCannonTarget();
         this.setState("drive");
         player.setPartDirty();
         player.game.grid.updateObject(player);
@@ -390,6 +427,7 @@ export class Npc extends BaseGameObject {
     dismount(player: Player, reposition = true) {
         if (this.driver !== player) return;
 
+        if (this.type === "motherShip") this.clearCannonTarget();
         this.driver = undefined;
         player.vehicle = undefined;
         player.vehicleBrake = false;
@@ -400,7 +438,7 @@ export class Npc extends BaseGameObject {
         this.shiftTicker = 0;
         this.reverseEngageTicker = 0;
         this.handbrakeEngaged = false;
-        this.setState("idle");
+        this.setState(this.type === "motherShip" ? "base" : "idle");
         this.setPartDirty();
 
         if (reposition) {
@@ -424,6 +462,7 @@ export class Npc extends BaseGameObject {
         this.updateCollider();
         this.setPartDirty();
         this.game.grid.updateObject(this);
+        this.mapIndicator?.updatePosition(this.pos);
     }
 
     syncDrivenCollider(pos: Vec2) {
@@ -511,6 +550,40 @@ export class Npc extends BaseGameObject {
             this.cannonReady = true;
             this.acquireCannonTarget();
         }
+    }
+
+    private updateDrivenMotherShip(dt: number) {
+        this.driverCannonCooldown = math.max(0, this.driverCannonCooldown - dt);
+        if (!this.targetActive) return;
+
+        this.cannonTicker -= dt;
+        if (this.cannonTicker > 0) return;
+
+        this.cannonProjectile = this.fireCannon(this.targetPos, 0);
+        this.targetActive = false;
+        this.driverCannonCooldown = cannonChargeTime;
+        this.setState("drive");
+        this.setPartDirty();
+    }
+
+    fireMountedCannon(dir: Vec2, distance: number) {
+        const vehicle = NpcDefs[this.type].vehicle;
+        if (
+            !this.driver ||
+            !vehicle?.mountedCannon ||
+            this.driverCannonCooldown > 0 ||
+            this.targetActive
+        ) {
+            return;
+        }
+
+        const targetDistance = math.clamp(distance, 2, cannonRange);
+        this.targetPos = v2.add(this.pos, v2.mul(v2.normalizeSafe(dir), targetDistance));
+        this.ori = Math.atan2(dir.y, dir.x);
+        this.targetActive = true;
+        this.cannonTicker = cannonChargeTime;
+        this.setState("cannon");
+        this.setPartDirty();
     }
 
     private getMotherShipMoveTarget() {

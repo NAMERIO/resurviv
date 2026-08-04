@@ -759,6 +759,7 @@ export class UiManager2 {
         map: Map,
         inputBinds: InputBinds,
         completedAmongUsTasks?: ReadonlySet<AmongUsTaskId>,
+        canUseDeveloper = false,
     ) {
         const state = this.newState;
 
@@ -918,6 +919,8 @@ export class UiManager2 {
                         !npc.active ||
                         npc.dead ||
                         !NpcDefs[npc.type]?.vehicle ||
+                        (NpcDefs[npc.type].vehicle?.developerOnly &&
+                            !canUseDeveloper) ||
                         npc.state === "drive" ||
                         !util.sameLayer(npc.layer, activePlayer.layer)
                     ) {

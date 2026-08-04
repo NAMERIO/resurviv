@@ -14,6 +14,16 @@ export interface VehicleDef {
     braking: number;
     coastingDrag: number;
     interactionRad: number;
+    /** Vehicle ignores ground, obstacle, NPC, and player collisions while driven. */
+    airborne?: boolean;
+    /** Only authenticated developer accounts may enter this vehicle. */
+    developerOnly?: boolean;
+    /** Driver can aim and use their equipped weapons while mounted. */
+    allowDriverWeapons?: boolean;
+    /** Uses the mothership's charged cannon instead of the player's weapons. */
+    mountedCannon?: boolean;
+    /** Whether to display the car speedometer HUD. */
+    showHud?: boolean;
     transmission: {
         gearSpeeds: number[];
         highSpeedAccelerationMultiplier: number;
@@ -113,6 +123,37 @@ function defineSportsCar(name: string, sprite: string, collision: Collider): Veh
 }
 
 export const VehicleDefs: Record<string, VehicleDef> = {
+    motherShip: {
+        ...sportsCarBase,
+        name: "Alien Mothership",
+        sprite: "map-spaceship-01.img",
+        scale: 0.5,
+        collision: collider.createCircle(v2.create(0, 0), 12),
+        maxForwardSpeed: 12,
+        maxReverseSpeed: 12,
+        acceleration: 11,
+        braking: 20,
+        coastingDrag: 2,
+        interactionRad: 3,
+        airborne: true,
+        developerOnly: true,
+        mountedCannon: true,
+        showHud: false,
+        transmission: {
+            ...sportsCarBase.transmission,
+            gearSpeeds: [6, 12, 18, 24, 30],
+        },
+        impact: { minBreakSpeed: Number.POSITIVE_INFINITY },
+        sound: {
+            start: "none",
+            loop: "mothership_mov_01",
+            stop: "none",
+            brake: "none",
+            drift: "none",
+            shift: "none",
+            burble: "none",
+        },
+    },
     sportsCar01: defineSportsCar(
         "Sports Car 01",
         "map-vehicle-sports-car-01.img",

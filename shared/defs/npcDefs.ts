@@ -120,6 +120,8 @@ export const NpcDefs: Record<string, NpcDef> = {
             { name: "base", animation: "base_motherShip" },
             { name: "fusion", animation: "fusion_motherShip" },
             { name: "cannon", animation: "load_motherShip" },
+            { name: "idle", animation: "base_motherShip" },
+            { name: "drive", animation: "base_motherShip" },
         ],
         movementSpeed: 14,
         movementPattern: "circle",
@@ -146,6 +148,7 @@ export const NpcDefs: Record<string, NpcDef> = {
             tint: 0xffffff,
             zIdx: 10,
         },
+        vehicle: VehicleDefs.motherShip,
     },
     skitter: {
         type: "npc",

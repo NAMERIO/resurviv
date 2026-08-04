@@ -245,7 +245,7 @@ export class Npc implements AbstractObject {
         if (!def) return;
         const isVehicle = !!def.vehicle;
 
-        if (isNew && !isVehicle) {
+        if (isNew && (!isVehicle || this.type === "motherShip")) {
             ctx.resourceManager?.loadAtlas("contact");
             this.targetSprite.texture = PIXI.Texture.from("map-target.img");
         }
@@ -350,7 +350,7 @@ export class Npc implements AbstractObject {
         const animation = SpriteAnimDefs[animationName];
         const sprites = this.dead
             ? [def.img.residue]
-            : def.vehicle
+            : def.vehicle && this.type !== "motherShip"
               ? [def.img.sprite]
               : animation.sprites;
         this.sprite.stop();
@@ -400,7 +400,16 @@ export class Npc implements AbstractObject {
         if (!def) return;
 
         if (this.type === "motherShip") {
-            if (this.state === "cannon" && this.targetActive) {
+            if (this.state === "drive") {
+                const locallyDriven =
+                    activePlayer.m_netData.m_vehicleId === this.__id &&
+                    !activePlayer.isNew;
+                this.visualPos = locallyDriven
+                    ? v2.copy(activePlayer.m_visualPos)
+                    : v2.copy(this.pos);
+                this.visualRot = this.rot;
+                this.vehicleVisualRot = this.rot;
+            } else if (this.state === "cannon" && this.targetActive) {
                 const angleDiff = math.angleDiff(this.visualRot, this.rot);
                 const maxTurn = motherShipAimTurnSpeed * dt;
                 this.visualRot += math.clamp(angleDiff, -maxTurn, maxTurn);

@@ -880,10 +880,6 @@ export class Game {
                 this.m_inputBinds.isBindPressed(Input.Fire) || this.m_touch.shotDetected;
             inputMsg.shootHold =
                 this.m_inputBinds.isBindDown(Input.Fire) || this.m_touch.shotDetected;
-            if (this.m_activePlayer.m_localData.m_vehicleId !== 0) {
-                inputMsg.shootStart = false;
-                inputMsg.shootHold = false;
-            }
             inputMsg.portrait =
                 this.m_camera.m_screenWidth < this.m_camera.m_screenHeight;
             const checkInputs = [
@@ -1266,6 +1262,7 @@ export class Game {
             this.m_map,
             this.m_inputBinds,
             this.m_amongUsCompletedTasks,
+            IS_DEV || this.canUseDeveloper(),
         );
         if (this.editor?.enabled && this.editor.toolParams.explosionDecalBrush) {
             this.m_emoteBarn.inputReset();

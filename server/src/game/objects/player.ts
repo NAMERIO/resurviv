@@ -3743,6 +3743,9 @@ export class Player extends BaseGameObject {
         const movementCollisionRad = this.vehicle
             ? this.vehicle.collisionRadius()
             : this.rad;
+        const airborneVehicle = Boolean(
+            this.vehicle && NpcDefs[this.vehicle.type].vehicle?.airborne,
+        );
 
         let steps: number;
         if (this.vehicle) {
@@ -3788,7 +3791,11 @@ export class Player extends BaseGameObject {
             v2.set(this.pos, v2.add(this.pos, v2.mul(movement, speedToAdd)));
             syncSkinObstacles();
 
-            for (let j = 0; j < objs.length && !this.debug.noClip; j++) {
+            for (
+                let j = 0;
+                j < objs.length && !this.debug.noClip && !airborneVehicle;
+                j++
+            ) {
                 const obj = objs[j];
                 let collision:
                     | ReturnType<typeof coldet.intersectCircleCircle>
@@ -3845,7 +3852,9 @@ export class Player extends BaseGameObject {
 
             for (
                 let j = 0;
-                j < this.game.playerBarn.livingPlayers.length && !this.debug.noClip;
+                j < this.game.playerBarn.livingPlayers.length &&
+                !this.debug.noClip &&
+                !airborneVehicle;
                 j++
             ) {
                 const obj = this.game.playerBarn.livingPlayers[j];
@@ -4246,7 +4255,8 @@ export class Player extends BaseGameObject {
         const originalLayer = this.layer;
         const rot = Math.atan2(this.dir.y, this.dir.x);
         const ori = math.radToOri(rot);
-        const stair = this.checkStairs(objs!, this.rad);
+        if (airborneVehicle) this.layer = 0;
+        const stair = airborneVehicle ? undefined : this.checkStairs(objs!, this.rad);
         if (stair) {
             if (ori === stair.downOri) {
                 this.aimLayer = 3;
@@ -4869,6 +4879,7 @@ export class Player extends BaseGameObject {
 
     damage(params: DamageParams) {
         if (this.debug.godMode) return;
+        if (this.vehicle && NpcDefs[this.vehicle.type].vehicle?.airborne) return;
         if (this._health < 0) this._health = 0;
         if (this.dead) return;
         if (this.downed && this.downedDamageTicker > 0) return;
@@ -6055,9 +6066,17 @@ export class Player extends BaseGameObject {
         }
         this.toMouseLen = msg.toMouseLen;
 
-        this.shootHold = msg.shootHold && !this.vehicle;
+        const vehicleAllowsWeapons = Boolean(
+            this.vehicle && NpcDefs[this.vehicle.type].vehicle?.allowDriverWeapons,
+        );
+        const vehicleMountedCannon = Boolean(
+            this.vehicle && NpcDefs[this.vehicle.type].vehicle?.mountedCannon,
+        );
+        this.shootHold = msg.shootHold && (!this.vehicle || vehicleAllowsWeapons);
 
-        if (msg.shootStart && !this.vehicle) {
+        if (msg.shootStart && vehicleMountedCannon) {
+            this.vehicle?.fireMountedCannon(this.dirNew, msg.toMouseLen);
+        } else if (msg.shootStart && (!this.vehicle || vehicleAllowsWeapons)) {
             this.shootStart = true;
         }
 
@@ -6378,6 +6397,7 @@ export class Player extends BaseGameObject {
                 !vehicle ||
                 object.dead ||
                 object.driver ||
+                (vehicle.developerOnly && !this.canUseDeveloper) ||
                 !util.sameLayer(object.layer, this.layer)
             ) {
                 continue;

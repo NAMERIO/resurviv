@@ -1,5 +1,6 @@
 import { AmongUsRoleDefs } from "../../../shared/defs/amongUsRoleDefs";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
+import { NpcDefs } from "../../../shared/defs/npcDefs";
 import { DamageStreakProperties } from "../../../shared/defs/gameObjects/damageStreakDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
 import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
@@ -316,7 +317,10 @@ export class WeaponManager {
         if (player.downed) {
             return;
         }
-        if (player.vehicle) {
+        if (
+            player.vehicle &&
+            !NpcDefs[player.vehicle.type].vehicle?.allowDriverWeapons
+        ) {
             this.cancelVehicleCombat();
             return;
         }
@@ -866,7 +870,12 @@ export class WeaponManager {
     }
 
     fireWeapon(offHand: boolean, forceFire?: boolean) {
-        if (this.player.vehicle) return;
+        if (
+            this.player.vehicle &&
+            !NpcDefs[this.player.vehicle.type].vehicle?.allowDriverWeapons
+        ) {
+            return;
+        }
         const itemDef = GameObjectDefs[this.activeWeapon] as GunDef;
 
         const weapon = this.weapons[this.curWeapIdx];

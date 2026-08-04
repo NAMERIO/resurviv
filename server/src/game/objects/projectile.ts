@@ -1,5 +1,6 @@
 import { GameObjectDefs } from "../../../../shared/defs/gameObjectDefs";
 import type { ThrowableDef } from "../../../../shared/defs/gameObjects/throwableDefs";
+import { NpcDefs } from "../../../../shared/defs/npcDefs";
 import { DamageType, GameConfig } from "../../../../shared/gameConfig";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
 import { type AABB, coldet } from "../../../../shared/utils/coldet";
@@ -349,6 +350,10 @@ export class Projectile extends BaseGameObject {
                 obj.__type === ObjectType.Player &&
                 def.playerCollision &&
                 !obj.dead &&
+                !(
+                    obj.vehicle &&
+                    NpcDefs[obj.vehicle.type].vehicle?.airborne
+                ) &&
                 util.sameLayer(this.layer, obj.layer) &&
                 obj.__id !== this.playerId
             ) {

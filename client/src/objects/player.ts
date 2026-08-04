@@ -1848,8 +1848,8 @@ export class Player implements AbstractObject {
         this.container.position.set(screenPos.x, screenPos.y);
         this.container.scale.set(screenScale, screenScale);
         const inVehicle = this.m_netData.m_vehicleId !== 0;
-        this.container.visible = !this.m_netData.m_dead && !inVehicle;
-        this.bodyContainer.visible = !this.propDisguiseActive;
+        this.container.visible = !this.m_netData.m_dead;
+        this.bodyContainer.visible = !this.propDisguiseActive && !inVehicle;
         if (inVehicle) {
             this.auraContainer.visible = false;
         }

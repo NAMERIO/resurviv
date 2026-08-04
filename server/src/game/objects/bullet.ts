@@ -6,7 +6,7 @@ import {
 import { PerkProperties } from "../../../../shared/defs/gameObjects/perkDefs";
 import { MapObjectDefs } from "../../../../shared/defs/mapObjectDefs";
 import type { ObstacleDef } from "../../../../shared/defs/mapObjectsTyping";
-import type { NpcDef } from "../../../../shared/defs/npcDefs";
+import { type NpcDef, NpcDefs } from "../../../../shared/defs/npcDefs";
 import { type DamageType, GameConfig } from "../../../../shared/gameConfig";
 import { Constants } from "../../../../shared/net/net";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
@@ -498,6 +498,12 @@ export class Bullet {
                     });
                 }
             } else if (obj.__type === ObjectType.Player) {
+                if (
+                    obj.vehicle &&
+                    NpcDefs[obj.vehicle.type].vehicle?.airborne
+                ) {
+                    continue;
+                }
                 if (
                     !(
                         !obj.dead &&

@@ -15,8 +15,8 @@ export class VehicleHud {
     private visible = false;
     private displayedSpeed = 0;
 
-    update(dt: number, vehicleId: number, gameSpeed: number) {
-        const shouldShow = vehicleId !== 0;
+    update(dt: number, vehicleId: number, gameSpeed: number, showHud = true) {
+        const shouldShow = vehicleId !== 0 && showHud;
         if (shouldShow !== this.visible) {
             this.visible = shouldShow;
             this.root.classList.toggle("is-visible", shouldShow);

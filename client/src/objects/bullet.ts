@@ -294,6 +294,7 @@ export class BulletBarn {
                     if (
                         npc.active &&
                         !npc.dead &&
+                        !NpcDefs[npc.type].vehicle?.airborne &&
                         util.sameLayer(npc.layer, b.layer) &&
                         NpcDefs[npc.type].height >= GameConfig.bullet.height &&
                         (b.reflectCount <= 0 || npc.__id !== b.reflectObjId)
@@ -316,6 +317,19 @@ export class BulletBarn {
                 }
                 for (let C = 0; C < players.length; C++) {
                     const player = players[C];
+                    const playerVehicle = player.m_netData.m_vehicleId
+                        ? npcs.find(
+                              (npc) =>
+                                  npc.active &&
+                                  npc.__id === player.m_netData.m_vehicleId,
+                          )
+                        : undefined;
+                    if (
+                        playerVehicle &&
+                        NpcDefs[playerVehicle.type].vehicle?.airborne
+                    ) {
+                        continue;
+                    }
                     if (
                         player.active &&
                         !player.m_netData.m_dead &&

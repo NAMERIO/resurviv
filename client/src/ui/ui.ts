@@ -1312,10 +1312,14 @@ export class UiManager {
         completedAmongUsTasks: ReadonlySet<AmongUsTaskId>,
     ) {
         const localPlayer = player;
+        const activeVehicle = map.m_npcPool
+            .m_getPool()
+            .find((npc) => npc.active && npc.__id === localPlayer.m_localData.m_vehicleId);
         this.vehicleHud.update(
             dt,
             localPlayer.m_localData.m_vehicleId,
             localPlayer.m_localData.m_vehicleSpeed,
+            activeVehicle?.type !== "motherShip",
         );
 
         if (this.weapsDirty) {
