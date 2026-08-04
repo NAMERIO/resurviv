@@ -8,6 +8,7 @@ interface DiscordRPCPresenceData {
 }
 
 interface DiscordRPCBridge {
+    setHome(playerName: string): void;
     matchStart(data: DiscordRPCPresenceData): void;
     matchUpdate(data: Partial<DiscordRPCPresenceData>): void;
     matchEnd(): void;

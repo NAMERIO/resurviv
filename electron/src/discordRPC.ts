@@ -17,6 +17,7 @@ export interface PresenceData {
 let rpcClient: InstanceType<typeof Client> | null = null;
 let connected = false;
 let currentPresence: PresenceData = {};
+let homePlayerName = "Guest";
 
 export async function initDiscordRPC(): Promise<void> {
     register(DISCORD_CLIENT_ID);
@@ -76,7 +77,10 @@ export function updateMatchPresence(data: PresenceData): void {
     });
 }
 
-export function setIdlePresence(): void {
+export function setIdlePresence(playerName?: string): void {
+    const cleanName = playerName?.trim();
+    if (cleanName) homePlayerName = cleanName;
+
     if (!connected || !rpcClient) return;
 
     currentPresence = {};
@@ -84,7 +88,7 @@ export function setIdlePresence(): void {
     rpcClient
         .setActivity({
             details: "Home Page",
-            state: "Choosing a game mode",
+            state: homePlayerName,
             largeImageKey: "icon_app",
             largeImageText: "Resurviv",
             instance: false,

@@ -32,6 +32,7 @@ import { AudioManager } from "./audioManager";
 import { ConfigManager, type ConfigType } from "./config";
 import { crosshair } from "./crosshair";
 import { device } from "./device";
+import { discordPresence } from "./discordPresence";
 import { errorLogManager } from "./errorLogs";
 import { Game } from "./game";
 import { helpers } from "./helpers";
@@ -1166,6 +1167,7 @@ export class Application {
     setConfigFromDOM() {
         const playerName = helpers.sanitizeNameInput(this.nameInput.val() as string);
         this.config.set("playerName", playerName);
+        discordPresence.setHome(playerName);
         const region = this.serverSelect.find(":selected").val();
         this.config.set("region", region as string);
         const gameModeIdx = this.getSelectedGameModeIdx();
@@ -1180,10 +1182,13 @@ export class Application {
                 if (!username) return;
                 this.config.set("playerName", username);
                 this.nameInput.val(username);
+                discordPresence.setHome(username);
             });
         }
 
-        this.nameInput.val(this.config.get("playerName")!);
+        const playerName = this.config.get("playerName")!;
+        this.nameInput.val(playerName);
+        discordPresence.setHome(playerName);
         this.serverSelect.find("option").each((_i, ele) => {
             const spellSyncLang = SDK.isSpellSync && window.spellSync.language;
             const configRegion = this.config.get("region");

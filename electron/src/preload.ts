@@ -10,6 +10,10 @@ interface RendererPresenceData {
 }
 
 contextBridge.exposeInMainWorld("discordRPC", {
+    setHome(playerName: string) {
+        ipcRenderer.send("discord:home", playerName);
+    },
+
     matchStart(data: RendererPresenceData) {
         ipcRenderer.send("discord:match-start", data);
     },

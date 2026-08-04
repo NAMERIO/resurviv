@@ -3,6 +3,10 @@ function isElectron(): boolean {
 }
 
 export const discordPresence = {
+    setHome(playerName: string): void {
+        if (!isElectron()) return;
+        window.discordRPC!.setHome(playerName);
+    },
     matchStart(data: {
         region?: string;
         gameMode?: string;

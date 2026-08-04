@@ -50,6 +50,10 @@ function createWindow(): void {
 }
 
 function registerIPC(): void {
+    ipcMain.on("discord:home", (_event: IpcMainEvent, playerName: string) => {
+        setIdlePresence(playerName);
+    });
+
     ipcMain.on("discord:match-start", (_event: IpcMainEvent, data: PresenceData) => {
         console.log("[IPC] match-start", data);
         updateMatchPresence({
