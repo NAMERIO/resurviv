@@ -80,5 +80,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: installers/*
-          generate_release_notes: true
+          body: |
+            ## Download Resurviv
+
+            - [Windows (.exe)](https://github.com/NAMERIO/resurviv/releases/latest/download/Resurviv-Windows.exe)
+            - [macOS (.dmg)](https://github.com/NAMERIO/resurviv/releases/latest/download/Resurviv-macOS.dmg)
+            - [Linux (.AppImage)](https://github.com/NAMERIO/resurviv/releases/latest/download/Resurviv-Linux.AppImage)
           make_latest: true
