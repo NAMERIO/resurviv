@@ -17,16 +17,16 @@ jobs:
         include:
           - platform: Windows
             os: windows-latest
-            command: pnpm run package -- --win --x64
-            asset: Survev-Windows.exe
+            command: pnpm run package:win
+            asset: Resurviv-Windows.exe
           - platform: macOS
             os: macos-latest
-            command: pnpm run package -- --mac --universal
-            asset: Survev-macOS.dmg
+            command: pnpm run package:mac
+            asset: Resurviv-macOS.dmg
           - platform: Linux
             os: ubuntu-latest
-            command: pnpm run package -- --linux --x64
-            asset: Survev-Linux.AppImage
+            command: pnpm run package:linux
+            asset: Resurviv-Linux.AppImage
     runs-on: ${{ matrix.os }}
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: "false"
@@ -43,7 +43,7 @@ jobs:
         uses: pnpm/action-setup@v4
 
       - name: Install Electron dependencies
-        run: pnpm install --frozen-lockfile --filter survev-desktop
+        run: pnpm install --frozen-lockfile --filter resurviv-desktop
 
       - name: Build installer
         run: ${{ matrix.command }}

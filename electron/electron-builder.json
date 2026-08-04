@@ -1,23 +1,25 @@
 {
-  "appId": "com.survev.desktop",
-  "productName": "Survev",
+  "appId": "biz.resurviv.desktop",
+  "productName": "Resurviv",
+  "npmRebuild": false,
   "directories": {
     "output": "release"
   },
   "files": ["dist/**/*", "node_modules/**/*"],
+  "extraResources": [{ "from": "assets", "to": "assets" }],
   "win": {
     "target": "nsis",
-    "icon": "../client/public/img/favicon.png",
-    "artifactName": "Survev-Windows.${ext}"
+    "icon": "assets/tree-01.png",
+    "artifactName": "Resurviv-Windows.${ext}"
   },
   "mac": {
     "target": "dmg",
-    "icon": "../client/public/img/favicon.png",
-    "artifactName": "Survev-macOS.${ext}"
+    "icon": "assets/tree-01.png",
+    "artifactName": "Resurviv-macOS.${ext}"
   },
   "linux": {
     "target": "AppImage",
-    "icon": "../client/public/img/favicon.png",
-    "artifactName": "Survev-Linux.${ext}"
+    "icon": "assets/tree-01.png",
+    "artifactName": "Resurviv-Linux.${ext}"
   }
 }

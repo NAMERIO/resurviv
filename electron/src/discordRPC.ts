@@ -56,7 +56,7 @@ export function updateMatchPresence(data: PresenceData): void {
         details,
         state,
         largeImageKey: "icon_app",
-        largeImageText: "Survev",
+        largeImageText: "Resurviv",
         smallImageKey: "loadout_kill_icon",
         smallImageText: `${currentPresence.kills ?? 0} Kills`,
         instance: false,
@@ -86,7 +86,7 @@ export function setIdlePresence(): void {
             details: "Home Page",
             state: "Choosing a game mode",
             largeImageKey: "icon_app",
-            largeImageText: "Survev",
+            largeImageText: "Resurviv",
             instance: false,
         })
         .catch((err: unknown) => {
@@ -110,7 +110,7 @@ function buildDetails(p: PresenceData): string {
     const parts: string[] = [];
     if (p.gameMode) parts.push(p.gameMode);
     if (p.region) parts.push(`Region: ${p.region.toUpperCase()}`);
-    return parts.length > 0 ? parts.join(" | ") : "Playing Survev";
+    return parts.length > 0 ? parts.join(" | ") : "Playing Resurviv";
 }
 
 function buildState(p: PresenceData): string {
