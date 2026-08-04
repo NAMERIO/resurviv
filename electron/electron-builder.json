@@ -2,6 +2,14 @@
   "appId": "biz.resurviv.desktop",
   "productName": "Resurviv",
   "npmRebuild": false,
+  "publish": [
+    {
+      "provider": "github",
+      "owner": "NAMERIO",
+      "repo": "resurviv",
+      "releaseType": "release"
+    }
+  ],
   "directories": {
     "output": "release"
   },
@@ -13,7 +21,7 @@
     "artifactName": "Resurviv-Windows.${ext}"
   },
   "mac": {
-    "target": "dmg",
+    "target": ["dmg", "zip"],
     "icon": "assets/tree-01.png",
     "artifactName": "Resurviv-macOS.${ext}"
   },

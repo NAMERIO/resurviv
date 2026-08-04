@@ -1,6 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { app, BrowserWindow, type IpcMainEvent, ipcMain } from "electron";
+import { initAutoUpdater } from "./autoUpdater.js";
 import {
     destroyDiscordRPC,
     initDiscordRPC,
@@ -79,6 +80,7 @@ function registerIPC(): void {
 app.whenReady().then(async () => {
     createWindow();
     registerIPC();
+    initAutoUpdater(() => mainWindow);
 
     await initDiscordRPC();
 

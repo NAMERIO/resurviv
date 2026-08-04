@@ -18,15 +18,24 @@ jobs:
           - platform: Windows
             os: windows-latest
             command: pnpm run package:win
-            asset: Resurviv-Windows.exe
+            assets: |
+              electron/release/Resurviv-Windows.exe
+              electron/release/Resurviv-Windows.exe.blockmap
+              electron/release/latest.yml
           - platform: macOS
             os: macos-latest
             command: pnpm run package:mac
-            asset: Resurviv-macOS.dmg
+            assets: |
+              electron/release/Resurviv-macOS.dmg
+              electron/release/Resurviv-macOS.zip
+              electron/release/Resurviv-macOS.zip.blockmap
+              electron/release/latest-mac.yml
           - platform: Linux
             os: ubuntu-latest
             command: pnpm run package:linux
-            asset: Resurviv-Linux.AppImage
+            assets: |
+              electron/release/Resurviv-Linux.AppImage
+              electron/release/latest-linux.yml
     runs-on: ${{ matrix.os }}
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: "false"
@@ -53,7 +62,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.platform }}
-          path: electron/release/${{ matrix.asset }}
+          path: ${{ matrix.assets }}
           if-no-files-found: error
 
   release:
