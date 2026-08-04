@@ -349,10 +349,15 @@ export class Application {
             this.startPingTest();
             this.siteInfo.load();
             this.localization.localizeIndex();
-            this.account.init();
             this.account.addEventListener("login", () => {
+                discordPresence.setHome(
+                    this.account.profile.username ||
+                        this.config.get("playerName") ||
+                        "Guest",
+                );
                 this.refreshUi();
             });
+            this.account.init();
 
             // Initialize ProfileUi after DOM is ready
             this.profileUi = new ProfileUi(

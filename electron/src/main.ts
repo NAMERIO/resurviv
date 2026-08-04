@@ -21,6 +21,7 @@ const PROD_CLIENT_URL =
 const IS_DEV = !app.isPackaged;
 
 let mainWindow: BrowserWindow | null = null;
+let quitting = false;
 
 function createWindow(): void {
     mainWindow = new BrowserWindow({
@@ -88,13 +89,21 @@ app.whenReady().then(async () => {
     });
 });
 
-app.on("window-all-closed", async () => {
-    await destroyDiscordRPC();
+app.on("window-all-closed", () => {
     if (process.platform !== "darwin") {
         app.quit();
     }
 });
 
-app.on("before-quit", async () => {
-    await destroyDiscordRPC();
+app.on("before-quit", (event) => {
+    if (quitting) return;
+
+    event.preventDefault();
+    quitting = true;
+
+    const forceQuitTimer = setTimeout(() => app.exit(0), 1500);
+    destroyDiscordRPC().finally(() => {
+        clearTimeout(forceQuitTimer);
+        app.exit(0);
+    });
 });

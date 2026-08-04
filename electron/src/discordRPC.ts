@@ -17,7 +17,7 @@ let rpcClient: InstanceType<typeof Client> | null = null;
 let connected = false;
 let currentPresence: PresenceData = {};
 let homePlayerName = "Guest";
-const sessionStartTimestamp = new Date();
+const sessionStartTimestamp = new Date(Date.now() - process.uptime() * 1000);
 
 export async function initDiscordRPC(): Promise<void> {
     register(DISCORD_CLIENT_ID);
@@ -116,7 +116,7 @@ function buildDetails(p: PresenceData): string {
 }
 
 function buildState(p: PresenceData): string {
-    const parts: string[] = [];
+    const parts: string[] = [homePlayerName];
     parts.push(`Kills: ${p.kills ?? 0}`);
     if (p.playersAlive != null) {
         parts.push(`Alive: ${p.playersAlive}`);
