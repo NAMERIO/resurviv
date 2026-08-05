@@ -9,18 +9,50 @@ const leftRounds = [[0, 1, 2, 3, 4, 5, 6, 7], [16, 17, 18, 19], [24, 25], [28]];
 const rightRounds = [[29], [26, 27], [20, 21, 22, 23], [8, 9, 10, 11, 12, 13, 14, 15]];
 let state: TournamentState;
 let canEdit = false;
+let editMode = false;
+let canPredict = false;
+let predictionMatchId: number | null = null;
+const predictions = new Map<number, string>();
 const bracket = document.querySelector<HTMLElement>("#bracket")!;
 const editor = document.querySelector<HTMLElement>("#editor-backdrop")!;
 const form = document.querySelector<HTMLFormElement>("#match-editor")!;
+const predictionDialog = document.querySelector<HTMLElement>("#prediction-backdrop")!;
 
-function playerRow(name: string | null, score: number | null, winner: boolean) {
-    return `<div class="player${winner ? " winner" : ""}${name ? "" : " tbd"}"><span class="player-name">${name || "To be decided"}</span><span class="score">${score ?? "—"}</span></div>`;
+interface PredictionStatus {
+    predictions: Array<{ matchId: number; predictedPlayer: string }>;
+    requiredPicks: number;
+    rewardGp: number;
+    rewarded: boolean;
+}
+
+function updatePredictionStatus(rewarded = false) {
+    const status = document.querySelector<HTMLElement>("#prediction-status")!;
+    if (rewarded) {
+        status.innerHTML = '<span class="prediction-progress">Perfect bracket!</span><span class="prediction-reward"><img src="/img/gui/currency-golde-potato.svg" alt="GP">5,000 GP awarded</span>';
+        status.classList.add("rewarded");
+        return;
+    }
+    status.classList.remove("rewarded");
+    status.innerHTML = `<span class="prediction-progress">${predictions.size}/31 predictions locked</span><span class="prediction-reward">Predict all 31 games correctly for <img src="/img/gui/currency-golde-potato.svg" alt="GP"> 5,000 GP</span>`;
+}
+
+function playerRow(
+    name: string | null,
+    score: number | null,
+    winner: boolean,
+    picked = false,
+) {
+    return `<div class="player${winner ? " winner" : ""}${picked ? " predicted-pick" : ""}${name ? "" : " tbd"}"><span class="player-name">${name || "To be decided"}</span><span class="score">${score ?? "—"}</span></div>`;
 }
 
 function matchCard(matchId: number) {
     const result = state.matches[matchId];
     const players = getTournamentPlayers(state, matchId);
-    return `<article class="match${canEdit ? " editable" : ""}" data-match-id="${matchId}" title="${canEdit ? "Edit score and winner" : "Matchup"}">${playerRow(players[0], result.scoreA, result.winner === 0)}${playerRow(players[1], result.scoreB, result.winner === 1)}</article>`;
+    const pick = predictions.get(matchId);
+    const ready = canPredict && result.winner === null && players[0] && players[1];
+    const extraClass = editMode ? " editable" : ready && !pick ? " predictable" : pick ? " predicted" : "";
+    const title = editMode ? "Edit score and winner" : pick ? `Locked prediction: ${pick}` : ready ? "Make a free prediction" : "Matchup";
+    return `<article class="match${extraClass}" data-match-id="${matchId}" title="${title}">${playerRow(players[0], result.scoreA, result.winner === 0, pick === players[0])}${playerRow(players[1], result.scoreB, result.winner === 1, pick === players[1])}</article>`;
 }
 
 function roundColumn(ids: number[], side: "left" | "right") {
@@ -59,10 +91,22 @@ async function load() {
     } catch {
         canEdit = false;
     }
+    editMode = canEdit;
     const status = document.querySelector<HTMLElement>("#dev-status")!;
     status.hidden = !canEdit;
-    status.textContent = canEdit ? "Developer editing enabled" : "";
+    status.textContent = canEdit ? "Edit mode ON - switch to predictions" : "";
     status.classList.toggle("enabled", canEdit);
+    const predictionStatus = document.querySelector<HTMLElement>("#prediction-status")!;
+    try {
+        const data = await request<PredictionStatus>("/api/tournament/predictions");
+        canPredict = true;
+        predictions.clear();
+        for (const pick of data.predictions) predictions.set(pick.matchId, pick.predictedPlayer);
+        updatePredictionStatus(data.rewarded);
+    } catch {
+        canPredict = false;
+        predictionStatus.textContent = "Sign in to predict every match for free and win 5,000 GP.";
+    }
     render();
 }
 
@@ -88,9 +132,21 @@ function openEditor(matchId: number) {
 }
 
 bracket.addEventListener("click", (event) => {
-    if (!canEdit) return;
     const card = (event.target as HTMLElement).closest<HTMLElement>(".match");
-    if (card) openEditor(Number(card.dataset.matchId));
+    if (!card) return;
+    const matchId = Number(card.dataset.matchId);
+    if (editMode) openEditor(matchId);
+    else if (canPredict && !predictions.has(matchId)) openPrediction(matchId);
+});
+document.querySelector("#dev-status")!.addEventListener("click", () => {
+    if (!canEdit) return;
+    editMode = !editMode;
+    const status = document.querySelector("#dev-status")!;
+    status.textContent = editMode
+        ? "Edit mode ON - switch to predictions"
+        : "Prediction mode - switch to editing";
+    status.classList.toggle("enabled", editMode);
+    render();
 });
 document.querySelector("#editor-close")!.addEventListener("click", () => {
     editor.hidden = true;
@@ -101,6 +157,49 @@ document.querySelector("#editor-cancel")!.addEventListener("click", () => {
 editor.addEventListener("click", (event) => {
     if (event.target === editor) editor.hidden = true;
 });
+
+function openPrediction(matchId: number) {
+    const players = getTournamentPlayers(state, matchId);
+    if (state.matches[matchId].winner !== null || !players[0] || !players[1]) return;
+    predictionMatchId = matchId;
+    const buttonA = document.querySelector<HTMLButtonElement>("#prediction-a")!;
+    const buttonB = document.querySelector<HTMLButtonElement>("#prediction-b")!;
+    buttonA.textContent = players[0];
+    buttonB.textContent = players[1];
+    buttonA.dataset.player = players[0];
+    buttonB.dataset.player = players[1];
+    document.querySelector("#prediction-error")!.textContent = "";
+    predictionDialog.hidden = false;
+}
+
+async function lockPrediction(player: string) {
+    if (predictionMatchId === null) return;
+    const error = document.querySelector<HTMLElement>("#prediction-error")!;
+    try {
+        await request<{ success: true }>("/api/tournament/prediction", {
+            method: "POST",
+            body: JSON.stringify({ matchId: predictionMatchId, predictedPlayer: player }),
+        });
+        predictions.set(predictionMatchId, player);
+        predictionDialog.hidden = true;
+        updatePredictionStatus();
+        render();
+    } catch (caught) {
+        error.textContent = caught instanceof Error ? caught.message : "Unable to lock prediction";
+    }
+}
+
+document.querySelector("#prediction-close")!.addEventListener("click", () => {
+    predictionDialog.hidden = true;
+});
+predictionDialog.addEventListener("click", (event) => {
+    if (event.target === predictionDialog) predictionDialog.hidden = true;
+});
+for (const id of ["#prediction-a", "#prediction-b"]) {
+    document.querySelector<HTMLButtonElement>(id)!.addEventListener("click", (event) => {
+        void lockPrediction((event.currentTarget as HTMLButtonElement).dataset.player!);
+    });
+}
 
 form.addEventListener("submit", async (event) => {
     event.preventDefault();

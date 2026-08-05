@@ -77,6 +77,8 @@ main {
   border-radius: 5px;
   color: #ddd;
   background: rgba(45, 45, 45, 0.9);
+  font-family: inherit;
+  cursor: pointer;
 }
 
 .dev-status.enabled {
@@ -104,6 +106,28 @@ h1 {
   color: rgba(255, 255, 255, 0.72);
 }
 
+.discord-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.discord-info:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.discord-info img {
+  width: 19px;
+  height: 19px;
+  object-fit: contain;
+}
+
 .legend {
   color: rgba(255, 255, 255, 0.62);
 }
@@ -111,6 +135,44 @@ h1 {
 .legend span {
   background: #83af50;
   box-shadow: none;
+}
+
+.prediction-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 5px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.prediction-progress {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.prediction-reward {
+  display: inline-flex;
+  align-items: center;
+  color: #f0d85a;
+}
+
+.prediction-reward::before {
+  content: "•";
+  margin-right: 8px;
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.prediction-reward img {
+  width: 15px;
+  height: 15px;
+  margin: 0 3px;
+  object-fit: contain;
+}
+
+.prediction-status.rewarded {
+  color: #dfffb9;
 }
 
 .bracket-shell {
@@ -151,6 +213,29 @@ h1 {
   box-shadow: 0 0 0 1px rgba(131, 175, 80, 0.62), 0 4px 9px rgba(0, 0, 0, 0.3);
 }
 
+.match.predictable {
+  cursor: pointer;
+}
+
+.match.predictable:hover {
+  background: rgba(36, 49, 27, 0.58);
+  box-shadow: 0 0 0 1px rgba(131, 175, 80, 0.65);
+}
+
+.player.predicted-pick {
+  color: #e8ffd0;
+  background: rgba(72, 105, 40, 0.56);
+}
+
+.player.predicted-pick .player-name::after {
+  content: "YOUR PICK";
+  margin-left: 5px;
+  color: #bde68c;
+  font-size: 7px;
+  font-style: normal;
+  letter-spacing: 0.4px;
+}
+
 .bracket-column.right .match {
   border-left: 0;
   border-right: 4px solid rgba(131, 175, 80, 0.78);
@@ -178,7 +263,13 @@ h1 {
 }
 
 .player.winner .player-name::before {
-  color: #fff;
+  content: "";
+  display: inline-block;
+  width: 11px;
+  height: 12px;
+  margin-right: 5px;
+  background: url("/img/clans/wins.svg") center / contain no-repeat;
+  vertical-align: -2px;
 }
 
 .player.winner .score {
@@ -400,6 +491,50 @@ footer a {
 .cancel-button:hover,
 .editor-close:hover {
   filter: brightness(1.3);
+}
+
+.prediction-dialog {
+  position: relative;
+  width: min(430px, calc(100vw - 28px));
+  padding: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-bottom: 3px solid rgba(0, 0, 0, 0.7);
+  border-radius: 5px;
+  background: rgba(27, 27, 27, 0.97);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.55);
+}
+
+.prediction-dialog h2 {
+  margin: 3px 0 4px;
+  font-size: 27px;
+}
+
+.prediction-dialog > p {
+  margin: 0 0 18px;
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 13px;
+}
+
+.prediction-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+.prediction-options button {
+  min-height: 54px;
+  padding: 8px;
+  border: 1px solid rgba(131, 175, 80, 0.68);
+  border-bottom: 3px solid #4f6e2e;
+  border-radius: 4px;
+  background: rgba(80, 115, 45, 0.72);
+  color: #fff;
+  font: 700 16px "Roboto Condensed", Arial, sans-serif;
+  cursor: pointer;
+}
+
+.prediction-options button:hover {
+  background: #83af50;
 }
 
 @media (max-width: 700px) {
