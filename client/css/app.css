@@ -18914,6 +18914,23 @@ div.roulette {
   margin-top: 6px;
 }
 
+#main-play-btns .tournament-row {
+  margin-top: 6px;
+}
+
+#main-play-btns .tournament-row > #btn-live-tournament {
+  background: #83af50;
+  border-bottom: 2px solid #5b7a38;
+  box-shadow: inset 0 -2px #5b7a38;
+  flex: 1 1 100%;
+  margin-right: 0;
+  text-decoration: none;
+}
+
+#main-play-btns .tournament-row > #btn-live-tournament:hover {
+  filter: brightness(80%);
+}
+
 #main-play-btns .clan-row > #btn-clans {
   background-color: #d07017;
   background-image: url(/img/gui/player-gui.svg);
@@ -19243,6 +19260,16 @@ div.roulette {
   top: var(--side-pad);
   width: fit-content;
   z-index: 1301;
+}
+
+.tournament-live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: #f2dd55;
+  box-shadow: 0 0 6px rgba(242, 221, 85, 0.8);
 }
 
 .news-btn-container .right-column-toggle,
