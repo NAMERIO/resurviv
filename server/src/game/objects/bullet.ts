@@ -498,10 +498,7 @@ export class Bullet {
                     });
                 }
             } else if (obj.__type === ObjectType.Player) {
-                if (
-                    obj.vehicle &&
-                    NpcDefs[obj.vehicle.type].vehicle?.airborne
-                ) {
+                if (obj.vehicle && NpcDefs[obj.vehicle.type].vehicle?.airborne) {
                     continue;
                 }
                 if (

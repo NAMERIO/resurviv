@@ -171,7 +171,8 @@ TournamentRouter.post(
                 FOR UPDATE
             `);
             const state = stateResult.rows[0]?.state;
-            if (!state) return { error: "Tournament is unavailable", status: 503 as const };
+            if (!state)
+                return { error: "Tournament is unavailable", status: 503 as const };
             if (state.matches[prediction.matchId].winner !== null) {
                 return { error: "This match is already finished", status: 409 as const };
             }
@@ -190,7 +191,10 @@ TournamentRouter.post(
                 RETURNING match_id
             `);
             if (!inserted.rows.length) {
-                return { error: "Your prediction is already locked", status: 409 as const };
+                return {
+                    error: "Your prediction is already locked",
+                    status: 409 as const,
+                };
             }
             return { success: true as const };
         });

@@ -2730,7 +2730,6 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
-
     outfitBengal: defineOutfitSkin("outfitBase", {
         name: "Bengal",
         noDropOnDeath: true,
@@ -3676,7 +3675,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
-    
+
     outfitBee: defineOutfitSkin("outfitBase", {
         name: "Buzz Buzz",
         noDropOnDeath: true,
@@ -3804,7 +3803,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     outfitSolarAegis: defineOutfitSkin("outfitBase", {
         name: "Solar Aegis",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         lore: "To shine the way.",
 
@@ -3828,7 +3827,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     outfitPaintSplat: defineOutfitSkin("outfitBase", {
         name: "Paint Splat",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         lore: "For those who fight with a splash of color.",
 
@@ -3852,7 +3851,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     outfitSacredGeometry: defineOutfitSkin("outfitBase", {
         name: "Sacred Geometry",
         noDropOnDeath: true,
-        
+
         rarity: 4,
         lore: "For those who see the hidden patterns in the battlefield.",
 
@@ -3876,7 +3875,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     outfitGoldenWaffle: defineOutfitSkin("outfitBase", {
         name: "Golden Waffle",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         lore: "For those who serve up sweet, golden destruction every morning.",
 
@@ -3900,7 +3899,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     outfitDonut: defineOutfitSkin("outfitBase", {
         name: "Donut",
         noDropOnDeath: true,
-        
+
         rarity: 3,
         lore: "For those who leave a trail of sweet defeat behind.",
 
@@ -3928,7 +3927,6 @@ const SkinDefs: Record<string, OutfitDef> = {
         rarity: 3,
         lore: "For those who command the power of the ancient stones.",
 
-
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-stone-idol.img",
@@ -3952,7 +3950,6 @@ const SkinDefs: Record<string, OutfitDef> = {
 
         rarity: 4,
         lore: "For those whose power renders the arena unrenderable.",
-
 
         skinImg: {
             baseTint: 0xffffff,
@@ -4193,7 +4190,6 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
-    
     outfitAutumnForest: defineOutfitSkin("outfitBase", {
         name: "Autumn Forest",
         noDropOnDeath: true,

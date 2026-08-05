@@ -1,6 +1,5 @@
 import { AmongUsRoleDefs } from "../../../shared/defs/amongUsRoleDefs";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
-import { NpcDefs } from "../../../shared/defs/npcDefs";
 import { DamageStreakProperties } from "../../../shared/defs/gameObjects/damageStreakDefs";
 import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
 import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
@@ -11,6 +10,7 @@ import {
 } from "../../../shared/defs/gameObjects/throwableDefs";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import type { ObstacleDef } from "../../../shared/defs/mapObjectsTyping";
+import { NpcDefs } from "../../../shared/defs/npcDefs";
 import { GameConfig, type InventoryItem, WeaponSlot } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import { ObjectType } from "../../../shared/net/objectSerializeFns";
@@ -317,10 +317,7 @@ export class WeaponManager {
         if (player.downed) {
             return;
         }
-        if (
-            player.vehicle &&
-            !NpcDefs[player.vehicle.type].vehicle?.allowDriverWeapons
-        ) {
+        if (player.vehicle && !NpcDefs[player.vehicle.type].vehicle?.allowDriverWeapons) {
             this.cancelVehicleCombat();
             return;
         }

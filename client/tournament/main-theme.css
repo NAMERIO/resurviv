@@ -210,7 +210,9 @@ h1 {
 .match.editable:hover {
   border-left-color: #b3dc79;
   background: rgba(28, 38, 22, 0.55);
-  box-shadow: 0 0 0 1px rgba(131, 175, 80, 0.62), 0 4px 9px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 0 0 1px rgba(131, 175, 80, 0.62),
+    0 4px 9px rgba(0, 0, 0, 0.3);
 }
 
 .match.predictable {
@@ -503,7 +505,10 @@ footer a {
   height: 42px;
   border-radius: 4px;
   color: #fff;
-  font: 700 14px "Roboto Condensed", Arial, sans-serif;
+  font:
+    700 14px "Roboto Condensed",
+    Arial,
+    sans-serif;
   cursor: pointer;
 }
 
@@ -559,7 +564,10 @@ footer a {
   border-radius: 4px;
   background: rgba(80, 115, 45, 0.72);
   color: #fff;
-  font: 700 16px "Roboto Condensed", Arial, sans-serif;
+  font:
+    700 16px "Roboto Condensed",
+    Arial,
+    sans-serif;
   cursor: pointer;
 }
 

@@ -173,11 +173,7 @@ export function createLootPreview(
 ) {
     const def = GameObjectDefs[gameType];
     if (def?.type === "outfit" && (def as OutfitDef).lootImg.skinLootImg) {
-        return createOutfitSkinPreview(
-            def as OutfitDef,
-            options.outfitScale,
-            className,
-        );
+        return createOutfitSkinPreview(def as OutfitDef, options.outfitScale, className);
     }
 
     const isGunSkin = def?.type === "gun_skin";

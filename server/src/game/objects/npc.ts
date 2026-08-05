@@ -233,11 +233,7 @@ export class Npc extends BaseGameObject {
             const aimDir = this.driver.dirNew;
             this.ori = Math.atan2(aimDir.y, aimDir.x);
             if (this.targetActive) {
-                const targetDistance = math.clamp(
-                    this.driver.toMouseLen,
-                    2,
-                    cannonRange,
-                );
+                const targetDistance = math.clamp(this.driver.toMouseLen, 2, cannonRange);
                 this.targetPos = v2.add(this.pos, v2.mul(aimDir, targetDistance));
                 this.speed = 0;
                 this.travelDir = v2.create(0, 0);

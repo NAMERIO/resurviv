@@ -1179,8 +1179,7 @@ export class Player implements AbstractObject {
         }
         if (this.meleeGalaxyFilter) {
             this.meleeGalaxyFilter.uniforms.uTime += dt;
-            const offset = this.meleeGalaxyFilter.uniforms
-                .uWorldOffset as Float32Array;
+            const offset = this.meleeGalaxyFilter.uniforms.uWorldOffset as Float32Array;
             offset[0] = this.m_pos.x * 10;
             offset[1] = this.m_pos.y * 10;
         }
@@ -2068,20 +2067,13 @@ export class Player implements AbstractObject {
         const outfitImg = outfitDef.skinImg;
         const bodyScale = this.m_bodyRad / GameConfig.player.radius;
 
-        const galaxySprites = [
-            this.bodySprite,
-            this.footLSprite,
-            this.footRSprite,
-        ];
+        const galaxySprites = [this.bodySprite, this.footLSprite, this.footRSprite];
         if (outfitDef.galaxyEffect) {
             this.galaxyFilter ??= createGalaxyFilter();
             // Match the roughly 11px strokes in the original 78px hand and
             // 149px backpack SVGs (half of a centered stroke lies inside).
             this.handGalaxyFilter ??= createGalaxyFilter(v2.create(0, 0), 0.11);
-            this.backpackGalaxyFilter ??= createGalaxyFilter(
-                v2.create(0, 0),
-                0.045,
-            );
+            this.backpackGalaxyFilter ??= createGalaxyFilter(v2.create(0, 0), 0.045);
             for (const sprite of galaxySprites) sprite.filters = [this.galaxyFilter];
             this.handLSprite.filters = [this.handGalaxyFilter];
             this.handRSprite.filters = [this.handGalaxyFilter];

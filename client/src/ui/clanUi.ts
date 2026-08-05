@@ -306,9 +306,9 @@ export class ClanUi {
     populateClanRegionSelects() {
         const createSelect = $("#clan-create-region-select").empty();
         const settingsSelect = $("#clan-region-select").empty();
-        const filterSelect = $("#clan-region-filter").empty().append(
-            $("<option/>", { value: "", text: "All Regions" }),
-        );
+        const filterSelect = $("#clan-region-filter")
+            .empty()
+            .append($("<option/>", { value: "", text: "All Regions" }));
 
         for (const [region, data] of Object.entries(GAME_REGIONS)) {
             const translated = this.localization.translate(data.l10n);
@@ -391,8 +391,7 @@ export class ClanUi {
         });
         $('input[name="clan-create-color-mode"]').on("change", () => {
             $("#clan-create-tag-color-input-2").toggle(
-                $('input[name="clan-create-color-mode"]:checked').val() ===
-                    "gradient",
+                $('input[name="clan-create-color-mode"]:checked').val() === "gradient",
             );
         });
         $("#clan-font-select").on("change", () => {
@@ -484,10 +483,9 @@ export class ClanUi {
                 this.loadClanList(1);
             }
         });
-        $("#clan-edit-name-input, #clan-font-select, #clan-tag-color-input, #clan-tag-color-input-2, #clan-bold-toggle").on(
-            "input change",
-            () => this.updateSettingsNameInputStyle(),
-        );
+        $(
+            "#clan-edit-name-input, #clan-font-select, #clan-tag-color-input, #clan-tag-color-input-2, #clan-bold-toggle",
+        ).on("input change", () => this.updateSettingsNameInputStyle());
         $("#clan-region-filter").on("change", () => {
             this.loadClanList(1);
         });
@@ -3268,7 +3266,10 @@ export class ClanUi {
 
     updateFontSelectStyle(selector: string) {
         const font = $(selector).val() as ClanFont;
-        $(selector).css("font-family", clanFontFamilies[font] || clanFontFamilies.default);
+        $(selector).css(
+            "font-family",
+            clanFontFamilies[font] || clanFontFamilies.default,
+        );
     }
 }
 
@@ -3278,11 +3279,7 @@ function getClanTagColors(color?: string | null): [string, string] {
     return [normalizedStart, normalizeColorInputValue(end || start)];
 }
 
-function makeClanTagColor(
-    startSelector: string,
-    endSelector: string,
-    modeName?: string,
-) {
+function makeClanTagColor(startSelector: string, endSelector: string, modeName?: string) {
     const start = ($(startSelector).val() as string) || "#ffffff";
     const end = ($(endSelector).val() as string) || start;
     if (modeName && $(`input[name="${modeName}"]:checked`).val() !== "gradient") {

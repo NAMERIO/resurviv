@@ -57,8 +57,7 @@ function syncDisplayedPlayerName(force = false): void {
 function syncCurrentScreen(): void {
     const startMenu = document.getElementById("start-menu-wrapper");
     const gameArea = document.getElementById("game-area-wrapper");
-    const isOnHomeScreen =
-        elementIsVisible(startMenu) && !elementIsVisible(gameArea);
+    const isOnHomeScreen = elementIsVisible(startMenu) && !elementIsVisible(gameArea);
 
     if (isOnHomeScreen && wasOnHomeScreen !== true) {
         ipcRenderer.send("discord:match-end");

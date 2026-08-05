@@ -320,14 +320,10 @@ export class BulletBarn {
                     const playerVehicle = player.m_netData.m_vehicleId
                         ? npcs.find(
                               (npc) =>
-                                  npc.active &&
-                                  npc.__id === player.m_netData.m_vehicleId,
+                                  npc.active && npc.__id === player.m_netData.m_vehicleId,
                           )
                         : undefined;
-                    if (
-                        playerVehicle &&
-                        NpcDefs[playerVehicle.type].vehicle?.airborne
-                    ) {
+                    if (playerVehicle && NpcDefs[playerVehicle.type].vehicle?.airborne) {
                         continue;
                     }
                     if (

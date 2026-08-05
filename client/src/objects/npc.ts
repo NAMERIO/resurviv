@@ -382,9 +382,7 @@ export class Npc implements AbstractObject {
         return {
             action: "game-drive",
             object:
-                this.type === "motherShip"
-                    ? "game-alien-mothership"
-                    : "game-sports-car",
+                this.type === "motherShip" ? "game-alien-mothership" : "game-sports-car",
         };
     }
 
@@ -404,8 +402,7 @@ export class Npc implements AbstractObject {
 
         if (this.type === "motherShip") {
             const locallyDriven =
-                activePlayer.m_netData.m_vehicleId === this.__id &&
-                !activePlayer.isNew;
+                activePlayer.m_netData.m_vehicleId === this.__id && !activePlayer.isNew;
             this.visualPos = locallyDriven
                 ? v2.copy(activePlayer.m_visualPos)
                 : v2.copy(this.pos);

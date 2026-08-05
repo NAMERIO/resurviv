@@ -350,10 +350,7 @@ export class Projectile extends BaseGameObject {
                 obj.__type === ObjectType.Player &&
                 def.playerCollision &&
                 !obj.dead &&
-                !(
-                    obj.vehicle &&
-                    NpcDefs[obj.vehicle.type].vehicle?.airborne
-                ) &&
+                !(obj.vehicle && NpcDefs[obj.vehicle.type].vehicle?.airborne) &&
                 util.sameLayer(this.layer, obj.layer) &&
                 obj.__id !== this.playerId
             ) {

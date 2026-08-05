@@ -2599,7 +2599,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
     }),
 
-     fist_Skeleton: defineMeleeSkin("fists", {
+    fist_Skeleton: defineMeleeSkin("fists", {
         name: "Skeleton Knuckles",
         rarity: Rarity.Epic,
         lore: "For those who want to drop their opponents down to the bare bone.",
@@ -2868,7 +2868,7 @@ const SkinDefs: Record<string, MeleeDef> = {
             sprite: "bone-knife.img",
         },
     }),
-    
+
     guthook_woodland: defineMeleeSkin("bayonet", {
         name: "Guthook Woodland",
         rarity: Rarity.Mythic,

@@ -33,7 +33,10 @@ export const TournamentPlayers = [
     "Tito",
 ] as const;
 
-export const TournamentPlayerRegions: Record<(typeof TournamentPlayers)[number], "NA" | "EU" | "AS"> = {
+export const TournamentPlayerRegions: Record<
+    (typeof TournamentPlayers)[number],
+    "NA" | "EU" | "AS"
+> = {
     Filthy: "NA",
     Scaleznikov: "AS",
     Razival: "NA",

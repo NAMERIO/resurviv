@@ -4081,10 +4081,7 @@ export class Game {
                 }
 
                 // Bullets often don't play hit sounds on the frame that a player dies
-                if (
-                    msg.damageType == GameConfig.DamageType.Player &&
-                    !msg.fakeKill
-                ) {
+                if (msg.damageType == GameConfig.DamageType.Player && !msg.fakeKill) {
                     this.m_bulletBarn.createBulletHit(
                         this.m_playerBarn,
                         msg.targetId,

@@ -14,8 +14,8 @@ import {
     zFindGameBody,
 } from "../../../shared/types/api";
 import { Config } from "../config";
-import { GIT_VERSION } from "../utils/gitRevision";
 import { startBundleRotationLogging } from "../utils/bundleLogging";
+import { GIT_VERSION } from "../utils/gitRevision";
 import { getFindGamePlayerData } from "../utils/playerData";
 import {
     getHonoIp,

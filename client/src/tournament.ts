@@ -1,7 +1,7 @@
 import {
     getTournamentPlayers,
-    TournamentPlayerRegions,
     type TournamentMatchResult,
+    TournamentPlayerRegions,
     type TournamentState,
 } from "../../shared/types/tournament";
 import { api } from "./api";
@@ -29,7 +29,8 @@ interface PredictionStatus {
 function updatePredictionStatus(rewarded = false) {
     const status = document.querySelector<HTMLElement>("#prediction-status")!;
     if (rewarded) {
-        status.innerHTML = '<span class="prediction-progress">Perfect bracket!</span><span class="prediction-reward"><img src="/img/gui/currency-golde-potato.svg" alt="GP">5,000 GP awarded</span>';
+        status.innerHTML =
+            '<span class="prediction-progress">Perfect bracket!</span><span class="prediction-reward"><img src="/img/gui/currency-golde-potato.svg" alt="GP">5,000 GP awarded</span>';
         status.classList.add("rewarded");
         return;
     }
@@ -43,7 +44,9 @@ function playerRow(
     winner: boolean,
     picked = false,
 ) {
-    const region = name ? TournamentPlayerRegions[name as keyof typeof TournamentPlayerRegions] : null;
+    const region = name
+        ? TournamentPlayerRegions[name as keyof typeof TournamentPlayerRegions]
+        : null;
     return `<div class="player${winner ? " winner" : ""}${picked ? " predicted-pick" : ""}${name ? "" : " tbd"}"><span class="player-name">${region ? `<span class="player-region region-${region.toLowerCase()}">${region}</span>` : ""}${winner ? '<img class="winner-trophy" src="/img/clans/wins.svg" alt="Winner">' : ""}${name || "To be decided"}</span><span class="score">${score ?? "—"}</span></div>`;
 }
 
@@ -52,8 +55,20 @@ function matchCard(matchId: number) {
     const players = getTournamentPlayers(state, matchId);
     const pick = predictions.get(matchId);
     const ready = canPredict && result.winner === null && players[0] && players[1];
-    const extraClass = editMode ? " editable" : ready && !pick ? " predictable" : pick ? " predicted" : "";
-    const title = editMode ? "Edit score and winner" : pick ? `Locked prediction: ${pick}` : ready ? "Make a free prediction" : "Matchup";
+    const extraClass = editMode
+        ? " editable"
+        : ready && !pick
+          ? " predictable"
+          : pick
+            ? " predicted"
+            : "";
+    const title = editMode
+        ? "Edit score and winner"
+        : pick
+          ? `Locked prediction: ${pick}`
+          : ready
+            ? "Make a free prediction"
+            : "Matchup";
     return `<article class="match${extraClass}" data-match-id="${matchId}" title="${title}">${playerRow(players[0], result.scoreA, result.winner === 0, pick === players[0])}${playerRow(players[1], result.scoreB, result.winner === 1, pick === players[1])}</article>`;
 }
 
@@ -103,11 +118,13 @@ async function load() {
         const data = await request<PredictionStatus>("/api/tournament/predictions");
         canPredict = true;
         predictions.clear();
-        for (const pick of data.predictions) predictions.set(pick.matchId, pick.predictedPlayer);
+        for (const pick of data.predictions)
+            predictions.set(pick.matchId, pick.predictedPlayer);
         updatePredictionStatus(data.rewarded);
     } catch {
         canPredict = false;
-        predictionStatus.textContent = "Sign in to predict every match for free and win 5,000 GP.";
+        predictionStatus.textContent =
+            "Sign in to predict every match for free and win 5,000 GP.";
     }
     render();
 }
@@ -187,7 +204,8 @@ async function lockPrediction(player: string) {
         updatePredictionStatus();
         render();
     } catch (caught) {
-        error.textContent = caught instanceof Error ? caught.message : "Unable to lock prediction";
+        error.textContent =
+            caught instanceof Error ? caught.message : "Unable to lock prediction";
     }
 }
 

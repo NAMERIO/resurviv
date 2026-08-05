@@ -2445,9 +2445,7 @@ export class ShopMenu {
             "box-shadow": "inset 0 0 0 1px rgba(0,0,0,0.35)",
         });
         modal.find("#market-item-sell-img .market-item-sprite").remove();
-        modal
-            .find("#market-item-sell-img")
-            .prepend(this.createMarketItemSprite(item));
+        modal.find("#market-item-sell-img").prepend(this.createMarketItemSprite(item));
         const rarityBadge = $(helpers.getItemRarityStyleMarkup(item.type, item.rarity));
         modal
             .find("#market-item-sell-type")

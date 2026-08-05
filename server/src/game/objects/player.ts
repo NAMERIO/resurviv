@@ -7894,15 +7894,17 @@ export class Player extends BaseGameObject {
                 gameId: game.id,
             };
 
-            void apiPrivateRouter.log_player_join.$post({
-                json: {
-                    name: logData.username,
-                    encodedIp: logData.encodedIp,
-                    region: logData.region,
-                },
-            }).catch((err) => {
-                game.logger.error(`Failed to send player join log to API:`, err);
-            });
+            void apiPrivateRouter.log_player_join
+                .$post({
+                    json: {
+                        name: logData.username,
+                        encodedIp: logData.encodedIp,
+                        region: logData.region,
+                    },
+                })
+                .catch((err) => {
+                    game.logger.error(`Failed to send player join log to API:`, err);
+                });
         } catch (err) {
             game.logger.error(`Failed to fetch API save game:`, err);
         }

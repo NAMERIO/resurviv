@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { createCanvas, loadImage, type CanvasRenderingContext2D } from "canvas";
+import { type CanvasRenderingContext2D, createCanvas, loadImage } from "canvas";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { getOutfitLootImg } from "../../../shared/defs/gameObjects/outfitDefs";
 import { Rarity } from "../../../shared/gameConfig";
@@ -68,7 +68,14 @@ async function drawItem(
 ) {
     const def = GameObjectDefs[itemType] as any;
     const rarity = Number(def?.rarity ?? Rarity.Stock);
-    const backgrounds = ["#282828", "#3e3e3e", "#465c33", "#1d4745", "#614066", "#6f0000"];
+    const backgrounds = [
+        "#282828",
+        "#3e3e3e",
+        "#465c33",
+        "#1d4745",
+        "#614066",
+        "#6f0000",
+    ];
     const borders = ["#969696", "#a1a1a1", "#80b251", "#50afab", "#874c90", "#c61014"];
     ctx.fillStyle = backgrounds[rarity] ?? backgrounds[0]!;
     ctx.fillRect(x, y, size, size);
@@ -80,7 +87,10 @@ async function drawItem(
     if (imagePath) {
         try {
             const image = await loadImage(imagePath);
-            const scale = Math.min((size * 0.72) / image.width, (size * 0.72) / image.height);
+            const scale = Math.min(
+                (size * 0.72) / image.width,
+                (size * 0.72) / image.height,
+            );
             const imageWidth = image.width * scale;
             const imageHeight = image.height * scale;
             ctx.drawImage(
@@ -116,10 +126,16 @@ export async function renderBundleCard(offers: FeaturedBundleOffer[]) {
     ctx.font = "23px sans-serif";
     const refreshesAt = offers[0]?.refreshesAt ?? Date.now();
     const hoursLeft = Math.max(0, Math.ceil((refreshesAt - Date.now()) / 3_600_000));
-    ctx.fillText(`Reward highlights  ${String(hoursLeft).padStart(2, "0")}:00:00`, 600, 124);
+    ctx.fillText(
+        `Reward highlights  ${String(hoursLeft).padStart(2, "0")}:00:00`,
+        600,
+        124,
+    );
 
     const potatoPath = publicAssetPath("img/gui/currency-golde-potato.svg");
-    const potato = potatoPath ? await loadImage(potatoPath).catch(() => undefined) : undefined;
+    const potato = potatoPath
+        ? await loadImage(potatoPath).catch(() => undefined)
+        : undefined;
 
     for (const [index, offer] of offers.entries()) {
         const x = index === 0 ? 100 : 420;
@@ -183,7 +199,11 @@ async function postBundleRotation(offers: FeaturedBundleOffer[]) {
     const formData = new FormData();
     // Node's Buffer is accepted by Blob at runtime, despite its stricter DOM typing.
     // @ts-expect-error Buffer<ArrayBufferLike> is a valid Node BlobPart
-    formData.append("file", new Blob([image], { type: "image/png" }), "featured-bundles.png");
+    formData.append(
+        "file",
+        new Blob([image], { type: "image/png" }),
+        "featured-bundles.png",
+    );
     formData.append(
         "payload_json",
         JSON.stringify({
@@ -230,7 +250,10 @@ async function checkBundleRotation() {
             return;
         }
     }
-    rotationTimer = setTimeout(checkBundleRotation, Math.max(CHECK_DELAY_MS, window.refreshesAt - Date.now() + CHECK_DELAY_MS));
+    rotationTimer = setTimeout(
+        checkBundleRotation,
+        Math.max(CHECK_DELAY_MS, window.refreshesAt - Date.now() + CHECK_DELAY_MS),
+    );
     rotationTimer.unref();
 }
 
