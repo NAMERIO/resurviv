@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#83af50">
+  <title>Resurviv Championship Bracket</title>
+  <link rel="icon" href="/favicon.ico">
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,700" rel="stylesheet">
+  <link href="./tournament.css" rel="stylesheet">
+  <link href="./main-theme.css" rel="stylesheet">
+</head>
+<body>
+  <main>
+    <div class="top-bar">
+      <a class="home-button" href="/">&#8592; Back to Game</a>
+      <img src="/img/loading-logo.svg" alt="Resurviv">
+      <div id="dev-status" class="dev-status" hidden></div>
+    </div>
+    <header class="hero">
+      <div class="eyebrow">RESURVIV COMMUNITY SERIES</div>
+      <h1>Championship Bracket</h1>
+      <p>32 enter. One survivor remains.</p>
+      <div class="legend"><span></span> Winner <b>/</b> Scores update live</div>
+    </header>
+    <section class="bracket-shell">
+      <div class="round-labels" aria-hidden="true"><span>Round of 32</span><span>Round of 16</span><span>Quarterfinal</span><span>Semifinal</span><strong>Final</strong><span>Semifinal</span><span>Quarterfinal</span><span>Round of 16</span><span>Round of 32</span></div>
+      <div id="bracket" class="bracket" aria-live="polite"><div class="loading">Loading tournament bracket...</div></div>
+    </section>
+    <footer><span id="last-updated">Waiting for bracket data</span><a href="/">Return to game</a></footer>
+  </main>
+  <div id="editor-backdrop" class="editor-backdrop" hidden>
+    <form id="match-editor" class="match-editor">
+      <button id="editor-close" class="editor-close" type="button" aria-label="Close">&times;</button>
+      <div class="editor-kicker">TOURNAMENT CONTROL</div>
+      <h2>Update Match</h2>
+      <p class="editor-help">Enter each score, then choose who advances.</p>
+      <input id="editor-match-id" type="hidden">
+      <div class="editor-scores">
+        <label class="editor-player"><span id="editor-name-a">Player A</span><span class="score-field"><small>SCORE</small><input id="editor-score-a" type="number" min="0" max="999"></span></label>
+        <label class="editor-player"><span id="editor-name-b">Player B</span><span class="score-field"><small>SCORE</small><input id="editor-score-b" type="number" min="0" max="999"></span></label>
+      </div>
+      <fieldset class="winner-picker"><legend>Who advances?</legend><label><input name="winner" type="radio" value="0"><span id="editor-winner-a">Player A</span></label><label><input name="winner" type="radio" value="1"><span id="editor-winner-b">Player B</span></label><label><input name="winner" type="radio" value=""><span>No winner yet</span></label></fieldset>
+      <div id="editor-error" class="editor-error"></div>
+      <div class="editor-actions"><button id="editor-cancel" class="cancel-button" type="button">Cancel</button><button class="save-button" type="submit">Save Match</button></div>
+    </form>
+  </div>
+  <script type="module" src="../src/tournament.ts"></script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+export const TournamentPlayers = [
+    "Filthy",
+    "Scaleznikov",
+    "Razival",
+    "Sigmasanty1",
+    "Life",
+    "Yamit",
+    "Mystic",
+    "Akemi",
+    "Yoosepe",
+    "Stxmn",
+    "Goosify",
+    "Meowski",
+    "Jud",
+    "Namerio",
+    "Goldop",
+    "Think",
+    "Syntelixion BRWN",
+    "El Primo",
+    "Pork",
+    "IsmiffyXippan",
+    "StepZ",
+    "Archaic",
+    "Cash1",
+    "Don Quixote",
+    "Chris21",
+    "Ikou",
+    "xvmr",
+    "Zadokbadok",
+    "worldgonemad",
+    "Bossk40",
+    "Meowserpro",
+    "Tito",
+] as const;
+
+export interface TournamentMatchResult {
+    scoreA: number | null;
+    scoreB: number | null;
+    winner: 0 | 1 | null;
+}
+
+export interface TournamentState {
+    matches: TournamentMatchResult[];
+    updatedAt: number | null;
+}
+
+export const TournamentRoundStarts = [0, 16, 24, 28, 30] as const;
+export const TournamentRoundSizes = [16, 8, 4, 2, 1] as const;
+
+export function createTournamentState(): TournamentState {
+    return {
+        matches: Array.from({ length: 31 }, () => ({
+            scoreA: null,
+            scoreB: null,
+            winner: null,
+        })),
+        updatedAt: null,
+    };
+}
+
+export function getTournamentRound(matchId: number) {
+    return TournamentRoundStarts.findLastIndex((start) => matchId >= start);
+}
+
+export function getTournamentPlayers(
+    state: TournamentState,
+    matchId: number,
+): Array<string | null> {
+    const round = getTournamentRound(matchId);
+    const position = matchId - TournamentRoundStarts[round];
+    if (round === 0) {
+        return [TournamentPlayers[position * 2], TournamentPlayers[position * 2 + 1]];
+    }
+
+    const previousStart = TournamentRoundStarts[round - 1];
+    return [0, 1].map((slot) => {
+        const sourceId = previousStart + position * 2 + slot;
+        const sourcePlayers: Array<string | null> = getTournamentPlayers(state, sourceId);
+        const winner = state.matches[sourceId]?.winner;
+        return winner === 0 || winner === 1 ? sourcePlayers[winner] : null;
+    });
+}
+
+export function clearTournamentDescendants(state: TournamentState, matchId: number) {
+    let round = getTournamentRound(matchId);
+    let position = matchId - TournamentRoundStarts[round];
+    while (round < TournamentRoundStarts.length - 1) {
+        round++;
+        position = Math.floor(position / 2);
+        state.matches[TournamentRoundStarts[round] + position] = {
+            scoreA: null,
+            scoreB: null,
+            winner: null,
+        };
+    }
+}

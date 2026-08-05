@@ -32,6 +32,7 @@ import { ClanRouter } from "./routes/clan/ClanRouter";
 import { cleanupOldLogs, isBanned } from "./routes/private/ModerationRouter";
 import { PrivateRouter } from "./routes/private/private";
 import { StatsRouter } from "./routes/stats/StatsRouter";
+import { TournamentRouter } from "./routes/tournament/TournamentRouter";
 import { AuthRouter } from "./routes/user/AuthRouter";
 import { UserRouter } from "./routes/user/UserRouter";
 
@@ -78,6 +79,7 @@ app.use(
 app.route("/api/user/", UserRouter);
 app.route("/api/auth/", AuthRouter);
 app.route("/api/clan/", ClanRouter);
+app.route("/api/tournament/", TournamentRouter);
 app.get("/api/events", authMiddleware, (c) => {
     const user = c.get("user");
     if (!user) {
