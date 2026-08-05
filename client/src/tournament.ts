@@ -1,5 +1,6 @@
 import {
     getTournamentPlayers,
+    TournamentPlayerRegions,
     type TournamentMatchResult,
     type TournamentState,
 } from "../../shared/types/tournament";
@@ -42,7 +43,8 @@ function playerRow(
     winner: boolean,
     picked = false,
 ) {
-    return `<div class="player${winner ? " winner" : ""}${picked ? " predicted-pick" : ""}${name ? "" : " tbd"}"><span class="player-name">${name || "To be decided"}</span><span class="score">${score ?? "—"}</span></div>`;
+    const region = name ? TournamentPlayerRegions[name as keyof typeof TournamentPlayerRegions] : null;
+    return `<div class="player${winner ? " winner" : ""}${picked ? " predicted-pick" : ""}${name ? "" : " tbd"}"><span class="player-name">${region ? `<span class="player-region region-${region.toLowerCase()}">${region}</span>` : ""}${winner ? '<img class="winner-trophy" src="/img/clans/wins.svg" alt="Winner">' : ""}${name || "To be decided"}</span><span class="score">${score ?? "—"}</span></div>`;
 }
 
 function matchCard(matchId: number) {

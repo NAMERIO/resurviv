@@ -33,6 +33,41 @@ export const TournamentPlayers = [
     "Tito",
 ] as const;
 
+export const TournamentPlayerRegions: Record<(typeof TournamentPlayers)[number], "NA" | "EU" | "AS"> = {
+    Filthy: "NA",
+    Scaleznikov: "AS",
+    Razival: "NA",
+    Sigmasanty1: "NA",
+    Life: "NA",
+    Yamit: "NA",
+    Mystic: "NA",
+    Akemi: "AS",
+    Yoosepe: "NA",
+    Stxmn: "NA",
+    Goosify: "EU",
+    Meowski: "AS",
+    Jud: "NA",
+    Namerio: "NA",
+    Goldop: "NA",
+    Think: "NA",
+    "Syntelixion BRWN": "AS",
+    "El Primo": "NA",
+    Pork: "NA",
+    IsmiffyXippan: "AS",
+    StepZ: "NA",
+    Archaic: "NA",
+    Cash1: "NA",
+    "Don Quixote": "AS",
+    Chris21: "AS",
+    Ikou: "NA",
+    xvmr: "NA",
+    Zadokbadok: "EU",
+    worldgonemad: "NA",
+    Bossk40: "NA",
+    Meowserpro: "NA",
+    Tito: "EU",
+};
+
 export interface TournamentMatchResult {
     scoreA: number | null;
     scoreB: number | null;
