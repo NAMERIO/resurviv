@@ -16225,23 +16225,23 @@ div.roulette {
   .iap-limited-offers
   .iap-lto-packs-container
   .iap-lto-pack
-  .iap-discount {
-  position: absolute;
-  top: 6px;
-  margin-left: 6px;
-  width: 100px;
-  height: 100px;
-  z-index: 1;
-  color: #aa1313;
-  transform: rotate(-45deg);
+  .iap-bundle-name {
+  height: 36px;
+  margin: 5px 5px 0;
+  color: #ffffff;
+  font-size: 12px;
   font-weight: bold;
-  background-image: url(../img/gui/iap-discount-tag.svg);
-  background-repeat: no-repeat;
-  background-position: left -30px;
-  background-size: 100%;
+  background: #874c90;
+  border: 2px solid #614066;
+  border-radius: 3px 3px 0 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  line-height: 10px;
-  padding-top: 6px;
+  line-height: 13px;
+  padding: 3px 5px;
+  overflow: hidden;
   pointer-events: none;
 }
 
@@ -16308,9 +16308,9 @@ div.roulette {
   .iap-lto-pack
   .iap-lto-item-container {
   background: #252525;
-  margin: 5px;
+  margin: 0 5px;
   text-align: center;
-  height: 250px;
+  height: 214px;
   padding-top: 5px;
   padding-bottom: 5px;
 }

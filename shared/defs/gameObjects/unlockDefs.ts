@@ -252,6 +252,7 @@ const _allowedMeleeSkins = [
     // "fist_paddle",
     // "fist_pixelDots",
     // "fist_purpleShutter",
+    "fist_living_galaxy",
     // "fist_qFist",
     // "fist_rafflesia",
     // "fist_ranchChips",

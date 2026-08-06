@@ -791,10 +791,10 @@ export class ShopMenu {
 
     renderFeatured() {
         const bundles = this.account.featuredBundles || [];
-        const nextRefreshAt = bundles.reduce(
-            (max, bundle) => Math.max(max, bundle.refreshesAt || 0),
-            0,
-        );
+        const refreshTimes = bundles
+            .map((bundle) => bundle.refreshesAt || 0)
+            .filter((refreshesAt) => refreshesAt > 0);
+        const nextRefreshAt = refreshTimes.length ? Math.min(...refreshTimes) : 0;
         $("#iap-lto-time-left-number").text(
             nextRefreshAt > 0
                 ? this.formatBundleCountdown(nextRefreshAt - Date.now())
@@ -819,14 +819,14 @@ export class ShopMenu {
             if (!bundle) {
                 pack.off("click").addClass("market-refresh-disabled");
                 pack.removeClass("iap-pack-purchased");
+                pack.find(".iap-bundle-name").text("");
                 pack.find(".iap-currency-text").text("0");
-                pack.find(".iap-discount").text("--");
                 continue;
             }
 
             pack.toggleClass("iap-pack-purchased", bundle.purchased);
+            pack.find(".iap-bundle-name").text(bundle.name);
             pack.find(".iap-currency-text").text(String(bundle.price));
-            pack.find(".iap-discount").text(`${bundle.discountPercent}% OFF`);
             const itemRow = $("<div/>");
 
             for (const itemType of bundle.itemTypes) {

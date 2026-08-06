@@ -126,11 +126,7 @@ export async function renderBundleCard(offers: FeaturedBundleOffer[]) {
     ctx.font = "23px sans-serif";
     const refreshesAt = offers[0]?.refreshesAt ?? Date.now();
     const hoursLeft = Math.max(0, Math.ceil((refreshesAt - Date.now()) / 3_600_000));
-    ctx.fillText(
-        `Reward highlights  ${String(hoursLeft).padStart(2, "0")}:00:00`,
-        600,
-        124,
-    );
+    ctx.fillText(`${String(hoursLeft).padStart(2, "0")}:00:00 remaining`, 600, 124);
 
     const potatoPath = publicAssetPath("img/gui/currency-golde-potato.svg");
     const potato = potatoPath
@@ -162,16 +158,17 @@ export async function renderBundleCard(offers: FeaturedBundleOffer[]) {
             );
         }
 
-        ctx.save();
-        ctx.translate(x + 48, 214);
-        ctx.rotate(-Math.PI / 4);
+        const badgeWidth = Math.min(260, width - 40);
+        const badgeX = x + (width - badgeWidth) / 2;
         ctx.fillStyle = "#f0df48";
-        ctx.fillRect(-70, -20, 140, 40);
+        drawRoundedRect(ctx, badgeX, 192, badgeWidth, 42, 5);
+        ctx.strokeStyle = "#c6ad1c";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(badgeX, 192, badgeWidth, 42);
         ctx.fillStyle = "#aa1313";
-        ctx.font = "bold 19px sans-serif";
+        ctx.font = "bold 20px sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(`${offer.discountPercent}% OFF`, 0, 7);
-        ctx.restore();
+        ctx.fillText(offer.name, x + width / 2, 220, badgeWidth - 16);
 
         const priceGradient = ctx.createLinearGradient(0, 630, 0, 678);
         priceGradient.addColorStop(0, "#f4f4d1");
@@ -197,11 +194,11 @@ async function postBundleRotation(offers: FeaturedBundleOffer[]) {
     const image = await renderBundleCard(offers);
     const refreshesAt = offers[0]?.refreshesAt ?? Date.now();
     const formData = new FormData();
-    // Node's Buffer is accepted by Blob at runtime, despite its stricter DOM typing.
-    // @ts-expect-error Buffer<ArrayBufferLike> is a valid Node BlobPart
+    const imageData = new ArrayBuffer(image.byteLength);
+    new Uint8Array(imageData).set(image);
     formData.append(
         "file",
-        new Blob([image], { type: "image/png" }),
+        new Blob([imageData], { type: "image/png" }),
         "featured-bundles.png",
     );
     formData.append(
@@ -214,8 +211,8 @@ async function postBundleRotation(offers: FeaturedBundleOffer[]) {
                     description: `Two fresh bundles are now live. They refresh ${formatDiscordTime(refreshesAt)}.`,
                     color: 0x26d7a0,
                     fields: offers.map((offer) => ({
-                        name: `${offer.size === "small" ? "💠" : "💎"} ${offer.size[0]!.toUpperCase()}${offer.size.slice(1)} Bundle`,
-                        value: `**${offer.price.toLocaleString()} GP** • ~~${offer.basePrice.toLocaleString()} GP~~ • **${offer.discountPercent}% off**\n${offer.itemTypes.map((type) => (GameObjectDefs[type] as any)?.name ?? type).join(" • ")}`,
+                        name: `${offer.size === "small" ? "💠" : "💎"} ${offer.name}`,
+                        value: `**${offer.price.toLocaleString()} GP**\n${offer.itemTypes.map((type) => (GameObjectDefs[type] as any)?.name ?? type).join(" • ")}`,
                         inline: false,
                     })),
                     image: { url: "attachment://featured-bundles.png" },

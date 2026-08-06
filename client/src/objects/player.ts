@@ -2168,9 +2168,16 @@ export class Player implements AbstractObject {
         if (meleeHandSprites && !outfitDef.ghillie) {
             setHandSprite(this.handLSprite, meleeHandSprites.spriteL, 0xffffff);
             setHandSprite(this.handRSprite, meleeHandSprites.spriteR, 0xffffff);
-            // A separately equipped fist skin should retain its own artwork.
-            this.handLSprite.filters = null;
-            this.handRSprite.filters = null;
+            if (meleeSkinDef.galaxyEffect) {
+                this.handGalaxyFilter ??= createGalaxyFilter(v2.create(83, 149), 0.11);
+                this.handLSprite.filters = [this.handGalaxyFilter];
+                this.handRSprite.filters = [this.handGalaxyFilter];
+            } else {
+                // A separately equipped fist skin should retain its own artwork.
+                this.handLSprite.filters = null;
+                this.handRSprite.filters = null;
+                if (!outfitDef.galaxyEffect) this.handGalaxyFilter = null;
+            }
         } else {
             setHandSprite(this.handLSprite, outfitImg.handSprite, handTint);
             setHandSprite(this.handRSprite, outfitImg.handSprite, handTint);

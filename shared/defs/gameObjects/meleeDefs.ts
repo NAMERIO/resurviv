@@ -1278,6 +1278,28 @@ const SkinDefs: Record<string, MeleeDef> = {
             y: 0.185,
         },
     }),
+    fist_living_galaxy: defineMeleeSkin("fists", {
+        name: "Living Galaxy Hands",
+        rarity: Rarity.Mythic,
+        lore: "Hold a piece of the endlessly moving night sky.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        galaxyEffect: true,
+        lootImg: {
+            sprite: "loot-first-galaxy-fists.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-hands-king-galaxy.img",
+            spriteR: "player-hands-king-galaxy.img",
+        },
+        scale: {
+            x: 0.185,
+            y: 0.185,
+        },
+    }),
     fist_blueVelvet: defineMeleeSkin("fists", {
         name: "Blue Velvet",
         rarity: Rarity.Common,
