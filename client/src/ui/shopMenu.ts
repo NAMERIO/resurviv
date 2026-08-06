@@ -819,13 +819,17 @@ export class ShopMenu {
             if (!bundle) {
                 pack.off("click").addClass("market-refresh-disabled");
                 pack.removeClass("iap-pack-purchased");
-                pack.find(".iap-bundle-name").text("");
+                pack.find(".iap-bundle-name-text").text("");
+                pack.find(".iap-bundle-time").text("");
                 pack.find(".iap-currency-text").text("0");
                 continue;
             }
 
             pack.toggleClass("iap-pack-purchased", bundle.purchased);
-            pack.find(".iap-bundle-name").text(bundle.name);
+            pack.find(".iap-bundle-name-text").text(bundle.name);
+            pack.find(".iap-bundle-time").text(
+                this.formatBundleCountdown(bundle.refreshesAt - Date.now()),
+            );
             pack.find(".iap-currency-text").text(String(bundle.price));
             const itemRow = $("<div/>");
 
@@ -2150,12 +2154,11 @@ export class ShopMenu {
 
     formatBundleCountdown(remainingMs: number) {
         const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
-        const hours = Math.floor(totalSeconds / 3600);
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         const seconds = totalSeconds % 60;
-        return [hours, minutes, seconds]
-            .map((value) => String(value).padStart(2, "0"))
-            .join(":");
+        return `${days}d ${hours}h ${minutes}m ${seconds}s`;
     }
 
     formatCountdown(remainingMs: number) {
