@@ -6,6 +6,7 @@ import {
     FeaturedBundleSlots,
 } from "../defs/gameObjects/featuredBundleDefs";
 import type { MeleeDef } from "../defs/gameObjects/meleeDefs";
+import type { OutfitDef } from "../defs/gameObjects/outfitDefs";
 import { Rarity } from "../gameConfig";
 import { getMarketItemRarity } from "./marketPricing";
 
@@ -75,6 +76,11 @@ function buildBundleOffer(
                 `Featured bundle ${definition.id} contains gameplay melee ${itemType}; only hand skins are allowed`,
             );
         }
+        if (itemDef.type === "outfit" && (itemDef as OutfitDef).obstacleType) {
+            throw new Error(
+                `Featured bundle ${definition.id} contains object-disguise outfit ${itemType}`,
+            );
+        }
     }
 
     const price = Math.max(1, Math.round(definition.price));
@@ -101,12 +107,7 @@ export function getFeaturedBundleOffers(now = Date.now()) {
         if (!definition) {
             throw new Error(`Featured ${size} slot references unknown bundle ${id}`);
         }
-        if (definition.size !== size) {
-            throw new Error(
-                `Featured ${size} slot references ${id}, which is a ${definition.size} bundle`,
-            );
-        }
-        return { id, ...definition };
+        return { id, ...definition, size };
     };
 
     const smallDefinition = getSelectedDefinition("small");
