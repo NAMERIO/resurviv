@@ -69,6 +69,7 @@ export const DeatchmatchDesert: MapDef = util.mergeDeep(structuredClone(Desert),
                 cache_07: 1,
                 bunker_structure_02: 1,
                 bunker_structure_05: 1,
+                cactus_01: 45,
                 chest_01: 1,
                 chest_03: { odds: 0.2 },
                 stone_04: 2,
@@ -132,6 +133,14 @@ export const DeatchmatchDesert: MapDef = util.mergeDeep(structuredClone(Desert),
 });
 
 DeatchmatchDesert.lootTable = {
+    tier_cactus: [
+        { name: "", count: 1, weight: 55 },
+        { name: "bandage", count: 2, weight: 18 },
+        { name: "soda", count: 1, weight: 12 },
+        { name: "2xscope", count: 1, weight: 8 },
+        { name: "4xscope", count: 1, weight: 4 },
+        { name: "8xscope", count: 1, weight: 1 },
+    ],
     tier_guns: [
         { name: "flare_gun", count: 1, weight: 14.5 },
         {

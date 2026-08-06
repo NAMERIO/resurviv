@@ -59,6 +59,14 @@ const mapDef: PartialMapDef = {
         },
     },
     lootTable: {
+        tier_cactus: [
+            { name: "", count: 1, weight: 55 },
+            { name: "bandage", count: 2, weight: 18 },
+            { name: "soda", count: 1, weight: 12 },
+            { name: "2xscope", count: 1, weight: 8 },
+            { name: "4xscope", count: 1, weight: 4 },
+            { name: "8xscope", count: 1, weight: 1 },
+        ],
         tier_guns: [
             { name: "famas", count: 1, weight: 0.9 },
             { name: "hk416", count: 1, weight: 4 },
@@ -295,6 +303,7 @@ const mapDef: PartialMapDef = {
                 desert_town_02: 1,
                 greenhouse_02: 1,
                 stone_05: 6,
+                cactus_01: 45,
             },
         ],
         randomSpawns: [],

@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 256 256"
+   width="256"
+   height="256"
+   version="1.1"
+   id="svg32"
+   sodipodi:docname="map-cactus-01.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview32"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="2.2290436"
+     inkscape:cx="12.33713"
+     inkscape:cy="144.68088"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg32" />
+  <defs
+     id="defs3">
+    <linearGradient
+       id="green"
+       x1="0"
+       y1="0"
+       x2="1"
+       y2="1">
+      <stop
+         offset="0"
+         stop-color="#65cf5c"
+         id="stop1" />
+      <stop
+         offset="0.48"
+         stop-color="#2caf4e"
+         id="stop2" />
+      <stop
+         offset="1"
+         stop-color="#137d39"
+         id="stop3" />
+    </linearGradient>
+    <filter
+       id="shadow"
+       x="-0.063829787"
+       y="-0.090909091"
+       width="1.1276596"
+       height="1.1818182">
+      <feGaussianBlur
+         stdDeviation="5"
+         id="feGaussianBlur3" />
+    </filter>
+    <linearGradient
+       id="green-4"
+       x1="85.812057"
+       y1="42.534815"
+       x2="215.1179"
+       y2="171.84065"
+       gradientTransform="matrix(0.85069631,0,0,1.1755076,1.5464684,0.00371747)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0"
+         stop-color="#65cf5c"
+         id="stop1-8" />
+      <stop
+         offset="0.48"
+         stop-color="#2caf4e"
+         id="stop2-8" />
+      <stop
+         offset="1"
+         stop-color="#137d39"
+         id="stop3-2" />
+    </linearGradient>
+  </defs>
+  <ellipse
+     cx="128"
+     cy="150"
+     rx="94"
+     ry="66"
+     fill="#3b2c16"
+     opacity="0.25"
+     filter="url(#shadow)"
+     id="ellipse3" />
+  <!-- Foreshortened arms: recognizable saguaro bends without a side-view trunk. -->
+  <path
+     d="M101 132C85 126 77 116 75 101C73 87 65 79 54 80C40 81 34 94 37 111C41 137 59 157 91 163Z"
+     fill="url(#green)"
+     stroke="#251d17"
+     stroke-width="7"
+     stroke-linejoin="round"
+     id="path3" />
+  <path
+     d="M155 132C171 126 179 116 181 101C183 87 191 79 202 80C216 81 222 94 219 111C215 137 197 157 165 163Z"
+     fill="url(#green)"
+     stroke="#251d17"
+     stroke-width="7"
+     stroke-linejoin="round"
+     id="path4" />
+  <!-- Main crown, shortened by overhead perspective. -->
+  <ellipse
+     cx="128"
+     cy="126"
+     rx="51"
+     ry="72"
+     fill="url(#green)"
+     stroke="#251d17"
+     stroke-width="8"
+     id="ellipse4" />
+  <!-- Curved ribs follow the foreshortened surfaces. -->
+  <g
+     fill="none"
+     stroke-linecap="round"
+     id="g11">
+    <path
+       d="M128 59v134"
+       stroke="#0d7334"
+       stroke-width="5"
+       id="path5" />
+    <path
+       d="M107 63c-14 35-14 91 0 124"
+       stroke="#71d468"
+       stroke-width="4"
+       id="path6" />
+    <path
+       d="M149 63c14 35 14 91 0 124"
+       stroke="#126f34"
+       stroke-width="4"
+       id="path7" />
+    <path
+       d="M91 79c-12 30-11 68 1 96"
+       stroke="#259943"
+       stroke-width="3"
+       id="path8" />
+    <path
+       d="M165 79c12 30 11 68-1 96"
+       stroke="#0d6c31"
+       stroke-width="3"
+       id="path9" />
+    <path
+       d="M53 88c-7 22 2 48 27 61"
+       stroke="#76d56b"
+       stroke-width="4"
+       id="path10" />
+    <path
+       d="M203 88c7 22-2 48-27 61"
+       stroke="#116f33"
+       stroke-width="4"
+       id="path11" />
+  </g>
+  <!-- Elliptical top caps make the camera angle read from above. -->
+  <!-- Sparse, bold spines matching the supplied cartoon reference. -->
+  <g
+     fill="#17351e"
+     id="g32">
+    <circle
+       cx="115"
+       cy="91"
+       r="2"
+       id="circle26" />
+    <circle
+       cx="141"
+       cy="104"
+       r="2"
+       id="circle27" />
+    <circle
+       cx="102"
+       cy="126"
+       r="2"
+       id="circle28" />
+    <circle
+       cx="151"
+       cy="142"
+       r="2"
+       id="circle29" />
+    <circle
+       cx="116"
+       cy="166"
+       r="2"
+       id="circle30" />
+    <circle
+       cx="56"
+       cy="112"
+       r="1.8"
+       id="circle31" />
+    <circle
+       cx="199"
+       cy="113"
+       r="1.8"
+       id="circle32" />
+  </g>
+  <ellipse
+     cx="127.96034"
+     cy="126.63817"
+     rx="51"
+     ry="72"
+     fill="url(#green)"
+     stroke="#251d17"
+     stroke-width="8"
+     id="ellipse4-5"
+     style="fill:none" />
+  <g
+     fill="#ead7a0"
+     stroke="#251d17"
+     stroke-width="1.8"
+     stroke-linejoin="round"
+     id="g26">
+    <path
+       d="M95 70L81 63l10 14Z"
+       id="path13" />
+    <path
+       d="M161 70l14-7-10 14Z"
+       id="path14" />
+    <path
+       d="M79 91l-15-3 13 11Z"
+       id="path15" />
+    <path
+       d="M177 91l15-3-13 11Z"
+       id="path16" />
+    <path
+       d="M73 120l-15 4 15 6Z"
+       id="path17" />
+    <path
+       d="m 120.33119,128.95048 14.4851,5.58407 -8.60537,-13.67288 z"
+       id="path17-1" />
+    <path
+       d="m 132.88796,83.341772 8.57808,-12.938958 -15.20763,5.452356 z"
+       id="path17-1-1" />
+    <path
+       d="m 151.70193,152.33001 8.77035,12.80941 0.65797,-16.14209 z"
+       id="path17-1-1-5" />
+    <path
+       d="M 107.54853,88.073558 93.174161,82.210339 101.51344,96.047116 Z"
+       id="path17-1-1-5-7" />
+    <path
+       d="m 127.38699,174.4176 -15,4 15,6 z"
+       id="path17-1-1-5-1" />
+    <path
+       d="m 99.636924,140.96035 -14.999997,4 14.999997,6 z"
+       id="path17-1-1-5-1-2" />
+    <path
+       d="m 159.07631,111.51244 -0.36626,-15.519861 -9.35419,13.171911 z"
+       id="path17-1-1-5-1-22" />
+    <path
+       d="m 119.04633,196.91653 5.99116,14.32153 3.91703,-15.67345 z"
+       id="path17-9" />
+    <path
+       d="M183 120l15 4-15 6Z"
+       id="path18" />
+    <path
+       d="M80 151l-13 10 16-2Z"
+       id="path19" />
+    <path
+       d="M176 151l13 10-16-2Z"
+       id="path20" />
+    <path
+       d="M96 181l-8 14 15-7Z"
+       id="path21" />
+    <path
+       d="M160 181l8 14-15-7Z"
+       id="path22" />
+    <path
+       d="M40 99l-13-4 11 11Z"
+       id="path23" />
+    <path
+       d="M43 128l-13 5 14 3Z"
+       id="path24" />
+    <path
+       d="M216 99l13-4-11 11Z"
+       id="path25" />
+    <path
+       d="M213 128l13 5-14 3Z"
+       id="path26" />
+  </g>
+</svg>
