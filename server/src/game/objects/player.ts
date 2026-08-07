@@ -1658,6 +1658,7 @@ export class Player extends BaseGameObject {
     poisonSource?: GameObject;
     poisonSourceTeamId?: number;
     contactSmokeTicker = 0;
+    obstacleContactDamageTicker = 0;
     nitroLaceEffect = false;
     nitroLaceDuration = 0;
     nitroLaceMaxDuration = 10;
@@ -3185,6 +3186,10 @@ export class Player extends BaseGameObject {
         }
 
         this.timeAlive += dt;
+        this.obstacleContactDamageTicker = Math.max(
+            0,
+            this.obstacleContactDamageTicker - dt,
+        );
 
         if (
             this.game.map.amongUsMode &&
@@ -3918,6 +3923,43 @@ export class Player extends BaseGameObject {
                     );
                     syncSkinObstacles();
                 }
+            }
+        }
+
+        if (
+            this.obstacleContactDamageTicker <= 0 &&
+            !this.debug.noClip &&
+            !airborneVehicle
+        ) {
+            for (const obj of objs) {
+                if (
+                    obj.__type !== ObjectType.Obstacle ||
+                    obj.dead ||
+                    !obj.collidable ||
+                    !util.sameLayer(obj.layer, this.layer)
+                ) {
+                    continue;
+                }
+
+                const contactDamage = (MapObjectDefs[obj.type] as ObstacleDef)
+                    .contactDamage;
+                if (!contactDamage) continue;
+
+                const contact = collider.intersectCircle(
+                    obj.collider,
+                    this.pos,
+                    movementCollisionRad + 0.05,
+                );
+                if (!contact) continue;
+
+                this.obstacleContactDamageTicker = contactDamage.cooldown;
+                this.damage({
+                    amount: contactDamage.amount,
+                    damageType: GameConfig.DamageType.Npc,
+                    source: obj,
+                    dir: contact.dir,
+                });
+                break;
             }
         }
 

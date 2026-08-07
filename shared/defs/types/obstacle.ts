@@ -48,6 +48,10 @@ export interface ObstacleDef {
     material?: string;
     extents?: Vec2;
     mapObstacleBounds?: AABB[];
+    contactDamage?: {
+        amount: number;
+        cooldown: number;
+    };
     door?: {
         interactionRad: number;
         canUse: boolean;

@@ -13865,6 +13865,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         collidable: true,
         destructible: true,
         health: 140,
+        contactDamage: { amount: 10, cooldown: 1 },
         hitParticle: "leaf",
         explodeParticle: "leaf",
         reflectBullets: false,
