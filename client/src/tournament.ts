@@ -258,7 +258,7 @@ async function openPredictionStats() {
             const players = match.players
                 .map((player, index) => {
                     const leader = !tied && match.votes[index] > match.votes[index ^ 1];
-                    return `<div class="prediction-stat-player${leader ? " leader" : ""}"><span class="prediction-stat-name">${player}${leader ? " · Most Picked" : ""}</span><span class="prediction-stat-bar"><span style="width:${percentages[index]}%"></span></span><span class="prediction-stat-value">${match.votes[index]} · ${percentages[index]}%</span></div>`;
+                    return `<div class="prediction-stat-player${leader ? " leader" : ""}"><span class="prediction-stat-name">${player}</span><span class="prediction-stat-bar"><span style="width:${percentages[index]}%"></span></span><span class="prediction-stat-value">${match.votes[index]} · ${percentages[index]}%</span></div>`;
                 })
                 .join("");
             rows.push(
