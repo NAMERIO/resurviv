@@ -65,7 +65,10 @@ import type {
     UsernameRequest,
     UsernameResponse,
 } from "../../shared/types/user";
-import type { FeaturedBundleOffer } from "../../shared/utils/featuredBundles";
+import {
+    type FeaturedBundleOffer,
+    getFeaturedBundleOffers,
+} from "../../shared/utils/featuredBundles";
 import type { ItemStatus } from "../../shared/utils/loadout";
 import { type Loadout, loadout as loadouts } from "../../shared/utils/loadout";
 import { util } from "../../shared/utils/util";
@@ -161,7 +164,7 @@ export class Account {
 
     loadout = loadouts.defaultLoadout();
     items: Item[] = [];
-    featuredBundles: FeaturedBundleOffer[] = [];
+    featuredBundles: FeaturedBundleOffer[] = getFeaturedBundleOffers().offers;
     lootBoxes: ShopLootBox[] = [];
     marketListings: MarketListing[] = [];
     userMarketListings: MarketListing[] = [];
@@ -306,6 +309,7 @@ export class Account {
             this.pendingGpGifts = [];
             this.pendingSkinGifts = [];
             this.items = [];
+            this.featuredBundles = getFeaturedBundleOffers().offers;
             if (err) {
                 errorLogManager.storeGeneric("account", "load_profile_error");
             } else if (data.banned) {

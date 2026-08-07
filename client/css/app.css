@@ -15448,6 +15448,15 @@ input [type="image"]:focus {
   pointer-events: auto;
 }
 
+#iap-modal.shop-bundles-public-preview .iap-limited-offers {
+  position: relative;
+  z-index: 3;
+}
+
+#iap-modal.shop-bundles-public-preview #store-lock {
+  display: none;
+}
+
 #store-lock {
   max-height: 100%;
   max-width: 100%;

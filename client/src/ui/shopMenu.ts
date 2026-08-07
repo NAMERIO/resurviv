@@ -191,11 +191,13 @@ export class ShopMenu {
             this.refreshData();
             this.render();
             this.startMarketTimers();
-            this.account.loadMarket((success) => {
-                if (!success) {
-                    this.setStatus("shop-market-load-failed");
-                }
-            });
+            if (this.account.loggedIn) {
+                this.account.loadMarket((success) => {
+                    if (!success) {
+                        this.setStatus("shop-market-load-failed");
+                    }
+                });
+            }
         });
         this.modal.onHide(() => {
             this.modal.selector.removeClass("is-open");
@@ -564,6 +566,10 @@ export class ShopMenu {
         $(tabSelector).addClass("store-tab-selected");
 
         const shopVisible = tab === "shop";
+        this.modal.selector.toggleClass(
+            "shop-bundles-public-preview",
+            shopVisible && !this.account.loggedIn,
+        );
         $("#lock-shop-container").css(
             "display",
             this.account.loggedIn ? "none" : "block",
@@ -1713,6 +1719,13 @@ export class ShopMenu {
     }
 
     handleFeaturedAction(bundle: FeaturedBundleOffer) {
+        if (!this.account.loggedIn) {
+            this.modal.hide();
+            window.requestAnimationFrame(() => {
+                $(document).trigger("pass-login-required");
+            });
+            return;
+        }
         this.pendingAction = "bundle";
         this.pendingFeaturedBundle = bundle;
         this.pendingSellItem = null;
