@@ -948,6 +948,12 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
             canCoalesce: true,
             maxInstances: 3,
         },
+        cactus_hit_01: {
+            path: "audio/hits/cactus_hit_01.mp3",
+            volume: 2.5,
+            canCoalesce: true,
+            maxInstances: 3,
+        },
         metal_bullet_hit_01: {
             path: "audio/hits/metal_bullet_hit_01.mp3",
             volume: 1,
@@ -1154,6 +1160,10 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
         bush_break_01: {
             path: "audio/sfx/bush_break_01.mp3",
             volume: 1,
+        },
+        cactus_break_01: {
+            path: "audio/sfx/cactus_break_01.ogg",
+            volume: 2,
         },
         bush_enter_01: {
             path: "audio/sfx/bush_enter_01.mp3",
@@ -2165,6 +2175,10 @@ const Groups: Record<string, { channel: string; sounds: string[] }> = {
     bush_bullet: {
         channel: "hits",
         sounds: ["bush_bullet_hit_01"],
+    },
+    cactus_hit: {
+        channel: "hits",
+        sounds: ["cactus_hit_01"],
     },
     tree_bullet: {
         channel: "hits",
