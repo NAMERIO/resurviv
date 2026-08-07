@@ -1,5 +1,6 @@
 import {
     getTournamentPlayers,
+    getTournamentRound,
     type TournamentMatchResult,
     TournamentPlayerRegions,
     type TournamentState,
@@ -18,6 +19,16 @@ const bracket = document.querySelector<HTMLElement>("#bracket")!;
 const editor = document.querySelector<HTMLElement>("#editor-backdrop")!;
 const form = document.querySelector<HTMLFormElement>("#match-editor")!;
 const predictionDialog = document.querySelector<HTMLElement>("#prediction-backdrop")!;
+const predictionStatsDialog = document.querySelector<HTMLElement>(
+    "#prediction-stats-backdrop",
+)!;
+
+interface PredictionMatchStats {
+    matchId: number;
+    players: [string | null, string | null];
+    votes: [number, number];
+    total: number;
+}
 
 interface PredictionStatus {
     predictions: Array<{ matchId: number; predictedPlayer: string }>;
@@ -220,6 +231,57 @@ for (const id of ["#prediction-a", "#prediction-b"]) {
         void lockPrediction((event.currentTarget as HTMLButtonElement).dataset.player!);
     });
 }
+
+const roundNames = ["Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "Final"];
+
+async function openPredictionStats() {
+    const list = document.querySelector<HTMLElement>("#prediction-stats-list")!;
+    predictionStatsDialog.hidden = false;
+    list.innerHTML = '<div class="prediction-stats-loading">Loading predictions...</div>';
+    try {
+        const data = await request<{ matches: PredictionMatchStats[] }>(
+            "/api/tournament/prediction-stats",
+        );
+        let previousRound = -1;
+        const rows: string[] = [];
+        for (const match of data.matches) {
+            if (!match.players[0] || !match.players[1]) continue;
+            const round = getTournamentRound(match.matchId);
+            if (round !== previousRound) {
+                rows.push(`<h3 class="prediction-stats-round">${roundNames[round]}</h3>`);
+                previousRound = round;
+            }
+            const percentages = match.votes.map((votes) =>
+                match.total > 0 ? Math.round((votes / match.total) * 100) : 0,
+            );
+            const tied = match.votes[0] === match.votes[1];
+            const players = match.players
+                .map((player, index) => {
+                    const leader = !tied && match.votes[index] > match.votes[index ^ 1];
+                    return `<div class="prediction-stat-player${leader ? " leader" : ""}"><span class="prediction-stat-name">${player}${leader ? " · Most Picked" : ""}</span><span class="prediction-stat-bar"><span style="width:${percentages[index]}%"></span></span><span class="prediction-stat-value">${match.votes[index]} · ${percentages[index]}%</span></div>`;
+                })
+                .join("");
+            rows.push(
+                `<section class="prediction-stat-match"><div class="prediction-stat-heading"><span>Match ${match.matchId + 1}</span><span>${match.total} total vote${match.total === 1 ? "" : "s"}</span></div>${players}</section>`,
+            );
+        }
+        list.innerHTML =
+            rows.join("") ||
+            '<div class="prediction-stats-loading">No matchups are ready yet.</div>';
+    } catch (error) {
+        list.innerHTML = `<div class="prediction-stats-loading">${error instanceof Error ? error.message : "Unable to load prediction statistics"}</div>`;
+    }
+}
+
+document.querySelector("#prediction-stats-button")!.addEventListener("click", () => {
+    void openPredictionStats();
+});
+document.querySelector("#prediction-stats-close")!.addEventListener("click", () => {
+    predictionStatsDialog.hidden = true;
+});
+predictionStatsDialog.addEventListener("click", (event) => {
+    if (event.target === predictionStatsDialog) predictionStatsDialog.hidden = true;
+});
 
 form.addEventListener("submit", async (event) => {
     event.preventDefault();

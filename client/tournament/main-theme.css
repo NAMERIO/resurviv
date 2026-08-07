@@ -575,6 +575,104 @@ footer a {
   background: #83af50;
 }
 
+.prediction-stats-button {
+  margin-top: 9px;
+  padding: 8px 18px;
+  border: 1px solid rgba(131, 175, 80, 0.75);
+  border-bottom: 3px solid #4f6e2e;
+  border-radius: 4px;
+  background: #83af50;
+  color: #fff;
+  font:
+    700 14px "Roboto Condensed",
+    Arial,
+    sans-serif;
+  cursor: pointer;
+}
+
+.prediction-stats-button:hover {
+  background: rgba(80, 115, 45, 0.82);
+}
+
+.prediction-stats-dialog {
+  width: min(620px, calc(100vw - 28px));
+  max-height: min(760px, calc(100vh - 28px));
+  box-sizing: border-box;
+}
+
+.prediction-stats-list {
+  max-height: min(610px, calc(100vh - 180px));
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.prediction-stats-round {
+  margin: 13px 0 6px;
+  color: #a9cf7d;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.prediction-stat-match {
+  margin-bottom: 8px;
+  padding: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.prediction-stat-heading {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 7px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 11px;
+}
+
+.prediction-stat-player {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) 2fr 78px;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+  font-size: 13px;
+}
+
+.prediction-stat-player + .prediction-stat-player {
+  margin-top: 5px;
+}
+
+.prediction-stat-player.leader .prediction-stat-name {
+  color: #c7ef91;
+  font-weight: 700;
+}
+
+.prediction-stat-bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.prediction-stat-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #83af50;
+}
+
+.prediction-stat-value {
+  text-align: right;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.prediction-stats-loading {
+  padding: 24px 0;
+  color: rgba(255, 255, 255, 0.65);
+  text-align: center;
+}
+
 @media (max-width: 700px) {
   body {
     min-width: 0;

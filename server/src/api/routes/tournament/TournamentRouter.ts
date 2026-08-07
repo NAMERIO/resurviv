@@ -151,6 +151,42 @@ TournamentRouter.get("/predictions", authMiddleware, async (c) => {
     });
 });
 
+TournamentRouter.get("/prediction-stats", async (c) => {
+    await ensureTournamentTable();
+    const state = await readState();
+    const result = await db.execute<{
+        match_id: number;
+        predicted_player: string;
+        votes: number | string;
+    }>(sql`
+        SELECT match_id, predicted_player, COUNT(*) AS votes
+        FROM tournament_predictions
+        WHERE tournament_id = 1
+        GROUP BY match_id, predicted_player
+        ORDER BY match_id, predicted_player
+    `);
+
+    const votes = new Map<string, number>();
+    for (const row of result.rows) {
+        votes.set(`${Number(row.match_id)}:${row.predicted_player}`, Number(row.votes));
+    }
+
+    return c.json({
+        matches: state.matches.map((_match, matchId) => {
+            const players = getTournamentPlayers(state, matchId);
+            const playerVotes = players.map((player) =>
+                player ? (votes.get(`${matchId}:${player}`) ?? 0) : 0,
+            );
+            return {
+                matchId,
+                players,
+                votes: playerVotes,
+                total: playerVotes[0] + playerVotes[1],
+            };
+        }),
+    });
+});
+
 const predictionSchema = z.object({
     matchId: z.number().int().min(0).max(30),
     predictedPlayer: z.string().min(1).max(40),

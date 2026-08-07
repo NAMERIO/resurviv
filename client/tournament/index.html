@@ -22,6 +22,7 @@
       <h1>Championship Bracket</h1>
       <a class="discord-info" href="https://discord.gg/pnmsY8DbvG" target="_blank" rel="noopener noreferrer"><img src="/img/clans/discord-logo.svg" alt="">Join the Discord server for more info</a>
       <div id="prediction-status" class="prediction-status">Sign in to make free predictions.</div>
+      <button id="prediction-stats-button" class="prediction-stats-button" type="button">Prediction Stats</button>
     </header>
     <section class="bracket-shell">
       <div class="round-labels" aria-hidden="true"><span>Round of 32</span><span>Round of 16</span><span>Quarterfinal</span><span>Semifinal</span><strong>Final</strong><span>Semifinal</span><span>Quarterfinal</span><span>Round of 16</span><span>Round of 32</span></div>
@@ -53,6 +54,15 @@
       <p>Choose carefully. Your pick locks immediately and cannot be changed.</p>
       <div class="prediction-options"><button id="prediction-a" type="button"></button><button id="prediction-b" type="button"></button></div>
       <div id="prediction-error" class="editor-error"></div>
+    </div>
+  </div>
+  <div id="prediction-stats-backdrop" class="editor-backdrop" hidden>
+    <div class="prediction-dialog prediction-stats-dialog" role="dialog" aria-modal="true" aria-labelledby="prediction-stats-title">
+      <button id="prediction-stats-close" class="editor-close" type="button" aria-label="Close">&times;</button>
+      <div class="editor-kicker">COMMUNITY PICKS</div>
+      <h2 id="prediction-stats-title">Prediction Statistics</h2>
+      <p>See who the community thinks will win. Votes are anonymous.</p>
+      <div id="prediction-stats-list" class="prediction-stats-list"><div class="prediction-stats-loading">Loading predictions...</div></div>
     </div>
   </div>
   <script type="module" src="../src/tournament.ts"></script>
