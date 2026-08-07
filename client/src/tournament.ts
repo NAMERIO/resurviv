@@ -46,7 +46,7 @@ function updatePredictionStatus(rewarded = false) {
         return;
     }
     status.classList.remove("rewarded");
-    status.innerHTML = `<span class="prediction-progress">${predictions.size}/31 predictions locked</span><span class="prediction-reward">Predict all 31 games correctly for <img src="/img/gui/currency-golde-potato.svg" alt="GP"> 5,000 GP</span>`;
+    status.innerHTML = `<span class="prediction-progress">${predictions.size}/31 match predictions locked</span><span class="prediction-reward">Correctly predict every match across all rounds for <img src="/img/gui/currency-golde-potato.svg" alt="GP"> 5,000 GP</span>`;
 }
 
 function playerRow(
@@ -244,8 +244,14 @@ async function openPredictionStats() {
         );
         let previousRound = -1;
         const rows: string[] = [];
-        for (const match of data.matches) {
-            if (!match.players[0] || !match.players[1]) continue;
+        const readyMatches = data.matches
+            .filter((match) => match.players[0] && match.players[1])
+            .sort(
+                (a, b) =>
+                    getTournamentRound(b.matchId) - getTournamentRound(a.matchId) ||
+                    a.matchId - b.matchId,
+            );
+        for (const match of readyMatches) {
             const round = getTournamentRound(match.matchId);
             if (round !== previousRound) {
                 rows.push(`<h3 class="prediction-stats-round">${roundNames[round]}</h3>`);

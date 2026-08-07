@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
     clearTournamentDescendants,
     createTournamentState,
+    getTournamentDescendantMatchIds,
     getTournamentPlayers,
     type TournamentState,
 } from "../../../../../shared/types/tournament";
@@ -274,6 +275,14 @@ TournamentRouter.post(
                 winner: update.winner,
             };
             if (oldWinner !== update.winner) {
+                for (const descendantId of getTournamentDescendantMatchIds(
+                    update.matchId,
+                )) {
+                    await tx.execute(sql`
+                        DELETE FROM tournament_predictions
+                        WHERE tournament_id = 1 AND match_id = ${descendantId}
+                    `);
+                }
                 clearTournamentDescendants(nextState, update.matchId);
             }
             nextState.updatedAt = Date.now();

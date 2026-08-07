@@ -119,6 +119,18 @@ export function getTournamentPlayers(
     });
 }
 
+export function getTournamentDescendantMatchIds(matchId: number) {
+    const descendants: number[] = [];
+    let round = getTournamentRound(matchId);
+    let position = matchId - TournamentRoundStarts[round];
+    while (round < TournamentRoundStarts.length - 1) {
+        round++;
+        position = Math.floor(position / 2);
+        descendants.push(TournamentRoundStarts[round] + position);
+    }
+    return descendants;
+}
+
 export function clearTournamentDescendants(state: TournamentState, matchId: number) {
     let round = getTournamentRound(matchId);
     let position = matchId - TournamentRoundStarts[round];
