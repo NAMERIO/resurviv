@@ -680,6 +680,9 @@ export class Game {
         if (this.m_playing) {
             this.m_playingTicker += dt;
         }
+        this.m_playerBarn.showDeveloperVitals =
+            (IS_DEV || this.canUseDeveloper()) &&
+            Boolean(this.m_config.get("debugTools")?.showPlayerHealth);
         this.m_playerBarn.m_update(
             dt,
             this.m_activeId,
@@ -3651,6 +3654,10 @@ export class Game {
         if (msg.groupStatusDirty) {
             const groupId = this.m_playerBarn.getPlayerInfo(this.m_activeId).groupId;
             this.m_playerBarn.updateGroupStatus(groupId, msg.groupStatus);
+        }
+
+        if (msg.developerPlayerVitals.length) {
+            this.m_playerBarn.updateDeveloperPlayerVitals(msg.developerPlayerVitals);
         }
 
         // Delete objects

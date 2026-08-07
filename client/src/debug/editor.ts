@@ -120,9 +120,20 @@ export class Editor {
                 {
                     title: "HUD",
                 },
+                {
+                    title: "Player",
+                },
             ],
         });
-        const [tools, render, HUD] = tabs.pages;
+        const [tools, render, HUD, player] = tabs.pages;
+
+        player
+            .addBinding(this.toolParams, "showPlayerHealth", {
+                label: "Health",
+            })
+            .on("change", () => {
+                this.config.set("debugTools", this.toolParams);
+            });
 
         //
         // Tools

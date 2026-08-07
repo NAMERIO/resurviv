@@ -28,6 +28,7 @@ export const debugToolsConfig = {
     throwFast: false,
     shootFast: false,
     punchFast: false,
+    showPlayerHealth: false,
     moveObjs: false,
     explosionDecalBrush: false,
     kothHillEditor: false,

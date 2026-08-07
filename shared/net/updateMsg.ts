@@ -363,7 +363,14 @@ export const UpdateExtFlags = {
     AirstrikeZones: 1 << 13,
     MapIndicators: 1 << 14,
     KillLeader: 1 << 15,
+    DeveloperPlayerVitals: 1 << 16,
 };
+
+export interface DeveloperPlayerVitals {
+    playerId: number;
+    health: number;
+    boost: number;
+}
 
 export class UpdateMsg implements AbstractMsg {
     delObjIds: number[] = [];
@@ -403,6 +410,8 @@ export class UpdateMsg implements AbstractMsg {
     groupStatus: GroupStatus[] = [];
     groupStatusDirty = false;
 
+    developerPlayerVitals: DeveloperPlayerVitals[] = [];
+
     bullets: Bullet[] = [];
     explosions: Explosion[] = [];
     emotes: Emote[] = [];
@@ -420,7 +429,7 @@ export class UpdateMsg implements AbstractMsg {
         /* STRIP_FROM_PROD_CLIENT:START */
         let flags = 0;
         const flagsIdx = s.byteIndex;
-        s.writeUint16(flags);
+        s.writeUint32(flags);
 
         if (this.delObjIds.length) {
             s.writeArray(this.delObjIds, 16, (id) => {
@@ -485,6 +494,15 @@ export class UpdateMsg implements AbstractMsg {
         if (this.groupStatusDirty) {
             serializeGroupStatus(s, this.groupStatus);
             flags |= UpdateExtFlags.GroupStatus;
+        }
+
+        if (this.developerPlayerVitals.length) {
+            s.writeArray(this.developerPlayerVitals, 8, (vitals) => {
+                s.writeUint16(vitals.playerId);
+                s.writeFloat(vitals.health, 0, 100, 7);
+                s.writeFloat(vitals.boost, 0, 100, 7);
+            });
+            flags |= UpdateExtFlags.DeveloperPlayerVitals;
         }
 
         if (this.bullets.length) {
@@ -613,7 +631,7 @@ export class UpdateMsg implements AbstractMsg {
         s.writeBoolean(this.started);
         const idx = s.byteIndex;
         s.byteIndex = flagsIdx;
-        s.writeUint16(flags);
+        s.writeUint32(flags);
         s.byteIndex = idx;
         /* STRIP_FROM_PROD_CLIENT:END */
     }
@@ -623,7 +641,7 @@ export class UpdateMsg implements AbstractMsg {
         s: BitStream,
         objectCreator: { m_getTypeById: (id: number, s: BitStream) => ObjectType },
     ) {
-        const flags = s.readUint16();
+        const flags = s.readUint32();
 
         if ((flags & UpdateExtFlags.DeletedObjects) != 0) {
             this.delObjIds = s.readArray(16, () => {
@@ -701,6 +719,13 @@ export class UpdateMsg implements AbstractMsg {
         if ((flags & UpdateExtFlags.GroupStatus) != 0) {
             this.groupStatus = deserializeGroupStatus(s);
             this.groupStatusDirty = true;
+        }
+        if ((flags & UpdateExtFlags.DeveloperPlayerVitals) != 0) {
+            this.developerPlayerVitals = s.readArray(8, () => ({
+                playerId: s.readUint16(),
+                health: s.readFloat(0, 100, 7),
+                boost: s.readFloat(0, 100, 7),
+            }));
         }
 
         if ((flags & UpdateExtFlags.Bullets) != 0) {

@@ -4661,6 +4661,16 @@ export class Player extends BaseGameObject {
             updateMsg.groupStatusDirty = true;
         }
 
+        // Developer-only diagnostics. This is built separately for each recipient,
+        // so regular clients never receive another player's private vitals.
+        if (this.canUseDeveloper || Config.gameServer.thisRegion === "local") {
+            updateMsg.developerPlayerVitals = playerBarn.players.map((p) => ({
+                playerId: p.__id,
+                health: p.health,
+                boost: p.boost,
+            }));
+        }
+
         const shouldSendEmote = (emote: Emote) => {
             const emotePlayer = game.objectRegister.getById(emote.playerId) as
                 | Player

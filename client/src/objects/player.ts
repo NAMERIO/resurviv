@@ -28,6 +28,7 @@ import {
 } from "../../../shared/gameConfig";
 import type { ObjectData, ObjectType } from "../../../shared/net/objectSerializeFns";
 import {
+    type DeveloperPlayerVitals,
     type GroupStatus,
     getPlayerStatusUpdateRate,
     type LocalDataWithDirty,
@@ -97,9 +98,75 @@ function createPlayerNameText() {
     const nameText = new PIXI.Text("", nameStyle);
     nameText.anchor.set(0.5, 0.5);
     nameText.scale.set(0.5, 0.5);
-    nameText.position.set(0, 30);
+    nameText.position.set(0, -39);
     nameText.visible = false;
     return nameText;
+}
+
+function drawDeveloperVitals(gfx: PIXI.Graphics, health: number, boost: number) {
+    const width = 40;
+    const height = 4;
+    const x = -width / 2;
+    const healthY = -32;
+    const boostY = -26;
+    const healthT = math.clamp(health / 100, 0, 1);
+    let healthColor = 0xff0000;
+    if (health > 25) {
+        if (math.eqAbs(health, 100, 0.2)) {
+            healthColor = 0xb3b3b3;
+        } else if (health >= 75) {
+            healthColor = 0xffffff;
+        } else {
+            const green = Math.floor(45 + ((112 - 45) / 45) * health);
+            const blue = Math.floor(45 + ((112 - 45) / 45) * health);
+            healthColor = (0xff << 16) | (green << 8) | blue;
+        }
+    }
+
+    gfx.clear();
+    // Match the game's health counter: translucent rounded base and its
+    // grey/white/pink/red health progression.
+    gfx.beginFill(0x000000, 0.4).drawRoundedRect(x, healthY, width, height, 2).endFill();
+    if (healthT > 0) {
+        gfx.beginFill(healthColor)
+            .drawRoundedRect(x, healthY, math.max(1, width * healthT), height, 2)
+            .endFill();
+    }
+
+    // Match the four differently-sized and colored sections in the game boost UI.
+    const boostColors = [0xff901a, 0xff751a, 0xff6616, 0xff5600];
+    const boostWidths = [10, 10, 15, 5];
+    const gap = 1;
+    const contentWidth = width - gap * 3;
+    const boostLeft = math.clamp(boost / 100, 0, 1) * contentWidth;
+    let cursor = x;
+    let consumed = 0;
+    for (let i = 0; i < boostWidths.length; i++) {
+        const segmentWidth = (boostWidths[i] / width) * contentWidth;
+        gfx.beginFill(0x000000, 0.4)
+            .drawRoundedRect(
+                cursor,
+                boostY,
+                segmentWidth,
+                height,
+                i === 0 || i === 3 ? 1.5 : 0,
+            )
+            .endFill();
+        const fillWidth = math.clamp(boostLeft - consumed, 0, segmentWidth);
+        if (fillWidth > 0) {
+            gfx.beginFill(boostColors[i])
+                .drawRoundedRect(
+                    cursor,
+                    boostY,
+                    fillWidth,
+                    height,
+                    i === 0 || i === 3 ? 1.5 : 0,
+                )
+                .endFill();
+        }
+        consumed += segmentWidth;
+        cursor += segmentWidth + gap;
+    }
 }
 
 function createSprite() {
@@ -329,6 +396,7 @@ export class Player implements AbstractObject {
 
     container = new PIXI.Container();
     nameText = createPlayerNameText();
+    developerVitalsGfx = new PIXI.Graphics();
     auraContainer = new PIXI.Container();
     auraCircle = createSprite();
 
@@ -587,6 +655,7 @@ export class Player implements AbstractObject {
 
         this.container.addChild(this.captureTheFlagSprite);
         this.container.addChild(this.nameText);
+        this.container.addChild(this.developerVitalsGfx);
 
         this.auraContainer.addChild(this.auraCircle);
 
@@ -1301,7 +1370,14 @@ export class Player implements AbstractObject {
             ? AmongUsRoleDefs.impostor.color
             : 0x00ffff;
         this.nameText.tint = 0xffffff;
-        this.nameText.visible = (!isActivePlayer && inSameGroup) || isKnownImpostor;
+        const showDeveloperVitals = playerBarn.showDeveloperVitals;
+        this.nameText.visible =
+            showDeveloperVitals || (!isActivePlayer && inSameGroup) || isKnownImpostor;
+        const vitals = playerBarn.developerPlayerVitals[this.__id];
+        this.developerVitalsGfx.visible = showDeveloperVitals && Boolean(vitals);
+        if (this.developerVitalsGfx.visible) {
+            drawDeveloperVitals(this.developerVitalsGfx, vitals.health, vitals.boost);
+        }
 
         // Locate nearby obstacles that may play interaction effects
         let insideObstacle: Obstacle | null = null;
@@ -3496,6 +3572,14 @@ export class PlayerBarn {
     anonPlayerNames = false;
     showClanTags = false;
     localPlayerId = 0;
+    showDeveloperVitals = false;
+    developerPlayerVitals: Record<number, DeveloperPlayerVitals> = {};
+
+    updateDeveloperPlayerVitals(vitals: DeveloperPlayerVitals[]) {
+        for (const value of vitals) {
+            this.developerPlayerVitals[value.playerId] = value;
+        }
+    }
 
     m_update(
         dt: number,
@@ -3721,6 +3805,7 @@ export class PlayerBarn {
         }
         delete this.playerInfo[id];
         delete this.playerStatus[id];
+        delete this.developerPlayerVitals[id];
     }
 
     getPlayerInfo(id: number) {
