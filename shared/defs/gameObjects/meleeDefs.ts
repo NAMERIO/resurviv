@@ -2878,6 +2878,18 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
     }),
 
+    bayonet_woodland: defineMeleeSkin("bayonet", {
+        name: "Bayonet Woodland",
+        rarity: Rarity.Rare,
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-bayonet-woodland.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-bayonet-woodland.img",
+        },
+    }),
+
     bone_knife: defineMeleeSkin("bayonet", {
         name: "Bone Knife",
         rarity: Rarity.Mythic,
@@ -2888,6 +2900,32 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
         worldImg: {
             sprite: "bone-knife.img",
+        },
+    }),
+
+    carving_fork: defineMeleeSkin("bayonet", {
+        name: "Carving Fork",
+        rarity: Rarity.Epic,
+        lore: "For those who like to keep their opponents at a comfortable roasting distance.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "carving-fork.img",
+        },
+        worldImg: {
+            sprite: "carving-fork.img",
+        },
+    }),
+
+    shadow_kunai: defineMeleeSkin("bayonet", {
+        name: "Shadow Kunai",
+        rarity: Rarity.Mythic,
+        lore: "For those who move like shadows and strike with precision.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "shadow-kunai.img",
+        },
+        worldImg: {
+            sprite: "shadow-kunai.img",
         },
     }),
 

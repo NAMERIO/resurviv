@@ -286,6 +286,8 @@ const _allowedMeleeSkins = [
     // "karambit_drowned",
     // "bayonet_rugged",
     // "bone_knife",
+    // "shadow_kunai",
+    // "carving_fork",
     // "bayonet_woodland",
     // "guthook_woodland",
     // "huntsman_rugged",
