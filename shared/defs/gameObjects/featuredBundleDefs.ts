@@ -27,6 +27,13 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 2500,
         durationDays: 3,
     },
+     bundle_vitaminD: {
+        name: "Vitamin D Set",
+        size: "small",
+        items: ["outfitVitaminD", "fist_flamingNucleus"],
+        price: 1250,
+        durationDays: 3,
+    },
 };
 
 export const FeaturedBundleSlots = {
