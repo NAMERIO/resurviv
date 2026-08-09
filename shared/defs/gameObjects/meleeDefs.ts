@@ -2903,6 +2903,45 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
     }),
 
+    bens_knife: defineMeleeSkin("bayonet", {
+        name: "Ben's Knife",
+        rarity: Rarity.Mythic,
+        lore: "A rare collector's item crafted by the serial killer & blacksmith Benny. - HXH",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "bens-knife.img",
+        },
+        worldImg: {
+            sprite: "bens-knife.img",
+        },
+    }),
+
+    police_baton: defineMeleeSkin("machete", {
+        name: "Police Baton",
+        rarity: Rarity.Epic,
+        lore: "For maintaining order in the most chaotic situations.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "police-baton.img",
+        },
+        worldImg: {
+            sprite: "police-baton.img",
+        },
+    }),
+
+    reapers_scythe: defineMeleeSkin("naginata", {
+        name: "Reaper's Scythe",
+        rarity: Rarity.Epic,
+        lore: "For those who reap victory with refined style.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "reapers-scythe.img",
+        },
+        worldImg: {
+            sprite: "reapers-scythe.img",
+        },
+    }),
+
     carving_fork: defineMeleeSkin("bayonet", {
         name: "Carving Fork",
         rarity: Rarity.Epic,
@@ -3001,6 +3040,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         worldImg: {
             sprite: "loot-melee-machete-taiga.img",
         },
+
     }),
     kukri_trad: defineMeleeSkin("machete", {
         name: "Tallow's Kukri",
