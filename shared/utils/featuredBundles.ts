@@ -5,8 +5,6 @@ import {
     type FeaturedBundleSize,
     FeaturedBundleSlots,
 } from "../defs/gameObjects/featuredBundleDefs";
-import type { MeleeDef } from "../defs/gameObjects/meleeDefs";
-import type { OutfitDef } from "../defs/gameObjects/outfitDefs";
 import { Rarity } from "../gameConfig";
 import { getMarketItemRarity } from "./marketPricing";
 
@@ -69,16 +67,6 @@ function buildBundleOffer(
         if (!itemDef) {
             throw new Error(
                 `Featured bundle ${definition.id} contains unknown item ${itemType}`,
-            );
-        }
-        if (itemDef.type === "melee" && !(itemDef as MeleeDef).handSprites) {
-            throw new Error(
-                `Featured bundle ${definition.id} contains gameplay melee ${itemType}; only hand skins are allowed`,
-            );
-        }
-        if (itemDef.type === "outfit" && (itemDef as OutfitDef).obstacleType) {
-            throw new Error(
-                `Featured bundle ${definition.id} contains object-disguise outfit ${itemType}`,
             );
         }
     }
