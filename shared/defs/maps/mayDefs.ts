@@ -5,7 +5,7 @@ const mapDef: PartialMapDef = {
     mapId: 5,
     desc: {
         name: "May",
-        icon: "img/gui/loot-weapon-double-lasr-gun.svg",
+        icon: "img/loot/loot-weapon-lasr-gun-dual.svg",
         buttonCss: "btn-mode-may",
     },
     assets: {
@@ -63,7 +63,7 @@ const mapDef: PartialMapDef = {
     },
     lootTable: {
         tier_space: [
-            { name: "lasr_swrd", count: 1, weight: 0.29 },
+            { name: "lasr_swrd_01", count: 1, weight: 0.29 },
             { name: "lasr_swrd_02", count: 1, weight: 0.15 },
             { name: "lasr_swrd_03", count: 1, weight: 0.15 },
             { name: "lasr_gun", count: 1, weight: 0.27 },

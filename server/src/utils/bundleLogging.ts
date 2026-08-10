@@ -128,7 +128,7 @@ export async function renderBundleCard(offers: FeaturedBundleOffer[]) {
     const hoursLeft = Math.max(0, Math.ceil((refreshesAt - Date.now()) / 3_600_000));
     ctx.fillText(`${String(hoursLeft).padStart(2, "0")}:00:00 remaining`, 600, 124);
 
-    const potatoPath = publicAssetPath("img/gui/currency-golde-potato.svg");
+    const potatoPath = publicAssetPath("img/gui/currency-golden-potato.svg");
     const potato = potatoPath
         ? await loadImage(potatoPath).catch(() => undefined)
         : undefined;

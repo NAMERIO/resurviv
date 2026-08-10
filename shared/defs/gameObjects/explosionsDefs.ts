@@ -306,7 +306,7 @@ export const ExplosionDefs: Record<string, ExplosionDef> = {
         explosionEffectType: "fire_shot",
         decalType: "",
     },
-    explosion_40mm_granade: {
+    explosion_40mm_grenade: {
         type: "explosion",
         damage: 125,
         obstacleDamage: 1.1,

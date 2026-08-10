@@ -367,7 +367,7 @@ const BoostDefs: Record<string, BoostDef> = {
         boost: 0.0,
         hideUi: true,
         lootImg: {
-            sprite: "loot-pulseBox.img",
+            sprite: "loot-medical-pulseBox.img",
             tint: 0xffffff,
             border: "loot-circle-outer-01.img",
             borderTint: 0x000000,
@@ -389,7 +389,7 @@ const BoostDefs: Record<string, BoostDef> = {
         useTime: 2,
         boost: 0,
         lootImg: {
-            sprite: "loot-nitroLace.img",
+            sprite: "loot-medical-nitroLace.img",
             tint: 0xffffff,
             border: "loot-circle-outer-01.img",
             borderTint: 0x000000,
@@ -515,7 +515,7 @@ const AmmoDefs: Record<string, AmmoDef> = {
         },
     },
     // "40mm": {
-    //     name: "40 mm",
+    //     name: "40mm",
     //     type: "ammo",
     //     special: true,
     //     minStackSize: 10,
@@ -664,7 +664,7 @@ const AmmoDefs: Record<string, AmmoDef> = {
         },
     },
     flux_rifle_ammo: {
-        name: "Potato Ammo",
+        name: "Flux Ammo",
         type: "ammo",
         special: true,
         hideUi: true,

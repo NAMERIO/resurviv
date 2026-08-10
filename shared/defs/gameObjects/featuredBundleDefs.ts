@@ -51,14 +51,14 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
     bundle_checkmate: {
         name: "Checkmate Set",
         size: "small",
-        items: ["outfitCheckmate", "fist_Checkmate"],
+        items: ["outfitCheckmate", "fist_checkmate"],
         price: 1350,
         durationDays: 7,
     },
     bundle_yinyang: {
         name: "Yin-Yang Set",
         size: "small",
-        items: ["outfitYinYang", "fist_Checkmate"],
+        items: ["outfitYinYang", "fist_checkmate"],
         price: 1350,
         durationDays: 7,
     },
