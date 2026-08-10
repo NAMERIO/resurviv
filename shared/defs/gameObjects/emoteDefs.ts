@@ -1490,6 +1490,16 @@ export const EmotesDefs: Record<string, EmoteDef> = {
         teamOnly: false,
         category: EmoteCategory.Other,
     },
+    emote_flagmoldova: {
+        type: "emote",
+        name: "Flag Moldova",
+        rarity: Rarity.Stock,
+        texture: "flag-moldova.img",
+        sound: "emote_01",
+        channel: "ui",
+        teamOnly: false,
+        category: EmoteCategory.Flags,
+    },
     emote_flagmorocco: {
         type: "emote",
         name: "Flag Morocco",
@@ -2614,16 +2624,6 @@ export const EmotesDefs: Record<string, EmoteDef> = {
         channel: "ui",
         teamOnly: false,
         category: EmoteCategory.Other,
-    },
-    emote_flagmoldova: {
-        type: "emote",
-        name: "Flag Moldova",
-        rarity: Rarity.Stock,
-        texture: "flag-moldova.img",
-        sound: "emote_01",
-        channel: "ui",
-        teamOnly: false,
-        category: EmoteCategory.Flags,
     },
     emote_its_ok: {
         type: "emote",

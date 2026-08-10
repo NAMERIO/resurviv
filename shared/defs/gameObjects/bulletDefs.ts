@@ -856,7 +856,7 @@ export const BaseDefs: Record<string, BulletDef> = {
         tracerWidth: 0.1,
         tracerLength: 0.9,
     },
-    bullet_m9A17: {
+    bullet_m9a17: {
         type: "bullet",
         damage: 0,
         obstacleDamage: 1,
@@ -943,7 +943,7 @@ const SkinDefs: Record<string, BulletDef> = {
         tracerLength: 0.8,
         reflectOnAnyObstacle: true,
     },
-    bullet_m9A17: {
+    bullet_m9a17: {
         type: "bullet",
         damage: 0,
         obstacleDamage: 1,

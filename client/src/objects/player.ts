@@ -2313,7 +2313,7 @@ export class Player implements AbstractObject {
         }
 
         if (this.m_hasPerk("phoenix")) {
-            this.phoenixSprite.texture = PIXI.Texture.from("loot-phoenix-perk.img");
+            this.phoenixSprite.texture = PIXI.Texture.from("player-perk-phoenix.img");
             this.phoenixSprite.scale.set(0.3, 0.3);
             this.phoenixSprite.anchor.set(0.575, 0.5);
             this.phoenixSprite.position.set(-4.0, 0.0);
@@ -2324,7 +2324,7 @@ export class Player implements AbstractObject {
         }
 
         if (this.m_hasPerk("pyro")) {
-            this.pyroSprite.texture = PIXI.Texture.from("loot-pyro-perk.img");
+            this.pyroSprite.texture = PIXI.Texture.from("player-perk-pyro.img");
             this.pyroSprite.scale.set(0.4, 0.4);
             this.pyroSprite.anchor.set(0.575, 0.5);
             this.pyroSprite.position.set(-5.0, 0.0);

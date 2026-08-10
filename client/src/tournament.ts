@@ -41,12 +41,12 @@ function updatePredictionStatus(rewarded = false) {
     const status = document.querySelector<HTMLElement>("#prediction-status")!;
     if (rewarded) {
         status.innerHTML =
-            '<span class="prediction-progress">Perfect bracket!</span><span class="prediction-reward"><img src="/img/gui/currency-golde-potato.svg" alt="GP">5,000 GP awarded</span>';
+            '<span class="prediction-progress">Perfect bracket!</span><span class="prediction-reward"><img src="/img/gui/currency-golden-potato.svg" alt="GP">5,000 GP awarded</span>';
         status.classList.add("rewarded");
         return;
     }
     status.classList.remove("rewarded");
-    status.innerHTML = `<span class="prediction-progress">${predictions.size}/31 match predictions locked</span><span class="prediction-reward">Correctly predict every match across all rounds for <img src="/img/gui/currency-golde-potato.svg" alt="GP"> 5,000 GP</span>`;
+    status.innerHTML = `<span class="prediction-progress">${predictions.size}/31 match predictions locked</span><span class="prediction-reward">Correctly predict every match across all rounds for <img src="/img/gui/currency-golden-potato.svg" alt="GP"> 5,000 GP</span>`;
 }
 
 function playerRow(

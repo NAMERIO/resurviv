@@ -79,9 +79,9 @@ export const loadoutGunSections = [
         name: "Other",
         guns: [
             // "bugle",
-            // "m9A17",
+            // "m9a17",
             // "m79",
-            // "waterGun",
+            // "water_gun",
             // "rainbow_blaster",
             // "bazooka",
             "flux_rifle",

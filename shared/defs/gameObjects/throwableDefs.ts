@@ -447,7 +447,7 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
         speed: { equip: 0, attack: 0 },
         lootImg: {
             sprite: "loot-throwable-poison.img",
-            tint: 0xffffff,
+            tint: 0x00ff00,
             border: "loot-circle-outer-01.img",
             borderTint: 0,
             scale: 0.2,
@@ -1158,7 +1158,7 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
                 left: { sprite: "none" },
             },
         },
-        useThrowParticles: true,
+        useThrowParticles: false,
         sound: {
             pullPin: "frag_pin_01",
             throwing: "frag_throw_01",
@@ -1224,11 +1224,11 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
             sprite: "player-rainbow-trail.img",
         },
     },
-    mm40_granade: {
-        name: "40mm granade",
+    mm40_grenade: {
+        name: "40mm Grenade",
         type: "throwable",
         quality: 0,
-        explosionType: "explosion_40mm_granade",
+        explosionType: "explosion_40mm_grenade",
         inventoryOrder: 0,
         noPotatoSwap: true,
         cookable: false,

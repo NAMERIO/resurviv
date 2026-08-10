@@ -42,7 +42,7 @@ function getPassRewardName(reward: PassRewardDef) {
 function getPassRewardImage(reward: PassRewardDef) {
     return "item" in reward
         ? helpers.getSvgFromGameType(reward.item)
-        : "img/loot/loot-golde-potato.svg";
+        : "img/loot/loot-golden-potato.svg";
 }
 
 function getPassRewardTransform(reward: PassRewardDef) {
@@ -1188,7 +1188,7 @@ export class Pass {
                 : itemCategory
                   ? `url(${itemCategory.categoryImage})`
                   : reward && "gp" in reward
-                    ? "url(img/loot/loot-golde-potato.svg)"
+                    ? "url(img/loot/loot-golden-potato.svg)"
                     : "";
         $("#pass-progress-unlock-type-image").css({
             "background-image": unlockTypeImageUrl,
