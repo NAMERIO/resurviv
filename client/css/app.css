@@ -13404,8 +13404,8 @@ input [type="image"]:focus {
 }
 
 .clan-war-column {
-  flex: 0 0 300px;
-  min-width: 280px;
+  flex: 0 0 480px;
+  min-width: 440px;
   min-height: 0;
 }
 
@@ -13418,7 +13418,8 @@ input [type="image"]:focus {
 }
 
 .clan-war-history-list {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
   max-height: 190px;
   overflow-y: auto;
@@ -13431,54 +13432,65 @@ input [type="image"]:focus {
 
 .clan-war-item {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 74px 96px 82px;
+  grid-template-columns: minmax(105px, 1fr) auto auto auto;
   align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 8px 10px;
+  gap: 9px;
+  min-height: 46px;
+  padding: 8px 11px;
   background-color: #3a3a3a;
+  border-left: 3px solid #777;
   border-radius: 5px;
 }
 
-.clan-war-column .clan-war-item {
-  grid-template-columns: minmax(0, 1fr) 64px;
-  grid-template-areas:
-    "opponent result"
-    "cgp date";
+.clan-war-item.win {
+  border-left-color: #7cfc00;
 }
 
-.clan-war-column .clan-war-opponent {
-  grid-area: opponent;
+.clan-war-item.loss {
+  border-left-color: #ff6969;
 }
 
-.clan-war-column .clan-war-result {
-  grid-area: result;
+.clan-war-item.draw {
+  border-left-color: #ffe400;
 }
 
-.clan-war-column .clan-war-cgp {
-  grid-area: cgp;
-  text-align: left;
-}
-
-.clan-war-column .clan-war-date {
-  grid-area: date;
-}
-
-.clan-war-opponent {
+.clan-war-matchup {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
   min-width: 0;
-  color: #c4c4c4;
+}
+
+.clan-war-team {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.clan-war-opponent strong {
+.clan-war-team.home {
   color: #fff;
 }
 
-.clan-war-result {
-  font-size: 13px;
+.clan-war-team.away {
+  color: #c8c8c8;
+}
+
+.clan-war-versus {
+  flex: 0 0 auto;
+  color: #777;
+  font-size: 11px;
   font-weight: bold;
+  text-transform: uppercase;
+}
+
+.clan-war-result {
+  padding: 3px 6px;
+  border-radius: 3px;
+  background-color: rgba(255, 255, 255, 0.07);
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.35px;
   text-align: center;
 }
 
@@ -13496,15 +13508,21 @@ input [type="image"]:focus {
 
 .clan-war-cgp {
   color: #ffe400;
+  font-size: 12px;
   font-weight: bold;
   text-align: right;
+  white-space: nowrap;
 }
 
 .clan-war-date,
 .clan-war-empty {
   color: #969b91;
-  font-size: 13px;
+  font-size: 11px;
   text-align: right;
+}
+
+.clan-war-date {
+  white-space: nowrap;
 }
 
 .clan-war-empty {
@@ -14939,8 +14957,8 @@ input [type="image"]:focus {
   }
 
   #modal-clan-page .clan-war-column {
-    flex-basis: 300px;
-    min-width: 280px;
+    flex-basis: 430px;
+    min-width: 400px;
   }
 
   #modal-clan-page .clan-members-section,
@@ -14982,8 +15000,8 @@ input [type="image"]:focus {
   }
 
   #modal-clan-page .clan-war-column {
-    flex-basis: 300px;
-    min-width: 280px;
+    flex-basis: 430px;
+    min-width: 400px;
   }
 
   #modal-clan-page .clan-members-section,
@@ -15023,8 +15041,8 @@ input [type="image"]:focus {
   }
 
   #modal-clan-page .clan-war-column {
-    flex-basis: 300px;
-    min-width: 280px;
+    flex-basis: 430px;
+    min-width: 400px;
   }
 
   #modal-clan-page .clan-members-section,

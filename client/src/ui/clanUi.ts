@@ -1777,12 +1777,29 @@ export class ClanUi {
         }
 
         for (const war of clan.clanWarHistory) {
-            const date = new Date(war.createdAt).toLocaleDateString();
+            const createdAt = new Date(war.createdAt);
+            const opponent = war.opponentClanName || "Clan War";
+            const date = createdAt.toLocaleDateString(undefined, {
+                month: "numeric",
+                day: "numeric",
+                year: "numeric",
+            });
+            const time = createdAt.toLocaleTimeString(undefined, {
+                hour: "numeric",
+                minute: "2-digit",
+            });
+            const awardedCgp = Number(war.cgpAwarded) || 0;
+            const cgpLabel = `${awardedCgp > 0 ? "+" : ""}${formatCgp(awardedCgp)} CGP`;
+
             container.append(
-                $("<div/>", { class: "clan-war-item" }).append(
-                    $("<div/>", { class: "clan-war-opponent" }).append(
-                        $("<span/>", { text: "vs " }),
-                        $("<strong/>", { text: war.opponentClanName || "Clan War" }),
+                $("<div/>", { class: `clan-war-item ${war.result}` }).append(
+                    $("<div/>", {
+                        class: "clan-war-matchup",
+                        title: `${clan.name} vs ${opponent}`,
+                    }).append(
+                        $("<strong/>", { class: "clan-war-team home", text: clan.name }),
+                        $("<span/>", { class: "clan-war-versus", text: "vs" }),
+                        $("<strong/>", { class: "clan-war-team away", text: opponent }),
                     ),
                     $("<div/>", {
                         class: `clan-war-result ${war.result}`,
@@ -1790,9 +1807,14 @@ export class ClanUi {
                     }),
                     $("<div/>", {
                         class: "clan-war-cgp",
-                        text: `+${formatCgp(war.cgpAwarded)} CGP`,
+                        text: cgpLabel,
                     }),
-                    $("<div/>", { class: "clan-war-date", text: date }),
+                    $("<time/>", {
+                        class: "clan-war-date",
+                        datetime: createdAt.toISOString(),
+                        title: createdAt.toLocaleString(),
+                        text: `${date} · ${time}`,
+                    }),
                 ),
             );
         }
