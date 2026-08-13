@@ -21781,7 +21781,7 @@ div.roulette {
   background-image: url(/img/gui/crown.svg);
   background-size: 78%;
   cursor: pointer;
-  right: 39px;
+  left: 6px;
 }
 
 #modal-prestige-arena .arena-player-card > .icon-transfer-owner:hover,
@@ -21909,7 +21909,7 @@ div.roulette {
   }
 
   #modal-prestige-arena .arena-player-card > .icon-transfer-owner {
-    right: 30px;
+    left: 4px;
   }
 
   #modal-prestige-arena .arena-player-card > .icon-in-game {
