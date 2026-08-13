@@ -17,8 +17,9 @@ export const privateOutfits = [
 const _allowedHealEffects = ["heal_basic", "boost_basic"];
 const _allowedDeathEffects = ["death_none", "death_basic"];
 const _allowedStreaks = ["streak_rapid_fire", "streak_heavy_hitter", "streak_juggernaut"];
-// const _allowedGunSkins = [
+//  const _allowedGunSkins = [
 //     "mosin_gilded"
+//     "mosin_camo"
 // ];
 const _featuredBundleUnlocks = [
     "outfitPeru",
@@ -286,9 +287,13 @@ const _allowedMeleeSkins = [
     // "karambit_drowned",
     // "bayonet_rugged",
     // "bone_knife",
+    // "farmers_sickle",
+    // "bloodmoon_huntsman",
+    // "gilded_bayonet",
     // "shadow_kunai",
     // "carving_fork",
     // "police_baton",
+    // "rapier_blade",
     // "reapers_scythe",
     // "bens_knife",
     // "bayonet_woodland",
@@ -316,6 +321,7 @@ const _allowedOutfits = [
     // "outfitBase",
     // "outfitAuresis",
     // "outfitPython",
+    // "outfitStickySituation",
     // "outfitUrbanGlitch",
     // "outfitSolarAegis",
     // "outfitRiotPlaid",

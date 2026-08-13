@@ -2179,7 +2179,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         name: "Toxic Fire",
         noDropOnDeath: true,
 
-        rarity: 4,
+        rarity: 5,
         lore: "For those who wield the green fire.",
         skinImg: {
             baseTint: 0xffffff,
@@ -3591,7 +3591,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         name: "Bugcat",
         noDropOnDeath: true,
 
-        rarity: 3,
+        rarity: 4,
         lore: "For those who fight with pure cuteness.",
 
         skinImg: {
@@ -3612,6 +3612,7 @@ const SkinDefs: Record<string, OutfitDef> = {
 
     outfitPython: defineOutfitSkin("outfitBase", {
         name: "Python",
+        noDropOnDeath: true,
         rarity: 3,
         lore: "For those who blend seamlessly.",
         skinImg: {
@@ -3623,6 +3624,27 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xbc8737,
             backpackSprite: "player-back-python.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitStickySituation: defineOutfitSkin("outfitBase", {
+        name: "Stick-y Situation",
+        noDropOnDeath: true,
+        rarity: 3,
+        lore: "Here to lumber the competition.",
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-stick-y-situation.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-stick-y-situation.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-stick-y-situation.img",
         },
         lootImg: {
             skinLootImg: true,

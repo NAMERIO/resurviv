@@ -2880,7 +2880,7 @@ const SkinDefs: Record<string, MeleeDef> = {
 
     bayonet_woodland: defineMeleeSkin("bayonet", {
         name: "Bayonet Woodland",
-        rarity: Rarity.Rare,
+        rarity: Rarity.Mythic,
         noPotatoSwap: false,
         lootImg: {
             sprite: "loot-melee-bayonet-woodland.img",
@@ -2892,7 +2892,7 @@ const SkinDefs: Record<string, MeleeDef> = {
 
     bone_knife: defineMeleeSkin("bayonet", {
         name: "Bone Knife",
-        rarity: Rarity.Mythic,
+        rarity: Rarity.Epic,
         lore: "For those who prefer a primal touch to their combat style.",
         noPotatoSwap: false,
         lootImg: {
@@ -2900,6 +2900,45 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
         worldImg: {
             sprite: "bone-knife.img",
+        },
+    }),
+
+    gilded_bayonet: defineMeleeSkin("bayonet", {
+        name: "Gilded Bayonet",
+        rarity: Rarity.Epic,
+        lore: "A luxurious take on the classic bayonet, perfect for those who appreciate both style and substance.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "gilded-bayonet.img",
+        },
+        worldImg: {
+            sprite: "gilded-bayonet.img",
+        },
+    }),
+
+    farmers_sickle: defineMeleeSkin("bayonet", {
+        name: "Farmer's Sickle",
+        rarity: Rarity.Rare,
+        lore: "Perfect for harvesting crops—or reaping victory on the field.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "farmers-sickle.img",
+        },
+        worldImg: {
+            sprite: "farmers-sickle.img",
+        },
+    }),
+
+    bloodmoon_huntsman: defineMeleeSkin("huntsman", {
+        name: "Bloodmoon Huntsman",
+        rarity: Rarity.Epic,
+        lore: "A vicious, ruby-tinted blade forged for fast strikes and ruthless accuracy.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "bloodmoon-huntsman.img",
+        },
+        worldImg: {
+            sprite: "bloodmoon-huntsman.img",
         },
     }),
 
@@ -2926,6 +2965,19 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
         worldImg: {
             sprite: "police-baton.img",
+        },
+    }),
+
+    rapier_blade: defineMeleeSkin("machete", {
+        name: "Rapier Blade",
+        rarity: Rarity.Epic,
+        lore: "For those who fight with elegance, speed, and undeniable finesse.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "rapier-blade.img",
+        },
+        worldImg: {
+            sprite: "rapier-blade.img",
         },
     }),
 
