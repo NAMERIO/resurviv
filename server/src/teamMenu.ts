@@ -327,6 +327,11 @@ class Room {
                 this.kick(msg.data.playerId);
                 break;
             }
+            case "transferOwner": {
+                if (!this.data.arena || !player.isLeader) break;
+                this.transferOwnership(msg.data.playerId);
+                break;
+            }
             case "swapTeam": {
                 if (!this.data.arena) break;
                 if (this.data.findingGame || this.players.some((p) => p.inGame)) break;
@@ -625,6 +630,16 @@ class Room {
         player.send("kicked", {});
 
         this.removePlayer(player);
+    }
+
+    transferOwnership(playerId: number) {
+        const nextOwner = this.players[playerId];
+        if (!this.data.arena || !nextOwner || nextOwner.isLeader) return;
+
+        this.players.splice(playerId, 1);
+        this.players.unshift(nextOwner);
+        this.arenaOwnerKey = nextOwner.userId || nextOwner.encodedIp;
+        this.sendState();
     }
 
     removePlayerWithError(player: Player, error: TeamMenuErrorType) {

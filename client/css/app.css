@@ -21622,3 +21622,299 @@ div.roulette {
 #home-social-links .btn-social {
   margin: 0;
 }
+
+/* Private lobby player cards */
+#modal-prestige-arena .arena-team-list,
+#modal-prestige-arena .arena-spectator-list {
+  align-content: start;
+  display: grid;
+  gap: 8px;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  grid-template-rows: none;
+  padding: 2px;
+}
+
+#modal-prestige-arena
+  #arena-teams-board.arena-large-teams
+  .arena-team-list,
+#modal-prestige-arena
+  #arena-teams-board.arena-single-team
+  .arena-team-list {
+  display: grid;
+  gap: 8px;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+  grid-template-rows: none;
+}
+
+#modal-prestige-arena .arena-team-slot.arena-player-card,
+#modal-prestige-arena .arena-spectator-item.arena-player-card,
+#modal-prestige-arena .arena-br-team-member.arena-player-card {
+  align-items: stretch;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.12), transparent 58%),
+    rgba(10, 16, 20, 0.46);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 -2px rgba(0, 0, 0, 0.2),
+    0 3px 8px rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  height: 136px;
+  justify-content: flex-end;
+  min-height: 136px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 8px 7px 6px;
+  position: relative;
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+#modal-prestige-arena .arena-team-slot.arena-player-card:not(.empty):hover,
+#modal-prestige-arena .arena-spectator-item.arena-player-card:not(.empty):hover,
+#modal-prestige-arena .arena-br-team-member.arena-player-card:not(.empty):hover {
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.18), transparent 58%),
+    rgba(10, 16, 20, 0.56);
+  transform: translateY(-1px);
+}
+
+#modal-prestige-arena .arena-player-card.is-self {
+  border-color: rgba(119, 255, 210, 0.72);
+  box-shadow:
+    inset 0 -2px rgba(0, 0, 0, 0.22),
+    0 0 0 1px rgba(67, 224, 171, 0.18),
+    0 4px 10px rgba(0, 0, 0, 0.18);
+}
+
+#modal-prestige-arena .arena-player-card.empty {
+  opacity: 0.48;
+}
+
+#modal-prestige-arena .arena-player-avatar {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+#modal-prestige-arena .arena-player-avatar.empty {
+  background-image: url(/img/gui/player-gui.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 46px;
+  filter: grayscale(1);
+  opacity: 0.42;
+}
+
+#modal-prestige-arena .arena-player-avatar-frame {
+  inset: 0;
+  position: absolute;
+  transform: scale(0.88);
+  transform-origin: center;
+}
+
+#modal-prestige-arena .arena-player-avatar-preview {
+  background-size: contain;
+  inset: 0;
+  position: absolute !important;
+}
+
+#modal-prestige-arena .arena-player-card > .arena-player-name {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 4px;
+  display: flex;
+  flex: 0 0 29px;
+  font-family: Roboto Condensed;
+  font-size: 14px;
+  font-weight: 700;
+  height: 29px;
+  justify-content: center;
+  line-height: 16px;
+  margin-top: 4px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 6px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+#modal-prestige-arena .arena-player-card.is-self > .arena-player-name {
+  color: #77ffd2;
+}
+
+#modal-prestige-arena .arena-player-card > .icon {
+  background-color: rgba(0, 0, 0, 0.36);
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 50%;
+  height: 27px;
+  margin: 0;
+  min-width: 27px;
+  position: absolute;
+  top: 6px;
+  width: 27px;
+  z-index: 2;
+}
+
+#modal-prestige-arena .arena-player-card > .icon-leader {
+  left: 6px;
+}
+
+#modal-prestige-arena .arena-player-card > .icon-kick {
+  right: 6px;
+}
+
+#modal-prestige-arena .arena-player-card > .icon-transfer-owner {
+  background-color: rgba(54, 119, 83, 0.9);
+  background-image: url(/img/gui/crown.svg);
+  background-size: 78%;
+  cursor: pointer;
+  right: 39px;
+}
+
+#modal-prestige-arena .arena-player-card > .icon-transfer-owner:hover,
+#modal-prestige-arena .arena-player-card > .icon-transfer-owner:focus {
+  background-color: rgba(70, 153, 107, 0.98);
+  outline: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+#modal-prestige-arena .arena-player-card > .icon-in-game {
+  bottom: 39px;
+  right: 6px;
+  top: auto;
+}
+
+#modal-prestige-arena .arena-spectator-list {
+  grid-template-columns: repeat(auto-fill, 132px);
+  justify-content: start;
+  overflow-y: auto;
+}
+
+#modal-prestige-arena .arena-spectator-item.arena-player-card {
+  height: 112px;
+  min-height: 112px;
+}
+
+#modal-prestige-arena .arena-br-team-members {
+  display: grid;
+  gap: 7px;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+}
+
+#modal-prestige-arena .arena-br-team-member.arena-player-card {
+  height: 124px;
+  min-height: 124px;
+  padding: 7px 6px 5px;
+}
+
+#modal-prestige-arena .arena-br-team-member-self {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  z-index: 2;
+}
+
+#modal-prestige-arena
+  #arena-teams-board.arena-large-teams
+  .arena-team-slot.arena-player-card {
+  height: 100px;
+  min-height: 100px;
+  padding: 5px;
+}
+
+#modal-prestige-arena
+  #arena-teams-board.arena-large-teams
+  .arena-player-card
+  > .arena-player-name {
+  flex-basis: 22px;
+  font-size: 11px;
+  height: 22px;
+  margin-top: 2px;
+  padding: 0 3px;
+}
+
+@media (max-width: 700px) {
+  #modal-prestige-arena .arena-team-list {
+    gap: 6px;
+    grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+  }
+
+  #modal-prestige-arena .arena-team-slot.arena-player-card {
+    height: 116px;
+    min-height: 116px;
+    padding: 6px 5px 5px;
+  }
+
+  #modal-prestige-arena .arena-player-card > .arena-player-name {
+    flex-basis: 25px;
+    font-size: 12px;
+    height: 25px;
+    margin-top: 3px;
+    padding: 0 4px;
+  }
+}
+
+@media (max-height: 565px) {
+  #modal-prestige-arena .arena-team-list,
+  #modal-prestige-arena .arena-spectator-list {
+    gap: 5px;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  }
+
+  #modal-prestige-arena .arena-spectator-list {
+    grid-template-columns: repeat(auto-fill, 110px);
+  }
+
+  #modal-prestige-arena .arena-team-slot.arena-player-card,
+  #modal-prestige-arena .arena-spectator-item.arena-player-card,
+  #modal-prestige-arena .arena-br-team-member.arena-player-card {
+    height: 94px;
+    min-height: 94px;
+    padding: 4px;
+  }
+
+  #modal-prestige-arena .arena-player-card > .arena-player-name {
+    flex-basis: 21px;
+    font-size: 11px;
+    height: 21px;
+    margin-top: 2px;
+    padding: 0 3px;
+  }
+
+  #modal-prestige-arena .arena-player-card > .icon {
+    height: 22px;
+    min-width: 22px;
+    top: 4px;
+    width: 22px;
+  }
+
+  #modal-prestige-arena .arena-player-card > .icon-leader {
+    left: 4px;
+  }
+
+  #modal-prestige-arena .arena-player-card > .icon-kick {
+    right: 4px;
+  }
+
+  #modal-prestige-arena .arena-player-card > .icon-transfer-owner {
+    right: 30px;
+  }
+
+  #modal-prestige-arena .arena-player-card > .icon-in-game {
+    bottom: 29px;
+    right: 4px;
+    top: auto;
+  }
+}

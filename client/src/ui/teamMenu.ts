@@ -1201,6 +1201,13 @@ export class TeamMenu {
         });
     }
 
+    transferOwnership(playerId: number) {
+        if (!this.isLeader || !this.arena || playerId === this.localPlayerId) return;
+        this.sendMessage("transferOwner", {
+            playerId,
+        });
+    }
+
     swapPlayerTeam(playerId: number, team: ArenaTeam | "spectator") {
         if (!this.arena) return;
         const player = this.getPlayerById(playerId);
