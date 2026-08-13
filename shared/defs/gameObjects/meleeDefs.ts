@@ -25,7 +25,6 @@ export interface MeleeDef {
     anim: {
         idlePose: string;
         attackAnims: string[];
-        poseAnims?: string[];
         deploy?: string;
     };
     sound: Record<string, string>;
@@ -1113,21 +1112,21 @@ const BaseDefs: Record<string, MeleeDef> = {
         stonePiercing: true,
         autoAttack: false,
         switchDelay: 0.25,
-        damage: 30, // 60
-        obstacleDamage: 1.5,
+        damage: 50, // 60, then 30
+        obstacleDamage: 1, // 1.5
         attack: {
             offset: { x: 2, y: 0 },
-            rad: 2.1,
+            rad: 2.2,
             damageTimes: [0.3],
             cooldownTime: 0.6,
         },
         speed: {
-            equip: -7,
+            equip: -3,
+            attack: 7,
         },
         anim: {
             idlePose: "meleeLasrSwrd",
             attackAnims: ["lasrSwrdSwing"],
-            poseAnims: ["lasrSwrd_pose_1", "lasrSwrd_pose_2", "lasrSwrd_pose_3"],
         },
         sound: {
             pickup: "frag_pickup_01",
@@ -1145,16 +1144,18 @@ const BaseDefs: Record<string, MeleeDef> = {
         },
         worldImg: {
             sprite: "loot-melee-lasrswrd-01.img",
-            pos: { x: 35.0, y: -35.0 },
-            rot: 0.785,
+            pos: { x: 38.0, y: -38.0 },
+            rot: 3,
             scale: { x: 0.4, y: 0.4 },
             tint: 0xffffff,
             leftHandOntop: true,
         },
+        /* Commenting out for now because triggering this causes the involved players and anyone near them or seeing it to freeze
         reflectArea: {
             offset: { x: 1.75, y: 0.0 },
             rad: 1,
         },
+        */
     },
     cutlass: {
         name: "Cutlass",
