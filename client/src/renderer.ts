@@ -93,7 +93,11 @@ export class Renderer {
             // Keep promoted ground objects on the ground/stairs group while
             // fully underground so they can be hidden without also hiding
             // objects on the basement side of stairs.
-            layerIdx = zOrd >= 100 && !(groundHidden && layer === 2) ? 3 : 2;
+            if (groundHidden) {
+                layerIdx = layer & 1 ? 3 : 2;
+            } else {
+                layerIdx = zOrd >= 100 ? 3 : 2;
+            }
         }
 
         if (
