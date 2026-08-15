@@ -913,13 +913,28 @@ export class Game {
             return;
         }
 
-        const players = this.modeManager.getPlayersSortedByRank();
+        const rankedPlayers = this.modeManager.getPlayersSortedByRank();
+        const rankByParticipant = new Map(
+            rankedPlayers.map(({ player, rank }) => [
+                player.getMatchParticipantKey(),
+                rank,
+            ]),
+        );
+        const players = this.playerBarn.matchPlayers.filter(
+            (player) => !player.spectatorOnly,
+        );
+        const participantKeyByMatchDataId = new Map(
+            players.map((player) => [
+                player.matchDataId,
+                player.getMatchParticipantKey(),
+            ]),
+        );
         /**
          * teamTotal is for total teams that started the match, i hope?
          *
          * it also seems to be unused by the client so we could also remove it?
          */
-        const rawValues: SaveGameBody["matchData"] = players.map(({ player, rank }) => {
+        const rawValues: SaveGameBody["matchData"] = players.map((player) => {
             return {
                 // *NOTE: userId is optional; we save the game stats for non logged users too
                 userId: player.userId,
@@ -950,7 +965,9 @@ export class Game {
                 mapId: this.map.mapId,
                 mapSeed: this.map.seed,
                 killedIds: player.killedIds,
-                rank: rank,
+                rank:
+                    rankByParticipant.get(player.getMatchParticipantKey()) ??
+                    rankedPlayers.length + 1,
                 ip: player.ip,
                 findGameIp: player.findGameIp,
             };
@@ -961,7 +978,7 @@ export class Game {
             SaveGameBody["matchData"][number]
         >();
         for (const data of rawValues) {
-            const key = data.userId ? `user:${data.userId}` : `ip:${data.findGameIp}`;
+            const key = participantKeyByMatchDataId.get(data.playerId)!;
             const existing = matchDataByParticipant.get(key);
             if (!existing) {
                 matchDataByParticipant.set(key, {

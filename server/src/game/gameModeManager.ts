@@ -79,7 +79,20 @@ export class GameModeManager {
 
     // used when saving the game match data
     getPlayersSortedByRank(): Array<{ player: Player; rank: number }> {
-        const players = [...this.game.playerBarn.matchPlayers];
+        // A reconnect creates a new Player object. Rank one stable participant
+        // once, using their latest session, so changing names or reconnecting
+        // cannot create duplicate teams/placements in match results.
+        const playersByParticipant = new Map<string, Player>();
+        for (const player of this.game.playerBarn.matchPlayers) {
+            if (player.spectatorOnly) continue;
+
+            const participantKey = player.getMatchParticipantKey();
+            const existing = playersByParticipant.get(participantKey);
+            if (!existing || player.matchDataId > existing.matchDataId) {
+                playersByParticipant.set(participantKey, player);
+            }
+        }
+        const players = Array.from(playersByParticipant.values());
 
         if (this.game.map.amongUsMode && this.game.amongUsWinningRole) {
             const winningRole = this.game.amongUsWinningRole;

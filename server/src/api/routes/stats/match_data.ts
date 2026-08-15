@@ -40,7 +40,11 @@ matchDataRouter.post(
             })
             .from(matchDataTable)
             .leftJoin(usersTable, eq(usersTable.id, matchDataTable.userId))
-            .orderBy(asc(matchDataTable.rank))
+            .orderBy(
+                asc(matchDataTable.rank),
+                asc(matchDataTable.teamId),
+                asc(matchDataTable.playerId),
+            )
             .where(eq(matchDataTable.gameId, gameId));
 
         return c.json<MatchDataResponse>(result);

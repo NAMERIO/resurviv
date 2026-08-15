@@ -3028,6 +3028,12 @@ export class Player extends BaseGameObject {
         return this.userId ? `user:${this.userId}` : `ip:${this.encodedIp}`;
     }
 
+    getMatchParticipantKey() {
+        return this.userId
+            ? `user:${this.userId}`
+            : `ip:${this.findGameEncodedIp || this.encodedIp}`;
+    }
+
     constructor(
         game: Game,
         pos: Vec2,

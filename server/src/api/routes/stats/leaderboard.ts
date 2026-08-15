@@ -73,7 +73,6 @@ async function soloLeaderboardQuery(params: LeaderboardParams) {
         db
             .select({
                 userId: matchDataTable.userId,
-                username: matchDataTable.username,
                 mapId: matchDataTable.mapId,
                 region: matchDataTable.region,
                 teamMode: matchDataTable.teamMode,
@@ -99,7 +98,6 @@ async function soloLeaderboardQuery(params: LeaderboardParams) {
             )
             .groupBy(
                 matchDataTable.userId,
-                matchDataTable.username,
                 matchDataTable.mapId,
                 matchDataTable.region,
                 matchDataTable.teamMode,
@@ -108,8 +106,9 @@ async function soloLeaderboardQuery(params: LeaderboardParams) {
             ),
     );
 
-    const usernameQuery =
-        type === "most_kills" ? aggregatedMatches.username : usersTable.username;
+    // Use the account's current name so a rename cannot split one account into
+    // multiple leaderboard rows.
+    const usernameQuery = usersTable.username;
 
     const result = await db
         .with(aggregatedMatches)
