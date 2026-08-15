@@ -138,8 +138,8 @@ export const FeaturedBundlePages = [
         large: "bundle_bugcat",
     },
     {
-        small: "bundle_galaxy",
-        large: "bundle_snowman",
+        small: "bundle_checkmate",
+        large: "bundle_flame",
     },
     {
         small: "bundle_dino",
