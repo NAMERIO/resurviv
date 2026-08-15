@@ -98,7 +98,7 @@ function createPlayerNameText() {
     const nameText = new PIXI.Text("", nameStyle);
     nameText.anchor.set(0.5, 0.5);
     nameText.scale.set(0.5, 0.5);
-    nameText.position.set(0, -39);
+    nameText.position.set(0, 30);
     nameText.visible = false;
     return nameText;
 }
