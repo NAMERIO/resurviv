@@ -21975,12 +21975,8 @@ div.roulette {
   padding: 2px;
 }
 
-#modal-prestige-arena
-  #arena-teams-board.arena-large-teams
-  .arena-team-list,
-#modal-prestige-arena
-  #arena-teams-board.arena-single-team
-  .arena-team-list {
+#modal-prestige-arena #arena-teams-board.arena-large-teams .arena-team-list,
+#modal-prestige-arena #arena-teams-board.arena-single-team .arena-team-list {
   display: grid;
   gap: 8px;
   grid-auto-flow: row;

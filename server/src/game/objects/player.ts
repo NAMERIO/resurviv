@@ -4566,9 +4566,7 @@ export class Player extends BaseGameObject {
             player = this;
         }
 
-        const viewPos = this.spectatorFreeCam
-            ? this.spectatorFreeCamPos
-            : player.pos;
+        const viewPos = this.spectatorFreeCam ? this.spectatorFreeCamPos : player.pos;
         const viewZoom = this.spectatorFreeCam
             ? this.spectatorFreeCamZoom
             : player._cullingZoom;

@@ -3091,7 +3091,6 @@ const SkinDefs: Record<string, MeleeDef> = {
         worldImg: {
             sprite: "loot-melee-machete-taiga.img",
         },
-
     }),
     kukri_trad: defineMeleeSkin("machete", {
         name: "Tallow's Kukri",

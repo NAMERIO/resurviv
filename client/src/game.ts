@@ -728,9 +728,7 @@ export class Game {
             if (!this.m_freeCameraActive) {
                 this.m_freeCameraPos = v2.copy(this.m_activePlayer.m_visualPos);
                 this.m_freeCameraLayer = util.toGroundLayer(this.m_activePlayer.layer);
-                this.m_uiManager.setFreeCameraUnderground(
-                    this.m_freeCameraLayer === 1,
-                );
+                this.m_uiManager.setFreeCameraUnderground(this.m_freeCameraLayer === 1);
             }
 
             const gameplayBlocked = this.m_input.isGameplayInputBlocked();
@@ -743,8 +741,7 @@ export class Game {
                     this.m_input.keyPressed(Key.Minus);
                 this.m_freeCameraZoom = math.clamp(
                     this.m_freeCameraZoom +
-                        (+zoomOut - +zoomIn) *
-                            GameConfig.player.spectatorFreeCamZoomStep,
+                        (+zoomOut - +zoomIn) * GameConfig.player.spectatorFreeCamZoomStep,
                     GameConfig.player.spectatorFreeCamMinZoom,
                     GameConfig.player.spectatorFreeCamMaxZoom,
                 );

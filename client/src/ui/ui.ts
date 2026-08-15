@@ -2784,10 +2784,7 @@ export class UiManager {
     setSpectating(spectating: boolean, teamMode?: TeamMode) {
         const freeCameraAvailable =
             spectating && this.game.m_arenaPrivate && this.game.m_spectatorOnly;
-        this.specFreeCameraButton.css(
-            "display",
-            freeCameraAvailable ? "block" : "none",
-        );
+        this.specFreeCameraButton.css("display", freeCameraAvailable ? "block" : "none");
         if (!freeCameraAvailable) {
             this.setFreeCamera(false);
         }
@@ -2811,9 +2808,7 @@ export class UiManager {
     setFreeCamera(enabled: boolean) {
         this.specFreeCamera =
             enabled && this.game.m_arenaPrivate && this.game.m_spectatorOnly;
-        const labelKey = this.specFreeCamera
-            ? "game-follow-player"
-            : "game-free-camera";
+        const labelKey = this.specFreeCamera ? "game-follow-player" : "game-free-camera";
         this.specFreeCameraButton
             .attr("data-l10n", labelKey)
             .html(this.localization.translate(labelKey));

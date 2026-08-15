@@ -53,7 +53,7 @@ export const TournamentPlayerRegions: Record<
     Namerio: "NA",
     Goldop: "NA",
     "2spas": "NA",
-    "Think": "NA",
+    Think: "NA",
     Hibbah: "NA",
     Pork: "NA",
     "Maybe Mat": "NA",
