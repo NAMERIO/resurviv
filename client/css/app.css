@@ -16228,6 +16228,146 @@ div.roulette {
   text-align: center;
 }
 
+.iap-bundle-nav {
+  appearance: none;
+  position: absolute;
+  top: 225px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid #705078;
+  border-radius: 5px;
+  background: rgba(31, 30, 30, 0.88);
+  color: #fff;
+  cursor: pointer;
+  font-size: 0;
+  line-height: 0;
+  transform: translateY(-50%);
+}
+
+.iap-bundle-nav::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  width: 13px;
+  height: 13px;
+  border: solid #fff;
+  border-width: 0 3px 3px 0;
+}
+
+.iap-bundle-nav-prev::before {
+  transform: rotate(135deg);
+}
+
+.iap-bundle-nav-next::before {
+  transform: rotate(-45deg);
+}
+
+.iap-bundle-nav:hover {
+  background: #614066;
+}
+
+.iap-bundle-nav-prev {
+  left: 1px;
+}
+
+.iap-bundle-nav-next {
+  right: 1px;
+}
+
+.iap-bundle-nav.is-disabled {
+  display: none;
+}
+
+.iap-bundle-pages {
+  position: absolute;
+  right: 0;
+  bottom: 5px;
+  left: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 18px;
+}
+
+.iap-bundle-page {
+  width: 11px;
+  height: 11px;
+  padding: 0;
+  border: 1px solid #9d83a3;
+  border-radius: 50%;
+  background: #252525;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+
+.iap-bundle-page:hover,
+.iap-bundle-page.is-active {
+  background: #a65bb3;
+  border-color: #dfafe7;
+}
+
+.iap-lto-packs-container.iap-bundle-slide-out-left {
+  animation: iapBundleSlideOutLeft 0.13s ease-in forwards;
+}
+
+.iap-lto-packs-container.iap-bundle-slide-out-right {
+  animation: iapBundleSlideOutRight 0.13s ease-in forwards;
+}
+
+.iap-lto-packs-container.iap-bundle-slide-in-right {
+  animation: iapBundleSlideInRight 0.18s ease-out;
+}
+
+.iap-lto-packs-container.iap-bundle-slide-in-left {
+  animation: iapBundleSlideInLeft 0.18s ease-out;
+}
+
+@keyframes iapBundleSlideOutLeft {
+  to {
+    opacity: 0;
+    transform: translateX(-45px);
+  }
+}
+
+@keyframes iapBundleSlideOutRight {
+  to {
+    opacity: 0;
+    transform: translateX(45px);
+  }
+}
+
+@keyframes iapBundleSlideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(45px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes iapBundleSlideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-45px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 #iap-modal
   .iap-screen
   .iap-container

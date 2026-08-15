@@ -2,8 +2,8 @@ import { GameObjectDefs } from "../defs/gameObjectDefs";
 import {
     type FeaturedBundleDef,
     FeaturedBundleDefs,
+    FeaturedBundlePages,
     type FeaturedBundleSize,
-    FeaturedBundleSlots,
 } from "../defs/gameObjects/featuredBundleDefs";
 import { Rarity } from "../gameConfig";
 import { getMarketItemRarity } from "./marketPricing";
@@ -14,6 +14,7 @@ export type FeaturedBundleOffer = {
     id: string;
     name: string;
     size: FeaturedBundleSize;
+    page: number;
     itemTypes: string[];
     price: number;
     refreshesAt: number;
@@ -60,6 +61,7 @@ export function getBundleMinPrice(itemType: string) {
 function buildBundleOffer(
     definition: FeaturedBundleDef & { id: string },
     window: BundleWindow,
+    page: number,
 ): FeaturedBundleOffer {
     const itemTypes = [...new Set(definition.items)];
     for (const itemType of itemTypes) {
@@ -77,6 +79,7 @@ function buildBundleOffer(
         id: `${window.cycle}-${definition.id}`,
         name: definition.name,
         size: definition.size,
+        page,
         itemTypes,
         price,
         refreshesAt: window.refreshesAt,
@@ -89,28 +92,36 @@ export function getFeaturedBundleSource(bundleId: string) {
 }
 
 export function getFeaturedBundleOffers(now = Date.now()) {
-    const getSelectedDefinition = (size: FeaturedBundleSize) => {
-        const id = FeaturedBundleSlots[size];
+    const getSelectedDefinition = (page: number, size: FeaturedBundleSize) => {
+        const id = FeaturedBundlePages[page][size];
         const definition = FeaturedBundleDefs[id];
         if (!definition) {
-            throw new Error(`Featured ${size} slot references unknown bundle ${id}`);
+            throw new Error(
+                `Featured page ${page + 1} ${size} slot references unknown bundle ${id}`,
+            );
         }
         return { id, ...definition, size };
     };
 
-    const smallDefinition = getSelectedDefinition("small");
-    const largeDefinition = getSelectedDefinition("large");
-    const smallWindow = getBundleWindow(smallDefinition.durationDays, now);
-    const largeWindow = getBundleWindow(largeDefinition.durationDays, now);
+    const offersWithWindows = FeaturedBundlePages.flatMap((_, page) =>
+        (["small", "large"] as const).map((size) => {
+            const definition = getSelectedDefinition(page, size);
+            const window = getBundleWindow(definition.durationDays, now);
+            return {
+                offer: buildBundleOffer(definition, window, page),
+                window,
+            };
+        }),
+    );
+
     return {
         window: {
             cycle: 0,
-            startsAt: Math.min(smallWindow.startsAt, largeWindow.startsAt),
-            refreshesAt: Math.min(smallWindow.refreshesAt, largeWindow.refreshesAt),
+            startsAt: Math.min(...offersWithWindows.map(({ window }) => window.startsAt)),
+            refreshesAt: Math.min(
+                ...offersWithWindows.map(({ window }) => window.refreshesAt),
+            ),
         },
-        offers: [
-            buildBundleOffer(smallDefinition, smallWindow),
-            buildBundleOffer(largeDefinition, largeWindow),
-        ],
+        offers: offersWithWindows.map(({ offer }) => offer),
     };
 }

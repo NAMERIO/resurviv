@@ -23,11 +23,11 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
     bundle_snowman: {
         name: "Snowman Set",
         size: "large",
-        items: ["outfitSnowman", "fist_frostpunch", "fist_lolitaPop",],
+        items: ["outfitSnowman", "fist_frostpunch", "fist_lolitaPop"],
         price: 2000,
         durationDays: 7,
     },
-     bundle_vitaminD: {
+    bundle_vitaminD: {
         name: "Vitamin D Set",
         size: "small",
         items: ["outfitVitaminD", "fist_flamingNucleus"],
@@ -93,7 +93,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
     bundle_pixel: {
         name: "Pixel Attack Set",
         size: "large",
-        items: ["outfitMaxAttack","outfitBitplosion", "fist_squareyCerry"],
+        items: ["outfitMaxAttack", "outfitBitplosion", "fist_squareyCerry"],
         price: 2850,
         durationDays: 7,
     },
@@ -107,14 +107,19 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
     bundle_ninja: {
         name: "Ninja Set",
         size: "large",
-        items: ["outfitVillageNinja", "fist_dreidel", "fist_getdowntonite", "huntsman_blackwater"],
+        items: [
+            "outfitVillageNinja",
+            "fist_dreidel",
+            "fist_getdowntonite",
+            "huntsman_blackwater",
+        ],
         price: 3250,
         durationDays: 7,
     },
     bundle_love: {
         name: "Love Set",
         size: "small",
-        items: ["outfitILavaYou","fist_rafflesia"],
+        items: ["outfitILavaYou", "fist_rafflesia"],
         price: 1750,
         durationDays: 7,
     },
@@ -125,12 +130,29 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 3000,
         durationDays: 7,
     },
-
-
-
 };
 
-export const FeaturedBundleSlots = {
-    small: "bundle_vitaminD",
-    large: "bundle_bugcat",
-} as const satisfies Record<FeaturedBundleSize, keyof typeof FeaturedBundleDefs>;
+export const FeaturedBundlePages = [
+    {
+        small: "bundle_vitaminD",
+        large: "bundle_bugcat",
+    },
+    {
+        small: "bundle_galaxy",
+        large: "bundle_snowman",
+    },
+    {
+        small: "bundle_dino",
+        large: "bundle_pixel",
+    },
+    {
+        small: "bundle_neondisk",
+        large: "bundle_ninja",
+    },
+    {
+        small: "bundle_checkmate",
+        large: "bundle_flame",
+    },
+] as const satisfies ReadonlyArray<
+    Record<FeaturedBundleSize, keyof typeof FeaturedBundleDefs>
+>;

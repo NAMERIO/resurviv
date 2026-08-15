@@ -111,6 +111,7 @@ export class ShopMenu {
     marketErrorToast = $("#market-error-toast");
     marketTimerId: number | null = null;
     marketErrorTimeoutId: number | null = null;
+    featuredBundleAnimationTimeoutId: number | null = null;
     balanceAnimationId: number | null = null;
     pendingSellItem: Listing | null = null;
     pendingAuctionItem: AuctionViewListing | null = null;
@@ -140,6 +141,8 @@ export class ShopMenu {
     lootBoxRevealTimeoutId: number | null = null;
     openingLootBox = false;
     pendingLootBoxRewardConfirmation = false;
+    featuredBundlePage = 0;
+    featuredBundleSliding = false;
 
     constructor(
         public account: Account,
@@ -211,6 +214,14 @@ export class ShopMenu {
                 window.clearTimeout(this.lootBoxRevealTimeoutId);
                 this.lootBoxRevealTimeoutId = null;
             }
+            if (this.featuredBundleAnimationTimeoutId !== null) {
+                window.clearTimeout(this.featuredBundleAnimationTimeoutId);
+                this.featuredBundleAnimationTimeoutId = null;
+            }
+            this.featuredBundleSliding = false;
+            $(".iap-lto-packs-container").removeClass(
+                "iap-bundle-slide-out-left iap-bundle-slide-out-right iap-bundle-slide-in-left iap-bundle-slide-in-right",
+            );
         });
 
         this.confirmSellModal.onHide(() => {
@@ -242,6 +253,16 @@ export class ShopMenu {
             e.preventDefault();
             if (this.getOrderedLootBoxes().length === 0) return false;
             this.cratesModal.show();
+            return false;
+        });
+        $("#iap-bundle-prev").on("click", (e) => {
+            e.preventDefault();
+            this.changeFeaturedBundlePage(-1);
+            return false;
+        });
+        $("#iap-bundle-next").on("click", (e) => {
+            e.preventDefault();
+            this.changeFeaturedBundlePage(1);
             return false;
         });
         this.bindSocialGpReward(
@@ -797,6 +818,13 @@ export class ShopMenu {
 
     renderFeatured() {
         const bundles = this.account.featuredBundles || [];
+        const pageCount = Math.max(1, ...bundles.map((bundle) => bundle.page + 1));
+        if (this.featuredBundlePage >= pageCount) {
+            this.featuredBundlePage = 0;
+        }
+        const visibleBundles = bundles.filter(
+            (bundle) => bundle.page === this.featuredBundlePage,
+        );
         const refreshTimes = bundles
             .map((bundle) => bundle.refreshesAt || 0)
             .filter((refreshesAt) => refreshesAt > 0);
@@ -813,8 +841,8 @@ export class ShopMenu {
         );
 
         const packMappings: Array<[string, FeaturedBundleOffer | undefined]> = [
-            ["#iap-lto-pack-1", bundles.find((bundle) => bundle.size === "small")],
-            ["#iap-lto-pack-2", bundles.find((bundle) => bundle.size === "large")],
+            ["#iap-lto-pack-1", visibleBundles.find((bundle) => bundle.size === "small")],
+            ["#iap-lto-pack-2", visibleBundles.find((bundle) => bundle.size === "large")],
         ];
 
         for (const [selector, bundle] of packMappings) {
@@ -852,6 +880,67 @@ export class ShopMenu {
             pack.removeClass("market-refresh-disabled");
             pack.off("click").on("click", () => this.handleFeaturedAction(bundle));
         }
+
+        const navigationDisabled = pageCount <= 1;
+        $("#iap-bundle-prev, #iap-bundle-next")
+            .prop("disabled", navigationDisabled)
+            .toggleClass("is-disabled", navigationDisabled);
+
+        const pages = $("#iap-bundle-pages").empty();
+        for (let page = 0; page < pageCount; page++) {
+            const button = $("<button/>", {
+                class: `iap-bundle-page${page === this.featuredBundlePage ? " is-active" : ""}`,
+                type: "button",
+                title: `Featured bundles ${page + 1} of ${pageCount}`,
+                "aria-label": `Show featured bundles ${page + 1} of ${pageCount}`,
+                "aria-current": page === this.featuredBundlePage ? "page" : undefined,
+            });
+            button.on("click", (event) => {
+                event.preventDefault();
+                this.setFeaturedBundlePage(page);
+            });
+            pages.append(button);
+        }
+    }
+
+    changeFeaturedBundlePage(direction: -1 | 1) {
+        const bundles = this.account.featuredBundles || [];
+        const pageCount = Math.max(1, ...bundles.map((bundle) => bundle.page + 1));
+        if (pageCount <= 1) return;
+
+        const page = (this.featuredBundlePage + direction + pageCount) % pageCount;
+        this.setFeaturedBundlePage(page, direction);
+    }
+
+    setFeaturedBundlePage(page: number, direction?: -1 | 1) {
+        if (page === this.featuredBundlePage || this.featuredBundleSliding) return;
+
+        const slideDirection = direction ?? (page > this.featuredBundlePage ? 1 : -1);
+        const packs = $(".iap-lto-packs-container");
+        const outgoingClass =
+            slideDirection > 0
+                ? "iap-bundle-slide-out-left"
+                : "iap-bundle-slide-out-right";
+        const incomingClass =
+            slideDirection > 0 ? "iap-bundle-slide-in-right" : "iap-bundle-slide-in-left";
+
+        this.featuredBundleSliding = true;
+        packs.addClass(outgoingClass);
+
+        if (this.featuredBundleAnimationTimeoutId !== null) {
+            window.clearTimeout(this.featuredBundleAnimationTimeoutId);
+        }
+        this.featuredBundleAnimationTimeoutId = window.setTimeout(() => {
+            this.featuredBundlePage = page;
+            this.renderFeatured();
+            packs.removeClass(outgoingClass).addClass(incomingClass);
+
+            this.featuredBundleAnimationTimeoutId = window.setTimeout(() => {
+                packs.removeClass(incomingClass);
+                this.featuredBundleAnimationTimeoutId = null;
+                this.featuredBundleSliding = false;
+            }, 180);
+        }, 130);
     }
 
     renderLootBoxes() {
