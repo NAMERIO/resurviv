@@ -104,11 +104,11 @@ function createPlayerNameText() {
 }
 
 function drawDeveloperVitals(gfx: PIXI.Graphics, health: number, boost: number) {
-    const width = 40;
-    const height = 4;
+    const width = 48;
+    const height = 5;
     const x = -width / 2;
-    const healthY = -32;
-    const boostY = -26;
+    const healthY = -38;
+    const boostY = -31;
     const healthT = math.clamp(health / 100, 0, 1);
     let healthColor = 0xff0000;
     if (health > 25) {
@@ -135,7 +135,7 @@ function drawDeveloperVitals(gfx: PIXI.Graphics, health: number, boost: number) 
 
     // Match the four differently-sized and colored sections in the game boost UI.
     const boostColors = [0xff901a, 0xff751a, 0xff6616, 0xff5600];
-    const boostWidths = [10, 10, 15, 5];
+    const boostWidths = [12, 12, 18, 6];
     const gap = 1;
     const contentWidth = width - gap * 3;
     const boostLeft = math.clamp(boost / 100, 0, 1) * contentWidth;
