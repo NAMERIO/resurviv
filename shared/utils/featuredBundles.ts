@@ -10,6 +10,15 @@ import { getMarketItemRarity } from "./marketPricing";
 
 export type { FeaturedBundleSize } from "../defs/gameObjects/featuredBundleDefs";
 
+export type FeaturedBundleRarity =
+    | "uncommon"
+    | "rare"
+    | "epic"
+    | "legendary"
+    | "mythic"
+    | "divine"
+    | "exclusive";
+
 export type FeaturedBundleOffer = {
     id: string;
     name: string;
@@ -17,6 +26,7 @@ export type FeaturedBundleOffer = {
     page: number;
     itemTypes: string[];
     price: number;
+    rarity: FeaturedBundleRarity;
     refreshesAt: number;
     purchased: boolean;
 };
@@ -58,6 +68,16 @@ export function getBundleMinPrice(itemType: string) {
     return getBundleBasePrice(itemType);
 }
 
+export function getFeaturedBundleRarity(price: number): FeaturedBundleRarity {
+    if (price < 1200) return "uncommon";
+    if (price < 1600) return "rare";
+    if (price < 2000) return "epic";
+    if (price < 2500) return "legendary";
+    if (price < 3200) return "mythic";
+    if (price < 4100) return "divine";
+    return "exclusive";
+}
+
 function buildBundleOffer(
     definition: FeaturedBundleDef & { id: string },
     window: BundleWindow,
@@ -82,6 +102,7 @@ function buildBundleOffer(
         page,
         itemTypes,
         price,
+        rarity: getFeaturedBundleRarity(price),
         refreshesAt: window.refreshesAt,
         purchased: false,
     };

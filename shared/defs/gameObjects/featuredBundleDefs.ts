@@ -145,14 +145,6 @@ export const FeaturedBundlePages = [
         small: "bundle_dino",
         large: "bundle_pixel",
     },
-    {
-        small: "bundle_neondisk",
-        large: "bundle_ninja",
-    },
-    {
-        small: "bundle_checkmate",
-        large: "bundle_flame",
-    },
 ] as const satisfies ReadonlyArray<
     Record<FeaturedBundleSize, keyof typeof FeaturedBundleDefs>
 >;

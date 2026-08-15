@@ -848,7 +848,10 @@ export class ShopMenu {
         for (const [selector, bundle] of packMappings) {
             const pack = $(selector);
             const itemsContainer = pack.find(".iap-loadout-items");
+            const rarityClasses =
+                "iap-bundle-rarity-uncommon iap-bundle-rarity-rare iap-bundle-rarity-epic iap-bundle-rarity-legendary iap-bundle-rarity-mythic iap-bundle-rarity-divine iap-bundle-rarity-exclusive";
             itemsContainer.empty();
+            pack.removeClass(rarityClasses);
 
             if (!bundle) {
                 pack.off("click").addClass("market-refresh-disabled");
@@ -859,6 +862,7 @@ export class ShopMenu {
                 continue;
             }
 
+            pack.addClass(`iap-bundle-rarity-${bundle.rarity}`);
             pack.toggleClass("iap-pack-purchased", bundle.purchased);
             pack.find(".iap-bundle-name-text").text(bundle.name);
             pack.find(".iap-bundle-time").text(

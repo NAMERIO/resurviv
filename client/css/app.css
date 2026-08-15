@@ -16374,16 +16374,212 @@ div.roulette {
   .iap-limited-offers
   .iap-lto-packs-container
   .iap-lto-pack {
-  background: #874c90;
+  --bundle-color: #874c90;
+  --bundle-dark: #614066;
+  --bundle-border: #a875b1;
+  --bundle-accent: #e8d9eb;
+  background: var(--bundle-color);
+  box-sizing: border-box;
   width: 120px;
   height: 305px;
   margin: 0 10px 10px 10px;
   border-radius: 5px;
   display: inline-block;
   position: relative;
+  overflow: hidden;
   line-height: 20px;
-  border-bottom: 2px solid #614066;
-  box-shadow: inset 0 -2px #614066;
+  border: 2px solid var(--bundle-border);
+  box-shadow: inset 0 -2px var(--bundle-dark);
+}
+
+#iap-modal
+  .iap-screen
+  .iap-container
+  .iap-limited-offers
+  .iap-lto-packs-container
+  .iap-lto-pack.iap-bundle-rarity-uncommon {
+  --bundle-color: #465c33;
+  --bundle-dark: #2d3b21;
+  --bundle-border: #80b251;
+  --bundle-accent: #1dff55;
+}
+
+#iap-modal
+  .iap-screen
+  .iap-container
+  .iap-limited-offers
+  .iap-lto-packs-container
+  .iap-lto-pack.iap-bundle-rarity-rare {
+  --bundle-color: #244b82;
+  --bundle-dark: #152d50;
+  --bundle-border: #4f8edc;
+  --bundle-accent: #78b7ff;
+}
+
+#iap-modal
+  .iap-screen
+  .iap-container
+  .iap-limited-offers
+  .iap-lto-packs-container
+  .iap-lto-pack.iap-bundle-rarity-epic {
+  --bundle-color: #614066;
+  --bundle-dark: #3f2943;
+  --bundle-border: #874c90;
+  --bundle-accent: #eb53ff;
+}
+
+#iap-modal
+  .iap-screen
+  .iap-container
+  .iap-limited-offers
+  .iap-lto-packs-container
+  .iap-lto-pack.iap-bundle-rarity-legendary {
+  --bundle-color: #8a3f1f;
+  --bundle-dark: #51200f;
+  --bundle-border: #ff7a45;
+  --bundle-accent: #ffac7a;
+}
+
+#iap-modal
+  .iap-screen
+  .iap-container
+  .iap-limited-offers
+  .iap-lto-packs-container
+  .iap-lto-pack.iap-bundle-rarity-mythic {
+  --bundle-color: #6f0000;
+  --bundle-dark: #420000;
+  --bundle-border: #c61014;
+  --bundle-accent: #ff5252;
+}
+
+#iap-modal
+  .iap-screen
+  .iap-container
+  .iap-limited-offers
+  .iap-lto-packs-container
+  .iap-lto-pack.iap-bundle-rarity-divine {
+  --bundle-color: #7d2057;
+  --bundle-dark: #48102f;
+  --bundle-border: #f23a8f;
+  --bundle-accent: #ff75bb;
+}
+
+#iap-modal
+  .iap-screen
+  .iap-container
+  .iap-limited-offers
+  .iap-lto-packs-container
+  .iap-lto-pack.iap-bundle-rarity-exclusive {
+  --bundle-color: #7b5916;
+  --bundle-dark: #463008;
+  --bundle-border: #e6b83f;
+  --bundle-accent: #ffe27a;
+}
+
+#iap-modal
+  .iap-screen
+  .iap-container
+  .iap-limited-offers
+  .iap-lto-packs-container
+  .iap-lto-pack
+  .iap-lto-item-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.3) 48%,
+    transparent 66%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-130%);
+  animation: iapBundleShimmer 7s ease-in-out infinite alternate;
+}
+
+#iap-modal
+  .iap-screen
+  .iap-container
+  .iap-limited-offers
+  .iap-lto-packs-container
+  .iap-lto-pack
+  .iap-lto-item-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    radial-gradient(circle, var(--bundle-accent) 0 1px, transparent 2px),
+    radial-gradient(circle, var(--bundle-accent) 0 1px, transparent 2px),
+    radial-gradient(circle, var(--bundle-accent) 0 1px, transparent 2px),
+    radial-gradient(circle, var(--bundle-accent) 0 1px, transparent 2px),
+    radial-gradient(circle, var(--bundle-accent) 0 1px, transparent 2px),
+    radial-gradient(circle, var(--bundle-accent) 0 1px, transparent 2px);
+  background-position:
+    3px -51px,
+    -19px -76px,
+    31px -98px,
+    -7px -121px,
+    43px -140px,
+    -37px -158px;
+  background-size:
+    47px 61px,
+    73px 83px,
+    97px 107px,
+    59px 131px,
+    113px 149px,
+    137px 167px;
+  opacity: 0.6;
+  pointer-events: none;
+  animation: iapBundleSparkles 4.8s linear infinite;
+}
+
+@keyframes iapBundleShimmer {
+  0%,
+  18% {
+    opacity: 0;
+    transform: translateX(-130%);
+  }
+
+  25% {
+    opacity: 1;
+    transform: translateX(-130%);
+  }
+
+  75% {
+    opacity: 1;
+    transform: translateX(130%);
+  }
+
+  82%,
+  100% {
+    opacity: 0;
+    transform: translateX(130%);
+  }
+}
+
+@keyframes iapBundleSparkles {
+  from {
+    background-position:
+      3px -51px,
+      -19px -76px,
+      31px -98px,
+      -7px -121px,
+      43px -140px,
+      -37px -158px;
+  }
+
+  to {
+    background-position:
+      3px 254px,
+      -19px 256px,
+      31px 223px,
+      -7px 272px,
+      43px 158px,
+      -37px 176px;
+  }
 }
 
 #iap-modal
@@ -16398,8 +16594,8 @@ div.roulette {
   color: #ffffff;
   font-size: 12px;
   font-weight: bold;
-  background: #874c90;
-  border: 2px solid #614066;
+  background: var(--bundle-color);
+  border: 2px solid var(--bundle-dark);
   border-radius: 3px 3px 0 0;
   box-sizing: border-box;
   display: flex;
@@ -16434,8 +16630,8 @@ div.roulette {
   .iap-bundle-time {
   height: 18px;
   margin: 0 5px;
-  color: #e8d9eb;
-  background: #614066;
+  color: var(--bundle-accent);
+  background: var(--bundle-dark);
   font-size: 10px;
   font-weight: normal;
   line-height: 18px;
@@ -16508,9 +16704,11 @@ div.roulette {
   .iap-lto-pack
   .iap-lto-item-container {
   background: #252525;
+  position: relative;
+  overflow: hidden;
   margin: 0 5px;
   text-align: center;
-  height: 188px;
+  height: 184px;
   padding-top: 5px;
   padding-bottom: 5px;
 }
@@ -16519,6 +16717,7 @@ div.roulette {
   height: 75%;
   width: 90%;
   position: relative;
+  z-index: 1;
   top: 50%;
   left: 50%;
   transform: translate(calc(-50% + 2px), -50%);
@@ -16588,6 +16787,7 @@ div.roulette {
   .iap-lto-packs-container
   .iap-lto-pack
   .iap-currency-container {
+  background-color: var(--bundle-color);
   background-image: url(../img/gui/currency-golden-potato.svg);
   background-size: 22px 22px;
   background-repeat: no-repeat;
