@@ -48,11 +48,29 @@ type BundleWindow = {
     refreshesAt: number;
 };
 
-function getBundleWindow(durationDays: number, now = Date.now()): BundleWindow {
+function getBundleWindow(
+    durationDays: number,
+    now = Date.now(),
+    resetAt?: number,
+): BundleWindow {
     if (!Number.isFinite(durationDays) || durationDays <= 0) {
         throw new Error("Featured bundle durationDays must be greater than zero");
     }
     const durationMs = durationDays * DAY_MS;
+
+    if (
+        resetAt !== undefined &&
+        Number.isFinite(resetAt) &&
+        resetAt <= now &&
+        now < resetAt + durationMs
+    ) {
+        const cycle = Math.max(
+            0,
+            Math.floor((resetAt - FEATURED_BUNDLE_ANCHOR_MS) / durationMs),
+        );
+        return { cycle, startsAt: resetAt, refreshesAt: resetAt + durationMs };
+    }
+
     const cycle = Math.max(0, Math.floor((now - FEATURED_BUNDLE_ANCHOR_MS) / durationMs));
     const startsAt = FEATURED_BUNDLE_ANCHOR_MS + cycle * durationMs;
     return { cycle, startsAt, refreshesAt: startsAt + durationMs };
@@ -112,7 +130,7 @@ export function getFeaturedBundleSource(bundleId: string) {
     return `featured_bundle:${bundleId}`;
 }
 
-export function getFeaturedBundleOffers(now = Date.now()) {
+export function getFeaturedBundleOffers(now = Date.now(), resetAt?: number) {
     const getSelectedDefinition = (page: number, size: FeaturedBundleSize) => {
         const id = FeaturedBundlePages[page][size];
         const definition = FeaturedBundleDefs[id];
@@ -127,7 +145,7 @@ export function getFeaturedBundleOffers(now = Date.now()) {
     const offersWithWindows = FeaturedBundlePages.flatMap((_, page) =>
         (["small", "large"] as const).map((size) => {
             const definition = getSelectedDefinition(page, size);
-            const window = getBundleWindow(definition.durationDays, now);
+            const window = getBundleWindow(definition.durationDays, now, resetAt);
             return {
                 offer: buildBundleOffer(definition, window, page),
                 window,

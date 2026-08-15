@@ -31,6 +31,7 @@ import {
     GameModeStatus,
     type GameModeStatus as GameModeStatusType,
 } from "../../../../../shared/types/stats";
+import { getFeaturedBundleOffers } from "../../../../../shared/utils/featuredBundles";
 import { passUtil } from "../../../../../shared/utils/passUtil";
 import { Config, serverConfigPath } from "../../../config";
 import { sendCurrentBundleRotation } from "../../../utils/bundleLogging";
@@ -43,6 +44,7 @@ import {
     zListGameModesBody,
     zLogPlayerJoinBody,
     zRemoveFeaturedYoutuberBody,
+    zResetFeaturedBundlesTimerBody,
     zSendFeaturedBundlesBody,
     zSetBattlePassEndBody,
     zSetBattleRoyaleModeBody,
@@ -749,6 +751,26 @@ export const PrivateRouter = new Hono<Context>()
                     200,
                 );
             }
+        },
+    )
+    .post(
+        "/reset_featured_bundles_timer",
+        validateParams(zResetFeaturedBundlesTimerBody),
+        (c) => {
+            const resetAt = Date.now();
+            Config.featuredBundleResetAt = resetAt;
+
+            saveConfig(serverConfigPath, {
+                featuredBundleResetAt: resetAt,
+            });
+
+            const { window } = getFeaturedBundleOffers(resetAt, resetAt);
+            return c.json(
+                {
+                    message: `Featured bundle timer reset. Bundles now refresh at ${new Date(window.refreshesAt).toISOString()}.`,
+                },
+                200,
+            );
         },
     )
     .post("/set_game_mode", validateParams(zSetGameModeBody), (c) => {

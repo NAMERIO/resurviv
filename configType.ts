@@ -198,6 +198,11 @@ export interface ConfigType {
     battlePassEndTime?: number;
 
     /**
+     * Timestamp of the latest manual featured-bundle timer reset.
+     */
+    featuredBundleResetAt?: number;
+
+    /**
      * The client theme, changes the splash screen background and for some the menu music.
      *
      * NOTE: Required at build time, unlike modes it wont update by fetching from the server!

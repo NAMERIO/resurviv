@@ -750,7 +750,9 @@ async function buildMarketState(userId: string) {
         sellers,
         purchasedBundles,
     ] = await Promise.all([
-        Promise.resolve(getFeaturedBundleOffers()),
+        Promise.resolve(
+            getFeaturedBundleOffers(Date.now(), Config.featuredBundleResetAt),
+        ),
         db.query.marketListingTable.findMany({
             where: eq(marketListingTable.status, "active"),
             orderBy: (table, { asc }) => [asc(table.price), asc(table.createdAt)],
@@ -2412,7 +2414,10 @@ UserRouter.post(
 
         try {
             const result = await db.transaction(async (tx) => {
-                const { offers } = getFeaturedBundleOffers();
+                const { offers } = getFeaturedBundleOffers(
+                    Date.now(),
+                    Config.featuredBundleResetAt,
+                );
                 const offer = offers.find((entry) => entry.id === bundleId);
 
                 if (!offer) {

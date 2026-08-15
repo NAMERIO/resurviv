@@ -228,11 +228,16 @@ async function postBundleRotation(offers: FeaturedBundleOffer[]) {
 }
 
 export async function sendCurrentBundleRotation() {
-    await postBundleRotation(getFeaturedBundleOffers().offers);
+    await postBundleRotation(
+        getFeaturedBundleOffers(Date.now(), Config.featuredBundleResetAt).offers,
+    );
 }
 
 async function checkBundleRotation() {
-    const { window, offers } = getFeaturedBundleOffers();
+    const { window, offers } = getFeaturedBundleOffers(
+        Date.now(),
+        Config.featuredBundleResetAt,
+    );
     const rotationId = offers.map((offer) => offer.id).join(":");
     if (currentRotationId === undefined) {
         currentRotationId = rotationId;

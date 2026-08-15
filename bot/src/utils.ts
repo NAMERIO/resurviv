@@ -55,6 +55,7 @@ export const enum Command {
     FuturedYoutubers = "futured-youtubers",
     RemoveFuturedYoutubers = "remove-futured-youtubers",
     SendFeaturedBundles = "send_featured_bundles",
+    ResetFeaturedBundlesTimer = "reset_featured_bundles_timer",
 }
 
 export const honoClient = hc<PrivateRouteApp>(API_URL, {
