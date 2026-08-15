@@ -31,7 +31,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         name: "Vitamin D Set",
         size: "small",
         items: ["outfitVitaminD", "fist_flamingNucleus"],
-        price: 1500,
+        price: 850,
         durationDays: 7,
     },
     bundle_dino: {
@@ -80,7 +80,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         name: "Sir Loin Set",
         size: "small",
         items: ["outfitSirLoin", "fist_cattleBattle"],
-        price: 1850,
+        price: 1225,
         durationDays: 7,
     },
     bundle_juleverny: {
@@ -111,11 +111,26 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 3250,
         durationDays: 7,
     },
+    bundle_love: {
+        name: "Love Set",
+        size: "small",
+        items: ["outfitILavaYou","fist_rafflesia"],
+        price: 1750,
+        durationDays: 7,
+    },
+    bundle_flame: {
+        name: "Flame Enthuasist Set",
+        size: "large",
+        items: ["outfitToxicFire", "outfitGhoulFire", "emote_buuurn"],
+        price: 3000,
+        durationDays: 7,
+    },
+
 
 
 };
 
 export const FeaturedBundleSlots = {
-    small: "bundle_grunge",
-    large: "bundle_ninja",
+    small: "bundle_vitaminD",
+    large: "bundle_bugcat",
 } as const satisfies Record<FeaturedBundleSize, keyof typeof FeaturedBundleDefs>;

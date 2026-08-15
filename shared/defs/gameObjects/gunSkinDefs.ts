@@ -23,4 +23,13 @@ export const GunSkinDefs: Record<string, GunSkinDef> = {
             sprite: "gun-mosin-gilded.img",
         },
     },
+    mosin_camo: {
+        type: "gun_skin",
+        name: "Camo Mosin",
+        rarity: Rarity.Rare,
+        gunType: "mosin",
+        worldImg: {
+            sprite: "gun-mosin-camo.img",
+        },
+    },
 };
