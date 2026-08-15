@@ -234,6 +234,15 @@ export const zTeamKickMsg = z.object({
 
 export type TeamKickMsg = z.infer<typeof zTeamKickMsg>;
 
+export const zTeamTransferOwnerMsg = z.object({
+    type: z.literal("transferOwner"),
+    data: z.object({
+        playerId: z.number(),
+    }),
+});
+
+export type TeamTransferOwnerMsg = z.infer<typeof zTeamTransferOwnerMsg>;
+
 export const zTeamSwapTeamMsg = z.object({
     type: z.literal("swapTeam"),
     data: z.object({
@@ -294,6 +303,7 @@ export const zTeamClientMsg = z.discriminatedUnion("type", [
     zTeamJoinMsg,
     zTeamPlayGameMsg,
     zTeamKickMsg,
+    zTeamTransferOwnerMsg,
     zTeamSwapTeamMsg,
     zTeamCreateBattleRoyaleTeamMsg,
     zTeamJoinBattleRoyaleTeamMsg,
@@ -314,6 +324,7 @@ export type ClientToServerTeamMsg =
     | TeamSetRoomPropsMsg
     | TeamCreateMsg
     | TeamKickMsg
+    | TeamTransferOwnerMsg
     | TeamSwapTeamMsg
     | TeamCreateBattleRoyaleTeamMsg
     | TeamJoinBattleRoyaleTeamMsg

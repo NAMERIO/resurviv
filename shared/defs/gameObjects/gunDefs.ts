@@ -1050,7 +1050,7 @@ export const BaseDefs: Record<string, GunDef> = {
         particle: { shellScale: 1, shellOffset: 0.45 },
         sound: {
             shoot: "flux_rifle_01",
-            reload: "flux_rifle_relaod_01",
+            reload: "flux_rifle_reload_01",
             pickup: "gun_pickup_01",
             empty: "empty_fire_02",
             deploy: "scar_switch_01",
@@ -3826,7 +3826,7 @@ export const BaseDefs: Record<string, GunDef> = {
             attack: 0.0,
         },
         lootImg: {
-            sprite: "loot-weapon-double-lasr-gun.img",
+            sprite: "loot-weapon-lasr-gun-dual.img",
             tint: 0x00ff00,
             border: "loot-circle-outer-01.img",
             borderTint: 0x000000,
@@ -3851,7 +3851,7 @@ export const BaseDefs: Record<string, GunDef> = {
             deploy: "deagle_switch_01",
         },
     },
-    m9A17: {
+    m9a17: {
         name: "Flamethrower",
         type: "gun",
         quality: 0,
@@ -3874,7 +3874,7 @@ export const BaseDefs: Record<string, GunDef> = {
         moveSpread: 10,
         shotSpread: 10,
         bulletCount: 1,
-        bulletType: "bullet_m9A17",
+        bulletType: "bullet_m9a17",
         projType: "fire_shot",
         noSplinter: true,
         headshotMult: 2,
@@ -3883,7 +3883,7 @@ export const BaseDefs: Record<string, GunDef> = {
             attack: 0,
         },
         lootImg: {
-            sprite: "loot-weapon-m9A17.img",
+            sprite: "loot-weapon-m9a17.img",
             tint: 65280,
             border: "loot-circle-outer-01.img",
             borderTint: 0,
@@ -3941,7 +3941,7 @@ export const BaseDefs: Record<string, GunDef> = {
         shotSpread: 1,
         bulletCount: 1,
         bulletType: "bullet_m79",
-        projType: "mm40_granade",
+        projType: "mm40_grenade",
         noSplinter: true,
         headshotMult: 1,
         speed: {
@@ -3986,7 +3986,7 @@ export const BaseDefs: Record<string, GunDef> = {
             deploy: "m79_switch_01",
         },
     },
-    waterGun: {
+    water_gun: {
         name: "Water Gun",
         type: "gun",
         quality: 0,
@@ -4167,7 +4167,7 @@ export const BaseDefs: Record<string, GunDef> = {
                 top: true,
                 max_height_adj: 15,
             },
-            onLoadComplete: "gun-rainbow-blater-loaded.img",
+            onLoadComplete: "gun-rainbow-blaster-loaded.img",
             loadingBullet: {
                 sprite: "rainbow-ball.img",
                 pos: {

@@ -7,7 +7,7 @@ const mapDef: PartialMapDef = {
     mapId: MapId.Contact,
     desc: {
         name: "Contact",
-        icon: "img/loot/loot-contact.svg",
+        icon: "img/gui/contact.svg",
         buttonCss: "btn-mode-contact",
         buttonText: "index-play-mode-contact",
         backgroundImg: "img/main_splash_contact.png",

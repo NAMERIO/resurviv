@@ -35,7 +35,7 @@ import { device } from "./device";
 import { discordPresence } from "./discordPresence";
 import { errorLogManager } from "./errorLogs";
 import { Game } from "./game";
-import { helpers } from "./helpers";
+import { createLootPreview, helpers } from "./helpers";
 import { InputHandler } from "./input";
 import { InputBinds, InputBindUi } from "./inputBinds";
 import { PingTest } from "./pingTest";
@@ -2385,6 +2385,44 @@ export class Application {
         const miniGameDef = getPrivateLobbyMiniGameDef(this.teamMenu.roomData.miniGame);
         const battleRoyaleLobby = !!miniGameDef.battleRoyale;
         const singleTeam = !!miniGameDef.singleTeam;
+        type ArenaLobbyPlayer = (typeof this.teamMenu.players)[number];
+        const formatArenaPlayerName = (player: ArenaLobbyPlayer) =>
+            player.clanName
+                ? `${helpers.getClanTagHtml(player.clanName, player.clanTagColor || "")} ${helpers.htmlEscape(player.name)}`
+                : helpers.htmlEscape(player.name);
+        const appendArenaPlayerIdentity = (
+            card: JQuery<HTMLElement>,
+            player?: ArenaLobbyPlayer,
+            emptyLabel = "Empty",
+        ) => {
+            const avatar = $("<div>", {
+                class: `arena-player-avatar${player ? "" : " empty"}`,
+                "aria-hidden": "true",
+            });
+            if (player) {
+                const avatarFrame = $("<div>", {
+                    class: "arena-player-avatar-frame",
+                });
+                avatarFrame.append(
+                    createLootPreview(
+                        player.outfit || "outfitBase",
+                        "arena-player-avatar-preview",
+                        { outfitScale: 1.2 },
+                    ),
+                );
+                avatar.append(avatarFrame);
+                if (player.playerId === this.teamMenu.localPlayerId) {
+                    card.addClass("is-self");
+                }
+            }
+            card.append(avatar);
+            card.append(
+                $("<div>", {
+                    class: "arena-player-name",
+                    html: player ? formatArenaPlayerName(player) : emptyLabel,
+                }),
+            );
+        };
         if (battleRoyaleLobby) {
             const players = this.teamMenu.players;
             const owner = players.find((p) => p.isLeader) || players[0];
@@ -2553,35 +2591,26 @@ export class Application {
 
                 const memberList = $("<div>", { class: "arena-br-team-members" });
                 for (const member of teamMembers) {
-                    memberList.append(
-                        $("<div>", { class: "arena-br-team-member" })
-                            .append(
-                                $("<span>", {
-                                    class: "arena-br-team-member-name",
-                                    html: member.clanName
-                                        ? `${helpers.getClanTagHtml(member.clanName, member.clanTagColor || "")} ${helpers.htmlEscape(member.name)}`
-                                        : helpers.htmlEscape(member.name),
-                                }),
-                            )
-                            .append(
-                                member.playerId === this.teamMenu.localPlayerId
-                                    ? $("<span>", {
-                                          class: "arena-br-team-member-self",
-                                          text: "You",
-                                      })
-                                    : $(),
-                            ),
-                    );
+                    const memberCard = $("<div>", {
+                        class: "arena-br-team-member arena-player-card",
+                    });
+                    appendArenaPlayerIdentity(memberCard, member);
+                    if (member.playerId === this.teamMenu.localPlayerId) {
+                        memberCard.append(
+                            $("<span>", {
+                                class: "arena-br-team-member-self",
+                                text: "You",
+                            }),
+                        );
+                    }
+                    memberList.append(memberCard);
                 }
                 while (memberList.children().length < teamSize) {
-                    memberList.append(
-                        $("<div>", { class: "arena-br-team-member empty" }).append(
-                            $("<span>", {
-                                class: "arena-br-team-member-name",
-                                text: "Empty",
-                            }),
-                        ),
-                    );
+                    const emptyMember = $("<div>", {
+                        class: "arena-br-team-member arena-player-card empty",
+                    });
+                    appendArenaPlayerIdentity(emptyMember);
+                    memberList.append(emptyMember);
                 }
 
                 const copyButton = $("<button>", {
@@ -2731,15 +2760,6 @@ export class Application {
             this.teamMenu.roomData.findingGame ||
             this.teamMenu.players.some((p) => p.inGame);
         const hostCanAssign = canManage && teamsLocked && !teamChangingBlocked;
-        const formatArenaPlayerName = (
-            playerName: string,
-            clanName?: string,
-            clanTagColor?: string,
-        ) =>
-            clanName
-                ? `${helpers.getClanTagHtml(clanName, clanTagColor || "")} ${helpers.htmlEscape(playerName)}`
-                : helpers.htmlEscape(playerName);
-
         const buildJoinButton = (target: ArenaTeam | "spectator", label: string) => {
             const selected = localTarget === target;
             const lockedForPlayer = teamsLocked && !canManage;
@@ -2865,11 +2885,11 @@ export class Application {
             target: ArenaTeam,
         ) => {
             const slot = $("<div>", {
-                class: `arena-team-slot${player ? "" : " empty"}`,
+                class: `arena-team-slot arena-player-card${player ? "" : " empty"}`,
                 "data-team-target": target,
             });
             if (!player) {
-                slot.append($("<div>", { class: "arena-player-name", text: "Empty" }));
+                appendArenaPlayerIdentity(slot);
                 list.append(slot);
                 return;
             }
@@ -2877,16 +2897,7 @@ export class Application {
                 slot.attr("draggable", "true");
                 slot.attr("data-playerid", String(player.playerId));
             }
-            slot.append(
-                $("<div>", {
-                    class: "arena-player-name",
-                    html: formatArenaPlayerName(
-                        player.name,
-                        player.clanName,
-                        player.clanTagColor,
-                    ),
-                }),
-            );
+            appendArenaPlayerIdentity(slot, player);
             if (player.isLeader) {
                 slot.append(
                     $("<div>", {
@@ -2906,6 +2917,25 @@ export class Application {
             }
 
             if (canManage && player.playerId !== this.teamMenu.localPlayerId) {
+                const transferOwner = $("<div>", {
+                    class: "icon icon-transfer-owner",
+                    "aria-label": "Make lobby owner",
+                    role: "button",
+                    tabindex: 0,
+                    title: "Make lobby owner",
+                });
+                transferOwner.on("click", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.teamMenu.transferOwnership(player.playerId);
+                });
+                transferOwner.on("keydown", (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.teamMenu.transferOwnership(player.playerId);
+                    }
+                });
                 const kick = $("<div>", {
                     class: "icon icon-kick",
                     "aria-label": "Kick player",
@@ -2924,6 +2954,7 @@ export class Application {
                         this.teamMenu.kickPlayer(player.playerId);
                     }
                 });
+                slot.append(transferOwner);
                 slot.append(kick);
             }
             list.append(slot);
@@ -2945,36 +2976,24 @@ export class Application {
             for (let i = 0; i < emptySpectatorSlots; i++) {
                 this.prestigeArenaSpectatorList.append(
                     $("<div>", {
-                        class: "arena-spectator-item empty",
-                    }).append(
-                        $("<div>", {
-                            class: "arena-player-name",
-                            text: "Empty",
-                        }),
-                    ),
+                        class: "arena-spectator-item arena-player-card empty",
+                    }).each((_idx, element) => {
+                        appendArenaPlayerIdentity($(element));
+                    }),
                 );
             }
         } else {
             for (let i = 0; i < spectators.length; i++) {
                 const spec = spectators[i];
                 const row = $("<div>", {
-                    class: "arena-spectator-item",
+                    class: "arena-spectator-item arena-player-card",
                     "data-team-target": "spectator",
                 });
                 if (hostCanAssign) {
                     row.attr("draggable", "true");
                     row.attr("data-playerid", String(spec.playerId));
                 }
-                row.append(
-                    $("<div>", {
-                        class: "arena-player-name",
-                        html: formatArenaPlayerName(
-                            spec.name || "Spectator",
-                            spec.clanName,
-                            spec.clanTagColor,
-                        ),
-                    }),
-                );
+                appendArenaPlayerIdentity(row, spec, "Spectator");
                 if (spec.isLeader) {
                     row.append(
                         $("<div>", {
@@ -2992,6 +3011,25 @@ export class Application {
                     );
                 }
                 if (canManage && spec.playerId !== this.teamMenu.localPlayerId) {
+                    const transferOwner = $("<div>", {
+                        class: "icon icon-transfer-owner",
+                        "aria-label": "Make lobby owner",
+                        role: "button",
+                        tabindex: 0,
+                        title: "Make lobby owner",
+                    });
+                    transferOwner.on("click", (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.teamMenu.transferOwnership(spec.playerId);
+                    });
+                    transferOwner.on("keydown", (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            this.teamMenu.transferOwnership(spec.playerId);
+                        }
+                    });
                     const kick = $("<div>", {
                         class: "icon icon-kick",
                         "aria-label": "Kick player",
@@ -3010,6 +3048,7 @@ export class Application {
                             this.teamMenu.kickPlayer(spec.playerId);
                         }
                     });
+                    row.append(transferOwner);
                     row.append(kick);
                 }
                 this.prestigeArenaSpectatorList.append(row);

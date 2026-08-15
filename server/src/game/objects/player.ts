@@ -7102,7 +7102,9 @@ export class Player extends BaseGameObject {
     customDropItem(dropMsg: net.DropItemMsg): void {
         if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
 
-        const itemDef = GameObjectDefs[dropMsg.item] as LootDef;
+        const itemDef = GameObjectDefs[dropMsg.item] as LootDef | undefined;
+        if (!itemDef) return;
+
         switch (itemDef.type) {
             case "gun":
                 if (isItemInLoadout(dropMsg.item, "gun")) break;

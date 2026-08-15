@@ -5227,7 +5227,7 @@ a:active {
 .currency-gp {
   align-items: center;
   background-color: #292501;
-  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-image: url(../img/gui/currency-golden-potato.svg);
   background-position: 12px center;
   background-repeat: no-repeat;
   background-size: 10%;
@@ -13404,8 +13404,8 @@ input [type="image"]:focus {
 }
 
 .clan-war-column {
-  flex: 0 0 300px;
-  min-width: 280px;
+  flex: 0 0 480px;
+  min-width: 440px;
   min-height: 0;
 }
 
@@ -13418,7 +13418,8 @@ input [type="image"]:focus {
 }
 
 .clan-war-history-list {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
   max-height: 190px;
   overflow-y: auto;
@@ -13431,54 +13432,65 @@ input [type="image"]:focus {
 
 .clan-war-item {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 74px 96px 82px;
+  grid-template-columns: minmax(105px, 1fr) auto auto auto;
   align-items: center;
-  gap: 10px;
-  min-height: 44px;
-  padding: 8px 10px;
+  gap: 9px;
+  min-height: 46px;
+  padding: 8px 11px;
   background-color: #3a3a3a;
+  border-left: 3px solid #777;
   border-radius: 5px;
 }
 
-.clan-war-column .clan-war-item {
-  grid-template-columns: minmax(0, 1fr) 64px;
-  grid-template-areas:
-    "opponent result"
-    "cgp date";
+.clan-war-item.win {
+  border-left-color: #7cfc00;
 }
 
-.clan-war-column .clan-war-opponent {
-  grid-area: opponent;
+.clan-war-item.loss {
+  border-left-color: #ff6969;
 }
 
-.clan-war-column .clan-war-result {
-  grid-area: result;
+.clan-war-item.draw {
+  border-left-color: #ffe400;
 }
 
-.clan-war-column .clan-war-cgp {
-  grid-area: cgp;
-  text-align: left;
-}
-
-.clan-war-column .clan-war-date {
-  grid-area: date;
-}
-
-.clan-war-opponent {
+.clan-war-matchup {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
   min-width: 0;
-  color: #c4c4c4;
+}
+
+.clan-war-team {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.clan-war-opponent strong {
+.clan-war-team.home {
   color: #fff;
 }
 
-.clan-war-result {
-  font-size: 13px;
+.clan-war-team.away {
+  color: #c8c8c8;
+}
+
+.clan-war-versus {
+  flex: 0 0 auto;
+  color: #777;
+  font-size: 11px;
   font-weight: bold;
+  text-transform: uppercase;
+}
+
+.clan-war-result {
+  padding: 3px 6px;
+  border-radius: 3px;
+  background-color: rgba(255, 255, 255, 0.07);
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.35px;
   text-align: center;
 }
 
@@ -13496,15 +13508,21 @@ input [type="image"]:focus {
 
 .clan-war-cgp {
   color: #ffe400;
+  font-size: 12px;
   font-weight: bold;
   text-align: right;
+  white-space: nowrap;
 }
 
 .clan-war-date,
 .clan-war-empty {
   color: #969b91;
-  font-size: 13px;
+  font-size: 11px;
   text-align: right;
+}
+
+.clan-war-date {
+  white-space: nowrap;
 }
 
 .clan-war-empty {
@@ -14939,8 +14957,8 @@ input [type="image"]:focus {
   }
 
   #modal-clan-page .clan-war-column {
-    flex-basis: 300px;
-    min-width: 280px;
+    flex-basis: 430px;
+    min-width: 400px;
   }
 
   #modal-clan-page .clan-members-section,
@@ -14982,8 +15000,8 @@ input [type="image"]:focus {
   }
 
   #modal-clan-page .clan-war-column {
-    flex-basis: 300px;
-    min-width: 280px;
+    flex-basis: 430px;
+    min-width: 400px;
   }
 
   #modal-clan-page .clan-members-section,
@@ -15023,8 +15041,8 @@ input [type="image"]:focus {
   }
 
   #modal-clan-page .clan-war-column {
-    flex-basis: 300px;
-    min-width: 280px;
+    flex-basis: 430px;
+    min-width: 400px;
   }
 
   #modal-clan-page .clan-members-section,
@@ -15183,7 +15201,7 @@ input [type="image"]:focus {
 
 .market-modal-price-container {
   background-color: #3e3e3e;
-  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-image: url(../img/gui/currency-golden-potato.svg);
   background-position: 18px center;
   background-repeat: no-repeat;
   background-size: 30px;
@@ -15306,7 +15324,7 @@ input [type="image"]:focus {
 }
 
 .confirm-sell-price-icon {
-  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-image: url(../img/gui/currency-golden-potato.svg);
   background-size: 18px 18px;
   background-repeat: no-repeat;
   background-position: center;
@@ -15488,7 +15506,7 @@ input [type="image"]:focus {
   border-radius: 5px;
   background: #252525;
   color: #f4db7c;
-  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-image: url(../img/gui/currency-golden-potato.svg);
   background-repeat: no-repeat;
   background-position: 10px center;
   background-size: 18px;
@@ -15556,7 +15574,7 @@ input [type="image"]:focus {
   width: 22px;
   height: 22px;
   transform: translateY(-50%);
-  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-image: url(../img/gui/currency-golden-potato.svg);
   background-repeat: no-repeat;
   background-size: contain;
 }
@@ -15775,7 +15793,7 @@ input [type="image"]:focus {
   width: 19px;
   height: 24px;
   margin-top: 6px;
-  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-image: url(../img/gui/currency-golden-potato.svg);
   background-repeat: no-repeat;
   background-size: 100%;
 }
@@ -16430,7 +16448,7 @@ div.roulette {
   .iap-lto-packs-container
   .iap-lto-pack
   .iap-currency-container {
-  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-image: url(../img/gui/currency-golden-potato.svg);
   background-size: 22px 22px;
   background-repeat: no-repeat;
   background-position: 12px center;
@@ -16974,7 +16992,7 @@ div.roulette {
   padding: 5px 8px 5px 10px;
   margin: 0;
   background: #141414;
-  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-image: url(../img/gui/currency-golden-potato.svg);
   background-repeat: no-repeat;
   background-position: 5px center;
   background-size: 17px;
@@ -17283,7 +17301,7 @@ div.roulette {
   color: #ffe400;
   font-weight: 700;
   background: #141414;
-  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-image: url(../img/gui/currency-golden-potato.svg);
   background-repeat: no-repeat;
   background-position: 6px center;
   background-size: 16px;
@@ -17505,7 +17523,7 @@ div.roulette {
   width: 34px;
   height: 34px;
   margin-right: 18px;
-  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-image: url(../img/gui/currency-golden-potato.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -17934,7 +17952,7 @@ div.roulette {
 }
 
 #modal-premium-pass-confirm .modal-body-item-img-gp {
-  background-image: url(/img/gui/currency-golde-potato.svg);
+  background-image: url(/img/gui/currency-golden-potato.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -18031,7 +18049,7 @@ div.roulette {
 }
 
 #modal-premium-pass-confirm .modal-pass-price .pass-gp-icon {
-  background-image: url(/img/gui/currency-golde-potato.svg);
+  background-image: url(/img/gui/currency-golden-potato.svg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: 72%;
@@ -18073,7 +18091,7 @@ div.roulette {
 }
 
 .side-quest-reward {
-  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-image: url(../img/gui/currency-golden-potato.svg);
   background-position: left center;
   background-repeat: no-repeat;
   background-size: 16px;
@@ -18180,7 +18198,7 @@ div.roulette {
 .rewarded-ad-gp-payout {
   align-items: center;
   background-color: rgba(0, 0, 0, 0.32);
-  background-image: url(../img/gui/currency-golde-potato.svg);
+  background-image: url(../img/gui/currency-golden-potato.svg);
   background-position: 6px center;
   background-repeat: no-repeat;
   background-size: 16px;
@@ -20306,7 +20324,7 @@ div.roulette {
 
 .friends-action-gp {
   background-color: #d07017;
-  background-image: url(/img/gui/currency-golde-potato.svg);
+  background-image: url(/img/gui/currency-golden-potato.svg);
   box-shadow: inset 0 -2px #9d5411;
 }
 
@@ -21603,4 +21621,300 @@ div.roulette {
 
 #home-social-links .btn-social {
   margin: 0;
+}
+
+/* Private lobby player cards */
+#modal-prestige-arena .arena-team-list,
+#modal-prestige-arena .arena-spectator-list {
+  align-content: start;
+  display: grid;
+  gap: 8px;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+  grid-template-rows: none;
+  padding: 2px;
+}
+
+#modal-prestige-arena
+  #arena-teams-board.arena-large-teams
+  .arena-team-list,
+#modal-prestige-arena
+  #arena-teams-board.arena-single-team
+  .arena-team-list {
+  display: grid;
+  gap: 8px;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+  grid-template-rows: none;
+}
+
+#modal-prestige-arena .arena-team-slot.arena-player-card,
+#modal-prestige-arena .arena-spectator-item.arena-player-card,
+#modal-prestige-arena .arena-br-team-member.arena-player-card {
+  align-items: stretch;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.12), transparent 58%),
+    rgba(10, 16, 20, 0.46);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 -2px rgba(0, 0, 0, 0.2),
+    0 3px 8px rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  height: 136px;
+  justify-content: flex-end;
+  min-height: 136px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 8px 7px 6px;
+  position: relative;
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+#modal-prestige-arena .arena-team-slot.arena-player-card:not(.empty):hover,
+#modal-prestige-arena .arena-spectator-item.arena-player-card:not(.empty):hover,
+#modal-prestige-arena .arena-br-team-member.arena-player-card:not(.empty):hover {
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.18), transparent 58%),
+    rgba(10, 16, 20, 0.56);
+  transform: translateY(-1px);
+}
+
+#modal-prestige-arena .arena-player-card.is-self {
+  border-color: rgba(119, 255, 210, 0.72);
+  box-shadow:
+    inset 0 -2px rgba(0, 0, 0, 0.22),
+    0 0 0 1px rgba(67, 224, 171, 0.18),
+    0 4px 10px rgba(0, 0, 0, 0.18);
+}
+
+#modal-prestige-arena .arena-player-card.empty {
+  opacity: 0.48;
+}
+
+#modal-prestige-arena .arena-player-avatar {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+#modal-prestige-arena .arena-player-avatar.empty {
+  background-image: url(/img/gui/player-gui.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 46px;
+  filter: grayscale(1);
+  opacity: 0.42;
+}
+
+#modal-prestige-arena .arena-player-avatar-frame {
+  inset: 0;
+  position: absolute;
+  transform: scale(0.88);
+  transform-origin: center;
+}
+
+#modal-prestige-arena .arena-player-avatar-preview {
+  background-size: contain;
+  inset: 0;
+  position: absolute !important;
+}
+
+#modal-prestige-arena .arena-player-card > .arena-player-name {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 4px;
+  display: flex;
+  flex: 0 0 29px;
+  font-family: Roboto Condensed;
+  font-size: 14px;
+  font-weight: 700;
+  height: 29px;
+  justify-content: center;
+  line-height: 16px;
+  margin-top: 4px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 6px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+#modal-prestige-arena .arena-player-card.is-self > .arena-player-name {
+  color: #77ffd2;
+}
+
+#modal-prestige-arena .arena-player-card > .icon {
+  background-color: rgba(0, 0, 0, 0.36);
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 50%;
+  height: 27px;
+  margin: 0;
+  min-width: 27px;
+  position: absolute;
+  top: 6px;
+  width: 27px;
+  z-index: 2;
+}
+
+#modal-prestige-arena .arena-player-card > .icon-leader {
+  left: 6px;
+}
+
+#modal-prestige-arena .arena-player-card > .icon-kick {
+  right: 6px;
+}
+
+#modal-prestige-arena .arena-player-card > .icon-transfer-owner {
+  background-color: rgba(54, 119, 83, 0.9);
+  background-image: url(/img/gui/crown.svg);
+  background-size: 78%;
+  cursor: pointer;
+  left: 6px;
+}
+
+#modal-prestige-arena .arena-player-card > .icon-transfer-owner:hover,
+#modal-prestige-arena .arena-player-card > .icon-transfer-owner:focus {
+  background-color: rgba(70, 153, 107, 0.98);
+  outline: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+#modal-prestige-arena .arena-player-card > .icon-in-game {
+  bottom: 39px;
+  right: 6px;
+  top: auto;
+}
+
+#modal-prestige-arena .arena-spectator-list {
+  grid-template-columns: repeat(auto-fill, 132px);
+  justify-content: start;
+  overflow-y: auto;
+}
+
+#modal-prestige-arena .arena-spectator-item.arena-player-card {
+  height: 112px;
+  min-height: 112px;
+}
+
+#modal-prestige-arena .arena-br-team-members {
+  display: grid;
+  gap: 7px;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+}
+
+#modal-prestige-arena .arena-br-team-member.arena-player-card {
+  height: 124px;
+  min-height: 124px;
+  padding: 7px 6px 5px;
+}
+
+#modal-prestige-arena .arena-br-team-member-self {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  z-index: 2;
+}
+
+#modal-prestige-arena
+  #arena-teams-board.arena-large-teams
+  .arena-team-slot.arena-player-card {
+  height: 100px;
+  min-height: 100px;
+  padding: 5px;
+}
+
+#modal-prestige-arena
+  #arena-teams-board.arena-large-teams
+  .arena-player-card
+  > .arena-player-name {
+  flex-basis: 22px;
+  font-size: 11px;
+  height: 22px;
+  margin-top: 2px;
+  padding: 0 3px;
+}
+
+@media (max-width: 700px) {
+  #modal-prestige-arena .arena-team-list {
+    gap: 6px;
+    grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+  }
+
+  #modal-prestige-arena .arena-team-slot.arena-player-card {
+    height: 116px;
+    min-height: 116px;
+    padding: 6px 5px 5px;
+  }
+
+  #modal-prestige-arena .arena-player-card > .arena-player-name {
+    flex-basis: 25px;
+    font-size: 12px;
+    height: 25px;
+    margin-top: 3px;
+    padding: 0 4px;
+  }
+}
+
+@media (max-height: 565px) {
+  #modal-prestige-arena .arena-team-list,
+  #modal-prestige-arena .arena-spectator-list {
+    gap: 5px;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  }
+
+  #modal-prestige-arena .arena-spectator-list {
+    grid-template-columns: repeat(auto-fill, 110px);
+  }
+
+  #modal-prestige-arena .arena-team-slot.arena-player-card,
+  #modal-prestige-arena .arena-spectator-item.arena-player-card,
+  #modal-prestige-arena .arena-br-team-member.arena-player-card {
+    height: 94px;
+    min-height: 94px;
+    padding: 4px;
+  }
+
+  #modal-prestige-arena .arena-player-card > .arena-player-name {
+    flex-basis: 21px;
+    font-size: 11px;
+    height: 21px;
+    margin-top: 2px;
+    padding: 0 3px;
+  }
+
+  #modal-prestige-arena .arena-player-card > .icon {
+    height: 22px;
+    min-width: 22px;
+    top: 4px;
+    width: 22px;
+  }
+
+  #modal-prestige-arena .arena-player-card > .icon-leader {
+    left: 4px;
+  }
+
+  #modal-prestige-arena .arena-player-card > .icon-kick {
+    right: 4px;
+  }
+
+  #modal-prestige-arena .arena-player-card > .icon-transfer-owner {
+    left: 4px;
+  }
+
+  #modal-prestige-arena .arena-player-card > .icon-in-game {
+    bottom: 29px;
+    right: 4px;
+    top: auto;
+  }
 }

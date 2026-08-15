@@ -824,7 +824,7 @@ const BaseDefs: Record<string, MeleeDef> = {
             equip: 1,
         },
         lootImg: {
-            sprite: "loot-melee-ice_pick.img",
+            sprite: "loot-melee-ice_pick-survev.img",
             tint: 0xffffff,
             border: "loot-circle-outer-02.img",
             borderTint: 0xffffff,
@@ -833,7 +833,7 @@ const BaseDefs: Record<string, MeleeDef> = {
             rot: 2.35619,
         },
         worldImg: {
-            sprite: "loot-melee-ice_pick.img",
+            sprite: "loot-melee-ice_pick-survev.img",
             pos: {
                 x: -12.5,
                 y: -10,
@@ -1105,7 +1105,7 @@ const BaseDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
     },
-    lasr_swrd: {
+    lasr_swrd_01: {
         name: "Lasr Swrd",
         type: "melee",
         quality: 1,
@@ -1136,19 +1136,18 @@ const BaseDefs: Record<string, MeleeDef> = {
             playerHit: "lasr_hit_01",
         },
         lootImg: {
-            sprite: "loot-melee-lasr-sword-01.img",
+            sprite: "loot-melee-lasrswrd-01.img",
             tint: 0xffffff,
             border: "loot-circle-outer-02.img",
             borderTint: 0xffffff,
             scale: 0.3,
-            mirror: true,
-            rot: 0.0,
+            rot: 0,
         },
         worldImg: {
-            sprite: "lasr-sword-01.img",
-            pos: { x: 110.0, y: -2.0 },
-            rot: 0.0,
-            scale: { x: 0.15, y: 0.15 },
+            sprite: "loot-melee-lasrswrd-01.img",
+            pos: { x: 35.0, y: -35.0 },
+            rot: 0.785,
+            scale: { x: 0.4, y: 0.4 },
             tint: 0xffffff,
             leftHandOntop: true,
         },
@@ -1224,14 +1223,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-red-gloves.img",
+            sprite: "loot-weapon-fists-red-gloves.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-gloves-01.img",
-            spriteR: "player-fists-gloves-02.img",
+            spriteL: "player-fists-gloves-l.img",
+            spriteR: "player-fists-gloves-r.img",
         },
         scale: {
             x: 0.185,
@@ -1244,7 +1243,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-feral-claws.img",
+            sprite: "loot-weapon-fists-feral-claws.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1264,14 +1263,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-crab-tongs.img",
+            sprite: "loot-weapon-fists-crab-tongs.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-crab-tongs-01.img",
-            spriteR: "player-fists-crab-tongs-02.img",
+            spriteL: "player-fists-crab-tongs-l.img",
+            spriteR: "player-fists-crab-tongs-r.img",
         },
         scale: {
             x: 0.185,
@@ -1286,7 +1285,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noDropOnDeath: true,
         galaxyEffect: true,
         lootImg: {
-            sprite: "loot-first-galaxy-fists.img",
+            sprite: "loot-weapon-fists-first-galaxy.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1306,30 +1305,30 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-BlueVelvet.img",
+            sprite: "loot-weapon-fists-blue-velvet.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-BlueVelvet.img",
-            spriteR: "player-hands-BlueVelvet.img",
+            spriteL: "player-fists-blue-velvet.img",
+            spriteR: "player-fists-blue-velvet.img",
         },
     }),
     fist_split: defineMeleeSkin("fists", {
-        name: "Split the diff",
+        name: "Split the Diff",
         rarity: Rarity.Uncommon,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-SpliTheDiff.img",
+            sprite: "loot-weapon-fists-split-the-diff.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-SpliTheDiff.img",
-            spriteR: "player-hands-SpliTheDiff.img",
+            spriteL: "player-fists-split-the-diff.img",
+            spriteR: "player-fists-split-the-diff.img",
         },
     }),
     fist_frostpunch: defineMeleeSkin("fists", {
@@ -1338,14 +1337,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-FrostPunch.img",
+            sprite: "loot-weapon-fists-frostpunch.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-FrostPunch.img",
-            spriteR: "player-hands-FrostPunch.img",
+            spriteL: "player-fists-frostpunch.img",
+            spriteR: "player-fists-frostpunch.img",
         },
     }),
     fist_immolate: defineMeleeSkin("fists", {
@@ -1354,14 +1353,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-immolate.img",
+            sprite: "loot-weapon-fists-immolate.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-immolate.img",
-            spriteR: "player-hands-immolate.img",
+            spriteL: "player-fists-immolate.img",
+            spriteR: "player-fists-immolate.img",
         },
     }),
     fist_bulletbills: defineMeleeSkin("fists", {
@@ -1370,14 +1369,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-bulletbills.img",
+            sprite: "loot-weapon-fists-bullet-bills.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-bulletbills.img",
-            spriteR: "player-hands-bulletbills.img",
+            spriteL: "player-fists-bullet-bills.img",
+            spriteR: "player-fists-bullet-bills.img",
         },
     }),
     fist_moss: defineMeleeSkin("fists", {
@@ -1386,14 +1385,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-moss.img",
+            sprite: "loot-weapon-fists-moss.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-moss.img",
-            spriteR: "player-hands-moss.img",
+            spriteL: "player-fists-moss.img",
+            spriteR: "player-fists-moss.img",
         },
     }),
     fist_blackholes: defineMeleeSkin("fists", {
@@ -1403,14 +1402,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noDropOnDeath: true,
         lore: "Created by Shad0wy_F1gure",
         lootImg: {
-            sprite: "loot-melee-blackholes.img",
+            sprite: "loot-weapon-fists-black-holes.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-blackholes.img",
-            spriteR: "player-hands-blackholes.img",
+            spriteL: "player-fists-black-holes.img",
+            spriteR: "player-fists-black-holes.img",
         },
     }),
     fist_rainbowhands: defineMeleeSkin("fists", {
@@ -1419,14 +1418,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-rainbowhands.img",
+            sprite: "loot-weapon-fists-rainbow-hands.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-rainbowhands.img",
-            spriteR: "player-hands-rainbowhands.img",
+            spriteL: "player-fists-rainbow-hands.img",
+            spriteR: "player-fists-rainbow-hands.img",
         },
     }),
     fist_darklets: defineMeleeSkin("fists", {
@@ -1435,14 +1434,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-darklets.img",
+            sprite: "loot-weapon-fists-darklets.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-darklets.img",
-            spriteR: "player-hands-darklets.img",
+            spriteL: "player-fists-darklets.img",
+            spriteR: "player-fists-darklets.img",
         },
     }),
     fist_scifi: defineMeleeSkin("fists", {
@@ -1451,14 +1450,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-scifi.img",
+            sprite: "loot-weapon-fists-scifi.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-scifi.img",
-            spriteR: "player-hands-scifi.img",
+            spriteL: "player-fists-scifi.img",
+            spriteR: "player-fists-scifi.img",
         },
     }),
     fist_poke: defineMeleeSkin("fists", {
@@ -1467,14 +1466,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-poke.img",
+            sprite: "loot-weapon-fists-poke.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-poke.img",
-            spriteR: "player-hands-poke.img",
+            spriteL: "player-fists-poke.img",
+            spriteR: "player-fists-poke.img",
         },
     }),
     fist_paws: defineMeleeSkin("fists", {
@@ -1483,14 +1482,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-paws.img",
+            sprite: "loot-weapon-fists-paws.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-paws.img",
-            spriteR: "player-hands-paws.img",
+            spriteL: "player-fists-paws.img",
+            spriteR: "player-fists-paws.img",
         },
     }),
     fist_dinoclaws: defineMeleeSkin("fists", {
@@ -1499,14 +1498,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-dinoclaws.img",
+            sprite: "loot-weapon-fists-dino-claws.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-dinoclaws.img",
-            spriteR: "player-hands-dinoclaws.img",
+            spriteL: "player-fists-dino-claws.img",
+            spriteR: "player-fists-dino-claws.img",
         },
     }),
     fist_leaf: defineMeleeSkin("fists", {
@@ -1515,14 +1514,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-leaf.img",
+            sprite: "loot-weapon-fists-leaf.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-leaf-left.img",
-            spriteR: "player-hands-leaf-right.img",
+            spriteL: "player-fists-leaf-l.img",
+            spriteR: "player-fists-leaf-r.img",
         },
     }),
     fist_ranger: defineMeleeSkin("fists", {
@@ -1531,14 +1530,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-ranger.img",
+            sprite: "loot-weapon-fists-ranger.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-ranger.img",
-            spriteR: "player-hands-ranger.img",
+            spriteL: "player-fists-ranger.img",
+            spriteR: "player-fists-ranger.img",
         },
     }),
     fist_linedUp: defineMeleeSkin("fists", {
@@ -1547,14 +1546,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-linedUp.img",
+            sprite: "loot-weapon-fists-lined-up.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-linedUp.img",
-            spriteR: "player-hands-linedUp.img",
+            spriteL: "player-fists-lined-up.img",
+            spriteR: "player-fists-lined-up.img",
         },
     }),
     fist_lit: defineMeleeSkin("fists", {
@@ -1563,14 +1562,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-lit.img",
+            sprite: "loot-weapon-fists-lit.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-lit-left.img",
-            spriteR: "player-hands-lit-right.img",
+            spriteL: "player-fists-lit-l.img",
+            spriteR: "player-fists-lit-r.img",
         },
     }),
     fist_gift_punch: defineMeleeSkin("fists", {
@@ -1579,14 +1578,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-gift-punch-fists.img",
+            sprite: "loot-weapon-fists-gift-punch.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-gift-puch.img",
-            spriteR: "player-fists-gift-puch.img",
+            spriteL: "player-fists-gift-punch.img",
+            spriteR: "player-fists-gift-punch.img",
         },
     }),
     fist_ember: defineMeleeSkin("fists", {
@@ -1595,7 +1594,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-ember-fists.img",
+            sprite: "loot-weapon-fists-ember.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1611,7 +1610,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-santa-fists.img",
+            sprite: "loot-weapon-fists-santa.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1627,7 +1626,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-purptog-fists.img",
+            sprite: "loot-weapon-fists-purptog.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1643,7 +1642,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-golden-lobster-fists.img",
+            sprite: "loot-weapon-fists-golden-lobster.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1659,14 +1658,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-pineFury.img",
+            sprite: "loot-weapon-fists-pine-fury.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-pineFury-left.img",
-            spriteR: "player-hands-pineFury-right.img",
+            spriteL: "player-fists-pine-fury-l.img",
+            spriteR: "player-fists-pine-fury-r.img",
         },
     }),
     fist_dreidel: defineMeleeSkin("fists", {
@@ -1675,14 +1674,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-dreidel.img",
+            sprite: "loot-weapon-fists-dreidel.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-dreidel-left.img",
-            spriteR: "player-hands-dreidel-right.img",
+            spriteL: "player-fists-dreidel-l.img",
+            spriteR: "player-fists-dreidel-r.img",
         },
     }),
     fist_bePresent: defineMeleeSkin("fists", {
@@ -1691,14 +1690,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-melee-bePresent.img",
+            sprite: "loot-weapon-fists-be-present.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-bePresent-left.img",
-            spriteR: "player-hands-bePresent-right.img",
+            spriteL: "player-fists-be-present-l.img",
+            spriteR: "player-fists-be-present-r.img",
         },
     }),
     fist_101spots: defineMeleeSkin("fists", {
@@ -1707,7 +1706,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-101-spots-fists.img",
+            sprite: "loot-weapon-fists-101-spots.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1723,7 +1722,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-at-net-fists.img",
+            sprite: "loot-weapon-fists-at-net.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1739,7 +1738,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-bad-mitten-fists.img",
+            sprite: "loot-weapon-fists-bad-mitten.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1755,7 +1754,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-beach-ballin-fists.img",
+            sprite: "loot-weapon-fists-beach-ballin.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1771,7 +1770,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-bloody-fists.img",
+            sprite: "loot-weapon-fists-bloody.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1787,7 +1786,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-bologna-fists.img",
+            sprite: "loot-weapon-fists-bologna.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1803,7 +1802,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-bonkbonk-fists.img",
+            sprite: "loot-weapon-fists-bonkbonk.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1819,7 +1818,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-boogie-stripes-fists.img",
+            sprite: "loot-weapon-fists-boogie-stripes.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1830,19 +1829,19 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
     }),
     fist_bullsEye: defineMeleeSkin("fists", {
-        name: "Bulls Eye",
+        name: "Bulls Eyes",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-bulls-eye-fists.img",
+            sprite: "loot-weapon-fists-bulls-eyes.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-bulls-eye-l.img",
-            spriteR: "player-fists-bulls-eye-r.img",
+            spriteL: "player-fists-bulls-eyes-l.img",
+            spriteR: "player-fists-bulls-eyes-r.img",
         },
     }),
     fist_cattleBattle: defineMeleeSkin("fists", {
@@ -1851,7 +1850,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-cattle-battle-fists.img",
+            sprite: "loot-weapon-fists-cattle-battle.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1861,13 +1860,29 @@ const SkinDefs: Record<string, MeleeDef> = {
             spriteR: "player-fists-cattle-battle-r.img",
         },
     }),
+    fist_checkmate: defineMeleeSkin("fists", {
+        name: "Checkmate",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-checkmate.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-hands-blue-zone.img",
+            spriteR: "player-hands-arctic-avenger.img",
+        },
+    }),
     fist_cocoNut: defineMeleeSkin("fists", {
         name: "Coco Nut",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-coco-nut-fists.img",
+            sprite: "loot-weapon-fists-coco-nut.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1883,7 +1898,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-condimentium-fists.img",
+            sprite: "loot-weapon-fists-condimentium.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1899,7 +1914,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-d-punch-pad-fists.img",
+            sprite: "loot-weapon-fists-d-punch-pad.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1915,7 +1930,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-develop-these-rolls-fists.img",
+            sprite: "loot-weapon-fists-develop-these-rolls.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1931,7 +1946,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-dish-soap-fists.img",
+            sprite: "loot-weapon-fists-dish-soap.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1947,7 +1962,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-dizzie-locs-fists.img",
+            sprite: "loot-weapon-fists-dizzie-locs.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1963,7 +1978,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-first-tool-fists.img",
+            sprite: "loot-weapon-fists-first-tool.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1979,7 +1994,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-flaming-nucleus-fists.img",
+            sprite: "loot-weapon-fists-flaming-nucleus.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -1995,7 +2010,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-flashy-fists.img",
+            sprite: "loot-weapon-fists-flashy.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2011,7 +2026,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-fritter-punch-fists.img",
+            sprite: "loot-weapon-fists-fritter-punch.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2027,7 +2042,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-fuzzy-hooves-fists.img",
+            sprite: "loot-weapon-fists-fuzzy-hooves.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2043,7 +2058,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-garbanjo-fists.img",
+            sprite: "loot-weapon-fists-garbanjo.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2059,7 +2074,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-getdowntonite-fists.img",
+            sprite: "loot-weapon-fists-getdowntonite.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2075,7 +2090,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-ghost-poke-fists.img",
+            sprite: "loot-weapon-fists-ghost-poke.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2091,7 +2106,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-gold-drops-fists.img",
+            sprite: "loot-weapon-fists-gold-drops.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2107,7 +2122,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-graphbars-fists.img",
+            sprite: "loot-weapon-fists-graphbars.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2117,29 +2132,13 @@ const SkinDefs: Record<string, MeleeDef> = {
             spriteR: "player-fists-graphbars-r.img",
         },
     }),
-    fist_Checkmate: defineMeleeSkin("fists", {
-        name: "Checkmate",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-hand-checkmate.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-hands-blue-zone.img",
-            spriteR: "player-hands-arctic-avenger.img",
-        },
-    }),
     fist_grizzly: defineMeleeSkin("fists", {
         name: "Grizzly",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-grizzly-fists.img",
+            sprite: "loot-weapon-fists-grizzly.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2155,7 +2154,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-horsepower-fists.img",
+            sprite: "loot-weapon-fists-horsepower.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2171,7 +2170,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-inky-business-fists.img",
+            sprite: "loot-weapon-fists-inky-business.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2187,7 +2186,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-lolita-pop-fists.img",
+            sprite: "loot-weapon-fists-lolita-pop.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2203,7 +2202,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-make-a-choice-fists.img",
+            sprite: "loot-weapon-fists-make-a-choice.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2219,7 +2218,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-marble-run-fists.img",
+            sprite: "loot-weapon-fists-marble-run.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2235,7 +2234,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-meteor-nite-fists.img",
+            sprite: "loot-weapon-fists-meteor-nite.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2251,7 +2250,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-milestones-fists.img",
+            sprite: "loot-weapon-fists-milestones.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2267,7 +2266,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-milkshaked-fists.img",
+            sprite: "loot-weapon-fists-milkshaked.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2283,7 +2282,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-no-pine-no-gain-fists.img",
+            sprite: "loot-weapon-fists-no-pine-no-gain.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2299,7 +2298,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-orange-lime-fists.img",
+            sprite: "loot-weapon-fists-orange-lime.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2315,7 +2314,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-orange-mintstones-fists.img",
+            sprite: "loot-weapon-fists-orange-mintstones.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2331,7 +2330,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-paddle-fists.img",
+            sprite: "loot-weapon-fists-paddle.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2347,7 +2346,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-pixel-dots-fists.img",
+            sprite: "loot-weapon-fists-pixel-dots.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2363,7 +2362,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-purple-shutter-fists.img",
+            sprite: "loot-weapon-fists-purple-shutter.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2379,7 +2378,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-q-fist-fists.img",
+            sprite: "loot-weapon-fists-q-fist.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2395,7 +2394,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-rafflesia-fists.img",
+            sprite: "loot-weapon-fists-rafflesia.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2411,7 +2410,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-ranch-chips-fists.img",
+            sprite: "loot-weapon-fists-ranch-chips.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2427,7 +2426,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-retrhorizon-fists.img",
+            sprite: "loot-weapon-fists-retrhorizon.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2443,7 +2442,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-shiny-jello-fists.img",
+            sprite: "loot-weapon-fists-shiny-jello.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2459,7 +2458,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-sponge-guy-fists.img",
+            sprite: "loot-weapon-fists-sponge-guy.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2475,7 +2474,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-squarey-cherry-fists.img",
+            sprite: "loot-weapon-fists-squarey-cherry.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2491,7 +2490,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-stonedgy-fists.img",
+            sprite: "loot-weapon-fists-stonedgy.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2507,7 +2506,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-tawget-fists.img",
+            sprite: "loot-weapon-fists-tawget.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2523,7 +2522,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-the-other-pong-fists.img",
+            sprite: "loot-weapon-fists-the-other-pong.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2539,7 +2538,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-tiger-seed-fists.img",
+            sprite: "loot-weapon-fists-tiger-seed.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2556,7 +2555,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-tiger-seed-fists.img",
+            sprite: "loot-weapon-fists-tiger-seed.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2574,7 +2573,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-tiger-seed-fists.img",
+            sprite: "loot-weapon-fists-tiger-seed.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2592,7 +2591,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-tiger-seed-fists.img",
+            sprite: "loot-weapon-fists-tiger-seed.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2610,7 +2609,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-tiger-seed-fists.img",
+            sprite: "loot-weapon-fists-tiger-seed.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2628,7 +2627,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-tiger-seed-fists.img",
+            sprite: "loot-weapon-fists-skeleton.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2646,7 +2645,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-tiger-seed-fists.img",
+            sprite: "loot-weapon-fists-tiger-seed.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2664,7 +2663,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-tiger-seed-fists.img",
+            sprite: "loot-weapon-fists-tiger-seed.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2682,7 +2681,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-tiger-seed-fists.img",
+            sprite: "loot-weapon-fists-tiger-seed.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2699,7 +2698,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-tropicana-fists.img",
+            sprite: "loot-weapon-fists-tropicana.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2715,7 +2714,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-up-and-atom-fists.img",
+            sprite: "loot-weapon-fists-up-and-atom.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2731,7 +2730,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-vitamin-c-fists.img",
+            sprite: "loot-weapon-fists-vitamin-c.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2747,7 +2746,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-washi-lamps-fists.img",
+            sprite: "loot-weapon-fists-washi-lamps.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2763,7 +2762,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-watermelon-fists.img",
+            sprite: "loot-weapon-fists-watermelon.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2779,7 +2778,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-woody-allan-fists.img",
+            sprite: "loot-weapon-fists-woody-allan.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2795,7 +2794,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-wrecked-angle-fists.img",
+            sprite: "loot-weapon-fists-wrecked-angle.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2890,16 +2889,16 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
     }),
 
-    bone_knife: defineMeleeSkin("bayonet", {
+    knife_bone: defineMeleeSkin("bayonet", {
         name: "Bone Knife",
         rarity: Rarity.Epic,
         lore: "For those who prefer a primal touch to their combat style.",
         noPotatoSwap: false,
         lootImg: {
-            sprite: "bone-knife.img",
+            sprite: "loot-melee-knife-bone.img",
         },
         worldImg: {
-            sprite: "bone-knife.img",
+            sprite: "loot-melee-knife-bone.img",
         },
     }),
 
@@ -2948,23 +2947,23 @@ const SkinDefs: Record<string, MeleeDef> = {
         lore: "A rare collector's item crafted by the serial killer & blacksmith Benny. - HXH",
         noPotatoSwap: false,
         lootImg: {
-            sprite: "bens-knife.img",
+            sprite: "loot-melee-knife-ben.img",
         },
         worldImg: {
-            sprite: "bens-knife.img",
+            sprite: "loot-melee-knife-ben.img",
         },
     }),
 
-    police_baton: defineMeleeSkin("machete", {
+    baton_police: defineMeleeSkin("machete", {
         name: "Police Baton",
         rarity: Rarity.Epic,
         lore: "For maintaining order in the most chaotic situations.",
         noPotatoSwap: false,
         lootImg: {
-            sprite: "police-baton.img",
+            sprite: "loot-melee-baton-police.img",
         },
         worldImg: {
-            sprite: "police-baton.img",
+            sprite: "loot-melee-baton-police.img",
         },
     }),
 
@@ -2987,49 +2986,48 @@ const SkinDefs: Record<string, MeleeDef> = {
         lore: "For those who reap victory with refined style.",
         noPotatoSwap: false,
         lootImg: {
-            sprite: "reapers-scythe.img",
+            sprite: "loot-melee-scythe-reaper.img",
         },
         worldImg: {
-            sprite: "reapers-scythe.img",
+            sprite: "loot-melee-scythe-reaper.img",
         },
     }),
 
-    carving_fork: defineMeleeSkin("bayonet", {
+    carvingfork: defineMeleeSkin("bayonet", {
         name: "Carving Fork",
         rarity: Rarity.Epic,
         lore: "For those who like to keep their opponents at a comfortable roasting distance.",
         noPotatoSwap: false,
         lootImg: {
-            sprite: "carving-fork.img",
+            sprite: "loot-melee-carvingfork.img",
         },
         worldImg: {
-            sprite: "carving-fork.img",
+            sprite: "loot-melee-carvingfork.img",
         },
     }),
 
-    shadow_kunai: defineMeleeSkin("bayonet", {
+    kunai_shadow: defineMeleeSkin("bayonet", {
         name: "Shadow Kunai",
         rarity: Rarity.Mythic,
         lore: "For those who move like shadows and strike with precision.",
         noPotatoSwap: false,
         lootImg: {
-            sprite: "shadow-kunai.img",
+            sprite: "loot-melee-kunai-shadow.img",
         },
         worldImg: {
-            sprite: "shadow-kunai.img",
+            sprite: "loot-melee-kunai-shadow.img",
         },
     }),
-
     guthook_woodland: defineMeleeSkin("bayonet", {
         name: "Guthook Woodland",
         rarity: Rarity.Mythic,
         lore: "Created by SigmaSanty1",
         noPotatoSwap: false,
         lootImg: {
-            sprite: "loot-melee-gutHookWoodland.img",
+            sprite: "loot-melee-guthook-woodland.img",
         },
         worldImg: {
-            sprite: "loot-melee-gutHookWoodland.img",
+            sprite: "loot-melee-guthook-woodland.img",
         },
     }),
     huntsman_rugged: defineMeleeSkin("huntsman", {
@@ -3220,12 +3218,12 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
     }),
     lasr_swrd_02: defineMeleeSkin("lasr_swrd", {
-        lootImg: { sprite: "loot-melee-lasr-sword-02.img" },
-        worldImg: { sprite: "lasr-sword-02.img" },
+        lootImg: { sprite: "loot-melee-lasrswrd-02.img" },
+        worldImg: { sprite: "loot-melee-lasrswrd-02.img" },
     }),
     lasr_swrd_03: defineMeleeSkin("lasr_swrd", {
-        lootImg: { sprite: "loot-melee-lasr-sword-03.img" },
-        worldImg: { sprite: "lasr-sword-03.img" },
+        lootImg: { sprite: "loot-melee-lasrswrd-03.img" },
+        worldImg: { sprite: "loot-melee-lasrswrd-03.img" },
     }),
 };
 
