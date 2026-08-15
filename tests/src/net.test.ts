@@ -150,6 +150,42 @@ test("Map Msg", () => {
     }
 });
 
+test("Spectator free camera input", () => {
+    const inMsg = new net.InputMsg();
+    inMsg.moveLeft = true;
+    inMsg.moveUp = true;
+    inMsg.spectatorFreeCam = true;
+    inMsg.spectatorFreeCamZoom = 72;
+
+    stream.serializeMsg(net.MsgType.Input, inMsg);
+    stream.stream.index = 0;
+    expect(stream.deserializeMsgType()).toBe(net.MsgType.Input);
+
+    const outMsg = new net.InputMsg();
+    outMsg.deserialize(stream.getStream());
+    expect(outMsg.moveLeft).toBe(true);
+    expect(outMsg.moveUp).toBe(true);
+    expect(outMsg.spectatorFreeCam).toBe(true);
+    expect(outMsg.spectatorFreeCamZoom).toBe(72);
+});
+
+test("Private spectator join state", () => {
+    const inMsg = new net.JoinedMsg();
+    inMsg.teamMode = 1;
+    inMsg.playerId = 42;
+    inMsg.arenaPrivate = true;
+    inMsg.spectatorOnly = true;
+
+    stream.serializeMsg(net.MsgType.Joined, inMsg);
+    stream.stream.index = 0;
+    expect(stream.deserializeMsgType()).toBe(net.MsgType.Joined);
+
+    const outMsg = new net.JoinedMsg();
+    outMsg.deserialize(stream.getStream());
+    expect(outMsg.arenaPrivate).toBe(true);
+    expect(outMsg.spectatorOnly).toBe(true);
+});
+
 test("Update Msg", () => {
     const inMsg = new net.UpdateMsg();
 
@@ -185,11 +221,18 @@ test("Update Msg", () => {
         curWeapIdx: 0,
         spectatorCountDirty: true,
         spectatorCount: util.randomInt(0, 255),
-        streakDirty: false,
+        streakDirty: true,
+        streakDamageDealt: 0,
+        streakNextThreshold: 0,
+        streakReady: false,
+        activeStreakActive: false,
+        activeStreakTimeLeft: 0,
         contactDirty: true,
         contactPercentage: 100,
-        nitroLaceDirty: false,
-        hideAndSeekBlindDirty: false,
+        nitroLaceDirty: true,
+        nitroLacePercentage: 0,
+        hideAndSeekBlindDirty: true,
+        hideAndSeekBlindTime: 0,
         hideAndSeekHunterReleaseTime: 0,
         hideAndSeekHunterReleaseSeeker: false,
         infectedRespawnTime: 0,
@@ -200,6 +243,8 @@ test("Update Msg", () => {
         amongUsEmergencyCallCooldownTime: 0,
         amongUsEmergencyCallsRemaining: 0,
         amongUsEmergencyMeetingSeq: 0,
+        vehicleId: 0,
+        vehicleSpeed: 0,
     };
 
     inMsg.gasDirty = true;

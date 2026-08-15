@@ -381,6 +381,9 @@ export class Building implements AbstractObject {
         renderer: Renderer,
         camera: Camera,
         debug: DebugRenderOpts,
+        viewPos: Vec2 = activePlayer.m_pos,
+        viewLayer = activePlayer.layer,
+        viewNoCeilingReveal = activePlayer.noCeilingRevealTicker > 0,
     ) {
         // Puzzle effects
         if (this.hasPuzzle) {
@@ -464,12 +467,12 @@ export class Building implements AbstractObject {
             const zoomIn = this.ceiling.zoomRegions[i].zoomIn;
             if (
                 zoomIn &&
-                (this.layer == activePlayer.layer || activePlayer.layer & 2) &&
+                (this.layer == viewLayer || viewLayer & 2) &&
                 collisionHelpers.scanCollider(
                     zoomIn,
                     map.m_obstaclePool.m_getPool(),
-                    activePlayer.m_pos,
-                    activePlayer.layer,
+                    viewPos,
+                    viewLayer,
                     0.5,
                     vision.width! * 2,
                     vision.dist!,
@@ -491,7 +494,7 @@ export class Building implements AbstractObject {
 
         // @NOTE: This will not allow for revealing any ceilings while
         // underground near stairs
-        if (activePlayer.noCeilingRevealTicker > 0 && !this.ceilingDead) {
+        if (viewNoCeilingReveal && !this.ceilingDead) {
             this.ceiling.visionTicker = 0;
         }
 
@@ -507,9 +510,9 @@ export class Building implements AbstractObject {
         // can see inside the other layer
         if (
             canSeeInside &&
-            activePlayer.noCeilingRevealTicker <= 0 &&
-            activePlayer.layer & 2 &&
-            !util.sameLayer(activePlayer.layer, this.layer)
+            !viewNoCeilingReveal &&
+            viewLayer & 2 &&
+            !util.sameLayer(viewLayer, this.layer)
         ) {
             this.ceiling.fadeAlpha = 0;
         }
@@ -556,7 +559,7 @@ export class Building implements AbstractObject {
                         soundEmitter.volume *
                         volumeFalloff *
                         visibilityMult;
-                    if (!util.sameAudioLayer(this.layer, activePlayer.layer)) {
+                    if (!util.sameAudioLayer(this.layer, viewLayer)) {
                         volume = 0;
                     }
                     if (volume < 0.003) {
@@ -584,8 +587,7 @@ export class Building implements AbstractObject {
             // standing on the interior mansion stairs.
             if (
                 img.isCeiling &&
-                (this.layer == activePlayer.layer ||
-                    (activePlayer.layer & 2 && this.layer == 1))
+                (this.layer == viewLayer || (viewLayer & 2 && this.layer == 1))
             ) {
                 layer |= 2;
             }

@@ -256,6 +256,10 @@ export class Map {
         camera: Camera,
         _smokeParticles: SmokeParticle[],
         debug: DebugRenderOpts,
+        viewPos: Vec2 = activePlayer.m_pos,
+        viewLayer = activePlayer.layer,
+        viewNoCeilingReveal = activePlayer.noCeilingRevealTicker > 0,
+        viewZoom = activePlayer.m_getZoom(),
     ) {
         const obstacles = this.m_obstaclePool.m_getPool();
         for (let i = 0; i < obstacles.length; i++) {
@@ -270,7 +274,7 @@ export class Map {
                     activePlayer,
                     renderer,
                 );
-                obstacle.render(dt, camera, debug, activePlayer.layer);
+                obstacle.render(dt, camera, debug, viewLayer);
             }
         }
 
@@ -287,8 +291,11 @@ export class Map {
                     renderer,
                     camera,
                     debug,
+                    viewPos,
+                    viewLayer,
+                    viewNoCeilingReveal,
                 );
-                building.render(camera, debug, activePlayer.layer);
+                building.render(camera, debug, viewLayer);
             }
         }
 
@@ -300,7 +307,7 @@ export class Map {
             const structure = structures[x];
             if (structure.active) {
                 structure.update(dt, this, activePlayer, ambience);
-                structure.render(camera, debug, activePlayer.layer);
+                structure.render(camera, debug, viewLayer);
             }
         }
 
@@ -324,12 +331,12 @@ export class Map {
 
             // Adjust radius and spawn rate based on zoom
             const maxRadius = 120;
-            const camRadius = activePlayer.m_getZoom() * 2.5;
+            const camRadius = viewZoom * 2.5;
             this.cameraEmitter.radius = math.min(camRadius, maxRadius);
             const radius = this.cameraEmitter.radius;
             const ratio = (radius * radius) / (maxRadius * maxRadius);
             this.cameraEmitter.rateMult = 1 / ratio;
-            const alphaTarget = activePlayer.layer == 0 ? 1 : 0;
+            const alphaTarget = viewLayer == 0 ? 1 : 0;
             this.cameraEmitter.alpha = math.lerp(
                 dt * 6,
                 this.cameraEmitter.alpha,

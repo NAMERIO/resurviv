@@ -1249,6 +1249,9 @@ export class Player extends BaseGameObject {
     team: Team | undefined = undefined;
     group: Group | undefined = undefined;
     spectatorOnly = false;
+    spectatorFreeCam = false;
+    spectatorFreeCamPos = v2.create(0, 0);
+    spectatorFreeCamZoom = GameConfig.player.spectatorFreeCamZoom;
 
     /**
      * set true if any member on the team changes health or disconnects
@@ -3148,6 +3151,32 @@ export class Player extends BaseGameObject {
 
     update(dt: number): void {
         if (this.dead) {
+            if (this.spectatorOnly && this.spectatorFreeCam) {
+                let movement = v2.create(0, 0);
+                if (this.touchMoveActive && this.touchMoveLen) {
+                    movement = v2.mul(this.touchMoveDir, this.touchMoveLen / 255);
+                } else {
+                    movement = v2.create(
+                        +this.moveRight - +this.moveLeft,
+                        +this.moveUp - +this.moveDown,
+                    );
+                    movement = v2.normalizeSafe(movement, v2.create(0, 0));
+                }
+                this.spectatorFreeCamPos = v2.add(
+                    this.spectatorFreeCamPos,
+                    v2.mul(movement, GameConfig.player.spectatorFreeCamSpeed * dt),
+                );
+                this.spectatorFreeCamPos.x = math.clamp(
+                    this.spectatorFreeCamPos.x,
+                    0,
+                    this.game.map.width,
+                );
+                this.spectatorFreeCamPos.y = math.clamp(
+                    this.spectatorFreeCamPos.y,
+                    0,
+                    this.game.map.height,
+                );
+            }
             this.spectateCooldown -= dt;
             if (this.infectedRespawnTicker > 0) {
                 this.infectedRespawnTicker = Math.max(0, this.infectedRespawnTicker - dt);
@@ -4462,6 +4491,7 @@ export class Player extends BaseGameObject {
             joinedMsg.playerId = this.__id;
             joinedMsg.started = game.started;
             joinedMsg.arenaPrivate = this.game.arenaPrivate;
+            joinedMsg.spectatorOnly = this.spectatorOnly;
             joinedMsg.miniGame = this.game.miniGame ?? "";
             joinedMsg.arenaCountdown = Math.ceil(this.game.arenaStartLockTimer);
             joinedMsg.teamMode = game.teamMode;
@@ -4530,8 +4560,14 @@ export class Player extends BaseGameObject {
             player = this;
         }
 
-        const radius = player._cullingZoom + 4;
-        let width = player._cullingZoom + 4;
+        const viewPos = this.spectatorFreeCam
+            ? this.spectatorFreeCamPos
+            : player.pos;
+        const viewZoom = this.spectatorFreeCam
+            ? this.spectatorFreeCamZoom
+            : player._cullingZoom;
+        const radius = viewZoom + 4;
+        let width = viewZoom + 4;
         // client zoom tries to keep a 16/9 aspect ratio, mirror it here
         let height = width / (16 / 9);
         if (this._cullingPortrait) {
@@ -4539,7 +4575,7 @@ export class Player extends BaseGameObject {
             width = height;
             height = tmp;
         }
-        const rect = collider.createAabbExtents(player.pos, v2.create(width, height));
+        const rect = collider.createAabbExtents(viewPos, v2.create(width, height));
 
         const newVisibleObjects = game.grid.intersectColliderSet(rect);
         for (const obj of newVisibleObjects) {
@@ -4661,10 +4697,16 @@ export class Player extends BaseGameObject {
             updateMsg.groupStatusDirty = true;
         }
 
-        // Developer-only diagnostics. This is built separately for each recipient,
-        // so regular clients never receive another player's private vitals.
-        if (this.canUseDeveloper || Config.gameServer.thisRegion === "local") {
-            updateMsg.developerPlayerVitals = playerBarn.players.map((p) => ({
+        // This is built separately for each recipient so player vitals are only
+        // exposed to developers and spectator-only viewers in private games.
+        const privateSpectator = game.arenaPrivate && this.spectatorOnly;
+        const developerVitals =
+            this.canUseDeveloper || Config.gameServer.thisRegion === "local";
+        if (developerVitals || privateSpectator) {
+            const visibleVitalsPlayers = privateSpectator
+                ? playerBarn.players.filter((p) => !p.spectatorOnly)
+                : playerBarn.players;
+            updateMsg.developerPlayerVitals = visibleVitalsPlayers.map((p) => ({
                 playerId: p.__id,
                 health: p.health,
                 boost: p.boost,
@@ -4698,7 +4740,7 @@ export class Player extends BaseGameObject {
             }
 
             if (emotePlayer) {
-                if (!emote.isPing && !player.visibleObjects.has(emotePlayer)) {
+                if (!emote.isPing && !this.visibleObjects.has(emotePlayer)) {
                     return false;
                 }
 
@@ -4750,12 +4792,12 @@ export class Player extends BaseGameObject {
             if (
                 (bullet.soundTargetArenaTeam !== undefined &&
                     bullet.soundTargetArenaTeam === player.arenaTeam) ||
-                v2.lengthSqr(v2.sub(bullet.pos, player.pos)) < radiusSquared ||
-                v2.lengthSqr(v2.sub(bullet.clientEndPos, player.pos)) < radiusSquared ||
+                v2.lengthSqr(v2.sub(bullet.pos, viewPos)) < radiusSquared ||
+                v2.lengthSqr(v2.sub(bullet.clientEndPos, viewPos)) < radiusSquared ||
                 coldet.intersectSegmentCircle(
                     bullet.pos,
                     bullet.clientEndPos,
-                    player.pos,
+                    viewPos,
                     extendedRadius,
                 )
             ) {
@@ -4766,7 +4808,7 @@ export class Player extends BaseGameObject {
         for (let i = 0; i < game.explosionBarn.newExplosions.length; i++) {
             const explosion = game.explosionBarn.newExplosions[i];
             const rad = explosion.rad + extendedRadius;
-            if (v2.lengthSqr(v2.sub(explosion.pos, player.pos)) < rad * rad) {
+            if (v2.lengthSqr(v2.sub(explosion.pos, viewPos)) < rad * rad) {
                 updateMsg.explosions.push(explosion);
             }
         }
@@ -6059,6 +6101,30 @@ export class Player extends BaseGameObject {
         this.ack = msg.seq;
         this.amongUsCamerasOpen =
             this.game.map.amongUsMode && Boolean(msg.amongUsCamerasOpen);
+
+        const spectatorFreeCam =
+            this.game.arenaPrivate && this.spectatorOnly && msg.spectatorFreeCam;
+        if (spectatorFreeCam && !this.spectatorFreeCam) {
+            this.spectatorFreeCamPos = v2.copy(this.spectating?.pos ?? this.pos);
+        }
+        this.spectatorFreeCam = spectatorFreeCam;
+        if (this.spectatorOnly) {
+            this.spectatorFreeCamZoom = math.clamp(
+                msg.spectatorFreeCamZoom,
+                GameConfig.player.spectatorFreeCamMinZoom,
+                GameConfig.player.spectatorFreeCamMaxZoom,
+            );
+            this.moveLeft = spectatorFreeCam && msg.moveLeft;
+            this.moveRight = spectatorFreeCam && msg.moveRight;
+            this.moveUp = spectatorFreeCam && msg.moveUp;
+            this.moveDown = spectatorFreeCam && msg.moveDown;
+            this.touchMoveActive = spectatorFreeCam && msg.touchMoveActive;
+            this.touchMoveDir = v2.normalizeSafe(msg.touchMoveDir);
+            this.touchMoveLen = spectatorFreeCam ? msg.touchMoveLen : 0;
+            this.portrait = msg.portrait;
+            this._cullingPortrait = msg.portrait;
+            return;
+        }
 
         if (this.dead) return;
         if (this.game.map.perkMode && !this.role) return;

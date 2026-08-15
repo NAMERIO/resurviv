@@ -133,7 +133,7 @@ export const GameConfig = {
     // the protocol we originated from was 78
     // remember to bump this every time a serialization function is changed
     // or a definition item added, removed or moved
-    protocolVersion: 1033,
+    protocolVersion: 1035,
     Input,
     EmoteSlot,
     WeaponSlot,
@@ -198,6 +198,11 @@ export const GameConfig = {
         medicHealRange: 8,
         medicReviveRange: 6,
         spectateDeadTimeout: 2,
+        spectatorFreeCamSpeed: 36,
+        spectatorFreeCamZoom: 32,
+        spectatorFreeCamMinZoom: 16,
+        spectatorFreeCamMaxZoom: 104,
+        spectatorFreeCamZoomStep: 8,
         killLeaderMinKills: 3,
         minSpawnRad: 25,
         perkModeRoleSelectDuration: 20,

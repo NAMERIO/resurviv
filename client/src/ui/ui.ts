@@ -213,6 +213,10 @@ export class UiManager {
     specPrev = false;
     specNextButton = $("#btn-spectate-next-player");
     specPrevButton = $("#btn-spectate-prev-player");
+    specFreeCamera = false;
+    specFreeCameraButton = $("#btn-spectate-free-camera");
+    specFreeCameraUnderground = false;
+    specFreeCameraLayerButton = $("#btn-spectate-free-camera-layer");
 
     // Touch specific buttons
     interactionElems = $("#ui-interaction-press, #ui-interaction");
@@ -478,10 +482,18 @@ export class UiManager {
         });
 
         this.specNextButton.on("click", () => {
+            this.setFreeCamera(false);
             this.specNext = true;
         });
         this.specPrevButton.on("click", () => {
+            this.setFreeCamera(false);
             this.specPrev = true;
+        });
+        this.specFreeCameraButton.on("click", () => {
+            this.setFreeCamera(!this.specFreeCamera);
+        });
+        this.specFreeCameraLayerButton.on("click", () => {
+            this.setFreeCameraUnderground(!this.specFreeCameraUnderground);
         });
 
         // Touch specific buttons
@@ -693,6 +705,8 @@ export class UiManager {
         this.specStatsButton.off("click");
         this.specNextButton.off("click");
         this.specPrevButton.off("click");
+        this.specFreeCameraButton.off("click");
+        this.specFreeCameraLayerButton.off("click");
         this.interactionElems.off("touchstart");
         this.reloadElems.off("touchstart");
         this.weapSwitches.off("mousedown");
@@ -2768,6 +2782,16 @@ export class UiManager {
     }
 
     setSpectating(spectating: boolean, teamMode?: TeamMode) {
+        const freeCameraAvailable =
+            spectating && this.game.m_arenaPrivate && this.game.m_spectatorOnly;
+        this.specFreeCameraButton.css(
+            "display",
+            freeCameraAvailable ? "block" : "none",
+        );
+        if (!freeCameraAvailable) {
+            this.setFreeCamera(false);
+        }
+
         if (this.spectating != spectating) {
             this.spectating = spectating;
             if (this.spectating) {
@@ -2782,6 +2806,34 @@ export class UiManager {
                 $(".ui-zoom").addClass("ui-zoom-hover");
             }
         }
+    }
+
+    setFreeCamera(enabled: boolean) {
+        this.specFreeCamera =
+            enabled && this.game.m_arenaPrivate && this.game.m_spectatorOnly;
+        const labelKey = this.specFreeCamera
+            ? "game-follow-player"
+            : "game-free-camera";
+        this.specFreeCameraButton
+            .attr("data-l10n", labelKey)
+            .html(this.localization.translate(labelKey));
+        this.specFreeCameraLayerButton.css(
+            "display",
+            this.specFreeCamera ? "block" : "none",
+        );
+        if (!this.specFreeCamera) {
+            this.setFreeCameraUnderground(false);
+        }
+    }
+
+    setFreeCameraUnderground(underground: boolean) {
+        this.specFreeCameraUnderground = underground && this.specFreeCamera;
+        const labelKey = this.specFreeCameraUnderground
+            ? "game-go-above-ground"
+            : "game-go-underground";
+        this.specFreeCameraLayerButton
+            .attr("data-l10n", labelKey)
+            .html(this.localization.translate(labelKey));
     }
 
     setLocalStats(stats: PlayerStatsMsg["playerStats"]) {

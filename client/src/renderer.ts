@@ -86,10 +86,14 @@ export class Renderer {
         }
         let layerIdx = layer;
         const onStairs = layer & 0x2;
+        const groundHidden = this.layer === 1 && this.underground;
         // Hack to render large/high objects (trees, smokes) on
         // a separate layer that isn't masked off by the bunkers.
         if (onStairs) {
-            layerIdx = zOrd >= 100 ? 3 : 2;
+            // Keep promoted ground objects on the ground/stairs group while
+            // fully underground so they can be hidden without also hiding
+            // objects on the basement side of stairs.
+            layerIdx = zOrd >= 100 && !(groundHidden && layer === 2) ? 3 : 2;
         }
 
         if (
@@ -231,6 +235,8 @@ export class Renderer {
 
         this.layers[0].visible = this.groundAlpha < 1.0;
         this.layers[1].visible = this.layerAlpha > 0.0;
+        this.layers[2].visible = !(this.layer === 1 && this.underground);
+        this.layers[3].visible = true;
         this.ground.visible = this.groundAlpha > 0.0;
 
         // Set stairs mask

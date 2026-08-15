@@ -35,7 +35,7 @@ import { discordPresence } from "./discordPresence";
 import { EmoteBarn } from "./emote";
 import { Gas } from "./gas";
 import { helpers } from "./helpers";
-import { GamepadButton, type InputHandler, Key } from "./input";
+import { GamepadButton, type InputHandler, Key, MouseWheel } from "./input";
 import type { InputBinds, InputBindUi } from "./inputBinds";
 import type { SoundHandle } from "./lib/createJS";
 import { Map } from "./map";
@@ -290,6 +290,11 @@ export class Game {
     seqSendTime!: number;
     pings!: number[];
     m_arenaPrivate = false;
+    m_spectatorOnly = false;
+    m_freeCameraActive = false;
+    m_freeCameraPos = v2.create(0, 0);
+    m_freeCameraZoom = GameConfig.player.spectatorFreeCamZoom;
+    m_freeCameraLayer = 0;
     m_privateMiniGame = "";
     debugPingTime!: number;
     lastUpdateTime!: number;
@@ -574,6 +579,10 @@ export class Game {
         this.updateIntervals = [];
         this.lastUpdateTime = 0;
         this.debugPingTime = 0;
+        this.m_freeCameraActive = false;
+        this.m_freeCameraPos = v2.create(0, 0);
+        this.m_freeCameraZoom = GameConfig.player.spectatorFreeCamZoom;
+        this.m_freeCameraLayer = 0;
         this.m_amongUsEmergencyMeetingSeq = 0;
         this.m_amongUsMeeting = null;
         this.m_amongUsMeetingSelectedId = -1;
@@ -680,9 +689,12 @@ export class Game {
         if (this.m_playing) {
             this.m_playingTicker += dt;
         }
+        const privateSpectator =
+            this.m_arenaPrivate && this.m_spectatorOnly && this.m_spectating;
         this.m_playerBarn.showDeveloperVitals =
-            (IS_DEV || this.canUseDeveloper()) &&
-            Boolean(this.m_config.get("debugTools")?.showPlayerHealth);
+            privateSpectator ||
+            ((IS_DEV || this.canUseDeveloper()) &&
+                Boolean(this.m_config.get("debugTools")?.showPlayerHealth));
         this.m_playerBarn.m_update(
             dt,
             this.m_activeId,
@@ -703,9 +715,102 @@ export class Game {
         );
         this.updateAmbience();
 
-        this.m_camera.m_pos = v2.copy(this.m_activePlayer.m_visualPos);
-        this.m_camera.m_applyShake();
-        const zoom = this.m_activePlayer.m_getZoom();
+        const freeCameraEnabled = privateSpectator && this.m_uiManager.specFreeCamera;
+        let freeCameraMoveLeft = false;
+        let freeCameraMoveRight = false;
+        let freeCameraMoveUp = false;
+        let freeCameraMoveDown = false;
+        let freeCameraTouchMoveActive = false;
+        let freeCameraTouchMoveDir = v2.create(1, 0);
+        let freeCameraTouchMoveLen = 0;
+
+        if (freeCameraEnabled) {
+            if (!this.m_freeCameraActive) {
+                this.m_freeCameraPos = v2.copy(this.m_activePlayer.m_visualPos);
+                this.m_freeCameraLayer = util.toGroundLayer(this.m_activePlayer.layer);
+                this.m_uiManager.setFreeCameraUnderground(
+                    this.m_freeCameraLayer === 1,
+                );
+            }
+
+            const gameplayBlocked = this.m_input.isGameplayInputBlocked();
+            if (!gameplayBlocked) {
+                const zoomIn =
+                    this.m_input.mouseWheel() === MouseWheel.Up ||
+                    this.m_input.keyPressed(Key.Plus);
+                const zoomOut =
+                    this.m_input.mouseWheel() === MouseWheel.Down ||
+                    this.m_input.keyPressed(Key.Minus);
+                this.m_freeCameraZoom = math.clamp(
+                    this.m_freeCameraZoom +
+                        (+zoomOut - +zoomIn) *
+                            GameConfig.player.spectatorFreeCamZoomStep,
+                    GameConfig.player.spectatorFreeCamMinZoom,
+                    GameConfig.player.spectatorFreeCamMaxZoom,
+                );
+            }
+            let movement = v2.create(0, 0);
+            if (this.m_input.usingGamepad) {
+                freeCameraTouchMoveActive = true;
+                freeCameraTouchMoveDir = v2.normalizeSafe(
+                    this.m_input.gamepadMove,
+                    v2.create(1, 0),
+                );
+                freeCameraTouchMoveLen = gameplayBlocked
+                    ? 0
+                    : Math.round(this.m_input.gamepadMoveMagnitude * 255);
+                if (freeCameraTouchMoveLen > 0) {
+                    movement = v2.mul(
+                        freeCameraTouchMoveDir,
+                        freeCameraTouchMoveLen / 255,
+                    );
+                }
+            } else if (!gameplayBlocked) {
+                freeCameraMoveLeft = this.m_inputBinds.isBindDown(Input.MoveLeft);
+                freeCameraMoveRight = this.m_inputBinds.isBindDown(Input.MoveRight);
+                freeCameraMoveUp = this.m_inputBinds.isBindDown(Input.MoveUp);
+                freeCameraMoveDown = this.m_inputBinds.isBindDown(Input.MoveDown);
+                movement = v2.create(
+                    +freeCameraMoveRight - +freeCameraMoveLeft,
+                    +freeCameraMoveUp - +freeCameraMoveDown,
+                );
+                movement = v2.normalizeSafe(movement, v2.create(0, 0));
+            }
+
+            this.m_freeCameraPos = v2.add(
+                this.m_freeCameraPos,
+                v2.mul(movement, GameConfig.player.spectatorFreeCamSpeed * dt),
+            );
+            this.m_freeCameraPos.x = math.clamp(
+                this.m_freeCameraPos.x,
+                0,
+                this.m_map.width,
+            );
+            this.m_freeCameraPos.y = math.clamp(
+                this.m_freeCameraPos.y,
+                0,
+                this.m_map.height,
+            );
+            this.m_freeCameraLayer = this.m_uiManager.specFreeCameraUnderground ? 1 : 0;
+            this.m_camera.m_pos = v2.copy(this.m_freeCameraPos);
+        } else {
+            this.m_camera.m_pos = v2.copy(this.m_activePlayer.m_visualPos);
+            this.m_camera.m_applyShake();
+        }
+        this.m_freeCameraActive = freeCameraEnabled;
+        const viewLayer = freeCameraEnabled
+            ? this.m_freeCameraLayer
+            : this.m_activePlayer.layer;
+        const underground = freeCameraEnabled
+            ? this.m_freeCameraLayer === 1
+            : this.m_activePlayer.isUnderground(this.m_map);
+        this.m_renderer.setActiveLayer(viewLayer);
+        this.m_renderer.setUnderground(underground);
+        this.m_audioManager.activeLayer = viewLayer;
+        this.m_audioManager.underground = underground;
+        const zoom = freeCameraEnabled
+            ? this.m_freeCameraZoom
+            : this.m_activePlayer.m_getZoom();
 
         const minDim = math.min(
             this.m_camera.m_screenWidth,
@@ -776,6 +881,19 @@ export class Game {
         const inputMsg = new net.InputMsg();
         inputMsg.seq = this.seq;
         inputMsg.amongUsCamerasOpen = this.m_amongUsCamerasOpen;
+        inputMsg.spectatorFreeCam = freeCameraEnabled;
+        if (freeCameraEnabled) {
+            inputMsg.spectatorFreeCamZoom = this.m_freeCameraZoom;
+            inputMsg.moveLeft = freeCameraMoveLeft;
+            inputMsg.moveRight = freeCameraMoveRight;
+            inputMsg.moveUp = freeCameraMoveUp;
+            inputMsg.moveDown = freeCameraMoveDown;
+            inputMsg.touchMoveActive = freeCameraTouchMoveActive;
+            inputMsg.touchMoveDir = freeCameraTouchMoveDir;
+            inputMsg.touchMoveLen = freeCameraTouchMoveLen;
+            inputMsg.portrait =
+                this.m_camera.m_screenWidth < this.m_camera.m_screenHeight;
+        }
         if (!this.m_spectating) {
             if (device.touch) {
                 const touchPlayerMovement = this.m_touch.getTouchMovement(this.m_camera);
@@ -1063,10 +1181,12 @@ export class Game {
         const specBegin = this.m_uiManager.specBegin;
         const specNext = (this.m_uiManager.specNext ||=
             this.m_spectating &&
+            !freeCameraEnabled &&
             (this.m_input.keyPressed(Key.Right) ||
                 this.m_inputBinds.isGamepadBindPressed(Input.EquipNextWeap)));
         const specPrev = (this.m_uiManager.specPrev ||=
             this.m_spectating &&
+            !freeCameraEnabled &&
             (this.m_input.keyPressed(Key.Left) ||
                 this.m_inputBinds.isGamepadBindPressed(Input.EquipPrevWeap)));
         const specForce =
@@ -1167,6 +1287,10 @@ export class Game {
             this.m_camera,
             smokeParticles,
             debug,
+            freeCameraEnabled ? this.m_freeCameraPos : this.m_activePlayer.m_pos,
+            viewLayer,
+            freeCameraEnabled ? false : this.m_activePlayer.noCeilingRevealTicker > 0,
+            zoom,
         );
         this.m_lootBarn.m_update(
             dt,
@@ -3801,6 +3925,7 @@ export class Game {
                 this.onJoin();
                 this.teamMode = msg.teamMode;
                 this.m_arenaPrivate = !!msg.arenaPrivate;
+                this.m_spectatorOnly = !!msg.spectatorOnly;
                 this.m_privateMiniGame = msg.miniGame;
                 this.m_localId = msg.playerId;
                 this.m_playerBarn.localPlayerId = this.m_localId;

@@ -8,6 +8,7 @@ export class JoinedMsg implements AbstractMsg {
     playerId = 0;
     started = false;
     arenaPrivate = false;
+    spectatorOnly = false;
     miniGame = "";
     arenaCountdown = 0;
     emotes: string[] = [];
@@ -18,6 +19,7 @@ export class JoinedMsg implements AbstractMsg {
         s.writeUint16(this.playerId);
         s.writeBoolean(this.started);
         s.writeBoolean(this.arenaPrivate);
+        s.writeBoolean(this.spectatorOnly);
         s.writeString(this.miniGame, MiniGameMaxLen);
         s.writeUint8(this.arenaCountdown);
 
@@ -32,6 +34,7 @@ export class JoinedMsg implements AbstractMsg {
         this.playerId = s.readUint16();
         this.started = s.readBoolean();
         this.arenaPrivate = s.readBoolean();
+        this.spectatorOnly = s.readBoolean();
         this.miniGame = s.readString(MiniGameMaxLen);
         this.arenaCountdown = s.readUint8();
 

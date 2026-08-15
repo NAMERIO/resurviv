@@ -21,6 +21,8 @@ export class InputMsg implements AbstractMsg {
     useItem = "";
     streakIdx = -1;
     amongUsCamerasOpen = false;
+    spectatorFreeCam = false;
+    spectatorFreeCamZoom = 32;
 
     addInput(input: Input) {
         if (this.inputs.length < 7 && !this.inputs.includes(input)) {
@@ -55,6 +57,10 @@ export class InputMsg implements AbstractMsg {
         s.writeGameType(this.useItem);
         s.writeInt8(this.streakIdx);
         s.writeBoolean(this.amongUsCamerasOpen);
+        s.writeBoolean(this.spectatorFreeCam);
+        if (this.spectatorFreeCam) {
+            s.writeUint8(this.spectatorFreeCamZoom);
+        }
     }
 
     deserialize(s: BitStream) {
@@ -84,5 +90,9 @@ export class InputMsg implements AbstractMsg {
         this.useItem = s.readGameType();
         this.streakIdx = s.readInt8();
         this.amongUsCamerasOpen = s.readBoolean();
+        this.spectatorFreeCam = s.readBoolean();
+        if (this.spectatorFreeCam) {
+            this.spectatorFreeCamZoom = s.readUint8();
+        }
     }
 }
