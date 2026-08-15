@@ -145,8 +145,8 @@ export const IdlePoses: Record<string, Partial<Record<Bones, Pose>>> = {
         [Bones.FootR]: new Pose(v2.create(-15.75, 9)),
     },
     meleeLasrSwrd: {
-        [Bones.HandL]: new Pose(v2.create(10.5, 0.0)),
-        [Bones.HandR]: new Pose(v2.create(18.0, 0.5)),
+        [Bones.HandL]: new Pose(v2.create(12, 12.5)),
+        [Bones.HandR]: new Pose(v2.create(7, 22)),
     },
 };
 
@@ -630,95 +630,26 @@ export const Animations: Record<
     },
     lasrSwrdSwing: {
         keyframes: [
-            frame(0.0, {
-                [Bones.HandL]: new Pose(v2.create(8.5, 13.25)),
-                [Bones.HandR]: new Pose(v2.create(16.0, 17.75)),
+            frame(0, {
+                [Bones.HandL]: new Pose(v2.create(12, 12.5)),
+                [Bones.HandR]: new Pose(v2.create(7, 22)),
             }),
-            frame(0.15, {
-                [Bones.HandL]: new Pose(v2.create(8.5, 13.25)).rotate(Math.PI * 0.2),
-                [Bones.HandR]: new Pose(v2.create(16.0, 17.75)).rotate(Math.PI * 0.2),
+            frame(def.lasr_swrd_01.attack.damageTimes[0] * 0.4, {
+                [Bones.HandL]: new Pose(v2.create(12, 12.5)).rotate(Math.PI * 0.2),
+                [Bones.HandR]: new Pose(v2.create(7, 22)).rotate(Math.PI * 0.2),
             }),
-            frame(0.45, {
-                [Bones.HandL]: new Pose(v2.create(8.5, 13.25)).rotate(-Math.PI * 0.6),
-                [Bones.HandR]: new Pose(v2.create(16.0, 17.75)).rotate(-Math.PI * 0.6),
+            frame(def.lasr_swrd_01.attack.damageTimes[0] * 0.7, {
+                [Bones.HandL]: new Pose(v2.create(12, 12.5)).rotate(-Math.PI * 1.1),
+                [Bones.HandR]: new Pose(v2.create(7, 22)).rotate(-Math.PI * 1.1),
             }),
-            frame(0.5, {
-                [Bones.HandL]: new Pose(v2.create(10.5, 0.0)),
-                [Bones.HandR]: new Pose(v2.create(18.0, 0.5)),
+            frame(def.lasr_swrd_01.attack.cooldownTime, {
+                [Bones.HandL]: new Pose(v2.create(12, 12.5)),
+                [Bones.HandR]: new Pose(v2.create(7, 22)),
             }),
         ],
         effects: [
             effect(0.0, "animPlaySound", { sound: "swing" }),
             effect(0.25, "animMeleeCollision", {}),
-        ],
-    },
-
-    lasrSwrd_pose_1: {
-        keyframes: [
-            frame(0, {
-                [Bones.HandL]: new Pose(v2.create(10.5, 0.0)).rotate(Math.PI * 0.3),
-                [Bones.HandR]: new Pose(v2.create(18.0, 0.5)).rotate(Math.PI * 0.3),
-            }),
-            frame(def.lasr_swrd_01.attack.damageTimes[0] * 0.5, {
-                [Bones.HandL]: new Pose(v2.create(10.5, 0.0)).rotate(-Math.PI * 0.2),
-                [Bones.HandR]: new Pose(v2.create(18.0, 0.5)).rotate(-Math.PI * 0.2),
-            }),
-            frame(def.lasr_swrd_01.attack.damageTimes[0], {
-                [Bones.HandL]: new Pose(v2.create(10.5, 0.0)),
-                [Bones.HandR]: new Pose(v2.create(18.0, 0.5)),
-            }),
-        ],
-        effects: [
-            effect(def.lasr_swrd_01.attack.damageTimes[0], "animPlaySound", {
-                sound: "lasr_swing_01",
-            }),
-            effect(def.lasr_swrd_01.attack.damageTimes[0], "animMeleeCollision", {}),
-        ],
-    },
-
-    lasrSwrd_pose_2: {
-        keyframes: [
-            frame(0, {
-                [Bones.HandL]: new Pose(v2.create(10.5, 0.0)).rotate(-Math.PI * 0.2),
-                [Bones.HandR]: new Pose(v2.create(18.0, 0.5)).rotate(-Math.PI * 0.2),
-            }),
-            frame(def.lasr_swrd_01.attack.damageTimes[0] * 0.5, {
-                [Bones.HandL]: new Pose(v2.create(10.5, 0.0)).rotate(Math.PI * 0.2),
-                [Bones.HandR]: new Pose(v2.create(18.0, 0.5)).rotate(Math.PI * 0.2),
-            }),
-            frame(def.lasr_swrd_01.attack.damageTimes[0], {
-                [Bones.HandL]: new Pose(v2.create(10.5, 0.0)),
-                [Bones.HandR]: new Pose(v2.create(18.0, 0.5)),
-            }),
-        ],
-        effects: [
-            effect(def.lasr_swrd_01.attack.damageTimes[0], "animPlaySound", {
-                sound: "lasr_swing_01",
-            }),
-            effect(def.lasr_swrd_01.attack.damageTimes[0], "animMeleeCollision", {}),
-        ],
-    },
-
-    lasrSwrd_pose_3: {
-        keyframes: [
-            frame(0, {
-                [Bones.HandL]: new Pose(v2.create(10.5, 0.0)).rotate(Math.PI * 0.1),
-                [Bones.HandR]: new Pose(v2.create(18.0, 0.5)).rotate(Math.PI * 0.1),
-            }),
-            frame(def.lasr_swrd_01.attack.damageTimes[0] * 0.5, {
-                [Bones.HandL]: new Pose(v2.create(10.5, 0.0)).rotate(-Math.PI * 0.3),
-                [Bones.HandR]: new Pose(v2.create(18.0, 0.5)).rotate(-Math.PI * 0.3),
-            }),
-            frame(def.lasr_swrd_01.attack.damageTimes[0], {
-                [Bones.HandL]: new Pose(v2.create(10.5, 0.0)),
-                [Bones.HandR]: new Pose(v2.create(18.0, 0.5)),
-            }),
-        ],
-        effects: [
-            effect(def.lasr_swrd_01.attack.damageTimes[0], "animPlaySound", {
-                sound: "lasr_swing_01",
-            }),
-            effect(def.lasr_swrd_01.attack.damageTimes[0], "animMeleeCollision", {}),
         ],
     },
 };
