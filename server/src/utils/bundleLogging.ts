@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { type CanvasRenderingContext2D, createCanvas, loadImage } from "canvas";
+import sharp from "sharp";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import {
     getOutfitLootImg,
@@ -15,8 +16,10 @@ import { Config } from "../config";
 
 const CHECK_DELAY_MS = 1_000;
 const RETRY_DELAY_MS = 60_000;
+const SVG_RASTER_DENSITY = 192;
 let currentRotationId: string | undefined;
 let rotationTimer: ReturnType<typeof setTimeout> | undefined;
+const assetImageCache = new Map<string, ReturnType<typeof loadImage>>();
 
 const bundleThemes: Record<
     FeaturedBundleOffer["rarity"],
@@ -155,6 +158,32 @@ function playerSpritePath(sprite: string) {
     return publicAssetPath(`img/player/${sprite.slice(0, -4)}.svg`);
 }
 
+async function loadAssetImage(imagePath: string) {
+    const cached = assetImageCache.get(imagePath);
+    if (cached) return cached;
+
+    const imagePromise = (async () => {
+        if (path.extname(imagePath).toLowerCase() !== ".svg") {
+            return loadImage(imagePath);
+        }
+
+        const png = await sharp(await fs.promises.readFile(imagePath), {
+            density: SVG_RASTER_DENSITY,
+        })
+            .png()
+            .toBuffer();
+        return loadImage(png);
+    })();
+    assetImageCache.set(imagePath, imagePromise);
+
+    try {
+        return await imagePromise;
+    } catch (error) {
+        assetImageCache.delete(imagePath);
+        throw error;
+    }
+}
+
 async function drawTintedImage(
     ctx: CanvasRenderingContext2D,
     imagePath: string,
@@ -164,7 +193,7 @@ async function drawTintedImage(
     height: number,
     tint = 0xffffff,
 ) {
-    const image = await loadImage(imagePath);
+    const image = await loadAssetImage(imagePath);
     if (tint === 0xffffff) {
         ctx.drawImage(image, x, y, width, height);
         return;
@@ -201,9 +230,10 @@ async function drawOutfitPreview(
         if (!imagePath) continue;
 
         try {
-            const image = await loadImage(imagePath);
-            const width = image.width * layer.scale * previewScale;
-            const height = image.height * layer.scale * previewScale;
+            const image = await loadAssetImage(imagePath);
+            const intrinsicScale = 72 / SVG_RASTER_DENSITY;
+            const width = image.width * intrinsicScale * layer.scale * previewScale;
+            const height = image.height * intrinsicScale * layer.scale * previewScale;
             await drawTintedImage(
                 ctx,
                 imagePath,
@@ -306,7 +336,7 @@ async function drawItem(
         const imagePath = itemImagePath(itemType);
         if (imagePath) {
             try {
-                const image = await loadImage(imagePath);
+                const image = await loadAssetImage(imagePath);
                 const scale = Math.min(
                     (size * 0.72) / image.width,
                     (size * 0.72) / image.height,
@@ -330,7 +360,7 @@ async function drawItem(
     const iconPath = itemTypeIconPath(itemType);
     if (iconPath) {
         try {
-            const icon = await loadImage(iconPath);
+            const icon = await loadAssetImage(iconPath);
             const iconScale = Math.min(18 / icon.width, 18 / icon.height);
             const iconWidth = icon.width * iconScale;
             const iconHeight = icon.height * iconScale;
@@ -369,7 +399,7 @@ export async function renderBundleCard(offers: FeaturedBundleOffer[]) {
 
     const potatoPath = publicAssetPath("img/gui/currency-golden-potato.svg");
     const potato = potatoPath
-        ? await loadImage(potatoPath).catch(() => undefined)
+        ? await loadAssetImage(potatoPath).catch(() => undefined)
         : undefined;
 
     const visibleOffers = [...offers]
