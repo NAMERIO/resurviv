@@ -2879,7 +2879,7 @@ const SkinDefs: Record<string, MeleeDef> = {
 
     bayonet_woodland: defineMeleeSkin("bayonet", {
         name: "Bayonet Woodland",
-        rarity: Rarity.Rare,
+        rarity: Rarity.Mythic,
         noPotatoSwap: false,
         lootImg: {
             sprite: "loot-melee-bayonet-woodland.img",
@@ -2891,7 +2891,7 @@ const SkinDefs: Record<string, MeleeDef> = {
 
     knife_bone: defineMeleeSkin("bayonet", {
         name: "Bone Knife",
-        rarity: Rarity.Mythic,
+        rarity: Rarity.Epic,
         lore: "For those who prefer a primal touch to their combat style.",
         noPotatoSwap: false,
         lootImg: {
@@ -2902,7 +2902,46 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
     }),
 
-    knife_ben: defineMeleeSkin("bayonet", {
+    gilded_bayonet: defineMeleeSkin("bayonet", {
+        name: "Gilded Bayonet",
+        rarity: Rarity.Epic,
+        lore: "A luxurious take on the classic bayonet, perfect for those who appreciate both style and substance.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "gilded-bayonet.img",
+        },
+        worldImg: {
+            sprite: "gilded-bayonet.img",
+        },
+    }),
+
+    farmers_sickle: defineMeleeSkin("bayonet", {
+        name: "Farmer's Sickle",
+        rarity: Rarity.Rare,
+        lore: "Perfect for harvesting crops—or reaping victory on the field.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "farmers-sickle.img",
+        },
+        worldImg: {
+            sprite: "farmers-sickle.img",
+        },
+    }),
+
+    bloodmoon_huntsman: defineMeleeSkin("huntsman", {
+        name: "Bloodmoon Huntsman",
+        rarity: Rarity.Epic,
+        lore: "A vicious, ruby-tinted blade forged for fast strikes and ruthless accuracy.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "bloodmoon-huntsman.img",
+        },
+        worldImg: {
+            sprite: "bloodmoon-huntsman.img",
+        },
+    }),
+
+    bens_knife: defineMeleeSkin("bayonet", {
         name: "Ben's Knife",
         rarity: Rarity.Mythic,
         lore: "A rare collector's item crafted by the serial killer & blacksmith Benny. - HXH",
@@ -2928,7 +2967,20 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
     }),
 
-    scythe_reaper: defineMeleeSkin("naginata", {
+    rapier_blade: defineMeleeSkin("machete", {
+        name: "Rapier Blade",
+        rarity: Rarity.Epic,
+        lore: "For those who fight with elegance, speed, and undeniable finesse.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "rapier-blade.img",
+        },
+        worldImg: {
+            sprite: "rapier-blade.img",
+        },
+    }),
+
+    reapers_scythe: defineMeleeSkin("naginata", {
         name: "Reaper's Scythe",
         rarity: Rarity.Epic,
         lore: "For those who reap victory with refined style.",
