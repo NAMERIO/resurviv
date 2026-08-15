@@ -78,12 +78,9 @@ export class GameModeManager {
     }
 
     // used when saving the game match data
-    getPlayersSortedByRank(): Array<{ player: Player; rank: number }> {
-        // A reconnect creates a new Player object. Rank one stable participant
-        // once, using their latest session, so changing names or reconnecting
-        // cannot create duplicate teams/placements in match results.
+    private getLatestPlayersByParticipant(players: Player[]): Player[] {
         const playersByParticipant = new Map<string, Player>();
-        for (const player of this.game.playerBarn.matchPlayers) {
+        for (const player of players) {
             if (player.spectatorOnly) continue;
 
             const participantKey = player.getMatchParticipantKey();
@@ -92,7 +89,19 @@ export class GameModeManager {
                 playersByParticipant.set(participantKey, player);
             }
         }
-        const players = Array.from(playersByParticipant.values());
+        return Array.from(playersByParticipant.values());
+    }
+
+    getMatchParticipants(): Player[] {
+        return this.getLatestPlayersByParticipant(this.game.playerBarn.matchPlayers);
+    }
+
+    // used when saving the game match data
+    getPlayersSortedByRank(): Array<{ player: Player; rank: number }> {
+        // A reconnect creates a new Player object. Rank one stable participant
+        // once, using their latest session, so changing names or reconnecting
+        // cannot create duplicate teams/placements in match results.
+        const players = this.getMatchParticipants();
 
         if (this.game.map.amongUsMode && this.game.amongUsWinningRole) {
             const winningRole = this.game.amongUsWinningRole;
@@ -520,9 +529,9 @@ export class GameModeManager {
     getGameoverPlayers(player: Player): Player[] {
         switch (this.mode) {
             case GameMode.Solo:
-                return this.game.playerBarn.matchPlayers;
+                return this.getMatchParticipants();
             case GameMode.Team:
-                return this.game.playerBarn.matchPlayers;
+                return this.getMatchParticipants();
             case GameMode.Faction:
                 const redLeader = this.game.playerBarn.teams[TeamColor.Red - 1].leader;
                 const blueLeader = this.game.playerBarn.teams[TeamColor.Blue - 1].leader;
@@ -543,9 +552,11 @@ export class GameModeManager {
                 );
 
                 // if game ends before leaders are promoted, just show the player by himself
-                return !redLeader || !blueLeader
-                    ? [player]
-                    : [player, redLeader, blueLeader, highestKiller];
+                return this.getLatestPlayersByParticipant(
+                    !redLeader || !blueLeader
+                        ? [player]
+                        : [player, redLeader, blueLeader, highestKiller],
+                );
         }
     }
 

@@ -5299,13 +5299,24 @@ export class Player extends BaseGameObject {
     killedIds: number[] = [];
 
     private getPlayerStatsSnapshot(player: Player): net.PlayerStatsMsg["playerStats"] {
+        const participantKey = player.getMatchParticipantKey();
+        const sessions = this.game.playerBarn.matchPlayers.filter(
+            (session) =>
+                !session.spectatorOnly &&
+                session.getMatchParticipantKey() === participantKey,
+        );
+        const sumSessionStat = (getValue: (session: Player) => number) =>
+            sessions.reduce((total, session) => total + getValue(session), 0);
+
         return {
             playerId: player.playerId,
-            timeAlive: Math.round(player.timeAlive),
-            kills: this.game.playerBarn.getTrackedKills(player),
+            timeAlive: Math.round(sumSessionStat((session) => session.timeAlive)),
+            kills: isBattleRoyaleMapName(this.game.mapName)
+                ? sumSessionStat((session) => session.kills)
+                : this.game.playerBarn.getTrackedKills(player),
             dead: player.dead,
-            damageDealt: Math.round(player.damageDealt),
-            damageTaken: Math.round(player.damageTaken),
+            damageDealt: Math.round(sumSessionStat((session) => session.damageDealt)),
+            damageTaken: Math.round(sumSessionStat((session) => session.damageTaken)),
             killerId: player.getAliveKiller()?.playerId ?? player.killedBy?.playerId ?? 0,
             name: player.name,
         };
