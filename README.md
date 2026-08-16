@@ -13,7 +13,7 @@ and server with `pnpm dev:server`
 
 or cd into server and client directories and run `pnpm dev` for each
 
-or pnpm -r dev to start both from root folder to start all at once.
+or pnpm -r dev from root folder to start all at once.
 
 ## Production builds
 See [HOSTING.md](./HOSTING.md)
