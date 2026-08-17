@@ -18602,16 +18602,16 @@ div.roulette {
 #start-menu .pass-track-item.golden .gold-potato-container {
   background-color: #292501;
   background-image: url(/img/gui/currency-potato-sack.svg);
-  background-position: center 21px;
+  background-position: center 14px;
   background-repeat: no-repeat;
-  background-size: 42px 56px;
+  background-size: 64px;
   height: 100%;
   width: 100%;
 }
 
 #start-menu .pass-track-item.golden .gold-potato-amount {
   background-color: #141414;
-  background-image: url(/img/gui/currency-potato-sack.svg);
+  background-image: url(/img/gui/currency-golden-potato.svg);
   background-position: 10px center;
   background-repeat: no-repeat;
   background-size: 11px 14px;
