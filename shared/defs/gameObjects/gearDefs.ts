@@ -389,7 +389,7 @@ const BoostDefs: Record<string, BoostDef> = {
         useTime: 2,
         boost: 0,
         lootImg: {
-            sprite: "loot-medical-nitroLace.img",
+            sprite: "loot-medical-nitrolace.img",
             tint: 0xffffff,
             border: "loot-circle-outer-01.img",
             borderTint: 0x000000,
