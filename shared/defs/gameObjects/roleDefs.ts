@@ -466,10 +466,10 @@ export const RoleDefs: Record<string, RoleDef> = {
         announce: false,
         sound: {},
         mapIcon: {
-            alive: "loot_flag.img",
+            alive: "flag.img",
         },
         mapIndicator: {
-            sprite: "loot_flag.img",
+            sprite: "flag.img",
             tint: 0xcc0000,
             pulse: true,
             pulseTint: 0xcc0000,
@@ -481,10 +481,10 @@ export const RoleDefs: Record<string, RoleDef> = {
         announce: false,
         sound: {},
         mapIcon: {
-            alive: "loot_flag.img",
+            alive: "flag.img",
         },
         mapIndicator: {
-            sprite: "loot_flag.img",
+            sprite: "flag.img",
             tint: 0x007eff,
             pulse: true,
             pulseTint: 0x007eff,
