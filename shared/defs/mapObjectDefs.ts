@@ -659,13 +659,13 @@ function createContainer(props: {
                     collision: [
                         props.open
                             ? collider.createAabbExtents(
-                                  v2.create(0, 0),
-                                  v2.create(2.5, 11),
-                              )
+                                v2.create(0, 0),
+                                v2.create(2.5, 11),
+                            )
                             : collider.createAabbExtents(
-                                  v2.create(0, 0),
-                                  v2.create(2.5, 8),
-                              ),
+                                v2.create(0, 0),
+                                v2.create(2.5, 8),
+                            ),
                     ],
                 },
             ],
@@ -685,19 +685,19 @@ function createContainer(props: {
                 {
                     zoomIn: props.open
                         ? collider.createAabbExtents(
-                              v2.create(0, 0),
-                              v2.create(2.5, 5.75),
-                          )
+                            v2.create(0, 0),
+                            v2.create(2.5, 5.75),
+                        )
                         : collider.createAabbExtents(
-                              v2.create(0, 2.25),
-                              v2.create(2.5, 5.5),
-                          ),
+                            v2.create(0, 2.25),
+                            v2.create(2.5, 5.5),
+                        ),
                     zoomOut: props.open
                         ? collider.createAabbExtents(v2.create(0, 0), v2.create(2.5, 11))
                         : collider.createAabbExtents(
-                              v2.create(0, -0.5),
-                              v2.create(2.5, 8.75),
-                          ),
+                            v2.create(0, -0.5),
+                            v2.create(2.5, 8.75),
+                        ),
                 },
             ],
             imgs: props.ceilingImgs! || [
@@ -11507,7 +11507,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         map: { display: false },
         terrain: { grass: true, beach: true },
         img: {
-            sprite: "loot_flag.img",
+            sprite: "flag.img",
             scale: 1,
             alpha: 1,
             tint: 0x8f2020,
@@ -11536,7 +11536,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         map: { display: false },
         terrain: { grass: true, beach: true },
         img: {
-            sprite: "loot_flag.img",
+            sprite: "flag.img",
             scale: 1,
             alpha: 1,
             tint: 0x1f4f9c,

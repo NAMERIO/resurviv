@@ -76,7 +76,7 @@ class Color {
         public r: number,
         public g: number,
         public b: number,
-    ) {}
+    ) { }
 
     getColors() {
         return {
@@ -805,11 +805,11 @@ export class UiManager {
         } else if (ctfDef && (this.kingOfTheHillMode || this.dominationMode)) {
             this.captureTheFlagZones = this.dominationMode
                 ? (ctfDef.dominationLocations ?? []).map((pos, idx) => ({
-                      teamId: 0,
-                      status: CaptureTheFlagFlagStatus.AtBase,
-                      pos: v2.copy(pos),
-                      label: String.fromCharCode(65 + idx),
-                  }))
+                    teamId: 0,
+                    status: CaptureTheFlagFlagStatus.AtBase,
+                    pos: v2.copy(pos),
+                    label: String.fromCharCode(65 + idx),
+                }))
                 : [];
             this.captureTheFlagZoneOverlay.clear();
             this.hideCaptureTheFlagZoneLabels();
@@ -921,7 +921,7 @@ export class UiManager {
             this.captureTheFlagZones.push({
                 teamId:
                     msg.phase === KingOfTheHillPhase.Active &&
-                    (msg.controllingTeamId === 1 || msg.controllingTeamId === 2)
+                        (msg.controllingTeamId === 1 || msg.controllingTeamId === 2)
                         ? msg.controllingTeamId
                         : 0,
                 status: CaptureTheFlagFlagStatus.AtBase,
@@ -1064,7 +1064,7 @@ export class UiManager {
     }
 
     private createCaptureTheFlagZoneFlagSprite() {
-        const sprite = new PIXI.Sprite(PIXI.Texture.from("loot_flag.img"));
+        const sprite = new PIXI.Sprite(PIXI.Texture.from("flag.img"));
         sprite.anchor.set(0.5);
         sprite.visible = false;
         return sprite;
@@ -1112,10 +1112,10 @@ export class UiManager {
             const zonePos = controlPointMode
                 ? zone.pos
                 : zone.teamId === 1
-                  ? ctfDef.redFlag
-                  : zone.teamId === 2
-                    ? ctfDef.blueFlag
-                    : zone.pos;
+                    ? ctfDef.redFlag
+                    : zone.teamId === 2
+                        ? ctfDef.blueFlag
+                        : zone.pos;
 
             const center = camera.m_pointToScreen(zonePos);
             const x = center.x - width / 2;
@@ -1128,8 +1128,8 @@ export class UiManager {
                 displayTeamId === 1
                     ? 0xff2f2f
                     : displayTeamId === 2
-                      ? 0x2f7dff
-                      : 0xffffff;
+                        ? 0x2f7dff
+                        : 0xffffff;
             const lockedAlpha = controlPointMode && !!zone.locked;
             const inactiveAlpha = controlPointMode && !!zone.inactive;
             const zoneAlpha = inactiveAlpha ? 0.45 : 1;
@@ -1191,13 +1191,13 @@ export class UiManager {
                     ? zone.contested
                         ? `${zone.label} · Contested`
                         : zone.progress
-                          ? `${zone.label} · ${zone.resetting ? `Resetting ${zone.progress.toFixed(1)}` : `${timeLeft.toFixed(1)}s`}`
-                          : `${zone.label}`
+                            ? `${zone.label} · ${zone.resetting ? `Resetting ${zone.progress.toFixed(1)}` : `${timeLeft.toFixed(1)}s`}`
+                            : `${zone.label}`
                     : this.kingOfTheHillMode
-                      ? zone.locked
-                          ? "Locked"
-                          : ""
-                      : "Flag Return";
+                        ? zone.locked
+                            ? "Locked"
+                            : ""
+                        : "Flag Return";
                 label.x = center.x;
                 label.y = center.y;
                 label.visible =
@@ -1206,7 +1206,7 @@ export class UiManager {
                 label.scale.set(math.clamp(camera.m_zoom / 1.5, 0.75, 1.15));
             }
             if (flagSprite) {
-                flagSprite.texture = PIXI.Texture.from("loot_flag.img");
+                flagSprite.texture = PIXI.Texture.from("flag.img");
                 flagSprite.tint = this.getCaptureTheFlagZoneFlagTint(zone.teamId);
                 flagSprite.x = center.x;
                 flagSprite.y = center.y;
@@ -1251,10 +1251,10 @@ export class UiManager {
             const zonePos = controlPointMode
                 ? zone.pos
                 : zone.teamId === 1
-                  ? ctfDef.redFlag
-                  : zone.teamId === 2
-                    ? ctfDef.blueFlag
-                    : zone.pos;
+                    ? ctfDef.redFlag
+                    : zone.teamId === 2
+                        ? ctfDef.blueFlag
+                        : zone.pos;
             const center = this.getMapPosFromWorldPos(zonePos, map);
             const x = center.x - width / 2;
             const y = center.y - height / 2;
@@ -1295,7 +1295,7 @@ export class UiManager {
                     ? center
                     : this.getMapPosFromWorldPos(zone.pos, map);
                 const flagSize = math.max(6, math.min(width, height) * 0.72);
-                flagSprite.texture = PIXI.Texture.from("loot_flag.img");
+                flagSprite.texture = PIXI.Texture.from("flag.img");
                 flagSprite.tint = this.getCaptureTheFlagZoneFlagTint(zone.teamId);
                 flagSprite.x = flagCenter.x;
                 flagSprite.y = flagCenter.y;
@@ -1393,8 +1393,8 @@ export class UiManager {
         if (
             this.actionSeq != player.m_action.seq &&
             ((this.actionSeq = player.m_action.seq),
-            this.m_pieTimer.stop(),
-            player.m_action.type != Action.None && !this.displayingStats)
+                this.m_pieTimer.stop(),
+                player.m_action.type != Action.None && !this.displayingStats)
         ) {
             let desc = "";
             let actionTxt1 = "";
@@ -1731,8 +1731,8 @@ export class UiManager {
             let tint = arenaTeamVision
                 ? playerBarn.getTeamColor(playerInfo.teamId)
                 : sameGroup
-                  ? playerBarn.getGroupColor(playerId)
-                  : playerBarn.getTeamColor(playerInfo.teamId);
+                    ? playerBarn.getGroupColor(playerId)
+                    : playerBarn.getTeamColor(playerInfo.teamId);
             const dotTint = tint;
             if (ctfRole) {
                 tint = roleDef?.color ?? roleDef?.mapIndicator?.tint ?? tint;
@@ -1746,19 +1746,19 @@ export class UiManager {
                 scale = playerStatus.dead
                     ? dotScale * 1.5
                     : ctfRole
-                      ? dotScale * 2
-                      : customMapIcon
-                        ? dotScale * 1.25
-                        : dotScale;
+                        ? dotScale * 2
+                        : customMapIcon
+                            ? dotScale * 1.25
+                            : dotScale;
             } else {
                 scale =
                     playerStatus.dead || playerStatus.downed
                         ? dotScale * 1.25
                         : ctfRole
-                          ? dotScale * 2
-                          : customMapIcon
-                            ? dotScale * 1.25
-                            : dotScale * 0.75;
+                            ? dotScale * 2
+                            : customMapIcon
+                                ? dotScale * 1.25
+                                : dotScale * 0.75;
             }
 
             if (ctfRole && !playerStatus.dead && !playerStatus.downed) {
@@ -2334,12 +2334,12 @@ export class UiManager {
             const S = amongUsMode
                 ? this.getAmongUsTitleText(localRole, isLocalTeamWinner)
                 : (captureTheFlagMode || kingOfTheHillMode || dominationMode) && gameOver
-                  ? winningTeamId === 1
-                      ? "Red Team Won"
-                      : winningTeamId === 2
-                        ? "Blue Team Won"
-                        : "Red and Blue Tied"
-                  : "Battle Results";
+                    ? winningTeamId === 1
+                        ? "Red Team Won"
+                        : winningTeamId === 2
+                            ? "Blue Team Won"
+                            : "Red and Blue Tied"
+                    : "Battle Results";
             const orderedPlayerStats = [...playerStats].sort((a, b) => {
                 if (a.dead !== b.dead) return a.dead ? 1 : -1;
                 if (a.timeAlive !== b.timeAlive) return b.timeAlive - a.timeAlive;
@@ -2359,9 +2359,9 @@ export class UiManager {
                 teamRank,
                 teamKills,
                 map.getMapDef().gameMode.factionMode! ||
-                    captureTheFlagMode ||
-                    kingOfTheHillMode ||
-                    dominationMode,
+                captureTheFlagMode ||
+                kingOfTheHillMode ||
+                dominationMode,
             );
             const I = $("<div/>").append(
                 $("<div/>", {
@@ -2464,11 +2464,10 @@ export class UiManager {
                         false,
                     ) || helpers.htmlEscape(stats.name || `Player${stats.playerId}`);
                 const B = $("<div/>", {
-                    class: `ui-stats-player-row${stats.dead ? " ui-stats-info-status" : ""}${
-                        stats.playerId == this.game.m_localId
+                    class: `ui-stats-player-row${stats.dead ? " ui-stats-info-status" : ""}${stats.playerId == this.game.m_localId
                             ? " ui-stats-player-row-current"
                             : ""
-                    }`,
+                        }`,
                 });
                 B.append(
                     $("<div/>", {
@@ -2484,11 +2483,10 @@ export class UiManager {
                     )
                     .append(
                         $("<div/>", {
-                            class: `ui-stats-player-spectate-icon${
-                                spectateTargetId
+                            class: `ui-stats-player-spectate-icon${spectateTargetId
                                     ? ""
                                     : " ui-stats-player-spectate-disabled"
-                            }`,
+                                }`,
                         }).on("click", () => {
                             if (spectateTargetId) {
                                 this.beginSpectating(spectateTargetId);
@@ -2533,9 +2531,8 @@ export class UiManager {
             }
             const localKillerId = localStats?.killerId ?? 0;
             const findKillerButton = $("<a/>", {
-                class: `ui-stats-find-killer menu-option${
-                    localKillerId ? "" : " btn-disabled"
-                }`,
+                class: `ui-stats-find-killer menu-option${localKillerId ? "" : " btn-disabled"
+                    }`,
                 html: "Find Killer",
             });
             findKillerButton.on("click", () => {
@@ -3040,8 +3037,8 @@ export class UiManager {
                 message +=
                     seconds > 0
                         ? ` ${Math.floor(seconds)} ${this.localization.translate(
-                              "game-seconds",
-                          )}`
+                            "game-seconds",
+                        )}`
                         : "";
                 break;
             }
@@ -3212,10 +3209,10 @@ export class UiManager {
             device.uiLayout == device.UiLayout.Sm
                 ? 0.5626
                 : math.min(
-                      1,
-                      math.clamp(camera.m_screenWidth / 1280, 0.75, 1) *
-                          math.clamp(camera.m_screenHeight / 1024, 0.75, 1),
-                  );
+                    1,
+                    math.clamp(camera.m_screenWidth / 1280, 0.75, 1) *
+                    math.clamp(camera.m_screenHeight / 1024, 0.75, 1),
+                );
         this.m_pieTimer.resize(this.touch, this.screenScaleFactor);
 
         this.gasRenderer.resize();
@@ -3324,9 +3321,9 @@ export class UiManager {
             const u = layoutSm
                 ? thisMinimapMargin + thisMinimapBorderWidth / 2
                 : screenHeight -
-                  minimapSize -
-                  thisMinimapMargin +
-                  thisMinimapBorderWidth / 2;
+                minimapSize -
+                thisMinimapMargin +
+                thisMinimapBorderWidth / 2;
             this.display.border.drawRect(
                 thisMinimapMargin + thisMinimapBorderWidth / 2 + thisMinimapMarginXAdjust,
                 u + thisMinimapMarginYAdjust,

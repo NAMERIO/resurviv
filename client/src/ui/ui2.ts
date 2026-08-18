@@ -1115,7 +1115,7 @@ export class UiManager2 {
         const fe =
             weaponDef.type == "gun"
                 ? weaponDef.ammoInfinite ||
-                  (activePlayer.m_hasPerk("endless_ammo") && !weaponDef.ignoreEndlessAmmo)
+                    (activePlayer.m_hasPerk("endless_ammo") && !weaponDef.ignoreEndlessAmmo)
                     ? Number.MAX_VALUE
                     : activePlayer.m_localData.m_inventory[weaponDef.ammo]
                 : 0;
@@ -1636,8 +1636,8 @@ export class UiManager2 {
                         (GameObjectDefs[Y.lootType] as AmmoDef).special && J.count == 0
                             ? 0
                             : J.count > 0
-                              ? 1
-                              : 0.25,
+                                ? 1
+                                : 0.25,
                     );
                     Y.div.style.color = J.count == J.maximum ? "#ff9900" : "#ffffff";
                 }
@@ -1831,8 +1831,8 @@ export class UiManager2 {
                 const killTxt = downed
                     ? this.localization.translate("game-knocked-out")
                     : mapObj && !mapObj.airdropCrate
-                      ? this.localization.translate("game-killed")
-                      : this.localization.translate("game-crushed");
+                        ? this.localization.translate("game-killed")
+                        : this.localization.translate("game-crushed");
                 return `${killName} ${killTxt} ${targetName}`;
             }
             case DamageType.Airstrike: {
@@ -1947,8 +1947,8 @@ export class UiManager2 {
         const killKey = knockedOut
             ? "game-knocked-out"
             : completeKill
-              ? "game-killed"
-              : "game-finally-killed";
+                ? "game-killed"
+                : "game-finally-killed";
         const killTxt = this.localization.translate(killKey);
         const targetTxt = suicide
             ? spectating
@@ -2111,7 +2111,7 @@ export function loadStaticDomImages() {
         "ui-loot-soda": "img/loot/loot-medical-soda.svg",
         // "ui-loot-pulseBox": "img/loot/loot-pulseBox.svg",
         "ui-loot-painkiller": "img/loot/loot-medical-pill.svg",
-        "ui-loot-nitroLace": "img/loot/loot-nitroLace.svg",
+        "ui-loot-nitroLace": "img/loot/loot-medical-nitrolace.svg",
         "ui-loot-9mm": "img/loot/loot-ammo-box.svg",
         "ui-loot-12gauge": "img/loot/loot-ammo-box.svg",
         "ui-loot-762mm": "img/loot/loot-ammo-box.svg",
