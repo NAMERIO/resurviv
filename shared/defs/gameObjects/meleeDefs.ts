@@ -2844,6 +2844,21 @@ const SkinDefs: Record<string, MeleeDef> = {
             sprite: "loot-melee-karambit-rugged.img",
         },
     }),
+    karambit_camo: defineMeleeSkin("karambit", {
+        name: "Karambit Camo",
+        rarity: Rarity.Rare,
+        noPotatoSwap: false,
+        anim: {
+            idlePose: "slash",
+            attackAnims: ["slash", "fists"],
+        },
+        lootImg: {
+            sprite: "loot-melee-karambit-camo.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-karambit-camo.img",
+        },
+    }),
     karambit_prismatic: defineMeleeSkin("karambit", {
         name: "Karambit Prismatic",
         rarity: Rarity.Epic,
