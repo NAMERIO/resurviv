@@ -2666,7 +2666,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         noDropOnDeath: true,
 
         rarity: 3,
-        lore: "Stealth Runner.",
+        lore: "The Air.",
 
         skinImg: {
             baseTint: 0xffffff,
@@ -2683,6 +2683,30 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+
+    outfitPtero: defineOutfitSkin("outfitBase", {
+        name: "Ptero",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "The Flight.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-ptero.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-ptero.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-ptero.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
 
     outfitHazard: defineOutfitSkin("outfitBase", {
         name: "Hazard",
@@ -4090,6 +4114,32 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
+    outfitBullyGear: defineOutfitSkin("outfitBase", {
+        name: "Bully Gear",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "If this skin served its original purpose, you’d die in roughly 20 seconds.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-bully-gear.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-bully-gear.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-bully-gear.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-bully-gear.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+
     outfitGobble: defineOutfitSkin("outfitBase", {
         name: "Gobble",
         noDropOnDeath: true,
@@ -4115,6 +4165,33 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+
+    outfitGojo: defineOutfitSkin("outfitBase", {
+        name: "Gojo",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        lore: "I alone am the honored one.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-gojo.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-gojo.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-gojo.img",
+            frontSpritePos: { x: -1.95, y: -.3702 },
+            frontSprite: "player-accessory-gojo.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
 
     outfitBlush: defineOutfitSkin("outfitBase", {
         name: "Blush",
@@ -4187,6 +4264,55 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+
+    outfitCrimsonHibiscus: defineOutfitSkin("outfitBase", {
+        name: "Crimson Hibiscus",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "For those who bloom with passion in the heat of battle.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-crimson-hibiscus.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-crimson-hibiscus.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-crimson-hibiscus.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitNightshadeStalker: defineOutfitSkin("outfitBase", {
+        name: "Nightshade Stalker",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "For those who move silently in the shadows of the battlefield.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-nightshade-stalker.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-nightshade-stalker.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-nightshade-stalker.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
 
     outfitFishBowl: defineOutfitSkin("outfitBase", {
         name: "Fish Bowl",
