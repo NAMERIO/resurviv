@@ -11507,7 +11507,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         map: { display: false },
         terrain: { grass: true, beach: true },
         img: {
-            sprite: "loot_flag.img",
+            sprite: "flag.img",
             scale: 1,
             alpha: 1,
             tint: 0x8f2020,
