@@ -4289,6 +4289,30 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
+    outfitLuna: defineOutfitSkin("outfitBase", {
+        name: "Luna",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "Luna is the word for moon in Spanish.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-luna.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-luna.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-luna.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
     outfitNightshadeStalker: defineOutfitSkin("outfitBase", {
         name: "Nightshade Stalker",
         noDropOnDeath: true,
@@ -4366,7 +4390,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         name: "Riot Plaid",
         noDropOnDeath: true,
 
-        rarity: 2,
+        rarity: 3,
         lore: "For those who get spawn killed a lot.",
 
         skinImg: {
