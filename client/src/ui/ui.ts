@@ -1064,7 +1064,7 @@ export class UiManager {
     }
 
     private createCaptureTheFlagZoneFlagSprite() {
-        const sprite = new PIXI.Sprite(PIXI.Texture.from("loot_flag.img"));
+        const sprite = new PIXI.Sprite(PIXI.Texture.from("flag.img"));
         sprite.anchor.set(0.5);
         sprite.visible = false;
         return sprite;
@@ -1206,7 +1206,7 @@ export class UiManager {
                 label.scale.set(math.clamp(camera.m_zoom / 1.5, 0.75, 1.15));
             }
             if (flagSprite) {
-                flagSprite.texture = PIXI.Texture.from("loot_flag.img");
+                flagSprite.texture = PIXI.Texture.from("flag.img");
                 flagSprite.tint = this.getCaptureTheFlagZoneFlagTint(zone.teamId);
                 flagSprite.x = center.x;
                 flagSprite.y = center.y;
@@ -1295,7 +1295,7 @@ export class UiManager {
                     ? center
                     : this.getMapPosFromWorldPos(zone.pos, map);
                 const flagSize = math.max(6, math.min(width, height) * 0.72);
-                flagSprite.texture = PIXI.Texture.from("loot_flag.img");
+                flagSprite.texture = PIXI.Texture.from("flag.img");
                 flagSprite.tint = this.getCaptureTheFlagZoneFlagTint(zone.teamId);
                 flagSprite.x = flagCenter.x;
                 flagSprite.y = flagCenter.y;

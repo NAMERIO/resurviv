@@ -2111,7 +2111,7 @@ export function loadStaticDomImages() {
         "ui-loot-soda": "img/loot/loot-medical-soda.svg",
         // "ui-loot-pulseBox": "img/loot/loot-pulseBox.svg",
         "ui-loot-painkiller": "img/loot/loot-medical-pill.svg",
-        "ui-loot-nitroLace": "img/loot/loot-nitroLace.svg",
+        "ui-loot-nitroLace": "img/loot/loot-medical-nitrolace.svg",
         "ui-loot-9mm": "img/loot/loot-ammo-box.svg",
         "ui-loot-12gauge": "img/loot/loot-ammo-box.svg",
         "ui-loot-762mm": "img/loot/loot-ammo-box.svg",

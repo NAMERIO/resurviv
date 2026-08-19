@@ -1547,7 +1547,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitSnow.img",
+            sprite: "loot-shirt-outfitSnow.img",
             tint: 0xffffff,
         },
     }),
