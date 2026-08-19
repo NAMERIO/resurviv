@@ -1052,7 +1052,7 @@ export class UiManager {
             dropShadowBlur: 3,
             dropShadowDistance: 1,
             fill: 0xffffff,
-            fontFamily: "Arial",
+            fontFamily: "Roboto Condensed",
             fontSize: 24,
             fontWeight: "bold",
             stroke: 0x000000,

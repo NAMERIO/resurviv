@@ -7338,7 +7338,7 @@ span.ui-stats-header-value {
   padding: 5px 10px;
   margin-top: 10px;
   border-radius: 5px;
-  font-family: "Arial; sans-serif";
+  font-family: "Roboto Condensed", Arial, sans-serif;
   font-size: 15px;
   z-index: 10000;
   pointer-events: none;

@@ -82,7 +82,7 @@ function perksEqual(a: Array<{ type: string }>, b: Array<{ type: string }>) {
 }
 function createPlayerNameText() {
     const nameStyle = {
-        fontFamily: "Arial",
+        fontFamily: "Roboto Condensed, Arial, sans-serif",
         fontWeight: "bold",
         fontSize: device.pixelRatio > 1 ? 30 : 22,
         align: "center",
