@@ -6732,6 +6732,10 @@ export class Player extends BaseGameObject {
                         return;
                     }
 
+                    if (this.streakActive && this.streakSavedWeapon?.slot === newGunIdx && this.chosenStreakType === "streak_heavy_hitter") {
+                        return;
+                    }
+
                     const oldWeapDef = GameObjectDefs[this.weapons[newGunIdx].type] as
                         | GunDef
                         | undefined;

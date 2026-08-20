@@ -764,18 +764,15 @@ export class WeaponManager {
     dropGun(weapIdx: number): void {
         const def = GameObjectDefs[this.weapons[weapIdx].type] as GunDef | undefined;
         if (def?.noDrop) return;
-        if (this.player.streakActive && weapIdx < 2) return;
 
-        if (this.player.streakActive && this.player.streakSavedWeapon?.slot === weapIdx) {
-            return;
-        }
+        if (this.player.streakActive && this.player.streakSavedWeapon?.slot === weapIdx && this.player.chosenStreakType === "streak_heavy_hitter") return;
 
         this._dropGun(weapIdx);
         this.setWeapon(weapIdx, "", 0);
     }
 
     replaceGun(idx: number, type: string): void {
-        if (this.player.streakActive && idx < 2) return;
+        if (this.player.streakActive && idx < 2 && this.player.chosenStreakType === "streak_heavy_hitter") return;
 
         const oldDef = GameObjectDefs[this.weapons[idx].type] as GunDef | undefined;
         let ammo = 0;
