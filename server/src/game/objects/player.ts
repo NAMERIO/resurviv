@@ -4702,14 +4702,18 @@ export class Player extends BaseGameObject {
         }
 
         // This is built separately for each recipient so player vitals are only
-        // exposed to developers and spectator-only viewers in private games.
-        const privateSpectator = game.arenaPrivate && this.spectatorOnly;
+        // exposed to developers and players who are actively spectating. Regular
+        // spectators only receive vitals for players currently in their view.
+        const spectatorVitals = this.dead && this.spectating !== undefined;
         const developerVitals =
             this.canUseDeveloper || Config.gameServer.thisRegion === "local";
-        if (developerVitals || privateSpectator) {
-            const visibleVitalsPlayers = privateSpectator
-                ? playerBarn.players.filter((p) => !p.spectatorOnly)
-                : playerBarn.players;
+        if (developerVitals || spectatorVitals) {
+            const visibleVitalsPlayers =
+                spectatorVitals && !developerVitals
+                    ? playerBarn.players.filter(
+                          (p) => !p.spectatorOnly && this.visibleObjects.has(p),
+                      )
+                    : playerBarn.players;
             updateMsg.developerPlayerVitals = visibleVitalsPlayers.map((p) => ({
                 playerId: p.__id,
                 health: p.health,

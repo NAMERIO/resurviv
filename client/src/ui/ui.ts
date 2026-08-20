@@ -1727,8 +1727,8 @@ export class UiManager {
             } else if (playerStatus.downed) {
                 texture = sameGroup ? "player-map-inner.img" : "player-map-downed.img";
             }
-            const arenaTeamVision = this.game.m_arenaPrivate;
-            let tint = arenaTeamVision
+            const teamColorVision = this.game.m_arenaPrivate || this.spectating;
+            let tint = teamColorVision
                 ? playerBarn.getTeamColor(playerInfo.teamId)
                 : sameGroup
                   ? playerBarn.getGroupColor(playerId)
@@ -1736,7 +1736,7 @@ export class UiManager {
             const dotTint = tint;
             if (ctfRole) {
                 tint = roleDef?.color ?? roleDef?.mapIndicator?.tint ?? tint;
-            } else if ((map.factionMode || arenaTeamVision) && customMapIcon) {
+            } else if ((map.factionMode || teamColorVision) && customMapIcon) {
                 tint = playerBarn.getTeamColor(playerInfo.teamId);
             }
             const dotScale = device.uiLayout == device.UiLayout.Sm ? 0.15 : 0.2;

@@ -1366,9 +1366,11 @@ export class Player implements AbstractObject {
         const inSameGroup = playerInfo.groupId == activeGroupId;
         const isKnownImpostor = playerInfo.amongUsRole === "impostor";
         this.nameText.text = playerBarn.getPlayerName(this.__id, activeId, false);
-        this.nameText.style.fill = isKnownImpostor
-            ? AmongUsRoleDefs.impostor.color
-            : 0x00ffff;
+        this.nameText.style.fill = playerBarn.showSpectatorVitals
+            ? playerBarn.getTeamColor(playerInfo.teamId)
+            : isKnownImpostor
+              ? AmongUsRoleDefs.impostor.color
+              : 0x00ffff;
         this.nameText.tint = 0xffffff;
         const showDeveloperVitals = playerBarn.showDeveloperVitals;
         this.nameText.visible =
@@ -3573,6 +3575,7 @@ export class PlayerBarn {
     showClanTags = false;
     localPlayerId = 0;
     showDeveloperVitals = false;
+    showSpectatorVitals = false;
     developerPlayerVitals: Record<number, DeveloperPlayerVitals> = {};
 
     updateDeveloperPlayerVitals(vitals: DeveloperPlayerVitals[]) {
@@ -3992,7 +3995,12 @@ export class PlayerBarn {
         if (teamIdx >= 0 && teamIdx < GameConfig.teamColors.length) {
             return GameConfig.teamColors[teamIdx];
         }
-        return 0xffffff;
+
+        // Player team IDs are serialized as uint8. Multiplying by 137 permutes
+        // all 255 hue slots, so every non-faction team gets a stable unique
+        // color while faction teams retain their familiar red and blue.
+        const hue = (((teamIdx * 137) % 255) + 255) % 255;
+        return util.rgbToInt(util.hsvToRgb(hue / 255, 0.72, 1));
     }
 
     getPlayerName(

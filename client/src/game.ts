@@ -689,10 +689,12 @@ export class Game {
         if (this.m_playing) {
             this.m_playingTicker += dt;
         }
+        const spectatorVitals = this.m_spectating;
         const privateSpectator =
             this.m_arenaPrivate && this.m_spectatorOnly && this.m_spectating;
+        this.m_playerBarn.showSpectatorVitals = spectatorVitals;
         this.m_playerBarn.showDeveloperVitals =
-            privateSpectator ||
+            spectatorVitals ||
             ((IS_DEV || this.canUseDeveloper()) &&
                 Boolean(this.m_config.get("debugTools")?.showPlayerHealth));
         this.m_playerBarn.m_update(
