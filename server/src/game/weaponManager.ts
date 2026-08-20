@@ -772,7 +772,13 @@ export class WeaponManager {
     }
 
     replaceGun(idx: number, type: string): void {
-        if (this.player.streakActive && idx < 2 && this.player.chosenStreakType === "streak_heavy_hitter") return;
+        if (
+            this.player.streakActive &&
+            this.player.streakSavedWeapon?.slot === idx &&
+            this.player.chosenStreakType === "streak_heavy_hitter"
+        ) {
+            return;
+        }
 
         const oldDef = GameObjectDefs[this.weapons[idx].type] as GunDef | undefined;
         let ammo = 0;
