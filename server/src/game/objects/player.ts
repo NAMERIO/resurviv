@@ -94,7 +94,6 @@ import type { MapIndicator } from "./mapIndicator";
 import type { Npc } from "./npc";
 import type { Obstacle } from "./obstacle";
 import type { Smoke } from "./smoke";
-import { block } from "sharp";
 
 function generateTempUsername() {
     return generateUsername("-", 0, net.Constants.PlayerNameMaxLen, "random");
