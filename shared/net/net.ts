@@ -379,6 +379,9 @@ export enum PickupMsgType {
     BetterItemEquipped,
     Success,
     GunCannotFire,
+    StreakPerkActive,
+    PerksDisabled,
+    StrobesDisabled,
 }
 
 export class UpdatePassMsg {

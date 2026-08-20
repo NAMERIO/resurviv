@@ -94,6 +94,7 @@ import type { MapIndicator } from "./mapIndicator";
 import type { Npc } from "./npc";
 import type { Obstacle } from "./obstacle";
 import type { Smoke } from "./smoke";
+import { block } from "sharp";
 
 function generateTempUsername() {
     return generateUsername("-", 0, net.Constants.PlayerNameMaxLen, "random");
@@ -6670,8 +6671,6 @@ export class Player extends BaseGameObject {
         ) {
             return;
         }
-        if (this.game.disableAirstrikes && obj.type === "strobe") return;
-        if (this.game.disablePerks && def.type === "perk") return;
 
         if (
             (this.actionType == GameConfig.Action.UseItem && def.type != "gun") ||
@@ -6686,7 +6685,8 @@ export class Player extends BaseGameObject {
         const pickupMsg = new net.PickupMsg();
         pickupMsg.item = obj.type;
         pickupMsg.type = net.PickupMsgType.Success;
-
+        let blockPickup = false;
+        
         switch (def.type) {
             case "ammo":
             case "scope":
@@ -6695,6 +6695,13 @@ export class Player extends BaseGameObject {
             case "throwable":
                 {
                     const itemType = obj.type;
+                    
+                    if (this.game.disableAirstrikes && itemType === "strobe") {
+                        pickupMsg.type = net.PickupMsgType.StrobesDisabled;
+                        blockPickup = true;
+                        break;
+                    }
+
                     if (!this.invManager.isValid(itemType)) break;
 
                     const result = this.invManager.give(itemType, obj.count);
@@ -6733,7 +6740,9 @@ export class Player extends BaseGameObject {
                     }
 
                     if (this.streakActive && this.streakSavedWeapon?.slot === newGunIdx && this.chosenStreakType === "streak_heavy_hitter") {
-                        return;
+                        blockPickup = true
+                        pickupMsg.type = net.PickupMsgType.StreakPerkActive;
+                        break;
                     }
 
                     const oldWeapDef = GameObjectDefs[this.weapons[newGunIdx].type] as
@@ -6907,6 +6916,12 @@ export class Player extends BaseGameObject {
                 let type = obj.type;
 
                 const isMistery = type === "halloween_mystery";
+                
+                if (this.game.disablePerks) {
+                    pickupMsg.type = net.PickupMsgType.PerksDisabled;
+                    blockPickup = true;
+                    break;
+                }
 
                 if (isMistery) {
                     type =
@@ -6974,7 +6989,7 @@ export class Player extends BaseGameObject {
             this.pickedUpLoot = true;
         }
 
-        obj.destroy();
+        if(!blockPickup) obj.destroy();
         this.msgsToSend.push({
             type: net.MsgType.Pickup,
             msg: pickupMsg,
