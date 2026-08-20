@@ -6685,7 +6685,7 @@ export class Player extends BaseGameObject {
         pickupMsg.item = obj.type;
         pickupMsg.type = net.PickupMsgType.Success;
         let blockPickup = false;
-        
+
         switch (def.type) {
             case "ammo":
             case "scope":
@@ -6694,7 +6694,7 @@ export class Player extends BaseGameObject {
             case "throwable":
                 {
                     const itemType = obj.type;
-                    
+
                     if (this.game.disableAirstrikes && itemType === "strobe") {
                         pickupMsg.type = net.PickupMsgType.StrobesDisabled;
                         blockPickup = true;
@@ -6738,8 +6738,12 @@ export class Player extends BaseGameObject {
                         return;
                     }
 
-                    if (this.streakActive && this.streakSavedWeapon?.slot === newGunIdx && this.chosenStreakType === "streak_heavy_hitter") {
-                        blockPickup = true
+                    if (
+                        this.streakActive &&
+                        this.streakSavedWeapon?.slot === newGunIdx &&
+                        this.chosenStreakType === "streak_heavy_hitter"
+                    ) {
+                        blockPickup = true;
                         pickupMsg.type = net.PickupMsgType.StreakPerkActive;
                         break;
                     }
@@ -6915,7 +6919,7 @@ export class Player extends BaseGameObject {
                 let type = obj.type;
 
                 const isMistery = type === "halloween_mystery";
-                
+
                 if (this.game.disablePerks) {
                     pickupMsg.type = net.PickupMsgType.PerksDisabled;
                     blockPickup = true;
@@ -6988,7 +6992,7 @@ export class Player extends BaseGameObject {
             this.pickedUpLoot = true;
         }
 
-        if(!blockPickup) obj.destroy();
+        if (!blockPickup) obj.destroy();
         this.msgsToSend.push({
             type: net.MsgType.Pickup,
             msg: pickupMsg,

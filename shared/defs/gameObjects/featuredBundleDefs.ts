@@ -96,7 +96,6 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         items: ["outfitJuleVerny", "fist_golden_lobster"],
         price: 1625,
         durationDays: 7,
-        
     },
     bundle_prince: {
         name: "Prince Set",
@@ -104,7 +103,6 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         items: ["outfitLustrousPaladin", "gilded_bayonet"],
         price: 1250,
         durationDays: 7,
-        
     },
     bundle_pixel: {
         name: "Pixel Attack Set",
@@ -130,7 +128,12 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
     bundle_ninja: {
         name: "Ninja Set",
         size: "large",
-        items: ["outfitVillageNinja", "fist_dreidel","fist_getdowntonite","huntsman_blackwater"],
+        items: [
+            "outfitVillageNinja",
+            "fist_dreidel",
+            "fist_getdowntonite",
+            "huntsman_blackwater",
+        ],
         price: 3250,
         durationDays: 7,
     },

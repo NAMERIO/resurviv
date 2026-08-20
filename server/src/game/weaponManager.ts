@@ -765,7 +765,12 @@ export class WeaponManager {
         const def = GameObjectDefs[this.weapons[weapIdx].type] as GunDef | undefined;
         if (def?.noDrop) return;
 
-        if (this.player.streakActive && this.player.streakSavedWeapon?.slot === weapIdx && this.player.chosenStreakType === "streak_heavy_hitter") return;
+        if (
+            this.player.streakActive &&
+            this.player.streakSavedWeapon?.slot === weapIdx &&
+            this.player.chosenStreakType === "streak_heavy_hitter"
+        )
+            return;
 
         this._dropGun(weapIdx);
         this.setWeapon(weapIdx, "", 0);

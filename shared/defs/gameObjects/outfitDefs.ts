@@ -2707,7 +2707,6 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
-
     outfitHazard: defineOutfitSkin("outfitBase", {
         name: "Hazard",
         noDropOnDeath: true,
@@ -4139,7 +4138,6 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
-
     outfitGobble: defineOutfitSkin("outfitBase", {
         name: "Gobble",
         noDropOnDeath: true,
@@ -4183,7 +4181,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-gojo.img",
-            frontSpritePos: { x: -1.95, y: -.3702 },
+            frontSpritePos: { x: -1.95, y: -0.3702 },
             frontSprite: "player-accessory-gojo.img",
         },
         lootImg: {
@@ -4191,7 +4189,6 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
-
 
     outfitBlush: defineOutfitSkin("outfitBase", {
         name: "Blush",
@@ -4336,7 +4333,6 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
-
 
     outfitFishBowl: defineOutfitSkin("outfitBase", {
         name: "Fish Bowl",
