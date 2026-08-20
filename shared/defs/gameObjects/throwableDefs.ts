@@ -417,9 +417,9 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
                 left: { sprite: "none" },
             },
         },
-        useThrowParticles: true,
+        useThrowParticles: false,
         sound: {
-            pullPin: "frag_pin_01",
+            pullPin: "strobe_click_01",
             throwing: "frag_throw_01",
             pickup: "frag_pickup_01",
             deploy: "frag_deploy_01",
@@ -453,14 +453,14 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
             scale: 0.2,
         },
         worldImg: {
-            sprite: "posion-proj-pin.img",
+            sprite: "proj-poison-nopin-nolever.img",
             scale: 0.12,
             tint: 0xffffff,
         },
         handImg: {
             equip: {
                 right: {
-                    sprite: "posion-proj-pin.img",
+                    sprite: "proj-poison-pin.img",
                     pos: { x: 3, y: 4.2 },
                     scale: 0.14,
                 },
@@ -468,12 +468,12 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
             },
             cook: {
                 right: {
-                    sprite: "posion-proj-pin.img",
+                    sprite: "proj-poison-nopin.img",
                     pos: { x: 3, y: 4.2 },
                     scale: 0.14,
                 },
                 left: {
-                    sprite: "posion-proj-pin.img",
+                    sprite: "proj-frag-pin-part.img",
                     pos: { x: 3, y: 4.2 },
                     scale: 0.14,
                 },
@@ -520,24 +520,24 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
             scale: 0.2,
         },
         worldImg: {
-            sprite: "flashbang-proj-pin.img",
+            sprite: "proj-flashbang-nopin-nolever.img",
             scale: 0.12,
             tint: 0xffffff,
         },
         handImg: {
             equip: {
                 right: {
-                    sprite: "flashbang-proj-pin.img",
+                    sprite: "proj-flashbang-pin.img",
                     pos: { x: 3, y: 4.2 },
-                    scale: 0.14,
+                    scale: 0.12,
                 },
                 left: { sprite: "none" },
             },
             cook: {
                 right: {
-                    sprite: "flashbang-proj-pin.img",
+                    sprite: "proj-flashbang-nopin.img",
                     pos: { x: 3, y: 4.2 },
-                    scale: 0.14,
+                    scale: 0.12,
                 },
                 left: {
                     sprite: "proj-frag-pin-part.img",
@@ -1160,7 +1160,7 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
         },
         useThrowParticles: false,
         sound: {
-            pullPin: "frag_pin_01",
+            pullPin: "strobe_click_01",
             throwing: "frag_throw_01",
             pickup: "frag_pickup_01",
             deploy: "frag_deploy_01",
@@ -1224,7 +1224,7 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
             sprite: "player-rainbow-trail.img",
         },
     },
-    mm40_grenade: {
+    "40mm_grenade": {
         name: "40mm Grenade",
         type: "throwable",
         quality: 0,
@@ -1435,26 +1435,30 @@ export const ThrowableDefs: Record<string, ThrowableDef> = {
             scale: 0.2,
         },
         worldImg: {
-            sprite: "proj-antiFire.img",
+            sprite: "proj-antiFire-nopin-nolever.img",
             scale: 0.12,
             tint: 0xffffff,
         },
         handImg: {
             equip: {
                 right: {
-                    sprite: "proj-antiFire.img",
+                    sprite: "proj-antiFire-pin.img",
                     pos: { x: 3, y: 4.2 },
-                    scale: 0.12,
+                    scale: 0.14,
                 },
                 left: { sprite: "none" },
             },
             cook: {
                 right: {
-                    sprite: "proj-antiFire.img",
+                    sprite: "proj-antiFire-nopin.img",
                     pos: { x: 3, y: 4.2 },
-                    scale: 0.12,
+                    scale: 0.14,
                 },
-                left: { sprite: "none" },
+                left: {
+                    sprite: "proj-antiFire-pin-part.img",
+                    pos: { x: 3, y: 4.2 },
+                    scale: 0.14,
+                },
             },
             throwing: {
                 right: { sprite: "none" },
