@@ -6688,7 +6688,6 @@ export class Player extends BaseGameObject {
         const pickupMsg = new net.PickupMsg();
         pickupMsg.item = obj.type;
         pickupMsg.type = net.PickupMsgType.Success;
-        let blockPickup = false;
 
         switch (def.type) {
             case "ammo":
@@ -6701,7 +6700,7 @@ export class Player extends BaseGameObject {
 
                     if (this.game.disableAirstrikes && itemType === "strobe") {
                         pickupMsg.type = net.PickupMsgType.StrobesDisabled;
-                        blockPickup = true;
+                        amountLeft = 1;
                         break;
                     }
 
@@ -6747,7 +6746,7 @@ export class Player extends BaseGameObject {
                         this.streakSavedWeapon?.slot === newGunIdx &&
                         this.chosenStreakType === "streak_heavy_hitter"
                     ) {
-                        blockPickup = true;
+                        amountLeft = 1;
                         pickupMsg.type = net.PickupMsgType.StreakPerkActive;
                         break;
                     }
@@ -6926,7 +6925,7 @@ export class Player extends BaseGameObject {
 
                 if (this.game.disablePerks) {
                     pickupMsg.type = net.PickupMsgType.PerksDisabled;
-                    blockPickup = true;
+                    amountLeft = 1;
                     break;
                 }
 
@@ -6996,7 +6995,7 @@ export class Player extends BaseGameObject {
             this.pickedUpLoot = true;
         }
 
-        if (!blockPickup) obj.destroy();
+        obj.destroy()
         this.msgsToSend.push({
             type: net.MsgType.Pickup,
             msg: pickupMsg,
