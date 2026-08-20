@@ -148,7 +148,7 @@ export const BaseDefs: Record<string, GunDef> = {
     //     },
     //     lootImg: {
     //         sprite: "loot-weapon-m134.img",
-    //         tint: 65280,
+    //         tint: 0xff00,
     //         border: "loot-circle-outer-01.img",
     //         borderTint: 0,
     //         scale: 0.3,
@@ -3770,7 +3770,7 @@ export const BaseDefs: Record<string, GunDef> = {
         },
         lootImg: {
             sprite: "loot-weapon-lasr-gun.img",
-            tint: 0x00ff00,
+            tint: 0xff00,
             border: "loot-circle-outer-01.img",
             borderTint: 0x000000,
             scale: 0.3,
@@ -3827,7 +3827,7 @@ export const BaseDefs: Record<string, GunDef> = {
         },
         lootImg: {
             sprite: "loot-weapon-lasr-gun-dual.img",
-            tint: 0x00ff00,
+            tint: 0xff00,
             border: "loot-circle-outer-01.img",
             borderTint: 0x000000,
             scale: 0.3,
@@ -3884,7 +3884,7 @@ export const BaseDefs: Record<string, GunDef> = {
         },
         lootImg: {
             sprite: "loot-weapon-m9a17.img",
-            tint: 65280,
+            tint: 0xff00,
             border: "loot-circle-outer-01.img",
             borderTint: 0,
             scale: 0.3,
@@ -3934,14 +3934,14 @@ export const BaseDefs: Record<string, GunDef> = {
         reloadTime: 2.3,
         fireDelay: 0,
         switchDelay: 0.9,
-        barrelLength: 2,
+        barrelLength: 2.75,
         barrelOffset: -1,
         recoilTime: 10000000000,
         moveSpread: 2,
         shotSpread: 1,
         bulletCount: 1,
         bulletType: "bullet_m79",
-        projType: "mm40_grenade",
+        projType: "40mm_grenade",
         noSplinter: true,
         headshotMult: 1,
         speed: {
@@ -3950,7 +3950,7 @@ export const BaseDefs: Record<string, GunDef> = {
         },
         lootImg: {
             sprite: "loot-weapon-m79.img",
-            tint: 65280,
+            tint: 0xff00,
             border: "loot-circle-outer-01.img",
             borderTint: 0,
             scale: 0.3,
@@ -4016,7 +4016,7 @@ export const BaseDefs: Record<string, GunDef> = {
         },
         lootImg: {
             sprite: "loot-weapon-water.img",
-            tint: 65280,
+            tint: 0xff00,
             border: "loot-circle-outer-01.img",
             borderTint: 0,
             scale: 0.3,
@@ -4076,7 +4076,7 @@ export const BaseDefs: Record<string, GunDef> = {
         },
         lootImg: {
             sprite: "loot-weapon-m134.img",
-            tint: 65280,
+            tint: 0xff00,
             border: "loot-circle-outer-01.img",
             borderTint: 0,
             scale: 0.3,
@@ -4141,11 +4141,11 @@ export const BaseDefs: Record<string, GunDef> = {
         speed: {
             equip: 0,
             attack: 0,
-            load: -0.20000000000004547,
+            load: -2,
         },
         lootImg: {
             sprite: "loot-weapon-rainbow-blaster.img",
-            tint: 65280,
+            tint: 0xff00,
             border: "loot-circle-outer-07.img",
             borderTint: 16777215,
             scale: 0.3,
@@ -4163,7 +4163,7 @@ export const BaseDefs: Record<string, GunDef> = {
             handsBelow: true,
             magImg: {
                 sprite: "gun-rainbow-top.img",
-                pos: { x: 0.5, y: -40.600000000000364 },
+                pos: { x: 0.5, y: -40 },
                 top: true,
                 max_height_adj: 15,
             },
@@ -4209,8 +4209,8 @@ export const BaseDefs: Record<string, GunDef> = {
         reloadTime: 1.41,
         fireDelay: 0,
         switchDelay: 0.9,
-        barrelLength: 5,
-        barrelOffset: 0,
+        barrelLength: 2.25,
+        barrelOffset: -1,
         recoilTime: 1e10,
         moveSpread: 2,
         shotSpread: 1,
@@ -4225,7 +4225,7 @@ export const BaseDefs: Record<string, GunDef> = {
         },
         lootImg: {
             sprite: "loot-weapon-bazooka.img",
-            tint: 0xffffff,
+            tint: 0xff00,
             border: "loot-circle-outer-01.img",
             borderTint: 0,
             scale: 0.3,
