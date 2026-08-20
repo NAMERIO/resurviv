@@ -45,8 +45,9 @@ export function atlasBuilderPlugin(): Plugin[] {
 
         if (changedAtlases.length) {
             atlasLogger.info(
-                `Skipping atlas build for ${changedAtlases.map((a) => a.name).join(", ")} - using cached versions`,
+                `Building atlases ${changedAtlases.map((a) => a.name).join(", ")}`,
             );
+            await atlasManager.buildAtlases(changedAtlases);
         } else {
             atlasLogger.info("Loading pre-built atlases");
         }
