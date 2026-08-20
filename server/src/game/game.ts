@@ -700,6 +700,7 @@ export class Game {
     handleSocketClose(socketId: string) {
         const player = this.playerBarn.socketIdToPlayer.get(socketId);
         if (!player) return;
+        this.playerBarn.socketIdToPlayer.delete(socketId);
         this.logger.info(`"${player.name}" left`);
         player.questManager.flushProgress();
         player.disconnected = true;
@@ -801,6 +802,13 @@ export class Game {
     }
 
     addJoinTokens(tokens: FindGamePrivateBody["playerData"], autoFill: boolean) {
+        const now = Date.now();
+        for (const [token, data] of this.joinTokens) {
+            if (data.expiresAt < now) {
+                this.joinTokens.delete(token);
+            }
+        }
+
         // Use one shared fallback hash for tokens that don't provide a roomId.
         // This keeps legacy behavior (party joins together) while allowing
         // arena tokens to split by per-player roomId suffixes (e.g. ROOM-A/ROOM-B).
@@ -814,7 +822,7 @@ export class Game {
             };
 
             this.joinTokens.set(token.token, {
-                expiresAt: Date.now() + 10000,
+                expiresAt: now + 10000,
                 userId: token.userId,
                 clanName: token.clanName,
                 clanTagColor: token.clanTagColor,
@@ -904,6 +912,7 @@ export class Game {
         }
         this.logger.info("Game Ended");
         this.joinTokens.clear();
+        this.joinSpamRateLimit.dispose();
         this.updateData();
         this._saveGameToDatabase();
     }

@@ -313,15 +313,18 @@ export class HTTPRateLimit {
 
     private _now = 0;
 
+    private readonly _advanceTimer: ReturnType<typeof setInterval>;
+    private readonly _cleanupTimer: ReturnType<typeof setInterval>;
+
     limit: number;
 
     constructor(limit: number, interval: number) {
         this.limit = limit;
-        setInterval(() => ++this._now, interval);
+        this._advanceTimer = setInterval(() => ++this._now, interval);
 
         // clear ips every hour to not leak memory ig
         // probably not an issue but why not /shrug
-        setInterval(
+        this._cleanupTimer = setInterval(
             () => {
                 this._IPsData.clear();
             },
@@ -346,6 +349,12 @@ export class HTTPRateLimit {
         } else {
             return ++ipData.count > this.limit;
         }
+    }
+
+    dispose() {
+        clearInterval(this._advanceTimer);
+        clearInterval(this._cleanupTimer);
+        this._IPsData.clear();
     }
 }
 

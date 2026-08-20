@@ -222,19 +222,13 @@ export class PlayerBarn {
     addPlayer(socketId: string, joinMsg: net.JoinMsg, ip: string) {
         const joinData = this.game.joinTokens.get(joinMsg.matchPriv);
 
-        if (!joinData) {
-            this.game.logger.info(`No join data.`);
+        if (!joinData || joinData.expiresAt < Date.now()) {
+            this.game.joinTokens.delete(joinMsg.matchPriv);
+            this.game.logger.info(`Missing or expired join data.`);
+            this.game.closeSocket(socketId);
             return;
         }
-
-        // if (!joinData || joinData.expiresAt < Date.now()) {
-        //     this.game.closeSocket(socketId);
-        //     if (joinData) {
-        //         this.game.joinTokens.delete(joinMsg.matchPriv);
-        //     }
-        //     return;
-        // }
-        // this.game.joinTokens.delete(joinMsg.matchPriv);
+        this.game.joinTokens.delete(joinMsg.matchPriv);
 
         if (Config.rateLimitsEnabled) {
             const count = this.livingPlayers.filter(
@@ -914,6 +908,12 @@ export class PlayerBarn {
 
     removePlayer(player: Player) {
         util.removeFrom(this.players, player);
+        if (!this.game.started) {
+            util.removeFrom(this.matchPlayers, player);
+        }
+        if (this.socketIdToPlayer.get(player.socketId) === player) {
+            this.socketIdToPlayer.delete(player.socketId);
+        }
 
         if (util.removeFrom(this.livingPlayers, player)) {
             this.aliveCountDirty = true;
