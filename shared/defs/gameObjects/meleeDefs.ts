@@ -2920,46 +2920,46 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
     }),
 
-    gilded_bayonet: defineMeleeSkin("bayonet", {
+    bayonet_gilded: defineMeleeSkin("bayonet", {
         name: "Gilded Bayonet",
         rarity: Rarity.Epic,
         lore: "A luxurious take on the classic bayonet, perfect for those who appreciate both style and substance.",
         noPotatoSwap: false,
         lootImg: {
-            sprite: "gilded-bayonet.img",
+            sprite: "loot-melee-bayonet-gilded.img",
         },
         worldImg: {
-            sprite: "gilded-bayonet.img",
+            sprite: "loot-melee-bayonet-gilded.img",
         },
     }),
 
-    farmers_sickle: defineMeleeSkin("bayonet", {
+    sickle_farmer: defineMeleeSkin("bayonet", {
         name: "Farmer's Sickle",
         rarity: Rarity.Rare,
         lore: "Perfect for harvesting crops—or reaping victory on the field.",
         noPotatoSwap: false,
         lootImg: {
-            sprite: "farmers-sickle.img",
+            sprite: "loot-melee-sickle-farmer.img",
         },
         worldImg: {
-            sprite: "farmers-sickle.img",
+            sprite: "loot-melee-sickle-farmer.img",
         },
     }),
 
-    bloodmoon_huntsman: defineMeleeSkin("huntsman", {
+    huntsman_bloodmoon: defineMeleeSkin("huntsman", {
         name: "Bloodmoon Huntsman",
         rarity: Rarity.Epic,
         lore: "A vicious, ruby-tinted blade forged for fast strikes and ruthless accuracy.",
         noPotatoSwap: false,
         lootImg: {
-            sprite: "bloodmoon-huntsman.img",
+            sprite: "loot-melee-huntsman-bloodmoon.img",
         },
         worldImg: {
-            sprite: "bloodmoon-huntsman.img",
+            sprite: "loot-melee-huntsman-bloodmoon.img",
         },
     }),
 
-    bens_knife: defineMeleeSkin("bayonet", {
+    knife_ben: defineMeleeSkin("bayonet", {
         name: "Ben's Knife",
         rarity: Rarity.Mythic,
         lore: "A rare collector's item crafted by the serial killer & blacksmith Benny. - HXH",
@@ -2972,7 +2972,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
     }),
 
-    toji_knife: defineMeleeSkin("bayonet", {
+    knife_toji: defineMeleeSkin("bayonet", {
         name: "Toji's Knife",
         rarity: Rarity.Mythic,
         lore: "Even infinity can be pierced.",
@@ -2998,20 +2998,20 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
     }),
 
-    rapier_blade: defineMeleeSkin("machete", {
-        name: "Rapier Blade",
+    rapier: defineMeleeSkin("machete", {
+        name: "Rapier",
         rarity: Rarity.Epic,
         lore: "For those who fight with elegance, speed, and undeniable finesse.",
         noPotatoSwap: false,
         lootImg: {
-            sprite: "rapier-blade.img",
+            sprite: "loot-melee-rapier.img",
         },
         worldImg: {
-            sprite: "rapier-blade.img",
+            sprite: "loot-melee-rapier.img",
         },
     }),
 
-    reapers_scythe: defineMeleeSkin("naginata", {
+    scythe_reaper: defineMeleeSkin("naginata", {
         name: "Reaper's Scythe",
         rarity: Rarity.Epic,
         lore: "For those who reap victory with refined style.",
