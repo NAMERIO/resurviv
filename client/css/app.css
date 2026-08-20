@@ -18601,7 +18601,7 @@ div.roulette {
 
 #start-menu .pass-track-item.golden .gold-potato-container {
   background-color: #292501;
-  background-image: url(/img/gui/currency-potato-sack.svg);
+  background-image: url(/img/gui/currency-potato-sack.svg?v=2);
   background-position: center 14px;
   background-repeat: no-repeat;
   background-size: 64px;

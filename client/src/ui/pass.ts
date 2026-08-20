@@ -19,6 +19,7 @@ import { MenuModal } from "./menuModal";
 const premiumPassUnlockType = "premiumPass";
 const defaultPremiumPassPrice = 1500;
 const defaultUnlockAllPassPrice = 3000;
+const passGpRewardImage = "/img/gui/currency-potato-sack.svg?v=2";
 
 function getNextPassUnlockItemId(passType: string, currentLevel: number) {
     const passDef = PassDefs[passType];
@@ -42,7 +43,7 @@ function getPassRewardName(reward: PassRewardDef) {
 function getPassRewardImage(reward: PassRewardDef) {
     return "item" in reward
         ? helpers.getSvgFromGameType(reward.item)
-        : "img/loot/loot-golden-potato.svg";
+        : passGpRewardImage;
 }
 
 function getPassRewardTransform(reward: PassRewardDef) {
@@ -128,7 +129,10 @@ function getPassTrackWidth(passItemCount: number) {
 
 function createGoldPotatoReward(amount: number) {
     return $("<div/>", { class: "item-golden_potato" }).append(
-        $("<div/>", { class: "gold-potato-container" }).append(
+        $("<div/>", {
+            class: "gold-potato-container",
+            css: { "background-image": `url(${passGpRewardImage})` },
+        }).append(
             $("<div/>", { class: "gold-potato-amount" }).append(
                 $("<div/>", { text: String(amount) }),
             ),
@@ -1188,7 +1192,7 @@ export class Pass {
                 : itemCategory
                   ? `url(${itemCategory.categoryImage})`
                   : reward && "gp" in reward
-                    ? "url(img/loot/loot-golden-potato.svg)"
+                    ? `url(${passGpRewardImage})`
                     : "";
         $("#pass-progress-unlock-type-image").css({
             "background-image": unlockTypeImageUrl,
