@@ -1,5 +1,3 @@
-import { Rarity } from "../../gameConfig";
-
 export interface DamageStreakDef {
     readonly type: "streak";
     readonly name: string;
