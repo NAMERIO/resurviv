@@ -20,8 +20,8 @@ export interface DamageStreakDef {
 }
 
 export const StreakThresholds = {
-    firstActivation: 0,
-    increment: 0,
+    firstActivation: 300,
+    increment: 400,
     get(activationIndex: number): number {
         return (
             StreakThresholds.firstActivation +
