@@ -1,5 +1,3 @@
-import { Rarity } from "../../gameConfig";
-
 export interface DamageStreakDef {
     readonly type: "streak";
     readonly name: string;
@@ -50,7 +48,7 @@ export const DamageStreakDefs: Record<string, DamageStreakDef> = {
     streak_heavy_hitter: {
         type: "streak",
         name: "Heavy Hitter",
-        lore: "AWM-S sniper for 10 seconds!",
+        lore: "Obtain an AWM-S for 10 seconds!",
         rewardType: "gun",
         rewardItem: "awc",
         duration: 10,
