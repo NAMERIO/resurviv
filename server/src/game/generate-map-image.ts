@@ -1,5 +1,4 @@
 import { type CanvasRenderingContext2D, createCanvas } from "canvas";
-import { config } from "process";
 import { type MapDef, MapDefs } from "../../../shared/defs/mapDefs";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import type { BuildingDef, ObstacleDef } from "../../../shared/defs/mapObjectsTyping";

@@ -1541,7 +1541,7 @@ function drawBuildingGroundPatches(item: EditorItem, building: BuildingDef) {
     ctx.restore();
 }
 
-function drawBuildingChildObjects(
+function _drawBuildingChildObjects(
     item: EditorItem,
     building: BuildingDef,
     depth: number,

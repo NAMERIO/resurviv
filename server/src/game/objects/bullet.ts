@@ -744,12 +744,12 @@ export class Bullet {
                         this.sourceTeamId !== col.player!.teamId
                     ) {
                         let burnDuration = GameConfig.player.burnDuration;
-                        let burnDamage = GameConfig.player.burnDamage;
+                        let _burnDamage = GameConfig.player.burnDamage;
 
                         if (this.player.hasPerk("pyro")) {
                             const pyroMult =
                                 (PerkProperties.pyro.fireDamageMult as number) ?? 1.2;
-                            burnDamage *= pyroMult;
+                            _burnDamage *= pyroMult;
                             burnDuration *= pyroMult;
                         }
 

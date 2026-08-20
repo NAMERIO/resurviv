@@ -806,7 +806,7 @@ function formatCrateLoot(): string {
     return `[{ tier: "${selectedTier}", min: ${doc.testCrate.minRolls}, max: ${doc.testCrate.maxRolls} }]`;
 }
 
-function formatLootTable(table: LootTable): string {
+function _formatLootTable(table: LootTable): string {
     const lines = ["{"];
     for (const [tier, entries] of lootTableEntries(table).sort(([a], [b]) =>
         a.localeCompare(b),

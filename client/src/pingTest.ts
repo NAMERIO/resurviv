@@ -120,7 +120,7 @@ export class PingTest {
             // console.log("Ping test results");
             // console.log("----------------------------------------");
             for (let i = 0; i < sorted.length; i++) {
-                const test = sorted[i];
+                const _test = sorted[i];
                 console.log(
                     // "region",
                     // test.region,

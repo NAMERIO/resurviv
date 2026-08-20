@@ -41,9 +41,7 @@ function getPassRewardName(reward: PassRewardDef) {
 }
 
 function getPassRewardImage(reward: PassRewardDef) {
-    return "item" in reward
-        ? helpers.getSvgFromGameType(reward.item)
-        : passGpRewardImage;
+    return "item" in reward ? helpers.getSvgFromGameType(reward.item) : passGpRewardImage;
 }
 
 function getPassRewardTransform(reward: PassRewardDef) {
