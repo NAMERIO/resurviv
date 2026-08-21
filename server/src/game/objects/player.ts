@@ -2086,6 +2086,17 @@ export class Player extends BaseGameObject {
         if (!this.streakReady) return;
         if (this.streakActive) return;
 
+        if (this.game.disablePerks) {
+            const disableStreakMsg = new net.PickupMsg();
+            disableStreakMsg.type = net.PickupMsgType.PerksDisabled;
+
+            this.msgsToSend.push({
+                type: net.MsgType.Pickup,
+                msg: disableStreakMsg,
+            });
+            return;
+        }
+
         const streakDef = DamageStreakDefs[this.chosenStreakType];
         if (!streakDef) return;
         if (streakDef.rewardType === "dash" && (this.downed || this.vehicle)) return;
