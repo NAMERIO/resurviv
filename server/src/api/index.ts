@@ -29,6 +29,7 @@ import { deleteExpiredSessions, validateSessionToken } from "./auth";
 import { authMiddleware, rateLimitMiddleware, validateParams } from "./auth/middleware";
 import type { SessionTableSelect, UsersTableSelect } from "./db/schema";
 import { ClanRouter } from "./routes/clan/ClanRouter";
+import { NewsRouter } from "./routes/NewsRouter";
 import { cleanupOldLogs, isBanned } from "./routes/private/ModerationRouter";
 import { PrivateRouter } from "./routes/private/private";
 import { StatsRouter } from "./routes/stats/StatsRouter";
@@ -80,6 +81,7 @@ app.route("/api/user/", UserRouter);
 app.route("/api/auth/", AuthRouter);
 app.route("/api/clan/", ClanRouter);
 app.route("/api/tournament/", TournamentRouter);
+app.route("/api/news", NewsRouter);
 app.get("/api/events", authMiddleware, (c) => {
     const user = c.get("user");
     if (!user) {

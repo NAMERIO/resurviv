@@ -23,6 +23,7 @@ import type {
     FindGameMatchData,
     FindGameResponse,
 } from "../../shared/types/api";
+import type { NewsResponse } from "../../shared/types/news";
 import { math } from "../../shared/utils/math";
 import { Account } from "./account";
 import { type GoogleH5AdPlacementInfo, googleH5Ads } from "./ads/googleH5Ads";
@@ -38,6 +39,7 @@ import { Game } from "./game";
 import { createLootPreview, helpers } from "./helpers";
 import { InputHandler } from "./input";
 import { InputBinds, InputBindUi } from "./inputBinds";
+import { appendNewsDocument, NewsManager } from "./newsManager";
 import { PingTest } from "./pingTest";
 import { proxy } from "./proxy";
 import { ResourceManager } from "./resources";
@@ -203,6 +205,8 @@ export class Application {
     checkedPingTest = false;
     hasFocus = true;
     newsDisplayed = false;
+    latestNewsTimestamp = 0;
+    newsManager: NewsManager;
     prestigeArenaSelectedModeIdx = 0;
     prestigeArenaSelectedMap = "main";
     prestigeArenaSelectedTeamMode = 2;
@@ -296,6 +300,7 @@ export class Application {
 
     constructor() {
         this.account = new Account(this.config);
+        this.newsManager = new NewsManager(this.account, () => this.loadNews());
         this.loadoutMenu = new LoadoutMenu(this.account, this.localization, this.config);
         this.pass = new Pass(this.account, this.loadoutMenu, this.localization);
         this.siteInfo = new SiteInfo(this.config, this.localization);
@@ -361,7 +366,9 @@ export class Application {
                         "Guest",
                 );
                 this.refreshUi();
+                this.newsManager.updateAccess();
             });
+            this.newsManager.init();
             this.account.init();
 
             // Initialize ProfileUi after DOM is ready
@@ -835,10 +842,10 @@ export class Application {
                 this.game?.free();
                 this.teamMenu.leave();
             });
-            const r = $("#news-current").data("date");
-            const a = new Date(r).getTime();
+            const staticNewsDate = String($("#news-current").data("date") ?? "");
+            this.latestNewsTimestamp = new Date(staticNewsDate).getTime() || 0;
             $(".news-toggle").on("click", () => {
-                this.config.set("lastNewsTimestamp", a);
+                this.config.set("lastNewsTimestamp", this.latestNewsTimestamp);
                 $(".news-toggle").find(".account-alert").css("display", "none");
                 $("#friends-wrapper").removeClass("open");
                 $("#news-wrapper").fadeIn(250);
@@ -855,10 +862,8 @@ export class Application {
                 $("#news-wrapper").fadeOut(250);
                 this.newsDisplayed = false;
             });
-            const i = this.config.get("lastNewsTimestamp")!;
-            if (a > i) {
-                $(".news-toggle").find(".account-alert").css("display", "block");
-            }
+            this.updateNewsAlert();
+            void this.loadNews();
             this.setDOMFromConfig();
             this.setAppActive(true);
             const domCanvas = document.querySelector<HTMLCanvasElement>("#cvs")!;
@@ -1015,6 +1020,72 @@ export class Application {
             ? [this.config.get("region")!]
             : this.pingTest.getRegionList();
         this.pingTest.start(regions);
+    }
+
+    updateNewsAlert() {
+        const lastViewed = this.config.get("lastNewsTimestamp") ?? 0;
+        $(".news-toggle")
+            .find(".account-alert")
+            .css("display", this.latestNewsTimestamp > lastViewed ? "block" : "none");
+    }
+
+    async loadNews() {
+        try {
+            const response = await fetch(api.resolveUrl("/api/news"), {
+                cache: "no-store",
+                headers: { Accept: "application/json" },
+            });
+            if (!response.ok) return;
+
+            const data = (await response.json()) as Partial<NewsResponse>;
+            const container = $("#news-dynamic").empty();
+            const staticNewsDate = String($("#news-current").data("date") ?? "");
+            let latestTimestamp = new Date(staticNewsDate).getTime() || 0;
+            if (!Array.isArray(data.posts) || data.posts.length === 0) {
+                this.latestNewsTimestamp = latestTimestamp;
+                this.updateNewsAlert();
+                return;
+            }
+
+            for (const post of data.posts) {
+                if (
+                    !post ||
+                    typeof post.title !== "string" ||
+                    typeof post.content !== "string" ||
+                    typeof post.publishedAt !== "string"
+                ) {
+                    continue;
+                }
+
+                const publishedAt = new Date(post.publishedAt);
+                const timestamp = publishedAt.getTime();
+                if (!Number.isFinite(timestamp)) continue;
+
+                latestTimestamp = Math.max(latestTimestamp, timestamp);
+                const postElement = $("<div>").attr("data-date", post.publishedAt);
+                const dateText =
+                    typeof post.dateText === "string" && post.dateText.trim()
+                        ? post.dateText
+                        : publishedAt.toLocaleDateString(undefined, {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                          });
+                postElement.append(
+                    $("<small>").addClass("news-date").text(dateText),
+                    $("<p>")
+                        .addClass("news-paragraph")
+                        .append($("<strong>").text(post.title)),
+                );
+                appendNewsDocument(postElement, post);
+                container.append(postElement);
+            }
+
+            this.latestNewsTimestamp = latestTimestamp;
+            this.updateNewsAlert();
+        } catch {
+            // Keep the static news visible when the API or database is unavailable.
+        }
     }
 
     startSocialEvents() {
@@ -1569,10 +1640,7 @@ export class Application {
             !canEdit || isBattleRoyale,
         );
         this.prestigeArenaHideEnemiesBtn.prop("disabled", !canEdit);
-        this.prestigeArenaBattleHideEnemiesBtn.prop(
-            "disabled",
-            !canEdit,
-        );
+        this.prestigeArenaBattleHideEnemiesBtn.prop("disabled", !canEdit);
     }
 
     setPrestigeArenaCreateOption(

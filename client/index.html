@@ -1149,12 +1149,14 @@
           <div id="modal-news-card" class="modal-content modal-close">
             <div class="modal-header">
               <span class="close close-corner pass-toggle"></span>
-              <h2>What's New!</h2>
+              <button id="news-manage-button" type="button">Manage</button>
+              <h2 id="modal-news-title">What's New!</h2>
             </div>
             <div class="modal-body">
               <div id="news-block" class="menu-block">
                 <div id="news">
                   <h3 class="news-header">What's New!</h3>
+                  <div id="news-dynamic"></div>
                   <div id="news-current" data-date="2026-03-24">
                     <small class="news-date">March 24th, 2026</small>
                     <p class="news-paragraph"><strong>Spring Blossoms</strong></p>
@@ -1230,6 +1232,81 @@
                   </div>
                 </div>
               </div>
+              <section id="news-manager" aria-label="News editor">
+                <div id="news-manager-list-view">
+                  <div class="news-library-header">
+                    <button id="news-editor-back" type="button">← View News</button>
+                    <div class="news-library-heading">
+                      <strong>News Posts</strong>
+                      <span>Select one to edit, or create a new post.</span>
+                    </div>
+                    <button id="news-editor-new" type="button">+ New Post</button>
+                  </div>
+                  <div id="news-post-list" aria-label="Saved news posts"></div>
+                </div>
+                <div id="news-editor-view">
+                  <div class="news-editor-topbar">
+                    <button id="news-editor-list" type="button">← All Posts</button>
+                    <div class="news-editor-heading">
+                      <strong id="news-editor-mode">New Post</strong>
+                    </div>
+                  </div>
+                  <div class="news-compose-panel">
+                    <div class="news-editor-fields">
+                      <label>
+                        <span>Post title</span>
+                        <input id="news-editor-title" type="text" maxlength="100" placeholder="Enter a title">
+                      </label>
+                      <label>
+                        <span>Date shown</span>
+                        <input id="news-editor-date" type="text" maxlength="60" placeholder="August 21st, 2026">
+                      </label>
+                    </div>
+                    <div id="news-selection-tools" role="toolbar" aria-label="Selected text tools">
+                      <div class="news-selection-actions">
+                        <span>Selected text</span>
+                        <button id="news-editor-color-menu" type="button">Text Color</button>
+                        <button id="news-editor-link" type="button">Make Link</button>
+                      </div>
+                      <div id="news-color-palette" aria-label="Text color palette">
+                        <button type="button" class="news-color-swatch" data-news-color="#ffffff" style="--news-swatch: #ffffff" aria-label="White"></button>
+                        <button type="button" class="news-color-swatch" data-news-color="#ffd34e" style="--news-swatch: #ffd34e" aria-label="Gold"></button>
+                        <button type="button" class="news-color-swatch" data-news-color="#ff8a42" style="--news-swatch: #ff8a42" aria-label="Orange"></button>
+                        <button type="button" class="news-color-swatch" data-news-color="#ff6b6b" style="--news-swatch: #ff6b6b" aria-label="Red"></button>
+                        <button type="button" class="news-color-swatch" data-news-color="#83af50" style="--news-swatch: #83af50" aria-label="Green"></button>
+                        <button type="button" class="news-color-swatch" data-news-color="#55aeb2" style="--news-swatch: #55aeb2" aria-label="Cyan"></button>
+                        <button type="button" class="news-color-swatch" data-news-color="#6fa8ff" style="--news-swatch: #6fa8ff" aria-label="Blue"></button>
+                        <button type="button" class="news-color-swatch" data-news-color="#c88cff" style="--news-swatch: #c88cff" aria-label="Purple"></button>
+                        <label class="news-custom-color" title="Choose a custom color">
+                          <span>Custom</span>
+                          <input id="news-editor-color" type="color" value="#ffd700">
+                        </label>
+                        <button id="news-editor-color-apply" type="button">Apply</button>
+                      </div>
+                      <div id="news-link-editor">
+                        <input id="news-link-text" type="text" maxlength="200" placeholder="Link text">
+                        <input id="news-link-url" type="url" maxlength="500" placeholder="Paste a URL">
+                        <button id="news-link-apply" type="button">Apply Link</button>
+                        <button id="news-link-cancel" type="button">Cancel</button>
+                      </div>
+                    </div>
+                    <div
+                      id="news-editor-content"
+                      contenteditable="true"
+                      role="textbox"
+                      aria-label="News post content"
+                      aria-multiline="true"
+                      data-placeholder="Start writing your news..."
+                    ><div><br></div></div>
+                  </div>
+                  <div class="news-editor-actions">
+                    <button id="news-editor-delete" type="button">Delete</button>
+                    <span id="news-editor-status" role="status"></span>
+                    <button id="news-editor-save-draft" type="button">Save Draft</button>
+                    <button id="news-editor-publish" type="button">Publish</button>
+                  </div>
+                </div>
+              </section>
             </div>
           </div>
         </div>

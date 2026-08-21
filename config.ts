@@ -84,6 +84,8 @@ export function getConfig(isProduction: boolean, dir: string) {
             allowBots: isDev,
             allowEditMsg: isDev,
             developerSlugs: [],
+            adminSlugs: [],
+            ownerSlugs: [],
             allowMockAccount: isDev,
         },
         defaultItems: {},

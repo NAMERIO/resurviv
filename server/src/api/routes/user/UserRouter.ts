@@ -357,6 +357,12 @@ function canUseDeveloper(slug: string) {
     return Config.debug.developerSlugs.includes(slug);
 }
 
+function canManageNews(slug: string) {
+    return (
+        Config.debug.adminSlugs.includes(slug) || Config.debug.ownerSlugs.includes(slug)
+    );
+}
+
 function isSupportedMarketItem(itemType: string) {
     return getMarketPriceBounds(itemType) !== null;
 }
@@ -925,6 +931,7 @@ UserRouter.post("/profile", async (c) => {
                 usernameSet,
                 usernameChangeTime: timeUntilNextChange,
                 canUseDeveloper: canUseDeveloper(slug),
+                canManageNews: canManageNews(slug),
             },
             gpBalance: claimedThanksReward?.gpBalance ?? user.gpBalance,
             rewardedAdGp: await getRewardedAdGpState(user.id),

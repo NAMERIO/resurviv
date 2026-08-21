@@ -106,7 +106,11 @@ const defaultConfig = {
     touchMoveStyle: "anywhere" as "locked" | "anywhere",
     touchAimStyle: "anywhere" as "locked" | "anywhere",
     touchAimLine: true,
-    profile: null as { slug: string; canUseDeveloper?: boolean } | null,
+    profile: null as {
+        slug: string;
+        canUseDeveloper?: boolean;
+        canManageNews?: boolean;
+    } | null,
     playerName: "",
     region: "na",
     gameModeIdx: 2,

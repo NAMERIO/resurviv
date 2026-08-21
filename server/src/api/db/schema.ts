@@ -5,6 +5,7 @@ import {
     index,
     integer,
     json,
+    jsonb,
     pgTable,
     serial,
     text,
@@ -14,6 +15,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { TeamMode } from "../../../../shared/gameConfig";
 import type { ClanFont, ClanMemberRole, ClanRegion } from "../../../../shared/types/clan";
+import type { NewsDocument } from "../../../../shared/types/news";
 import { GameModeStatus } from "../../../../shared/types/stats";
 import { ItemStatus, type Loadout, loadout } from "../../../../shared/utils/loadout";
 
@@ -53,6 +55,27 @@ export const usersTable = pgTable("users", {
 
 export type UsersTableInsert = typeof usersTable.$inferInsert;
 export type UsersTableSelect = typeof usersTable.$inferSelect;
+
+export const newsTable = pgTable(
+    "news",
+    {
+        id: serial("id").primaryKey(),
+        title: text("title").notNull(),
+        content: text("content").notNull(),
+        dateText: text("date_text"),
+        document: jsonb("document").$type<NewsDocument>(),
+        authorUserId: text("author_user_id"),
+        publishedAt: timestamp("published_at", { withTimezone: true })
+            .notNull()
+            .defaultNow(),
+        updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+        isPublished: boolean("is_published").notNull().default(true),
+    },
+    (table) => [index("idx_news_published_at").on(table.publishedAt)],
+);
+
+export type NewsTableInsert = typeof newsTable.$inferInsert;
+export type NewsTableSelect = typeof newsTable.$inferSelect;
 
 export const userAuthIdentityTable = pgTable(
     "user_auth_identity",

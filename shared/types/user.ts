@@ -23,6 +23,7 @@ export type ProfileResponse =
               linkedDiscord: boolean;
               usernameChangeTime: number;
               canUseDeveloper: boolean;
+              canManageNews: boolean;
           };
           gpBalance: number;
           thankYouGift?: {
