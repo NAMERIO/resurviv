@@ -96,11 +96,13 @@ export class Application {
         "#create-disable-airstrikes",
     );
     prestigeArenaDisablePerksBtn = $<HTMLButtonElement>("#create-disable-perks");
+    prestigeArenaDisableLootingBtn = $<HTMLButtonElement>("create-disable-looting");
     prestigeArenaBattleOptions = $("#battle-private-options");
     prestigeArenaBattleDisableAirstrikesBtn = $<HTMLButtonElement>(
         "#battle-disable-airstrikes",
     );
     prestigeArenaBattleDisablePerksBtn = $<HTMLButtonElement>("#battle-disable-perks");
+    prestigeArenaBattleDisableLootingBtn = $<HTMLButtonElement>("create-disable-looting");
     prestigeArenaPlayerCounter = $("#battle-player-counter");
     prestigeArenaPlayerCount = $("#battle-total");
     prestigeArenaPlayerMax = $("#battle-max");
@@ -777,6 +779,12 @@ export class Application {
                     !this.teamMenu.roomData.disablePerks,
                 );
             });
+            this.prestigeArenaDisableLootingBtn.on("click", () => {
+                this.setPrestigeArenaCreateOption(
+                    "disableLooting",
+                    !this.teamMenu.roomData.disableLooting,
+                );
+            });
             this.prestigeArenaBattleDisableAirstrikesBtn.on("click", () => {
                 this.setPrestigeArenaCreateOption(
                     "disableAirstrikes",
@@ -787,6 +795,12 @@ export class Application {
                 this.setPrestigeArenaCreateOption(
                     "disablePerks",
                     !this.teamMenu.roomData.disablePerks,
+                );
+            });
+            this.prestigeArenaBattleDisableLootingBtn.on("click", () => {
+                this.setPrestigeArenaCreateOption(
+                    "disableLooting",
+                    !this.teamMenu.roomData.disableLooting,
                 );
             });
             this.prestigeArenaCreateBtn.on("click", () => {
@@ -1515,6 +1529,10 @@ export class Application {
             "active",
             !!this.teamMenu.roomData.disablePerks,
         );
+        this.prestigeArenaDisableLootingBtn.toggleClass(
+            "active",
+            !!this.teamMenu.roomData.disableLooting,
+        );
         this.prestigeArenaBattleDisableAirstrikesBtn.toggleClass(
             "active",
             !!this.teamMenu.roomData.disableAirstrikes,
@@ -1522,6 +1540,10 @@ export class Application {
         this.prestigeArenaBattleDisablePerksBtn.toggleClass(
             "active",
             !!this.teamMenu.roomData.disablePerks,
+        );
+        this.prestigeArenaBattleDisableLootingBtn.toggleClass(
+            "active",
+            !!this.teamMenu.roomData.disableLooting,
         );
         this.prestigeArenaDisableAirstrikesBtn.attr(
             "aria-pressed",
@@ -1531,6 +1553,10 @@ export class Application {
             "aria-pressed",
             String(!!this.teamMenu.roomData.disablePerks),
         );
+        this.prestigeArenaDisableLootingBtn.attr(
+            "aria-pressed",
+            String(!!this.teamMenu.roomData.disableLooting),
+        );
         this.prestigeArenaBattleDisableAirstrikesBtn.attr(
             "aria-pressed",
             String(!!this.teamMenu.roomData.disableAirstrikes),
@@ -1539,11 +1565,16 @@ export class Application {
             "aria-pressed",
             String(!!this.teamMenu.roomData.disablePerks),
         );
+        this.prestigeArenaBattleDisableLootingBtn.attr(
+            "aria-pressed",
+            String(!!this.teamMenu.roomData.disableLooting),
+        );
         this.prestigeArenaDisableAirstrikesBtn.prop(
             "disabled",
             !canEdit || isBattleRoyale,
         );
         this.prestigeArenaDisablePerksBtn.prop("disabled", !canEdit || isBattleRoyale);
+        this.prestigeArenaDisableLootingBtn.prop("disabled", !canEdit || isBattleRoyale);
         this.prestigeArenaBattleDisableAirstrikesBtn.prop(
             "disabled",
             !canEdit || isBattleRoyale,
@@ -1552,10 +1583,14 @@ export class Application {
             "disabled",
             !canEdit || isBattleRoyale,
         );
+        this.prestigeArenaBattleDisableLootingBtn.prop(
+            "disabled",
+            !canEdit || isBattleRoyale,
+        );
     }
 
     setPrestigeArenaCreateOption(
-        prop: "disableAirstrikes" | "disablePerks",
+        prop: "disableAirstrikes" | "disablePerks" | "disableLooting",
         value: boolean,
     ) {
         if (
