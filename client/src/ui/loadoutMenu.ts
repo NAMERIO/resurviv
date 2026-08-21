@@ -1263,6 +1263,7 @@ export class LoadoutMenu {
             [EmoteCategory.Food]: this.localization.translate("emote-subcat-food"),
             [EmoteCategory.Animals]: this.localization.translate("emote-subcat-animals"),
             [EmoteCategory.Logos]: this.localization.translate("emote-subcat-logos"),
+            [EmoteCategory.Words]: this.localization.translate("emote-subcat-words"),
             [EmoteCategory.Other]: this.localization.translate("emote-subcat-other"),
             [EmoteCategory.Flags]: this.localization.translate("emote-subcat-flags"),
             [EmoteCategory.Default]: this.localization.translate("emote-subcat-default"),
