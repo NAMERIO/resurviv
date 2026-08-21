@@ -2088,6 +2088,7 @@ export class Player extends BaseGameObject {
 
         const streakDef = DamageStreakDefs[this.chosenStreakType];
         if (!streakDef) return;
+        if (streakDef.rewardType === "dash" && (this.downed || this.vehicle)) return;
 
         this.streakReady = false;
         this.streakActive = true;
@@ -2110,6 +2111,17 @@ export class Player extends BaseGameObject {
             const ammo = gunDef ? gunDef.maxClip : 30;
             this.weaponManager.setWeapon(slot, streakDef.rewardItem, ammo);
             this.weaponManager.setCurWeapIndex(slot, true, true, true);
+        } else if (streakDef.rewardType === "dash") {
+            this.dashTimeLeft = streakDef.duration;
+            this.dashSpeed = (streakDef.dashDistance ?? 12) / streakDef.duration;
+            const dashMovement =
+                this.touchMoveActive && this.touchMoveLen > 0
+                    ? this.touchMoveDir
+                    : v2.create(
+                          Number(this.moveRight) - Number(this.moveLeft),
+                          Number(this.moveUp) - Number(this.moveDown),
+                      );
+            this.dashDir = v2.normalizeSafe(dashMovement, this.dirNew);
         }
     }
 
@@ -2392,6 +2404,8 @@ export class Player extends BaseGameObject {
 
         this.streakReady = false;
         this.streakActive = false;
+        this.dashSpeed = 0;
+        this.dashTimeLeft = 0;
         this.streakDirty = true;
         this.weaponManager.setCurWeapIndex(GameConfig.WeaponSlot.Melee);
         this.weaponManager.showNextThrowable();
@@ -2700,6 +2714,8 @@ export class Player extends BaseGameObject {
         this.hasRoleHelmet = false;
         this.streakReady = false;
         this.streakActive = false;
+        this.dashSpeed = 0;
+        this.dashTimeLeft = 0;
         this.streakDirty = true;
 
         for (let i = 0; i < GameConfig.WeaponSlot.Count; i++) {
@@ -2869,6 +2885,9 @@ export class Player extends BaseGameObject {
     streakReady = false;
     streakActive = false;
     streakActiveTimer = 0;
+    dashSpeed = 0;
+    dashTimeLeft = 0;
+    dashDir = v2.create(1, 0);
     streakSavedWeapon: { slot: number; type: string; ammo: number } | null = null;
     streakGunSlot: number = -1;
     streakDirty = true;
@@ -3777,6 +3796,12 @@ export class Player extends BaseGameObject {
             );
         }
 
+        const isDashing = this.dashSpeed > 0 && this.dashTimeLeft > 0;
+        const movementDt = isDashing ? Math.min(dt, this.dashTimeLeft) : dt;
+        if (isDashing) {
+            v2.set(movement, this.dashDir);
+        }
+
         this.posOld = v2.copy(this.pos);
 
         const hasTreeClimbing = this.hasPerk("tree_climbing");
@@ -3791,6 +3816,12 @@ export class Player extends BaseGameObject {
         if (this.vehicle) {
             this.speed = Math.abs(this.vehicle.speed);
             steps = Math.round(math.max(this.speed * dt + 5, 5));
+        } else if (isDashing) {
+            // Spread the dash across its duration so it is visible while retaining the
+            // normal substep collision solver for walls and players.
+            this.speed = this.dashSpeed;
+            this.dashTimeLeft = Math.max(0, this.dashTimeLeft - dt);
+            steps = Math.round(math.max(this.speed * movementDt + 5, 5));
         } else if (movement.x !== 0 || movement.y !== 0) {
             this.recalculateSpeed(hasTreeClimbing);
             steps = Math.round(math.max(this.speed * dt + 5, 5));
@@ -3800,7 +3831,7 @@ export class Player extends BaseGameObject {
         }
         this.moveVel = v2.mul(movement, this.speed);
 
-        const speedToAdd = (this.speed / steps) * dt;
+        const speedToAdd = (this.speed / steps) * movementDt;
 
         const broadphaseRadius = math.max(
             math.max(
@@ -3811,7 +3842,7 @@ export class Player extends BaseGameObject {
         );
         const circle = collider.createCircle(
             this.pos,
-            broadphaseRadius + this.speed * dt,
+            broadphaseRadius + this.speed * movementDt,
         );
 
         const objs = this.game.grid.intersectCollider(circle);
@@ -6995,7 +7026,7 @@ export class Player extends BaseGameObject {
             this.pickedUpLoot = true;
         }
 
-        obj.destroy()
+        obj.destroy();
         this.msgsToSend.push({
             type: net.MsgType.Pickup,
             msg: pickupMsg,

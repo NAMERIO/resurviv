@@ -646,16 +646,18 @@ export class Account {
                 }
             }
 
-            const args: SetItemStatusRequest = {
-                status,
-                itemTypes,
-            };
             this.emit("items", this.items);
-            this.ajaxRequest("/api/user/set_item_status", args, (err) => {
-                if (err) {
-                    errorLogManager.storeGeneric("account", "set_item_status_error");
-                }
-            });
+            for (let i = 0; i < itemTypes.length; i += 50) {
+                const args: SetItemStatusRequest = {
+                    status,
+                    itemTypes: itemTypes.slice(i, i + 50),
+                };
+                this.ajaxRequest("/api/user/set_item_status", args, (err) => {
+                    if (err) {
+                        errorLogManager.storeGeneric("account", "set_item_status_error");
+                    }
+                });
+            }
         }
     }
 

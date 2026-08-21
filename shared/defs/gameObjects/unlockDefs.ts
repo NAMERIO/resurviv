@@ -16,7 +16,12 @@ export const privateOutfits = [
 
 const _allowedHealEffects = ["heal_basic", "boost_basic"];
 const _allowedDeathEffects = ["death_none", "death_basic"];
-const _allowedStreaks = ["streak_rapid_fire", "streak_heavy_hitter", "streak_juggernaut"];
+const _allowedStreaks = [
+    "streak_rapid_fire",
+    "streak_heavy_hitter",
+    "streak_juggernaut",
+    "streak_dash",
+];
 //  const _allowedGunSkins = [
 //     "mosin_gilded"
 //     "mosin_camo"

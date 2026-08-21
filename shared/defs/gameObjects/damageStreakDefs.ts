@@ -2,9 +2,10 @@ export interface DamageStreakDef {
     readonly type: "streak";
     readonly name: string;
     readonly lore: string;
-    readonly rewardType: "perk" | "gun";
+    readonly rewardType: "perk" | "gun" | "dash";
     readonly rewardItem: string;
     readonly duration: number;
+    readonly dashDistance?: number;
     readonly lootImg: {
         sprite: string;
         tint: number;
@@ -73,6 +74,23 @@ export const DamageStreakDefs: Record<string, DamageStreakDef> = {
             tint: 0xffffff,
             border: "loot-circle-outer-03.img",
             borderTint: 0xff0000,
+            scale: 0.275,
+        },
+        sound: { activate: "perk_pickup_01" },
+    },
+    streak_dash: {
+        type: "streak",
+        name: "Dash",
+        lore: "Dash in your movement direction, or forward while standing still!",
+        rewardType: "dash",
+        rewardItem: "",
+        duration: 0.3,
+        dashDistance: 14,
+        lootImg: {
+            sprite: "loot-perk-windwalk.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0x55ccff,
             scale: 0.275,
         },
         sound: { activate: "perk_pickup_01" },

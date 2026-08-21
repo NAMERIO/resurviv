@@ -1699,7 +1699,7 @@ export class LoadoutMenu {
             for (let i = this.localAckItems.length - 1; i >= 0; i--) {
                 const s = this.localAckItems[i];
                 const n = GameObjectDefs[s.type];
-                if (n.type == category.gameType) {
+                if (n?.type == category.gameType) {
                     this.localAckItems.splice(i, 1);
                 }
             }
