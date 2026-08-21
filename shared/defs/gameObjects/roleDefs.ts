@@ -602,6 +602,6 @@ export const RoleDefs: Record<string, RoleDef> = {
         }),
         announce: false,
         sound: { assign: "spawn_01" },
-        perks: ["windwalk","melee_runner", "streak_juggernaut_effect"]
+        perks: ["windwalk", "melee_runner", "streak_juggernaut_effect"]
     }
 };

@@ -851,7 +851,7 @@ const SkinDefs = {
         },
     }),
     helmet03_samurai: defineSkin("helmet03", {
-        name: "Yusha no Kabuto",     // Is this translation accurate lol
+        name: "Yuki no Kabuto", // I think this is correct? (The translation)
         noDrop: true,
         skinImg: {
             baseTint: 0xffffff,
