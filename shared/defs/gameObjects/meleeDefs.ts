@@ -25,6 +25,7 @@ export interface MeleeDef {
     anim: {
         idlePose: string;
         attackAnims: string[];
+        poseAnims?: string[];
         deploy?: string;
     };
     sound: Record<string, string>;
@@ -1127,6 +1128,7 @@ const BaseDefs: Record<string, MeleeDef> = {
         anim: {
             idlePose: "meleeLasrSwrd",
             attackAnims: ["lasrSwrdSwing"],
+            poseAnims: ["lasrSwrd_pose_1", "lasrSwrd_pose_2", "lasrSwrd_pose_3"],
         },
         sound: {
             pickup: "frag_pickup_01",
@@ -1150,7 +1152,7 @@ const BaseDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
             leftHandOntop: true,
         },
-        /* Commenting out for now because triggering this causes the involved players and anyone near them or seeing it to freeze
+        /* Commenting out for now because this doesn't properly trigger sound or anim
         reflectArea: {
             offset: { x: 1.75, y: 0.0 },
             rad: 1,
@@ -3232,11 +3234,11 @@ const SkinDefs: Record<string, MeleeDef> = {
             pos: { x: -10.5, y: -3 },
         },
     }),
-    lasr_swrd_02: defineMeleeSkin("lasr_swrd", {
+    lasr_swrd_02: defineMeleeSkin("lasr_swrd_01", {
         lootImg: { sprite: "loot-melee-lasrswrd-02.img" },
         worldImg: { sprite: "loot-melee-lasrswrd-02.img" },
     }),
-    lasr_swrd_03: defineMeleeSkin("lasr_swrd", {
+    lasr_swrd_03: defineMeleeSkin("lasr_swrd_01", {
         lootImg: { sprite: "loot-melee-lasrswrd-03.img" },
         worldImg: { sprite: "loot-melee-lasrswrd-03.img" },
     }),
