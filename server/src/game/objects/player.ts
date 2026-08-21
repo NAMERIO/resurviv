@@ -2195,7 +2195,7 @@ export class Player extends BaseGameObject {
                 streakDef &&
                 (streakDef.rewardItem === "streak_juggernaut_effect" ||
                     streakDef.rewardItem === "samurai")
-                ) {
+            ) {
                 this.health +=
                     DamageStreakProperties.streak_juggernaut_effect.healthRegen * dt;
             }
@@ -5736,8 +5736,8 @@ export class Player extends BaseGameObject {
             if (this.streakSavedWeapons.length > 0) {
                 for (const weapon of this.streakSavedWeapons) {
                     this.weaponManager.setWeapon(weapon.slot, weapon.type, weapon.ammo);
-                this.streakSavedWeapons = [];
-                }   
+                    this.streakSavedWeapons = [];
+                }
             }
             this.streakGunSlot = -1;
             this.deactivateStreak();
@@ -6814,7 +6814,7 @@ export class Player extends BaseGameObject {
                     if (
                         this.streakActive &&
                         this.streakSavedWeapons.some(
-                            (weapon) => weapon.slot === newGunIdx
+                            (weapon) => weapon.slot === newGunIdx,
                         ) &&
                         this.chosenStreakType === "streak_heavy_hitter"
                     ) {
