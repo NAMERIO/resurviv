@@ -6982,7 +6982,6 @@ export class Player extends BaseGameObject {
                 }
                 break;
             case "outfit":
-
                 if (this.streakActive && this.chosenStreakType === "streak_samurai") {
                     amountLeft = 1;
                     pickupMsg.type = net.PickupMsgType.StreakPerkActive;
