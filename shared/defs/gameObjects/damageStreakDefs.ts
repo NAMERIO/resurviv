@@ -87,7 +87,7 @@ export const DamageStreakDefs: Record<string, DamageStreakDef> = {
         duration: 0.3,
         dashDistance: 14,
         lootImg: {
-            sprite: "loot-perk-windwalk.img",
+            sprite: "loot-perk-dash.img",
             tint: 0xffffff,
             border: "loot-circle-outer-03.img",
             borderTint: 0x55ccff,
