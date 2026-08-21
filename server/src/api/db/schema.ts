@@ -1,12 +1,15 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
     bigint,
     boolean,
+    check,
+    foreignKey,
     index,
     integer,
     json,
     jsonb,
     pgTable,
+    primaryKey,
     serial,
     text,
     timestamp,
@@ -17,6 +20,7 @@ import { TeamMode } from "../../../../shared/gameConfig";
 import type { ClanFont, ClanMemberRole, ClanRegion } from "../../../../shared/types/clan";
 import type { NewsDocument } from "../../../../shared/types/news";
 import { GameModeStatus } from "../../../../shared/types/stats";
+import type { TournamentState } from "../../../../shared/types/tournament";
 import { ItemStatus, type Loadout, loadout } from "../../../../shared/utils/loadout";
 
 export const sessionTable = pgTable("session", {
@@ -76,6 +80,59 @@ export const newsTable = pgTable(
 
 export type NewsTableInsert = typeof newsTable.$inferInsert;
 export type NewsTableSelect = typeof newsTable.$inferSelect;
+
+export const tournamentBracketStateTable = pgTable("tournament_bracket_state", {
+    id: integer("id").primaryKey(),
+    state: jsonb("state").$type<TournamentState>().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const tournamentPredictionsTable = pgTable(
+    "tournament_predictions",
+    {
+        tournamentId: integer("tournament_id").notNull().default(1),
+        userId: text("user_id").notNull(),
+        matchId: integer("match_id").notNull(),
+        predictedPlayer: text("predicted_player").notNull(),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        primaryKey({
+            columns: [table.tournamentId, table.userId, table.matchId],
+            name: "tournament_predictions_pkey",
+        }),
+        foreignKey({
+            columns: [table.userId],
+            foreignColumns: [usersTable.id],
+            name: "tournament_predictions_user_id_fkey",
+        }).onDelete("cascade"),
+        check(
+            "tournament_predictions_match_id_check",
+            sql`${table.matchId} BETWEEN 0 AND 30`,
+        ),
+    ],
+);
+
+export const tournamentPredictionRewardsTable = pgTable(
+    "tournament_prediction_rewards",
+    {
+        tournamentId: integer("tournament_id").notNull().default(1),
+        userId: text("user_id").notNull(),
+        gpAwarded: integer("gp_awarded").notNull().default(5000),
+        awardedAt: timestamp("awarded_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        primaryKey({
+            columns: [table.tournamentId, table.userId],
+            name: "tournament_prediction_rewards_pkey",
+        }),
+        foreignKey({
+            columns: [table.userId],
+            foreignColumns: [usersTable.id],
+            name: "tournament_prediction_rewards_user_id_fkey",
+        }).onDelete("cascade"),
+    ],
+);
 
 export const userAuthIdentityTable = pgTable(
     "user_auth_identity",
