@@ -2086,7 +2086,7 @@ export class Player extends BaseGameObject {
         if (!this.streakReady) return;
         if (this.streakActive) return;
 
-        if(this.game.disablePerks) {
+        if (this.game.disablePerks) {
             const disableStreakMsg = new net.PickupMsg();
             disableStreakMsg.type = net.PickupMsgType.PerksDisabled;
 
