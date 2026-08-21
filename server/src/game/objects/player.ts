@@ -2103,11 +2103,11 @@ export class Player extends BaseGameObject {
             const slot = this.curWeapIdx <= 1 ? this.curWeapIdx : 0;
             this.streakGunSlot = slot;
             this.streakSavedWeapons = [
-                    {
+                {
                     slot,
                     type: this.weapons[slot].type,
                     ammo: this.weapons[slot].ammo,
-                }
+                },
             ];
             const gunDef = GameObjectDefs[streakDef.rewardItem] as GunDef;
             const ammo = gunDef ? gunDef.maxClip : 30;
@@ -2192,14 +2192,13 @@ export class Player extends BaseGameObject {
 
             const streakDef = DamageStreakDefs[this.chosenStreakType];
             if (
-                streakDef && 
-                (streakDef.rewardItem === "streak_juggernaut_effect" || 
+                streakDef &&
+                (streakDef.rewardItem === "streak_juggernaut_effect" ||
                     streakDef.rewardItem === "samurai")
-                ) { 
+                ) {
                 this.health +=
                     DamageStreakProperties.streak_juggernaut_effect.healthRegen * dt;
-                }
-            
+            }
 
             if (this.streakActiveTimer <= 0) {
                 this.deactivateStreak();
@@ -5735,15 +5734,10 @@ export class Player extends BaseGameObject {
                 this.weaponManager.setWeapon(this.streakGunSlot, "", 0);
             }
             if (this.streakSavedWeapons.length > 0) {
-                for(const weapon of this.streakSavedWeapons){
-                    this.weaponManager.setWeapon(
-                        weapon.slot,
-                        weapon.type,
-                        weapon.ammo,
-                    );
+                for (const weapon of this.streakSavedWeapons) {
+                    this.weaponManager.setWeapon(weapon.slot, weapon.type, weapon.ammo);
                 this.streakSavedWeapons = [];
-            }
-               
+                }   
             }
             this.streakGunSlot = -1;
             this.deactivateStreak();
@@ -6790,7 +6784,7 @@ export class Player extends BaseGameObject {
                 }
                 break;
             case "melee":
-                if (this.streakActive && this.chosenStreakType === "streak_samurai"){
+                if (this.streakActive && this.chosenStreakType === "streak_samurai") {
                     amountLeft = 1;
                     pickupMsg.type = net.PickupMsgType.StreakPerkActive;
                     break;
@@ -6819,7 +6813,9 @@ export class Player extends BaseGameObject {
 
                     if (
                         this.streakActive &&
-                        this.streakSavedWeapons.some((weapon) => weapon.slot === newGunIdx) &&
+                        this.streakSavedWeapons.some(
+                            (weapon) => weapon.slot === newGunIdx
+                        ) &&
                         this.chosenStreakType === "streak_heavy_hitter"
                     ) {
                         amountLeft = 1;
@@ -6827,7 +6823,7 @@ export class Player extends BaseGameObject {
                         break;
                     }
 
-                    if (this.streakActive && this.chosenStreakType === "streak_samurai"){
+                    if (this.streakActive && this.chosenStreakType === "streak_samurai") {
                         amountLeft = 1;
                         pickupMsg.type = net.PickupMsgType.StreakPerkActive;
                         break;
@@ -6932,7 +6928,7 @@ export class Player extends BaseGameObject {
                     const thisLevel = this.getGearLevel(thisType);
                     amountLeft = 1;
 
-                    if (this.streakActive && this.chosenStreakType === "streak_samurai"){
+                    if (this.streakActive && this.chosenStreakType === "streak_samurai") {
                         amountLeft = 1;
                         pickupMsg.type = net.PickupMsgType.StreakPerkActive;
                         break;
@@ -6987,7 +6983,7 @@ export class Player extends BaseGameObject {
                 break;
             case "outfit":
 
-                if (this.streakActive && this.chosenStreakType === "streak_samurai"){
+                if (this.streakActive && this.chosenStreakType === "streak_samurai") {
                     amountLeft = 1;
                     pickupMsg.type = net.PickupMsgType.StreakPerkActive;
                     break;
