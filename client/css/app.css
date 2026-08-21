@@ -5581,10 +5581,12 @@ a:active {
 }
 
 #modal-prestige-arena #modal-create-window .private-option-buttons {
-  display: grid;
-  gap: 8px;
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
   grid-area: options;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  justify-content: flex-start;
   margin: 0;
 }
 
@@ -6095,26 +6097,61 @@ a:active {
 }
 
 #modal-prestige-arena .private-option-toggle {
-  background: #4f4f4f;
+  align-items: center;
+  background: #474747;
   border: 0;
-  border-radius: 4px;
+  border-radius: 3px;
+  box-shadow: inset 0 -3px #353535;
   color: #ffffff;
   cursor: pointer;
+  display: inline-flex;
   font-family: Roboto Condensed;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
-  height: 38px;
-  line-height: 18px;
+  gap: 7px;
+  height: 34px;
+  justify-content: flex-start;
+  line-height: 16px;
+  min-width: 132px;
+  padding: 4px 9px 6px 5px;
+}
+
+#modal-prestige-arena .private-option-toggle::before {
+  background-color: rgba(0, 0, 0, 0.2);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 2px;
+  content: "";
+  flex: 0 0 25px;
+  height: 24px;
+}
+
+#modal-prestige-arena #create-disable-airstrikes::before,
+#modal-prestige-arena #battle-disable-airstrikes::before {
+  background-image: url(/img/gui/ping-map-airstrike.svg);
+}
+
+#modal-prestige-arena #create-disable-perks::before,
+#modal-prestige-arena #battle-disable-perks::before {
+  background-image: url(/img/loot/loot-perk-firepower.svg);
+}
+
+#modal-prestige-arena .private-option-toggle:not(:disabled):hover {
+  filter: brightness(85%);
 }
 
 #modal-prestige-arena .private-option-toggle.active {
   background: #d45656;
-  box-shadow: inset 0 -2px #943c3c;
+  box-shadow: inset 0 -3px #943c3c;
+  color: #ffffff;
 }
 
 #modal-prestige-arena .private-option-toggle:disabled {
   cursor: default;
-  opacity: 0.55;
+  filter: none;
+  opacity: 0.72;
 }
 
 #modal-prestige-arena #modal-battle-window.arena-joined-layout {
@@ -6301,10 +6338,12 @@ a:active {
 }
 
 #modal-prestige-arena #battle-private-options {
-  display: grid;
-  gap: 8px;
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
   grid-area: options;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  justify-content: flex-start;
   margin: 0;
 }
 

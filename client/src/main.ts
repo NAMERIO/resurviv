@@ -1503,10 +1503,7 @@ export class Application {
             "hide",
             isBattleRoyale,
         );
-        this.prestigeArenaBattleOptions.toggleClass(
-            "hide",
-            isBattleRoyale || !this.teamMenu.isLeader,
-        );
+        this.prestigeArenaBattleOptions.toggleClass("hide", isBattleRoyale);
         this.prestigeArenaDisableAirstrikesBtn.toggleClass(
             "active",
             !!this.teamMenu.roomData.disableAirstrikes,
@@ -3247,7 +3244,10 @@ export class Application {
         this.syncPrestigeArenaCreatePaneVisibility();
         this.prestigeArenaBattleInputGroup.css("display", "none");
         this.prestigeArenaPlayerCounter.css("display", "flex");
-        this.prestigeArenaBattleOptions.toggleClass("hide", !this.teamMenu.isLeader);
+        this.prestigeArenaBattleOptions.toggleClass(
+            "hide",
+            this.isBattleRoyaleMiniGame(this.teamMenu.roomData.miniGame),
+        );
         if (
             this.teamMenu.isLeader &&
             !this.prestigeArenaBattleModeSelection.children().length
