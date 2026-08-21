@@ -376,6 +376,7 @@ const _allowedOutfits = [
     // "outfitTopOnePercent",
     // "outfitTopTwoPercent",
     // "outfitTopThreePercent",
+    // "outfitSzn2",
     // "outfitTurkey",
     // "outfitGrich",
     // "outfitSnowman",
