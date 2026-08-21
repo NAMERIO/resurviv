@@ -6138,6 +6138,11 @@ a:active {
   background-image: url(/img/loot/loot-perk-firepower.svg);
 }
 
+#modal-prestige-arena #create-hide-enemies::before,
+#modal-prestige-arena #battle-hide-enemies::before {
+  background-image: url(/img/gui/mag-glass.svg);
+}
+
 #modal-prestige-arena .private-option-toggle:not(:disabled):hover {
   filter: brightness(85%);
 }
@@ -6246,8 +6251,9 @@ a:active {
     "mode"
     "type"
     "game"
+    "options"
     "actions";
-  grid-template-rows: 52px 44px 50px 50px 50px 50px auto;
+  grid-template-rows: 52px 44px 50px 50px 50px 50px auto auto;
 }
 
 #modal-prestige-arena #modal-create-window.arena-battle-royale:not(.hide) {
@@ -6255,10 +6261,10 @@ a:active {
     "region region"
     "mode type"
     "game game"
+    "options options"
     "create create";
 }
 
-#modal-prestige-arena #modal-create-window.arena-battle-royale .private-option-buttons,
 #modal-prestige-arena #modal-create-window.arena-battle-royale .create-team-count-group,
 #modal-prestige-arena #modal-create-window.arena-battle-royale .create-impostors-group {
   display: none !important;

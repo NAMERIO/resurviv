@@ -53,6 +53,7 @@ export interface RoomData {
     amongUsImpostorCount: AmongUsImpostorCount;
     disableAirstrikes: boolean;
     disablePerks: boolean;
+    showEnemiesOnMap: boolean;
 }
 
 //
@@ -148,6 +149,7 @@ export const zClientRoomData = z.object({
     amongUsImpostorCount: z.number().int().min(1).max(3).optional(),
     disableAirstrikes: z.boolean().optional(),
     disablePerks: z.boolean().optional(),
+    showEnemiesOnMap: z.boolean().optional(),
 });
 
 export type ClientRoomData = z.infer<typeof zClientRoomData>;

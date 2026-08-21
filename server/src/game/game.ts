@@ -98,6 +98,7 @@ export class Game {
     amongUsImpostorCount: AmongUsImpostorCount;
     disableAirstrikes: boolean;
     disablePerks: boolean;
+    showEnemiesOnMap: boolean;
     infectedHumansWon = false;
     hideAndSeekHidersWon = false;
     amongUsWinningRole?: AmongUsRole;
@@ -196,6 +197,7 @@ export class Game {
                 : DefaultAmongUsImpostorCount;
         this.disableAirstrikes = !!config.disableAirstrikes;
         this.disablePerks = !!config.disablePerks;
+        this.showEnemiesOnMap = config.showEnemiesOnMap !== false;
 
         this.teamMode = config.teamMode;
         this.mapName = config.mapName;
@@ -894,6 +896,7 @@ export class Game {
             amongUsImpostorCount: this.amongUsImpostorCount,
             disableAirstrikes: this.disableAirstrikes,
             disablePerks: this.disablePerks,
+            showEnemiesOnMap: this.showEnemiesOnMap,
             canJoin: this.canJoin,
             aliveCount: this.aliveCount,
             startedTime: this.startedTime,

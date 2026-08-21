@@ -409,6 +409,7 @@ export class TeamMenu {
                     this.roomData.amongUsImpostorCount || DefaultAmongUsImpostorCount,
                 disableAirstrikes: !!this.roomData.disableAirstrikes,
                 disablePerks: !!this.roomData.disablePerks,
+                showEnemiesOnMap: this.roomData.showEnemiesOnMap !== false,
                 findingGame: false,
                 lastError: "",
             } as RoomData;
@@ -573,6 +574,7 @@ export class TeamMenu {
                     this.roomData.amongUsImpostorCount = ourRoomData.amongUsImpostorCount;
                     this.roomData.disableAirstrikes = ourRoomData.disableAirstrikes;
                     this.roomData.disablePerks = ourRoomData.disablePerks;
+                    this.roomData.showEnemiesOnMap = ourRoomData.showEnemiesOnMap;
                 }
                 this.refreshUi();
                 this.onStateUpdated?.();

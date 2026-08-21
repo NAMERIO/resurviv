@@ -90,6 +90,7 @@ class GameServer {
             ),
             disableAirstrikes: !!data.disableAirstrikes,
             disablePerks: !!data.disablePerks,
+            showEnemiesOnMap: data.showEnemiesOnMap !== false,
             playerData: data.playerData,
             groupHash: data.groupHash,
             targetGameId: data.targetGameId,

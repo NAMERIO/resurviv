@@ -96,11 +96,13 @@ export class Application {
         "#create-disable-airstrikes",
     );
     prestigeArenaDisablePerksBtn = $<HTMLButtonElement>("#create-disable-perks");
+    prestigeArenaHideEnemiesBtn = $<HTMLButtonElement>("#create-hide-enemies");
     prestigeArenaBattleOptions = $("#battle-private-options");
     prestigeArenaBattleDisableAirstrikesBtn = $<HTMLButtonElement>(
         "#battle-disable-airstrikes",
     );
     prestigeArenaBattleDisablePerksBtn = $<HTMLButtonElement>("#battle-disable-perks");
+    prestigeArenaBattleHideEnemiesBtn = $<HTMLButtonElement>("#battle-hide-enemies");
     prestigeArenaPlayerCounter = $("#battle-player-counter");
     prestigeArenaPlayerCount = $("#battle-total");
     prestigeArenaPlayerMax = $("#battle-max");
@@ -777,6 +779,12 @@ export class Application {
                     !this.teamMenu.roomData.disablePerks,
                 );
             });
+            this.prestigeArenaHideEnemiesBtn.on("click", () => {
+                this.setPrestigeArenaCreateOption(
+                    "showEnemiesOnMap",
+                    this.teamMenu.roomData.showEnemiesOnMap === false,
+                );
+            });
             this.prestigeArenaBattleDisableAirstrikesBtn.on("click", () => {
                 this.setPrestigeArenaCreateOption(
                     "disableAirstrikes",
@@ -787,6 +795,12 @@ export class Application {
                 this.setPrestigeArenaCreateOption(
                     "disablePerks",
                     !this.teamMenu.roomData.disablePerks,
+                );
+            });
+            this.prestigeArenaBattleHideEnemiesBtn.on("click", () => {
+                this.setPrestigeArenaCreateOption(
+                    "showEnemiesOnMap",
+                    this.teamMenu.roomData.showEnemiesOnMap === false,
                 );
             });
             this.prestigeArenaCreateBtn.on("click", () => {
@@ -1499,11 +1513,8 @@ export class Application {
         const isBattleRoyale = this.isBattleRoyaleMiniGame(
             this.teamMenu.roomData.miniGame || this.prestigeArenaSelectedMiniGame,
         );
-        $("#modal-create-window .private-option-buttons").toggleClass(
-            "hide",
-            isBattleRoyale,
-        );
-        this.prestigeArenaBattleOptions.toggleClass("hide", isBattleRoyale);
+        $("#modal-create-window .private-option-buttons").removeClass("hide");
+        this.prestigeArenaBattleOptions.removeClass("hide");
         this.prestigeArenaDisableAirstrikesBtn.toggleClass(
             "active",
             !!this.teamMenu.roomData.disableAirstrikes,
@@ -1520,6 +1531,9 @@ export class Application {
             "active",
             !!this.teamMenu.roomData.disablePerks,
         );
+        const enemiesHidden = this.teamMenu.roomData.showEnemiesOnMap === false;
+        this.prestigeArenaHideEnemiesBtn.toggleClass("active", enemiesHidden);
+        this.prestigeArenaBattleHideEnemiesBtn.toggleClass("active", enemiesHidden);
         this.prestigeArenaDisableAirstrikesBtn.attr(
             "aria-pressed",
             String(!!this.teamMenu.roomData.disableAirstrikes),
@@ -1536,6 +1550,11 @@ export class Application {
             "aria-pressed",
             String(!!this.teamMenu.roomData.disablePerks),
         );
+        this.prestigeArenaHideEnemiesBtn.attr("aria-pressed", String(enemiesHidden));
+        this.prestigeArenaBattleHideEnemiesBtn.attr(
+            "aria-pressed",
+            String(enemiesHidden),
+        );
         this.prestigeArenaDisableAirstrikesBtn.prop(
             "disabled",
             !canEdit || isBattleRoyale,
@@ -1549,10 +1568,15 @@ export class Application {
             "disabled",
             !canEdit || isBattleRoyale,
         );
+        this.prestigeArenaHideEnemiesBtn.prop("disabled", !canEdit);
+        this.prestigeArenaBattleHideEnemiesBtn.prop(
+            "disabled",
+            !canEdit,
+        );
     }
 
     setPrestigeArenaCreateOption(
-        prop: "disableAirstrikes" | "disablePerks",
+        prop: "disableAirstrikes" | "disablePerks" | "showEnemiesOnMap",
         value: boolean,
     ) {
         if (

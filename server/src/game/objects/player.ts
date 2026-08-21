@@ -449,7 +449,7 @@ export class PlayerBarn {
             }
         }
 
-        if (this.game.isTeamMode || this.game.map.factionMode) {
+        if (this.game.isTeamMode || this.game.map.factionMode || this.game.arenaPrivate) {
             this.playerStatusTicker += dt;
         }
 
@@ -6636,13 +6636,16 @@ export class Player extends BaseGameObject {
                       p.arenaTeam === this.arenaTeam
                     : false;
             const arenaShowsAllPlayers =
-                this.game.arenaPrivate && !isBattleRoyaleMapName(this.game.mapName);
-            const visible =
-                this.game.arenaPrivate && hideAndSeekSettings && this.arenaTeam
-                    ? hideAndSeekVisible
-                    : arenaShowsAllPlayers ||
-                      (!hiddenByDebug &&
-                          (p.teamId === this.teamId || p.timeUntilHidden > 0));
+                this.game.arenaPrivate && this.game.showEnemiesOnMap;
+            const arenaHidesEnemies =
+                this.game.arenaPrivate && !this.game.showEnemiesOnMap;
+            const visible = arenaHidesEnemies
+                ? p === this || (!hiddenByDebug && p.teamId === this.teamId)
+                : this.game.arenaPrivate && hideAndSeekSettings && this.arenaTeam
+                  ? hideAndSeekVisible
+                  : arenaShowsAllPlayers ||
+                    (!hiddenByDebug &&
+                        (p.teamId === this.teamId || p.timeUntilHidden > 0));
             return {
                 hasData:
                     (arenaShowsAllPlayers && visible) ||
