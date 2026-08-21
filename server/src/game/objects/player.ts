@@ -6995,7 +6995,7 @@ export class Player extends BaseGameObject {
             this.pickedUpLoot = true;
         }
 
-        obj.destroy()
+        obj.destroy();
         this.msgsToSend.push({
             type: net.MsgType.Pickup,
             msg: pickupMsg,

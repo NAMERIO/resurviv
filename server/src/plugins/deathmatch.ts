@@ -185,15 +185,23 @@ export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
             const weapon = killer.weapons[slot];
             if (weapon.type) {
                 const gunDef = GameObjectDefs[weapon.type] as GunDef;
-                if(killer.hasPerk("firepower")){
+                if (killer.hasPerk("firepower")) {
                     killer.weapons[slot] = {
                         ...weapon,
-                        ammo: calculateAmmoToGive(weapon.type, weapon.ammo, gunDef.extendedClip),
+                        ammo: calculateAmmoToGive(
+                            weapon.type,
+                            weapon.ammo,
+                            gunDef.extendedClip,
+                        ),
                     };
-                } else{
+                } else {
                     killer.weapons[slot] = {
                         ...weapon,
-                        ammo: calculateAmmoToGive(weapon.type, weapon.ammo, gunDef.maxClip),
+                        ammo: calculateAmmoToGive(
+                            weapon.type,
+                            weapon.ammo,
+                            gunDef.maxClip,
+                        ),
                     };
                 }
             }
