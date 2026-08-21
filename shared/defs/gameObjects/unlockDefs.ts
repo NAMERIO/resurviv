@@ -329,7 +329,7 @@ const _allowedOutfits = [
     // "outfitVillageNinja",
     // "outfitDragonTails",
     // "outfitGreenTeaRex",
-    // "outfitToxicFire,"
+    // "outfitToxicFire",
     // "outfitBase",
     // "outfitAuresis",
     // "outfitPython",
@@ -349,7 +349,7 @@ const _allowedOutfits = [
     // "outfitPlaqueDoctor",
     // "outfitAutumnSweater",
     // "outfitForestPlaid",
-    // "outfitVitaminD"
+    // "outfitVitaminD",
     // "outfitCupcake",
     // "outfitPaintSplat",
     // "outfitGoldenWaffle",
