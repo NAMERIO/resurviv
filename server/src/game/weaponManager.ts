@@ -767,7 +767,7 @@ export class WeaponManager {
 
         if (
             this.player.streakActive &&
-            this.player.streakSavedWeapon?.slot === weapIdx &&
+            this.player.streakSavedWeapons.some((weapon) => weapon.slot === weapIdx) &&
             this.player.chosenStreakType === "streak_heavy_hitter"
         )
             return;
@@ -779,7 +779,7 @@ export class WeaponManager {
     replaceGun(idx: number, type: string): void {
         if (
             this.player.streakActive &&
-            this.player.streakSavedWeapon?.slot === idx &&
+            this.player.streakSavedWeapons.some((weapon) => weapon.slot === idx) &&
             this.player.chosenStreakType === "streak_heavy_hitter"
         ) {
             return;

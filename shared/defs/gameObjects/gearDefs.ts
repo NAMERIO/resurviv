@@ -850,6 +850,17 @@ const SkinDefs = {
             rot: 0.5 * Math.PI,
         },
     }),
+    helmet03_samurai: defineSkin("helmet03", {
+        name: "Yusha no Kabuto",     // Is this translation accurate lol
+        noDrop: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseTintRed: 0xffffff,
+            baseTintBlue: 0xffffff,
+            baseSprite: "player-helmet-samurai.img",
+            spriteScale: 0.3,
+        },
+    }),
     helmet03_moon: defineSkin("helmet03", {
         name: "Tsukuyomi no Kabuto",
         skinImg: {

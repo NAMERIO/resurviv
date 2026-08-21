@@ -595,4 +595,13 @@ export const RoleDefs: Record<string, RoleDef> = {
         guiImg: "img/gui/role-assault.svg",
         color: 0xffec17,
     },
+    samurai: {
+        type: "role",
+        defaultItems: createDefaultItems({
+            helmet: "helmet03_samurai",
+        }),
+        announce: false,
+        sound: { assign: "spawn_01" },
+        perks: ["windwalk","melee_runner", "streak_juggernaut_effect"]
+    }
 };
