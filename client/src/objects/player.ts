@@ -1707,6 +1707,10 @@ export class Player implements AbstractObject {
                     particle: "heart_pull",
                     sound: "ability_stim_01",
                 },
+                [HasteType.Dash]: {
+                    particle: "dash_wind",
+                    sound: "dash_whoosh",
+                },
             };
             const fx = hasteEffects[this.m_netData.m_hasteType];
 
@@ -1724,6 +1728,8 @@ export class Player implements AbstractObject {
             this.hasteEmitter = particleBarn.addEmitter(fx.particle, {
                 pos: this.m_pos,
                 layer: this.layer,
+                duration: this.m_netData.m_hasteType === HasteType.Dash ? 0.3 : undefined,
+                scale: this.m_netData.m_hasteType === HasteType.Dash ? 1.75 : 1,
             });
             this.hasteSeq = this.m_netData.m_hasteSeq;
         } else if (!this.m_netData.m_hasteType && this.hasteEmitter) {

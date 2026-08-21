@@ -2114,6 +2114,7 @@ export class Player extends BaseGameObject {
         } else if (streakDef.rewardType === "dash") {
             this.dashTimeLeft = streakDef.duration;
             this.dashSpeed = (streakDef.dashDistance ?? 12) / streakDef.duration;
+            this.giveHaste(GameConfig.HasteType.Dash, streakDef.duration);
             const dashMovement =
                 this.touchMoveActive && this.touchMoveLen > 0
                     ? this.touchMoveDir
@@ -8018,7 +8019,10 @@ export class Player extends BaseGameObject {
             this.speed -= GameConfig.player.cookSpeedPenalty;
         }
 
-        if (this.hasteType != GameConfig.HasteType.None) {
+        if (
+            this.hasteType != GameConfig.HasteType.None &&
+            this.hasteType != GameConfig.HasteType.Dash
+        ) {
             this.speed += GameConfig.player.hasteSpeedBonus;
         }
 

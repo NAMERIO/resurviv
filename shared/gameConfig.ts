@@ -83,6 +83,7 @@ export enum HasteType {
     Takedown,
     Inspire,
     HeartPull,
+    Dash,
     Count,
 }
 

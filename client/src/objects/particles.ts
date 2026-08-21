@@ -4134,6 +4134,15 @@ const EmitterDefs: Record<string, EmitterDef> = {
         rot: 0,
         maxCount: Number.MAX_VALUE,
     },
+    dash_wind: {
+        particle: "leaf",
+        rate: new Range(0.05, 0.06),
+        radius: 1.5,
+        speed: new Range(1, 1.5),
+        angle: 0,
+        rot: 0,
+        maxCount: 6,
+    },
     takedown: {
         particle: "takedownStim",
         rate: new Range(0.1, 0.12),

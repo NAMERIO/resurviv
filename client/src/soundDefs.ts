@@ -1643,6 +1643,10 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
             path: "audio/sfx/ability_stim_01.mp3",
             volume: 4,
         },
+        dash_whoosh: {
+            path: "audio/sfx/dash_whoosh.mp3",
+            volume: 1.5,
+        },
         xp_drop_01: {
             path: "audio/sfx/xp_drop_01.mp3",
             volume: 1.25,
