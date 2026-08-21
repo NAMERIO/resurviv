@@ -2026,6 +2026,7 @@ export class UiManager2 {
             [PickupMsgType.StreakPerkActive]: "streak-perk-active",
             [PickupMsgType.PerksDisabled]: "perks-disabled",
             [PickupMsgType.StrobesDisabled]: "strobes-disabled",
+            [PickupMsgType.LootingDisabled]: "looting-disabled",
         };
         const key = typeMap[type] || typeMap[PickupMsgType.Full];
         return this.localization.translate(key);

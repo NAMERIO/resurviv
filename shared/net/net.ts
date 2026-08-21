@@ -382,6 +382,7 @@ export enum PickupMsgType {
     StreakPerkActive,
     PerksDisabled,
     StrobesDisabled,
+    LootingDisabled,
 }
 
 export class UpdatePassMsg {

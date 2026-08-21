@@ -165,6 +165,7 @@ class Room {
         amongUsImpostorCount: DefaultAmongUsImpostorCount,
         disableAirstrikes: false,
         disablePerks: false,
+        disableLooting: false,
     };
 
     arenaOwnerKey?: string;
@@ -524,6 +525,7 @@ class Room {
         this.data.teamsLocked = this.data.arena ? !!props.teamsLocked : false;
         this.data.disableAirstrikes = this.data.arena ? !!props.disableAirstrikes : false;
         this.data.disablePerks = this.data.arena ? !!props.disablePerks : false;
+        this.data.disableLooting = this.data.arena ? !!props.disableLooting : false;
 
         if (this.data.arena && !this.isBattleRoyaleArena()) {
             this.moveInactiveArenaTeamsToSpectators();
@@ -588,7 +590,7 @@ class Room {
         if (!mode) return;
         const mapName =
             getPrivateLobbyMiniGameMapName(this.data.miniGame) ?? mode.mapName;
-        const warmupKey = `${this.data.region}:${mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.amongUsImpostorCount}:${this.data.disableAirstrikes}:${this.data.disablePerks}`;
+        const warmupKey = `${this.data.region}:${mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.amongUsImpostorCount}:${this.data.disableAirstrikes}:${this.data.disablePerks}${this.data.disableLooting}`;
         if (this.arenaWarmupKey === warmupKey) return;
         this.arenaWarmupKey = warmupKey;
         void this.teamMenu.server
@@ -606,6 +608,7 @@ class Room {
                         : undefined,
                 disableAirstrikes: this.data.disableAirstrikes,
                 disablePerks: this.data.disablePerks,
+                disableLooting: this.data.disableLooting,
                 groupHash: this.id,
                 playerData: [],
             } satisfies FindGamePrivateBody)
@@ -1200,6 +1203,7 @@ class Room {
                     : undefined,
             disableAirstrikes: this.data.arena ? this.data.disableAirstrikes : false,
             disablePerks: this.data.arena ? this.data.disablePerks : false,
+            disableLooting: this.data.arena ? this.data.disableLooting : false,
             groupHash: this.data.arena ? this.id : undefined,
             playerData,
         });
@@ -1317,6 +1321,7 @@ class Room {
                     : undefined,
             disableAirstrikes: this.data.disableAirstrikes,
             disablePerks: this.data.disablePerks,
+            disableLooting: this.data.disableLooting,
             groupHash: this.id,
             targetGameId: this.currentArenaGameId,
             playerData,
