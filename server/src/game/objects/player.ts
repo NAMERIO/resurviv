@@ -1718,7 +1718,7 @@ export class Player extends BaseGameObject {
     pullToSourceSpeed = 18;
     shootDisabledTimer = 0;
 
-    promoteToRole(role: string) {
+    promoteToRole(role: string, preserveExistingPerks = false) {
         const roleDef = GameObjectDefs[role] as RoleDef;
         if (!roleDef || roleDef.type !== "role") {
             this.game.logger.warn(`Invalid role type: ${role}`);
@@ -1894,10 +1894,16 @@ export class Player extends BaseGameObject {
                 } else {
                     newPerks.delete(perkType);
                 }
-            } else if (this.perks[i].droppable && newPerks.has(perkType)) {
-                this.dropLoot(perkType);
-                this.removePerk(perkType);
-                i--;
+            } else if (newPerks.has(perkType)) {
+                if (preserveExistingPerks) {
+                    // Temporary roles should borrow matching perks instead of replacing
+                    // them with role owned copies that are removed with the role.
+                    newPerks.delete(perkType);
+                } else if (this.perks[i].droppable) {
+                    this.dropLoot(perkType);
+                    this.removePerk(perkType);
+                    i--;
+                }
             }
         }
 
@@ -2152,7 +2158,7 @@ export class Player extends BaseGameObject {
             this.weaponManager.setWeapon(2, "katana_samurai", 0);
             this.weaponManager.setWeapon(3, "", 0);
             this.setOutfit("outfitMeteor");
-            this.promoteToRole("samurai");
+            this.promoteToRole("samurai", true);
         }
     }
 
