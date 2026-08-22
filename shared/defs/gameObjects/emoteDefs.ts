@@ -2008,7 +2008,7 @@ export const EmotesDefs: Record<string, EmoteDef> = {
         type: "emote",
         name: "Nooblet",
         rarity: Rarity.Rare,
-        texture: "emote-nooblet.img",
+        texture: "face-nooblet.img",
         sound: "emote_01",
         channel: "ui",
         teamOnly: false,
