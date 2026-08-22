@@ -3167,6 +3167,15 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
     }),
+    katana_samurai: defineMeleeSkin("katana", {
+        name: "Katana Samurai",
+        quality: 1,
+        noDropOnDeath: true,
+        lootImg: { sprite: "loot-melee-katana-samurai.img" },
+        worldImg: {
+            sprite: "loot-melee-katana-samurai.img",
+        },
+    }),
     sledgehammer: defineMeleeSkin("stonehammer", {
         name: "Sledgehammer",
         lootImg: { sprite: "loot-melee-sledgehammer.img" },
