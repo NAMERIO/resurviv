@@ -1143,6 +1143,8 @@ export const LoadoutAtlas: AtlasDef = {
         "particles/armor-bronze-particle-2.svg",
         "particles/armor-diamond-particle-1.svg",
         "particles/armor-diamond-particle-2.svg",
+        "particles/armor-crown-particle-1.svg",
+        "particles/armor-crown-particle-2.svg",
         "particles/part-40mm-01.svg",
         "particles/part-pin-01.svg",
         "particles/part-snow-02.svg",
@@ -1698,6 +1700,8 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-base-outfitSzn1-3rdPlace.svg",
         "player/player-accessory-outfitSzn2.svg",
         "player/player-base-outfitSzn2.svg",
+        "player/player-back-outfitSzn2.svg",
+        "player/player-hands-outfitSzn2.svg",
 
         "player/player-back-village-ninja.svg",
         "player/player-back-white-day.svg",

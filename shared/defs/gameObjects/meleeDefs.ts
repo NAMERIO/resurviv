@@ -2848,7 +2848,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     karambit_camo: defineMeleeSkin("karambit", {
         name: "Karambit Camo",
-        rarity: Rarity.Rare,
+        rarity: Rarity.Epic,
         noPotatoSwap: false,
         anim: {
             idlePose: "slash",
