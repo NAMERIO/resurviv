@@ -1659,6 +1659,11 @@ export class TeamMenu {
             switch (msg.type) {
                 case "create": {
                     const arena = !!msg.data.arena || !!msg.data.roomData.arena;
+                    if (arena && !player.userId) {
+                        this.logger.warn("Guest attempted to create a private lobby");
+                        player.send("error", { type: "create_failed" });
+                        break;
+                    }
                     // don't allow creating a team if there's no team mode enabled
                     const allowedModes = arena
                         ? this.allowedArenaGameModeIdxs()

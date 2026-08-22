@@ -811,6 +811,10 @@ export class Application {
                 );
             });
             this.prestigeArenaCreateBtn.on("click", () => {
+                if (!this.account.loggedIn) {
+                    this.profileUi.showLoginMenu({ modal: true });
+                    return;
+                }
                 if (this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined) {
                     this.setPrestigeArenaTab("battle");
                     return;
@@ -1494,7 +1498,8 @@ export class Application {
 
     syncPrestigeArenaCreatePaneVisibility() {
         const showCreatePane =
-            !this.teamMenu.active || !this.teamMenu.arena || !this.teamMenu.joined;
+            this.account.loggedIn &&
+            (!this.teamMenu.active || !this.teamMenu.arena || !this.teamMenu.joined);
         this.prestigeArenaCreatePane.toggleClass("hide", !showCreatePane);
         this.prestigeArenaWrapper.toggleClass("arena-has-create-panel", showCreatePane);
         this.prestigeArenaWrapper.toggleClass(
@@ -3200,12 +3205,6 @@ export class Application {
     }
 
     showPrestigeArenaModal() {
-        if (!this.account.loggedIn) {
-            this.profileUi.showLoginMenu({
-                modal: true,
-            });
-            return;
-        }
         this.prestigeArenaModalRequestedOpen = true;
         this.prestigeArenaSummaryTab.addClass("hide");
         this.prestigeArenaSpectateTab.addClass("hide");
@@ -3552,6 +3551,10 @@ export class Application {
     ) {
         if (this.active && this.quickPlayPendingModeIdx === -1) {
             if (create && arena) {
+                if (!this.account.loggedIn) {
+                    this.profileUi.showLoginMenu({ modal: true });
+                    return;
+                }
                 // Arena create must always create a fresh arena room, never infer from URL/hash.
                 if (this.teamMenu.active && !this.teamMenu.joined) {
                     this.teamMenu.leave();
