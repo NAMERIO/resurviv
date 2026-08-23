@@ -514,21 +514,21 @@ const AmmoDefs: Record<string, AmmoDef> = {
             pickup: "ammo_pickup_01",
         },
     },
-    // "40mm": {
-    //     name: "40mm",
-    //     type: "ammo",
-    //     special: true,
-    //     minStackSize: 10,
-    //     lootImg: {
-    //       sprite: "loot-ammo-box.img",
-    //       scale: 0.2,
-    //       tint: 843179,
-    //       tintDark: 843179
-    //     },
-    //     sound: {
-    //       pickup: "ammo_pickup_01"
-    //     }
-    // },
+    "40mm": {
+        name: "40mm",
+        type: "ammo",
+        special: true,
+        minStackSize: 10,
+        lootImg: {
+            sprite: "loot-ammo-box.img",
+            scale: 0.2,
+            tint: 0x0cddab,
+            tintDark: 0x0cddab,
+        },
+        sound: {
+            pickup: "ammo_pickup_01",
+        },
+    },
     "762mm": {
         name: "7.62mm",
         type: "ammo",
@@ -690,6 +690,22 @@ const AmmoDefs: Record<string, AmmoDef> = {
             scale: 0.2,
             tint: 0xa7d8ff,
             tintDark: 0x7fcaff,
+        },
+        sound: {
+            pickup: "ammo_pickup_01",
+        },
+    },
+    rainbow_ammo: {
+        name: "Rainbow Ammo",
+        type: "ammo",
+        special: true,
+        hideUi: true,
+        minStackSize: 1,
+        lootImg: {
+            sprite: "loot-ammo-box.img",
+            scale: 0.2,
+            tint: 0xff66ff,
+            tintDark: 0x993d99,
         },
         sound: {
             pickup: "ammo_pickup_01",

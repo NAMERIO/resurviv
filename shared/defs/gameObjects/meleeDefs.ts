@@ -3251,6 +3251,14 @@ const SkinDefs: Record<string, MeleeDef> = {
         lootImg: { sprite: "loot-melee-lasrswrd-03.img" },
         worldImg: { sprite: "loot-melee-lasrswrd-03.img" },
     }),
+    cutlass_gold: defineMeleeSkin("cutlass", {
+        name: "Gold Cutlass",
+        noPotatoSwap: true,
+        damage: 35,
+        perk: "pirate",
+        lootImg: { sprite: "loot-melee-cutlass-gold.img" },
+        worldImg: { sprite: "loot-melee-cutlass-gold.img" },
+    }),
 };
 
 export const MeleeDefs: Record<string, MeleeDef> = { ...BaseDefs, ...SkinDefs };
