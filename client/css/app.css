@@ -20340,7 +20340,9 @@ div.roulette {
   background: #2d2d2d;
   border: 1px solid #555;
   border-radius: 4px;
-  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.55), inset 0 -2px #1b1b1b;
+  box-shadow:
+    0 5px 16px rgba(0, 0, 0, 0.55),
+    inset 0 -2px #1b1b1b;
   display: none;
   left: 50%;
   max-width: calc(100% - 20px);
