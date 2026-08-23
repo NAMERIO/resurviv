@@ -1,5 +1,4 @@
 import type { AtlasDef } from "../atlasDefs";
-import { BuildingSprites } from "./buildings";
 
 export const ValentineAtlas: AtlasDef = {
     compress: true,
