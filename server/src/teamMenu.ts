@@ -165,6 +165,7 @@ class Room {
         amongUsImpostorCount: DefaultAmongUsImpostorCount,
         disableAirstrikes: false,
         disablePerks: false,
+        disableLooting: false,
         showEnemiesOnMap: true,
     };
 
@@ -525,6 +526,7 @@ class Room {
         this.data.teamsLocked = this.data.arena ? !!props.teamsLocked : false;
         this.data.disableAirstrikes = this.data.arena ? !!props.disableAirstrikes : false;
         this.data.disablePerks = this.data.arena ? !!props.disablePerks : false;
+        this.data.disableLooting = this.data.arena ? !!props.disableLooting : false;
         this.data.showEnemiesOnMap = this.data.arena
             ? props.showEnemiesOnMap !== false
             : true;
@@ -592,7 +594,7 @@ class Room {
         if (!mode) return;
         const mapName =
             getPrivateLobbyMiniGameMapName(this.data.miniGame) ?? mode.mapName;
-        const warmupKey = `${this.data.region}:${mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.amongUsImpostorCount}:${this.data.disableAirstrikes}:${this.data.disablePerks}:${this.data.showEnemiesOnMap}`;
+        const warmupKey = `${this.data.region}:${mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.amongUsImpostorCount}:${this.data.disableAirstrikes}:${this.data.disablePerks}:${this.data.disableLooting}:${this.data.showEnemiesOnMap}`;
         if (this.arenaWarmupKey === warmupKey) return;
         this.arenaWarmupKey = warmupKey;
         void this.teamMenu.server
@@ -610,6 +612,7 @@ class Room {
                         : undefined,
                 disableAirstrikes: this.data.disableAirstrikes,
                 disablePerks: this.data.disablePerks,
+                disableLooting: this.data.disableLooting,
                 showEnemiesOnMap: this.data.showEnemiesOnMap,
                 groupHash: this.id,
                 playerData: [],
@@ -1205,6 +1208,7 @@ class Room {
                     : undefined,
             disableAirstrikes: this.data.arena ? this.data.disableAirstrikes : false,
             disablePerks: this.data.arena ? this.data.disablePerks : false,
+            disableLooting: this.data.arena ? this.data.disableLooting : false,
             showEnemiesOnMap: this.data.arena ? this.data.showEnemiesOnMap : true,
             groupHash: this.data.arena ? this.id : undefined,
             playerData,
@@ -1323,6 +1327,7 @@ class Room {
                     : undefined,
             disableAirstrikes: this.data.disableAirstrikes,
             disablePerks: this.data.disablePerks,
+            disableLooting: this.data.disableLooting,
             showEnemiesOnMap: this.data.showEnemiesOnMap,
             groupHash: this.id,
             targetGameId: this.currentArenaGameId,

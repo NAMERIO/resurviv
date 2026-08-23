@@ -6138,6 +6138,11 @@ a:active {
   background-image: url(/img/loot/loot-perk-firepower.svg);
 }
 
+#modal-prestige-arena #create-disable-looting::before,
+#modal-prestige-arena #battle-disable-looting::before {
+  background-image: url(/img/gui/loot-i-01.svg);
+}
+
 #modal-prestige-arena #create-hide-enemies::before,
 #modal-prestige-arena #battle-hide-enemies::before {
   background-image: url(/img/gui/mag-glass.svg);

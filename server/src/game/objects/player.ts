@@ -6752,10 +6752,22 @@ export class Player extends BaseGameObject {
         if (obj.destroyed) return;
 
         const def = GameObjectDefs[obj.type];
+        const pickupMsg = new net.PickupMsg();
+        pickupMsg.item = obj.type;
+        pickupMsg.type = net.PickupMsgType.Success;
+
         if (
-            def.type === "gun" &&
+            this.game.disableLooting ||
             isHideAndSeekHider(this.game.miniGame, this.arenaTeam)
         ) {
+            if (this.pickupTicker > 0) return;
+
+            this.pickupTicker = 1;
+            pickupMsg.type = net.PickupMsgType.LootingDisabled;
+            this.msgsToSend.push({
+                type: net.MsgType.Pickup,
+                msg: pickupMsg,
+            });
             return;
         }
 
@@ -6766,12 +6778,10 @@ export class Player extends BaseGameObject {
             return;
 
         if (this.pickupTicker > 0) return;
+
         this.pickupTicker = 0.1;
         let amountLeft = 0;
         let lootToAdd = obj.type;
-        const pickupMsg = new net.PickupMsg();
-        pickupMsg.item = obj.type;
-        pickupMsg.type = net.PickupMsgType.Success;
 
         switch (def.type) {
             case "ammo":

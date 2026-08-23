@@ -107,6 +107,7 @@ export interface ServerGameConfig {
     readonly amongUsImpostorCount?: AmongUsImpostorCount;
     readonly disableAirstrikes?: boolean;
     readonly disablePerks?: boolean;
+    readonly disableLooting?: boolean;
     readonly showEnemiesOnMap?: boolean;
 }
 
@@ -119,6 +120,7 @@ export interface GameData {
     amongUsImpostorCount?: AmongUsImpostorCount;
     disableAirstrikes?: boolean;
     disablePerks?: boolean;
+    disableLooting?: boolean;
     showEnemiesOnMap?: boolean;
     canJoin: boolean;
     aliveCount: number;
@@ -137,6 +139,7 @@ export const zFindGamePrivateBody = z.object({
     amongUsImpostorCount: z.number().int().min(1).max(3).optional(),
     disableAirstrikes: z.boolean().optional(),
     disablePerks: z.boolean().optional(),
+    disableLooting: z.boolean().optional(),
     showEnemiesOnMap: z.boolean().optional(),
     groupHash: z.string().optional(),
     targetGameId: z.string().optional(),
