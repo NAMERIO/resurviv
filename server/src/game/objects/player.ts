@@ -6760,7 +6760,14 @@ export class Player extends BaseGameObject {
             this.game.disableLooting ||
             isHideAndSeekHider(this.game.miniGame, this.arenaTeam)
         ) {
+            if (this.pickupTicker > 0) return;
+
+            this.pickupTicker = 1;
             pickupMsg.type = net.PickupMsgType.LootingDisabled;
+            this.msgsToSend.push({
+                type: net.MsgType.Pickup,
+                msg: pickupMsg,
+            });
             return;
         }
 
