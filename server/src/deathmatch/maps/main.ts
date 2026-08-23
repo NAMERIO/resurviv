@@ -32,7 +32,7 @@ export const mapDef: PartialMapDef = {
         particles: { camera: "falling_leaf_spring" },
     },
     assets: {
-        atlases: ["gradient", "loadout", "shared", "main", "cobalt", "woods"],
+        atlases: ["gradient", "loadout", "shared", "main"],
     },
     gameConfig: {
         planes: {
@@ -106,7 +106,7 @@ export const mapDef: PartialMapDef = {
                 house_red_02: 1,
             },
         ],
-        importantSpawns: ["logging_complex_01tw", "club_complex_01", "Memorial_Park"],
+        importantSpawns: ["logging_complex_01tw", "club_complex_01", "memorialPark"],
         customSpawnRules: {
             locationSpawns: [],
         },
@@ -116,7 +116,7 @@ export const mapDef: PartialMapDef = {
                 choose: 1,
             },
             {
-                spawns: ["club_complex_01", "Memorial_Park"],
+                spawns: ["club_complex_01", "memorialPark"],
                 choose: 1,
             },
             {

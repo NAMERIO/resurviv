@@ -6,22 +6,9 @@ export const MainAtlas: AtlasDef = {
     images: [
         ...BuildingSprites.greenhouse,
         ...BuildingSprites.bunker_chrys,
-        ...BuildingSprites.bunker_crossing,
-        ...BuildingSprites.bunker_hydra,
-        ...BuildingSprites.warehouse_complex,
-        ...BuildingSprites.bunker_twins,
-
-        "map/map-tree-07sp.svg",
-        "map/map-tree-08sp.svg",
-
-        "map/lasr_swrds_tree_01.svg",
-
-        "map/map-statue-04.svg",
 
         "map/map-stone-03tw.svg",
         "map/map-stone-res-02tw.svg",
-        "map/map-bunker-crossing-floor-01tw.svg",
-        "map/map-tree-13.svg",
         "map/map-bush-01f.svg",
     ],
 };

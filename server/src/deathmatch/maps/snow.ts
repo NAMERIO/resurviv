@@ -28,7 +28,7 @@ const mapDef = {
             { name: "bells_01", channel: "ui" },
             { name: "snowball_pickup_01", channel: "ui" },
         ],
-        atlases: ["gradient", "loadout", "shared", "snow", "woods", "cobalt", "desert"],
+        atlases: ["gradient", "loadout", "shared", "snow"],
     },
     biome: {
         colors: {
@@ -197,7 +197,7 @@ const mapDef = {
         },
         randomSpawns: [
             {
-                spawns: ["club_complex_01", "Memorial_Park"],
+                spawns: ["club_complex_01", "memorialPark"],
                 choose: 1,
             },
             {

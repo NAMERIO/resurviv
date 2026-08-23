@@ -1,8 +1,10 @@
 import type { AtlasDef } from "../atlasDefs";
+import { BuildingSprites } from "./buildings";
 
 export const CobaltAtlas: AtlasDef = {
     compress: true,
     images: [
+        ...BuildingSprites.bunker_twins,
         "map/map-class-crate-03.svg",
         "map/map-class-crate-assault.svg",
         "map/map-class-crate-demo.svg",

@@ -4,10 +4,6 @@ import { BuildingSprites } from "./buildings";
 export const ValentineAtlas: AtlasDef = {
     compress: true,
     images: [
-        ...BuildingSprites.bunker_crossing,
-        ...BuildingSprites.bunker_hydra,
-        ...BuildingSprites.bunker_twins,
-        "map/map-tree-13.svg",
         "map/bush-rose.svg",
         "map/map-bush-07sp.svg",
         "map/map-candy-store-basket.svg",

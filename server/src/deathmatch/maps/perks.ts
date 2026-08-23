@@ -29,7 +29,7 @@ const mapDef = {
             { name: "log_13", channel: "sfx" },
             { name: "log_14", channel: "sfx" },
         ],
-        atlases: ["gradient", "loadout", "shared", "perks", "woods", "desert"],
+        atlases: ["gradient", "loadout", "shared", "perks"],
     },
     biome: {
         colors: {
@@ -122,7 +122,7 @@ const mapDef = {
         importantSpawns: ["logging_complex_01p", "desert_town_02p"],
         randomSpawns: [
             {
-                spawns: ["club_complex_01", "Memorial_Park"],
+                spawns: ["club_complex_01", "memorialPark"],
                 choose: 1,
             },
             {

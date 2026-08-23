@@ -6,7 +6,6 @@ export const WoodsAtlas: AtlasDef = {
     images: [
         ...BuildingSprites.pavilion,
         ...BuildingSprites.bunker_eye,
-        ...BuildingSprites.bunker_hatchet,
         ...BuildingSprites.workshop,
 
         "map/map-bush-01x.svg",
@@ -14,16 +13,11 @@ export const WoodsAtlas: AtlasDef = {
         "map/map-bush-07sp.svg",
         "map/map-bush-res-06.svg",
 
-        "map/map-campfire-01.svg",
-
         "map/map-chest-03x.svg",
 
         "map/map-crate-01x.svg",
         "map/map-crate-02x.svg",
         "map/map-crate-03x.svg",
-        "map/map-crate-19.svg",
-
-        "map/map-snowball-res.svg",
 
         "map/map-stone-01x.svg",
         "map/map-stone-03x.svg",
@@ -49,9 +43,7 @@ export const WoodsAtlas: AtlasDef = {
         "map/map-web-01.svg",
         "map/map-safe-01.svg",
 
-        "map/map-woodpile-02.svg",
         "map/map-woodpile-03.svg",
-        "map/map-woodpile-res-02.svg",
         "map/map-woodpile-res-03.svg",
 
         "map/map-snow-01.svg",
