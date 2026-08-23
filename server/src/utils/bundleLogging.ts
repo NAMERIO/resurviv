@@ -69,23 +69,76 @@ const bundleThemes: Record<
     },
 };
 
-function itemImagePath(itemType: string) {
+function assetNameToSvg(assetName: string) {
+    return assetName.endsWith(".img") ? `${assetName.slice(0, -4)}.svg` : assetName;
+}
+
+function findPublicAsset(assetName: string | undefined, folders: string[]) {
+    if (!assetName) return undefined;
+
+    const svgName = assetNameToSvg(assetName).replaceAll("\\", "/");
+    const relativePaths = svgName.startsWith("img/")
+        ? [svgName]
+        : folders.map((folder) => `img/${folder}/${svgName}`);
+
+    for (const relativePath of relativePaths) {
+        const assetPath = publicAssetPath(relativePath);
+        if (assetPath) return assetPath;
+    }
+
+    return undefined;
+}
+
+export function getBundleItemImagePath(itemType: string) {
     const def = GameObjectDefs[itemType] as any;
-    let relativePath = "";
+    if (!def) return undefined;
+
     if (def?.type === "gun_skin") {
-        relativePath = `img/guns/${def.worldImg.sprite.slice(0, -4)}.svg`;
-    } else if (def?.type === "outfit") {
+        return findPublicAsset(def.worldImg?.sprite, ["guns"]);
+    }
+    if (def?.type === "outfit") {
         const lootImg = getOutfitLootImg(def);
         const folder = def.lootImg.skinLootImg ? "player" : "loot";
-        relativePath = `img/${folder}/${lootImg.sprite.slice(0, -4)}.svg`;
-    } else if (def?.type === "emote") {
-        relativePath = `img/emotes/${def.texture.slice(0, -4)}.svg`;
-    } else if (def?.lootImg?.sprite) {
-        relativePath = `img/loot/${def.lootImg.sprite.slice(0, -4)}.svg`;
+        return findPublicAsset(lootImg.sprite, [folder]);
     }
-    if (!relativePath) return undefined;
 
-    return publicAssetPath(relativePath);
+    const preferredTextureFolders: Partial<Record<string, string[]>> = {
+        emote: ["emotes"],
+        crosshair: ["crosshairs"],
+        heal_effect: ["particles"],
+        boost_effect: ["particles"],
+        death_effect: ["loot"],
+        ping: ["gui"],
+    };
+    const textureFolders = preferredTextureFolders[def.type] ?? [];
+    const candidates: Array<[string | undefined, string[]]> = [
+        [def.lootImg?.sprite, ["loot"]],
+        [def.texture, textureFolders],
+        [def.icon, []],
+        [def.worldImg?.sprite, ["guns"]],
+        [def.handSprites?.spriteL, ["player"]],
+        [def.handSprites?.spriteR, ["player"]],
+        [def.mapTexture, ["gui", "map"]],
+        [def.mapIndicator?.sprite, ["gui", "map"]],
+        [`loot-${itemType.replaceAll("_", "-")}.svg`, ["loot"]],
+    ];
+    const fallbackFolders = [
+        "loot",
+        "guns",
+        "player",
+        "emotes",
+        "crosshairs",
+        "particles",
+        "gui",
+        "map",
+    ];
+
+    for (const [assetName, folders] of candidates) {
+        const assetPath = findPublicAsset(assetName, [...folders, ...fallbackFolders]);
+        if (assetPath) return assetPath;
+    }
+
+    return undefined;
 }
 
 function publicAssetPath(relativePath: string) {
@@ -333,7 +386,7 @@ async function drawItem(
     if (def?.type === "outfit" && (def as OutfitDef).lootImg.skinLootImg) {
         await drawOutfitPreview(ctx, def as OutfitDef, x, y, size);
     } else {
-        const imagePath = itemImagePath(itemType);
+        const imagePath = getBundleItemImagePath(itemType);
         if (imagePath) {
             try {
                 const image = await loadAssetImage(imagePath);

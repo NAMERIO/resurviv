@@ -1,3 +1,9 @@
+<p align="center">
+  <a href="https://resurviv.biz">
+    <img src="client/public/img/github_banner.png" alt="Resurviv.biz gameplay across multiple maps" width="100%">
+  </a>
+</p>
+
 ## Production server: https://resurviv.biz
 
 # Open sourced surviv.io

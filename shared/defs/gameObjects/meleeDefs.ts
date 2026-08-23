@@ -2848,7 +2848,7 @@ const SkinDefs: Record<string, MeleeDef> = {
     }),
     karambit_camo: defineMeleeSkin("karambit", {
         name: "Karambit Camo",
-        rarity: Rarity.Rare,
+        rarity: Rarity.Epic,
         noPotatoSwap: false,
         anim: {
             idlePose: "slash",
@@ -3165,6 +3165,15 @@ const SkinDefs: Record<string, MeleeDef> = {
         worldImg: {
             sprite: "loot-melee-katana.img",
             tint: 0xffffff,
+        },
+    }),
+    katana_samurai: defineMeleeSkin("katana", {
+        name: "Katana Samurai",
+        quality: 1,
+        noDropOnDeath: true,
+        lootImg: { sprite: "loot-melee-katana-samurai.img" },
+        worldImg: {
+            sprite: "loot-melee-katana-samurai.img",
         },
     }),
     sledgehammer: defineMeleeSkin("stonehammer", {

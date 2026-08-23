@@ -45,7 +45,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         name: "Neon Disk Set",
         size: "small",
         items: ["outfitLasrDisk", "fist_scifi"],
-        price: 1850,
+        price: 900,
         durationDays: 7,
     },
     bundle_checkmate: {
@@ -214,20 +214,27 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 700,
         durationDays: 7,
     },
+    bundle_farmer: {
+        name: "Farmers Set",
+        size: "small",
+        items: ["outfitHoldinHide", "farmers_sickle"],
+        price: 700,
+        durationDays: 7,
+    },
 };
 
 export const FeaturedBundlePages = [
     {
-        small: "bundle_vitaminD",
-        large: "bundle_bugcat",
+        small: "bundle_neondisk",
+        large: "bundle_void",
     },
     {
-        small: "bundle_checkmate",
-        large: "bundle_flame",
+        small: "bundle_dragon",
+        large: "bundle_dinner",
     },
     {
-        small: "bundle_dino",
-        large: "bundle_pixel",
+        small: "bundle_gridflag",
+        large: "bundle_lightning",
     },
 ] as const satisfies ReadonlyArray<
     Record<FeaturedBundleSize, keyof typeof FeaturedBundleDefs>
