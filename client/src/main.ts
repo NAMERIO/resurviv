@@ -23,6 +23,7 @@ import type {
     FindGameMatchData,
     FindGameResponse,
 } from "../../shared/types/api";
+import type { NewsResponse } from "../../shared/types/news";
 import { math } from "../../shared/utils/math";
 import { Account } from "./account";
 import { type GoogleH5AdPlacementInfo, googleH5Ads } from "./ads/googleH5Ads";
@@ -38,6 +39,7 @@ import { Game } from "./game";
 import { createLootPreview, helpers } from "./helpers";
 import { InputHandler } from "./input";
 import { InputBinds, InputBindUi } from "./inputBinds";
+import { appendNewsDocument, NewsManager } from "./newsManager";
 import { PingTest } from "./pingTest";
 import { proxy } from "./proxy";
 import { ResourceManager } from "./resources";
@@ -96,13 +98,17 @@ export class Application {
         "#create-disable-airstrikes",
     );
     prestigeArenaDisablePerksBtn = $<HTMLButtonElement>("#create-disable-perks");
-    prestigeArenaDisableLootingBtn = $<HTMLButtonElement>("create-disable-looting");
+    prestigeArenaDisableLootingBtn = $<HTMLButtonElement>("#create-disable-looting");
+    prestigeArenaHideEnemiesBtn = $<HTMLButtonElement>("#create-hide-enemies");
     prestigeArenaBattleOptions = $("#battle-private-options");
     prestigeArenaBattleDisableAirstrikesBtn = $<HTMLButtonElement>(
         "#battle-disable-airstrikes",
     );
     prestigeArenaBattleDisablePerksBtn = $<HTMLButtonElement>("#battle-disable-perks");
-    prestigeArenaBattleDisableLootingBtn = $<HTMLButtonElement>("create-disable-looting");
+    prestigeArenaBattleDisableLootingBtn = $<HTMLButtonElement>(
+        "#battle-disable-looting",
+    );
+    prestigeArenaBattleHideEnemiesBtn = $<HTMLButtonElement>("#battle-hide-enemies");
     prestigeArenaPlayerCounter = $("#battle-player-counter");
     prestigeArenaPlayerCount = $("#battle-total");
     prestigeArenaPlayerMax = $("#battle-max");
@@ -203,6 +209,8 @@ export class Application {
     checkedPingTest = false;
     hasFocus = true;
     newsDisplayed = false;
+    latestNewsTimestamp = 0;
+    newsManager: NewsManager;
     prestigeArenaSelectedModeIdx = 0;
     prestigeArenaSelectedMap = "main";
     prestigeArenaSelectedTeamMode = 2;
@@ -296,6 +304,7 @@ export class Application {
 
     constructor() {
         this.account = new Account(this.config);
+        this.newsManager = new NewsManager(this.account, () => this.loadNews());
         this.loadoutMenu = new LoadoutMenu(this.account, this.localization, this.config);
         this.pass = new Pass(this.account, this.loadoutMenu, this.localization);
         this.siteInfo = new SiteInfo(this.config, this.localization);
@@ -361,7 +370,9 @@ export class Application {
                         "Guest",
                 );
                 this.refreshUi();
+                this.newsManager.updateAccess();
             });
+            this.newsManager.init();
             this.account.init();
 
             // Initialize ProfileUi after DOM is ready
@@ -785,6 +796,12 @@ export class Application {
                     !this.teamMenu.roomData.disableLooting,
                 );
             });
+            this.prestigeArenaHideEnemiesBtn.on("click", () => {
+                this.setPrestigeArenaCreateOption(
+                    "showEnemiesOnMap",
+                    this.teamMenu.roomData.showEnemiesOnMap === false,
+                );
+            });
             this.prestigeArenaBattleDisableAirstrikesBtn.on("click", () => {
                 this.setPrestigeArenaCreateOption(
                     "disableAirstrikes",
@@ -803,7 +820,17 @@ export class Application {
                     !this.teamMenu.roomData.disableLooting,
                 );
             });
+            this.prestigeArenaBattleHideEnemiesBtn.on("click", () => {
+                this.setPrestigeArenaCreateOption(
+                    "showEnemiesOnMap",
+                    this.teamMenu.roomData.showEnemiesOnMap === false,
+                );
+            });
             this.prestigeArenaCreateBtn.on("click", () => {
+                if (!this.account.loggedIn) {
+                    this.profileUi.showLoginMenu({ modal: true });
+                    return;
+                }
                 if (this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined) {
                     this.setPrestigeArenaTab("battle");
                     return;
@@ -835,10 +862,10 @@ export class Application {
                 this.game?.free();
                 this.teamMenu.leave();
             });
-            const r = $("#news-current").data("date");
-            const a = new Date(r).getTime();
+            const staticNewsDate = String($("#news-current").data("date") ?? "");
+            this.latestNewsTimestamp = new Date(staticNewsDate).getTime() || 0;
             $(".news-toggle").on("click", () => {
-                this.config.set("lastNewsTimestamp", a);
+                this.config.set("lastNewsTimestamp", this.latestNewsTimestamp);
                 $(".news-toggle").find(".account-alert").css("display", "none");
                 $("#friends-wrapper").removeClass("open");
                 $("#news-wrapper").fadeIn(250);
@@ -855,10 +882,8 @@ export class Application {
                 $("#news-wrapper").fadeOut(250);
                 this.newsDisplayed = false;
             });
-            const i = this.config.get("lastNewsTimestamp")!;
-            if (a > i) {
-                $(".news-toggle").find(".account-alert").css("display", "block");
-            }
+            this.updateNewsAlert();
+            void this.loadNews();
             this.setDOMFromConfig();
             this.setAppActive(true);
             const domCanvas = document.querySelector<HTMLCanvasElement>("#cvs")!;
@@ -1015,6 +1040,72 @@ export class Application {
             ? [this.config.get("region")!]
             : this.pingTest.getRegionList();
         this.pingTest.start(regions);
+    }
+
+    updateNewsAlert() {
+        const lastViewed = this.config.get("lastNewsTimestamp") ?? 0;
+        $(".news-toggle")
+            .find(".account-alert")
+            .css("display", this.latestNewsTimestamp > lastViewed ? "block" : "none");
+    }
+
+    async loadNews() {
+        try {
+            const response = await fetch(api.resolveUrl("/api/news"), {
+                cache: "no-store",
+                headers: { Accept: "application/json" },
+            });
+            if (!response.ok) return;
+
+            const data = (await response.json()) as Partial<NewsResponse>;
+            const container = $("#news-dynamic").empty();
+            const staticNewsDate = String($("#news-current").data("date") ?? "");
+            let latestTimestamp = new Date(staticNewsDate).getTime() || 0;
+            if (!Array.isArray(data.posts) || data.posts.length === 0) {
+                this.latestNewsTimestamp = latestTimestamp;
+                this.updateNewsAlert();
+                return;
+            }
+
+            for (const post of data.posts) {
+                if (
+                    !post ||
+                    typeof post.title !== "string" ||
+                    typeof post.content !== "string" ||
+                    typeof post.publishedAt !== "string"
+                ) {
+                    continue;
+                }
+
+                const publishedAt = new Date(post.publishedAt);
+                const timestamp = publishedAt.getTime();
+                if (!Number.isFinite(timestamp)) continue;
+
+                latestTimestamp = Math.max(latestTimestamp, timestamp);
+                const postElement = $("<div>").attr("data-date", post.publishedAt);
+                const dateText =
+                    typeof post.dateText === "string" && post.dateText.trim()
+                        ? post.dateText
+                        : publishedAt.toLocaleDateString(undefined, {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                          });
+                postElement.append(
+                    $("<small>").addClass("news-date").text(dateText),
+                    $("<p>")
+                        .addClass("news-paragraph")
+                        .append($("<strong>").text(post.title)),
+                );
+                appendNewsDocument(postElement, post);
+                container.append(postElement);
+            }
+
+            this.latestNewsTimestamp = latestTimestamp;
+            this.updateNewsAlert();
+        } catch {
+            // Keep the static news visible when the API or database is unavailable.
+        }
     }
 
     startSocialEvents() {
@@ -1423,7 +1514,8 @@ export class Application {
 
     syncPrestigeArenaCreatePaneVisibility() {
         const showCreatePane =
-            !this.teamMenu.active || !this.teamMenu.arena || !this.teamMenu.joined;
+            this.account.loggedIn &&
+            (!this.teamMenu.active || !this.teamMenu.arena || !this.teamMenu.joined);
         this.prestigeArenaCreatePane.toggleClass("hide", !showCreatePane);
         this.prestigeArenaWrapper.toggleClass("arena-has-create-panel", showCreatePane);
         this.prestigeArenaWrapper.toggleClass(
@@ -1513,14 +1605,8 @@ export class Application {
         const isBattleRoyale = this.isBattleRoyaleMiniGame(
             this.teamMenu.roomData.miniGame || this.prestigeArenaSelectedMiniGame,
         );
-        $("#modal-create-window .private-option-buttons").toggleClass(
-            "hide",
-            isBattleRoyale,
-        );
-        this.prestigeArenaBattleOptions.toggleClass(
-            "hide",
-            isBattleRoyale || !this.teamMenu.isLeader,
-        );
+        $("#modal-create-window .private-option-buttons").removeClass("hide");
+        this.prestigeArenaBattleOptions.removeClass("hide");
         this.prestigeArenaDisableAirstrikesBtn.toggleClass(
             "active",
             !!this.teamMenu.roomData.disableAirstrikes,
@@ -1545,6 +1631,9 @@ export class Application {
             "active",
             !!this.teamMenu.roomData.disableLooting,
         );
+        const enemiesHidden = this.teamMenu.roomData.showEnemiesOnMap === false;
+        this.prestigeArenaHideEnemiesBtn.toggleClass("active", enemiesHidden);
+        this.prestigeArenaBattleHideEnemiesBtn.toggleClass("active", enemiesHidden);
         this.prestigeArenaDisableAirstrikesBtn.attr(
             "aria-pressed",
             String(!!this.teamMenu.roomData.disableAirstrikes),
@@ -1569,6 +1658,11 @@ export class Application {
             "aria-pressed",
             String(!!this.teamMenu.roomData.disableLooting),
         );
+        this.prestigeArenaHideEnemiesBtn.attr("aria-pressed", String(enemiesHidden));
+        this.prestigeArenaBattleHideEnemiesBtn.attr(
+            "aria-pressed",
+            String(enemiesHidden),
+        );
         this.prestigeArenaDisableAirstrikesBtn.prop(
             "disabled",
             !canEdit || isBattleRoyale,
@@ -1587,10 +1681,16 @@ export class Application {
             "disabled",
             !canEdit || isBattleRoyale,
         );
+        this.prestigeArenaHideEnemiesBtn.prop("disabled", !canEdit);
+        this.prestigeArenaBattleHideEnemiesBtn.prop("disabled", !canEdit);
     }
 
     setPrestigeArenaCreateOption(
-        prop: "disableAirstrikes" | "disablePerks" | "disableLooting",
+        prop:
+            | "disableAirstrikes"
+            | "disablePerks"
+            | "disableLooting"
+            | "showEnemiesOnMap",
         value: boolean,
     ) {
         if (
@@ -3146,12 +3246,6 @@ export class Application {
     }
 
     showPrestigeArenaModal() {
-        if (!this.account.loggedIn) {
-            this.profileUi.showLoginMenu({
-                modal: true,
-            });
-            return;
-        }
         this.prestigeArenaModalRequestedOpen = true;
         this.prestigeArenaSummaryTab.addClass("hide");
         this.prestigeArenaSpectateTab.addClass("hide");
@@ -3282,7 +3376,10 @@ export class Application {
         this.syncPrestigeArenaCreatePaneVisibility();
         this.prestigeArenaBattleInputGroup.css("display", "none");
         this.prestigeArenaPlayerCounter.css("display", "flex");
-        this.prestigeArenaBattleOptions.toggleClass("hide", !this.teamMenu.isLeader);
+        this.prestigeArenaBattleOptions.toggleClass(
+            "hide",
+            this.isBattleRoyaleMiniGame(this.teamMenu.roomData.miniGame),
+        );
         if (
             this.teamMenu.isLeader &&
             !this.prestigeArenaBattleModeSelection.children().length
@@ -3495,6 +3592,10 @@ export class Application {
     ) {
         if (this.active && this.quickPlayPendingModeIdx === -1) {
             if (create && arena) {
+                if (!this.account.loggedIn) {
+                    this.profileUi.showLoginMenu({ modal: true });
+                    return;
+                }
                 // Arena create must always create a fresh arena room, never infer from URL/hash.
                 if (this.teamMenu.active && !this.teamMenu.joined) {
                     this.teamMenu.leave();

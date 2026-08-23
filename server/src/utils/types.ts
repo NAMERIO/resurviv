@@ -108,6 +108,7 @@ export interface ServerGameConfig {
     readonly disableAirstrikes?: boolean;
     readonly disablePerks?: boolean;
     readonly disableLooting?: boolean;
+    readonly showEnemiesOnMap?: boolean;
 }
 
 export interface GameData {
@@ -120,6 +121,7 @@ export interface GameData {
     disableAirstrikes?: boolean;
     disablePerks?: boolean;
     disableLooting?: boolean;
+    showEnemiesOnMap?: boolean;
     canJoin: boolean;
     aliveCount: number;
     startedTime: number;
@@ -138,6 +140,7 @@ export const zFindGamePrivateBody = z.object({
     disableAirstrikes: z.boolean().optional(),
     disablePerks: z.boolean().optional(),
     disableLooting: z.boolean().optional(),
+    showEnemiesOnMap: z.boolean().optional(),
     groupHash: z.string().optional(),
     targetGameId: z.string().optional(),
     playerData: z.array(

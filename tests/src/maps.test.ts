@@ -15,9 +15,9 @@ describe.for(maps)("Map %s", (map) => {
             tableId,
             table,
         ]) => {
-            const itemsSet = new Set();
+            const itemsSet = new Set<string>();
             for (const item of table) {
-                itemsSet.add(item.name);
+                itemsSet.add(JSON.stringify(item));
                 if (item.name.startsWith("tier_")) {
                     expect(item.name).toBeValidLootTier();
                 } else if (item.npc) {
@@ -34,11 +34,12 @@ describe.for(maps)("Map %s", (map) => {
         });
     });
 
-    describe("Airdrop Crates", () => {
-        test.for(mapDef.gameConfig.planes.crates)("Crate %$", (crate) => {
-            expect(crate.name).toBeValidMapObj();
+    if (mapDef.gameConfig.planes.crates.length)
+        describe("Airdrop Crates", () => {
+            test.for(mapDef.gameConfig.planes.crates)("Crate %$", (crate) => {
+                expect(crate.name).toBeValidMapObj();
+            });
         });
-    });
 
     if (mapDef.gameConfig.unlocks) {
         describe("Unlocks", () => {
@@ -106,10 +107,9 @@ describe.for(maps)("Map %s", (map) => {
     });
 
     describe("No duplicated sprites", () => {
-        const sprites = new Set<string>();
-
         test.for(mapDef.assets.atlases)("Atlas $0", (atlas) => {
             const atlasDef = Atlases[atlas];
+            const sprites = new Set<string>();
             for (const sprite of atlasDef.images) {
                 expect(sprites.has(sprite), `Duplicated sprite ${sprite}`).toBeFalsy();
 

@@ -12,7 +12,11 @@ const audio = Array.from(
 );
 
 const atlases = Array.from(
-    new Set([...DeatchmatchMain.assets.atlases, ...BattleRoyaleContact.assets.atlases]),
+    new Set([
+        ...DeatchmatchMain.assets.atlases,
+        ...BattleRoyaleContact.assets.atlases,
+        "desert" as const,
+    ]),
 );
 
 export const DeathmatchContact = util.mergeDeep(structuredClone(DeatchmatchMain), {

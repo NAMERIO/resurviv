@@ -498,6 +498,10 @@ export interface ConfigType {
          * Account slugs allowed to use the in-game editor in production.
          */
         developerSlugs: string[];
+        /** Account slugs allowed to manage website news. */
+        adminSlugs: string[];
+        /** Account slugs allowed to manage website news with owner access. */
+        ownerSlugs: string[];
         /**
          * If the "mock" test account is enabled, used for testing account features without requiring discord or google oauth2 keys
          */

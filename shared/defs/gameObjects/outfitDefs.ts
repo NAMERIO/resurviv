@@ -5567,6 +5567,30 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
+    outfitSzn2: defineOutfitSkin("outfitBase", {
+        name: "Season 2 Winner",
+        noDropOnDeath: true,
+        moveEmitter: "crownParticle",
+        lore: "Season 2 Clan Champions — [#1] Clan",
+        rarity: 5,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitSzn2.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-outfitSzn2.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-outfitSzn2.img",
+            frontSpritePos: { x: -12.5, y: 0 },
+            frontSprite: "player-accessory-outfitSzn2.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
     // unfinished skins
 
     outfitVitaminD: defineOutfitSkin("outfitBase", {

@@ -99,6 +99,7 @@ export class Game {
     disableAirstrikes: boolean;
     disablePerks: boolean;
     disableLooting: boolean;
+    showEnemiesOnMap: boolean;
     infectedHumansWon = false;
     hideAndSeekHidersWon = false;
     amongUsWinningRole?: AmongUsRole;
@@ -198,6 +199,7 @@ export class Game {
         this.disableAirstrikes = !!config.disableAirstrikes;
         this.disablePerks = !!config.disablePerks;
         this.disableLooting = !!config.disableLooting;
+        this.showEnemiesOnMap = config.showEnemiesOnMap !== false;
 
         this.teamMode = config.teamMode;
         this.mapName = config.mapName;
@@ -897,6 +899,7 @@ export class Game {
             disableAirstrikes: this.disableAirstrikes,
             disablePerks: this.disablePerks,
             disableLooting: this.disableLooting,
+            showEnemiesOnMap: this.showEnemiesOnMap,
             canJoin: this.canJoin,
             aliveCount: this.aliveCount,
             startedTime: this.startedTime,

@@ -42,6 +42,7 @@ class GameProcess implements GameData {
     disableAirstrikes = false;
     disablePerks = false;
     disableLooting = false;
+    showEnemiesOnMap = true;
     id = "";
     aliveCount = 0;
     startedTime = 0;
@@ -92,6 +93,7 @@ class GameProcess implements GameData {
                     this.disableAirstrikes = !!msg.disableAirstrikes;
                     this.disablePerks = !!msg.disablePerks;
                     this.disableLooting = !!msg.disableLooting;
+                    this.showEnemiesOnMap = msg.showEnemiesOnMap !== false;
                     if (this.id !== msg.id) {
                         this.manager.processById.delete(this.id);
                         this.id = msg.id;
@@ -157,6 +159,7 @@ class GameProcess implements GameData {
         this.disableAirstrikes = !!config.disableAirstrikes;
         this.disablePerks = !!config.disablePerks;
         this.disableLooting = !!config.disableLooting;
+        this.showEnemiesOnMap = config.showEnemiesOnMap !== false;
         this.stopped = false;
         this.creating = true;
         this.groupHash = undefined;
@@ -401,6 +404,7 @@ export class GameProcessManager implements GameManager {
                 proc.disableAirstrikes === !!body.disableAirstrikes &&
                 proc.disablePerks === !!body.disablePerks &&
                 proc.disableLooting === !!body.disableLooting &&
+                proc.showEnemiesOnMap === (body.showEnemiesOnMap !== false) &&
                 (requestedGroupHash
                     ? proc.groupHash === requestedGroupHash
                     : !proc.groupHash)
@@ -463,6 +467,7 @@ export class GameProcessManager implements GameManager {
                 disableAirstrikes: !!body.disableAirstrikes,
                 disablePerks: !!body.disablePerks,
                 disableLooting: !!body.disableLooting,
+                showEnemiesOnMap: body.showEnemiesOnMap !== false,
             });
         }
 

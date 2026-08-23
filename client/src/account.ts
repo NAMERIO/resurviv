@@ -159,6 +159,7 @@ export class Account {
         username: "",
         slug: "",
         canUseDeveloper: false,
+        canManageNews: false,
         usernameChangeTime: 0,
     };
 
@@ -327,9 +328,11 @@ export class Account {
                 const profile = this.config.get("profile") || {
                     slug: "",
                     canUseDeveloper: false,
+                    canManageNews: false,
                 };
                 profile.slug = data.profile.slug;
                 profile.canUseDeveloper = data.profile.canUseDeveloper;
+                profile.canManageNews = data.profile.canManageNews;
                 this.config.set("profile", profile);
             }
             if (!this.loggedIn) {

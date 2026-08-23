@@ -514,21 +514,21 @@ const AmmoDefs: Record<string, AmmoDef> = {
             pickup: "ammo_pickup_01",
         },
     },
-    // "40mm": {
-    //     name: "40mm",
-    //     type: "ammo",
-    //     special: true,
-    //     minStackSize: 10,
-    //     lootImg: {
-    //       sprite: "loot-ammo-box.img",
-    //       scale: 0.2,
-    //       tint: 843179,
-    //       tintDark: 843179
-    //     },
-    //     sound: {
-    //       pickup: "ammo_pickup_01"
-    //     }
-    // },
+    "40mm": {
+        name: "40mm",
+        type: "ammo",
+        special: true,
+        minStackSize: 10,
+        lootImg: {
+            sprite: "loot-ammo-box.img",
+            scale: 0.2,
+            tint: 0x0cddab,
+            tintDark: 0x0cddab,
+        },
+        sound: {
+            pickup: "ammo_pickup_01",
+        },
+    },
     "762mm": {
         name: "7.62mm",
         type: "ammo",
@@ -695,6 +695,22 @@ const AmmoDefs: Record<string, AmmoDef> = {
             pickup: "ammo_pickup_01",
         },
     },
+    rainbow_ammo: {
+        name: "Rainbow Ammo",
+        type: "ammo",
+        special: true,
+        hideUi: true,
+        minStackSize: 1,
+        lootImg: {
+            sprite: "loot-ammo-box.img",
+            scale: 0.2,
+            tint: 0xff66ff,
+            tintDark: 0x993d99,
+        },
+        sound: {
+            pickup: "ammo_pickup_01",
+        },
+    },
 };
 
 const BaseDefs = {
@@ -848,6 +864,17 @@ const SkinDefs = {
             border: "loot-circle-outer-01.img",
             scale: 0.3,
             rot: 0.5 * Math.PI,
+        },
+    }),
+    helmet03_samurai: defineSkin("helmet03", {
+        name: "Yuki no Kabuto", // I think this is correct? (The translation)
+        noDrop: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseTintRed: 0xffffff,
+            baseTintBlue: 0xffffff,
+            baseSprite: "player-helmet-samurai.img",
+            spriteScale: 0.3,
         },
     }),
     helmet03_moon: defineSkin("helmet03", {

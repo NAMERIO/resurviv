@@ -54,6 +54,7 @@ export interface RoomData {
     disableAirstrikes: boolean;
     disablePerks: boolean;
     disableLooting: boolean;
+    showEnemiesOnMap: boolean;
 }
 
 //
@@ -150,6 +151,7 @@ export const zClientRoomData = z.object({
     disableAirstrikes: z.boolean().optional(),
     disablePerks: z.boolean().optional(),
     disableLooting: z.boolean().optional(),
+    showEnemiesOnMap: z.boolean().optional(),
 });
 
 export type ClientRoomData = z.infer<typeof zClientRoomData>;

@@ -29,7 +29,7 @@ const mapDef = {
             { name: "log_13", channel: "sfx" },
             { name: "log_14", channel: "sfx" },
         ],
-        atlases: ["gradient", "loadout", "shared", "perks", "woods"],
+        atlases: ["gradient", "loadout", "shared", "perks", "woods", "desert"],
     },
     biome: {
         colors: {
@@ -50,7 +50,7 @@ const mapDef = {
         },
         tracerColors: {},
         airdrop: {
-            planeImg: "airdrop_plane",
+            planeImg: "map-plane-01.img",
             planeSound: "airdrop_plane",
             airdropImg: "map-chute-01-perk.img",
             tint: 0xffffff,
@@ -189,7 +189,7 @@ const mapDef = {
                 bush_04: "bush_07p",
                 tree_06: "tree_01p",
                 crate_18: "crate_02p",
-                carte_02: "crate_02p",
+                crate_02: "crate_02p",
             },
         ],
     },
@@ -200,7 +200,7 @@ export const DeatchmatchPerks = util.mergeDeep({}, Main, mapDef) as MapDef;
 DeatchmatchPerks["lootTable"] = {
     tier_scopes: [
         { name: "", count: 1, weight: 1 },
-        { name: "8x", count: 1, weight: 0.5 },
+        { name: "8xscope", count: 1, weight: 0.5 },
     ],
     tier_mansion_floor: [{ name: "outfitCasanova", count: 1, weight: 1 }],
     tier_vault_floor: [{ name: "outfitJester", count: 1, weight: 1 }],

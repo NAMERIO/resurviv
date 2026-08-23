@@ -449,7 +449,7 @@ export class PlayerBarn {
             }
         }
 
-        if (this.game.isTeamMode || this.game.map.factionMode) {
+        if (this.game.isTeamMode || this.game.map.factionMode || this.game.arenaPrivate) {
             this.playerStatusTicker += dt;
         }
 
@@ -1718,7 +1718,7 @@ export class Player extends BaseGameObject {
     pullToSourceSpeed = 18;
     shootDisabledTimer = 0;
 
-    promoteToRole(role: string) {
+    promoteToRole(role: string, preserveExistingPerks = false) {
         const roleDef = GameObjectDefs[role] as RoleDef;
         if (!roleDef || roleDef.type !== "role") {
             this.game.logger.warn(`Invalid role type: ${role}`);
@@ -1894,10 +1894,16 @@ export class Player extends BaseGameObject {
                 } else {
                     newPerks.delete(perkType);
                 }
-            } else if (this.perks[i].droppable && newPerks.has(perkType)) {
-                this.dropLoot(perkType);
-                this.removePerk(perkType);
-                i--;
+            } else if (newPerks.has(perkType)) {
+                if (preserveExistingPerks) {
+                    // Temporary roles should borrow matching perks instead of replacing
+                    // them with role owned copies that are removed with the role.
+                    newPerks.delete(perkType);
+                } else if (this.perks[i].droppable) {
+                    this.dropLoot(perkType);
+                    this.removePerk(perkType);
+                    i--;
+                }
             }
         }
 
@@ -2086,6 +2092,17 @@ export class Player extends BaseGameObject {
         if (!this.streakReady) return;
         if (this.streakActive) return;
 
+        if (this.game.disablePerks) {
+            const disableStreakMsg = new net.PickupMsg();
+            disableStreakMsg.type = net.PickupMsgType.PerksDisabled;
+
+            this.msgsToSend.push({
+                type: net.MsgType.Pickup,
+                msg: disableStreakMsg,
+            });
+            return;
+        }
+
         const streakDef = DamageStreakDefs[this.chosenStreakType];
         if (!streakDef) return;
         if (streakDef.rewardType === "dash" && (this.downed || this.vehicle)) return;
@@ -2102,11 +2119,13 @@ export class Player extends BaseGameObject {
         } else if (streakDef.rewardType === "gun") {
             const slot = this.curWeapIdx <= 1 ? this.curWeapIdx : 0;
             this.streakGunSlot = slot;
-            this.streakSavedWeapon = {
-                slot,
-                type: this.weapons[slot].type,
-                ammo: this.weapons[slot].ammo,
-            };
+            this.streakSavedWeapons = [
+                {
+                    slot,
+                    type: this.weapons[slot].type,
+                    ammo: this.weapons[slot].ammo,
+                },
+            ];
             const gunDef = GameObjectDefs[streakDef.rewardItem] as GunDef;
             const ammo = gunDef ? gunDef.maxClip : 30;
             this.weaponManager.setWeapon(slot, streakDef.rewardItem, ammo);
@@ -2123,7 +2142,32 @@ export class Player extends BaseGameObject {
                           Number(this.moveUp) - Number(this.moveDown),
                       );
             this.dashDir = v2.normalizeSafe(dashMovement, this.dirNew);
+        } else if (streakDef.rewardItem === "samurai") {
+            this.streakSavedWeapons = [0, 1, 2, 3].map((slot) => ({
+                slot,
+                type: this.weapons[slot].type,
+                ammo: this.weapons[slot].ammo,
+            }));
+            this.streakSavedOutfit = this.outfit;
+            if (!(this.helmet === "helmet03")) {
+                this.dropArmor(this.helmet);
+            }
+            this.helmet = "helmet03_samurai";
+            this.weaponManager.setWeapon(0, "", 0);
+            this.weaponManager.setWeapon(1, "", 0);
+            this.weaponManager.setWeapon(2, "katana_samurai", 0);
+            this.weaponManager.setWeapon(3, "", 0);
+            this.setOutfit("outfitMeteor");
+            this.promoteToRole("samurai", true);
         }
+    }
+
+    restoreStreakWeapons(): void {
+        for (const weapon of this.streakSavedWeapons) {
+            this.weaponManager.setWeapon(weapon.slot, weapon.type, weapon.ammo);
+        }
+
+        this.streakSavedWeapons = [];
     }
 
     deactivateStreak(): void {
@@ -2136,18 +2180,20 @@ export class Player extends BaseGameObject {
                     this.removePerk(streakDef.rewardItem);
                 }
             } else if (streakDef.rewardType === "gun") {
-                if (this.streakGunSlot >= 0) {
-                    this.weaponManager.setWeapon(this.streakGunSlot, "", 0);
+                if (this.streakSavedWeapons.length > 0) {
+                    this.restoreStreakWeapons();
                 }
-                if (this.streakSavedWeapon) {
-                    this.weaponManager.setWeapon(
-                        this.streakSavedWeapon.slot,
-                        this.streakSavedWeapon.type,
-                        this.streakSavedWeapon.ammo,
-                    );
-                    this.streakSavedWeapon = null;
-                }
+
                 this.streakGunSlot = -1;
+            } else if (streakDef.rewardType === "samurai") {
+                if (this.streakSavedWeapons.length > 0) {
+                    this.restoreStreakWeapons();
+                }
+
+                this.setOutfit(this.streakSavedOutfit);
+                this.removeRole();
+                this.hasRoleHelmet = false;
+                this.helmet = "helmet03";
             }
         }
 
@@ -2162,7 +2208,11 @@ export class Player extends BaseGameObject {
             this.streakDirty = true;
 
             const streakDef = DamageStreakDefs[this.chosenStreakType];
-            if (streakDef && streakDef.rewardItem === "streak_juggernaut_effect") {
+            if (
+                streakDef &&
+                (streakDef.rewardItem === "streak_juggernaut_effect" ||
+                    streakDef.rewardItem === "samurai")
+            ) {
                 this.health +=
                     DamageStreakProperties.streak_juggernaut_effect.healthRegen * dt;
             }
@@ -2889,8 +2939,9 @@ export class Player extends BaseGameObject {
     dashSpeed = 0;
     dashTimeLeft = 0;
     dashDir = v2.create(1, 0);
-    streakSavedWeapon: { slot: number; type: string; ammo: number } | null = null;
+    streakSavedWeapons: { slot: number; type: string; ammo: number }[] = [];
     streakGunSlot: number = -1;
+    streakSavedOutfit = "";
     streakDirty = true;
     hideAndSeekBlindTicker = 0;
     hideAndSeekBlindDirty = false;
@@ -5699,13 +5750,11 @@ export class Player extends BaseGameObject {
             if (this.streakGunSlot >= 0) {
                 this.weaponManager.setWeapon(this.streakGunSlot, "", 0);
             }
-            if (this.streakSavedWeapon) {
-                this.weaponManager.setWeapon(
-                    this.streakSavedWeapon.slot,
-                    this.streakSavedWeapon.type,
-                    this.streakSavedWeapon.ammo,
-                );
-                this.streakSavedWeapon = null;
+            if (this.streakSavedWeapons.length > 0) {
+                for (const weapon of this.streakSavedWeapons) {
+                    this.weaponManager.setWeapon(weapon.slot, weapon.type, weapon.ammo);
+                    this.streakSavedWeapons = [];
+                }
             }
             this.streakGunSlot = -1;
             this.deactivateStreak();
@@ -6625,13 +6674,16 @@ export class Player extends BaseGameObject {
                       p.arenaTeam === this.arenaTeam
                     : false;
             const arenaShowsAllPlayers =
-                this.game.arenaPrivate && !isBattleRoyaleMapName(this.game.mapName);
-            const visible =
-                this.game.arenaPrivate && hideAndSeekSettings && this.arenaTeam
-                    ? hideAndSeekVisible
-                    : arenaShowsAllPlayers ||
-                      (!hiddenByDebug &&
-                          (p.teamId === this.teamId || p.timeUntilHidden > 0));
+                this.game.arenaPrivate && this.game.showEnemiesOnMap;
+            const arenaHidesEnemies =
+                this.game.arenaPrivate && !this.game.showEnemiesOnMap;
+            const visible = arenaHidesEnemies
+                ? p === this || (!hiddenByDebug && p.teamId === this.teamId)
+                : this.game.arenaPrivate && hideAndSeekSettings && this.arenaTeam
+                  ? hideAndSeekVisible
+                  : arenaShowsAllPlayers ||
+                    (!hiddenByDebug &&
+                        (p.teamId === this.teamId || p.timeUntilHidden > 0));
             return {
                 hasData:
                     (arenaShowsAllPlayers && visible) ||
@@ -6755,6 +6807,12 @@ export class Player extends BaseGameObject {
                 }
                 break;
             case "melee":
+                if (this.streakActive && this.chosenStreakType === "streak_samurai") {
+                    amountLeft = 1;
+                    pickupMsg.type = net.PickupMsgType.StreakPerkActive;
+                    break;
+                }
+
                 if (this.weapons[GameConfig.WeaponSlot.Melee].type === obj.type) {
                     pickupMsg.type = net.PickupMsgType.AlreadyEquipped;
                     amountLeft = 1;
@@ -6778,9 +6836,17 @@ export class Player extends BaseGameObject {
 
                     if (
                         this.streakActive &&
-                        this.streakSavedWeapon?.slot === newGunIdx &&
+                        this.streakSavedWeapons.some(
+                            (weapon) => weapon.slot === newGunIdx,
+                        ) &&
                         this.chosenStreakType === "streak_heavy_hitter"
                     ) {
+                        amountLeft = 1;
+                        pickupMsg.type = net.PickupMsgType.StreakPerkActive;
+                        break;
+                    }
+
+                    if (this.streakActive && this.chosenStreakType === "streak_samurai") {
                         amountLeft = 1;
                         pickupMsg.type = net.PickupMsgType.StreakPerkActive;
                         break;
@@ -6885,6 +6951,12 @@ export class Player extends BaseGameObject {
                     const thisLevel = this.getGearLevel(thisType);
                     amountLeft = 1;
 
+                    if (this.streakActive && this.chosenStreakType === "streak_samurai") {
+                        amountLeft = 1;
+                        pickupMsg.type = net.PickupMsgType.StreakPerkActive;
+                        break;
+                    }
+
                     // role helmets and perk helmets can't be dropped in favor of another helmet, they're the "highest" tier
                     if (
                         def.type == "helmet" &&
@@ -6933,6 +7005,12 @@ export class Player extends BaseGameObject {
                 }
                 break;
             case "outfit":
+                if (this.streakActive && this.chosenStreakType === "streak_samurai") {
+                    amountLeft = 1;
+                    pickupMsg.type = net.PickupMsgType.StreakPerkActive;
+                    break;
+                }
+
                 if (this.role) {
                     const roleDef = GameObjectDefs[this.role] as RoleDef;
                     if (roleDef.defaultItems?.noDropOutfit) {
@@ -7040,6 +7118,7 @@ export class Player extends BaseGameObject {
     // in original game, only called on snowball or potato collision
     dropRandomLoot(): void {
         if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
+        if (this.streakActive && this.chosenStreakType === "streak_samurai") return;
 
         // all possible droppable loot held by the player
         // 4 categories: inventory, weapons, armor, perks

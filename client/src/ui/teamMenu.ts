@@ -410,6 +410,7 @@ export class TeamMenu {
                 disableAirstrikes: !!this.roomData.disableAirstrikes,
                 disablePerks: !!this.roomData.disablePerks,
                 disableLooting: !!this.roomData.disableLooting,
+                showEnemiesOnMap: this.roomData.showEnemiesOnMap !== false,
                 findingGame: false,
                 lastError: "",
             } as RoomData;
@@ -575,6 +576,7 @@ export class TeamMenu {
                     this.roomData.disableAirstrikes = ourRoomData.disableAirstrikes;
                     this.roomData.disablePerks = ourRoomData.disablePerks;
                     this.roomData.disableLooting = ourRoomData.disableLooting;
+                    this.roomData.showEnemiesOnMap = ourRoomData.showEnemiesOnMap;
                 }
                 this.refreshUi();
                 this.onStateUpdated?.();

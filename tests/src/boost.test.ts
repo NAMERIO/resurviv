@@ -42,6 +42,7 @@ test("Assume leadership", async () => {
 
     const player = game.playerBarn.addTestPlayer({});
     player.addPerk("assume_leadership");
+    player.boost = 0;
 
     player.health = 1;
     player.update(1);

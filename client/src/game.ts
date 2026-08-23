@@ -765,10 +765,18 @@ export class Game {
                     );
                 }
             } else if (!gameplayBlocked) {
-                freeCameraMoveLeft = this.m_inputBinds.isBindDown(Input.MoveLeft);
-                freeCameraMoveRight = this.m_inputBinds.isBindDown(Input.MoveRight);
-                freeCameraMoveUp = this.m_inputBinds.isBindDown(Input.MoveUp);
-                freeCameraMoveDown = this.m_inputBinds.isBindDown(Input.MoveDown);
+                freeCameraMoveLeft =
+                    this.m_inputBinds.isBindDown(Input.MoveLeft) ||
+                    this.m_input.keyDown(Key.Left);
+                freeCameraMoveRight =
+                    this.m_inputBinds.isBindDown(Input.MoveRight) ||
+                    this.m_input.keyDown(Key.Right);
+                freeCameraMoveUp =
+                    this.m_inputBinds.isBindDown(Input.MoveUp) ||
+                    this.m_input.keyDown(Key.Up);
+                freeCameraMoveDown =
+                    this.m_inputBinds.isBindDown(Input.MoveDown) ||
+                    this.m_input.keyDown(Key.Down);
                 movement = v2.create(
                     +freeCameraMoveRight - +freeCameraMoveLeft,
                     +freeCameraMoveUp - +freeCameraMoveDown,

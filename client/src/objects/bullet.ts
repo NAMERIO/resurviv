@@ -541,7 +541,7 @@ export class BulletBarn {
                         );
                         hit = col.collidable;
                     } else if (col.type == "lasr_swrd") {
-                        const lasrDef = GameObjectDefs.lasr_swrd as MeleeDef;
+                        const lasrDef = GameObjectDefs.lasr_swrd_01 as MeleeDef;
                         audioManager.playGroup(lasrDef.sound.swing, {
                             soundPos: col.point,
                             layer: col.layer!,
