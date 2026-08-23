@@ -6,25 +6,43 @@
    fill="none"
    version="1.1"
    id="svg11"
+   sodipodi:docname="player-back-auresis.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.99377169"
+     inkscape:cx="58.86664"
+     inkscape:cy="91.570328"
+     inkscape:window-width="1283"
+     inkscape:window-height="540"
+     inkscape:window-x="0"
+     inkscape:window-y="33"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg11" />
   <path
-     d="M 140.768,77.6525 C 142.984,40.9924 115.061,9.47568 78.4008,7.25786 41.7409,5.04005 10.2263,32.961 8.01107,69.6211 5.79582,106.281 33.7187,137.798 70.3786,140.016 107.039,142.234 138.553,114.313 140.768,77.6525 Z"
-     fill="url(#paint0_linear)"
-     id="path1"
-     style="fill:url(#paint0_linear)" />
-  <path
-     d="M 140.768,77.6525 C 142.984,40.9924 115.061,9.47568 78.4008,7.25786 41.7409,5.04005 10.2263,32.961 8.01107,69.6211 5.79582,106.281 33.7187,137.798 70.3786,140.016 107.039,142.234 138.553,114.313 140.768,77.6525 Z"
+     d="m 145.86465,78.353503 c 2.39919,-39.6906 -27.83206,-73.81265 -67.522771,-76.21381 -39.690388,-2.40114 -73.810144,27.82789 -76.208494,67.5185 -2.39837,39.690387 27.832751,73.812727 67.523139,76.214087 39.690926,2.40135 73.810036,-27.82773 76.208126,-67.518777 z"
      fill="#414141"
      fill-opacity="0.7"
      id="path2"
-     style="fill:#cbb267;fill-opacity:0.25098" />
+     style="mix-blend-mode:multiply;fill:#cbb267;fill-opacity:0.25098;stroke-width:1" />
   <path
      fill-rule="evenodd"
      clip-rule="evenodd"
      d="m 13.0197,74.0009 c 0,33.6861 27.3055,60.9901 60.9803,60.9921 33.675,0.003 60.98,-27.296 60.98,-60.9819 C 134.98,40.325 107.675,13.0214 74,13.0186 40.3252,13.0158 13.0197,40.3148 13.0197,74.0009 Z M 74,146.006 C 34.2318,146.003 2,113.761 2,74 2,34.2392 34.2318,2.00269 74,2.00601 c 39.768,0.00331 72,32.24519 72,72.00599 0,39.761 -32.232,71.997 -72,71.994 z"
      fill="#000000"
-     id="path3" />
+     id="path3"
+     style="fill:#333333;fill-opacity:1" />
   <defs
      id="defs11">
     <linearGradient
@@ -33,7 +51,8 @@
        y1="127.381"
        x2="28.1938"
        y2="2.41908"
-       gradientUnits="userSpaceOnUse">
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1.0826649,0,0,1.0826649,-6.5399199,-5.718129)">
       <stop
          stop-color="#9D9D9D"
          id="stop3"
@@ -81,4 +100,9 @@
          style="stop-color:#aa820a;stop-opacity:1;" />
     </linearGradient>
   </defs>
+  <path
+     d="M 145.86465,78.35351 C 148.26384,38.662906 118.03259,4.540858 78.341879,2.139702 38.651491,-0.26144302 4.5317401,29.96759 2.1333901,69.658194 -0.26498989,109.34858 29.96614,143.47092 69.656524,145.87228 109.34745,148.27363 143.46656,118.04455 145.86465,78.35351 Z"
+     fill="url(#paint0_linear)"
+     id="path1"
+     style="mix-blend-mode:multiply;fill:url(#paint0_linear);stroke-width:1" />
 </svg>
