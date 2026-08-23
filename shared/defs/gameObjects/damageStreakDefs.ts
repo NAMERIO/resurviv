@@ -98,7 +98,7 @@ export const DamageStreakDefs: Record<string, DamageStreakDef> = {
     streak_samurai: {
         type: "streak",
         name: "Samurai",
-        lore: "Gain windwalk, melee runner, juggernaut, but become confined to a Katana. Immune to snow.",
+        lore: "Gain windwalk, melee runner, juggernaut, but become confined to a katana. Immune to snow.",
         rewardType: "samurai",
         rewardItem: "samurai",
         duration: 10,

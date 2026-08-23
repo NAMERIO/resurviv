@@ -2142,16 +2142,19 @@ export class Player extends BaseGameObject {
                           Number(this.moveUp) - Number(this.moveDown),
                       );
             this.dashDir = v2.normalizeSafe(dashMovement, this.dirNew);
-        } else if (streakDef.rewardItem === "samurai") {
+        } else if (streakDef.rewardType === "samurai") {
+            if (this.weaponManager.cookingThrowable) {
+                this.weaponManager.throwThrowable();
+            }
             this.streakSavedWeapons = [0, 1, 2, 3].map((slot) => ({
                 slot,
                 type: this.weapons[slot].type,
                 ammo: this.weapons[slot].ammo,
             }));
-            this.streakSavedOutfit = this.outfit;
             if (!(this.helmet === "helmet03")) {
                 this.dropArmor(this.helmet);
             }
+            this.streakSavedOutfit = this.outfit;
             this.helmet = "helmet03_samurai";
             this.weaponManager.setWeapon(0, "", 0);
             this.weaponManager.setWeapon(1, "", 0);
@@ -3219,7 +3222,6 @@ export class Player extends BaseGameObject {
             this.invManager.give("2xscope", 1);
         }
 
-        this.weaponManager.showNextThrowable();
         this.recalculateScale();
 
         this.logPlayerIp();
