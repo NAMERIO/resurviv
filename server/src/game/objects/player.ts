@@ -266,12 +266,7 @@ export class PlayerBarn {
             pos = spawnBuilding.pos;
             layer = spawnBuilding.layer;
         } else {
-            const privateLobbyTeamSpawn =
-                this.game.arenaPrivate && joinData.arenaTeam && !this.game.map.amongUsMode
-                    ? this.game.map.getSpawnPos(group, team, joinData.arenaTeam)
-                    : undefined;
             pos =
-                privateLobbyTeamSpawn ??
                 this.game.captureTheFlagManager.getSpawnPos(
                     joinData.arenaTeam,
                     team?.id,
@@ -2739,12 +2734,7 @@ export class Player extends BaseGameObject {
         this.emoteCounter = 0;
         this.layer = 0;
 
-        const privateLobbyTeamSpawn =
-            this.game.arenaPrivate && this.arenaTeam
-                ? this.game.map.getSpawnPos(this.group, this.team, this.arenaTeam)
-                : undefined;
         const spawnPos =
-            privateLobbyTeamSpawn ??
             this.game.captureTheFlagManager.getSpawnPos(this.arenaTeam, this.teamId) ??
             this.game.kingOfTheHillManager.getSpawnPos(this.arenaTeam, this.teamId) ??
             this.game.dominationManager.getSpawnPos(this.arenaTeam, this.teamId) ??
