@@ -695,6 +695,28 @@ button:disabled {
   border-bottom: 0;
 }
 
+.existing-building-toolbar {
+  position: sticky;
+  top: -12px;
+  z-index: 1;
+  margin: -12px -12px 4px;
+  border-bottom: 3px solid var(--game-border);
+  background: var(--game-panel-solid);
+  padding: 12px;
+}
+
+.existing-building-toolbar .small-note {
+  margin: 7px 0 0;
+}
+
+.existing-building-list {
+  min-height: 120px;
+}
+
+.existing-building-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
 .small-note {
   color: var(--game-muted);
   font-size: 11px;

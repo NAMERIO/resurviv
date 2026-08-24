@@ -119,6 +119,9 @@ interface EditorItem {
     fallbackHeight: number;
     alpha: number;
     tint: number;
+    removeOnDamaged?: boolean;
+    mirrorX?: boolean;
+    mirrorY?: boolean;
     surfaceType?: string;
     mapGroundPatch?: {
         shape?: MapGroundPatchShape;
@@ -141,6 +144,8 @@ interface EditorDoc {
         beach: boolean;
     };
     mapColor: number;
+    mapDisplay: boolean;
+    mapScale: number;
     zIdx: number;
     gridSize: number;
     snapToGrid: boolean;
@@ -325,8 +330,35 @@ root.innerHTML = `
           <div class="section-body button-grid file-grid">
             <button id="new-doc" class="mini-button">New</button>
             <button id="import" class="mini-button">Import</button>
+            <button id="load-existing" class="mini-button">Existing</button>
             <button id="local-save" class="mini-button">Save</button>
             <button id="local-load" class="mini-button">Load</button>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-header">
+            <div class="section-title">Building</div>
+          </div>
+          <div class="section-body">
+            <div class="field-grid">
+              <div class="field">
+                <label for="building-map-color">Map color</label>
+                <input id="building-map-color" class="text-field" spellcheck="false">
+              </div>
+              <div class="field">
+                <label for="building-zidx">Z index</label>
+                <input id="building-zidx" class="number-field" type="number" step="1">
+              </div>
+              <div class="field">
+                <label for="building-map-scale">Map scale</label>
+                <input id="building-map-scale" class="number-field" type="number" min="0.01" step="0.05">
+              </div>
+            </div>
+            <div class="field-grid tool-field-grid">
+              <label class="check-row compact-check"><span>Show on map</span><input id="building-map-display" type="checkbox"></label>
+              <label class="check-row compact-check"><span>Grass</span><input id="building-terrain-grass" type="checkbox"></label>
+              <label class="check-row compact-check"><span>Beach</span><input id="building-terrain-beach" type="checkbox"></label>
+            </div>
           </div>
         </div>
         <div class="section">
@@ -468,6 +500,8 @@ function createEmptyDoc(): EditorDoc {
             beach: true,
         },
         mapColor: 0x6b6b6b,
+        mapDisplay: true,
+        mapScale: 1,
         zIdx: 1,
         gridSize: 1,
         snapToGrid: true,
@@ -524,6 +558,9 @@ function normalizeItem(item: Partial<EditorItem>): EditorItem {
         fallbackHeight,
         alpha: finite(item.alpha, 1),
         tint: finite(item.tint, 0xffffff),
+        removeOnDamaged: item.removeOnDamaged,
+        mirrorX: item.mirrorX,
+        mirrorY: item.mirrorY,
         surfaceType: item.surfaceType,
         mapGroundPatch: item.mapGroundPatch,
         ignoreMapSpawnReplacement: item.ignoreMapSpawnReplacement,
@@ -1508,9 +1545,18 @@ function drawItem(item: EditorItem) {
     }
 }
 
-function drawBuildingObject(item: EditorItem, building: BuildingDef) {
+function drawBuildingObject(item: EditorItem, building: BuildingDef, depth = 0) {
+    const hasGroundPatches = Boolean(building.mapGroundPatches?.length);
     drawBuildingGroundPatches(item, building);
-    if (drawBuildingMapShapes(item, building)) return;
+    const drewImages = drawBuildingImages(
+        item,
+        mode === "roof" ? building.ceiling?.imgs || [] : building.floor?.imgs || [],
+    );
+    drawBuildingChildObjects(item, building, depth);
+    const hasChildObjects = Boolean(building.mapObjects?.length);
+    const drewMapShapes =
+        !drewImages && !hasChildObjects && drawBuildingMapShapes(item, building);
+    if (hasGroundPatches || drewImages || hasChildObjects || drewMapShapes) return;
 
     const screen = worldToScreen(v2.create(item.x, item.y));
     ctx.save();
@@ -1518,6 +1564,37 @@ function drawBuildingObject(item: EditorItem, building: BuildingDef) {
     ctx.rotate(-item.rotation);
     drawFallbackItemBox(item);
     ctx.restore();
+}
+
+function drawBuildingImages(item: EditorItem, images: readonly FloorImage[]): boolean {
+    let drewImage = false;
+    const buildingOri = radToOri(item.rotation);
+
+    for (const floorImage of images) {
+        const image = getImage(floorImage.sprite);
+        if (!image?.loaded || image.failed) continue;
+
+        const pos = buildingLocalToWorld(
+            item,
+            floorImage.pos || v2.create(0, 0),
+            buildingOri,
+        );
+        const screen = worldToScreen(pos);
+        const scale = (floorImage.scale ?? 1) * item.scale * camera.zoom;
+        const width = image.img.naturalWidth * scale;
+        const height = image.img.naturalHeight * scale;
+
+        ctx.save();
+        ctx.translate(screen.x, screen.y);
+        ctx.rotate(-oriToRad(buildingOri + (floorImage.rot || 0)));
+        ctx.globalAlpha *= floorImage.alpha ?? 1;
+        ctx.scale(floorImage.mirrorX ? -1 : 1, floorImage.mirrorY ? -1 : 1);
+        ctx.drawImage(image.img, -width / 2, -height / 2, width, height);
+        ctx.restore();
+        drewImage = true;
+    }
+
+    return drewImage;
 }
 
 function drawBuildingGroundPatches(item: EditorItem, building: BuildingDef) {
@@ -1541,7 +1618,7 @@ function drawBuildingGroundPatches(item: EditorItem, building: BuildingDef) {
     ctx.restore();
 }
 
-function _drawBuildingChildObjects(
+function drawBuildingChildObjects(
     item: EditorItem,
     building: BuildingDef,
     depth: number,
@@ -1579,6 +1656,7 @@ function _drawBuildingChildObjects(
                     localCollider: createAabbCollider(12, 12),
                 },
                 def as BuildingDef,
+                depth + 1,
             );
             continue;
         }
@@ -3108,6 +3186,21 @@ function syncStaticControls() {
     buildingNameInput.value = doc.name;
     snapToggle.checked = doc.snapToGrid;
     gridSizeInput.value = String(doc.gridSize);
+    (document.getElementById("building-map-color") as HTMLInputElement).value = hexCss(
+        doc.mapColor,
+    );
+    (document.getElementById("building-zidx") as HTMLInputElement).value = String(
+        doc.zIdx,
+    );
+    (document.getElementById("building-map-scale") as HTMLInputElement).value = String(
+        doc.mapScale,
+    );
+    (document.getElementById("building-map-display") as HTMLInputElement).checked =
+        doc.mapDisplay;
+    (document.getElementById("building-terrain-grass") as HTMLInputElement).checked =
+        doc.terrain.grass;
+    (document.getElementById("building-terrain-beach") as HTMLInputElement).checked =
+        doc.terrain.beach;
     (document.getElementById("undo") as HTMLButtonElement).disabled = historyIndex <= 0;
     (document.getElementById("redo") as HTMLButtonElement).disabled =
         historyIndex >= history.length - 1;
@@ -3219,6 +3312,26 @@ function setupControls() {
         doc.gridSize = Math.max(MIN_GRID_SIZE, Number(gridSizeInput.value) || 1);
         commit("grid");
     });
+    bindText("building-map-color", (value) => {
+        doc.mapColor = parseHexColor(value, doc.mapColor);
+    });
+    bindNumber("building-zidx", (value) => {
+        doc.zIdx = Math.round(value);
+    });
+    bindNumber("building-map-scale", (value) => {
+        doc.mapScale = Math.max(0.01, value);
+    });
+    for (const [id, update] of [
+        ["building-map-display", (checked: boolean) => (doc.mapDisplay = checked)],
+        ["building-terrain-grass", (checked: boolean) => (doc.terrain.grass = checked)],
+        ["building-terrain-beach", (checked: boolean) => (doc.terrain.beach = checked)],
+    ] as const) {
+        const input = document.getElementById(id) as HTMLInputElement;
+        input.addEventListener("change", () => {
+            update(input.checked);
+            commit("edit building");
+        });
+    }
     assetSearch.addEventListener("input", renderPalette);
     assetCategorySelect.addEventListener("change", () => {
         activeCategory = assetCategorySelect.value as PaletteCategory;
@@ -3280,6 +3393,9 @@ function setupControls() {
         });
     document.getElementById("export")?.addEventListener("click", openExportDialog);
     document.getElementById("import")?.addEventListener("click", openImportDialog);
+    document
+        .getElementById("load-existing")
+        ?.addEventListener("click", openExistingDialog);
     document.getElementById("local-save")?.addEventListener("click", saveNamedDoc);
     document.getElementById("local-load")?.addEventListener("click", openLoadDialog);
     document.getElementById("preview")?.addEventListener("click", enterPreviewMode);
@@ -3327,6 +3443,107 @@ function openExportDialog() {
     document.getElementById("download-json")?.addEventListener("click", () => {
         textarea.value = serializeDoc(doc);
     });
+}
+
+function openExistingDialog() {
+    const buildings = Object.entries(MapObjectDefs as Record<string, MapObjectDef>)
+        .filter((entry): entry is [string, BuildingDef] => entry[1].type === "building")
+        .sort(([a], [b]) => a.localeCompare(b));
+
+    openDialog(
+        "Load Existing Building",
+        `<div class="existing-building-toolbar">
+          <input id="existing-building-search" class="text-field" placeholder="Search ${buildings.length} buildings" autofocus>
+          <p class="small-note">Loads the resolved building definition, including its floor, roof, collision surfaces, ground patches, child objects, and basement.</p>
+        </div>
+        <div id="existing-building-list" class="existing-building-list"></div>`,
+        `<span class="small-note">Loading replaces the current unsaved canvas.</span>`,
+    );
+
+    const search = document.getElementById(
+        "existing-building-search",
+    ) as HTMLInputElement;
+    const list = document.getElementById("existing-building-list") as HTMLDivElement;
+
+    const render = () => {
+        const query = search.value.trim().toLowerCase();
+        const filtered = buildings.filter(([name]) => name.toLowerCase().includes(query));
+        list.innerHTML = filtered.length
+            ? filtered
+                  .map(([name, building]) => {
+                      const partCount =
+                          (building.floor?.imgs?.length || 0) +
+                          (building.ceiling?.imgs?.length || 0) +
+                          (building.floor?.surfaces || []).reduce(
+                              (count, surface) =>
+                                  count + (surface.collision?.length || 0),
+                              0,
+                          ) +
+                          (building.mapGroundPatches?.length || 0) +
+                          (building.mapObjects?.length || 0);
+                      const basement = building.basement ? " · basement" : "";
+                      return `<div class="local-save-row existing-building-row">
+                        <div>
+                          <strong>${escapeHtml(name)}</strong>
+                          <div class="small-note">${partCount} editable parts${basement}</div>
+                        </div>
+                        <button class="mini-button" data-existing-building="${escapeAttr(name)}">Load</button>
+                      </div>`;
+                  })
+                  .join("")
+            : `<div class="selection-empty">No building matches that search.</div>`;
+
+        list.querySelectorAll<HTMLButtonElement>("[data-existing-building]").forEach(
+            (button) => {
+                button.addEventListener("click", () => {
+                    const name = button.dataset.existingBuilding || "";
+                    const building = MapObjectDefs[name];
+                    if (building?.type !== "building") return;
+                    loadEditorDocument(
+                        documentFromBuildingDef(name, building as BuildingDef),
+                    );
+                    closeDialog();
+                });
+            },
+        );
+    };
+
+    search.addEventListener("input", render);
+    render();
+    search.focus();
+}
+
+function loadEditorDocument(next: EditorDoc) {
+    doc = normalizeDoc(next);
+    selectedIds.clear();
+    history = [serializeDoc(doc)];
+    historyIndex = 0;
+    mode = "base";
+    preview = null;
+    saveWorkingDoc();
+    frameDocument();
+    syncModeButtons();
+    renderAllPanels();
+}
+
+function frameDocument() {
+    const bounds = boundsForItems(doc.items);
+    if (!bounds) {
+        camera = { x: 0, y: 0, zoom: scopeToCameraZoom(DEFAULT_SCOPE) };
+        activeScope = DEFAULT_SCOPE;
+        return;
+    }
+
+    const width = Math.max(MIN_GRID_SIZE, bounds.max.x - bounds.min.x);
+    const height = Math.max(MIN_GRID_SIZE, bounds.max.y - bounds.min.y);
+    camera.x = (bounds.min.x + bounds.max.x) / 2;
+    camera.y = (bounds.min.y + bounds.max.y) / 2;
+    camera.zoom = clamp(
+        Math.min((viewWidth - 80) / (width * PPU), (viewHeight - 80) / (height * PPU)),
+        MIN_CAMERA_ZOOM,
+        MAX_CAMERA_ZOOM,
+    );
+    activeScope = customScopeName(camera.zoom);
 }
 
 function openImportDialog() {
@@ -3456,27 +3673,33 @@ function buildBuildingDef(section: "base" | "basement") {
         (item) => objectLayers.includes(item.layer) && inferMapObjectType(item),
     );
 
-    const surfaceColliders = hitboxes.length
-        ? hitboxes.map((item) => firstAabb(itemColliders(item)[0]))
-        : regularFloorItems.map((item) => firstAabb(itemColliders(item)[0]));
+    const surfaceItems = hitboxes.length ? hitboxes : regularFloorItems;
+    const surfaceGroups = new Map<string, AABB[]>();
+    for (const item of surfaceItems) {
+        const collision = firstAabb(itemColliders(item)[0]);
+        if (!collision) continue;
+        const type = item.surfaceType || "wood";
+        const collisions = surfaceGroups.get(type) || [];
+        collisions.push(collision);
+        surfaceGroups.set(type, collisions);
+    }
+    if (!surfaceGroups.size) {
+        surfaceGroups.set(regularFloorItems[0]?.surfaceType || "wood", []);
+    }
     const zoomColliders = roofItems.length
         ? [boundsForItems([...floorItems, ...mapObjects])]
         : [];
 
     return {
-        mapDisplay: !isBasement,
+        mapDisplay: !isBasement && doc.mapDisplay,
         mapColor: doc.mapColor,
+        mapScale: doc.mapScale,
         zIdx: isBasement ? 0 : doc.zIdx,
         floorImgs: regularFloorItems.filter((item) => item.sprite).map(itemToFloorImage),
-        floorSurfaces: [
-            {
-                type:
-                    regularFloorItems[0]?.surfaceType ||
-                    hitboxes[0]?.surfaceType ||
-                    "wood",
-                collision: surfaceColliders.filter(Boolean) as AABB[],
-            },
-        ],
+        floorSurfaces: Array.from(surfaceGroups, ([type, collision]) => ({
+            type,
+            collision,
+        })),
         ceilingImgs: roofItems.filter((item) => item.sprite).map(itemToFloorImage),
         zoomRegions: zoomColliders.filter(Boolean) as AABB[],
         mapObjects: mapObjects.map(itemToMapObject),
@@ -3492,6 +3715,9 @@ function itemToFloorImage(item: EditorItem) {
         alpha: item.alpha,
         tint: item.tint,
         rot: radToOri(item.rotation),
+        removeOnDamaged: item.removeOnDamaged,
+        mirrorX: item.mirrorX,
+        mirrorY: item.mirrorY,
     };
 }
 
@@ -3569,7 +3795,7 @@ function formatBuilding(
     lines.push("{");
     lines.push(`    type: "building",`);
     lines.push(
-        `    map: { display: ${building.mapDisplay}, color: ${hexColor(building.mapColor)}, scale: 1 },`,
+        `    map: { display: ${building.mapDisplay}, color: ${hexColor(building.mapColor)}, scale: ${formatNum(building.mapScale)} },`,
     );
     lines.push(
         `    terrain: { grass: ${doc.terrain.grass}, beach: ${doc.terrain.beach} },`,
@@ -3662,6 +3888,9 @@ function formatFloorImage(img: ReturnType<typeof itemToFloorImage>): string {
         `tint: ${hexColor(img.tint)}`,
     ];
     if (img.rot) parts.push(`rot: ${img.rot}`);
+    if (img.removeOnDamaged) parts.push("removeOnDamaged: true");
+    if (img.mirrorX) parts.push("mirrorX: true");
+    if (img.mirrorY) parts.push("mirrorY: true");
     return `{ ${parts.join(", ")} }`;
 }
 
@@ -3697,11 +3926,29 @@ function importDocument(text: string): EditorDoc {
     if (!name || !baseDef)
         throw new Error("Could not find a BuildingDef in that import.");
 
+    return documentFromBuildingDef(name, baseDef, defs);
+}
+
+function documentFromBuildingDef(
+    name: string,
+    baseDef: BuildingDef,
+    defs: Record<string, BuildingDef | MapObjectDef> = MapObjectDefs,
+): EditorDoc {
     const next = createEmptyDoc();
     next.name = sanitizeKey(name);
-    importBuildingIntoDoc(next, baseDef, false);
-    if (baseDef.basement && defs[baseDef.basement]) {
-        importBuildingIntoDoc(next, defs[baseDef.basement], true);
+    next.terrain.grass = baseDef.terrain?.grass ?? next.terrain.grass;
+    next.terrain.beach = baseDef.terrain?.beach ?? next.terrain.beach;
+    next.mapColor = baseDef.map?.color ?? next.mapColor;
+    next.mapDisplay = baseDef.map?.display ?? true;
+    next.mapScale = baseDef.map?.scale ?? 1;
+    next.zIdx = baseDef.zIdx ?? 0;
+    importBuildingIntoDoc(next, baseDef, false, defs);
+
+    if (baseDef.basement) {
+        const basementDef = defs[baseDef.basement];
+        if (basementDef?.type === "building") {
+            importBuildingIntoDoc(next, basementDef as BuildingDef, true, defs);
+        }
     }
     return next;
 }
@@ -3739,48 +3986,61 @@ function importBuildingIntoDoc(
     next: EditorDoc,
     building: BuildingDef,
     basement: boolean,
+    defs: Record<string, BuildingDef | MapObjectDef> = MapObjectDefs,
+    transform: BuildingImportTransform = identityBuildingImportTransform(),
 ) {
     const floorLayer: LayerId = basement ? "basementFloor" : "floor";
     const objectLayer: LayerId = basement ? "basement" : "objects";
     const wallLayer: LayerId = basement ? "basement" : "walls";
 
     for (const img of building.floor?.imgs || []) {
+        const pos = transformBuildingImportPoint(transform, img.pos || v2.create(0, 0));
         next.items.push({
             id: makeId("part"),
             name: img.sprite,
             kind: basement ? "basementFloor" : "floor",
             layer: floorLayer,
             sprite: img.sprite,
-            x: img.pos?.x || 0,
-            y: img.pos?.y || 0,
-            rotation: oriToRad(img.rot || 0),
-            scale: 1,
+            x: pos.x,
+            y: pos.y,
+            rotation: oriToRad(transform.ori + (img.rot || 0)),
+            scale: transform.scale,
             assetScale: img.scale || 1,
             fallbackWidth: 16,
             fallbackHeight: 12,
             alpha: img.alpha ?? 1,
             tint: img.tint ?? 0xffffff,
+            removeOnDamaged: img.removeOnDamaged,
+            mirrorX: img.mirrorX,
+            mirrorY: img.mirrorY,
             surfaceType: building.floor.surfaces?.[0]?.type || "wood",
             localCollider: createAabbCollider(16, 12),
         });
     }
     if (!basement) {
         for (const img of building.ceiling?.imgs || []) {
+            const pos = transformBuildingImportPoint(
+                transform,
+                img.pos || v2.create(0, 0),
+            );
             next.items.push({
                 id: makeId("part"),
                 name: img.sprite,
                 kind: "roof",
                 layer: "roof",
                 sprite: img.sprite,
-                x: img.pos?.x || 0,
-                y: img.pos?.y || 0,
-                rotation: oriToRad(img.rot || 0),
-                scale: 1,
+                x: pos.x,
+                y: pos.y,
+                rotation: oriToRad(transform.ori + (img.rot || 0)),
+                scale: transform.scale,
                 assetScale: img.scale || 1,
                 fallbackWidth: 18,
                 fallbackHeight: 14,
                 alpha: img.alpha ?? 1,
                 tint: img.tint ?? 0xffffff,
+                removeOnDamaged: img.removeOnDamaged,
+                mirrorX: img.mirrorX,
+                mirrorY: img.mirrorY,
                 localCollider: createAabbCollider(18, 14),
             });
         }
@@ -3790,15 +4050,16 @@ function importBuildingIntoDoc(
             const box = collider.toAabb(col);
             const size = v2.sub(box.max, box.min);
             const center = v2.mul(v2.add(box.min, box.max), 0.5);
+            const pos = transformBuildingImportPoint(transform, center);
             next.items.push({
                 id: makeId("part"),
                 name: basement ? "basement_collision" : "floor_collision",
                 kind: "hitbox",
                 layer: "hitboxes",
-                x: center.x,
-                y: center.y,
-                rotation: 0,
-                scale: 1,
+                x: pos.x,
+                y: pos.y,
+                rotation: oriToRad(transform.ori),
+                scale: transform.scale,
                 assetScale: 1,
                 fallbackWidth: size.x,
                 fallbackHeight: size.y,
@@ -3813,15 +4074,16 @@ function importBuildingIntoDoc(
         const box = collider.toAabb(patch.bound);
         const size = v2.sub(box.max, box.min);
         const center = v2.mul(v2.add(box.min, box.max), 0.5);
+        const pos = transformBuildingImportPoint(transform, center);
         next.items.push({
             id: makeId("part"),
             name: "map_floor",
             kind: "floor",
             layer: floorLayer,
-            x: center.x,
-            y: center.y,
-            rotation: 0,
-            scale: 1,
+            x: pos.x,
+            y: pos.y,
+            rotation: oriToRad(transform.ori),
+            scale: transform.scale,
             assetScale: 1,
             fallbackWidth: size.x,
             fallbackHeight: size.y,
@@ -3839,8 +4101,19 @@ function importBuildingIntoDoc(
     }
     for (const obj of building.mapObjects || []) {
         if (!obj.type || typeof obj.type !== "string") continue;
-        const def = MapObjectDefs[obj.type];
+        const def = defs[obj.type] || MapObjectDefs[obj.type];
         const obstacle = def?.type === "obstacle" ? (def as ObstacleDef) : undefined;
+        const childBuilding = def?.type === "building" ? (def as BuildingDef) : undefined;
+        const childPos = transformBuildingImportPoint(transform, obj.pos);
+        const childOri =
+            obj.inheritOri === false ? obj.ori || 0 : transform.ori + (obj.ori || 0);
+        const childScale = transform.scale * (obj.scale || 1);
+
+        const childBounds = childBuilding
+            ? buildingLocalImageBounds(childBuilding)
+            : null;
+        const childWidth = childBounds ? childBounds.max.x - childBounds.min.x : 3;
+        const childHeight = childBounds ? childBounds.max.y - childBounds.min.y : 3;
         const classification = obstacle
             ? classifyObstacle(obj.type, obstacle)
             : { kind: "object" as ItemKind, layer: objectLayer };
@@ -3858,24 +4131,55 @@ function importBuildingIntoDoc(
                   ? wallLayer
                   : objectLayer,
             type: obj.type,
-            sprite: obstacle?.img?.sprite,
-            x: obj.pos.x,
-            y: obj.pos.y,
-            rotation: oriToRad(obj.ori || 0),
-            scale: obj.scale || 1,
+            sprite:
+                obstacle?.img?.sprite ||
+                childBuilding?.ceiling?.imgs?.[0]?.sprite ||
+                childBuilding?.floor?.imgs?.[0]?.sprite,
+            x: childPos.x,
+            y: childPos.y,
+            rotation: oriToRad(childOri),
+            scale: childScale,
             assetScale: obstacle?.img?.scale ?? 1,
             fallbackWidth: obstacle
                 ? fallbackSizeFromCollider(obstacle.collision).width
-                : 3,
+                : childWidth,
             fallbackHeight: obstacle
                 ? fallbackSizeFromCollider(obstacle.collision).height
-                : 3,
+                : childHeight,
             alpha: 1,
             tint: 0xffffff,
             ignoreMapSpawnReplacement: obj.ignoreMapSpawnReplacement,
             inheritOri: obj.inheritOri,
-            localCollider: obstacle?.collision || createAabbCollider(3, 3),
+            localCollider:
+                obstacle?.collision || createAabbCollider(childWidth, childHeight),
         });
+    }
+}
+
+interface BuildingImportTransform {
+    pos: Vec2;
+    ori: number;
+    scale: number;
+}
+
+function identityBuildingImportTransform(): BuildingImportTransform {
+    return { pos: v2.create(0, 0), ori: 0, scale: 1 };
+}
+
+function transformBuildingImportPoint(
+    transform: BuildingImportTransform,
+    point: Vec2,
+): Vec2 {
+    const scaled = v2.mul(point, transform.scale);
+    switch (((transform.ori % 4) + 4) % 4) {
+        case 1:
+            return v2.add(transform.pos, v2.create(-scaled.y, scaled.x));
+        case 2:
+            return v2.add(transform.pos, v2.create(-scaled.x, -scaled.y));
+        case 3:
+            return v2.add(transform.pos, v2.create(scaled.y, -scaled.x));
+        default:
+            return v2.add(transform.pos, scaled);
     }
 }
 
