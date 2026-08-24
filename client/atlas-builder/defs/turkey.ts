@@ -13,7 +13,6 @@ export const TurkeyAtlas: AtlasDef = {
         "map/map-squash-res-02.svg",
         "map/map-squash-res-03.svg",
 
-        "map/map-tree-07.svg",
         "map/map-tree-08.svg",
 
         "map/map-bush-06tr.svg",

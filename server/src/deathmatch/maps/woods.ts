@@ -90,7 +90,7 @@ export const DeatchmatchWoods: MapDef = util.mergeDeep(structuredClone(Woods), {
 
 /* STRIP_FROM_PROD_CLIENT:START */
 DeatchmatchWoods.mapGen.randomSpawns.push({
-    spawns: ["club_complex_01", "memorialPark"],
+    spawns: ["club_complex_01", "memorial_park"],
     choose: 1,
 });
 /* STRIP_FROM_PROD_CLIENT:END */

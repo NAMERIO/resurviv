@@ -93,7 +93,7 @@ export const gun_game: MapDef = util.mergeDeep(structuredClone(Main), {
         ],
         randomSpawns: [
             {
-                spawns: ["club_complex_01", "memorialPark"],
+                spawns: ["club_complex_01", "memorial_park"],
                 choose: 1,
             },
             {
