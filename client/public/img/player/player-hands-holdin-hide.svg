@@ -1,10 +1,64 @@
-<svg width="78" height="77" viewBox="0 0 78 77" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M38.4017 69.9941C55.5225 69.9941 69.4044 56.115 69.4079 38.9941C69.4113 21.8733 55.5349 7.99414 38.4141 7.99414C21.2932 7.99414 7.41129 21.8733 7.40787 38.9941C7.40445 56.115 21.2808 69.9941 38.4017 69.9941Z" fill="url(#paint0_linear_1546_612)"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M64.1677 38.4977C64.1677 24.5483 52.8588 13.2359 38.9062 13.2331C24.9537 13.2302 13.6448 24.5381 13.6448 38.4875C13.6448 52.4369 24.9537 63.7493 38.9062 63.7521C52.8588 63.755 64.1677 52.4471 64.1677 38.4977ZM38.9062 1.9926C59.0636 1.99669 75.4062 18.3406 75.4062 38.5C75.4062 58.6594 59.0636 74.9967 38.9062 74.9926C18.7489 74.9885 2.40625 58.6447 2.40625 38.4852C2.40625 18.3258 18.7489 1.98852 38.9062 1.9926Z" fill="black"/>
-<defs>
-<linearGradient id="paint0_linear_1546_612" x1="38.4141" y1="7.99414" x2="38.4141" y2="69.9941" gradientUnits="userSpaceOnUse">
-<stop offset="0.520833" stop-color="#C9C9C9"/>
-<stop offset="0.520933" stop-color="#E3E3E3"/>
-</linearGradient>
-</defs>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="78"
+   height="77"
+   viewBox="0 0 78 77"
+   fill="none"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="player-hands-holdin-hide.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="2.7012987"
+     inkscape:cx="38.685096"
+     inkscape:cy="38.314904"
+     inkscape:window-width="1289"
+     inkscape:window-height="557"
+     inkscape:window-x="0"
+     inkscape:window-y="33"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg3" />
+  <path
+     d="M38.4017 69.9941C55.5225 69.9941 69.4044 56.115 69.4079 38.9941C69.4113 21.8733 55.5349 7.99414 38.4141 7.99414C21.2932 7.99414 7.41129 21.8733 7.40787 38.9941C7.40445 56.115 21.2808 69.9941 38.4017 69.9941Z"
+     fill="url(#paint0_linear_1546_612)"
+     id="path1" />
+  <path
+     d="m 38.90625,1.9921875 c -20.1573,-0.00408 -36.5,16.3327875 -36.5,36.4921875 0,0.169906 0.00159,0.340409 0.00391,0.509766 H 13.650391 c -0.0033,-0.168468 -0.0059,-0.3366 -0.0059,-0.50586 0,-13.9494 11.309219,-25.258759 25.261719,-25.255859 13.9526,0.0028 25.261719,11.316225 25.261719,25.265625 0,0.165844 -0.0027,0.33101 -0.0059,0.496094 h 11.240235 c 0.0022,-0.164439 0.0039,-0.329183 0.0039,-0.494141 0,-20.1594 -16.3426,-36.5037225 -36.5,-36.5078125 z"
+     style="clip-rule:evenodd;fill:#282828;fill-rule:evenodd;fill-opacity:1"
+     id="path3" />
+  <defs
+     id="defs3">
+    <linearGradient
+       id="paint0_linear_1546_612"
+       x1="38.4141"
+       y1="7.99414"
+       x2="38.4141"
+       y2="69.9941"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0.5"
+         stop-color="#C9C9C9"
+         id="stop2" />
+      <stop
+         offset="0.5"
+         stop-color="#E3E3E3"
+         id="stop3" />
+    </linearGradient>
+  </defs>
+  <path
+     d="M 75.402344,38.994141 H 64.162109 C 63.897614,52.714422 52.692968,63.754819 38.90625,63.751953 25.123047,63.749187 13.920241,52.709802 13.650391,38.994141 H 2.4101563 C 2.6824273,58.919076 18.918838,74.988122 38.90625,74.992187 58.898709,74.996254 75.137912,58.925713 75.402344,38.994141 Z"
+     style="mix-blend-mode:normal;fill:#2d2d2d;fill-opacity:1;fill-rule:evenodd;stroke-width:2;stroke-linecap:round;stroke-miterlimit:2"
+     id="path4" />
 </svg>

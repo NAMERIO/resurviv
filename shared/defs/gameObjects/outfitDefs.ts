@@ -85,13 +85,15 @@ const BaseDefs: Record<string, OutfitDef> = {
 };
 
 const SkinDefs: Record<string, OutfitDef> = {
+    // ============ JUSTIN & NICK OUTFITS ============
+    // === Basics ===
     outfitBase: defineOutfitSkin("outfitBase", {
         noDropOnDeath: true,
         name: "Basic Outfit",
         rarity: Rarity.Stock,
         lore: "Pure and simple.",
         lootImg: {
-            sprite: "loot-shirt-outfitBase.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -109,7 +111,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -126,7 +128,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -143,7 +145,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -160,7 +162,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -177,7 +179,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -194,625 +196,11 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-    outfitTurkey: defineOutfitSkin("outfitBase", {
-        name: "Fowl Facade",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 0xf0cebb,
-            baseSprite: "player-base-outfitTurkey.img",
-            handTint: 0xa51300,
-            handSprite: "player-hands-02.img",
-            footTint: 0xa51300,
-            footSprite: "player-feet-02.img",
-            backpackTint: 0xa85526,
-            backpackSprite: "player-circle-base-02.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitTurkey.img",
-            tint: 0xf0cebb,
-        },
-        rarity: Rarity.Rare,
-        lore: "M1100 not included.",
-    }),
-    outfitDev: defineOutfitSkin("outfitBase", {
-        name: "Developer Swag",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 0x348628,
-            baseSprite: "player-base-outfitDC.img",
-            handTint: 0x69da22,
-            handSprite: "player-hands-02.img",
-            footTint: 0x69da22,
-            footSprite: "player-feet-02.img",
-            backpackTint: 0x2c4b09,
-            backpackSprite: "player-circle-base-02.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitDev.img",
-            tint: 0xffffff,
-        },
-        rarity: Rarity.Mythic,
-        lore: "The limited edition print.",
-    }),
-    outfitGD: defineOutfitSkin("outfitBase", {
-        name: "Game Designr",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 0xab3030,
-            baseSprite: "player-base-outfitDC.img",
-            handTint: 0xe35f5f,
-            handSprite: "player-hands-02.img",
-            footTint: 0xe35f5f,
-            footSprite: "player-feet-02.img",
-            backpackTint: 0x6e1010,
-            backpackSprite: "player-circle-base-02.img",
-        },
-        lootImg: {
-            sprite: "loot-shirt-outfitGD.img",
-            tint: 0xffffff,
-        },
-        rarity: Rarity.Epic,
-        lore: "For those who knows.",
-    }),
-    outfitMod: defineOutfitSkin("outfitBase", {
-        name: "Game Moderatr",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 0x3393db,
-            baseSprite: "player-base-outfitDC.img",
-            handTint: 0x93c7ee,
-            handSprite: "player-hands-02.img",
-            footTint: 0x93c7ee,
-            footSprite: "player-feet-02.img",
-            backpackTint: 0x175686,
-            backpackSprite: "player-circle-base-02.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitMod.img",
-            tint: 0xffffff,
-        },
-        rarity: Rarity.Rare,
-        lore: "For those who wield the power of the pan.",
-    }),
-    outfitGrich: defineOutfitSkin("outfitBase", {
-        name: "Grinch",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-grinch.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-grinch.img",
-            footTint: 0xffffff,
-            footSprite: "player-hands-grinch.img",
-            backpackTint: 12002083,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-grinch.img",
-            tint: 0xffffff,
-        },
-        rarity: 5,
-        lore: "For those who wield the power of the pan.",
-    }),
-    outfitCheckmate: defineOutfitSkin("outfitBase", {
-        name: "Checkmate",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-checkmate.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-arctic-avenger.img",
-            footTint: 0xffffff,
-            footSprite: "player-hands-arctic-avenger.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-checkmate.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitCheckmate.img",
-            tint: 0xffffff,
-        },
-        rarity: 2,
-    }),
-    outfitEyes_t: defineOutfitSkin("outfitBase", {
-        name: "Eyes-T",
-        noDropOnDeath: false, // for now
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-eyes-t.img",
-            handTint: 16777215,
-            handSprite: "player-hands-01.img",
-            footTint: 16777215,
-            footSprite: "player-feet-01.img",
-            backpackTint: 16777215,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-eyes-t.img",
-            tint: 0xffffff,
-        },
-        rarity: 5,
-    }),
-    outfitCosmicBlue: defineOutfitSkin("outfitBase", {
-        name: "Cosmic Blue",
-        noDropOnDeath: false, // for now
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-cosmic-blue.img",
-            handTint: 2755133,
-            handSprite: "player-hands-02.img",
-            footTint: 2755133,
-            footSprite: "player-feet-02.img",
-            backpackTint: 12002083,
-            backpackSprite: "player-circle-base-02.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-cosmic-blue.img",
-            tint: 0xffffff,
-        },
-        rarity: 5,
-    }),
-    outfitBraaains: defineOutfitSkin("outfitBase", {
-        name: "Braaains",
-        noDropOnDeath: false, // for now
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-braaains.img",
-            handTint: 6842472,
-            handSprite: "player-hands-01.img",
-            footTint: 6842472,
-            footSprite: "player-feet-01.img",
-            backpackTint: 65535,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-braaains.img",
-            tint: 0xffffff,
-        },
-        rarity: 5,
-    }),
-    outfitSnowman: defineOutfitSkin("outfitBase", {
-        name: "Snowman",
-        noDropOnDeath: true,
-        rarity: 4,
-        lore: "",
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-snowman.img",
-            handTint: 0xc02727,
-            handSprite: "player-hands-01.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xc02727,
-            frontSpritePos: { x: 3, y: 0 },
-            frontSprite: "player-accessory-snowman.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-snowman.img",
-            tint: 0xffffff,
-        },
-    }),
-    outfitKxrLogo: defineOutfitSkin("outfitBase", {
-        name: "KxrClient's logo skin",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 0x567042,
-            baseSprite: "player-base-kxr.img",
-            handTint: 0x6a8854,
-            handSprite: "player-hands-01.img",
-            footTint: 0x4a6038,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0x62804c,
-            backpackSprite: "player-circle-base-01.img",
-            aboveHand: false,
-        },
-        lootImg: {
-            sprite: "loot-outfit-kxr.img",
-            tint: 0x6a8854,
-        },
-        rarity: 3,
-        lore: "For those who uses KxrClient :3",
-    }),
-    outfitPolice: defineOutfitSkin("outfitBase", {
-        name: "Police",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-outfitPolice.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-police.img",
-            footTint: 0xffffff,
-            backpackTint: 0xffffff,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-police.img",
-            tint: 0xffffff,
-        },
-        rarity: 5,
-        lore: "For those who wield the power of the pan.",
-    }),
-
-    outfitChewieCheese: defineOutfitSkin("outfitBase", {
-        name: "Chewie Cheese",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 12266256,
-            baseSprite: "player-base-01.img",
-            handTint: 0xf8c574,
-            handSprite: "player-hands-01.img",
-            footTint: 0xf8c574,
-            footSprite: "player-hands-01.img",
-            backpackTint: 13644309,
-            backpackSprite: "player-circle-base-01.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-base-chewie-cheese.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-chewie-cheese.img",
-            tint: 0xffffff,
-        },
-        rarity: 2,
-        lore: "For those who wield the power of the pan.",
-    }),
-    outfitStepz: defineOutfitSkin("outfitBase", {
-        name: "Stepz Outfit",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-stepz.img",
-            handTint: 0x740007,
-            handSprite: "player-hands-01.img",
-            footTint: 0x740007,
-            footSprite: "player-hands-01.img",
-            backpackTint: 0x740007,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-stepz.img",
-            tint: 0xffffff,
-        },
-        rarity: 3,
-        lore: "Custom outfit for Stepz for winning tournament.",
-    }),
-    outfitThePro: defineOutfitSkin("outfitBase", {
-        name: "The Pro",
-        noDropOnDeath: true,
-        rarity: Rarity.Rare,
-        lore: "For those who wear their wins",
-        skinImg: {
-            baseTint: 0xedc078,
-            baseSprite: "player-base-01.img",
-            handTint: 0x325c62,
-            handSprite: "player-hands-01.img",
-            footTint: 0x325c62,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0x274659,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitThePro.img",
-            tint: 0xffffff,
-        },
-    }),
-    outfitChemisTree: defineOutfitSkin("outfitBase", {
-        name: "Chemis-tree",
-        noDropOnDeath: true,
-        rarity: 3,
-        lore: "",
-        skinImg: {
-            baseTint: 16777215,
-            baseSprite: "player-base-chemis-tree.img",
-            handTint: 16777215,
-            handSprite: "player-hands-chemis-tree.img",
-            footTint: 16777215,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0x274659,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-chemis-tree.img",
-            tint: 0xffffff,
-        },
-    }),
-    outfitWinter: defineOutfitSkin("outfitBase", {
-        name: "Winter Onesie",
-        noDropOnDeath: true,
-        rarity: 3,
-        lore: "Sleep Well.",
-        skinImg: {
-            baseTint: 16777215,
-            baseSprite: "player-base-outfitWinter.img",
-            handTint: 16777215,
-            handSprite: "player-hands-winter.img",
-            footTint: 4168127,
-            footSprite: "player-feet-02.img",
-            backpackTint: 4032425,
-            backpackSprite: "player-circle-base-02.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitWinter.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitFireball: defineOutfitSkin("outfitBase", {
-        name: "Fireball",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 12266256,
-            baseSprite: "player-base-01.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-outfitFireball.img",
-            footTint: 0xffffff,
-            footSprite: "player-hands-outfitFireball.img",
-            backpackTint: 13644309,
-            backpackSprite: "player-circle-base-01.img",
-            frontSpritePos: { x: -4, y: 0 },
-            frontSprite: "player-accessory-outfitFireball.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitFireball.img",
-            tint: 0xffffff,
-        },
-        rarity: 5,
-        lore: "For those who wield the power of the pan.",
-    }),
-    outfitWolf: defineOutfitSkin("outfitBase", {
-        name: "Wolf",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 6184542,
-            baseSprite: "player-base-01.img",
-            handTint: 9539985,
-            handSprite: "player-hands-01.img",
-            footTint: 9539985,
-            footSprite: "player-hands-01.img",
-            backpackTint: 5197647,
-            backpackSprite: "player-circle-base-01.img",
-            frontSpritePos: { x: -3, y: 0 },
-            frontSprite: "player-accessory-outfitWolf.img",
-            aboveHand: true,
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitWolf.img",
-            tint: 0xffffff,
-        },
-        rarity: 3,
-        lore: "For those who hunt alone.",
-    }),
-    outfitPanda: defineOutfitSkin("outfitBase", {
-        name: "Panda",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-01.img",
-            handTint: 14408667,
-            handSprite: "player-hands-01.img",
-            footTint: 14408667,
-            footSprite: "player-hands-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-circle-base-01.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-outfitPanda.img",
-            aboveHand: true,
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitPanda.img",
-            tint: 0xffffff,
-        },
-        rarity: 3,
-        lore: "",
-    }),
-    outfitGreenTeaRex: defineOutfitSkin("outfitBase", {
-        name: "Green Tea Rex",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 16777215,
-            baseSprite: "player-base-green-tea-rex.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-green-tea-rex.img",
-            footTint: 0xffffff,
-            footSprite: "player-hands-green-tea-rex.img",
-            backpackTint: 13644309,
-            backpackSprite: "player-circle-base-01.img",
-            frontSpritePos: { x: 6, y: 0 },
-            frontSprite: "player-accessory-green-tea-rex.img",
-            aboveHand: true,
-        },
-        lootImg: {
-            sprite: "loot-outfit-green-tea-rex.img",
-            tint: 0xffffff,
-        },
-        rarity: 3,
-        lore: "For those who wield the power of the pan.",
-    }),
-    outfitDragonTails: defineOutfitSkin("outfitBase", {
-        name: "Dragon Tails",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 13041664,
-            baseSprite: "player-base-dragon-tails.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-dragon-tails.img",
-            footTint: 0xffffff,
-            footSprite: "player-hands-dragon-tails.img",
-            backpackTint: 7667712,
-            backpackSprite: "player-circle-base-02.img",
-            frontSpritePos: { x: -5, y: 0 },
-            frontSprite: "player-accessory-dragon-tails.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-dragon-tails.img",
-            tint: 0xffffff,
-        },
-        rarity: 3,
-        lore: "For those who wield the power of the pan.",
-    }),
-    outfitVillageNinja: defineOutfitSkin("outfitBase", {
-        name: "Village Ninja",
-        noDropOnDeath: true,
-        moveEmitter: "village_ninja_trail",
-        skinImg: {
-            baseTint: 16777215,
-            baseSprite: "player-base-village-ninja.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-village-ninja.img",
-            footTint: 0xffffff,
-            footSprite: "player-hands-dragon-tails.img",
-            backpackTint: 16777215,
-            backpackSprite: "player-back-village-ninja.img",
-            frontSpritePos: { x: -2, y: 0 },
-            frontSprite: "player-accessory-village-ninja.img",
-            aboveHand: false,
-        },
-        lootImg: {
-            sprite: "loot-outfit-village-ninja.img",
-            tint: 16777215,
-        },
-        rarity: 3,
-        lore: "For those who wield the power of the pan.",
-    }),
-    outfitChromesis: defineOutfitSkin("outfitBase", {
-        name: "Chromesis",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 16777215,
-            baseSprite: "player-base-outfitChromesis.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-chrome.img",
-            footTint: 0xffffff,
-            footSprite: "player-hands-chrome.img",
-            backpackTint: 9803157,
-            backpackSprite: "player-circle-base-01.img",
-            frontSpritePos: { x: -5, y: 0 },
-            frontSprite: "outfit-chrome-accessory.img",
-            aboveHand: false,
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitChromesis.img",
-            tint: 16777215,
-        },
-        rarity: 5,
-        lore: "For those who wield the power of the pan.",
-    }),
-    outfitDiamond: defineOutfitSkin("outfitBase", {
-        name: "Diamond",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-diamond.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-diamond.img",
-            footTint: 0xffffff,
-            footSprite: "player-hands-diamond.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-diamond.img",
-            frontSpritePos: { x: -5, y: 0 },
-            frontSprite: "player-accessory-diamond.img",
-            aboveHand: false,
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitDiamond.img",
-            tint: 0xffffff,
-        },
-        rarity: 5,
-        lore: "For those who are retarded.",
-    }),
-    outfitMultiTusking: defineOutfitSkin("outfitBase", {
-        name: "Multi Tusking",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 16777215,
-            baseSprite: "player-base-multi-tusking.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-multi-tusking.img",
-            footTint: 0xffffff,
-            footSprite: "player-hands-multi-tusking.img",
-            backpackTint: 9065728,
-            backpackSprite: "player-circle-base-01.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-multi-tusking.img",
-            aboveHand: true,
-        },
-        lootImg: {
-            sprite: "loot-outfit-multi-tusking.img",
-            tint: 16777215,
-        },
-        rarity: 3,
-        lore: "For those who wield the power of the pan.",
-    }),
-    outfitMaxAttack: defineOutfitSkin("outfitBase", {
-        name: "Max Attack",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 16777215,
-            baseSprite: "player-base-max-attack.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-max-attack.img",
-            footTint: 0xffffff,
-            footSprite: "player-hands-max-attack.img",
-            backpackTint: 2359872,
-            backpackSprite: "player-circle-base-01.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-max-attack.img",
-            aboveHand: true,
-        },
-        lootImg: {
-            sprite: "loot-outfit-max-attack.img",
-            tint: 16777215,
-        },
-        rarity: 3,
-        lore: "For those who wield the power of the pan.",
-    }),
-    outfitLustrousPaladin: defineOutfitSkin("outfitBase", {
-        name: "Lustrous Paladin",
-        moveEmitter: "paladinParticle",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 16777215,
-            baseSprite: "player-base-lustrous-paladin.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-lustrous-paladin.img",
-            footTint: 0xffffff,
-            footSprite: "player-hands-lustrous-paladin.img",
-            backpackTint: 16768256,
-            backpackSprite: "player-circle-base-01.img",
-            frontSpritePos: { x: -1, y: 0 },
-            frontSprite: "player-accessory-lustrous-paladin.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-lustrous-paladin.img",
-            tint: 16777215,
-        },
-        rarity: 3,
-        lore: "For those who wield the power of the pan.",
-    }),
-
-    outfitSpeedoSunburn: defineOutfitSkin("outfitBase", {
-        name: "Speedo Sunburn",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 16777215,
-            baseSprite: "player-base-outfitSpeedoSunburn.img",
-            handTint: 16037119,
-            handSprite: "player-hands-01.img",
-            footTint: 16037119,
-            footSprite: "player-feet-01.img",
-            backpackTint: 16650006,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitSpeedoSunburn.img",
-            tint: 16777215,
-        },
-        rarity: 2,
-        lore: "For those who wield the power of the pan.",
-    }),
-
+    // === Regular ===
     outfitWheat: defineOutfitSkin("outfitBase", {
         name: "Splintered Wheat",
         rarity: Rarity.Stock,
@@ -827,26 +215,8 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitWheat.img",
+            skinLootImg: true,
             tint: 0xffffff,
-        },
-    }),
-    outfitPreacher: defineOutfitSkin("outfitBase", {
-        name: "Preacher",
-        noDropOnDeath: true,
-        skinImg: {
-            baseTint: 9586810,
-            baseSprite: "player-base-02.img",
-            handTint: 9586810,
-            handSprite: "player-hands-02.img",
-            footTint: 9586810,
-            footSprite: "player-feet-02.img",
-            backpackTint: 9586810,
-            backpackSprite: "player-circle-base-02.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-01.img",
-            tint: 9586810,
         },
     }),
     outfitNoir: defineOutfitSkin("outfitBase", {
@@ -862,7 +232,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0x1b1b1b,
         },
     }),
@@ -879,7 +249,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0x9a1818,
         },
     }),
@@ -896,7 +266,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0x173e99,
         },
     }),
@@ -914,7 +284,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0x840000,
         },
     }),
@@ -932,7 +302,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 13223,
         },
     }),
@@ -949,7 +319,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitSpetsnaz.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -966,7 +336,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0x2aff00,
         },
     }),
@@ -983,7 +353,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0x16b900,
         },
     }),
@@ -1000,7 +370,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0xbc002d,
         },
     }),
@@ -1017,7 +387,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitLumber.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -1034,7 +404,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0x1b400c,
         },
     }),
@@ -1051,7 +421,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0x990000,
         },
     }),
@@ -1068,7 +438,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0x4b2e83,
         },
     }),
@@ -1085,7 +455,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 7143401,
         },
     }),
@@ -1102,7 +472,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitHeaven.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -1119,7 +489,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0x950000,
         },
     }),
@@ -1136,7 +506,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0xffc600,
         },
     }),
@@ -1153,7 +523,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0xbaa2,
         },
     }),
@@ -1170,7 +540,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0xff5f67,
         },
     }),
@@ -1188,48 +558,8 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0xc3ae85,
-        },
-    }),
-    outfitParma: defineOutfitSkin("outfitBase", {
-        name: "PARMA Jumpsuit",
-        noDropOnDeath: true,
-        rarity: Rarity.Common,
-        lore: "Next generation inversion.",
-        skinImg: {
-            baseTint: 0x857659,
-            baseSprite: "player-base-01.img",
-            handTint: 0xc3ae85,
-            handSprite: "player-hands-01.img",
-            footTint: 0xc3ae85,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0x40392c,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitParma.img",
-            tint: 0xffffff,
-        },
-    }),
-    outfitParmaPrestige: defineOutfitSkin("outfitBase", {
-        name: "The Core Jumpsuit",
-        noDropOnDeath: true,
-        rarity: Rarity.Rare,
-        lore: "Special issue for staffers at Bunker 1.",
-        skinImg: {
-            baseTint: 0xe3c081,
-            baseSprite: "player-base-outfitParmaPrestige.img",
-            handTint: 0xa9936b,
-            handSprite: "player-hands-02.img",
-            footTint: 0xa9936b,
-            footSprite: "player-feet-02.img",
-            backpackTint: 0x655231,
-            backpackSprite: "player-circle-base-02.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitParmaPrestige.img",
-            tint: 0xffffff,
         },
     }),
     outfitCasanova: defineOutfitSkin("outfitBase", {
@@ -1245,7 +575,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0x42080c,
         },
     }),
@@ -1262,7 +592,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0xff5c22,
         },
     }),
@@ -1279,7 +609,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0x770078,
         },
     }),
@@ -1298,7 +628,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitWoodland.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -1316,7 +646,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitRoyalFortune.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -1335,7 +665,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitKeyLime.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -1354,66 +684,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitCobaltShell.img",
-            tint: 0xffffff,
-        },
-    }),
-    outfitFragtastic: defineOutfitSkin("outfitBase", {
-        name: "Fragtastic",
-        rarity: Rarity.Common,
-        lore: "Pin not included. Maybe.",
-        skinImg: {
-            baseTint: 0x62591f,
-            baseSprite: "player-base-01.img",
-            handTint: 0x7f742a,
-            handSprite: "player-hands-01.img",
-            footTint: 0x7f742a,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0x999999,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-01.img",
-            tint: 0x938632,
-        },
-    }),
-    outfitCarbonFiber: defineOutfitSkin("outfitBase", {
-        name: "Carbon Fiber",
-        // noDropOnDeath: true,
-        rarity: Rarity.Uncommon,
-        lore: "Military-grade, fine spun filament.",
-        skinImg: {
-            baseTint: 0x212121,
-            baseSprite: "player-base-01.img",
-            handTint: 0x1c1c1c,
-            handSprite: "player-hands-01.img",
-            footTint: 0x1c1c1c,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0x363636,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitCarbonFiber.img",
-            tint: 0xffffff,
-        },
-    }),
-    outfitDarkGloves: defineOutfitSkin("outfitBase", {
-        name: "The Professional",
-        // noDropOnDeath: true,
-        rarity: Rarity.Common,
-        lore: "True survivrs wear the dark gloves.",
-        skinImg: {
-            baseTint: 0xf8c574,
-            baseSprite: "player-base-01.img",
-            handTint: 0xbe7800,
-            handSprite: "player-hands-01.img",
-            footTint: 0xbe7800,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xa36700,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitDarkGloves.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -1433,7 +704,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitDarkShirt.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -1451,7 +722,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-01.img",
+            skinLootImg: true,
             tint: 0x83af50,
         },
     }),
@@ -1469,7 +740,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitDesertCamo.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
@@ -1488,144 +759,72 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitCamo.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-    outfitRed: defineOutfitSkin("outfitBase", {
-        name: "Target Practice",
-        // noDropOnDeath: true,
-        rarity: Rarity.Uncommon,
-        lore: "On the plus side, they won't see you bleed.",
+    // === Exclusives ===
+    outfitDev: defineOutfitSkin("outfitBase", {
+        name: "Developer Swag",
+        noDropOnDeath: true,
         skinImg: {
-            baseTint: 0xff0000,
-            baseSprite: "player-base-01.img",
-            handTint: 0xd40000,
-            handSprite: "player-hands-01.img",
-            footTint: 0xd40000,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xb70000,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitRed.img",
-            tint: 0xffffff,
-        },
-    }),
-    outfitWhite: defineOutfitSkin("outfitBase", {
-        name: "Arctic Avenger",
-        // noDropOnDeath: true,
-        rarity: Rarity.Common,
-        lore: "No business like snow business.",
-        skinImg: {
-            baseTint: 0xe3e3e3,
-            baseSprite: "player-base-01.img",
-            handTint: 0xeeeeee,
-            handSprite: "player-hands-01.img",
-            footTint: 0xeeeeee,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xdcdcdc,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitWhite.img",
-            tint: 0xffffff,
-        },
-    }),
-    outfitSnow: defineOutfitSkin("outfitBase", {
-        name: "Snowed Over",
-        rarity: Rarity.Uncommon,
-        lore: "It's shirt weather!!",
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-outfitSnow.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-outfitSnow.img",
-            footTint: 0xb2eaff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0x77c4dd,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-shirt-outfitSnow.img",
-            tint: 0xffffff,
-        },
-    }),
-    outfitBlackIce: defineOutfitSkin("outfitBase", {
-        name: "Black Ice",
-        rarity: Rarity.Common,
-        skinImg: {
-            baseTint: 0x686d6e,
-            baseSprite: "player-base-02.img",
-            handTint: 0x414753,
-            handSprite: "player-hands-01.img",
-            footTint: 0x33333d,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0x5e6473,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-01.img",
-            tint: 0x5e6473,
-        },
-    }),
-    outfitCoconut: defineOutfitSkin("outfitBase", {
-        name: "Coconut Frenzy",
-        rarity: Rarity.Common,
-        lore: "It's the coco fruit!",
-        skinImg: {
-            baseTint: 0x765836,
-            baseSprite: "player-base-01.img",
-            handTint: 0x362d22,
-            handSprite: "player-hands-01.img",
-            footTint: 0xe9edf6,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xe9edf6,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-01.img",
-            tint: 0x765836,
-        },
-    }),
-    outfitWave: defineOutfitSkin("outfitBase", {
-        name: "Tidal Wave",
-        rarity: Rarity.Common,
-        lore: "Send them to Davy Jones' locker.",
-        skinImg: {
-            baseTint: 0x1198ec,
-            baseSprite: "player-base-02.img",
-            handTint: 0xfdf5f1,
+            baseTint: 0x348628,
+            baseSprite: "player-base-outfitDC.img",
+            handTint: 0x69da22,
             handSprite: "player-hands-02.img",
-            footTint: 0xfdf5f1,
+            footTint: 0x69da22,
             footSprite: "player-feet-02.img",
-            backpackTint: 0x2178ae,
-            backpackSprite: "player-circle-base-01.img",
+            backpackTint: 0x2c4b09,
+            backpackSprite: "player-circle-base-02.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitWave.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
+        rarity: Rarity.Mythic,
+        lore: "The limited edition print.",
     }),
-    outfitParrotfish: defineOutfitSkin("outfitBase", {
-        name: "Parrotfish",
+    outfitGD: defineOutfitSkin("outfitBase", {
+        name: "Game Designr",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xab3030,
+            baseSprite: "player-base-outfitDC.img",
+            handTint: 0xe35f5f,
+            handSprite: "player-hands-02.img",
+            footTint: 0xe35f5f,
+            footSprite: "player-feet-02.img",
+            backpackTint: 0x6e1010,
+            backpackSprite: "player-circle-base-02.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: Rarity.Epic,
+        lore: "For those who knows.",
+    }),
+    outfitMod: defineOutfitSkin("outfitBase", {
+        name: "Game Moderatr",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0x3393db,
+            baseSprite: "player-base-outfitDC.img",
+            handTint: 0x93c7ee,
+            handSprite: "player-hands-02.img",
+            footTint: 0x93c7ee,
+            footSprite: "player-feet-02.img",
+            backpackTint: 0x175686,
+            backpackSprite: "player-circle-base-02.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
         rarity: Rarity.Rare,
-        lore: "Show off your scales around the island. Coral, beware!",
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-outfitParrotfish.img",
-            handTint: 0x3ac6c6,
-            handSprite: "player-hands-02.img",
-            footTint: 0x306790,
-            footSprite: "player-feet-02.img",
-            backpackTint: 0x37aeab,
-            backpackSprite: "player-circle-base-01.img",
-        },
-        lootImg: {
-            sprite: "loot-shirt-outfitParrotfish.img",
-            tint: 0xffffff,
-        },
+        lore: "For those who wield the power of the pan.",
     }),
+    // === Halloween costumes ===
     outfitBarrel: defineOutfitSkin("outfitBase", {
         name: "Barrel Costume",
         obstacleType: "barrel_01",
@@ -1660,6 +859,14 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
     outfitHalloweenTree: defineOutfitSkin("outfitBase", {
+        name: "Tree Costume",
+        obstacleType: "tree_07",
+        baseScale: 1,
+        lootImg: {
+            tint: 0x462d12,
+        },
+    }),
+    outfitTree: defineOutfitSkin("outfitBase", {
         name: "Tree Costume",
         obstacleType: "tree_07",
         baseScale: 1,
@@ -1803,28 +1010,169 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xa9621d,
         },
     }),
-
-    // ============ GENERATED OUTFITS ============
-    outfitWhiteDay: defineOutfitSkin("outfitBase", {
+    // === Pass 1 ===
+    outfitParma: defineOutfitSkin("outfitBase", {
+        name: "PARMA Jumpsuit",
         noDropOnDeath: true,
-        name: "Marshmallow Suit",
-        rarity: 1,
+        rarity: Rarity.Common,
+        lore: "Next generation inversion.",
         skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-outfitWhiteDay.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-white.img",
-            footTint: 0xc6bb40,
-            footSprite: "player-feet-02.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-white-day.img",
+            baseTint: 0x857659,
+            baseSprite: "player-base-01.img",
+            handTint: 0xc3ae85,
+            handSprite: "player-hands-01.img",
+            footTint: 0xc3ae85,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x40392c,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-whiteDay.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
+    outfitWhite: defineOutfitSkin("outfitBase", {
+        name: "Arctic Avenger",
+        // noDropOnDeath: true,
+        rarity: Rarity.Common,
+        lore: "No business like snow business.",
+        skinImg: {
+            baseTint: 0xe3e3e3,
+            baseSprite: "player-base-01.img",
+            handTint: 0xeeeeee,
+            handSprite: "player-hands-01.img",
+            footTint: 0xeeeeee,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xdcdcdc,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitRed: defineOutfitSkin("outfitBase", {
+        name: "Target Practice",
+        // noDropOnDeath: true,
+        rarity: Rarity.Uncommon,
+        lore: "On the plus side, they won't see you bleed.",
+        skinImg: {
+            baseTint: 0xff0000,
+            baseSprite: "player-base-01.img",
+            handTint: 0xd40000,
+            handSprite: "player-hands-01.img",
+            footTint: 0xd40000,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xb70000,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitDarkGloves: defineOutfitSkin("outfitBase", {
+        name: "The Professional",
+        // noDropOnDeath: true,
+        rarity: Rarity.Common,
+        lore: "True survivrs wear the dark gloves.",
+        skinImg: {
+            baseTint: 0xf8c574,
+            baseSprite: "player-base-01.img",
+            handTint: 0xbe7800,
+            handSprite: "player-hands-01.img",
+            footTint: 0xbe7800,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xa36700,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitCarbonFiber: defineOutfitSkin("outfitBase", {
+        name: "Carbon Fiber",
+        // noDropOnDeath: true,
+        rarity: Rarity.Uncommon,
+        lore: "Military-grade, fine spun filament.",
+        skinImg: {
+            baseTint: 0x212121,
+            baseSprite: "player-base-01.img",
+            handTint: 0x1c1c1c,
+            handSprite: "player-hands-01.img",
+            footTint: 0x1c1c1c,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x363636,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitParmaPrestige: defineOutfitSkin("outfitBase", {
+        name: "The Core Jumpsuit",
+        noDropOnDeath: true,
+        rarity: Rarity.Rare,
+        lore: "Special issue for staffers at Bunker 1.",
+        skinImg: {
+            baseTint: 0xe3c081,
+            baseSprite: "player-base-outfitParmaPrestige.img",
+            handTint: 0xa9936b,
+            handSprite: "player-hands-02.img",
+            footTint: 0xa9936b,
+            footSprite: "player-feet-02.img",
+            backpackTint: 0x655231,
+            backpackSprite: "player-circle-base-02.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitTurkey: defineOutfitSkin("outfitBase", {
+        name: "Fowl Facade",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xf0cebb,
+            baseSprite: "player-base-outfitTurkey.img",
+            handTint: 0xa51300,
+            handSprite: "player-hands-02.img",
+            footTint: 0xa51300,
+            footSprite: "player-feet-02.img",
+            backpackTint: 0xa85526,
+            backpackSprite: "player-circle-base-02.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xf0cebb,
+        },
+        rarity: Rarity.Rare,
+        lore: "M1100 not included.",
+    }),
+    // ============ KONGREGATE OUTFITS ============
+    // === Added with LTMs ===
+    outfitWinter: defineOutfitSkin("outfitBase", {
+        name: "Winter Onesie",
+        noDropOnDeath: true,
+        rarity: 3,
+        lore: "Sleep well.",
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitWinter.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-winter.img",
+            footTint: 0x3f99bf,
+            footSprite: "player-feet-02.img",
+            backpackTint: 0x3f99bf,
+            backpackSprite: "player-circle-base-02.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
     outfitGeometric: defineOutfitSkin("outfitBase", {
         name: "Geometric",
         noDropOnDeath: true,
@@ -1843,11 +1191,10 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-geometric.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitGeometric.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
     outfitMilitary: defineOutfitSkin("outfitBase", {
         name: "Military",
         noDropOnDeath: true,
@@ -1862,36 +1209,222 @@ const SkinDefs: Record<string, OutfitDef> = {
             handSprite: "player-hands-military.img",
             footTint: 0x4a5b42,
             footSprite: "player-feet-02.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-military.img",
+            backpackTint: 0x0f120d,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitMilitary.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitSunset: defineOutfitSkin("outfitBase", {
-        name: "Sunset",
+    outfitWhiteDay: defineOutfitSkin("outfitBase", {
         noDropOnDeath: true,
-
-        rarity: 2,
+        name: "Marshmallow Suit",
+        rarity: 1,
         skinImg: {
             baseTint: 0xffffff,
-            baseSprite: "player-base-outfitSunset.img",
+            baseSprite: "player-base-outfitWhiteDay.img",
             handTint: 0xffffff,
-            handSprite: "player-hands-sunset.img",
-            footTint: 0xbe89ab,
-            footSprite: "player-feet-01.img",
+            handSprite: "player-hands-white.img",
+            footTint: 0xc6bb40,
+            footSprite: "player-feet-02.img",
             backpackTint: 0xffffff,
-            backpackSprite: "player-back-sunset.img",
+            backpackSprite: "player-back-white-day.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitSunset.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
+    outfitSpeedo: defineOutfitSkin("outfitBase", {
+        name: "Speedo",
+        rarity: 1,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitSpeedo.img",
+            handTint: 0xf4b4ff,
+            handSprite: "player-hands-01.img",
+            footTint: 0xf4b4ff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x959595,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    // === Winter outfits ===
+    outfitSnowman: defineOutfitSkin("outfitBase", {
+        name: "Snowman",
+        noDropOnDeath: true,
+        rarity: 4,
+        lore: "",
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-snowman.img",
+            handTint: 0xd40000,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xc02727,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 3, y: 0 },
+            frontSprite: "player-accessory-snowman.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitGrinch: defineOutfitSkin("outfitBase", {
+        name: "Grinch",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-grinch.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-grinch.img",
+            footTint: 0x617700,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xc02727,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 5,
+        lore: "For those who wield the power of the pan.",
+    }),
+    outfitChristmasTree: defineOutfitSkin("outfitBase", {
+        name: "Christmas Tree",
+        noDropOnDeath: true,
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-christmastree.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-christmastree.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xc02727,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitBuckTeeth: defineOutfitSkin("outfitBase", {
+        name: "Buck Teeth",
+        noDropOnDeath: true,
 
+        rarity: 4,
+        skinImg: {
+            baseTint: 0x3f2b16,
+            baseSprite: "player-base-01.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-deer.img",
+            footTint: 0x232323,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x232323,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 5, y: 0 },
+            frontSprite: "player-accessory-buck-teeth.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitPoinsetee: defineOutfitSkin("outfitBase", {
+        name: "Poinsetee",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0x253600,
+            baseSprite: "player-base-01.img",
+            handTint: 0xf6e781,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x603008,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -3, y: 0 },
+            frontSprite: "player-accessory-poinsetee.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitSnowyClaus: defineOutfitSkin("outfitBase", {
+        name: "Snowy Claus",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-snowy-claus.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-snowy-claus.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x603008,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -1, y: 1.4 },
+            frontSprite: "player-accessory-snowy-claus.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitCamoDeer: defineOutfitSkin("outfitBase", {
+        name: "Camo Deer",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-camo-deer.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-deer.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x232323,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 5, y: 0 },
+            frontSprite: "player-accessory-camo-deer.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitChemisTree: defineOutfitSkin("outfitBase", {
+        name: "Chemis-tree",
+        noDropOnDeath: true,
+        rarity: 3,
+        lore: "",
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-chemis-tree.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-chemis-tree.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x08333f,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    // === Pass 2 ===
     outfitDeepPurple: defineOutfitSkin("outfitBase", {
         name: "Deep Purple",
         noDropOnDeath: true,
@@ -1900,40 +1433,18 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-outfitDeepPurple.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-deep-purple.img",
+            handTint: 0x917b9e,
+            handSprite: "player-hands-01.img",
             footTint: 0x907b9e,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-deep-purple.img",
+            backpackTint: 0x91809f,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitDeepPurple.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitSplotchfest: defineOutfitSkin("outfitBase", {
-        name: "Splotchfest",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-outfitSplotchfest.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-splotchfest.img",
-            footTint: 0x63a73c,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-splotchfest.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitSplotchfest.img",
-            tint: 0xffffff,
-        },
-    }),
-
     outfitClaymore: defineOutfitSkin("outfitBase", {
         name: "Clay More",
         noDropOnDeath: true,
@@ -1942,19 +1453,122 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-outfitClayMore.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-clay-more.img",
+            handTint: 0xa8502a,
+            handSprite: "player-hands-01.img",
             footTint: 0xa8502a,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-clay-more.img",
+            backpackTint: 0xee8781,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitClayMore.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
+    outfitSplotchfest: defineOutfitSkin("outfitBase", {
+        name: "Splotchfest",
+        noDropOnDeath: true,
 
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitSplotchfest.img",
+            handTint: 0x63a73c,
+            handSprite: "player-hands-01.img",
+            footTint: 0x63a73c,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x63a73c,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitSunset: defineOutfitSkin("outfitBase", {
+        name: "Sunset",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitSunset.img",
+            handTint: 0xbe89ab,
+            handSprite: "player-hands-01.img",
+            footTint: 0xbe89ab,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x628ac9,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitChromesis: defineOutfitSkin("outfitBase", {
+        name: "Chromesis",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitChromesis.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-chrome.img",
+            footTint: 0xffffff,
+            footSprite: "player-hands-chrome.img",
+            backpackTint: 9803157,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -5, y: 0 },
+            frontSprite: "player-accessory-outfitChromesis.img",
+            aboveHand: false,
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 5,
+        lore: "For those who wield the power of the pan.",
+    }),
+    // === Pass 3 ===
+    outfitUrbanCamo: defineOutfitSkin("outfitBase", {
+        name: "Urban Camo",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitUrbanCamo.img",
+            handTint: 0x2b405c,
+            handSprite: "player-hands-01.img",
+            footTint: 0x2b405c,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xa5b2ca,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitGiraffe: defineOutfitSkin("outfitBase", {
+        name: "Giraffe",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitGiraffe.img",
+            handTint: 0xf1b644,
+            handSprite: "player-hands-01.img",
+            footTint: 0xf1b644,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-giraffe.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
     outfitRusticSands: defineOutfitSkin("outfitBase", {
         name: "Rustic Sands",
         noDropOnDeath: true,
@@ -1963,21 +1577,20 @@ const SkinDefs: Record<string, OutfitDef> = {
         lore: "Created by FrankzeeTank",
 
         skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-rustic-sands.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-rustic-sands.img",
+            baseTint: 0xfada78,
+            baseSprite: "player-base-01.img",
+            handTint: 0x714216,
+            handSprite: "player-hands-01.img",
             footTint: 0x714216,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-rustic-sands.img",
+            backpackTint: 0x7b2817,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitRusticSands.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
     outfitWaves: defineOutfitSkin("outfitBase", {
         name: "Waves",
         noDropOnDeath: true,
@@ -1988,84 +1601,18 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-outfitWaves.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-waves.img",
+            handTint: 0x3c7598,
+            handSprite: "player-hands-01.img",
             footTint: 0x3c7598,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-waves.img",
+            backpackTint: 0x153445,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitWaves.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitUrbanCamo: defineOutfitSkin("outfitBase", {
-        name: "Urban Camo",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-outfitUrbanCamo.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-urban-camo.img",
-            footTint: 0x2b405c,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-urban-camo.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitUrbanCamo.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitNeonEyesore: defineOutfitSkin("outfitBase", {
-        name: "Neon Eyesore",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "Created by Savage_Wuhan (Jerrie123)",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-neon.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-neon.img",
-            footTint: 0x75fa4c,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-neon.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitNeonEyesore.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitGiraffe: defineOutfitSkin("outfitBase", {
-        name: "Giraffe",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-outfitGiraffe.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-giraffe.img",
-            footTint: 0xf1b644,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-giraffe.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitGiraffe.img",
-            tint: 0xffffff,
-        },
-    }),
-
     outfitCow: defineOutfitSkin("outfitBase", {
         name: "Cow",
         noDropOnDeath: true,
@@ -2075,39 +1622,36 @@ const SkinDefs: Record<string, OutfitDef> = {
             baseTint: 0xffffff,
             baseSprite: "player-base-outfitCow.img",
             handTint: 0xffffff,
-            handSprite: "player-hands-cow.img",
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
-            backpackSprite: "player-back-cow.img",
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitCow.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitMojo: defineOutfitSkin("outfitBase", {
-        name: "Mojo",
-        noDropOnDeath: true,
-
-        rarity: 4,
+    outfitFragtastic: defineOutfitSkin("outfitBase", {
+        name: "Fragtastic",
+        rarity: Rarity.Common,
+        lore: "Pin not included. Maybe.",
         skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-outfitMojo.img",
-            handTint: 0x0fffff,
-            handSprite: "player-hands-mojo.img",
-            footTint: 0xe6c70d,
+            baseTint: 0x62591f,
+            baseSprite: "player-base-01.img",
+            handTint: 0x7f742a,
+            handSprite: "player-hands-01.img",
+            footTint: 0x7f742a,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-mojo.img",
+            backpackTint: 0x999999,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitMojo.img",
-            tint: 0xffffff,
+            skinLootImg: true,
+            tint: 0x938632,
         },
     }),
-
     outfitZebra: defineOutfitSkin("outfitBase", {
         name: "Zebra",
         noDropOnDeath: true,
@@ -2117,183 +1661,42 @@ const SkinDefs: Record<string, OutfitDef> = {
             baseTint: 0xffffff,
             baseSprite: "player-base-outfitZebra.img",
             handTint: 0xffffff,
-            handSprite: "player-hands-zebra.img",
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-zebra.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitZebra.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitAstronaut: defineOutfitSkin("outfitBase", {
-        name: "Astronaut",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-astronaut.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-astronaut.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-astronaut.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-outfitAstronaut.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitAstronaut.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitDiamondy: defineOutfitSkin("outfitBase", {
-        name: "Diamondy",
-        noDropOnDeath: true,
-
-        rarity: 5,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-diamondy.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-diamondy.img",
-            footTint: 0xf8c137,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-diamondy.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-outfitDiamondy.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitDiamondy.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitToxicFire: defineOutfitSkin("outfitBase", {
-        name: "Toxic Fire",
-        noDropOnDeath: true,
-
-        rarity: 5,
-        lore: "For those who wield the green fire.",
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-toxic-fire.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-toxic-fire.img",
-            footTint: 0xf8c137,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-toxic-fire.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-toxic-fire.img",
+            backpackTint: 0x101010,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
             skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitMecha: defineOutfitSkin("outfitBase", {
-        name: "Mecha",
+    outfitFireball: defineOutfitSkin("outfitBase", {
+        name: "Fireball",
         noDropOnDeath: true,
-
-        rarity: 5,
         skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-mecha.img",
+            baseTint: 0xbb2b10,
+            baseSprite: "player-base-01.img",
             handTint: 0xffffff,
-            handSprite: "player-hands-outfitMecha.img",
-            footTint: 0x5b7eda,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-mecha.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-outfitMecha.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitMecha.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitTree: defineOutfitSkin("outfitBase", {
-        name: "Tree Costume",
-        obstacleType: "tree_07",
-        baseScale: 1,
-        lootImg: {
-            tint: 0x462d12,
-        },
-    }),
-
-    outfitSpeedo: defineOutfitSkin("outfitBase", {
-        name: "Speedo",
-        rarity: 1,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-outfitSpeedo.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-speedo.img",
-            footTint: 0x959595,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-speedo.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-speedo.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitBlueLava: defineOutfitSkin("outfitBase", {
-        name: "BlueLava",
-        noDropOnDeath: true,
-
-        rarity: 5,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-outfitBlueLava.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-outfitBlueLava.img",
+            handSprite: "player-hands-outfitFireball.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-circle-base-outfitBlueLava.img",
+            backpackTint: 0xd03215,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -4, y: 0 },
+            frontSprite: "player-accessory-outfitFireball.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitBlueLava.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
+        rarity: 5,
+        lore: "For those who wield the power of the pan.",
     }),
-
-    outfitInfernoCamo: defineOutfitSkin("outfitBase", {
-        name: "Inferno Camo",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-outfitInferno.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-magma-camo.img",
-            footTint: 0xe85f0a,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-magma-camo.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-outfitInferno.img",
-            tint: 0xffffff,
-        },
-    }),
-
+    // === Pass 4 ===
     outfitMango: defineOutfitSkin("outfitBase", {
-        name: "Mango",
+        name: "Smoothie",
         noDropOnDeath: true,
 
         rarity: 2,
@@ -2306,38 +1709,161 @@ const SkinDefs: Record<string, OutfitDef> = {
             handSprite: "player-hands-outfitMango.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-smoothie.img",
+            backpackTint: 0x7d663e,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-outfitMango.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
+    outfitNeonEyesore: defineOutfitSkin("outfitBase", {
+        name: "Neon",
+        noDropOnDeath: true,
 
+        rarity: 3,
+        lore: "Created by Savage_Wuhan (Jerrie123)",
+
+        skinImg: {
+            baseTint: 0x74fcfd,
+            baseSprite: "player-base-01.img",
+            handTint: 0x75fa4c,
+            handSprite: "player-hands-01.img",
+            footTint: 0x75fa4c,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xfffe55,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitInfernoCamo: defineOutfitSkin("outfitBase", {
+        name: "Magma Camo",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitInferno.img",
+            handTint: 0xe85f0a,
+            handSprite: "player-hands-01.img",
+            footTint: 0xe85f0a,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xe85f0a,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
     outfitParrot: defineOutfitSkin("outfitBase", {
-        name: "Parrot",
+        name: "Parakeet",
         noDropOnDeath: true,
 
         rarity: 1,
         lore: "Created by Mxstyc",
 
         skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-parrot.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-parrot.img",
+            baseTint: 0x48742c,
+            baseSprite: "player-base-01.img",
+            handTint: 0xeac352,
+            handSprite: "player-hands-01.img",
             footTint: 0xeac352,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-parrot.img",
+            backpackTint: 0xbc261a,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-parrot.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
+    outfitSpeedoSunburn: defineOutfitSkin("outfitBase", {
+        name: "Speedo Sunburn",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitSpeedoSunburn.img",
+            handTint: 0xf4b4ff,
+            handSprite: "player-hands-01.img",
+            footTint: 0xf4b4ff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xfe0f16,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 2,
+        lore: "For those who wield the power of the pan.",
+    }),
+    outfitMojo: defineOutfitSkin("outfitBase", {
+        name: "Mojo",
+        noDropOnDeath: true,
 
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitMojo.img",
+            handTint: 0xe6c70d,
+            handSprite: "player-hands-01.img",
+            footTint: 0xe6c70d,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x101010,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitAstronaut: defineOutfitSkin("outfitBase", {
+        name: "Space Dude",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-astronaut.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-astronaut.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-outfitAstronaut.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitBlueLava: defineOutfitSkin("outfitBase", {
+        name: "Cold Magma",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitBlueLava.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-outfitBlueLava.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-outfitBlueLava.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    // === Pass 5 ===
     outfitCrusader: defineOutfitSkin("outfitBase", {
         name: "Crusader",
         noDropOnDeath: true,
@@ -2348,19 +1874,18 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-crusader.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-crusader.img",
+            handTint: 0x214724,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-crusader.img",
+            backpackTint: 0xba2b28,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-crusader.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
     outfitLasrDisk: defineOutfitSkin("outfitBase", {
         name: "Lasr Disk",
         noDropOnDeath: true,
@@ -2369,19 +1894,18 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-lasr-disk.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-lasr-disk.img",
+            handTint: 0x979797,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-lasr-disk.img",
+            backpackTint: 0x101010,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-lasr-disk.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
     outfitBeachCamo: defineOutfitSkin("outfitBase", {
         name: "Beach Camo",
         noDropOnDeath: true,
@@ -2390,19 +1914,18 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-beach-camo.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-beach-camo.img",
+            handTint: 0xa5b85d,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-beach-camo.img",
+            backpackTint: 0x78a65a,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-beach-camo.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
     outfitForest: defineOutfitSkin("outfitBase", {
         name: "Forest",
         noDropOnDeath: true,
@@ -2411,19 +1934,18 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-forest.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-forest.img",
+            handTint: 0xa3a3a3,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-forest.img",
+            backpackTint: 0x4d4d4d,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-forest.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
     outfitGingerbread: defineOutfitSkin("outfitBase", {
         name: "Gingerbread",
         noDropOnDeath: true,
@@ -2432,19 +1954,18 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-gingerbread.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-gingerbread.img",
+            handTint: 0xd38136,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-gingerbread.img",
+            backpackTint: 0xdf2626,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-gingerbread.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
     outfitVenom: defineOutfitSkin("outfitBase", {
         name: "Venom",
         noDropOnDeath: true,
@@ -2455,40 +1976,18 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-venom.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-venom.img",
+            handTint: 0x62cf3f,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-venom.img",
+            backpackTint: 0x508831,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-venom.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitBlueMecha: defineOutfitSkin("outfitBase", {
-        name: "Blue Mecha",
-        noDropOnDeath: true,
-
-        rarity: 5,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-blue-mecha.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-blue-mecha.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-blue-mecha.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-blue-mecha.img",
-            tint: 0xffffff,
-        },
-    }),
-
     outfitEventHorizon: defineOutfitSkin("outfitBase", {
         name: "Event Horizon",
         noDropOnDeath: true,
@@ -2499,281 +1998,59 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-event-horizon.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-event-horizon.img",
+            handTint: 0x3b2586,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-event-horizon.img",
+            backpackTint: 0x100a26,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-event-horizon.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-    outfitChritstmasTree: defineOutfitSkin("outfitBase", {
-        name: "Chritstmas Tree",
-        noDropOnDeath: true,
-        rarity: 4,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-christmastree.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-christmastree.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-christmas-tree.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-christmastree.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitYinYang: defineOutfitSkin("outfitBase", {
-        name: "Yin Yang",
-        noDropOnDeath: true,
-        rarity: 3,
-        lore: "Created by Spy",
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-yin-yang.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-yin-yang.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-yin-yang.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-yin-yang.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitTiki: defineOutfitSkin("outfitBase", {
-        name: "Tiki",
+    outfitBlueMecha: defineOutfitSkin("outfitBase", {
+        name: "Blue Mecha",
         noDropOnDeath: true,
 
-        rarity: 3,
+        rarity: 5,
         skinImg: {
             baseTint: 0xffffff,
-            baseSprite: "player-base-tiki.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-tiki.img",
+            baseSprite: "player-base-blue-mecha.img",
+            handTint: 0x2e2e2e,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-tiki.img",
+            backpackTint: 0xaaaaaa,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-tiki.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitMachoLucha2: defineOutfitSkin("outfitBase", {
-        name: "Macho Lucha",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-macho-lucha.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-macho-lucha.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "macho-lucha-back.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-macho-lucha.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitCalaca: defineOutfitSkin("outfitBase", {
-        name: "Calaca",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-calaca.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-calaca.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-calaca.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-calaca.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitSortaBlue: defineOutfitSkin("outfitBase", {
-        name: "Sorta Blue",
+    // === Pass 6 ===
+    outfitViper: defineOutfitSkin("outfitBase", {
+        name: "Viper",
         noDropOnDeath: true,
 
         rarity: 2,
-        lore: "Created by StraightUpFoReal",
-
         skinImg: {
             baseTint: 0xffffff,
-            baseSprite: "player-base-sorta-blue.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-sorta-blue.img",
+            baseSprite: "player-base-viper.img",
+            handTint: 0xa3a3a3,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-sorta-blue.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-sorta-blue.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitMellow: defineOutfitSkin("outfitBase", {
-        name: "Mellow",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "Created by Jabari",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-mellow.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-mellow.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-mellow.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-mellow.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitAero: defineOutfitSkin("outfitBase", {
-        name: "Aero",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "The Air.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-aero.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-aero.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-aero.img",
+            backpackTint: 0x2aa0ba,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
             skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitPtero: defineOutfitSkin("outfitBase", {
-        name: "Ptero",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "The Flight.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-ptero.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-ptero.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-ptero.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitHazard: defineOutfitSkin("outfitBase", {
-        name: "Hazard",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        lore: "For those who serve as a walking warning label.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-hazard.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-hazard.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-hazard.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitMummy: defineOutfitSkin("outfitBase", {
-        name: "Mummy",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        lore: "For those who rise again after every loss.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-mummy.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-mummy.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-mummy.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitBengal: defineOutfitSkin("outfitBase", {
-        name: "Bengal",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-bengal.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-bengal.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-bengal.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-bengal.img",
-            tint: 0xffffff,
-        },
-    }),
-
     outfitUnderbrush: defineOutfitSkin("outfitBase", {
         name: "Underbrush",
         noDropOnDeath: true,
@@ -2784,19 +2061,124 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-underbrush.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-underbrush.img",
+            handTint: 0x78a65a,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-underbrush.img",
+            backpackTint: 0x78a65a,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-underbrush.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
+    outfitMellow: defineOutfitSkin("outfitBase", {
+        name: "Mellow",
+        noDropOnDeath: true,
 
+        rarity: 3,
+        lore: "Created by Jabari",
+
+        skinImg: {
+            baseTint: 0xedeb7f,
+            baseSprite: "player-base-01.img",
+            handTint: 0xedeb7f,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xc0ea7d,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitRosePetals: defineOutfitSkin("outfitBase", {
+        name: "Rose Petals",
+        noDropOnDeath: true,
+
+        rarity: 1,
+        lore: "Created by DotDot",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-rose-petals.img",
+            handTint: 0x808080,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x808080,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitBengal: defineOutfitSkin("outfitBase", {
+        name: "Bengal",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-bengal.img",
+            handTint: 0xea8611,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x101010,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitSortaBlue: defineOutfitSkin("outfitBase", {
+        name: "Sorta Blue",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "Created by StraightUpFoReal",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-sorta-blue.img",
+            handTint: 0x0e1b2f,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-sorta-blue.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitPurpleMecha: defineOutfitSkin("outfitBase", {
+        name: "Grape Mech",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-purple-mecha.img",
+            handTint: 0x7f3a97,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x9bdd48,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
     outfitMagmatic: defineOutfitSkin("outfitBase", {
         name: "Magmatic",
         noDropOnDeath: true,
@@ -2813,118 +2195,11 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-magmatic.img",
         },
         lootImg: {
-            sprite: "loot-outfit-magmatic.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitPurpleMecha: defineOutfitSkin("outfitBase", {
-        name: "Purple Mecha",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-purple-mecha.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-purple-mecha.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-purple-mecha.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-purple-mecha.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitRosePetals: defineOutfitSkin("outfitBase", {
-        name: "Rose Petals",
-        noDropOnDeath: true,
-
-        rarity: 1,
-        lore: "Created by DotDot",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-rose-petals.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-rose-petals.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-rose-petals.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-rose-petals.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitViper: defineOutfitSkin("outfitBase", {
-        name: "Viper",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-viper.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-viper.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-viper.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-viper.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitFullCircle: defineOutfitSkin("outfitBase", {
-        name: "Full Circle",
-        noDropOnDeath: true,
-
-        rarity: 1,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-full-circle.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-full-circle.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-full-circle.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-full-circle.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitPleasingPart: defineOutfitSkin("outfitBase", {
-        name: "Pleasing Part",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-pleasing-part.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-pleasing-part.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-pleasing-part.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-pleasing-part.img",
-            tint: 0xffffff,
-        },
-    }),
-
+    // === Pass 7 ===
     outfitItJustMist: defineOutfitSkin("outfitBase", {
         name: "It Just Mist",
         noDropOnDeath: true,
@@ -2933,82 +2208,38 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-it-just-mist.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-it-just-mist.img",
+            handTint: 0xaa0000,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-it-just-mist.img",
+            backpackTint: 0xaa0000,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-it-just-mist.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
     outfitOneInAMelon: defineOutfitSkin("outfitBase", {
-        name: "One In A Melon",
+        name: "One in a Melon",
         noDropOnDeath: true,
 
         rarity: 3,
         skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-one-in-a-melon.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-one-in-a-melon.img",
+            baseTint: 0x24bf0c,
+            baseSprite: "player-base-01.img",
+            handTint: 0xffab1e,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-one-in-a-melon.img",
+            backpackTint: 0xf74289,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-one-in-a-melon.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitColdestEdge: defineOutfitSkin("outfitBase", {
-        name: "Coldest Edge",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-coldest-edge.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-coldest-edge.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-coldest-edge.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-coldest-edge.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitRetroSunset: defineOutfitSkin("outfitBase", {
-        name: "Retro Sunset",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-retro-sunset.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-retro-sunset.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-retro-sunset.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-retro-sunset.img",
-            tint: 0xffffff,
-        },
-    }),
-
     outfitBoet: defineOutfitSkin("outfitBase", {
         name: "Boet",
         noDropOnDeath: true,
@@ -3017,40 +2248,38 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-boet.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-boet.img",
+            handTint: 0x183304,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-boet.img",
+            backpackTint: 0x8b0c12,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-boet.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitOldKumo: defineOutfitSkin("outfitBase", {
-        name: "Old Kumo",
+    outfitFullCircle: defineOutfitSkin("outfitBase", {
+        name: "Full Circle",
         noDropOnDeath: true,
 
-        rarity: 3,
+        rarity: 1,
         skinImg: {
             baseTint: 0xffffff,
-            baseSprite: "player-base-old-kumo.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-old-kumo.img",
+            baseSprite: "player-base-full-circle.img",
+            handTint: 0x838495,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-old-kumo.img",
+            backpackTint: 0x171823,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-old-kumo.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
     outfitPanteraOnca: defineOutfitSkin("outfitBase", {
         name: "Pantera Onca",
         noDropOnDeath: true,
@@ -3059,40 +2288,78 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-pantera-onca.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-pantera-onca.img",
+            handTint: 0xe39600,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-pantera-onca.img",
+            backpackTint: 0xe39600,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-pantera-onca.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitTipTheScales: defineOutfitSkin("outfitBase", {
-        name: "Tip The Scales",
+    outfitOldKumo: defineOutfitSkin("outfitBase", {
+        name: "Old Kumo",
         noDropOnDeath: true,
 
-        rarity: 4,
+        rarity: 3,
         skinImg: {
             baseTint: 0xffffff,
-            baseSprite: "player-base-tip-the-scales.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-tip-the-scales.img",
+            baseSprite: "player-base-old-kumo.img",
+            handTint: 0x09432c,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-tip-the-scales.img",
+            backpackTint: 0x09432c,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-tip-the-scales.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
+    outfitRetroSunset: defineOutfitSkin("outfitBase", {
+        name: "Retro Sunset",
+        noDropOnDeath: true,
 
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-retro-sunset.img",
+            handTint: 0x222222,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x222222,
+            backpackSprite: "player-circle-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitPleasingPart: defineOutfitSkin("outfitBase", {
+        name: "Pleasing Part",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-pleasing-part.img",
+            handTint: 0xe65239,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xeece59,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
     outfitAvocadoh: defineOutfitSkin("outfitBase", {
         name: "Avocadoh",
         noDropOnDeath: true,
@@ -3101,40 +2368,82 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-avocadoh.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-avocadoh.img",
+            handTint: 0x9f672e,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-avocadoh.img",
+            backpackTint: 0x1c4723,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-avocadoh.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
+    outfitTipTheScales: defineOutfitSkin("outfitBase", {
+        name: "Tip the Scales",
+        noDropOnDeath: true,
 
-    outfitEggnite: defineOutfitSkin("outfitBase", {
-        name: "Eggnite",
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-tip-the-scales.img",
+            handTint: 0x4e6ba8,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x4e6ba8,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitEyes_t: defineOutfitSkin("outfitBase", {
+        name: "Eyes-T",
+        noDropOnDeath: false, // for now
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-eyes-t.img",
+            handTint: 0xbfd4ec,
+            handSprite: "player-hands-01.img",
+            footTint: 0xbfd4ec,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffcfbb,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 5,
+    }),
+    // === Pass 8 ===
+    outfitGhoulFire: defineOutfitSkin("outfitBase", {
+        name: "Blue Burns",
         noDropOnDeath: true,
 
         rarity: 5,
+        lore: "Created by earldre",
+
         skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-eggnite.img",
+            baseTint: 0x117993,
+            baseSprite: "player-base-01.img",
             handTint: 0xffffff,
-            handSprite: "player-hands-eggnite.img",
+            handSprite: "player-hands-ghoul-fire.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-eggnite.img",
+            backpackTint: 0x13b3ff,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-ghoul-fire.img",
         },
         lootImg: {
-            sprite: "loot-outfit-eggnite.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
     outfitSunburn: defineOutfitSkin("outfitBase", {
         name: "Sunburn",
         noDropOnDeath: true,
@@ -3151,32 +2460,54 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-sunburn.img",
         },
         lootImg: {
-            sprite: "loot-outfit-sunburn.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitElectricIce: defineOutfitSkin("outfitBase", {
-        name: "Electric Ice",
+    outfitGridflag: defineOutfitSkin("outfitBase", {
+        name: "Gridflag",
         noDropOnDeath: true,
 
-        rarity: 1,
+        rarity: 2,
+        lore: "Created by Saksham",
+
         skinImg: {
             baseTint: 0xffffff,
-            baseSprite: "player-base-electric-ice.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-electric-ice.img",
+            baseSprite: "player-base-gridflag.img",
+            handTint: 0x1d93b8,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-electric-ice.img",
+            backpackTint: 0xb7aa3a,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-electric-ice.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
+    outfitStarflag: defineOutfitSkin("outfitBase", {
+        name: "Starflag",
+        noDropOnDeath: true,
 
+        rarity: 2,
+        lore: "Created by Saksham",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-starflag.img",
+            handTint: 0x9f1717,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x176089,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
     outfitBubblegum: defineOutfitSkin("outfitBase", {
         name: "Bubblegum",
         noDropOnDeath: true,
@@ -3195,166 +2526,10 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-back-bubblegum.img",
         },
         lootImg: {
-            sprite: "loot-outfit-bubblegum.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitGaudisque: defineOutfitSkin("outfitBase", {
-        name: "Gaudisque",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-gaudisque.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-gaudisque.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-gaudisque.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-gaudisque.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitStarflag: defineOutfitSkin("outfitBase", {
-        name: "Starflag",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        lore: "Created by Saksham",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-starflag.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-starflag.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-starflag.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-starflag.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitGridflag: defineOutfitSkin("outfitBase", {
-        name: "Gridflag",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        lore: "Created by Saksham",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-gridflag.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-gridflag.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-gridflag.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-gridflag.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitToxicBarrel: defineOutfitSkin("outfitBase", {
-        name: "Toxic Barrel",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        lore: "Created by gtFlamez",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-toxic-barrel.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-toxic-barrel.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-toxic-barrel.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-toxic-barrel.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitBlueZone: defineOutfitSkin("outfitBase", {
-        name: "Blue Zone",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        lore: "Created by JFKWhite",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-blue-zone.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-blue-zone.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-blue-zone.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-blue-zone.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitStumpd: defineOutfitSkin("outfitBase", {
-        name: "Stumpd",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-stumpd.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-stumpd.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-stumpd.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-stumpd.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitDigiturt: defineOutfitSkin("outfitBase", {
-        name: "Digiturt",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-digiturt.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-digiturt.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-digiturt.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-digiturt.img",
-            tint: 0xffffff,
-        },
-    }),
-
     outfitMelonWater: defineOutfitSkin("outfitBase", {
         name: "MelonWater",
         noDropOnDeath: true,
@@ -3365,19 +2540,80 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-melonwater.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-melonwater.img",
+            handTint: 0x8ab487,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-melonwater.img",
+            backpackTint: 0x075300,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-melonwater.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
+    outfitElectricIce: defineOutfitSkin("outfitBase", {
+        name: "Electric Ice",
+        noDropOnDeath: true,
 
+        rarity: 1,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-electric-ice.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-electric-ice.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-electric-ice.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitGaudisque: defineOutfitSkin("outfitBase", {
+        name: "Gaudisque",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-gaudisque.img",
+            handTint: 0xda6d5f,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x8b9661,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitToxicBarrel: defineOutfitSkin("outfitBase", {
+        name: "Toxic Barrel",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "Created by gtFlamez",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-toxic-barrel.img",
+            handTint: 0x405043,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x052600,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
     outfitStarryNight: defineOutfitSkin("outfitBase", {
         name: "Starry Night",
         noDropOnDeath: true,
@@ -3390,108 +2626,58 @@ const SkinDefs: Record<string, OutfitDef> = {
             handSprite: "player-hands-starry-night.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-starry-night.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-starry-night.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitStreetArt: defineOutfitSkin("outfitBase", {
-        name: "Street Art",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-street-art.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-street-art.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-street-art.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-street-art.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitNorseCode: defineOutfitSkin("outfitBase", {
-        name: "Norse Code",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-norse-code.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-norse-code.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-norse-code.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-norse-code.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitILavaYou: defineOutfitSkin("outfitBase", {
-        name: "I Lava You",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        lore: "Created by NeDmik",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-i-lava-you.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-i-lava-you.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-i-lava-you.img",
-            frontSpritePos: { x: -2, y: 0 },
-            frontSprite: "player-accessory-i-lava-you.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-i-lava-you.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitIgris: defineOutfitSkin("outfitBase", {
-        name: "Igris",
-        noDropOnDeath: true,
-
-        rarity: 5,
-        lore: "For those who fight with absolute loyalty.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-igris.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-igris.img",
-            footTint: 0xffffff,
-            footSprite: "player-hands-igris.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-igris.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-igris.img",
-            aboveHand: true,
+            backpackTint: 0x1b2f55,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
             skinLootImg: true,
             tint: 0xffffff,
         },
     }),
+    outfitHotMagma: defineOutfitSkin("outfitBase", {
+        name: "Hot Magma",
+        noDropOnDeath: true,
 
+        rarity: 5,
+        lore: "Created by XxHackerzxX",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-hot-magma.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-hot-magma.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-hot-magma.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitBlueZone: defineOutfitSkin("outfitBase", {
+        name: "Blue Zone",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "Created by JFKWhite",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-blue-zone.img",
+            handTint: 0x202020,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xf0ff,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
     outfitKingGalaxy: defineOutfitSkin("outfitBase", {
         name: "King Galaxy",
         noDropOnDeath: true,
@@ -3512,33 +2698,115 @@ const SkinDefs: Record<string, OutfitDef> = {
             frontSprite: "player-accessory-king-galaxy.img",
         },
         lootImg: {
-            sprite: "loot-outfit-king-galaxy.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitLivingGalaxy: defineOutfitSkin("outfitBase", {
-        name: "Living Galaxy",
+    outfitDragonTails: defineOutfitSkin("outfitBase", {
+        name: "Dragon Tails",
         noDropOnDeath: true,
-        rarity: 5,
-        lore: "A window into a sky that never stands still.",
-        galaxyEffect: true,
         skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-king-galaxy.img",
+            baseTint: 13041664,
+            baseSprite: "player-base-dragon-tails.img",
             handTint: 0xffffff,
-            handSprite: "player-hands-king-galaxy.img",
+            handSprite: "player-hands-dragon-tails.img",
             footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-king-galaxy.img",
+            footSprite: "player-hands-dragon-tails.img",
+            backpackTint: 7667712,
+            backpackSprite: "player-circle-base-02.img",
+            frontSpritePos: { x: -5, y: 0 },
+            frontSprite: "player-accessory-dragon-tails.img",
         },
         lootImg: {
-            sprite: "loot-outfit-galaxy.img",
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 3,
+        lore: "For those who wield the power of the pan.",
+    }),
+    outfitDigiturt: defineOutfitSkin("outfitBase", {
+        name: "Digiturt",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-digiturt.img",
+            handTint: 0x148262,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xe2cdaa,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
+    outfitBraaains: defineOutfitSkin("outfitBase", {
+        name: "Braaains",
+        noDropOnDeath: false, // for now
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-braaains.img",
+            handTint: 0x5d6a85,
+            handSprite: "player-hands-01.img",
+            footTint: 0x686868,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x1386b8,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 5,
+    }),
+    outfitNorseCode: defineOutfitSkin("outfitBase", {
+        name: "Norse Code",
+        noDropOnDeath: true,
 
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-norse-code.img",
+            handTint: 0x758078,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x682d07,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitILavaYou: defineOutfitSkin("outfitBase", {
+        name: "I Lava You",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "Created by NeDmik",
+
+        skinImg: {
+            baseTint: 0x79002c,
+            baseSprite: "player-base-01.img",
+            handTint: 0xcf044d,
+            handSprite: "player-hands-01.img",
+            footTint: 0xcf044d,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xcf044d,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -2, y: 0 },
+            frontSprite: "player-accessory-i-lava-you.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
     outfitJuleVerny: defineOutfitSkin("outfitBase", {
         name: "Jule Verny",
         noDropOnDeath: true,
@@ -3557,36 +2825,1413 @@ const SkinDefs: Record<string, OutfitDef> = {
             frontSprite: "player-accessory-jule-verny.img",
         },
         lootImg: {
-            sprite: "loot-outfit-jule-verny.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
+    outfitStumped: defineOutfitSkin("outfitBase", {
+        name: "Stumped",
+        noDropOnDeath: true,
 
-    outfitGhoulFire: defineOutfitSkin("outfitBase", {
-        name: "Blue Burns",
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-stumped.img",
+            handTint: 0xda9157,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x613721,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitStreetArt: defineOutfitSkin("outfitBase", {
+        name: "Street Art",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-street-art.img",
+            handTint: 0x212124,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x212124,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitCosmicBlue: defineOutfitSkin("outfitBase", {
+        name: "Cosmic Blue",
+        noDropOnDeath: false, // for now
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-cosmic-blue.img",
+            handTint: 2755133,
+            handSprite: "player-hands-02.img",
+            footTint: 2755133,
+            footSprite: "player-feet-02.img",
+            backpackTint: 12002083,
+            backpackSprite: "player-circle-base-02.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 5,
+    }),
+    // === Pass 9 ===
+    outfitColorPalette: defineOutfitSkin("outfitBase", {
+        name: "Color Palette",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-color-palette.img",
+            handTint: 0xaa6c23,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x871f34,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitChromaticCTR: defineOutfitSkin("outfitBase", {
+        name: "Chromatic CTR",
+        noDropOnDeath: true,
+
+        rarity: 1,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-chromatic-ctr.img",
+            handTint: 0x007878,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x00615b,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitTurtleSweater: defineOutfitSkin("outfitBase", {
+        name: "Turtle Sweater",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-turtle-sweater.img",
+            handTint: 0x007878,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x007878,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitHowPitaful: defineOutfitSkin("outfitBase", {
+        name: "How Pita-ful",
         noDropOnDeath: true,
 
         rarity: 5,
-        lore: "Created by earldre",
-
         skinImg: {
             baseTint: 0xffffff,
-            baseSprite: "player-base-ghoul-fire.img",
+            baseSprite: "player-base-how-pita-ful.img",
             handTint: 0xffffff,
-            handSprite: "player-hands-ghoul-fire.img",
+            handSprite: "player-hands-how-pita-ful.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-ghoul-fire.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-ghoul-fire.img",
+            backpackTint: 0x844514,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
-            sprite: "loot-outfit-ghoul-fire.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
+    outfitSoapPods: defineOutfitSkin("outfitBase", {
+        name: "Soap Pods",
+        noDropOnDeath: true,
 
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-soap-pods.img",
+            handTint: 0x020058,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x020058,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitTomatoandCheese: defineOutfitSkin("outfitBase", {
+        name: "Tomato and Cheese",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-tomato-and-cheese.img",
+            handTint: 0x4b4b4b,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x4b4b4b,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitH2Oh: defineOutfitSkin("outfitBase", {
+        name: "H2Oh!",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        lore: "Created by NeDmik",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-h2oh.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-h2oh.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-h2oh.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitScarween: defineOutfitSkin("outfitBase", {
+        name: "Scarween",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "Created by IHASYOUPROS[YT]",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-scareween.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-scareween.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-scareween.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitSwords: defineOutfitSkin("outfitBase", {
+        name: "Swords",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "Created by skumzeninguem",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-swords.img",
+            handTint: 0x156d6d,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x24b399,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitHopelessRamentic: defineOutfitSkin("outfitBase", {
+        name: "Hopeless Ramen-tic",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-hopeless-ramentic.img",
+            handTint: 0x292929,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x292929,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitChewieCheese: defineOutfitSkin("outfitBase", {
+        name: "Chewie Cheese",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xbb2b10,
+            baseSprite: "player-base-01.img",
+            handTint: 0xecac5a,
+            handSprite: "player-hands-01.img",
+            footTint: 0xecac5a,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x7f493f,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-base-chewie-cheese.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 2,
+        lore: "For those who wield the power of the pan.",
+    }),
+    // === Pass 10 ===
+    outfitWoodFire: defineOutfitSkin("outfitBase", {
+        name: "Wood Fire",
+        noDropOnDeath: true,
+
+        rarity: 1,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-wood-fire.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-wood-fire.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-wood-fire.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitHoldinHide: defineOutfitSkin("outfitBase", {
+        name: "Holdin Hide",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-holdin-hide.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-holdin-hide.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x2d2617,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitDisasteroid: defineOutfitSkin("outfitBase", {
+        name: "Disasteroid",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        skinImg: {
+            baseTint: 0x573c26,
+            baseSprite: "player-base-01.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-disasteroid.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-disasteroid.img",
+            frontSpritePos: { x: -10, y: -1.8 },
+            frontSprite: "player-accessory-disasteroid.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitBluntRazor: defineOutfitSkin("outfitBase", {
+        name: "Blunt Razor",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-blunt-razor.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-blunt-razor.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-blunt-razor.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitRuppert: defineOutfitSkin("outfitBase", {
+        name: "Ruppert",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-ruppert.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-ruppert.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x434759,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitGreenTeaRex: defineOutfitSkin("outfitBase", {
+        name: "Green Tea Rex",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-green-tea-rex.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-green-tea-rex.img",
+            footTint: 0x0a5551,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x0a5551,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 6, y: 0 },
+            frontSprite: "player-accessory-green-tea-rex.img",
+            aboveHand: true,
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 3,
+        lore: "For those who wield the power of the pan.",
+    }),
+    outfitTribeMask: defineOutfitSkin("outfitBase", {
+        name: "Tribe Mask",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-tribe-mask.img",
+            handTint: 0xffd732,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x393839,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitPhoebonachi: defineOutfitSkin("outfitBase", {
+        name: "phoebonachi",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-phoebonachi.img",
+            handTint: 0xa53e35,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xd79e70,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitTribeShield: defineOutfitSkin("outfitBase", {
+        name: "Tribe Shield",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-tribe-shield.img",
+            handTint: 0x1fa3ab,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x5e2128,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitMultiTusking: defineOutfitSkin("outfitBase", {
+        name: "Multi Tusking",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-multi-tusking.img",
+            handTint: 0xa0683e,
+            handSprite: "player-hands-01.img",
+            footTint: 0xa0683e,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x42210c,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-multi-tusking.img",
+            aboveHand: true,
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 3,
+        lore: "For those who wield the power of the pan.",
+    }),
+    outfitTirelessly: defineOutfitSkin("outfitBase", {
+        name: "Tirelessly",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-tirelessly.img",
+            handTint: 0x404040,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x404040,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitBrontoChop: defineOutfitSkin("outfitBase", {
+        name: "Bronto Chop",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-bronto-chop.img",
+            handTint: 0xcab39c,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xcab39c,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    // === Pass 11 ===
+    outfitTunelSun: defineOutfitSkin("outfitBase", {
+        name: "Tunel Sun",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-tunel-sun.img",
+            handTint: 0xf52c95,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x15063d,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitHuedini: defineOutfitSkin("outfitBase", {
+        name: "Hue-dini",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-huedini.img",
+            handTint: 0x74eaf6,
+            handSprite: "player-hands-01.img",
+            footTint: 0x74eaf6,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xff76ff,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitBombyman: defineOutfitSkin("outfitBase", {
+        name: "Bombyman",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-bombyman.img",
+            handTint: 0x3c3643,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x2f2934,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitSunriseBlvd: defineOutfitSkin("outfitBase", {
+        name: "Sunrise Blvd",
+        noDropOnDeath: true,
+
+        rarity: 1,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-sunrise-blvd.img",
+            handTint: 0xff77c0,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x4d19e1,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitIdDie4U: defineOutfitSkin("outfitBase", {
+        name: "Id Die 4 U",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        skinImg: {
+            baseTint: 0x640000,
+            baseSprite: "player-base-01.img",
+            handTint: 0xffd25d,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x420000,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -5, y: 0 },
+            frontSprite: "player-accessory-id-die-4-u.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitIntoTheGrid: defineOutfitSkin("outfitBase", {
+        name: "Into the Grid",
+        noDropOnDeath: true,
+
+        rarity: 1,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-into-the-grid.img",
+            handTint: 0xce1c7d,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x210a45,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitToontooine: defineOutfitSkin("outfitBase", {
+        name: "Toontooine",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-toontooine.img",
+            handTint: 0x393a40,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x0f1014,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitBitplosion: defineOutfitSkin("outfitBase", {
+        name: "Bitplosion",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-bitplosion.img",
+            handTint: 0xce2527,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffe500,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitItsMeCoin: defineOutfitSkin("outfitBase", {
+        name: "It's-a-Coin", // name changed for better flow
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-its-me-coin.img",
+            handTint: 0xffde52,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffde52,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffde52,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 2,
+        lore: "Shame it's just the regular yellow one...",
+    }),
+    outfitMaxAttack: defineOutfitSkin("outfitBase", {
+        name: "Max Attack",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0x130f30,
+            baseSprite: "player-base-01.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-max-attack.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x07003a,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-max-attack.img",
+            aboveHand: true,
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 3,
+        lore: "For those who wield the power of the pan.",
+    }),
+    // === Pass 12 ===
+    outfitHowlODays: defineOutfitSkin("outfitBase", {
+        name: "Howl-o-Days",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xf1e1d6,
+            baseSprite: "player-base-01.img",
+            handTint: 0xe1cec2,
+            handSprite: "player-hands-01.img",
+            footTint: 0xe1cec2,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xa6897e,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -10, y: 0 },
+            frontSprite: "player-accessory-howl-o-days.img",
+            aboveHand: true,
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 2,
+        lore: "AWOOOOOOOOOOOOOOOOOOO",
+    }),
+    outfitCaptnCactus: defineOutfitSkin("outfitBase", {
+        name: "Captn' Cactus",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-captn-cactus.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-captn-cactus.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x425501,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitNachoHat: defineOutfitSkin("outfitBase", {
+        name: "Nacho Hat",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-nacho-hat.img",
+            handTint: 0x9d664f,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x9d664f,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -10, y: 0 },
+            frontSprite: "player-accessory-nacho-hat.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitBroncoSaurus: defineOutfitSkin("outfitBase", {
+        name: "Bronco-Saurus",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xdfc3aa,
+            baseSprite: "player-base-01.img",
+            handTint: 0x886d50,
+            handSprite: "player-hands-01.img",
+            footTint: 0x886d50,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x634b32,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -4, y: 0 },
+            frontSprite: "player-accessory-bronco-saurus.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitNeckNapkin: defineOutfitSkin("outfitBase", {
+        name: "Neck Napkin",
+        noDropOnDeath: true,
+
+        rarity: 1,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-neck-napkin.img",
+            handTint: 0x724633,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x0b4071,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -11, y: 0 },
+            frontSprite: "player-accessory-neck-napkin.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitMoosli: defineOutfitSkin("outfitBase", {
+        name: "Moosli",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-moosli.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-moosli.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xf7f7f7,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 3, y: 0 },
+            frontSprite: "player-accessory-moosli.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitSuppaPoncho: defineOutfitSkin("outfitBase", {
+        name: "Suppa Poncho",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-suppa-poncho.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-suppa-poncho.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x663f2e,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -11, y: 0 },
+            frontSprite: "player-accessory-suppa-poncho.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitGoodFeather: defineOutfitSkin("outfitBase", {
+        name: "Good Feather",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xc4765e,
+            baseSprite: "player-base-01.img",
+            handTint: 0xff8b3b,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x795e53,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -8, y: 0 },
+            frontSprite: "player-accessory-good-feather.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitRanchDressing: defineOutfitSkin("outfitBase", {
+        name: "Ranch Dressing",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-ranch-dressing.img",
+            handTint: 0xd9a487,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x231204,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -4.3, y: -2 },
+            frontSprite: "player-accessory-ranch-dressing.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitTheySeeMeRolling: defineOutfitSkin("outfitBase", {
+        name: "They See Me Rolling",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        skinImg: {
+            baseTint: 0x6a3730,
+            baseSprite: "player-base-01.img",
+            handTint: 0xffd38c,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x481d17,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-they-see-me-rolling.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitSirLoin: defineOutfitSkin("outfitBase", {
+        name: "Sir Loin",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        skinImg: {
+            baseTint: 0x471a0b,
+            baseSprite: "player-base-01.img",
+            handTint: 0x471a0b,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x471a0b,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 3, y: 0 },
+            frontSprite: "player-accessory-sir-loin.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    // === "NFTs" ===
+    outfitAhoy: defineOutfitSkin("outfitBase", {
+        name: "Captain Richpants",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-ahoy.img",
+            handTint: 0xe9bf80,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-ahoy.img",
+            frontSpritePos: { x: -9, y: 0 },
+            frontSprite: "player-accessory-ahoy.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitLustrousPaladin: defineOutfitSkin("outfitBase", {
+        name: "Palladius",
+        moveEmitter: "paladinParticle",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-lustrous-paladin.img",
+            handTint: 0xca0000,
+            handSprite: "player-hands-01.img",
+            footTint: 0xca0000,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-lustrous-paladin.img",
+            frontSpritePos: { x: -1, y: 0 },
+            frontSprite: "player-accessory-lustrous-paladin.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 3,
+        lore: "For those who wield the power of the pan.",
+    }),
+    outfitVillageNinja: defineOutfitSkin("outfitBase", {
+        name: "Nagato",
+        noDropOnDeath: true,
+        moveEmitter: "village_ninja_trail",
+        skinImg: {
+            baseTint: 0x040d1f,
+            baseSprite: "player-base-01.img",
+            handTint: 0x040d1f,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-village-ninja.img",
+            frontSpritePos: { x: -2, y: 0 },
+            frontSprite: "player-accessory-village-ninja.img",
+            aboveHand: false,
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 3,
+        lore: "For those who wield the power of the pan.",
+    }),
+    // === Other ===
+    outfitYinYang: defineOutfitSkin("outfitBase", {
+        name: "Yin Yang",
+        noDropOnDeath: true,
+        rarity: 3,
+        lore: "Created by Spy",
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-yin-yang.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x101010,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitTiki: defineOutfitSkin("outfitBase", {
+        name: "Tiki",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-tiki.img",
+            handTint: 0xce4452,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xdaa047,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitMachoLucha2: defineOutfitSkin("outfitBase", {
+        name: "Macho Lucha",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-macho-lucha.img",
+            handTint: 0xe3e190,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x393535,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitCalaca: defineOutfitSkin("outfitBase", {
+        name: "Calaca",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-calaca.img",
+            handTint: 0xf5901a,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x47c3b3,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    // === Unused ===
+    outfitMecha: defineOutfitSkin("outfitBase", {
+        name: "Mecha",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        skinImg: {
+            baseTint: 0xededed,
+            baseSprite: "player-base-01.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-outfitMecha.img",
+            footTint: 0x5b7eda,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x5b7eda,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-outfitMecha.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitDiamondy: defineOutfitSkin("outfitBase", {
+        name: "Diamondy",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        skinImg: {
+            baseTint: 0xbfe8ff,
+            baseSprite: "player-base-01.img",
+            handTint: 0xf8c137,
+            handSprite: "player-hands-01.img",
+            footTint: 0xf8c137,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xf8c137,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-outfitDiamondy.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitEggnite: defineOutfitSkin("outfitBase", {
+        name: "Eggnite",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-eggnite.img",
+            handTint: 0xffd500,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x6e6e6e,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitSpaceSnout: defineOutfitSkin("outfitBase", {
+        name: "Space Snout",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-space-snout.img",
+            handTint: 0xc1c1c1,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x084d40,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    // ============ SURVEV OUTFITS ============
+    outfitSnow: defineOutfitSkin("outfitBase", {
+        name: "Snowed Over",
+        rarity: Rarity.Uncommon,
+        lore: "It's shirt weather!!",
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitSnow.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-outfitSnow.img",
+            footTint: 0xb2eaff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x77c4dd,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitBlackIce: defineOutfitSkin("outfitBase", {
+        name: "Black Ice",
+        rarity: Rarity.Common,
+        skinImg: {
+            baseTint: 0x686d6e,
+            baseSprite: "player-base-02.img",
+            handTint: 0x414753,
+            handSprite: "player-hands-01.img",
+            footTint: 0x33333d,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x5e6473,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0x5e6473,
+        },
+    }),
+    outfitCoconut: defineOutfitSkin("outfitBase", {
+        name: "Coconut Frenzy",
+        rarity: Rarity.Common,
+        lore: "It's the coco fruit!",
+        skinImg: {
+            baseTint: 0x765836,
+            baseSprite: "player-base-01.img",
+            handTint: 0x362d22,
+            handSprite: "player-hands-01.img",
+            footTint: 0xe9edf6,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xe9edf6,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0x765836,
+        },
+    }),
+    outfitWave: defineOutfitSkin("outfitBase", {
+        name: "Tidal Wave",
+        rarity: Rarity.Common,
+        lore: "Send them to Davy Jones' locker.",
+        skinImg: {
+            baseTint: 0x1198ec,
+            baseSprite: "player-base-02.img",
+            handTint: 0xfdf5f1,
+            handSprite: "player-hands-02.img",
+            footTint: 0xfdf5f1,
+            footSprite: "player-feet-02.img",
+            backpackTint: 0x2178ae,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitParrotfish: defineOutfitSkin("outfitBase", {
+        name: "Parrotfish",
+        rarity: Rarity.Rare,
+        lore: "Show off your scales around the island. Coral, beware!",
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitParrotfish.img",
+            handTint: 0x3ac6c6,
+            handSprite: "player-hands-02.img",
+            footTint: 0x306790,
+            footSprite: "player-feet-02.img",
+            backpackTint: 0x37aeab,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    // ============ RESURVIV-ORIGINAL OUTFITS ============
+    // === Base ===
+    outfitKxrLogo: defineOutfitSkin("outfitBase", {
+        name: "KxrClient's logo skin",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0x567042,
+            baseSprite: "player-base-kxr.img",
+            handTint: 0x6a8854,
+            handSprite: "player-hands-01.img",
+            footTint: 0x4a6038,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x62804c,
+            backpackSprite: "player-circle-base-01.img",
+            aboveHand: false,
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0x6a8854,
+        },
+        rarity: 3,
+        lore: "For those who uses KxrClient :3",
+    }),
+    // === Passes ===
+    outfitThePro: defineOutfitSkin("outfitBase", {
+        name: "The Pro",
+        noDropOnDeath: true,
+        rarity: Rarity.Rare,
+        lore: "For those who wear their wins.",
+        skinImg: {
+            baseTint: 0xedc078,
+            baseSprite: "player-base-01.img",
+            handTint: 0x325c62,
+            handSprite: "player-hands-01.img",
+            footTint: 0x325c62,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x274659,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitUrbanGlitch: defineOutfitSkin("outfitBase", {
+        name: "Urban Glitch",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "For those who break the game.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-urban-glitch.img",
+            aboveHand: true,
+            handTint: 0x02fafa,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x3c3a3d,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitPython: defineOutfitSkin("outfitBase", {
+        name: "Python",
+        noDropOnDeath: true,
+        rarity: 3,
+        lore: "For those who blend seamlessly.",
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-python.img",
+            handTint: 0x917f36,
+            handSprite: "player-hands-01.img",
+            footTint: 0xeeff5d,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x291e05,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
     outfitCyberpunk: defineOutfitSkin("outfitBase", {
         name: "Cyber Punk",
         noDropOnDeath: true,
@@ -3609,72 +4254,6 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
-
-    outfitBugcat: defineOutfitSkin("outfitBase", {
-        name: "Bugcat",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        lore: "For those who fight with pure cuteness.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-bugcat.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-bugcat.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-bugcat.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitPython: defineOutfitSkin("outfitBase", {
-        name: "Python",
-        noDropOnDeath: true,
-        rarity: 3,
-        lore: "For those who blend seamlessly.",
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-python.img",
-            handTint: 0xeeff5d,
-            handSprite: "player-hands-python.img",
-            footTint: 0xeeff5d,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xbc8737,
-            backpackSprite: "player-back-python.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitStickySituation: defineOutfitSkin("outfitBase", {
-        name: "Stick-y Situation",
-        noDropOnDeath: true,
-        rarity: 3,
-        lore: "Here to lumber the competition.",
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-stick-y-situation.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-stick-y-situation.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-stick-y-situation.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
     outfitEnergyWave: defineOutfitSkin("outfitBase", {
         name: "Energy Wave",
         noDropOnDeath: true,
@@ -3685,116 +4264,41 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-energy-wave.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-energy-wave.img",
+            handTint: 0x0a2739,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-energy-wave.img",
+            backpackTint: 0x0a2739,
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
             skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitPeru: defineOutfitSkin("outfitBase", {
-        name: "Peru",
+    outfitSolarAegis: defineOutfitSkin("outfitBase", {
+        name: "Solar Aegis",
         noDropOnDeath: true,
 
-        rarity: 2,
-        lore: "For those who fight with Yoosepe.",
+        rarity: 3,
+        lore: "To shine the way.",
 
         skinImg: {
             baseTint: 0xffffff,
-            baseSprite: "player-base-peru.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-peru.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-peru.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitBee: defineOutfitSkin("outfitBase", {
-        name: "Buzz Buzz",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        lore: "For those who sting and stay sweet.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-bee.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-bee.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-bee.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-bee.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitVoidcore: defineOutfitSkin("outfitBase", {
-        name: "Void Core",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        lore: "For those who channel Ikou's cosmic energy.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-voidcore.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-voidcore.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-voidcore.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitBeru: defineOutfitSkin("outfitBase", {
-        name: "Beru",
-        noDropOnDeath: true,
-
-        rarity: 5,
-        lore: "For those who serve the shadow king.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-beru.img",
+            baseSprite: "player-base-solar-aegis.img",
             aboveHand: true,
             handTint: 0xffffff,
-            handSprite: "player-hands-beru.img",
+            handSprite: "player-hands-solar-aegis.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
-            backpackSprite: "player-back-beru.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-beru.img",
+            backpackSprite: "player-back-solar-aegis.img",
         },
         lootImg: {
             skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
     outfitAuresis: defineOutfitSkin("outfitBase", {
         name: "Auresis",
         noDropOnDeath: true,
@@ -3820,618 +4324,53 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
-
-    outfitUrbanGlitch: defineOutfitSkin("outfitBase", {
-        name: "Urban Glitch",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        lore: "For those who break the game.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-urban-glitch.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-urban-glitch.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-urban-glitch.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitSolarAegis: defineOutfitSkin("outfitBase", {
-        name: "Solar Aegis",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "To shine the way.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-solar-aegis.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-solar-aegis.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-solar-aegis.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitPaintSplat: defineOutfitSkin("outfitBase", {
-        name: "Paint Splat",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "For those who fight with a splash of color.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-paint-splat.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-paint-splat.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-paint-splat.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitSacredGeometry: defineOutfitSkin("outfitBase", {
-        name: "Sacred Geometry",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        lore: "For those who see the hidden patterns in the battlefield.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-sacred-geometry.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-sacred-geometry.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-sacred-geometry.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitGoldenWaffle: defineOutfitSkin("outfitBase", {
-        name: "Golden Waffle",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "For those who serve up sweet, golden destruction every morning.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-golden-waffle.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-golden-waffle.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-golden-waffle.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitDonut: defineOutfitSkin("outfitBase", {
-        name: "Donut",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "For those who leave a trail of sweet defeat behind.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-donut.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-donut.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-donut.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitStoneIdol: defineOutfitSkin("outfitBase", {
-        name: "Stone Idol",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "For those who command the power of the ancient stones.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-stone-idol.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-stone-idol.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-stone-idol.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitMissingTexture: defineOutfitSkin("outfitBase", {
-        name: "Missing Texture",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        lore: "For those whose power renders the arena unrenderable.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-missing-texture.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-missing-texture.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-missing-texture.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitAutumnSweater: defineOutfitSkin("outfitBase", {
-        name: "Autumn Sweater",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        lore: "For those who stay warm when autumn chills the battlefield.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-autumn-sweater.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-autumn-sweater.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-autumn-sweater.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitCandy: defineOutfitSkin("outfitBase", {
-        name: "Sweet Tooth",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        lore: "For those who kill with a sugar rush.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-candy.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-candy.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-candy.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-candy.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitVikingHelm: defineOutfitSkin("outfitBase", {
-        name: "Viking Helm",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        lore: "For those who fight with the spirit of the vikings.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-viking-helm.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-viking-helm.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-viking-helm.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-viking-helm.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitGhost: defineOutfitSkin("outfitBase", {
-        name: "Ghost",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        lore: "For those who haunt the battlefield.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-ghost.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-ghost.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-ghost.img",
-            frontSpritePos: { x: -2, y: -1.8 },
-            frontSprite: "player-accessory-ghost.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitBullyGear: defineOutfitSkin("outfitBase", {
-        name: "Bully Gear",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "If this skin served its original purpose, you’d die in roughly 20 seconds.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-bully-gear.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-bully-gear.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-bully-gear.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-bully-gear.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitGobble: defineOutfitSkin("outfitBase", {
-        name: "Gobble",
+    outfitIgris: defineOutfitSkin("outfitBase", {
+        name: "Igris",
         noDropOnDeath: true,
 
         rarity: 5,
-        lore: "For those who gobble up the competition before feast day.",
+        lore: "For those who fight with absolute loyalty.",
 
         skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-gobble.img",
-            aboveHand: true,
+            baseTint: 0xca212a,
+            baseSprite: "player-base-01.img",
             handTint: 0xffffff,
-            handSprite: "player-hands-gobble.img",
-            footTint: 0xffffff,
+            handSprite: "player-hands-igris.img",
+            footTint: 0xca212a,
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
-            backpackSprite: "player-back-gobble.img",
-            frontSpritePos: { x: -2, y: 0 },
-            frontSprite: "player-accessory-gobble.img",
+            backpackSprite: "player-back-igris.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-igris.img",
+            aboveHand: true,
         },
         lootImg: {
             skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitGojo: defineOutfitSkin("outfitBase", {
-        name: "Gojo",
-        noDropOnDeath: true,
-
-        rarity: 5,
-        lore: "I alone am the honored one.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-gojo.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-gojo.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-gojo.img",
-            frontSpritePos: { x: -1.95, y: -0.3702 },
-            frontSprite: "player-accessory-gojo.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitMahoraga: defineOutfitSkin("outfitBase", {
-        name: "Mahoraga",
-        noDropOnDeath: true,
-
-        rarity: 5,
-        lore: "With every turn, I adapt.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-mahoraga.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-mahoraga.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-mahoraga.img",
-            frontSpritePos: { x: -3, y: -0.3702 },
-            frontSprite: "player-accessory-mahoraga.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitBlush: defineOutfitSkin("outfitBase", {
-        name: "Blush",
+    outfitVoidcore: defineOutfitSkin("outfitBase", {
+        name: "Void Core",
         noDropOnDeath: true,
 
         rarity: 2,
-        lore: "A little bit of Blush to calm the quiet",
+        lore: "For those who channel Ikou's cosmic energy.",
 
         skinImg: {
             baseTint: 0xffffff,
-            baseSprite: "player-base-blush.img",
-            aboveHand: true,
+            baseSprite: "player-base-voidcore.img",
             handTint: 0xffffff,
-            handSprite: "player-hands-blush.img",
+            handSprite: "player-hands-voidcore.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
-            backpackSprite: "player-back-blush.img",
+            backpackSprite: "player-back-voidcore.img",
         },
         lootImg: {
             skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitPie: defineOutfitSkin("outfitBase", {
-        name: "Cherry Pie",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "For those who always serve up a slice of victory.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-pie.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-pie.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-pie.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitMondrian: defineOutfitSkin("outfitBase", {
-        name: "Mondrian Grid",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "Fo those who turn every battle into a masterpiece of modern art.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-mondrian.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-mondrian.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-mondrian.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitCrimsonHibiscus: defineOutfitSkin("outfitBase", {
-        name: "Crimson Hibiscus",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "For those who bloom with passion in the heat of battle.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-crimson-hibiscus.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-crimson-hibiscus.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-crimson-hibiscus.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitLuna: defineOutfitSkin("outfitBase", {
-        name: "Luna",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "Luna is the word for moon in Spanish.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-luna.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-luna.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-luna.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitNightshadeStalker: defineOutfitSkin("outfitBase", {
-        name: "Nightshade Stalker",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "For those who move silently in the shadows of the battlefield.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-nightshade-stalker.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-nightshade-stalker.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-nightshade-stalker.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitFishBowl: defineOutfitSkin("outfitBase", {
-        name: "Fish Bowl",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "For those who swim in the sea of competition.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-fish-bowl.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-fish-bowl.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-fish-bowl.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitAutumnForest: defineOutfitSkin("outfitBase", {
-        name: "Autumn Forest",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        lore: "For those who blend seamlessly into the falling leaves.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-autumn-forest.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-autumn-forest.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-autumn-forest.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitRiotPlaid: defineOutfitSkin("outfitBase", {
-        name: "Riot Plaid",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "For those who get spawn killed a lot.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-riot-plaid.img",
-            aboveHand: true,
-            handTint: 0xffffff,
-            handSprite: "player-hands-riot-plaid.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-riot-plaid.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
     outfitArchaicCrown: defineOutfitSkin("outfitBase", {
         name: "Archaic Crown",
         noDropOnDeath: true,
@@ -4456,57 +4395,30 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
-
-    outfitPlaqueDoctor: defineOutfitSkin("outfitBase", {
-        name: "Plague Doctor",
+    outfitBee: defineOutfitSkin("outfitBase", {
+        name: "Buzz Buzz",
         noDropOnDeath: true,
 
-        rarity: 5,
-        lore: "The doctor of the plague.",
+        rarity: 4,
+        lore: "For those who sting and stay sweet.",
 
         skinImg: {
             baseTint: 0xffffff,
-            aboveHand: true,
-            baseSprite: "player-base-plaque-doctor.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-plaque-doctor.img",
+            baseSprite: "player-base-bee.img",
+            handTint: 0xfec237,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
-            backpackSprite: "player-back-plaque-doctor.img",
-            frontSpritePos: { x: 4, y: 0 },
-            frontSprite: "player-accessory-plaque-doctor.img",
+            backpackSprite: "player-back-bee.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-bee.img",
         },
         lootImg: {
             skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitForestPlaid: defineOutfitSkin("outfitBase", {
-        name: "Forest Plaid",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        lore: "For those who chop through the competition like a true lumberjack.",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            aboveHand: true,
-            baseSprite: "player-base-forest-plaid.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-forest-plaid.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-forest-plaid.img",
-        },
-        lootImg: {
-            skinLootImg: true,
-            tint: 0xffffff,
-        },
-    }),
-
     outfitCupcake: defineOutfitSkin("outfitBase", {
         name: "Cupcake",
         noDropOnDeath: true,
@@ -4515,15 +4427,15 @@ const SkinDefs: Record<string, OutfitDef> = {
         lore: "Cupcake doesn't bite.",
 
         skinImg: {
-            baseTint: 0xffffff,
+            baseTint: 0xe2e2e8,
             aboveHand: true,
-            baseSprite: "player-base-cupcake.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-cupcake.img",
+            baseSprite: "player-base-01.img",
+            handTint: 0xabb3b3,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-cupcake.img",
+            backpackTint: 0xabb3b3,
+            backpackSprite: "player-circle-base-01.img",
             frontSpritePos: { x: -0.75, y: 0 },
             frontSprite: "player-accessory-cupcake.img",
         },
@@ -4532,995 +4444,280 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
-
-    outfitSpartan: defineOutfitSkin("outfitBase", {
-        name: "Spartan",
+    outfitBeru: defineOutfitSkin("outfitBase", {
+        name: "Beru",
         noDropOnDeath: true,
 
         rarity: 5,
-        lore: "For those who fight with honor and valor under Archaic!.",
+        lore: "For those who serve the shadow king.",
 
         skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-spartan.img",
+            baseTint: 0x20f,
+            baseSprite: "player-base-01.img",
+            aboveHand: true,
             handTint: 0xffffff,
-            handSprite: "player-hands-spartan.img",
+            handSprite: "player-hands-beru.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
-            backpackSprite: "player-back-spartan.img",
-            frontSpritePos: { x: -2, y: 0.75 },
-            frontSprite: "player-accessory-spartan.img",
+            backpackSprite: "player-back-beru.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-beru.img",
         },
         lootImg: {
             skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitHotMagma: defineOutfitSkin("outfitBase", {
-        name: "Hot Magma",
-        noDropOnDeath: true,
-
-        rarity: 5,
-        lore: "Created by XxHackerzxX",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-hot-magma.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-hot-magma.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-hot-magma.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-hot-magma.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitAhoy: defineOutfitSkin("outfitBase", {
-        name: "Ahoy",
-        noDropOnDeath: true,
-
-        rarity: 5,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-ahoy.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-ahoy.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-ahoy.img",
-            frontSpritePos: { x: -9, y: 0 },
-            frontSprite: "player-accessory-ahoy.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-ahoy.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitH2Oh: defineOutfitSkin("outfitBase", {
-        name: "H2Oh",
-        noDropOnDeath: true,
-
-        rarity: 5,
-        lore: "Created by NeDmik",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-h2oh.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-h2oh.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-h2oh.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-h2oh.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitSoapPods: defineOutfitSkin("outfitBase", {
-        name: "Soap Pods",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-soap-pods.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-soap-pods.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-soap-pods.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-soap-pods.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitCatchemOl: defineOutfitSkin("outfitBase", {
-        name: "Catchem Ol",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-catchem-ol.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-catchem-ol.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-catchem-ol.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-catchem-ol.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitSwords: defineOutfitSkin("outfitBase", {
-        name: "Swords",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "Created by skumzeninguem",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-swords.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-swords.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-swords.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-swords.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitScarween: defineOutfitSkin("outfitBase", {
-        name: "Scarween",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        lore: "Created by IHASYOUPROS[YT]",
-
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-scareween.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-scareween.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-scareween.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-scareween.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitTomatoandCheese: defineOutfitSkin("outfitBase", {
-        name: "Tomato and Cheese",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-tomato-and-cheese.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-tomato-and-cheese.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-tomato-and-cheese.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-tomato-and-cheese.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitColorPalette: defineOutfitSkin("outfitBase", {
-        name: "Color Palette",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-color-palette.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-color-palette.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-color-palette.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-color-palette.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitTurtleSweater: defineOutfitSkin("outfitBase", {
-        name: "Turtle Sweater",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-turtle-sweater.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-turtle-sweater.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-turtle-sweater.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-turtle-sweater.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitChromaticCTR: defineOutfitSkin("outfitBase", {
-        name: "Chromatic CTR",
-        noDropOnDeath: true,
-
-        rarity: 1,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-chromatic-ctr.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-chromatic-ctr.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-chromatic-ctr.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-chromatic-ctr.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitBuckTeeth: defineOutfitSkin("outfitBase", {
-        name: "Buck Teeth",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-buck-teeth.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-buck-teeth.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-buck-teeth.img",
-            frontSpritePos: { x: 5, y: 0 },
-            frontSprite: "player-accessory-buck-teeth.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-buck-teeth.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitPoinsetee: defineOutfitSkin("outfitBase", {
-        name: "Poinsetee",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-poinsetee.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-poinsetee.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-poinsetee.img",
-            frontSpritePos: { x: -3, y: 0 },
-            frontSprite: "player-accessory-poinsetee.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-poinsetee.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitSnowyClaus: defineOutfitSkin("outfitBase", {
-        name: "Snowy Claus",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-snowy-claus.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-snowy-claus.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-snowy-claus.img",
-            frontSpritePos: { x: -1, y: 1.4 },
-            frontSprite: "player-accessory-snowy-claus.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-snowy-claus.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitCamoDeer: defineOutfitSkin("outfitBase", {
-        name: "Camo Deer",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-camo-deer.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-camo-deer.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-camo-deer.img",
-            frontSpritePos: { x: 5, y: 0 },
-            frontSprite: "player-accessory-camo-deer.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-camo-deer.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitWoodFire: defineOutfitSkin("outfitBase", {
-        name: "Wood Fire",
-        noDropOnDeath: true,
-
-        rarity: 1,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-wood-fire.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-wood-fire.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-wood-fire.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-wood-fire.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitBluntRazor: defineOutfitSkin("outfitBase", {
-        name: "Blunt Razor",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-blunt-razor.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-blunt-razor.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-blunt-razor.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-blunt-razor.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitHoldinHide: defineOutfitSkin("outfitBase", {
-        name: "Holdin Hide",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-holdin-hide.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-holdin-hide.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-holdin-hide.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-holdin-hide.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitTribeShield: defineOutfitSkin("outfitBase", {
-        name: "Tribe Shield",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-tribe-shield.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-tribe-shield.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-tribe-shield.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-tribe-shield.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitPhoebonachi: defineOutfitSkin("outfitBase", {
-        name: "phoebonachi",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-phoebonachi.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-phoebonachi.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-phoebonachi.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-phoebonachi.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitRuppert: defineOutfitSkin("outfitBase", {
-        name: "Ruppert",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-ruppert.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-ruppert.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-ruppert.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-ruppert.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitTribeMask: defineOutfitSkin("outfitBase", {
-        name: "Tribe Mask",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-tribe-mask.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-tribe-mask.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-tribe-mask.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-tribe-mask.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitTirelessly: defineOutfitSkin("outfitBase", {
-        name: "Tirelessly",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-tirelessly.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-tirelessly.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-tirelessly.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-tirelessly.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitBrontoChop: defineOutfitSkin("outfitBase", {
-        name: "Bronto Chop",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-bronto-chop.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-bronto-chop.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-bronto-chop.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-bronto-chop.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitDisasteroid: defineOutfitSkin("outfitBase", {
-        name: "Disasteroid",
-        noDropOnDeath: true,
-
-        rarity: 5,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-disasteroid.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-disasteroid.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-disasteroid.img",
-            frontSpritePos: { x: -10, y: -1.8 },
-            frontSprite: "player-accessory-disasteroid.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-disasteroid.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitSunriseBlvd: defineOutfitSkin("outfitBase", {
-        name: "Sunrise Blvd",
-        noDropOnDeath: true,
-
-        rarity: 1,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-sunrise-blvd.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-sunrise-blvd.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-sunrise-blvd.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-sunrise-blvd.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitIntoTheGrid: defineOutfitSkin("outfitBase", {
-        name: "Into The Grid",
-        noDropOnDeath: true,
-
-        rarity: 1,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-into-the-grid.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-into-the-grid.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-into-the-grid.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-into-the-grid.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitToontooine: defineOutfitSkin("outfitBase", {
-        name: "Toontooine",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-toontooine.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-toontooine.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-toontooine.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-toontooine.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitTunelSun: defineOutfitSkin("outfitBase", {
-        name: "Tunel Sun",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-tunel-sun.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-tunel-sun.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-tunel-sun.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-tunel-sun.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitBitplosion: defineOutfitSkin("outfitBase", {
-        name: "Bitplosion",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-bitplosion.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-bitplosion.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-bitplosion.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-bitplosion.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitSpaceSnout: defineOutfitSkin("outfitBase", {
-        name: "Space Snout",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-space-snout.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-space-snout.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-space-snout.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-space-snout.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitBombyman: defineOutfitSkin("outfitBase", {
-        name: "Bombyman",
-        noDropOnDeath: true,
-
-        rarity: 4,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-bombyman.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-bombyman.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-bombyman.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-bombyman.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitIdDie4U: defineOutfitSkin("outfitBase", {
-        name: "Id Die 4 U",
-        noDropOnDeath: true,
-
-        rarity: 5,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-id-die-4-u.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-id-die-4-u.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-id-die-4-u.img",
-            frontSpritePos: { x: -5, y: 0 },
-            frontSprite: "player-accessory-id-die-4-u.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-id-die-4-u.img",
-            tint: 0xffffff,
-        },
-    }),
-    outfitMwow: defineOutfitSkin("outfitBase", {
-        name: "MEOW",
+    // === Bundles ===
+    outfitLivingGalaxy: defineOutfitSkin("outfitBase", {
+        name: "Living Galaxy",
         noDropOnDeath: true,
         rarity: 5,
+        lore: "A window into a sky that never stands still.",
+        galaxyEffect: true,
         skinImg: {
             baseTint: 0xffffff,
+            baseSprite: "player-base-king-galaxy.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-king-galaxy.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-king-galaxy.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitCheckmate: defineOutfitSkin("outfitBase", {
+        name: "Checkmate",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-checkmate.img",
+            handTint: 0xeeeeee,
+            handSprite: "player-hands-01.img",
+            footTint: 0xeeeeee,
+            footSprite: "player-hands-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-checkmate.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 2,
+    }),
+    outfitWolf: defineOutfitSkin("outfitBase", {
+        name: "Wolf",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 6184542,
             baseSprite: "player-base-01.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-yin-yang.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-moosli.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-meow.img",
+            handTint: 9539985,
+            handSprite: "player-hands-01.img",
+            footTint: 9539985,
+            footSprite: "player-hands-01.img",
+            backpackTint: 5197647,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -3, y: 0 },
+            frontSprite: "player-accessory-outfitWolf.img",
             aboveHand: true,
         },
         lootImg: {
-            sprite: "loot-outfit-outfitMeow.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
+        rarity: 3,
+        lore: "For those who hunt alone.",
     }),
-
-    outfitNeckNapkin: defineOutfitSkin("outfitBase", {
-        name: "Neck Napkin",
-        noDropOnDeath: true,
-
-        rarity: 1,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-neck-napkin.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-neck-napkin.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-neck-napkin.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-neck-napkin.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-neck-napkin.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitTheySeeMeRolling: defineOutfitSkin("outfitBase", {
-        name: "They See Me Rolling",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-they-see-me-rolling.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-they-see-me-rolling.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-they-see-me-rolling.img",
-            frontSpritePos: { x: 0, y: 0 },
-            frontSprite: "player-accessory-they-see-me-rolling.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-they-see-me-rolling.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitCaptnCactus: defineOutfitSkin("outfitBase", {
-        name: "Captn Cactus",
-        noDropOnDeath: true,
-
-        rarity: 2,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-captn-cactus.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-captn-cactus.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-captn-cactus.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-captn-cactus.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitGoodFeather: defineOutfitSkin("outfitBase", {
-        name: "Good Feather",
+    outfitRiotPlaid: defineOutfitSkin("outfitBase", {
+        name: "Riot Plaid",
         noDropOnDeath: true,
 
         rarity: 3,
+        lore: "For those who get spawn killed a lot.",
+
         skinImg: {
             baseTint: 0xffffff,
-            baseSprite: "player-base-good-feather.img",
+            baseSprite: "player-base-riot-plaid.img",
+            aboveHand: true,
             handTint: 0xffffff,
-            handSprite: "player-hands-good-feather.img",
+            handSprite: "player-hands-riot-plaid.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
-            backpackSprite: "player-back-good-feather.img",
-            frontSpritePos: { x: -8, y: 0 },
-            frontSprite: "player-accessory-good-feather.img",
+            backpackSprite: "player-back-riot-plaid.img",
         },
         lootImg: {
-            sprite: "loot-outfit-good-feather.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitNachoHat: defineOutfitSkin("outfitBase", {
-        name: "Nacho Hat",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-nacho-hat.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-nacho-hat.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-nacho-hat.img",
-            frontSpritePos: { x: -10, y: 0 },
-            frontSprite: "player-accessory-nacho-hat.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-nacho-hat.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitSuppaPoncho: defineOutfitSkin("outfitBase", {
-        name: "Suppa Poncho",
-        noDropOnDeath: true,
-
-        rarity: 3,
-        skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-suppa-poncho.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-suppa-poncho.img",
-            footTint: 0xffffff,
-            footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-suppa-poncho.img",
-            frontSpritePos: { x: -11, y: 0 },
-            frontSprite: "player-accessory-suppa-poncho.img",
-        },
-        lootImg: {
-            sprite: "loot-outfit-suppa-poncho.img",
-            tint: 0xffffff,
-        },
-    }),
-
-    outfitRanchDressing: defineOutfitSkin("outfitBase", {
-        name: "Ranch Dressing",
+    outfitBugcat: defineOutfitSkin("outfitBase", {
+        name: "Bugcat",
         noDropOnDeath: true,
 
         rarity: 4,
+        lore: "For those who fight with pure cuteness.",
+
         skinImg: {
             baseTint: 0xffffff,
-            baseSprite: "player-base-ranch-dressing.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-ranch-dressing.img",
+            baseSprite: "player-base-bugcat.img",
+            handTint: 0x7dcaea,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
-            backpackSprite: "player-back-ranch-dressing.img",
-            frontSpritePos: { x: -4.3, y: -2 },
-            frontSprite: "player-accessory-ranch-dressing.img",
+            backpackSprite: "player-back-bugcat.img",
         },
         lootImg: {
-            sprite: "loot-outfit-ranch-dressing.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitSirLoin: defineOutfitSkin("outfitBase", {
-        name: "Sir Loin",
+    outfitGojo: defineOutfitSkin("outfitBase", {
+        name: "Gojo",
         noDropOnDeath: true,
 
         rarity: 5,
+        lore: "I alone am the honored one.",
+
         skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-sir-loin.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-sir-loin.img",
+            baseTint: 0xf9ca9d,
+            baseSprite: "player-base-01.img",
+            aboveHand: true,
+            handTint: 0x24242b,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
-            backpackSprite: "player-back-sir-loin.img",
-            frontSpritePos: { x: 3, y: 0 },
-            frontSprite: "player-accessory-sir-loin.img",
+            backpackSprite: "player-back-gojo.img",
+            frontSpritePos: { x: -1.95, y: -0.3702 },
+            frontSprite: "player-accessory-gojo.img",
         },
         lootImg: {
-            sprite: "loot-outfit-sir-loin.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
-    outfitMoosli: defineOutfitSkin("outfitBase", {
-        name: "Moosli",
+    outfitMahoraga: defineOutfitSkin("outfitBase", {
+        name: "Mahoraga",
         noDropOnDeath: true,
 
         rarity: 5,
+        lore: "With every turn, I adapt.",
+
         skinImg: {
-            baseTint: 0xffffff,
-            baseSprite: "player-base-moosli.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-moosli.img",
+            baseTint: 0xdcdbe3,
+            baseSprite: "player-base-01.img",
+            aboveHand: true,
+            handTint: 0xd9d9e2,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-moosli.img",
-            frontSpritePos: { x: 3, y: 0 },
-            frontSprite: "player-accessory-moosli.img",
+            backpackTint: 0x343741,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -3, y: -0.3702 },
+            frontSprite: "player-accessory-mahoraga.img",
         },
         lootImg: {
-            sprite: "loot-outfit-moosli.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
+    outfitToxicFire: defineOutfitSkin("outfitBase", {
+        name: "Toxic Fire",
+        noDropOnDeath: true,
 
-    outfitPreyDinner: defineOutfitSkin("outfitBase", {
-        name: "Prey Dinner",
+        rarity: 5,
+        lore: "For those who wield the green fire.",
+        skinImg: {
+            baseTint: 0x1f7816,
+            baseSprite: "player-base-01.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-toxic-fire.img",
+            footTint: 0xf8c137,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x4cd305,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-toxic-fire.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitCrimsonHibiscus: defineOutfitSkin("outfitBase", {
+        name: "Crimson Hibiscus",
         noDropOnDeath: true,
 
         rarity: 3,
+        lore: "For those who bloom with passion in the heat of battle.",
+
         skinImg: {
             baseTint: 0xffffff,
-            baseSprite: "player-base-prey-dinner.img",
-            handTint: 0xffffff,
-            handSprite: "player-hands-prey-dinner.img",
+            baseSprite: "player-base-crimson-hibiscus.img",
+            aboveHand: true,
+            handTint: 0xa50035,
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
-            backpackSprite: "player-back-prey-dinner.img",
+            backpackSprite: "player-back-crimson-hibiscus.img",
         },
         lootImg: {
-            sprite: "loot-outfit-prey-dinner.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
+    outfitDonut: defineOutfitSkin("outfitBase", {
+        name: "Donut",
+        noDropOnDeath: true,
 
+        rarity: 3,
+        lore: "For those who leave a trail of sweet defeat behind.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-donut.img",
+            aboveHand: true,
+            handTint: 0xf8c625,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-donut.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    // === Lootboxes ===
+    outfitPolice: defineOutfitSkin("outfitBase", {
+        name: "Police",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitPolice.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-police.img",
+            footTint: 0xffffff,
+            backpackTint: 0xffffff,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 5,
+        lore: "For those who wield the power of the pan.",
+    }),
+    // === Clan season awards ===
     outfitTopOnePercent: defineOutfitSkin("outfitBase", {
         name: "Top 1%",
         noDropOnDeath: true,
@@ -5540,11 +4737,10 @@ const SkinDefs: Record<string, OutfitDef> = {
             frontSprite: "player-accessory-outfitSzn1-1stPlace.img",
         },
         lootImg: {
-            sprite: "loot-outfit-Szn1-1stPlayers.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
     outfitTopTwoPercent: defineOutfitSkin("outfitBase", {
         name: "Top 2%",
         noDropOnDeath: true,
@@ -5564,11 +4760,10 @@ const SkinDefs: Record<string, OutfitDef> = {
             frontSprite: "player-accessory-outfitSzn1-2ndPlace.img",
         },
         lootImg: {
-            sprite: "loot-outfit-Szn1-2ndPlayers.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
     outfitTopThreePercent: defineOutfitSkin("outfitBase", {
         name: "Top 3%",
         noDropOnDeath: true,
@@ -5588,11 +4783,10 @@ const SkinDefs: Record<string, OutfitDef> = {
             frontSprite: "player-accessory-outfitSzn1-3rdPlace.img",
         },
         lootImg: {
-            sprite: "loot-outfit-Szn1-3rdPlayers.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),
-
     outfitSzn2: defineOutfitSkin("outfitBase", {
         name: "Season 2 Winner",
         noDropOnDeath: true,
@@ -5606,8 +4800,8 @@ const SkinDefs: Record<string, OutfitDef> = {
             handSprite: "player-hands-outfitSzn2.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0xffffff,
-            backpackSprite: "player-back-outfitSzn2.img",
+            backpackTint: 0x1c1c1c,
+            backpackSprite: "player-circle-base-01.img",
             frontSpritePos: { x: -12.5, y: 0 },
             frontSprite: "player-accessory-outfitSzn2.img",
         },
@@ -5616,9 +4810,798 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+    // === Private ===
+    outfitPreacher: defineOutfitSkin("outfitBase", {
+        name: "Preacher",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 9586810,
+            baseSprite: "player-base-02.img",
+            handTint: 9586810,
+            handSprite: "player-hands-02.img",
+            footTint: 9586810,
+            footSprite: "player-feet-02.img",
+            backpackTint: 9586810,
+            backpackSprite: "player-circle-base-02.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 9586810,
+        },
+    }),
+    outfitStepz: defineOutfitSkin("outfitBase", {
+        name: "Stepz Outfit",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-stepz.img",
+            handTint: 0x740007,
+            handSprite: "player-hands-01.img",
+            footTint: 0x740007,
+            footSprite: "player-hands-01.img",
+            backpackTint: 0x740007,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 3,
+        lore: "Custom outfit for Stepz for winning tournament.",
+    }),
+    // === Unused? ===
+    outfitPanda: defineOutfitSkin("outfitBase", {
+        name: "Panda",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-01.img",
+            handTint: 14408667,
+            handSprite: "player-hands-01.img",
+            footTint: 14408667,
+            footSprite: "player-hands-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-outfitPanda.img",
+            aboveHand: true,
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 3,
+        lore: "",
+    }),
+    outfitDiamond: defineOutfitSkin("outfitBase", {
+        name: "Diamond",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-diamond.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-diamond.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-diamond.img",
+            frontSpritePos: { x: -5, y: 0 },
+            frontSprite: "player-accessory-diamond.img",
+            aboveHand: false,
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+        rarity: 5,
+        lore: "For those who are retarded.",
+    }),
+    outfitAero: defineOutfitSkin("outfitBase", {
+        name: "Aero",
+        noDropOnDeath: true,
 
-    // unfinished skins
+        rarity: 3,
+        lore: "The Air.",
 
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-aero.img",
+            handTint: 0x42566f,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x42566f,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitPtero: defineOutfitSkin("outfitBase", {
+        name: "Ptero",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "The Flight.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-ptero.img",
+            handTint: 0x48487a,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x302f57,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitHazard: defineOutfitSkin("outfitBase", {
+        name: "Hazard",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "For those who serve as a walking warning label.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-hazard.img",
+            handTint: 0xfff200,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xccc200,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitMummy: defineOutfitSkin("outfitBase", {
+        name: "Mummy",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "For those who rise again after every loss.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-mummy.img",
+            handTint: 0x98896e,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x98896e,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitColdestEdge: defineOutfitSkin("outfitBase", {
+        name: "Coldest Edge",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-coldest-edge.img",
+            handTint: 0x979797,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x202020,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitStickySituation: defineOutfitSkin("outfitBase", {
+        name: "Stick-y Situation",
+        noDropOnDeath: true,
+        rarity: 3,
+        lore: "Here to lumber the competition.",
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-stick-y-situation.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-stick-y-situation.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-stick-y-situation.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitPeru: defineOutfitSkin("outfitBase", {
+        name: "Peru",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "For those who fight with Yoosepe.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-peru.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-peru.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xc1282d,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitPaintSplat: defineOutfitSkin("outfitBase", {
+        name: "Paint Splat",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "For those who fight with a splash of color.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-paint-splat.img",
+            aboveHand: true,
+            handTint: 0x07e848,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x2b2d42,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitSacredGeometry: defineOutfitSkin("outfitBase", {
+        name: "Sacred Geometry",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "For those who see the hidden patterns in the battlefield.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-sacred-geometry.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-sacred-geometry.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-sacred-geometry.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitGoldenWaffle: defineOutfitSkin("outfitBase", {
+        name: "Golden Waffle",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "For those who serve up sweet, golden destruction every morning.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-golden-waffle.img",
+            aboveHand: true,
+            handTint: 0xf5d469,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xbd7929,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitStoneIdol: defineOutfitSkin("outfitBase", {
+        name: "Stone Idol",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "For those who command the power of the ancient stones.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-stone-idol.img",
+            aboveHand: true,
+            handTint: 0x62513b,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x786548,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitMissingTexture: defineOutfitSkin("outfitBase", {
+        name: "Missing Texture",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "For those whose power renders the arena unrenderable.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-missing-texture.img",
+            aboveHand: true,
+            handTint: 0xff639a,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-missing-texture.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitAutumnSweater: defineOutfitSkin("outfitBase", {
+        name: "Autumn Sweater",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "For those who stay warm when autumn chills the battlefield.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-autumn-sweater.img",
+            aboveHand: true,
+            handTint: 0xd35400,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x032320,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitCandy: defineOutfitSkin("outfitBase", {
+        name: "Sweet Tooth",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "For those who kill with a sugar rush.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-candy.img",
+            aboveHand: true,
+            handTint: 0xffcc00,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x2880ee,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-candy.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitVikingHelm: defineOutfitSkin("outfitBase", {
+        name: "Viking Helm",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "For those who fight with the spirit of the vikings.",
+
+        skinImg: {
+            baseTint: 0xd4a373,
+            baseSprite: "player-base-01.img",
+            handTint: 0x9a7a42,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x4a0e17,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-viking-helm.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitGhost: defineOutfitSkin("outfitBase", {
+        name: "Ghost",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "For those who haunt the battlefield.",
+
+        skinImg: {
+            baseTint: 0xeec4a4,
+            baseSprite: "player-base-01.img",
+            handTint: 0xeec4a4,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xeec4a4,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -2, y: -1.8 },
+            frontSprite: "player-accessory-ghost.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitBullyGear: defineOutfitSkin("outfitBase", {
+        name: "Bully Gear",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "If this skin served its original purpose, you’d die in roughly 20 seconds.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-bully-gear.img",
+            handTint: 0x7d5d50,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x262626,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-bully-gear.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitGobble: defineOutfitSkin("outfitBase", {
+        name: "Gobble",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        lore: "For those who gobble up the competition before feast day.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-gobble.img",
+            aboveHand: true,
+            handTint: 0x8b5a2b,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x4a2e18,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -2, y: 0 },
+            frontSprite: "player-accessory-gobble.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitBlush: defineOutfitSkin("outfitBase", {
+        name: "Blush",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "A little bit of blush to calm the quiet.",
+
+        skinImg: {
+            baseTint: 0xdcaeac,
+            baseSprite: "player-base-01.img",
+            aboveHand: true,
+            handTint: 0xdcaeac,
+            handSprite: "player-hands-01.img",
+            footTint: 0xdcaeac,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xdcaeac,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitPie: defineOutfitSkin("outfitBase", {
+        name: "Cherry Pie",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "For those who always serve up a slice of victory.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-pie.img",
+            aboveHand: true,
+            handTint: 0xda8c2e,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xba6c1b,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitMondrian: defineOutfitSkin("outfitBase", {
+        name: "Mondrian Grid",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "For those who turn every battle into a masterpiece of modern art.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-mondrian.img",
+            aboveHand: true,
+            handTint: 0xe8ebe8,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-mondrian.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitLuna: defineOutfitSkin("outfitBase", {
+        name: "Luna",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "Luna is the word for moon in Spanish.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-luna.img",
+            aboveHand: true,
+            handTint: 0x2f3246,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x2f3246,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitNightshadeStalker: defineOutfitSkin("outfitBase", {
+        name: "Nightshade Stalker",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "For those who move silently in the shadows of the battlefield.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-nightshade-stalker.img",
+            aboveHand: true,
+            handTint: 0x2f2857,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x211b39,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitFishBowl: defineOutfitSkin("outfitBase", {
+        name: "Fish Bowl",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "For those who swim in the sea of competition.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-fish-bowl.img",
+            aboveHand: true,
+            handTint: 0x79a9b7,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x79a9b7,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitAutumnForest: defineOutfitSkin("outfitBase", {
+        name: "Autumn Forest",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "For those who blend seamlessly into the falling leaves.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-autumn-forest.img",
+            aboveHand: true,
+            handTint: 0x4b1d13,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x4b1d13,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitPlaqueDoctor: defineOutfitSkin("outfitBase", {
+        name: "Plague Doctor",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        lore: "The doctor of the plague.",
+
+        skinImg: {
+            baseTint: 0x2b2827,
+            aboveHand: true,
+            baseSprite: "player-base-01.img",
+            handTint: 0x2b2827,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x2b2827,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 4, y: 0 },
+            frontSprite: "player-accessory-plaque-doctor.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitForestPlaid: defineOutfitSkin("outfitBase", {
+        name: "Forest Plaid",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "For those who chop through the competition like a true lumberjack.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            aboveHand: true,
+            baseSprite: "player-base-forest-plaid.img",
+            handTint: 0x3b4433,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x1c1f1d,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitSpartan: defineOutfitSkin("outfitBase", {
+        name: "Spartan",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        lore: "For those who fight with honor and valor under Archaic!",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-spartan.img",
+            handTint: 0x4f3a75,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x4f3a75,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -2, y: 0.75 },
+            frontSprite: "player-accessory-spartan.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitCatchemOl: defineOutfitSkin("outfitBase", {
+        name: "Catchem Ol",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-catchem-ol.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-catchem-ol.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-catchem-ol.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitMeow: defineOutfitSkin("outfitBase", {
+        name: "MEOW",
+        noDropOnDeath: true,
+        rarity: 5,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-01.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-yin-yang.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xf7f7f7,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-meow.img",
+            aboveHand: true,
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitPreyDinner: defineOutfitSkin("outfitBase", {
+        name: "Prey Dinner",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-prey-dinner.img",
+            handTint: 0x815000,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x2e1d0a,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    // === Unfinished ===
     outfitVitaminD: defineOutfitSkin("outfitBase", {
         name: "Vitamin D",
         noDropOnDeath: true,
@@ -5633,7 +5616,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-fists-flaming-nucleus-l.img",
             backpackTint: 0xffe600,
             frontSpritePos: { x: 0, y: -1 },
-            frontSprite: "player-accessory-Vitamin-D.img",
+            frontSprite: "player-accessory-vitamin-d.img",
         },
         lootImg: {
             skinLootImg: true,
@@ -5659,7 +5642,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             aboveHand: false,
         },
         lootImg: {
-            sprite: "loot-outfit-rsrv-tag.img",
+            skinLootImg: true,
             tint: 0xffffff,
         },
     }),

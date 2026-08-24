@@ -1,10 +1,83 @@
-<svg width="149" height="148" viewBox="0 0 149 148" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M74.7583 140.137C111.485 140.137 141.26 110.364 141.263 73.6367C141.265 36.9098 111.495 7.13672 74.7676 7.13672C38.0406 7.13672 8.26549 36.9098 8.26292 73.6367C8.26035 110.364 38.0313 140.137 74.7583 140.137Z" fill="url(#paint0_linear)"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M13.3928 74.0009C13.3928 107.687 40.6982 134.991 74.373 134.993C108.048 134.996 135.353 107.697 135.353 74.0111C135.353 40.325 108.048 13.0214 74.373 13.0186C40.6982 13.0158 13.3928 40.3148 13.3928 74.0009ZM74.373 146.006C34.6049 146.003 2.37305 113.761 2.37304 74C2.37304 34.2392 34.6049 2.00269 74.373 2.00601C114.141 2.00932 146.373 34.2512 146.373 74.012C146.373 113.773 114.141 146.009 74.373 146.006Z" fill="black"/>
-<defs>
-<linearGradient id="paint0_linear" x1="74.7676" y1="7.13672" x2="74.7676" y2="140.137" gradientUnits="userSpaceOnUse">
-<stop stop-color="#A61E00"/>
-<stop offset="1"/>
-</linearGradient>
-</defs>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="149"
+   height="148"
+   viewBox="0 0 149 148"
+   fill="none"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="player-back-cosmic-blue.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="1.9875434"
+     inkscape:cx="92.073462"
+     inkscape:cy="43.017929"
+     inkscape:window-width="1470"
+     inkscape:window-height="895"
+     inkscape:window-x="0"
+     inkscape:window-y="33"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg3" />
+  <path
+     d="M74.7583 140.137C111.485 140.137 141.26 110.364 141.263 73.6367C141.265 36.9098 111.495 7.13672 74.7676 7.13672C38.0406 7.13672 8.26549 36.9098 8.26292 73.6367C8.26035 110.364 38.0313 140.137 74.7583 140.137Z"
+     fill="url(#paint0_linear)"
+     id="path1" />
+  <path
+     fill-rule="evenodd"
+     clip-rule="evenodd"
+     d="M13.3928 74.0009C13.3928 107.687 40.6982 134.991 74.373 134.993C108.048 134.996 135.353 107.697 135.353 74.0111C135.353 40.325 108.048 13.0214 74.373 13.0186C40.6982 13.0158 13.3928 40.3148 13.3928 74.0009ZM74.373 146.006C34.6049 146.003 2.37305 113.761 2.37304 74C2.37304 34.2392 34.6049 2.00269 74.373 2.00601C114.141 2.00932 146.373 34.2512 146.373 74.012C146.373 113.773 114.141 146.009 74.373 146.006Z"
+     fill="black"
+     id="path2"
+     style="fill:url(#linearGradient5)" />
+  <defs
+     id="defs3">
+    <linearGradient
+       id="linearGradient3"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#210600;stop-opacity:1"
+         offset="0"
+         id="stop4" />
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="1"
+         id="stop5" />
+    </linearGradient>
+    <linearGradient
+       id="paint0_linear"
+       x1="74.7676"
+       y1="7.13672"
+       x2="74.7676"
+       y2="140.137"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         stop-color="#A61E00"
+         id="stop2" />
+      <stop
+         offset="1"
+         id="stop3" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3"
+       id="linearGradient5"
+       x1="74.373024"
+       y1="2.0060239"
+       x2="74.373024"
+       y2="146.00598"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
 </svg>

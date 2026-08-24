@@ -1,10 +1,52 @@
-<svg width="78" height="78" viewBox="0 0 78 78" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M7.78515 39.3587C7.78515 56.4795 21.6643 70.3615 38.7852 70.3649C55.906 70.3683 69.7852 56.4919 69.7852 39.3711C69.7852 22.2503 55.906 8.36832 38.7852 8.3649C21.6643 8.36148 7.78515 22.2379 7.78515 39.3587Z" fill="url(#paint0_linear)"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M64.5466 38.8688C64.5466 24.9194 53.2377 13.607 39.2852 13.6042C25.3326 13.6013 14.0237 24.9092 14.0237 38.8586C14.0237 52.808 25.3326 64.1204 39.2852 64.1232C53.2377 64.1261 64.5466 52.8182 64.5466 38.8688ZM39.2852 2.3637C59.4425 2.36778 75.7852 18.7116 75.7852 38.8711C75.7852 59.0305 59.4425 75.3678 39.2852 75.3637C19.1278 75.3596 2.78515 59.0158 2.78515 38.8563C2.78516 18.6969 19.1278 2.35961 39.2852 2.3637Z" fill="black"/>
-<defs>
-<linearGradient id="paint0_linear" x1="69.7852" y1="39.3711" x2="7.78515" y2="39.3711" gradientUnits="userSpaceOnUse">
-<stop stop-color="#FF8ED2"/>
-<stop offset="1" stop-color="#FF43B4"/>
-</linearGradient>
-</defs>
-</svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="78"
+   height="78"
+   viewBox="0 0 78 78"
+   fill="none"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="player-hands-bubblegum.svg"
+   xml:space="preserve"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><sodipodi:namedview
+     id="namedview3"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="3.7712362"
+     inkscape:cx="29.168155"
+     inkscape:cy="27.709747"
+     inkscape:window-width="1470"
+     inkscape:window-height="895"
+     inkscape:window-x="0"
+     inkscape:window-y="33"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg3" /><path
+     d="M7.78515 39.3587C7.78515 56.4795 21.6643 70.3615 38.7852 70.3649C55.906 70.3683 69.7852 56.4919 69.7852 39.3711C69.7852 22.2503 55.906 8.36832 38.7852 8.3649C21.6643 8.36148 7.78515 22.2379 7.78515 39.3587Z"
+     fill="url(#paint0_linear)"
+     id="path1" /><path
+     fill-rule="evenodd"
+     clip-rule="evenodd"
+     d="M64.5466 38.8688C64.5466 24.9194 53.2377 13.607 39.2852 13.6042C25.3326 13.6013 14.0237 24.9092 14.0237 38.8586C14.0237 52.808 25.3326 64.1204 39.2852 64.1232C53.2377 64.1261 64.5466 52.8182 64.5466 38.8688ZM39.2852 2.3637C59.4425 2.36778 75.7852 18.7116 75.7852 38.8711C75.7852 59.0305 59.4425 75.3678 39.2852 75.3637C19.1278 75.3596 2.78515 59.0158 2.78515 38.8563C2.78516 18.6969 19.1278 2.35961 39.2852 2.3637Z"
+     id="path2"
+     style="fill:#330d24;fill-opacity:1" /><defs
+     id="defs3"><linearGradient
+       id="paint0_linear"
+       x1="69.7852"
+       y1="39.3711"
+       x2="7.78515"
+       y2="39.3711"
+       gradientUnits="userSpaceOnUse"><stop
+         stop-color="#FF8ED2"
+         id="stop2" /><stop
+         offset="1"
+         stop-color="#FF43B4"
+         id="stop3" /></linearGradient></defs></svg>

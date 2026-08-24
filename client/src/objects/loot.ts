@@ -170,7 +170,7 @@ export class Loot implements AbstractObject {
             this.skinAccessorySprite.visible = false;
             if (outfitDef?.lootImg.skinLootImg) {
                 const playerBodyScale = 0.25;
-                const skinLootScale = 0.82;
+                const skinLootScale = 0.65;
                 const scaleRatio = (innerScale / playerBodyScale) * skinLootScale;
                 const outfitImg = outfitDef.skinImg;
 
