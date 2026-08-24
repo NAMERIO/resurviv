@@ -119,6 +119,7 @@ function m() {
         const i = GameObjectDefs[a] as AmmoDef | HealDef | BoostDef;
         if (
             !(i as AmmoDef).hideUi &&
+            document.getElementById(`ui-loot-${a}`) &&
             (i.type == "heal" || i.type == "boost" || i.type == "ammo")
         ) {
             t.push(a);
