@@ -4190,6 +4190,32 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
+    outfitMahoraga: defineOutfitSkin("outfitBase", {
+        name: "Mahoraga",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        lore: "With every turn, I adapt.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-mahoraga.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-mahoraga.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-mahoraga.img",
+            frontSpritePos: { x: -3, y: -0.3702 },
+            frontSprite: "player-accessory-mahoraga.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
     outfitBlush: defineOutfitSkin("outfitBase", {
         name: "Blush",
         noDropOnDeath: true,

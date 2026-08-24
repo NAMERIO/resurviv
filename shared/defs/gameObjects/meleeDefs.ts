@@ -2972,6 +2972,19 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
     }),
 
+    toji_knife: defineMeleeSkin("bayonet", {
+        name: "Toji's Knife",
+        rarity: Rarity.Mythic,
+        lore: "Even infinity can be pierced.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-knife-toji.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-knife-toji.img",
+        },
+    }),
+
     baton_police: defineMeleeSkin("machete", {
         name: "Police Baton",
         rarity: Rarity.Epic,

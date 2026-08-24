@@ -2259,11 +2259,7 @@ export class GameMap {
             getPos = () => {
                 return v2.add(this.center, util.randomPointInCircle(24));
             };
-        } else if (
-            this.game.arenaPrivate &&
-            this.game.miniGame === "pvp" &&
-            arenaTeam
-        ) {
+        } else if (this.game.arenaPrivate && this.game.miniGame === "pvp" && arenaTeam) {
             const anchor = this.privateLobbyTeamSpawnAnchors[arenaTeam];
             let attempt = 0;
             getPos = () => {
