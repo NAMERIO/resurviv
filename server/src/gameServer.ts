@@ -89,6 +89,7 @@ class GameServer {
                 data.amongUsImpostorCount,
             ),
             disableAirstrikes: !!data.disableAirstrikes,
+            movingZone: !!data.movingZone,
             disablePerks: !!data.disablePerks,
             disableLooting: !!data.disableLooting,
             showEnemiesOnMap: data.showEnemiesOnMap !== false,

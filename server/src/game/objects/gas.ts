@@ -15,9 +15,13 @@ interface StageData {
     duration: number;
     rad: number;
     damage: number;
+    moveCenter?: boolean;
+    timerDuration?: number;
+    timerOffset?: number;
 }
 
 const GAME_TIME_IN_MINUTES = 6;
+const MOVING_ZONE_PHASE_DURATION = 60;
 
 const GasStages: StageData[] = [
     {
@@ -52,6 +56,75 @@ const GasStages: StageData[] = [
     },
 ];
 
+const MovingZoneGasStages: StageData[] = [
+    {
+        mode: GasMode.Inactive,
+        duration: 0,
+        rad: 0.7425,
+        damage: 0,
+    },
+    {
+        mode: GasMode.Waiting,
+        duration: 2 * MOVING_ZONE_PHASE_DURATION,
+        rad: 0.7425,
+        damage: 20,
+        timerOffset: 4 * MOVING_ZONE_PHASE_DURATION,
+    },
+    {
+        mode: GasMode.Moving,
+        duration: MOVING_ZONE_PHASE_DURATION,
+        rad: 0.55,
+        damage: 20,
+        timerOffset: 3 * MOVING_ZONE_PHASE_DURATION,
+    },
+    {
+        mode: GasMode.Moving,
+        duration: MOVING_ZONE_PHASE_DURATION,
+        rad: 0.35,
+        damage: 20,
+        timerOffset: 2 * MOVING_ZONE_PHASE_DURATION,
+    },
+    {
+        mode: GasMode.Moving,
+        duration: MOVING_ZONE_PHASE_DURATION,
+        rad: 0.35,
+        damage: 30,
+        moveCenter: true,
+        timerOffset: MOVING_ZONE_PHASE_DURATION,
+    },
+    {
+        mode: GasMode.Moving,
+        duration: MOVING_ZONE_PHASE_DURATION,
+        rad: 0.35,
+        damage: 30,
+        moveCenter: true,
+    },
+    {
+        mode: GasMode.Moving,
+        duration: MOVING_ZONE_PHASE_DURATION,
+        rad: 0.22,
+        damage: 55,
+        moveCenter: true,
+        timerDuration: 0,
+    },
+    {
+        mode: GasMode.Moving,
+        duration: MOVING_ZONE_PHASE_DURATION,
+        rad: 0.1,
+        damage: 55,
+        moveCenter: true,
+        timerDuration: 0,
+    },
+    {
+        mode: GasMode.Moving,
+        duration: MOVING_ZONE_PHASE_DURATION,
+        rad: 0,
+        damage: 55,
+        moveCenter: true,
+        timerDuration: 0,
+    },
+];
+
 export class Gas {
     private battleRoyaleJoinClosed = false;
     /**
@@ -83,6 +156,10 @@ export class Gas {
      * returns 0 if gas if inactive
      */
     duration: number;
+
+    /** Duration and offset used by the HUD's continuous countdown. */
+    timerDuration: number;
+    timerOffset: number;
 
     /**
      * Old gas radius
@@ -164,6 +241,8 @@ export class Gas {
         this.radOld = 0.85 * this.mapSize;
         this.radNew = this.currentRad = stage.rad * this.mapSize;
         this.duration = stage.duration;
+        this.timerDuration = stage.timerDuration ?? stage.duration;
+        this.timerOffset = stage.timerOffset ?? 0;
         this.damage = stage.damage;
 
         if (this.disabled) {
@@ -172,6 +251,8 @@ export class Gas {
             this.circleIdx = -1;
             this.radOld = this.radNew = this.currentRad = this.mapSize * 2;
             this.duration = 0;
+            this.timerDuration = 0;
+            this.timerOffset = 0;
             this.damage = 0;
             this.gasT = 0;
         }
@@ -242,11 +323,37 @@ export class Gas {
         this.radOld = this.currentRad;
         this.radNew = stage.rad * this.mapSize;
         this.duration = stage.duration;
+        this.timerDuration = stage.timerDuration ?? stage.duration;
+        this.timerOffset = stage.timerOffset ?? 0;
         this.damage = stage.damage;
 
         const circleIdxOld = this.circleIdx;
 
-        if (this.mode === GasMode.Waiting) {
+        if (this._usesMovingZoneStages()) {
+            this.posOld = v2.copy(this.currentPos);
+            this.posNew = v2.copy(this.currentPos);
+
+            if (stage.moveCenter) {
+                const travelRad = Math.min(this.currentRad * 0.75, this.mapSize * 0.18);
+                this.posNew = v2.add(this.posNew, util.randomPointInCircle(travelRad));
+
+                const targetRad = this.radNew * 0.75;
+                this.posNew = math.v2Clamp(
+                    this.posNew,
+                    v2.create(targetRad, targetRad),
+                    v2.create(
+                        this.game.map.width - targetRad,
+                        this.game.map.height - targetRad,
+                    ),
+                );
+            }
+
+            this.currentPos = this.posOld;
+            this.currentRad = this.radOld;
+            if (this.mode === GasMode.Waiting) {
+                this.circleIdx++;
+            }
+        } else if (this.mode === GasMode.Waiting) {
             this.posOld = v2.copy(this.posNew);
 
             this.posNew = v2.add(
@@ -327,10 +434,17 @@ export class Gas {
         return this._getStages()[this.stage];
     }
 
-    private _getStages() {
-        return isBattleRoyaleMapName(this.game.mapName)
-            ? BattleRoyaleGasStages
-            : GasStages;
+    private _usesMovingZoneStages() {
+        return (
+            this.game.arenaPrivate &&
+            this.game.movingZone &&
+            !isBattleRoyaleMapName(this.game.mapName)
+        );
+    }
+
+    private _getStages(): readonly StageData[] {
+        if (isBattleRoyaleMapName(this.game.mapName)) return BattleRoyaleGasStages;
+        return this._usesMovingZoneStages() ? MovingZoneGasStages : GasStages;
     }
 
     get finalCloseStarted() {

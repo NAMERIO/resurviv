@@ -251,6 +251,8 @@ test("Update Msg", () => {
     inMsg.gasData = {
         mode: GasMode.Inactive,
         duration: util.random(0, 200),
+        timerDuration: util.random(0, 200),
+        timerOffset: util.random(0, 400),
         posOld: randomPos(),
         posNew: randomPos(),
         radOld: util.random(0, 200),
@@ -287,6 +289,8 @@ test("Update Msg", () => {
     expect(outMsg.gasData).toStrictEqual({
         mode: inMsg.gasData.mode,
         duration: expect.closeTo(inMsg.gasData.duration),
+        timerDuration: expect.closeTo(inMsg.gasData.timerDuration),
+        timerOffset: expect.closeTo(inMsg.gasData.timerOffset),
         posOld: {
             x: expect.closeTo(inMsg.gasData.posOld.x, 1),
             y: expect.closeTo(inMsg.gasData.posOld.y, 1),

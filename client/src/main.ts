@@ -97,6 +97,7 @@ export class Application {
     prestigeArenaDisableAirstrikesBtn = $<HTMLButtonElement>(
         "#create-disable-airstrikes",
     );
+    prestigeArenaMovingZoneBtn = $<HTMLButtonElement>("#create-moving-zone");
     prestigeArenaDisablePerksBtn = $<HTMLButtonElement>("#create-disable-perks");
     prestigeArenaDisableLootingBtn = $<HTMLButtonElement>("#create-disable-looting");
     prestigeArenaHideEnemiesBtn = $<HTMLButtonElement>("#create-hide-enemies");
@@ -104,6 +105,7 @@ export class Application {
     prestigeArenaBattleDisableAirstrikesBtn = $<HTMLButtonElement>(
         "#battle-disable-airstrikes",
     );
+    prestigeArenaBattleMovingZoneBtn = $<HTMLButtonElement>("#battle-moving-zone");
     prestigeArenaBattleDisablePerksBtn = $<HTMLButtonElement>("#battle-disable-perks");
     prestigeArenaBattleDisableLootingBtn = $<HTMLButtonElement>(
         "#battle-disable-looting",
@@ -784,6 +786,12 @@ export class Application {
                     !this.teamMenu.roomData.disableAirstrikes,
                 );
             });
+            this.prestigeArenaMovingZoneBtn.on("click", () => {
+                this.setPrestigeArenaCreateOption(
+                    "movingZone",
+                    !this.teamMenu.roomData.movingZone,
+                );
+            });
             this.prestigeArenaDisablePerksBtn.on("click", () => {
                 this.setPrestigeArenaCreateOption(
                     "disablePerks",
@@ -806,6 +814,12 @@ export class Application {
                 this.setPrestigeArenaCreateOption(
                     "disableAirstrikes",
                     !this.teamMenu.roomData.disableAirstrikes,
+                );
+            });
+            this.prestigeArenaBattleMovingZoneBtn.on("click", () => {
+                this.setPrestigeArenaCreateOption(
+                    "movingZone",
+                    !this.teamMenu.roomData.movingZone,
                 );
             });
             this.prestigeArenaBattleDisablePerksBtn.on("click", () => {
@@ -1611,6 +1625,10 @@ export class Application {
             "active",
             !!this.teamMenu.roomData.disableAirstrikes,
         );
+        this.prestigeArenaMovingZoneBtn.toggleClass(
+            "active",
+            !!this.teamMenu.roomData.movingZone,
+        );
         this.prestigeArenaDisablePerksBtn.toggleClass(
             "active",
             !!this.teamMenu.roomData.disablePerks,
@@ -1622,6 +1640,10 @@ export class Application {
         this.prestigeArenaBattleDisableAirstrikesBtn.toggleClass(
             "active",
             !!this.teamMenu.roomData.disableAirstrikes,
+        );
+        this.prestigeArenaBattleMovingZoneBtn.toggleClass(
+            "active",
+            !!this.teamMenu.roomData.movingZone,
         );
         this.prestigeArenaBattleDisablePerksBtn.toggleClass(
             "active",
@@ -1638,6 +1660,10 @@ export class Application {
             "aria-pressed",
             String(!!this.teamMenu.roomData.disableAirstrikes),
         );
+        this.prestigeArenaMovingZoneBtn.attr(
+            "aria-pressed",
+            String(!!this.teamMenu.roomData.movingZone),
+        );
         this.prestigeArenaDisablePerksBtn.attr(
             "aria-pressed",
             String(!!this.teamMenu.roomData.disablePerks),
@@ -1649,6 +1675,10 @@ export class Application {
         this.prestigeArenaBattleDisableAirstrikesBtn.attr(
             "aria-pressed",
             String(!!this.teamMenu.roomData.disableAirstrikes),
+        );
+        this.prestigeArenaBattleMovingZoneBtn.attr(
+            "aria-pressed",
+            String(!!this.teamMenu.roomData.movingZone),
         );
         this.prestigeArenaBattleDisablePerksBtn.attr(
             "aria-pressed",
@@ -1667,9 +1697,14 @@ export class Application {
             "disabled",
             !canEdit || isBattleRoyale,
         );
+        this.prestigeArenaMovingZoneBtn.prop("disabled", !canEdit || isBattleRoyale);
         this.prestigeArenaDisablePerksBtn.prop("disabled", !canEdit || isBattleRoyale);
         this.prestigeArenaDisableLootingBtn.prop("disabled", !canEdit || isBattleRoyale);
         this.prestigeArenaBattleDisableAirstrikesBtn.prop(
+            "disabled",
+            !canEdit || isBattleRoyale,
+        );
+        this.prestigeArenaBattleMovingZoneBtn.prop(
             "disabled",
             !canEdit || isBattleRoyale,
         );
@@ -1688,6 +1723,7 @@ export class Application {
     setPrestigeArenaCreateOption(
         prop:
             | "disableAirstrikes"
+            | "movingZone"
             | "disablePerks"
             | "disableLooting"
             | "showEnemiesOnMap",

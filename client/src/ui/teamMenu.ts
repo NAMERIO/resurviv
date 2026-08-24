@@ -408,6 +408,7 @@ export class TeamMenu {
                 amongUsImpostorCount:
                     this.roomData.amongUsImpostorCount || DefaultAmongUsImpostorCount,
                 disableAirstrikes: !!this.roomData.disableAirstrikes,
+                movingZone: !!this.roomData.movingZone,
                 disablePerks: !!this.roomData.disablePerks,
                 disableLooting: !!this.roomData.disableLooting,
                 showEnemiesOnMap: this.roomData.showEnemiesOnMap !== false,
@@ -574,6 +575,7 @@ export class TeamMenu {
                     this.roomData.miniGame = ourRoomData.miniGame;
                     this.roomData.amongUsImpostorCount = ourRoomData.amongUsImpostorCount;
                     this.roomData.disableAirstrikes = ourRoomData.disableAirstrikes;
+                    this.roomData.movingZone = ourRoomData.movingZone;
                     this.roomData.disablePerks = ourRoomData.disablePerks;
                     this.roomData.disableLooting = ourRoomData.disableLooting;
                     this.roomData.showEnemiesOnMap = ourRoomData.showEnemiesOnMap;

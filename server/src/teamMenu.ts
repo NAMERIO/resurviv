@@ -164,6 +164,7 @@ class Room {
         miniGame: DefaultPrivateLobbyMiniGame,
         amongUsImpostorCount: DefaultAmongUsImpostorCount,
         disableAirstrikes: false,
+        movingZone: false,
         disablePerks: false,
         disableLooting: false,
         showEnemiesOnMap: true,
@@ -525,6 +526,7 @@ class Room {
         this.data.autoFill = this.data.arena ? false : props.autoFill;
         this.data.teamsLocked = this.data.arena ? !!props.teamsLocked : false;
         this.data.disableAirstrikes = this.data.arena ? !!props.disableAirstrikes : false;
+        this.data.movingZone = this.data.arena ? !!props.movingZone : false;
         this.data.disablePerks = this.data.arena ? !!props.disablePerks : false;
         this.data.disableLooting = this.data.arena ? !!props.disableLooting : false;
         this.data.showEnemiesOnMap = this.data.arena
@@ -594,7 +596,7 @@ class Room {
         if (!mode) return;
         const mapName =
             getPrivateLobbyMiniGameMapName(this.data.miniGame) ?? mode.mapName;
-        const warmupKey = `${this.data.region}:${mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.amongUsImpostorCount}:${this.data.disableAirstrikes}:${this.data.disablePerks}:${this.data.disableLooting}:${this.data.showEnemiesOnMap}`;
+        const warmupKey = `${this.data.region}:${mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.amongUsImpostorCount}:${this.data.disableAirstrikes}:${this.data.movingZone}:${this.data.disablePerks}:${this.data.disableLooting}:${this.data.showEnemiesOnMap}`;
         if (this.arenaWarmupKey === warmupKey) return;
         this.arenaWarmupKey = warmupKey;
         void this.teamMenu.server
@@ -611,6 +613,7 @@ class Room {
                         ? this.data.amongUsImpostorCount
                         : undefined,
                 disableAirstrikes: this.data.disableAirstrikes,
+                movingZone: this.data.movingZone,
                 disablePerks: this.data.disablePerks,
                 disableLooting: this.data.disableLooting,
                 showEnemiesOnMap: this.data.showEnemiesOnMap,
@@ -1207,6 +1210,7 @@ class Room {
                     ? this.data.amongUsImpostorCount
                     : undefined,
             disableAirstrikes: this.data.arena ? this.data.disableAirstrikes : false,
+            movingZone: this.data.arena ? this.data.movingZone : false,
             disablePerks: this.data.arena ? this.data.disablePerks : false,
             disableLooting: this.data.arena ? this.data.disableLooting : false,
             showEnemiesOnMap: this.data.arena ? this.data.showEnemiesOnMap : true,
@@ -1326,6 +1330,7 @@ class Room {
                     ? this.data.amongUsImpostorCount
                     : undefined,
             disableAirstrikes: this.data.disableAirstrikes,
+            movingZone: this.data.movingZone,
             disablePerks: this.data.disablePerks,
             disableLooting: this.data.disableLooting,
             showEnemiesOnMap: this.data.showEnemiesOnMap,

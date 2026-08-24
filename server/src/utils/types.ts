@@ -106,6 +106,7 @@ export interface ServerGameConfig {
     readonly miniGame?: PrivateLobbyMiniGame;
     readonly amongUsImpostorCount?: AmongUsImpostorCount;
     readonly disableAirstrikes?: boolean;
+    readonly movingZone?: boolean;
     readonly disablePerks?: boolean;
     readonly disableLooting?: boolean;
     readonly showEnemiesOnMap?: boolean;
@@ -119,6 +120,7 @@ export interface GameData {
     miniGame?: PrivateLobbyMiniGame;
     amongUsImpostorCount?: AmongUsImpostorCount;
     disableAirstrikes?: boolean;
+    movingZone?: boolean;
     disablePerks?: boolean;
     disableLooting?: boolean;
     showEnemiesOnMap?: boolean;
@@ -138,6 +140,7 @@ export const zFindGamePrivateBody = z.object({
     miniGame: z.enum(PrivateLobbyMiniGameIds).optional(),
     amongUsImpostorCount: z.number().int().min(1).max(3).optional(),
     disableAirstrikes: z.boolean().optional(),
+    movingZone: z.boolean().optional(),
     disablePerks: z.boolean().optional(),
     disableLooting: z.boolean().optional(),
     showEnemiesOnMap: z.boolean().optional(),

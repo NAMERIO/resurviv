@@ -97,6 +97,7 @@ export class Game {
     miniGame: ServerGameConfig["miniGame"];
     amongUsImpostorCount: AmongUsImpostorCount;
     disableAirstrikes: boolean;
+    movingZone: boolean;
     disablePerks: boolean;
     disableLooting: boolean;
     showEnemiesOnMap: boolean;
@@ -197,6 +198,7 @@ export class Game {
                 ? normalizeAmongUsImpostorCount(config.amongUsImpostorCount)
                 : DefaultAmongUsImpostorCount;
         this.disableAirstrikes = !!config.disableAirstrikes;
+        this.movingZone = !!config.movingZone;
         this.disablePerks = !!config.disablePerks;
         this.disableLooting = !!config.disableLooting;
         this.showEnemiesOnMap = config.showEnemiesOnMap !== false;
@@ -897,6 +899,7 @@ export class Game {
             miniGame: this.miniGame,
             amongUsImpostorCount: this.amongUsImpostorCount,
             disableAirstrikes: this.disableAirstrikes,
+            movingZone: this.movingZone,
             disablePerks: this.disablePerks,
             disableLooting: this.disableLooting,
             showEnemiesOnMap: this.showEnemiesOnMap,

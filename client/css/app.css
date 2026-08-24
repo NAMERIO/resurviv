@@ -6133,6 +6133,11 @@ a:active {
   background-image: url(/img/gui/ping-map-airstrike.svg);
 }
 
+#modal-prestige-arena #create-moving-zone::before,
+#modal-prestige-arena #battle-moving-zone::before {
+  background-image: url(/img/gui/gas.svg);
+}
+
 #modal-prestige-arena #create-disable-perks::before,
 #modal-prestige-arena #battle-disable-perks::before {
   background-image: url(/img/loot/loot-perk-firepower.svg);
