@@ -225,6 +225,51 @@ button:disabled {
     0 0 0 2px rgb(80 175 171 / 25%);
 }
 
+.color-input-row {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+}
+
+.color-field {
+  width: 42px;
+  height: 32px;
+  cursor: pointer;
+  border: 2px solid var(--game-border);
+  border-radius: 5px;
+  background: rgb(0 0 0 / 62%);
+  padding: 2px;
+}
+
+.color-field:focus-visible {
+  border-color: var(--game-teal);
+  outline: 2px solid rgb(80 175 171 / 25%);
+}
+
+.color-field::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-field::-webkit-color-swatch {
+  border: 0;
+  border-radius: 2px;
+}
+
+.color-field::-moz-color-swatch {
+  border: 0;
+  border-radius: 2px;
+}
+
+.color-value {
+  overflow: hidden;
+  color: var(--game-text);
+  font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .name-field {
   width: clamp(168px, 22vw, 300px);
 }

@@ -341,9 +341,19 @@ root.innerHTML = `
           </div>
           <div class="section-body">
             <div class="field-grid">
-              <div class="field">
-                <label for="building-map-color">Map color</label>
-                <input id="building-map-color" class="text-field" spellcheck="false">
+              <div class="field map-color-field">
+                <label for="building-map-color">Minimap color</label>
+                <div class="color-input-row">
+                  <input id="building-map-color" class="color-field" type="color" aria-label="Choose building map color">
+                  <output id="building-map-color-value" class="color-value" for="building-map-color"></output>
+                </div>
+              </div>
+              <div class="field map-color-field">
+                <label for="building-map-floor-color">All map floors</label>
+                <div class="color-input-row">
+                  <input id="building-map-floor-color" class="color-field" type="color" aria-label="Choose color for all map floors">
+                  <output id="building-map-floor-color-value" class="color-value" for="building-map-floor-color"></output>
+                </div>
               </div>
               <div class="field">
                 <label for="building-zidx">Z index</label>
@@ -556,7 +566,7 @@ function normalizeItem(item: Partial<EditorItem>): EditorItem {
         assetScale: finite(item.assetScale, 1),
         fallbackWidth,
         fallbackHeight,
-        alpha: finite(item.alpha, 1),
+        alpha: item.mapGroundPatch ? 1 : finite(item.alpha, 1),
         tint: finite(item.tint, 0xffffff),
         removeOnDamaged: item.removeOnDamaged,
         mirrorX: item.mirrorX,
@@ -1276,6 +1286,7 @@ function draw() {
         drawDragSelection();
     } else {
         drawPreviewPlayer();
+        drawMinimapPreview();
     }
 
     statusLeft.textContent = `Cursor ${formatNum(pointer.world.x)}, ${formatNum(pointer.world.y)} | ${scopeLabel(activeScope)} | Zoom ${Math.round(camera.zoom * 100)}%`;
@@ -1609,7 +1620,7 @@ function drawBuildingGroundPatches(item: EditorItem, building: BuildingDef) {
         const y = Math.min(min.y, max.y);
         const width = Math.abs(max.x - min.x);
         const height = Math.abs(max.y - min.y);
-        ctx.fillStyle = `${hexCss(patch.color)}cc`;
+        ctx.fillStyle = hexCss(patch.color);
         ctx.strokeStyle = `${hexCss(patch.color)}`;
         ctx.lineWidth = 1;
         ctx.fillRect(x, y, width, height);
@@ -1693,7 +1704,7 @@ function drawBuildingMapShapes(item: EditorItem, building: BuildingDef): boolean
     ctx.save();
     ctx.lineWidth = 2;
     for (const shape of shapes) {
-        ctx.fillStyle = `${hexCss(shape.color)}cc`;
+        ctx.fillStyle = hexCss(shape.color);
         ctx.strokeStyle = hexCss(shape.color);
         drawBuildingLocalCollider(item, shape.collider);
     }
@@ -1785,7 +1796,7 @@ function drawFallbackItemBox(item: EditorItem) {
 
 function fillForItem(item: EditorItem): string {
     if (item.mapGroundPatch) {
-        return `${hexCss(item.tint)}cc`;
+        return hexCss(item.tint);
     }
     switch (item.kind) {
         case "roof":
@@ -1971,6 +1982,95 @@ function drawPreviewPlayer() {
     ctx.restore();
 }
 
+function drawMinimapPreview() {
+    if (!preview) return;
+
+    const panelMargin = 16;
+    const panelWidth = Math.min(216, Math.max(150, viewWidth - panelMargin * 2));
+    const panelHeight = 132;
+    const panelX = viewWidth - panelWidth - panelMargin;
+    const panelY = panelMargin;
+    const contentX = panelX + 12;
+    const contentY = panelY + 43;
+    const contentWidth = panelWidth - 24;
+    const contentHeight = panelHeight - 55;
+    const footprintItems = doc.items.filter(
+        (item) =>
+            item.layer !== "roof" &&
+            item.layer !== "hitboxes" &&
+            !isBasementItem(item) &&
+            !item.mapGroundPatch,
+    );
+    const bounds =
+        boundsForItems(footprintItems) ||
+        boundsForItems(doc.items.filter((item) => !isBasementItem(item)));
+
+    ctx.save();
+    ctx.fillStyle = "rgba(8, 13, 15, 0.94)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.24)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(panelX, panelY, panelWidth, panelHeight, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
+    ctx.font = "600 12px ui-sans-serif, system-ui";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText(`Minimap · ${hexColor(doc.mapColor)}`, panelX + 12, panelY + 9);
+    ctx.fillStyle = doc.mapDisplay ? "#8fcf68" : "#e0aa62";
+    ctx.font = "11px ui-sans-serif, system-ui";
+    ctx.fillText(
+        doc.mapDisplay
+            ? `Shown on map · scale ${formatNum(doc.mapScale)}`
+            : "Hidden in game · Show on map is off",
+        panelX + 12,
+        panelY + 25,
+    );
+
+    ctx.beginPath();
+    ctx.rect(contentX, contentY, contentWidth, contentHeight);
+    ctx.clip();
+    ctx.fillStyle = hexCss(editorMapColors.grass);
+    ctx.fillRect(contentX, contentY, contentWidth, contentHeight);
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.18)";
+    ctx.lineWidth = 1;
+    for (let x = contentX + 8; x < contentX + contentWidth; x += 16) {
+        ctx.beginPath();
+        ctx.moveTo(x, contentY);
+        ctx.lineTo(x, contentY + contentHeight);
+        ctx.stroke();
+    }
+    for (let y = contentY + 8; y < contentY + contentHeight; y += 16) {
+        ctx.beginPath();
+        ctx.moveTo(contentX, y);
+        ctx.lineTo(contentX + contentWidth, y);
+        ctx.stroke();
+    }
+
+    if (bounds) {
+        const width = Math.max(MIN_GRID_SIZE, bounds.max.x - bounds.min.x);
+        const height = Math.max(MIN_GRID_SIZE, bounds.max.y - bounds.min.y);
+        const fitScale = Math.min(
+            (contentWidth * 0.7) / width,
+            (contentHeight * 0.7) / height,
+        );
+        const scale = fitScale * Math.max(0.01, doc.mapScale);
+        const drawWidth = width * scale;
+        const drawHeight = height * scale;
+        const drawX = contentX + (contentWidth - drawWidth) / 2;
+        const drawY = contentY + (contentHeight - drawHeight) / 2;
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = hexCss(doc.mapColor);
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.72)";
+        ctx.lineWidth = 1.5;
+        ctx.fillRect(drawX, drawY, drawWidth, drawHeight);
+        ctx.strokeRect(drawX, drawY, drawWidth, drawHeight);
+    }
+    ctx.restore();
+}
+
 function itemCorners(item: EditorItem): Vec2[] {
     const size = itemSize(item);
     const points = [
@@ -2059,6 +2159,7 @@ function applyMapFloorRole(item: EditorItem) {
     item.layer = "floor";
     item.type = undefined;
     item.sprite = undefined;
+    item.alpha = 1;
     item.mapGroundPatch ??= patchDefaults();
     item.surfaceType ||= "sand";
     if (item.tint === 0xffffff) item.tint = DEFAULT_MAP_FLOOR_COLOR;
@@ -2860,8 +2961,8 @@ function renderSelectionPanel() {
       </div>
       <div class="field-grid" style="margin-top: 8px;">
         <div class="field">
-          <label for="sel-alpha">Alpha</label>
-          <input id="sel-alpha" class="number-field" type="number" step="0.05" min="0" max="1" value="${formatNum(item.alpha)}">
+          <label for="sel-alpha">${item.mapGroundPatch ? "Alpha (fixed)" : "Alpha"}</label>
+          <input id="sel-alpha" class="number-field" type="number" step="0.05" min="0" max="1" value="${formatNum(item.mapGroundPatch ? 1 : item.alpha)}" ${item.mapGroundPatch ? "disabled" : ""}>
         </div>
         <div class="field">
           <label for="sel-tint">Tint hex</label>
@@ -2890,7 +2991,10 @@ function renderSelectionPanel() {
       </div>
       <div class="field" style="margin-top: 8px;">
         <label for="sel-map-floor-color">Map floor color</label>
-        <input id="sel-map-floor-color" class="text-field" value="${hexColor(item.tint)}">
+        <div class="color-input-row">
+          <input id="sel-map-floor-color" class="color-field" type="color" value="${hexCss(item.tint)}" aria-label="Choose selected map floor color">
+          <output id="sel-map-floor-color-value" class="color-value" for="sel-map-floor-color">${hexColor(item.tint)} / ${Math.round(item.tint)}</output>
+        </div>
       </div>
       <div class="field-grid" style="margin-top: 8px;">
         <div class="field">
@@ -3016,10 +3120,22 @@ function renderSelectionPanel() {
     if (item.mapGroundPatch) {
         bindNumber("sel-map-floor-width", (value) => setItemWidth(item, value));
         bindNumber("sel-map-floor-height", (value) => setItemHeight(item, value));
-        bindText(
+        const mapFloorColor = document.getElementById(
             "sel-map-floor-color",
-            (value) => (item.tint = parseHexColor(value, item.tint)),
-        );
+        ) as HTMLInputElement;
+        const mapFloorColorValue = document.getElementById(
+            "sel-map-floor-color-value",
+        ) as HTMLOutputElement;
+        const updateMapFloorColor = () => {
+            item.tint = parseHexColor(mapFloorColor.value, item.tint);
+            item.alpha = 1;
+            mapFloorColorValue.value = `${hexColor(item.tint)} / ${Math.round(item.tint)}`;
+        };
+        mapFloorColor.addEventListener("input", updateMapFloorColor);
+        mapFloorColor.addEventListener("change", () => {
+            updateMapFloorColor();
+            commit("edit map floor color");
+        });
         bindSelect("sel-patch-shape", (value) => {
             if (!item.mapGroundPatch) return;
             item.mapGroundPatch.shape = value === "ellipse" ? "ellipse" : "rect";
@@ -3186,9 +3302,8 @@ function syncStaticControls() {
     buildingNameInput.value = doc.name;
     snapToggle.checked = doc.snapToGrid;
     gridSizeInput.value = String(doc.gridSize);
-    (document.getElementById("building-map-color") as HTMLInputElement).value = hexCss(
-        doc.mapColor,
-    );
+    syncBuildingMapColorControl();
+    syncBuildingMapFloorColorControl();
     (document.getElementById("building-zidx") as HTMLInputElement).value = String(
         doc.zIdx,
     );
@@ -3312,8 +3427,33 @@ function setupControls() {
         doc.gridSize = Math.max(MIN_GRID_SIZE, Number(gridSizeInput.value) || 1);
         commit("grid");
     });
-    bindText("building-map-color", (value) => {
-        doc.mapColor = parseHexColor(value, doc.mapColor);
+    const mapColorInput = document.getElementById(
+        "building-map-color",
+    ) as HTMLInputElement;
+    mapColorInput.addEventListener("input", () => {
+        doc.mapColor = parseHexColor(mapColorInput.value, doc.mapColor);
+        syncBuildingMapColorControl();
+    });
+    mapColorInput.addEventListener("change", () => {
+        doc.mapColor = parseHexColor(mapColorInput.value, doc.mapColor);
+        commit("edit building map color");
+    });
+    const mapFloorColorInput = document.getElementById(
+        "building-map-floor-color",
+    ) as HTMLInputElement;
+    const applyMapFloorColor = () => {
+        const color = parseHexColor(mapFloorColorInput.value, DEFAULT_MAP_FLOOR_COLOR);
+        for (const item of doc.items) {
+            if (!item.mapGroundPatch) continue;
+            item.tint = color;
+            item.alpha = 1;
+        }
+        syncBuildingMapFloorColorControl();
+    };
+    mapFloorColorInput.addEventListener("input", applyMapFloorColor);
+    mapFloorColorInput.addEventListener("change", () => {
+        applyMapFloorColor();
+        commit("edit all map floor colors");
     });
     bindNumber("building-zidx", (value) => {
         doc.zIdx = Math.round(value);
@@ -3419,6 +3559,39 @@ function setupControls() {
     document
         .getElementById("align-bottom")
         ?.addEventListener("click", () => alignSelection("bottom"));
+}
+
+function syncBuildingMapColorControl() {
+    const colorInput = document.getElementById("building-map-color") as HTMLInputElement;
+    const colorValue = document.getElementById(
+        "building-map-color-value",
+    ) as HTMLOutputElement;
+    const numericColor = Math.round(doc.mapColor);
+    colorInput.value = hexCss(numericColor);
+    colorValue.value = `${hexColor(numericColor)} / ${numericColor}`;
+    colorValue.title = `Stored numeric color: ${numericColor}`;
+}
+
+function syncBuildingMapFloorColorControl() {
+    const colorInput = document.getElementById(
+        "building-map-floor-color",
+    ) as HTMLInputElement;
+    const colorValue = document.getElementById(
+        "building-map-floor-color-value",
+    ) as HTMLOutputElement;
+    const mapFloors = doc.items.filter((item) => item.mapGroundPatch);
+    const color = Math.round(mapFloors[0]?.tint ?? DEFAULT_MAP_FLOOR_COLOR);
+    const mixed = mapFloors.some((item) => Math.round(item.tint) !== color);
+    colorInput.value = hexCss(color);
+    colorInput.disabled = mapFloors.length === 0;
+    colorValue.value = mapFloors.length
+        ? mixed
+            ? `Mixed (${mapFloors.length})`
+            : `${hexColor(color)} / ${color}`
+        : "No map floors";
+    colorValue.title = mixed
+        ? "Picking a color will apply it to every map floor"
+        : `Stored numeric color: ${color}`;
 }
 
 function sanitizeKey(value: string): string {
@@ -4087,7 +4260,7 @@ function importBuildingIntoDoc(
             assetScale: 1,
             fallbackWidth: size.x,
             fallbackHeight: size.y,
-            alpha: 0.82,
+            alpha: 1,
             tint: patch.color,
             surfaceType: building.floor?.surfaces?.[0]?.type || "grass",
             mapGroundPatch: {
