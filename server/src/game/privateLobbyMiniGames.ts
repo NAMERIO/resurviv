@@ -214,6 +214,7 @@ export const PrivateLobbyMiniGameServerSettings: Record<
     domination: {
         domination: DominationSettings,
     },
+    bed_war: {},
 };
 
 export function getPrivateLobbyMiniGameMapName(
@@ -223,6 +224,7 @@ export function getPrivateLobbyMiniGameMapName(
     if (miniGame === "capture_the_flag") return "capture_the_flag";
     if (miniGame === "king_of_the_hill") return "capture_the_flag";
     if (miniGame === "domination") return "capture_the_flag";
+    if (miniGame === "bed_war") return "bed_war";
     return undefined;
 }
 

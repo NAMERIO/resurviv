@@ -111,6 +111,7 @@ export class ApiServer {
             "valentine",
             "inferno",
             "woods",
+            "bed_war",
             "capture_the_flag",
         ];
 

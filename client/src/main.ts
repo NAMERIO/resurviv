@@ -1768,6 +1768,7 @@ export class Application {
             "inferno",
             "woods",
             "contact",
+            "bed_war",
             "capture_the_flag",
         ]);
         const gameModeStyles = this.siteInfo.getGameModeStyles();
@@ -1795,7 +1796,8 @@ export class Application {
                 ? [1, 2, 4]
                 : miniGame === "capture_the_flag" ||
                     miniGame === "king_of_the_hill" ||
-                    miniGame === "domination"
+                    miniGame === "domination" ||
+                    miniGame === "bed_war"
                   ? [2, 4, 10, 15]
                   : [1, 2, 4, 10, 15];
         const mapStyleByName = new Map<
@@ -2900,7 +2902,8 @@ export class Application {
             "arena-capture-the-flag",
             miniGameDef.id === "capture_the_flag" ||
                 miniGameDef.id === "king_of_the_hill" ||
-                miniGameDef.id === "domination",
+                miniGameDef.id === "domination" ||
+                miniGameDef.id === "bed_war",
         );
         this.prestigeArenaTeamsBoard.css({
             "--arena-team-board-columns": String(Math.min(activeTeams.length, 2)),

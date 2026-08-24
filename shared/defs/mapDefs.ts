@@ -33,6 +33,7 @@ import { DeathmatchValentine } from "../../server/src/deathmatch/maps/valentine"
 import { DeatchmatchWoods as Woods } from "../../server/src/deathmatch/maps/woods";
 import type { Vec2 } from "../utils/v2";
 import { Beach } from "./maps/beachDefs";
+import { DeathmatchBedWar } from "./maps/bedWarDefs";
 import { Birthday } from "./maps/birthdayDefs";
 import { DeathmatchCaptureTheFlag } from "./maps/captureTheFlagDefs";
 import { MainSpring } from "./maps/mainSpringDefs";
@@ -65,11 +66,13 @@ export type Atlas =
     | "valentine"
     | "inferno"
     | "beach"
+    | "bed_war"
     | "contact";
 
 export const MapDefs = {
     main: DeatchmatchMain,
     among_us: DeathmatchAmongUs,
+    bed_war: DeathmatchBedWar,
     capture_the_flag: DeathmatchCaptureTheFlag,
     br_main: BattleRoyaleMain,
     main_spring: MainSpring,
