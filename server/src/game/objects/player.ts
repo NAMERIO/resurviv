@@ -266,7 +266,12 @@ export class PlayerBarn {
             pos = spawnBuilding.pos;
             layer = spawnBuilding.layer;
         } else {
+            const privateLobbyTeamSpawn =
+                this.game.arenaPrivate && joinData.arenaTeam && !this.game.map.amongUsMode
+                    ? this.game.map.getSpawnPos(group, team, joinData.arenaTeam)
+                    : undefined;
             pos =
+                privateLobbyTeamSpawn ??
                 this.game.captureTheFlagManager.getSpawnPos(
                     joinData.arenaTeam,
                     team?.id,
@@ -276,7 +281,7 @@ export class PlayerBarn {
                     team?.id,
                 ) ??
                 this.game.dominationManager.getSpawnPos(joinData.arenaTeam, team?.id) ??
-                this.game.map.getSpawnPos(group, team);
+                this.game.map.getSpawnPos(group, team, joinData.arenaTeam);
             if (group && !group.spawnPosition) {
                 group.spawnPosition = v2.copy(pos);
             }
@@ -1921,7 +1926,10 @@ export class Player extends BaseGameObject {
         this.roleMenuTicker = 0;
         this.promoteToRole(role);
         // v2.set() necessary since this.collider.pos is linked to this.pos by reference
-        v2.set(this.pos, this.game.map.getSpawnPos(this.group, this.team));
+        v2.set(
+            this.pos,
+            this.game.map.getSpawnPos(this.group, this.team, this.arenaTeam),
+        );
         if (this.group && !this.group.spawnPosition) {
             this.group.spawnPosition = v2.copy(this.pos);
         }
@@ -2681,7 +2689,10 @@ export class Player extends BaseGameObject {
         this.sentDeathEmote = false;
         this.sendDeathEmoteTicker = 0;
         this.layer = 0;
-        v2.set(this.pos, this.game.map.getSpawnPos());
+        v2.set(
+            this.pos,
+            this.game.map.getSpawnPos(this.group, this.team, this.arenaTeam),
+        );
         this.collider.pos = this.pos;
         this.applyInfectedLoadout();
         this.createObstacleOutfit();
@@ -2728,11 +2739,16 @@ export class Player extends BaseGameObject {
         this.emoteCounter = 0;
         this.layer = 0;
 
+        const privateLobbyTeamSpawn =
+            this.game.arenaPrivate && this.arenaTeam
+                ? this.game.map.getSpawnPos(this.group, this.team, this.arenaTeam)
+                : undefined;
         const spawnPos =
+            privateLobbyTeamSpawn ??
             this.game.captureTheFlagManager.getSpawnPos(this.arenaTeam, this.teamId) ??
             this.game.kingOfTheHillManager.getSpawnPos(this.arenaTeam, this.teamId) ??
             this.game.dominationManager.getSpawnPos(this.arenaTeam, this.teamId) ??
-            this.game.map.getSpawnPos(this.group, this.team);
+            this.game.map.getSpawnPos(this.group, this.team, this.arenaTeam);
         v2.set(this.pos, spawnPos);
         this.collider.pos = this.pos;
         this.removeRole();
