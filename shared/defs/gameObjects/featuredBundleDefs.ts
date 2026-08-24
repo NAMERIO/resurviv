@@ -151,6 +151,13 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1800,
         durationDays: 7,
     },
+    bundle_jjk: {
+        name: "JJK Set",
+        size: "large",
+        items: ["outfitGojo", "outfitMahoraga", "toji_knife"],
+        price: 2850,
+        durationDays: 7,
+    },
     bundle_lightning: {
         name: "Lightning Set",
         size: "large",
