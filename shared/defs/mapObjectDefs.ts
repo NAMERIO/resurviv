@@ -35631,7 +35631,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         mapGroundPatches: [
             {
                 bound: collider.createAabbExtents(v2.create(0, 0), v2.create(170, 5.5)),
-                color: 0x7e5f35,
+                color: 0x5e8e2f,
                 roughness: 0,
                 offsetDist: 0,
                 order: 1,
@@ -35639,7 +35639,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
             {
                 bound: collider.createAabbExtents(v2.create(0, 0), v2.create(5.5, 82.5)),
-                color: 0x7e5f35,
+                color: 0x5e8e2f,
                 roughness: 0,
                 offsetDist: 0,
                 order: 1,
@@ -35647,7 +35647,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
             {
                 bound: collider.createAabbExtents(v2.create(-72.5, 0), v2.create(20, 24)),
-                color: 0x7e5f35,
+                color: 0x5e8e2f,
                 roughness: 0.02,
                 offsetDist: 0.5,
                 order: 1,
@@ -35655,7 +35655,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
             {
                 bound: collider.createAabbExtents(v2.create(-0.125, -0.125), v2.create(18, 18)),
-                color: 0x7e5f35,
+                color: 0x5e8e2f,
                 roughness: 0.02,
                 offsetDist: 0.5,
                 order: 1,
@@ -35663,7 +35663,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
             {
                 bound: collider.createAabbExtents(v2.create(72.5, 0), v2.create(20, 24)),
-                color: 0x7e5f35,
+                color: 0x5e8e2f,
                 roughness: 0.02,
                 offsetDist: 0.5,
                 order: 1,
