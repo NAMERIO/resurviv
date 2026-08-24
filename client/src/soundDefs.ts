@@ -954,6 +954,18 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
             canCoalesce: true,
             maxInstances: 3,
         },
+        fence_bullet_hit_01: {
+            path: "audio/hits/fence_bullet_hit_01.mp3",
+            volume: 1,
+            canCoalesce: true,
+            maxInstances: 3,
+        },
+        fence_bullet_hit_02: {
+            path: "audio/hits/fence_bullet_hit_02.mp3",
+            volume: 1,
+            canCoalesce: true,
+            maxInstances: 3,
+        },
         metal_bullet_hit_01: {
             path: "audio/hits/metal_bullet_hit_01.mp3",
             volume: 1,
@@ -2119,6 +2131,10 @@ const Groups: Record<string, { channel: string; sounds: string[] }> = {
     wall_bullet: {
         channel: "hits",
         sounds: ["metal_bullet_hit_01"],
+    },
+    fence_bullet: {
+        channel: "hits",
+        sounds: ["fence_bullet_hit_01", "fence_bullet_hit_02"],
     },
     wall_wood_bullet: {
         channel: "hits",

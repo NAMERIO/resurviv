@@ -547,6 +547,23 @@ const ParticleDefs: Record<string, ParticleDef> = {
             return util.rgbToInt(util.hsvToRgb(0.01, 0.02, util.random(0.38, 0.41)));
         },
     },
+    fenceChip: {
+        image: ["part-fence-01.img"],
+        life: new Range(0.45, 0.7),
+        drag: new Range(2, 6),
+        rotVel: new Range(Math.PI * 2, Math.PI * 5),
+        scale: {
+            start: new Range(0.08, 0.14),
+            end: new Range(0.03, 0.07),
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 1,
+            end: 0,
+            lerp: new Range(0.75, 1),
+        },
+        color: 0xffffff,
+    },
     barrelBreak: {
         image: ["part-spark-02.img"],
         life: new Range(0.8, 1),

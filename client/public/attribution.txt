@@ -43,3 +43,6 @@ https://opengameart.org/content/free-top-down-car-sprites-by-unlucky-studio
 https://opengameart.org/content/car-sound-effects-pack-low-quality
 "Screeching tires #2" by Dorian CLAIR is licensed under CC0
 https://bigsoundbank.com/screeching-tires-2-s2369.html
+Fence artwork and fence hit sounds from HasangerGames/suroi, licensed under GPL-3.0
+https://github.com/HasangerGames/suroi/tree/85df5067b19a876cac4304232cc1e68ff1b07c7f
+Fence hit sounds credited by Suroi
