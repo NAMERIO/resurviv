@@ -16,6 +16,11 @@ const truncateCanvas = document.createElement("canvas");
 const outfitSkinLootImageCache = new Map<string, string>();
 const outfitSkinLootImagePromises = new Map<string, Promise<string>>();
 
+function getPlayerSpritePath(sprite: string) {
+    const path = `img/player/${sprite.slice(0, -4)}.svg`;
+    return GIT_VERSION ? `${path}?v=${encodeURIComponent(GIT_VERSION)}` : path;
+}
+
 interface OutfitSkinImageLayer {
     sprite: string;
     tint: number;
@@ -113,7 +118,7 @@ export function createOutfitSkinPreview(
     });
 
     for (const [zIndex, layerDef] of getOutfitSkinLayers(def).entries()) {
-        const imagePath = `img/player/${layerDef.sprite.slice(0, -4)}.svg`;
+        const imagePath = getPlayerSpritePath(layerDef.sprite);
         const layer = $("<span/>", {
             css: {
                 display: "block",
@@ -199,7 +204,7 @@ async function buildOutfitSkinLootImage(def: OutfitDef) {
     const layers = getOutfitSkinLayers(def);
     const sources = await Promise.all(
         layers.map(async (layer) => {
-            const path = `img/player/${layer.sprite.slice(0, -4)}.svg`;
+            const path = getPlayerSpritePath(layer.sprite);
             const response = await fetch(path);
             if (!response.ok) {
                 throw new Error(`Failed loading skin sprite ${path}`);

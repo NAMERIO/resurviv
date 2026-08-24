@@ -3180,6 +3180,15 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
     }),
+    katana_samurai: defineMeleeSkin("katana", {
+        name: "Katana Samurai",
+        quality: 1,
+        noDropOnDeath: true,
+        lootImg: { sprite: "loot-melee-katana-samurai.img" },
+        worldImg: {
+            sprite: "loot-melee-katana-samurai.img",
+        },
+    }),
     sledgehammer: defineMeleeSkin("stonehammer", {
         name: "Sledgehammer",
         lootImg: { sprite: "loot-melee-sledgehammer.img" },
@@ -3254,6 +3263,14 @@ const SkinDefs: Record<string, MeleeDef> = {
     lasr_swrd_03: defineMeleeSkin("lasr_swrd_01", {
         lootImg: { sprite: "loot-melee-lasrswrd-03.img" },
         worldImg: { sprite: "loot-melee-lasrswrd-03.img" },
+    }),
+    cutlass_gold: defineMeleeSkin("cutlass", {
+        name: "Gold Cutlass",
+        noPotatoSwap: true,
+        damage: 35,
+        perk: "pirate",
+        lootImg: { sprite: "loot-melee-cutlass-gold.img" },
+        worldImg: { sprite: "loot-melee-cutlass-gold.img" },
     }),
 };
 

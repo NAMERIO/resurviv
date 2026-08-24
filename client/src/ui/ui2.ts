@@ -119,6 +119,7 @@ function m() {
         const i = GameObjectDefs[a] as AmmoDef | HealDef | BoostDef;
         if (
             !(i as AmmoDef).hideUi &&
+            document.getElementById(`ui-loot-${a}`) &&
             (i.type == "heal" || i.type == "boost" || i.type == "ammo")
         ) {
             t.push(a);
@@ -2026,6 +2027,7 @@ export class UiManager2 {
             [PickupMsgType.StreakPerkActive]: "streak-perk-active",
             [PickupMsgType.PerksDisabled]: "perks-disabled",
             [PickupMsgType.StrobesDisabled]: "strobes-disabled",
+            [PickupMsgType.LootingDisabled]: "looting-disabled",
         };
         const key = typeMap[type] || typeMap[PickupMsgType.Full];
         return this.localization.translate(key);

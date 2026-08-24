@@ -1348,7 +1348,10 @@ export class UiManager {
         this.updateCaptureTheFlagScoreboard();
 
         // Gas timer display
-        const timeLeft = math.max(Math.floor(gas.duration * (1 - gas.circleT)), 0);
+        const timeLeft = math.max(
+            Math.floor(gas.timerDuration * (1 - gas.circleT) + gas.timerOffset),
+            0,
+        );
         const gasState = {
             mode: gas.mode,
             time: timeLeft,

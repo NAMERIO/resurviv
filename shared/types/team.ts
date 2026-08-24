@@ -52,7 +52,9 @@ export interface RoomData {
     miniGame: PrivateLobbyMiniGame;
     amongUsImpostorCount: AmongUsImpostorCount;
     disableAirstrikes: boolean;
+    movingZone: boolean;
     disablePerks: boolean;
+    disableLooting: boolean;
     showEnemiesOnMap: boolean;
 }
 
@@ -148,7 +150,9 @@ export const zClientRoomData = z.object({
     miniGame: z.enum(PrivateLobbyMiniGameIds).optional(),
     amongUsImpostorCount: z.number().int().min(1).max(3).optional(),
     disableAirstrikes: z.boolean().optional(),
+    movingZone: z.boolean().optional(),
     disablePerks: z.boolean().optional(),
+    disableLooting: z.boolean().optional(),
     showEnemiesOnMap: z.boolean().optional(),
 });
 

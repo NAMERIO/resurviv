@@ -2,7 +2,7 @@ export interface DamageStreakDef {
     readonly type: "streak";
     readonly name: string;
     readonly lore: string;
-    readonly rewardType: "perk" | "gun" | "dash";
+    readonly rewardType: "perk" | "gun" | "dash" | "samurai";
     readonly rewardItem: string;
     readonly duration: number;
     readonly dashDistance?: number;
@@ -88,6 +88,22 @@ export const DamageStreakDefs: Record<string, DamageStreakDef> = {
         dashDistance: 14,
         lootImg: {
             sprite: "loot-perk-dash.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0x55ccff,
+            scale: 0.275,
+        },
+        sound: { activate: "perk_pickup_01" },
+    },
+    streak_samurai: {
+        type: "streak",
+        name: "Samurai",
+        lore: "Gain windwalk, melee runner, juggernaut, but become confined to a katana. Immune to snow.",
+        rewardType: "samurai",
+        rewardItem: "samurai",
+        duration: 10,
+        lootImg: {
+            sprite: "loot-perk-samurai.img",
             tint: 0xffffff,
             border: "loot-circle-outer-03.img",
             borderTint: 0x55ccff,

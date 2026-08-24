@@ -11183,7 +11183,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         explodeParticle: "leafRiver",
         img: {
             sprite: "bush-rose.img",
-            residue: "bush-res-rose.img",
+            residue: "map-bush-res-13.img",
             alpha: 1.0,
             scale: 0.5,
         },
@@ -13414,7 +13414,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     stone_03l: createRiverStone({
         img: {
             sprite: "map-stone-03l.img",
-            residue: "map-stone-res-01l",
+            residue: "map-stone-res-01l.img",
         },
     }),
     stone_03f: createRiverStone({

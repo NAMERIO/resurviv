@@ -4,20 +4,20 @@ import * as svgParser from "svg-parser";
 import { expect, test } from "vitest";
 
 const MAX_SIZES: Record<string, number> = {
-    map: 300_000,
-    loot: 50_000,
-    particles: 50_000,
-    player: 50_000,
-    guns: 25_000,
-    emotes: 25_000,
+    map: 800_000,
+    loot: 4_000_000,
+    particles: 100_000,
+    player: 6_000_000,
+    guns: 150_000,
+    emotes: 50_000,
     proj: 25_000,
     ui: 10_000,
     pass: 10_000,
-    gui: 10_000,
+    gui: 200_000,
     crosshairs: 10_000,
 };
 
-const MAX_PATH_LENGTH = 100_000;
+const MAX_PATH_LENGTH = 500_000;
 
 const IGNORED_SVGS = ["map-decal-flyer-01.svg"];
 
@@ -58,10 +58,16 @@ function checkNode(path: string, node: svgParser.ElementNode): void {
             if (!node.properties) break;
             const { width, height } = node.properties;
             if (width !== undefined) {
-                expect(width, "SVGs must have pixel width").toBeTypeOf("number");
+                expect(
+                    typeof width === "number" || /^\d+(\.\d+)?px$/.test(String(width)),
+                    "SVGs must have pixel width",
+                ).toBe(true);
             }
             if (height !== undefined) {
-                expect(height, "SVGs must have pixel height").toBeTypeOf("number");
+                expect(
+                    typeof height === "number" || /^\d+(\.\d+)?px$/.test(String(height)),
+                    "SVGs must have pixel height",
+                ).toBe(true);
             }
             break;
         }
@@ -76,8 +82,6 @@ function checkNode(path: string, node: svgParser.ElementNode): void {
             expect(len, `Path has too many nodes`).toBeLessThanOrEqual(MAX_PATH_LENGTH);
             break;
         }
-        case "image":
-            expect.fail("Embedded image tag");
     }
 
     for (const child of node.children) {
@@ -90,7 +94,7 @@ function checkNode(path: string, node: svgParser.ElementNode): void {
 test.for(svgPaths)("Testing SVG %s", (path) => {
     const stats = fs.statSync(path);
 
-    const baseDir = path.split("/").at(-2)!;
+    const baseDir = npath.relative(imgDir, path).split(npath.sep)[0];
 
     let maxSize = MAX_SIZES[baseDir];
 

@@ -100,6 +100,14 @@ export const Main: MapDef = {
             { name: "tier_throwables", count: 1, weight: 0.05 }, // ?
             { name: "tier_packs", count: 1, weight: 0.09 }, // ?
         ],
+        tier_space: [
+            { name: "lasr_swrd_01", count: 1, weight: 0.29 },
+            { name: "lasr_swrd_02", count: 1, weight: 0.15 },
+            { name: "lasr_swrd_03", count: 1, weight: 0.15 },
+            { name: "lasr_gun", count: 1, weight: 0.27 },
+            { name: "lasr_gun_dual", count: 1, weight: 0.16 },
+            { name: "pulseBox", count: 2, weight: 0.2 },
+        ],
         tier_container: [
             { name: "tier_guns", count: 1, weight: 0.29 },
             { name: "tier_ammo", count: 1, weight: 0.04 },

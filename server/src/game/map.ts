@@ -7,6 +7,7 @@ import type {
     StructureDef,
     SurfaceData,
 } from "../../../shared/defs/mapObjectsTyping";
+import type { ArenaTeam } from "../../../shared/defs/miniGame";
 import type { MapId } from "../../../shared/defs/types/misc";
 import { GameConfig, GasMode, TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
@@ -34,6 +35,13 @@ import { RiverCreator } from "./riverCreator";
 const BattleRoyaleBridgeSpawns = {
     bunker_structure_05: { nearbyWidthMult: 1.2 },
 } satisfies Record<string, { nearbyWidthMult: number }>;
+
+const PrivateLobbySpawnAnchors = [
+    v2.create(96, 83),
+    v2.create(352, 89),
+    v2.create(336, 339),
+    v2.create(98, 349),
+];
 
 // most of this logic is based on the `renderMapBuildingBounds` from client debugHelpers
 // which was found on BHA leak
@@ -195,6 +203,7 @@ export class GameMap {
     scale: "large" | "small";
     center: Vec2;
     bounds: AABB;
+    privateLobbyTeamSpawnAnchors: Record<ArenaTeam, Vec2>;
 
     grassInset: number;
     shoreInset: number;
@@ -278,6 +287,15 @@ export class GameMap {
 
     constructor(game: Game) {
         this.game = game;
+
+        const privateLobbySpawnAnchors = PrivateLobbySpawnAnchors.map(v2.copy);
+        util.shuffleArray(privateLobbySpawnAnchors);
+        this.privateLobbyTeamSpawnAnchors = {
+            A: privateLobbySpawnAnchors[0],
+            B: privateLobbySpawnAnchors[1],
+            C: privateLobbySpawnAnchors[2],
+            D: privateLobbySpawnAnchors[3],
+        };
 
         const mapDef = (this.mapDef = util.cloneDeep(
             MapDefs[game.config.mapName],
@@ -2221,7 +2239,7 @@ export class GameMap {
         }
     }
 
-    getSpawnPos(group?: Group, team?: Team): Vec2 {
+    getSpawnPos(group?: Group, team?: Team, arenaTeam?: ArenaTeam): Vec2 {
         if (Config.debug.spawnMode === "fixed" && !this.amongUsMode) {
             return v2.copy(Config.debug.spawnPos ?? this.center);
         }
@@ -2240,6 +2258,30 @@ export class GameMap {
         } else if (this.amongUsMode) {
             getPos = () => {
                 return v2.add(this.center, util.randomPointInCircle(24));
+            };
+        } else if (
+            this.game.arenaPrivate &&
+            this.game.miniGame === "pvp" &&
+            arenaTeam
+        ) {
+            const anchor = this.privateLobbyTeamSpawnAnchors[arenaTeam];
+            let attempt = 0;
+            getPos = () => {
+                if (attempt++ >= 250 && this.game.gas.mode === GasMode.Moving) {
+                    return v2.add(
+                        this.game.gas.currentPos,
+                        util.randomPointInCircle(
+                            this.game.gas.currentRad * 0.7,
+                            Math.random,
+                            3,
+                        ),
+                    );
+                }
+
+                // Prefer the requested coordinate, then gradually search farther
+                // away when terrain or a map object blocks the immediate area.
+                const searchRadius = Math.min(12 + attempt * 0.1, 32);
+                return v2.add(anchor, util.randomPointInCircle(searchRadius));
             };
         } else if (this.game.gas.mode == GasMode.Moving) {
             getPos = () => {

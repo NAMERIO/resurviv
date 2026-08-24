@@ -6133,9 +6133,26 @@ a:active {
   background-image: url(/img/gui/ping-map-airstrike.svg);
 }
 
+#modal-prestige-arena #create-moving-zone::before,
+#modal-prestige-arena #battle-moving-zone::before {
+  background-image: url(/img/gui/gas.svg);
+}
+
 #modal-prestige-arena #create-disable-perks::before,
 #modal-prestige-arena #battle-disable-perks::before {
   background-image: url(/img/loot/loot-perk-firepower.svg);
+}
+
+#modal-prestige-arena #create-disable-looting::before,
+#modal-prestige-arena #battle-disable-looting::before {
+  background-image:
+    linear-gradient(45deg, transparent 46%, #e55757 46%, #e55757 54%, transparent 54%),
+    linear-gradient(-45deg, transparent 46%, #e55757 46%, #e55757 54%, transparent 54%),
+    url(/img/loot/loot-pack-03.svg);
+  background-size:
+    20px 20px,
+    20px 20px,
+    18px 18px;
 }
 
 #modal-prestige-arena #create-hide-enemies::before,
@@ -20340,7 +20357,9 @@ div.roulette {
   background: #2d2d2d;
   border: 1px solid #555;
   border-radius: 4px;
-  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.55), inset 0 -2px #1b1b1b;
+  box-shadow:
+    0 5px 16px rgba(0, 0, 0, 0.55),
+    inset 0 -2px #1b1b1b;
   display: none;
   left: 50%;
   max-width: calc(100% - 20px);

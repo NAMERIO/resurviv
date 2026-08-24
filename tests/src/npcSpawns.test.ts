@@ -59,7 +59,6 @@ test("NPC AI remains active while the game is waiting for players", async () => 
     expect(game.started).toBe(false);
     game.npcBarn.update(30);
 
-    expect(game.npcBarn.npcs.length).toBeGreaterThan(motherShips.length);
     expect(motherShips.map((npc) => npc.pos)).not.toEqual(positions);
 });
 

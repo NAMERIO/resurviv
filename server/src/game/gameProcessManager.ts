@@ -40,7 +40,9 @@ class GameProcess implements GameData {
     miniGame: ServerGameConfig["miniGame"] = DefaultPrivateLobbyMiniGame;
     amongUsImpostorCount: AmongUsImpostorCount = DefaultAmongUsImpostorCount;
     disableAirstrikes = false;
+    movingZone = false;
     disablePerks = false;
+    disableLooting = false;
     showEnemiesOnMap = true;
     id = "";
     aliveCount = 0;
@@ -90,7 +92,9 @@ class GameProcess implements GameData {
                         msg.amongUsImpostorCount,
                     );
                     this.disableAirstrikes = !!msg.disableAirstrikes;
+                    this.movingZone = !!msg.movingZone;
                     this.disablePerks = !!msg.disablePerks;
+                    this.disableLooting = !!msg.disableLooting;
                     this.showEnemiesOnMap = msg.showEnemiesOnMap !== false;
                     if (this.id !== msg.id) {
                         this.manager.processById.delete(this.id);
@@ -155,7 +159,9 @@ class GameProcess implements GameData {
             config.amongUsImpostorCount,
         );
         this.disableAirstrikes = !!config.disableAirstrikes;
+        this.movingZone = !!config.movingZone;
         this.disablePerks = !!config.disablePerks;
+        this.disableLooting = !!config.disableLooting;
         this.showEnemiesOnMap = config.showEnemiesOnMap !== false;
         this.stopped = false;
         this.creating = true;
@@ -399,7 +405,9 @@ export class GameProcessManager implements GameManager {
                 proc.amongUsImpostorCount ===
                     normalizeAmongUsImpostorCount(body.amongUsImpostorCount) &&
                 proc.disableAirstrikes === !!body.disableAirstrikes &&
+                proc.movingZone === !!body.movingZone &&
                 proc.disablePerks === !!body.disablePerks &&
+                proc.disableLooting === !!body.disableLooting &&
                 proc.showEnemiesOnMap === (body.showEnemiesOnMap !== false) &&
                 (requestedGroupHash
                     ? proc.groupHash === requestedGroupHash
@@ -461,7 +469,9 @@ export class GameProcessManager implements GameManager {
                     body.amongUsImpostorCount,
                 ),
                 disableAirstrikes: !!body.disableAirstrikes,
+                movingZone: !!body.movingZone,
                 disablePerks: !!body.disablePerks,
+                disableLooting: !!body.disableLooting,
                 showEnemiesOnMap: body.showEnemiesOnMap !== false,
             });
         }

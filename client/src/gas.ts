@@ -162,6 +162,8 @@ export class Gas {
     circleT = 0;
     circleTOld = 0;
     duration = 0;
+    timerDuration = 0;
+    timerOffset = 0;
     interpolationT = 0;
 
     gasRenderer!: GasRenderer;
@@ -220,7 +222,9 @@ export class Gas {
     setFullState(circleT: number, data: GasData, ui: UiManager) {
         // Update Ui
         if (data.mode != this.mode) {
-            const timeLeft = Math.ceil(data.duration * (1 - circleT));
+            const timeLeft = Math.ceil(
+                data.timerDuration * (1 - circleT) + data.timerOffset,
+            );
             ui.setWaitingForPlayers(false);
             ui.displayGasAnnouncement(data.mode, timeLeft);
         }
@@ -228,6 +232,8 @@ export class Gas {
         // Update state
         this.mode = data.mode;
         this.duration = data.duration;
+        this.timerDuration = data.timerDuration;
+        this.timerOffset = data.timerOffset;
         this.setProgress(circleT);
 
         // Update circles

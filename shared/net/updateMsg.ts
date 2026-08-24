@@ -322,6 +322,8 @@ function deserializePlayerInfo(s: BitStream, data: PlayerInfo) {
 export interface GasData {
     mode: number;
     duration: number;
+    timerDuration: number;
+    timerOffset: number;
     posOld: Vec2;
     posNew: Vec2;
     radOld: number;
@@ -331,6 +333,8 @@ export interface GasData {
 function serializeGasData(s: BitStream, data: GasData) {
     s.writeUint8(data.mode);
     s.writeFloat32(data.duration);
+    s.writeFloat32(data.timerDuration);
+    s.writeFloat32(data.timerOffset);
     s.writeMapPos(data.posOld);
     s.writeMapPos(data.posNew);
     s.writeFloat(data.radOld, 0, 2048, 16);
@@ -340,6 +344,8 @@ function serializeGasData(s: BitStream, data: GasData) {
 function deserializeGasData(s: BitStream, data: GasData) {
     data.mode = s.readUint8();
     data.duration = s.readFloat32();
+    data.timerDuration = s.readFloat32();
+    data.timerOffset = s.readFloat32();
     data.posOld = s.readMapPos();
     data.posNew = s.readMapPos();
     data.radOld = s.readFloat(0, 2048, 16);
