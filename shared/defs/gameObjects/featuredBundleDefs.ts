@@ -173,14 +173,14 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         durationDays: 7,
     },
     bundle_turtle: {
-        name: "Turtle  Set",
+        name: "Turtle Set",
         size: "small",
         items: ["outfitDigiturt", "fist_firstTool"],
         price: 950,
         durationDays: 7,
     },
     bundle_gridflag: {
-        name: "Grid Flag  Set",
+        name: "Grid Flag Set",
         size: "small",
         items: ["outfitGridflag", "fist_qFist"],
         price: 750,
