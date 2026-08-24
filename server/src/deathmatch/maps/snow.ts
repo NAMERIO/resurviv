@@ -186,7 +186,7 @@ const mapDef = {
                 shack_01: 2,
                 mansion_structure_01: 1,
                 police_01: 1,
-                greenhouse_01: 1,
+                greenhouse_02: 1,
                 house_red_02: 1,
                 bush_01: 15,
                 crate_03x: 7,

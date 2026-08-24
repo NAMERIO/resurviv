@@ -32,5 +32,7 @@ export const PerksAtlas: AtlasDef = {
 
         "map/map-gun-mount-lasr.svg",
         "map/map-gun-flux-rifle.svg",
+
+        "map/map-tree-07.svg"
     ],
 };
