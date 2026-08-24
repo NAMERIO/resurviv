@@ -169,7 +169,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         name: "Turtle  Set",
         size: "small",
         items: ["outfitDigiturt", "fist_firstTool"],
-        price: 1000,
+        price: 950,
         durationDays: 7,
     },
     bundle_gridflag: {
@@ -219,6 +219,13 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         size: "small",
         items: ["outfitHoldinHide", "farmers_sickle"],
         price: 700,
+        durationDays: 7,
+    },
+    bundle_desert: {
+        name: "Desert Set",
+        size: "large",
+        items: ["outfitDesertCamo", "outfitCaptnCactus", "outfitTheySeeMeRolling"],
+        price: 850,
         durationDays: 7,
     },
 };
