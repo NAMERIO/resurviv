@@ -5,13 +5,11 @@ export const PerksAtlas: AtlasDef = {
     compress: true,
     images: [
         ...BuildingSprites.reactor,
-        ...BuildingSprites.bunker_chrys,
-        ...BuildingSprites.bunker_crossing,
-        ...BuildingSprites.bunker_hydra,
-        ...BuildingSprites.warehouse_complex,
-        ...BuildingSprites.bunker_twins,
-        ...BuildingSprites.saloon,
+        ...BuildingSprites.bunker_chrys_aged,
         ...BuildingSprites.greenhouse_aged,
+
+        "map/map-case-meteor-01.svg",
+
         "map/map-silo-09.svg",
         "map/map-gun-lasr.svg",
         "map/map-vat-eye.svg",
@@ -31,5 +29,10 @@ export const PerksAtlas: AtlasDef = {
         "map/map-bush-07-perk.svg",
         "map/map-bush-res-perk.svg",
         "map/map-tree-01-perk.svg",
+
+        "map/map-gun-mount-lasr.svg",
+        "map/map-gun-flux-rifle.svg",
+
+        "map/map-tree-07.svg",
     ],
 };

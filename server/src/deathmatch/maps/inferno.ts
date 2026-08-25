@@ -29,7 +29,7 @@ const mapDef: PartialMapDef = {
             { name: "footstep_08", channel: "sfx" },
             { name: "footstep_09", channel: "sfx" },
         ],
-        atlases: ["gradient", "loadout", "shared", "desert", "main", "inferno", "woods"],
+        atlases: ["gradient", "loadout", "shared", "inferno"],
     },
     biome: {
         colors: {
@@ -136,7 +136,7 @@ const mapDef: PartialMapDef = {
         ],
         randomSpawns: [
             {
-                spawns: ["club_complex_01", "Memorial_Park"],
+                spawns: ["club_complex_01", "memorial_park"],
                 choose: 1,
             },
             {

@@ -95,7 +95,7 @@ export const Resurviv_Cobalt: MapDef = util.mergeDeep(structuredClone(Cobalt), {
         ],
         randomSpawns: [
             {
-                spawns: ["club_complex_01", "Memorial_Park"],
+                spawns: ["club_complex_01", "memorial_park"],
                 choose: 1,
             },
             {

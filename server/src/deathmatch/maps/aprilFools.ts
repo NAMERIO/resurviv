@@ -13,7 +13,7 @@ const aprilFoolsDef: PartialMapDef = {
         backgroundImg: "img/main_splash.png",
     },
     assets: {
-        atlases: ["gradient", "loadout", "shared", "main", "woods", "desert"],
+        atlases: ["gradient", "loadout", "shared", "main"],
     },
     gameMode: {
         aprilFoolsMode: true,

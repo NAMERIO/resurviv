@@ -81,13 +81,13 @@ export const DeatchmatchDesert: MapDef = util.mergeDeep(structuredClone(Desert),
                 shack_01: 2,
                 police_01: 1,
                 bank_01: 1,
-                greenhouse_01: 1,
+                greenhouse_02: 1,
                 house_red_02: 1,
             },
         ],
         randomSpawns: [
             {
-                spawns: ["club_complex_01", "Memorial_Park"],
+                spawns: ["club_complex_01", "memorial_park"],
                 choose: 1,
             },
             {

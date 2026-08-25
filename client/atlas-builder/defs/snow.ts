@@ -4,11 +4,8 @@ import { BuildingSprites } from "./buildings";
 export const SnowAtlas: AtlasDef = {
     compress: true,
     images: [
-        ...BuildingSprites.warehouse_complex,
-        ...BuildingSprites.bunker_hydra,
         ...BuildingSprites.greenhouse_aged,
         ...BuildingSprites.bunker_chrys_aged,
-        ...BuildingSprites.bunker_crossing,
 
         "map/map-plane-01x.svg",
 
@@ -16,8 +13,6 @@ export const SnowAtlas: AtlasDef = {
         "map/map-airdrop-02x.svg",
 
         "map/map-bush-01x.svg",
-
-        "map/map-campfire-01.svg",
 
         "map/map-chest-03x.svg",
         "map/map-chute-01x.svg",
@@ -35,7 +30,6 @@ export const SnowAtlas: AtlasDef = {
         "map/map-snow-04.svg",
         "map/map-snow-05.svg",
         "map/map-snow-06.svg",
-        "map/map-snowball-res.svg",
 
         "map/map-stone-01x.svg",
         "map/map-stone-03x.svg",
@@ -53,5 +47,7 @@ export const SnowAtlas: AtlasDef = {
 
         "map/map-woodpile-03.svg",
         "map/map-woodpile-res-03.svg",
+
+        "map/map-tree-07.svg",
     ],
 };

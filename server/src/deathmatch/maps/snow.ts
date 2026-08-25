@@ -28,7 +28,7 @@ const mapDef = {
             { name: "bells_01", channel: "ui" },
             { name: "snowball_pickup_01", channel: "ui" },
         ],
-        atlases: ["gradient", "loadout", "shared", "snow", "woods", "cobalt", "desert"],
+        atlases: ["gradient", "loadout", "shared", "snow"],
     },
     biome: {
         colors: {
@@ -186,7 +186,7 @@ const mapDef = {
                 shack_01: 2,
                 mansion_structure_01: 1,
                 police_01: 1,
-                greenhouse_01: 1,
+                greenhouse_02: 1,
                 house_red_02: 1,
                 bush_01: 15,
                 crate_03x: 7,
@@ -197,7 +197,7 @@ const mapDef = {
         },
         randomSpawns: [
             {
-                spawns: ["club_complex_01", "Memorial_Park"],
+                spawns: ["club_complex_01", "memorial_park"],
                 choose: 1,
             },
             {

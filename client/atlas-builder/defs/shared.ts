@@ -21,6 +21,10 @@ export const SharedAtlas: AtlasDef = {
         ...BuildingSprites.bunker_conch,
         ...BuildingSprites.bunker_egg,
         ...BuildingSprites.bunker_storm,
+        ...BuildingSprites.bunker_hatchet,
+        ...BuildingSprites.bunker_crossing,
+        ...BuildingSprites.bunker_hydra,
+        ...BuildingSprites.warehouse_complex,
 
         // generic bunker sprites
         "map/map-bunker-generic-ceiling-01.svg",
@@ -167,15 +171,14 @@ export const SharedAtlas: AtlasDef = {
         "map/map-fence-01.svg",
 
         "map/map-grill-01.svg",
-        "map/map-campfire-01.svg",
 
         "map/map-gun-mount-01.svg",
         "map/map-gun-mount-02.svg",
         "map/map-gun-mount-03.svg",
         "map/map-gun-mount-04.svg",
         "map/map-gun-mount-05.svg",
-        "map/map-gun-mount-lasr.svg",
-        "map/map-gun-flux-rifle.svg",
+        "map/map-gun-mount-06.svg",
+        "map/map-gun-mount-07.svg",
 
         "map/map-hedgehog-01.svg",
         "map/map-hut-res-01.svg",
@@ -320,5 +323,23 @@ export const SharedAtlas: AtlasDef = {
 
         "map/map-woodpile-01.svg",
         "map/map-woodpile-res-01.svg",
+
+        // Snowball
+        "map/map-snowball-res.svg",
+
+        // Memorial Park:
+        "map/map-campfire-01.svg",
+
+        // Logging Complex:
+        "map/map-crate-19.svg",
+        "map/map-woodpile-02.svg",
+        "map/map-woodpile-res-02.svg",
+
+        // Small Desert Town:
+
+        "map/map-building-archway-ceiling-01.svg",
+        "map/map-archway-res-01.svg",
+        "map/map-crate-18.svg",
+        "map/map-tree-06.svg",
     ],
 };

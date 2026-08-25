@@ -13,7 +13,6 @@ export const FactionAtlas: AtlasDef = {
 
         "map/map-chest-03f.svg",
 
-        ...BuildingSprites.warehouse_complex,
         // 50v50 main bridge only
         "map/map-complex-warehouse-floor-04.svg",
 

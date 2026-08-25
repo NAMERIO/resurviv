@@ -26,7 +26,7 @@ export const DeatchmatchCobalt: MapDef = util.mergeDeep(structuredClone(Cobalt),
             { name: "log_13", channel: "sfx" },
             { name: "log_14", channel: "sfx" },
         ],
-        atlases: ["gradient", "loadout", "shared", "main", "cobalt", "woods", "desert"],
+        atlases: ["gradient", "loadout", "shared", "main", "cobalt"],
     },
     gameConfig: {
         planes: {
@@ -60,7 +60,7 @@ export const DeatchmatchCobalt: MapDef = util.mergeDeep(structuredClone(Cobalt),
             : {},
         randomSpawns: [
             {
-                spawns: ["club_complex_01", "Memorial_Park"],
+                spawns: ["club_complex_01", "memorial_park"],
                 choose: 1,
             },
             {
