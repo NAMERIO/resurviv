@@ -14,8 +14,6 @@ export const BedWarAtlas: AtlasDef = {
         "map/map-statue-01.svg",
         "map/map-table-04.svg",
         "map/map-table-res-02.svg",
-        "map/map-tree-04h.svg",
-        "map/map-tree-10.svg",
         "map/map-web-01.svg",
         "map/map-woodpile-02.svg",
         "map/map-woodpile-03.svg",

@@ -45,7 +45,14 @@ export const BedWarMapDef: PartialMapDef = {
         densitySpawns: [{}],
         fixedSpawns: [{}],
         randomSpawns: [],
-        spawnReplacements: [{}],
+        spawnReplacements: [
+            {
+                tree_02: "tree_01",
+                tree_02h: "tree_01",
+                tree_09: "tree_01",
+                tree_10: "tree_01",
+            },
+        ],
         importantSpawns: [],
         customSpawnRules: {
             locationSpawns: [

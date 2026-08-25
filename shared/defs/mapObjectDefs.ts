@@ -35640,7 +35640,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 color: 0x5e8e2f,
                 roughness: 0,
                 offsetDist: 0,
-                order: 1,
+                order: 0,
                 useAsMapShape: true,
             },
             {
@@ -35648,7 +35648,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 color: 0x5e8e2f,
                 roughness: 0,
                 offsetDist: 0,
-                order: 1,
+                order: 0,
                 useAsMapShape: true,
             },
             {
@@ -35656,7 +35656,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 color: 0x5e8e2f,
                 roughness: 0.02,
                 offsetDist: 0.5,
-                order: 1,
+                order: 0,
                 useAsMapShape: true,
             },
             {
@@ -35664,7 +35664,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 color: 0x5e8e2f,
                 roughness: 0.02,
                 offsetDist: 0.5,
-                order: 1,
+                order: 0,
                 useAsMapShape: true,
             },
             {
@@ -35672,7 +35672,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 color: 0x5e8e2f,
                 roughness: 0.02,
                 offsetDist: 0.5,
-                order: 1,
+                order: 0,
                 useAsMapShape: true,
             },
         ],
