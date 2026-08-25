@@ -162,6 +162,8 @@ const _featuredBundleUnlocks = [
     "outfitCalaca",
     "outfitEggnite",
     "outfitSpaceSnout",
+    "outfitMugnificent",
+    "outfitDeRanged",
     "outfitSnow",
     "outfitBlackIce",
     "outfitCoconut",
@@ -192,6 +194,7 @@ const _featuredBundleUnlocks = [
     "outfitCatchemOl",
     "outfitMeow",
     "outfitPreyDinner",
+    "outfitCandyCorn",
     "outfitVitaminD",
 ];
 const _allowedMeleeSkins = [
@@ -496,6 +499,8 @@ const _allowedOutfits = [
     // "outfitDiamondy",
     // "outfitEggnite",
     // "outfitSpaceSnout",
+    // "outfitMugnificent",
+    // "outfitDeRanged",
     "outfitKxrLogo",
     // "outfitThePro",
     // "outfitUrbanGlitch",
@@ -558,6 +563,7 @@ const _allowedOutfits = [
     // "outfitCatchemOl",
     // "outfitMeow",
     // "outfitPreyDinner",
+    // "outfitCandyCorn",
     // "outfitVitaminD",
     // "outfitReTag",
 ];
