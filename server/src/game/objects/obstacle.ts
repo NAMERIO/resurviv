@@ -369,6 +369,7 @@ export class Obstacle extends BaseGameObject {
 
         const def = MapObjectDefs[this.type] as ObstacleDef;
         if (this.health === 0 || !this.destructible) return;
+        if (!this.game.bedWarManager.canDamageBed(this, params)) return;
 
         if (params.damageType === DamageType.Player) {
             let armorPiercing = false;
@@ -389,7 +390,7 @@ export class Obstacle extends BaseGameObject {
             if (def.stonePlated && !stonePiercing) return;
         }
 
-        this.health -= params.amount!;
+        this.health -= params.amount! * (def.incomingDamageMultiplier ?? 1);
         this.health = math.max(0, this.health);
 
         this.healthT = math.clamp(this.health / this.maxHealth, 0, 1);
@@ -544,6 +545,7 @@ export class Obstacle extends BaseGameObject {
         }
 
         this.parentBuilding?.obstacleDestroyed(this);
+        this.game.bedWarManager.onObstacleDestroyed(this, params);
 
         if (this.isWall) {
             const objs = this.game.grid.intersectGameObject(this);

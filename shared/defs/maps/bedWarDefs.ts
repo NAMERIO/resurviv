@@ -16,6 +16,11 @@ export const BedWarMapDef: PartialMapDef = {
     gameMode: {
         maxPlayers: 80,
         killLeaderEnabled: false,
+        bedWar: {
+            redSpawn: v2.create(316, 269),
+            blueSpawn: v2.create(57, 108),
+            spawnRadius: 4,
+        },
         disableGas: true,
     },
     assets: {

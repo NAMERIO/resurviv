@@ -17,6 +17,7 @@ export interface ObstacleDef {
     destructible: boolean;
     explosion?: string;
     health: number;
+    incomingDamageMultiplier?: number;
     hitParticle: string;
     explodeParticle: string[] | string;
     reflectBullets: boolean;

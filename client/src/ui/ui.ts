@@ -6,6 +6,7 @@ import { PingDefs } from "../../../shared/defs/gameObjects/pingDefs";
 import { type RoleDef, RoleDefs } from "../../../shared/defs/gameObjects/roleDefs";
 import type { MapDef } from "../../../shared/defs/mapDefs";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
+import type { ObstacleDef } from "../../../shared/defs/mapObjectsTyping";
 import { Action, GameConfig, GasMode, TeamMode } from "../../../shared/gameConfig";
 import {
     CaptureTheFlagFlagStatus,
@@ -13,6 +14,7 @@ import {
 } from "../../../shared/net/captureTheFlagMsg";
 import type { LeaderboardMsg } from "../../../shared/net/leaderboardMsg";
 import {
+    type BedWarMsg,
     type DominationMsg,
     type KingOfTheHillMsg,
     KingOfTheHillPhase,
@@ -111,6 +113,8 @@ type CaptureTheFlagScoreState = {
     scoreLimit: number;
     matchTimeLeft: number;
     totalMatchTimeLeft?: number;
+    redAlive?: boolean;
+    blueAlive?: boolean;
     receivedAt: number;
 };
 export class UiManager {
@@ -270,6 +274,7 @@ export class UiManager {
     private captureTheFlagMode = false;
     private kingOfTheHillMode = false;
     private dominationMode = false;
+    private bedWarMode = false;
     private kingOfTheHillLocked = false;
     private captureTheFlagZoneLabels = [
         this.createCaptureTheFlagZoneLabel(),
@@ -747,6 +752,7 @@ export class UiManager {
         this.captureTheFlagMode = false;
         this.kingOfTheHillMode = false;
         this.dominationMode = false;
+        this.bedWarMode = false;
         this.kingOfTheHillLocked = false;
         this.clearCaptureTheFlagState();
         this.dead = false;
@@ -760,12 +766,31 @@ export class UiManager {
     onMapLoad(map: Map, camera: Camera) {
         this.clearAmongUsTaskMapMarkers();
         const ctfDef = map.getMapDef().gameMode.captureTheFlag;
+        const bedWarDef = map.getMapDef().gameMode.bedWar;
+        this.bedWarMode = !!bedWarDef && this.game.m_privateMiniGame === "bed_war";
         this.kingOfTheHillMode =
             !!ctfDef && this.game.m_privateMiniGame === "king_of_the_hill";
         this.dominationMode = !!ctfDef && this.game.m_privateMiniGame === "domination";
         this.captureTheFlagMode =
             !!ctfDef && !this.kingOfTheHillMode && !this.dominationMode;
-        if (ctfDef && this.captureTheFlagMode) {
+        if (bedWarDef && this.bedWarMode) {
+            const bedHealth = (MapObjectDefs.bed_war_01 as ObstacleDef).health;
+            this.captureTheFlagZones = [];
+            this.captureTheFlagZoneOverlay.clear();
+            this.hideCaptureTheFlagZoneLabels();
+            this.captureTheFlagScoreState = {
+                redScore: bedHealth,
+                blueScore: bedHealth,
+                scoreLimit: bedHealth,
+                matchTimeLeft: 0,
+                redAlive: true,
+                blueAlive: true,
+                receivedAt: performance.now(),
+            };
+            this.captureTheFlagLastTimeText = "BED HP";
+            this.updateCaptureTheFlagScoreboard(true);
+            this.updateCaptureTheFlagScoreboardVisibility();
+        } else if (ctfDef && this.captureTheFlagMode) {
             this.captureTheFlagZones = [
                 {
                     teamId: 1,
@@ -835,7 +860,9 @@ export class UiManager {
         this.applyTeamStatusVisibility();
         const displayLeader = map.getMapDef().gameMode.killLeaderEnabled;
         const displayLeaderboard =
-            !map.mapName.startsWith("br_") && !map.getMapDef().gameMode.captureTheFlag;
+            !map.mapName.startsWith("br_") &&
+            !map.getMapDef().gameMode.captureTheFlag &&
+            !map.getMapDef().gameMode.bedWar;
 
         $("#ui-kill-leader-container").css("display", displayLeader ? "block" : "none");
         $("#ui-kill-leaderboard-title").css("display", displayLeaderboard ? "" : "none");
@@ -965,6 +992,24 @@ export class UiManager {
         this.updateCaptureTheFlagScoreboardVisibility();
     }
 
+    setBedWarState(msg: BedWarMsg) {
+        this.bedWarMode = true;
+        this.captureTheFlagMode = false;
+        this.kingOfTheHillMode = false;
+        this.dominationMode = false;
+        this.captureTheFlagScoreState = {
+            redScore: msg.redBedHealth,
+            blueScore: msg.blueBedHealth,
+            scoreLimit: math.max(1, msg.maxBedHealth),
+            matchTimeLeft: 0,
+            redAlive: msg.redBedAlive,
+            blueAlive: msg.blueBedAlive,
+            receivedAt: performance.now(),
+        };
+        this.updateCaptureTheFlagScoreboard(true);
+        this.updateCaptureTheFlagScoreboardVisibility();
+    }
+
     private clearCaptureTheFlagState() {
         this.captureTheFlagZones = [];
         this.captureTheFlagZoneOverlay.clear();
@@ -973,6 +1018,7 @@ export class UiManager {
         this.captureTheFlagLastTimeText = "";
         this.kingOfTheHillMode = false;
         this.dominationMode = false;
+        this.bedWarMode = false;
         this.kingOfTheHillLocked = false;
         this.captureTheFlagScoreboard.css("display", "none");
         this.captureTheFlagMatchTime.css("display", "none");
@@ -996,7 +1042,10 @@ export class UiManager {
     private updateCaptureTheFlagScoreboardVisibility() {
         this.captureTheFlagScoreboard.css(
             "display",
-            (this.captureTheFlagMode || this.kingOfTheHillMode || this.dominationMode) &&
+            (this.captureTheFlagMode ||
+                this.kingOfTheHillMode ||
+                this.dominationMode ||
+                this.bedWarMode) &&
                 this.hudVisible &&
                 !this.bigmapDisplayed
                 ? "block"
@@ -1012,10 +1061,30 @@ export class UiManager {
         const redPct = math.clamp(state.redScore / scoreLimit, 0, 1) * 100;
         const bluePct = math.clamp(state.blueScore / scoreLimit, 0, 1) * 100;
 
-        this.captureTheFlagRedScore.text(`${state.redScore}`);
-        this.captureTheFlagBlueScore.text(`${state.blueScore}`);
+        this.captureTheFlagRedScore.text(
+            this.bedWarMode
+                ? state.redAlive === false
+                    ? "DESTROYED"
+                    : `${state.redScore} HP`
+                : `${state.redScore}`,
+        );
+        this.captureTheFlagBlueScore.text(
+            this.bedWarMode
+                ? state.blueAlive === false
+                    ? "DESTROYED"
+                    : `${state.blueScore} HP`
+                : `${state.blueScore}`,
+        );
         this.captureTheFlagRedProgress.css("width", `${redPct}%`);
         this.captureTheFlagBlueProgress.css("width", `${bluePct}%`);
+
+        if (this.bedWarMode) {
+            this.captureTheFlagLastTimeText = "BED HP";
+            this.captureTheFlagTime.text("BED HP");
+            this.captureTheFlagMatchTime.css("display", "none");
+            this.captureTheFlagScoreGoal.css("display", "none");
+            return;
+        }
 
         const elapsed = (performance.now() - state.receivedAt) / 1000;
         const matchTimeLeft = math.max(0, state.matchTimeLeft - elapsed);

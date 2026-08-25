@@ -28,6 +28,7 @@ import {
     type ServerGameConfig,
     type UpdateDataMsg,
 } from "../utils/types";
+import { BedWarManager } from "./bedWarManager";
 import { CaptureTheFlagManager } from "./captureTheFlagManager";
 import { DominationManager } from "./dominationManager";
 import { GameModeManager } from "./gameModeManager";
@@ -107,6 +108,7 @@ export class Game {
     captureTheFlagManager: CaptureTheFlagManager;
     kingOfTheHillManager: KingOfTheHillManager;
     dominationManager: DominationManager;
+    bedWarManager: BedWarManager;
     arenaStartLockTimer = 0;
     arenaLastCountdownSecond = -1;
     arenaGoBroadcasted = false;
@@ -234,18 +236,21 @@ export class Game {
         this.captureTheFlagManager = new CaptureTheFlagManager(this);
         this.kingOfTheHillManager = new KingOfTheHillManager(this);
         this.dominationManager = new DominationManager(this);
+        this.bedWarManager = new BedWarManager(this);
         this.modeManager = new GameModeManager(this);
 
         if (
             this.map.factionMode ||
             this.captureTheFlagManager.enabled ||
             this.kingOfTheHillManager.enabled ||
-            this.dominationManager.enabled
+            this.dominationManager.enabled ||
+            this.bedWarManager.enabled
         ) {
             const teamCount =
                 this.captureTheFlagManager.enabled ||
                 this.kingOfTheHillManager.enabled ||
-                this.dominationManager.enabled
+                this.dominationManager.enabled ||
+                this.bedWarManager.enabled
                     ? 2
                     : this.map.mapDef.gameMode.factions!;
             for (let i = 1; i <= teamCount; i++) {
@@ -288,6 +293,7 @@ export class Game {
         this.captureTheFlagManager.init();
         this.kingOfTheHillManager.init();
         this.dominationManager.init();
+        this.bedWarManager.init();
         this.pluginManager.emit("gameCreated", this);
 
         this.allowJoin = true;
@@ -367,6 +373,10 @@ export class Game {
 
         this.profiler.addSample("domination");
         this.dominationManager.update(dt);
+        this.profiler.endSample();
+
+        this.profiler.addSample("bedWar");
+        this.bedWarManager.update();
         this.profiler.endSample();
 
         this.profiler.addSample("map");

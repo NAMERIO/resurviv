@@ -75,6 +75,7 @@ import {
     getInfectedSettings,
     getPrivateLobbyMiniGameWeaponOverride,
     isAmongUsMiniGame,
+    isBedWarMiniGame,
     isCaptureTheFlagMiniGame,
     isDominationMiniGame,
     isHideAndSeekHider,
@@ -253,7 +254,8 @@ export class PlayerBarn {
             (this.game.map.factionMode ||
                 this.game.captureTheFlagManager.enabled ||
                 this.game.kingOfTheHillManager.enabled ||
-                this.game.dominationManager.enabled) &&
+                this.game.dominationManager.enabled ||
+                this.game.bedWarManager.enabled) &&
             !this.game.isTeamMode
                 ? this.getSmallestTeam()
                 : result?.team;
@@ -276,6 +278,7 @@ export class PlayerBarn {
                     team?.id,
                 ) ??
                 this.game.dominationManager.getSpawnPos(joinData.arenaTeam, team?.id) ??
+                this.game.bedWarManager.getSpawnPos(joinData.arenaTeam, team?.id) ??
                 this.game.map.getSpawnPos(group, team, joinData.arenaTeam);
             if (group && !group.spawnPosition) {
                 group.spawnPosition = v2.copy(pos);
@@ -472,7 +475,8 @@ export class PlayerBarn {
                 if (
                     (isCaptureTheFlagMiniGame(this.game.miniGame) ||
                         isKingOfTheHillMiniGame(this.game.miniGame) ||
-                        isDominationMiniGame(this.game.miniGame)) &&
+                        isDominationMiniGame(this.game.miniGame) ||
+                        isBedWarMiniGame(this.game.miniGame)) &&
                     player.captureTheFlagRespawnTicker > 0
                 ) {
                     continue;
@@ -2719,7 +2723,8 @@ export class Player extends BaseGameObject {
         if (
             !isCaptureTheFlagMiniGame(this.game.miniGame) &&
             !isKingOfTheHillMiniGame(this.game.miniGame) &&
-            !isDominationMiniGame(this.game.miniGame)
+            !isDominationMiniGame(this.game.miniGame) &&
+            !isBedWarMiniGame(this.game.miniGame)
         ) {
             return;
         }
@@ -2741,6 +2746,7 @@ export class Player extends BaseGameObject {
             this.game.captureTheFlagManager.getSpawnPos(this.arenaTeam, this.teamId) ??
             this.game.kingOfTheHillManager.getSpawnPos(this.arenaTeam, this.teamId) ??
             this.game.dominationManager.getSpawnPos(this.arenaTeam, this.teamId) ??
+            this.game.bedWarManager.getSpawnPos(this.arenaTeam, this.teamId) ??
             this.game.map.getSpawnPos(this.group, this.team, this.arenaTeam);
         v2.set(this.pos, spawnPos);
         this.collider.pos = this.pos;
@@ -5443,7 +5449,8 @@ export class Player extends BaseGameObject {
         const isCaptureTheFlagDeath =
             isCaptureTheFlagMiniGame(this.game.miniGame) ||
             isKingOfTheHillMiniGame(this.game.miniGame) ||
-            isDominationMiniGame(this.game.miniGame);
+            isDominationMiniGame(this.game.miniGame) ||
+            isBedWarMiniGame(this.game.miniGame);
         if (isCaptureTheFlagDeath) {
             this.captureTheFlagRespawnPerks = this.perks.map((perk) => ({ ...perk }));
         }

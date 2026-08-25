@@ -370,6 +370,7 @@ export enum MsgType {
     CaptureTheFlag,
     KingOfTheHill,
     Domination,
+    BedWar,
 }
 
 export enum PickupMsgType {
@@ -400,6 +401,7 @@ export {
     AmongUsMeetingVoteMsg,
 } from "./amongUsMeetingMsg";
 export { ArenaCountdownMsg } from "./arenaCountdownMsg";
+export { BedWarEvent, BedWarMsg } from "./bedWarMsg";
 export {
     CaptureTheFlagEvent,
     CaptureTheFlagFlagStatus,

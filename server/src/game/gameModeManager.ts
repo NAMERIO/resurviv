@@ -184,6 +184,15 @@ export class GameModeManager {
 
     /** true if game needs to end */
     handleGameEnd(): boolean {
+        if (this.game.bedWarManager.enabled) {
+            if (!this.game.started || !this.game.bedWarManager.isMatchOver()) {
+                return false;
+            }
+            return this.game.bedWarManager.endWithWinner(
+                this.game.bedWarManager.getWinningTeamId(),
+            );
+        }
+
         if (this.game.dominationManager.enabled) {
             if (!this.game.started) return false;
             if (this.game.dominationManager.hasReachedScoreLimit()) {
@@ -388,7 +397,8 @@ export class GameModeManager {
         if (
             this.game.captureTheFlagManager.enabled ||
             this.game.kingOfTheHillManager.enabled ||
-            this.game.dominationManager.enabled
+            this.game.dominationManager.enabled ||
+            this.game.bedWarManager.enabled
         ) {
             let redAlive = false;
             let blueAlive = false;
@@ -422,7 +432,8 @@ export class GameModeManager {
         if (
             this.game.captureTheFlagManager.enabled ||
             this.game.kingOfTheHillManager.enabled ||
-            this.game.dominationManager.enabled
+            this.game.dominationManager.enabled ||
+            this.game.bedWarManager.enabled
         ) {
             let redAlive = 0;
             let blueAlive = 0;
@@ -609,6 +620,15 @@ export class GameModeManager {
         }));
     }
     handlePlayerDeath(player: Player, params: DamageParams): void {
+        if (this.game.bedWarManager.enabled) {
+            player.kill(params);
+            if (this.game.bedWarManager.canRespawn(player)) {
+                player.captureTheFlagRespawnTicker =
+                    this.game.bedWarManager.settings?.respawnCooldown ?? 5;
+            }
+            return;
+        }
+
         if (this.game.captureTheFlagManager.enabled) {
             this.game.captureTheFlagManager.onPlayerDeath(player);
             player.kill(params);

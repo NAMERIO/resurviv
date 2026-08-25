@@ -77,12 +77,17 @@ export interface DominationSettings {
     matchDuration: number;
 }
 
+export interface BedWarSettings {
+    respawnCooldown: number;
+}
+
 interface PrivateLobbyMiniGameServerSettings {
     hideAndSeek?: HideAndSeekSettings;
     infected?: InfectedSettings;
     captureTheFlag?: CaptureTheFlagSettings;
     kingOfTheHill?: KingOfTheHillSettings;
     domination?: DominationSettings;
+    bedWar?: BedWarSettings;
     getWeaponOverride?: (
         arenaTeam: ArenaTeam | undefined,
     ) => PrivateLobbyMiniGameWeaponOverride | undefined;
@@ -158,6 +163,10 @@ export const DominationSettings: DominationSettings = {
     matchDuration: 600,
 };
 
+export const BedWarSettings: BedWarSettings = {
+    respawnCooldown: 5,
+};
+
 export const PrivateLobbyMiniGameServerSettings: Record<
     PrivateLobbyMiniGame,
     PrivateLobbyMiniGameServerSettings
@@ -214,7 +223,9 @@ export const PrivateLobbyMiniGameServerSettings: Record<
     domination: {
         domination: DominationSettings,
     },
-    bed_war: {},
+    bed_war: {
+        bedWar: BedWarSettings,
+    },
 };
 
 export function getPrivateLobbyMiniGameMapName(
@@ -293,6 +304,17 @@ export function getDominationSettings(
 
 export function isDominationMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
     return miniGame === "domination";
+}
+
+export function getBedWarSettings(
+    miniGame: PrivateLobbyMiniGame | undefined,
+): BedWarSettings | undefined {
+    if (!miniGame) return undefined;
+    return PrivateLobbyMiniGameServerSettings[miniGame].bedWar;
+}
+
+export function isBedWarMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
+    return miniGame === "bed_war";
 }
 
 export function isHideAndSeekHider(

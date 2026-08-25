@@ -11258,6 +11258,11 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     bed_lg_01: createBed({
         img: { residue: "map-bed-res-02.img" },
     }),
+    bed_war_01: createBed({
+        health: 1000,
+        incomingDamageMultiplier: 0.25,
+        img: { residue: "map-bed-res-02.img" },
+    }),
     bollard_01: {
         type: "obstacle",
         scale: { createMin: 1, createMax: 1, destroy: 1 },
@@ -35696,6 +35701,32 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             ],
         },
         mapObjects: [
+            {
+                type: "bed_war_01",
+                pos: v2.create(145, 0),
+                scale: 1,
+                ori: 1,
+                puzzlePiece: "bed_war_red",
+            },
+            {
+                type: "bed_war_01",
+                pos: v2.create(-145, 0),
+                scale: 1,
+                ori: 3,
+                puzzlePiece: "bed_war_blue",
+            },
+            {
+                type: "fence_01",
+                pos: v2.create(137, 0),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "fence_01",
+                pos: v2.create(-137, 0),
+                scale: 1,
+                ori: 1,
+            },
             {
                 type: "warehouse_01h",
                 pos: v2.create(-74, -55),

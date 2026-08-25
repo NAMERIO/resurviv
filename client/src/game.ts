@@ -4036,6 +4036,27 @@ export class Game {
                 this.m_uiManager.setDominationState(msg);
                 break;
             }
+            case net.MsgType.BedWar: {
+                const msg = new net.BedWarMsg();
+                msg.deserialize(stream);
+                if (!this.m_map.getMapDef().gameMode.bedWar) break;
+                this.m_uiManager.setBedWarState(msg);
+                if (msg.event === net.BedWarEvent.BedDestroyed) {
+                    const localTeamId = this.m_playerBarn.getPlayerInfo(
+                        this.m_localId,
+                    ).teamId;
+                    const ourBed = msg.bedTeamId === localTeamId;
+                    const text = ourBed
+                        ? "Our Bed Was Destroyed - No More Respawns"
+                        : "Enemy Bed Destroyed";
+                    this.m_ui2Manager.addKillFeedMessage(
+                        text,
+                        msg.bedTeamId === 1 ? "#ff6666" : "#66b7ff",
+                    );
+                    this.m_uiManager.displayAnnouncement(text, 3500);
+                }
+                break;
+            }
             case net.MsgType.AmongUsMeetingState: {
                 const msg = new net.AmongUsMeetingStateMsg();
                 msg.deserialize(stream);

@@ -200,6 +200,11 @@ export interface MapDef {
             kingOfTheHillLocations?: Vec2[];
             dominationLocations?: Vec2[];
         };
+        bedWar?: {
+            redSpawn: Vec2;
+            blueSpawn: Vec2;
+            spawnRadius?: number;
+        };
         disableGas?: boolean;
     };
     gameConfig: {
