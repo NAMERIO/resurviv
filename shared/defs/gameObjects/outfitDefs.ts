@@ -2333,7 +2333,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
             backpackTint: 0x222222,
-            backpackSprite: "player-circle-01.img",
+            backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
             skinLootImg: true,
@@ -5567,7 +5567,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             baseTint: 0xffffff,
             baseSprite: "player-base-01.img",
             handTint: 0xffffff,
-            handSprite: "player-hands-yin-yang.img",
+            handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
             backpackTint: 0xf7f7f7,
