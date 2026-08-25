@@ -5497,6 +5497,22 @@ function createMemorialPark<T extends BuildingDef>(e: Partial<T>): T {
             zoomRegions: [],
             imgs: [],
         },
+        occupiedEmitters: [
+            {
+                type: "campfire_smoke",
+                pos: v2.create(-26, -15),
+                rot: 0,
+                scale: 1,
+                layer: 0,
+                parentToCeiling: true,
+            },
+        ],
+        healRegions: [
+            {
+                collision: collider.createCircle(v2.create(-26, -15), 15),
+                healRate: 2,
+            },
+        ],
         mapObjects: [
             {
                 type: "statue_structure_03",
