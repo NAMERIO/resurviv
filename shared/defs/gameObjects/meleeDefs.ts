@@ -1215,6 +1215,9 @@ const BaseDefs: Record<string, MeleeDef> = {
 };
 
 const SkinDefs: Record<string, MeleeDef> = {
+    // ===== Fist skins =====
+    // ==== Gloves ====
+    // === Available by default ===
     fists: defineMeleeSkin("fists", {
         name: "Fists",
         rarity: Rarity.Stock,
@@ -1280,28 +1283,58 @@ const SkinDefs: Record<string, MeleeDef> = {
             y: 0.185,
         },
     }),
-    fist_living_galaxy: defineMeleeSkin("fists", {
-        name: "Living Galaxy Hands",
-        rarity: Rarity.Mythic,
-        lore: "Hold a piece of the endlessly moving night sky.",
+    // === Unlockable ===
+    // == Kong ==
+    // = Seasonal =
+    fist_bePresent: defineMeleeSkin("fists", {
+        name: "Be Present",
+        rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
-        galaxyEffect: true,
         lootImg: {
-            sprite: "loot-weapon-fists-first-galaxy.img",
+            sprite: "loot-weapon-fists-be-present.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-king-galaxy.img",
-            spriteR: "player-hands-king-galaxy.img",
-        },
-        scale: {
-            x: 0.185,
-            y: 0.185,
+            spriteL: "player-fists-be-present-l.img",
+            spriteR: "player-fists-be-present-r.img",
         },
     }),
+    fist_dreidel: defineMeleeSkin("fists", {
+        name: "Dreidel",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-dreidel.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-dreidel-l.img",
+            spriteR: "player-fists-dreidel-r.img",
+        },
+    }),
+    fist_pineFury: defineMeleeSkin("fists", {
+        name: "Pine Fury",
+        rarity: Rarity.Epic,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-pine-fury.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-pine-fury-l.img",
+            spriteR: "player-fists-pine-fury-r.img",
+        },
+    }),
+    // = Pass 2 =
     fist_blueVelvet: defineMeleeSkin("fists", {
         name: "Blue Velvet",
         rarity: Rarity.Common,
@@ -1350,6 +1383,23 @@ const SkinDefs: Record<string, MeleeDef> = {
             spriteR: "player-fists-frostpunch.img",
         },
     }),
+    // = Pass 3 =
+    fist_moss: defineMeleeSkin("fists", {
+        name: "Moss",
+        rarity: Rarity.Common,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-moss.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-moss.img",
+            spriteR: "player-fists-moss.img",
+        },
+    }),
     fist_immolate: defineMeleeSkin("fists", {
         name: "Immolate",
         rarity: Rarity.Common,
@@ -1364,6 +1414,22 @@ const SkinDefs: Record<string, MeleeDef> = {
         handSprites: {
             spriteL: "player-fists-immolate.img",
             spriteR: "player-fists-immolate.img",
+        },
+    }),
+    fist_rainbowhands: defineMeleeSkin("fists", {
+        name: "Rainbow Hands",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-rainbow-hands.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-rainbow-hands.img",
+            spriteR: "player-fists-rainbow-hands.img",
         },
     }),
     fist_bulletbills: defineMeleeSkin("fists", {
@@ -1382,20 +1448,36 @@ const SkinDefs: Record<string, MeleeDef> = {
             spriteR: "player-fists-bullet-bills.img",
         },
     }),
-    fist_moss: defineMeleeSkin("fists", {
-        name: "Moss",
-        rarity: Rarity.Common,
+    fist_poke: defineMeleeSkin("fists", {
+        name: "Poke",
+        rarity: Rarity.Epic,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-moss.img",
+            sprite: "loot-weapon-fists-poke.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-moss.img",
-            spriteR: "player-fists-moss.img",
+            spriteL: "player-fists-poke.img",
+            spriteR: "player-fists-poke.img",
+        },
+    }),
+    fist_darklets: defineMeleeSkin("fists", {
+        name: "Darklets",
+        rarity: Rarity.Uncommon,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-darklets.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-darklets.img",
+            spriteR: "player-fists-darklets.img",
         },
     }),
     fist_blackholes: defineMeleeSkin("fists", {
@@ -1415,118 +1497,7 @@ const SkinDefs: Record<string, MeleeDef> = {
             spriteR: "player-fists-black-holes.img",
         },
     }),
-    fist_rainbowhands: defineMeleeSkin("fists", {
-        name: "Rainbow Hands",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-rainbow-hands.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-rainbow-hands.img",
-            spriteR: "player-fists-rainbow-hands.img",
-        },
-    }),
-    fist_darklets: defineMeleeSkin("fists", {
-        name: "Darklets",
-        rarity: Rarity.Uncommon,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-darklets.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-darklets.img",
-            spriteR: "player-fists-darklets.img",
-        },
-    }),
-    fist_scifi: defineMeleeSkin("fists", {
-        name: "Flynn",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-scifi.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-scifi.img",
-            spriteR: "player-fists-scifi.img",
-        },
-    }),
-    fist_poke: defineMeleeSkin("fists", {
-        name: "Poke",
-        rarity: Rarity.Epic,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-poke.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-poke.img",
-            spriteR: "player-fists-poke.img",
-        },
-    }),
-    fist_paws: defineMeleeSkin("fists", {
-        name: "Paws",
-        rarity: Rarity.Epic,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-paws.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-paws.img",
-            spriteR: "player-fists-paws.img",
-        },
-    }),
-    fist_dinoclaws: defineMeleeSkin("fists", {
-        name: "Raptor",
-        rarity: Rarity.Epic,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-dino-claws.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-dino-claws.img",
-            spriteR: "player-fists-dino-claws.img",
-        },
-    }),
-    fist_leaf: defineMeleeSkin("fists", {
-        name: "Tree Puncher",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-leaf.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-leaf-l.img",
-            spriteR: "player-fists-leaf-r.img",
-        },
-    }),
+    // = Pass 4 =
     fist_ranger: defineMeleeSkin("fists", {
         name: "Ranger",
         rarity: Rarity.Uncommon,
@@ -1541,6 +1512,22 @@ const SkinDefs: Record<string, MeleeDef> = {
         handSprites: {
             spriteL: "player-fists-ranger.img",
             spriteR: "player-fists-ranger.img",
+        },
+    }),
+    fist_ember: defineMeleeSkin("fists", {
+        name: "Ember",
+        rarity: Rarity.Common,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-ember.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-ember-l.img",
+            spriteR: "player-fists-ember-r.img",
         },
     }),
     fist_linedUp: defineMeleeSkin("fists", {
@@ -1559,22 +1546,55 @@ const SkinDefs: Record<string, MeleeDef> = {
             spriteR: "player-fists-lined-up.img",
         },
     }),
-    fist_lit: defineMeleeSkin("fists", {
-        name: "Lit",
-        rarity: Rarity.Common,
+    fist_leaf: defineMeleeSkin("fists", {
+        name: "Tree Puncher",
+        rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-lit.img",
+            sprite: "loot-weapon-fists-leaf.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-lit-l.img",
-            spriteR: "player-fists-lit-r.img",
+            spriteL: "player-fists-leaf-l.img",
+            spriteR: "player-fists-leaf-r.img",
         },
     }),
+    fist_scifi: defineMeleeSkin("fists", {
+        name: "Flynn",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-scifi.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-scifi.img",
+            spriteR: "player-fists-scifi.img",
+        },
+    }),
+    fist_dinoclaws: defineMeleeSkin("fists", {
+        name: "Raptor",
+        rarity: Rarity.Epic,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-dino-claws.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-dino-claws.img",
+            spriteR: "player-fists-dino-claws.img",
+        },
+    }),
+    // = Pass 5 =
     fist_gift_punch: defineMeleeSkin("fists", {
         name: "Gift Punch",
         rarity: Rarity.Uncommon,
@@ -1589,22 +1609,6 @@ const SkinDefs: Record<string, MeleeDef> = {
         handSprites: {
             spriteL: "player-fists-gift-punch.img",
             spriteR: "player-fists-gift-punch.img",
-        },
-    }),
-    fist_ember: defineMeleeSkin("fists", {
-        name: "Ember",
-        rarity: Rarity.Common,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-ember.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-ember-l.img",
-            spriteR: "player-fists-ember-r.img",
         },
     }),
     fist_santa: defineMeleeSkin("fists", {
@@ -1655,740 +1659,37 @@ const SkinDefs: Record<string, MeleeDef> = {
             spriteR: "player-fists-golden-lobster-r.img",
         },
     }),
-    fist_pineFury: defineMeleeSkin("fists", {
-        name: "Pine Fury",
-        rarity: Rarity.Epic,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-pine-fury.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-pine-fury-l.img",
-            spriteR: "player-fists-pine-fury-r.img",
-        },
-    }),
-    fist_dreidel: defineMeleeSkin("fists", {
-        name: "Dreidel",
+    // = Pass 6 =
+    fist_spongeGuy: defineMeleeSkin("fists", {
+        name: "Sponge Guy",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-dreidel.img",
+            sprite: "loot-weapon-fists-sponge-guy.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-dreidel-l.img",
-            spriteR: "player-fists-dreidel-r.img",
+            spriteL: "player-fists-sponge-guy-l.img",
+            spriteR: "player-fists-sponge-guy-r.img",
         },
     }),
-    fist_bePresent: defineMeleeSkin("fists", {
-        name: "Be Present",
+    fist_tropicana: defineMeleeSkin("fists", {
+        name: "Tropicana",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-be-present.img",
+            sprite: "loot-weapon-fists-tropicana.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-be-present-l.img",
-            spriteR: "player-fists-be-present-r.img",
-        },
-    }),
-    fist_101spots: defineMeleeSkin("fists", {
-        name: "101 Spots",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-101-spots.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-101-spots-l.img",
-            spriteR: "player-fists-101-spots-r.img",
-        },
-    }),
-    fist_atNet: defineMeleeSkin("fists", {
-        name: "At Net",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-at-net.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-at-net-l.img",
-            spriteR: "player-fists-at-net-r.img",
-        },
-    }),
-    fist_badMitten: defineMeleeSkin("fists", {
-        name: "Bad Mitten",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-bad-mitten.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-bad-mitten-l.img",
-            spriteR: "player-fists-bad-mitten-r.img",
-        },
-    }),
-    fist_beachBallin: defineMeleeSkin("fists", {
-        name: "Beach Ballin",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-beach-ballin.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-beach-ballin-l.img",
-            spriteR: "player-fists-beach-ballin-r.img",
-        },
-    }),
-    fist_bloody: defineMeleeSkin("fists", {
-        name: "Bloody",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-bloody.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-bloody-l.img",
-            spriteR: "player-fists-bloody-r.img",
-        },
-    }),
-    fist_bologna: defineMeleeSkin("fists", {
-        name: "Bologna",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-bologna.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-bologna-l.img",
-            spriteR: "player-fists-bologna-r.img",
-        },
-    }),
-    fist_bonkbonk: defineMeleeSkin("fists", {
-        name: "Bonk Bonk",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-bonkbonk.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-bonkbonk-l.img",
-            spriteR: "player-fists-bonkbonk-r.img",
-        },
-    }),
-    fist_boogieStripes: defineMeleeSkin("fists", {
-        name: "Boogie Stripes",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-boogie-stripes.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-boogie-stripes-l.img",
-            spriteR: "player-fists-boogie-stripes-r.img",
-        },
-    }),
-    fist_bullsEye: defineMeleeSkin("fists", {
-        name: "Bulls Eyes",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-bulls-eyes.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-bulls-eyes-l.img",
-            spriteR: "player-fists-bulls-eyes-r.img",
-        },
-    }),
-    fist_cattleBattle: defineMeleeSkin("fists", {
-        name: "Cattle Battle",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-cattle-battle.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-cattle-battle-l.img",
-            spriteR: "player-fists-cattle-battle-r.img",
-        },
-    }),
-    fist_checkmate: defineMeleeSkin("fists", {
-        name: "Checkmate",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-checkmate.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-hands-blue-zone.img",
-            spriteR: "player-hands-arctic-avenger.img",
-        },
-    }),
-    fist_cocoNut: defineMeleeSkin("fists", {
-        name: "Coco Nut",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-coco-nut.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-coco-nut-l.img",
-            spriteR: "player-fists-coco-nut-r.img",
-        },
-    }),
-    fist_condimentium: defineMeleeSkin("fists", {
-        name: "Condimentium",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-condimentium.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-condimentium-l.img",
-            spriteR: "player-fists-condimentium-r.img",
-        },
-    }),
-    fist_dPunchPad: defineMeleeSkin("fists", {
-        name: "D-Punch Pad",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-d-punch-pad.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-d-punch-pad-l.img",
-            spriteR: "player-fists-d-punch-pad-r.img",
-        },
-    }),
-    fist_developTheseRolls: defineMeleeSkin("fists", {
-        name: "Develop These Rolls",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-develop-these-rolls.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-develop-these-rolls-l.img",
-            spriteR: "player-fists-develop-these-rolls-r.img",
-        },
-    }),
-    fist_dishSoap: defineMeleeSkin("fists", {
-        name: "Dish Soap",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-dish-soap.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-dish-soap-l.img",
-            spriteR: "player-fists-dish-soap-r.img",
-        },
-    }),
-    fist_dizzieLocs: defineMeleeSkin("fists", {
-        name: "Dizzie Locs",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-dizzie-locs.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-dizzie-locs-l.img",
-            spriteR: "player-fists-dizzie-locs-r.img",
-        },
-    }),
-    fist_firstTool: defineMeleeSkin("fists", {
-        name: "First Tool",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-first-tool.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-first-tool-l.img",
-            spriteR: "player-fists-first-tool-r.img",
-        },
-    }),
-    fist_flamingNucleus: defineMeleeSkin("fists", {
-        name: "Flaming Nucleus",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-flaming-nucleus.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-flaming-nucleus-l.img",
-            spriteR: "player-fists-flaming-nucleus-r.img",
-        },
-    }),
-    fist_flashy: defineMeleeSkin("fists", {
-        name: "Flashy",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-flashy.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-flashy-l.img",
-            spriteR: "player-fists-flashy-r.img",
-        },
-    }),
-    fist_fritterPunch: defineMeleeSkin("fists", {
-        name: "Fritter Punch",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-fritter-punch.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-fritter-punch-l.img",
-            spriteR: "player-fists-fritter-punch-r.img",
-        },
-    }),
-    fist_fuzzyHooves: defineMeleeSkin("fists", {
-        name: "Fuzzy Hooves",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-fuzzy-hooves.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-fuzzy-hooves-l.img",
-            spriteR: "player-fists-fuzzy-hooves-r.img",
-        },
-    }),
-    fist_garbanjo: defineMeleeSkin("fists", {
-        name: "Garbanjo",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-garbanjo.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-garbanjo-l.img",
-            spriteR: "player-fists-garbanjo-r.img",
-        },
-    }),
-    fist_getdowntonite: defineMeleeSkin("fists", {
-        name: "Get Down Tonight",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-getdowntonite.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-getdowntonite-l.img",
-            spriteR: "player-fists-getdowntonite-r.img",
-        },
-    }),
-    fist_ghostPoke: defineMeleeSkin("fists", {
-        name: "Ghost Poke",
-        rarity: Rarity.Mythic,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-ghost-poke.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-ghost-poke-l.img",
-            spriteR: "player-fists-ghost-poke-r.img",
-        },
-    }),
-    fist_goldDrops: defineMeleeSkin("fists", {
-        name: "Gold Drops",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-gold-drops.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-gold-drops-l.img",
-            spriteR: "player-fists-gold-drops-r.img",
-        },
-    }),
-    fist_graphbars: defineMeleeSkin("fists", {
-        name: "Graphbars",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-graphbars.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-graphbars-l.img",
-            spriteR: "player-fists-graphbars-r.img",
-        },
-    }),
-    fist_grizzly: defineMeleeSkin("fists", {
-        name: "Grizzly",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-grizzly.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-grizzly-l.img",
-            spriteR: "player-fists-grizzly-r.img",
-        },
-    }),
-    fist_horsepower: defineMeleeSkin("fists", {
-        name: "Horsepower",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-horsepower.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-horsepower-l.img",
-            spriteR: "player-fists-horsepower-r.img",
-        },
-    }),
-    fist_inkyBusiness: defineMeleeSkin("fists", {
-        name: "Inky Business",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-inky-business.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-inky-business-l.img",
-            spriteR: "player-fists-inky-business-r.img",
-        },
-    }),
-    fist_lolitaPop: defineMeleeSkin("fists", {
-        name: "Lolita Pop",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-lolita-pop.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-lolita-pop-l.img",
-            spriteR: "player-fists-lolita-pop-r.img",
-        },
-    }),
-    fist_makeAChoice: defineMeleeSkin("fists", {
-        name: "Make A Choice",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-make-a-choice.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-make-a-choice-l.img",
-            spriteR: "player-fists-make-a-choice-r.img",
-        },
-    }),
-    fist_marbleRun: defineMeleeSkin("fists", {
-        name: "Marble Run",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-marble-run.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-marble-run-l.img",
-            spriteR: "player-fists-marble-run-r.img",
-        },
-    }),
-    fist_meteorNite: defineMeleeSkin("fists", {
-        name: "Meteor Nite",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-meteor-nite.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-meteor-nite-l.img",
-            spriteR: "player-fists-meteor-nite-r.img",
-        },
-    }),
-    fist_milestones: defineMeleeSkin("fists", {
-        name: "Milestones",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-milestones.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-milestones-l.img",
-            spriteR: "player-fists-milestones-r.img",
-        },
-    }),
-    fist_milkshaked: defineMeleeSkin("fists", {
-        name: "Milkshaked",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-milkshaked.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-milkshaked-l.img",
-            spriteR: "player-fists-milkshaked-r.img",
-        },
-    }),
-    fist_noPineNoGain: defineMeleeSkin("fists", {
-        name: "No Pine No Gain",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-no-pine-no-gain.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-no-pine-no-gain-l.img",
-            spriteR: "player-fists-no-pine-no-gain-r.img",
-        },
-    }),
-    fist_orangeLime: defineMeleeSkin("fists", {
-        name: "Orange Lime",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-orange-lime.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-orange-lime-l.img",
-            spriteR: "player-fists-orange-lime-r.img",
-        },
-    }),
-    fist_orangeMintstones: defineMeleeSkin("fists", {
-        name: "Orange Mintstones",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-orange-mintstones.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-orange-mintstones-l.img",
-            spriteR: "player-fists-orange-mintstones-r.img",
-        },
-    }),
-    fist_paddle: defineMeleeSkin("fists", {
-        name: "Paddle",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-paddle.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-paddle-l.img",
-            spriteR: "player-fists-paddle-r.img",
-        },
-    }),
-    fist_pixelDots: defineMeleeSkin("fists", {
-        name: "Pixel Dots",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-pixel-dots.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-pixel-dots-l.img",
-            spriteR: "player-fists-pixel-dots-r.img",
-        },
-    }),
-    fist_purpleShutter: defineMeleeSkin("fists", {
-        name: "Purple Shutter",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-purple-shutter.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-purple-shutter-l.img",
-            spriteR: "player-fists-purple-shutter-r.img",
-        },
-    }),
-    fist_qFist: defineMeleeSkin("fists", {
-        name: "Q Fist",
-        rarity: Rarity.Rare,
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-q-fist.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-q-fist-l.img",
-            spriteR: "player-fists-q-fist-r.img",
+            spriteL: "player-fists-tropicana-l.img",
+            spriteR: "player-fists-tropicana-r.img",
         },
     }),
     fist_rafflesia: defineMeleeSkin("fists", {
@@ -2407,132 +1708,182 @@ const SkinDefs: Record<string, MeleeDef> = {
             spriteR: "player-fists-rafflesia-r.img",
         },
     }),
-    fist_ranchChips: defineMeleeSkin("fists", {
-        name: "Ranch Chips",
+    fist_goldDrops: defineMeleeSkin("fists", {
+        name: "Gold Drops",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-ranch-chips.img",
+            sprite: "loot-weapon-fists-gold-drops.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-ranch-chips-l.img",
-            spriteR: "player-fists-ranch-chips-r.img",
+            spriteL: "player-fists-gold-drops-l.img",
+            spriteR: "player-fists-gold-drops-r.img",
         },
     }),
-    fist_retrhorizon: defineMeleeSkin("fists", {
-        name: "Retro Horizon",
+    fist_grizzly: defineMeleeSkin("fists", {
+        name: "Grizzly",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-retrhorizon.img",
+            sprite: "loot-weapon-fists-grizzly.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-retrhorizon-l.img",
-            spriteR: "player-fists-retrhorizon-r.img",
+            spriteL: "player-fists-grizzly-l.img",
+            spriteR: "player-fists-grizzly-r.img",
         },
     }),
-    fist_shinyJello: defineMeleeSkin("fists", {
-        name: "Shiny Jello",
+    // = Pass 7 =
+    fist_vitaminC: defineMeleeSkin("fists", {
+        name: "Vitamin C",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-shiny-jello.img",
+            sprite: "loot-weapon-fists-vitamin-c.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-shiny-jello-l.img",
-            spriteR: "player-fists-shiny-jello-r.img",
+            spriteL: "player-fists-vitamin-c-l.img",
+            spriteR: "player-fists-vitamin-c-r.img",
         },
     }),
-    fist_spongeGuy: defineMeleeSkin("fists", {
-        name: "Sponge Guy",
+    fist_cocoNut: defineMeleeSkin("fists", {
+        name: "Coco Nut",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-sponge-guy.img",
+            sprite: "loot-weapon-fists-coco-nut.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-sponge-guy-l.img",
-            spriteR: "player-fists-sponge-guy-r.img",
+            spriteL: "player-fists-coco-nut-l.img",
+            spriteR: "player-fists-coco-nut-r.img",
         },
     }),
-    fist_squareyCerry: defineMeleeSkin("fists", {
-        name: "Squarey Cherry",
+    fist_atNet: defineMeleeSkin("fists", {
+        name: "At Net",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-squarey-cherry.img",
+            sprite: "loot-weapon-fists-at-net.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-squarey-cherry-l.img",
-            spriteR: "player-fists-squarey-cherry-r.img",
+            spriteL: "player-fists-at-net-l.img",
+            spriteR: "player-fists-at-net-r.img",
         },
     }),
-    fist_stonedgy: defineMeleeSkin("fists", {
-        name: "Stonedgy",
+    fist_beachBallin: defineMeleeSkin("fists", {
+        name: "Beach Ballin",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-stonedgy.img",
+            sprite: "loot-weapon-fists-beach-ballin.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-stonedgy-l.img",
-            spriteR: "player-fists-stonedgy-r.img",
+            spriteL: "player-fists-beach-ballin-l.img",
+            spriteR: "player-fists-beach-ballin-r.img",
         },
     }),
-    fist_tawget: defineMeleeSkin("fists", {
-        name: "Tawget",
+    fist_marbleRun: defineMeleeSkin("fists", {
+        name: "Marble Run",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-tawget.img",
+            sprite: "loot-weapon-fists-marble-run.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-tawget-l.img",
-            spriteR: "player-fists-tawget-r.img",
+            spriteL: "player-fists-marble-run-l.img",
+            spriteR: "player-fists-marble-run-r.img",
         },
     }),
-    fist_theOtherPong: defineMeleeSkin("fists", {
-        name: "The Other Pong",
+    fist_fritterPunch: defineMeleeSkin("fists", {
+        name: "Fritter Punch",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-the-other-pong.img",
+            sprite: "loot-weapon-fists-fritter-punch.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-the-other-pong-l.img",
-            spriteR: "player-fists-the-other-pong-r.img",
+            spriteL: "player-fists-fritter-punch-l.img",
+            spriteR: "player-fists-fritter-punch-r.img",
+        },
+    }),
+    // = Pass 8 =
+    fist_bologna: defineMeleeSkin("fists", {
+        name: "Bologna",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-bologna.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-bologna-l.img",
+            spriteR: "player-fists-bologna-r.img",
+        },
+    }),
+    fist_inkyBusiness: defineMeleeSkin("fists", {
+        name: "Inky Business",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-inky-business.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-inky-business-l.img",
+            spriteR: "player-fists-inky-business-r.img",
+        },
+    }),
+    fist_bloody: defineMeleeSkin("fists", {
+        name: "Bloody",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-bloody.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-bloody-l.img",
+            spriteR: "player-fists-bloody-r.img",
         },
     }),
     fist_tigerSeed: defineMeleeSkin("fists", {
@@ -2551,196 +1902,149 @@ const SkinDefs: Record<string, MeleeDef> = {
             spriteR: "player-fists-tiger-seed-r.img",
         },
     }),
-    fist_CandyCorn: defineMeleeSkin("fists", {
-        name: "Candy Corn",
-        rarity: Rarity.Uncommon,
-        lore: "Sweet tooth.",
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-tiger-seed.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-candy-corn-l.img",
-            spriteR: "player-fists-candy-corn-r.img",
-        },
-    }),
-
-    fist_TurkeyLeg: defineMeleeSkin("fists", {
-        name: "Turkey Legs",
-        rarity: Rarity.Rare,
-        lore: "The meat munchers.",
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-tiger-seed.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-turkey-leg-l.img",
-            spriteR: "player-fists-turkey-leg-r.img",
-        },
-    }),
-
-    fist_MapleLeaves: defineMeleeSkin("fists", {
-        name: "Maple Leaves",
-        rarity: Rarity.Epic,
-        lore: "For those who let their enemies fall like autumn leaves.",
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-tiger-seed.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-maple-leaves-l.img",
-            spriteR: "player-fists-maple-leaves-r.img",
-        },
-    }),
-
-    fist_Pumpkin: defineMeleeSkin("fists", {
-        name: "Pumpkin",
-        rarity: Rarity.Rare,
-        lore: "For those ready to smash the competition this autumn.",
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-tiger-seed.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-pumpkin-l.img",
-            spriteR: "player-fists-pumpkin-r.img",
-        },
-    }),
-
-    fist_Skeleton: defineMeleeSkin("fists", {
-        name: "Skeleton Knuckles",
-        rarity: Rarity.Epic,
-        lore: "For those who want to drop their opponents down to the bare bone.",
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-skeleton.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-skeleton-l.img",
-            spriteR: "player-fists-skeleton-r.img",
-        },
-    }),
-
-    fist_Acorn: defineMeleeSkin("fists", {
-        name: "Acorn Fists",
-        rarity: Rarity.Rare,
-        lore: "For those ready to go nuts on the battlefield.",
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-tiger-seed.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-acorn-l.img",
-            spriteR: "player-fists-acorn-r.img",
-        },
-    }),
-
-    fist_OvenMitts: defineMeleeSkin("fists", {
-        name: "Oven Mitts",
-        rarity: Rarity.Rare,
-        lore: "For handling heat on and off the battlefield.",
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-tiger-seed.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-oven-mitts-l.img",
-            spriteR: "player-fists-oven-mitts-r.img",
-        },
-    }),
-
-    fist_Pinecone: defineMeleeSkin("fists", {
-        name: "Pinecones",
-        rarity: Rarity.Rare,
-        lore: "For those who like their strikes extra prickly.",
-        noPotatoSwap: true,
-        noDropOnDeath: true,
-        lootImg: {
-            sprite: "loot-weapon-fists-tiger-seed.img",
-            scale: 0.3,
-            rad: 25,
-            tint: 0xffffff,
-        },
-        handSprites: {
-            spriteL: "player-fists-pinecone-l.img",
-            spriteR: "player-fists-pinecone-r.img",
-        },
-    }),
-
-    fist_tropicana: defineMeleeSkin("fists", {
-        name: "Tropicana",
+    fist_flashy: defineMeleeSkin("fists", {
+        name: "Flashy",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-tropicana.img",
+            sprite: "loot-weapon-fists-flashy.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-tropicana-l.img",
-            spriteR: "player-fists-tropicana-r.img",
+            spriteL: "player-fists-flashy-l.img",
+            spriteR: "player-fists-flashy-r.img",
         },
     }),
-    fist_upAndAtom: defineMeleeSkin("fists", {
-        name: "Up And Atom",
+    fist_theOtherPong: defineMeleeSkin("fists", {
+        name: "The Other Pong",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-up-and-atom.img",
+            sprite: "loot-weapon-fists-the-other-pong.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-up-and-atom-l.img",
-            spriteR: "player-fists-up-and-atom-r.img",
+            spriteL: "player-fists-the-other-pong-l.img",
+            spriteR: "player-fists-the-other-pong-r.img",
         },
     }),
-    fist_vitaminC: defineMeleeSkin("fists", {
-        name: "Vitamin C",
+    fist_makeAChoice: defineMeleeSkin("fists", {
+        name: "Make A Choice",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-vitamin-c.img",
+            sprite: "loot-weapon-fists-make-a-choice.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-vitamin-c-l.img",
-            spriteR: "player-fists-vitamin-c-r.img",
+            spriteL: "player-fists-make-a-choice-l.img",
+            spriteR: "player-fists-make-a-choice-r.img",
+        },
+    }),
+    fist_paddle: defineMeleeSkin("fists", {
+        name: "Paddle",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-paddle.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-paddle-l.img",
+            spriteR: "player-fists-paddle-r.img",
+        },
+    }),
+    // = Pass 9 =
+    fist_condimentium: defineMeleeSkin("fists", {
+        name: "Condimentium",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-condimentium.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-condimentium-l.img",
+            spriteR: "player-fists-condimentium-r.img",
+        },
+    }),
+    fist_orangeLime: defineMeleeSkin("fists", {
+        name: "Orange Lime",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-orange-lime.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-orange-lime-l.img",
+            spriteR: "player-fists-orange-lime-r.img",
+        },
+    }),
+    fist_purpleShutter: defineMeleeSkin("fists", {
+        name: "Purple Shutter",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-purple-shutter.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-purple-shutter-l.img",
+            spriteR: "player-fists-purple-shutter-r.img",
+        },
+    }),
+    fist_shinyJello: defineMeleeSkin("fists", {
+        name: "Shiny Jello",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-shiny-jello.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-shiny-jello-l.img",
+            spriteR: "player-fists-shiny-jello-r.img",
+        },
+    }),
+    fist_ghostPoke: defineMeleeSkin("fists", {
+        name: "Ghost Poke",
+        rarity: Rarity.Mythic,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-ghost-poke.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-ghost-poke-l.img",
+            spriteR: "player-fists-ghost-poke-r.img",
         },
     }),
     fist_washiLamps: defineMeleeSkin("fists", {
@@ -2759,36 +2063,343 @@ const SkinDefs: Record<string, MeleeDef> = {
             spriteR: "player-fists-washi-lamps-r.img",
         },
     }),
-    fist_watermelon: defineMeleeSkin("fists", {
-        name: "Watermelon",
+    fist_getdowntonite: defineMeleeSkin("fists", {
+        name: "Get Down Tonight",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-watermelon.img",
+            sprite: "loot-weapon-fists-getdowntonite.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-watermelon-l.img",
-            spriteR: "player-fists-watermelon-r.img",
+            spriteL: "player-fists-getdowntonite-l.img",
+            spriteR: "player-fists-getdowntonite-r.img",
         },
     }),
-    fist_woodyAllan: defineMeleeSkin("fists", {
-        name: "Woody Allan",
+    fist_milestones: defineMeleeSkin("fists", {
+        name: "Milestones",
         rarity: Rarity.Rare,
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-woody-allan.img",
+            sprite: "loot-weapon-fists-milestones.img",
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-woody-allan-l.img",
-            spriteR: "player-fists-woody-allan-r.img",
+            spriteL: "player-fists-milestones-l.img",
+            spriteR: "player-fists-milestones-r.img",
+        },
+    }),
+    // = Pass 10 =
+    fist_orangeMintstones: defineMeleeSkin("fists", {
+        name: "Orange Mintstones",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-orange-mintstones.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-orange-mintstones-l.img",
+            spriteR: "player-fists-orange-mintstones-r.img",
+        },
+    }),
+    fist_meteorNite: defineMeleeSkin("fists", {
+        name: "Meteor Nite",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-meteor-nite.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-meteor-nite-l.img",
+            spriteR: "player-fists-meteor-nite-r.img",
+        },
+    }),
+    fist_bonkbonk: defineMeleeSkin("fists", {
+        name: "Bonk Bonk",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-bonkbonk.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-bonkbonk-l.img",
+            spriteR: "player-fists-bonkbonk-r.img",
+        },
+    }),
+    fist_flamingNucleus: defineMeleeSkin("fists", {
+        name: "Flaming Nucleus",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-flaming-nucleus.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-flaming-nucleus-l.img",
+            spriteR: "player-fists-flaming-nucleus-r.img",
+        },
+    }),
+    fist_firstTool: defineMeleeSkin("fists", {
+        name: "First Tool",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-first-tool.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-first-tool-l.img",
+            spriteR: "player-fists-first-tool-r.img",
+        },
+    }),
+    fist_bullsEye: defineMeleeSkin("fists", {
+        name: "Bulls Eyes",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-bulls-eyes.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-bulls-eyes-l.img",
+            spriteR: "player-fists-bulls-eyes-r.img",
+        },
+    }),
+    fist_fuzzyHooves: defineMeleeSkin("fists", {
+        name: "Fuzzy Hooves",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-fuzzy-hooves.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-fuzzy-hooves-l.img",
+            spriteR: "player-fists-fuzzy-hooves-r.img",
+        },
+    }),
+    fist_stonedgy: defineMeleeSkin("fists", {
+        name: "Stonedgy",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-stonedgy.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-stonedgy-l.img",
+            spriteR: "player-fists-stonedgy-r.img",
+        },
+    }),
+    // = Pass 11 =
+    fist_pixelDots: defineMeleeSkin("fists", {
+        name: "Pixel Dots",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-pixel-dots.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-pixel-dots-l.img",
+            spriteR: "player-fists-pixel-dots-r.img",
+        },
+    }),
+    fist_retrhorizon: defineMeleeSkin("fists", {
+        name: "Retro Horizon",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-retrhorizon.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-retrhorizon-l.img",
+            spriteR: "player-fists-retrhorizon-r.img",
+        },
+    }),
+    fist_qFist: defineMeleeSkin("fists", {
+        name: "Q Fist",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-q-fist.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-q-fist-l.img",
+            spriteR: "player-fists-q-fist-r.img",
+        },
+    }),
+    fist_dizzieLocs: defineMeleeSkin("fists", {
+        name: "Dizzie Locs",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-dizzie-locs.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-dizzie-locs-l.img",
+            spriteR: "player-fists-dizzie-locs-r.img",
+        },
+    }),
+    fist_ranchChips: defineMeleeSkin("fists", {
+        name: "Ranch Chips",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-ranch-chips.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-ranch-chips-l.img",
+            spriteR: "player-fists-ranch-chips-r.img",
+        },
+    }),
+    fist_squareyCerry: defineMeleeSkin("fists", {
+        name: "Squarey Cherry",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-squarey-cherry.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-squarey-cherry-l.img",
+            spriteR: "player-fists-squarey-cherry-r.img",
+        },
+    }),
+    fist_lolitaPop: defineMeleeSkin("fists", {
+        name: "Lolita Pop",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-lolita-pop.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-lolita-pop-l.img",
+            spriteR: "player-fists-lolita-pop-r.img",
+        },
+    }),
+    fist_developTheseRolls: defineMeleeSkin("fists", {
+        name: "Develop These Rolls",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-develop-these-rolls.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-develop-these-rolls-l.img",
+            spriteR: "player-fists-develop-these-rolls-r.img",
+        },
+    }),
+    fist_dPunchPad: defineMeleeSkin("fists", {
+        name: "D-Punch Pad",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-d-punch-pad.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-d-punch-pad-l.img",
+            spriteR: "player-fists-d-punch-pad-r.img",
+        },
+    }),
+    // = Pass 12 =
+    fist_boogieStripes: defineMeleeSkin("fists", {
+        name: "Boogie Stripes",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-boogie-stripes.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-boogie-stripes-l.img",
+            spriteR: "player-fists-boogie-stripes-r.img",
+        },
+    }),
+    fist_badMitten: defineMeleeSkin("fists", {
+        name: "Bad Mitten",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-bad-mitten.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-bad-mitten-l.img",
+            spriteR: "player-fists-bad-mitten-r.img",
         },
     }),
     fist_wreckedAngle: defineMeleeSkin("fists", {
@@ -2807,6 +2418,410 @@ const SkinDefs: Record<string, MeleeDef> = {
             spriteR: "player-fists-wrecked-angle-r.img",
         },
     }),
+    fist_woodyAllan: defineMeleeSkin("fists", {
+        name: "Woody Allan",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-woody-allan.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-woody-allan-l.img",
+            spriteR: "player-fists-woody-allan-r.img",
+        },
+    }),
+    fist_tawget: defineMeleeSkin("fists", {
+        name: "Tawget",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-tawget.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-tawget-l.img",
+            spriteR: "player-fists-tawget-r.img",
+        },
+    }),
+    fist_horsepower: defineMeleeSkin("fists", {
+        name: "Horsepower",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-horsepower.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-horsepower-l.img",
+            spriteR: "player-fists-horsepower-r.img",
+        },
+    }),
+    fist_milkshaked: defineMeleeSkin("fists", {
+        name: "Milkshaked",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-milkshaked.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-milkshaked-l.img",
+            spriteR: "player-fists-milkshaked-r.img",
+        },
+    }),
+    fist_cattleBattle: defineMeleeSkin("fists", {
+        name: "Cattle Battle",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-cattle-battle.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-cattle-battle-l.img",
+            spriteR: "player-fists-cattle-battle-r.img",
+        },
+    }),
+    // = Probably unused =
+    fist_101spots: defineMeleeSkin("fists", {
+        name: "101 Spots",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-101-spots.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-101-spots-l.img",
+            spriteR: "player-fists-101-spots-r.img",
+        },
+    }),
+    fist_dishSoap: defineMeleeSkin("fists", {
+        name: "Dish Soap",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-dish-soap.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-dish-soap-l.img",
+            spriteR: "player-fists-dish-soap-r.img",
+        },
+    }),
+    fist_garbanjo: defineMeleeSkin("fists", {
+        name: "Garbanjo",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-garbanjo.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-garbanjo-l.img",
+            spriteR: "player-fists-garbanjo-r.img",
+        },
+    }),
+    fist_graphbars: defineMeleeSkin("fists", {
+        name: "Graphbars",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-graphbars.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-graphbars-l.img",
+            spriteR: "player-fists-graphbars-r.img",
+        },
+    }),
+    fist_lit: defineMeleeSkin("fists", {
+        name: "Lit",
+        rarity: Rarity.Common,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-lit.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-lit-l.img",
+            spriteR: "player-fists-lit-r.img",
+        },
+    }),
+    fist_noPineNoGain: defineMeleeSkin("fists", {
+        name: "No Pine No Gain",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-no-pine-no-gain.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-no-pine-no-gain-l.img",
+            spriteR: "player-fists-no-pine-no-gain-r.img",
+        },
+    }),
+    fist_upAndAtom: defineMeleeSkin("fists", {
+        name: "Up And Atom",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-up-and-atom.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-up-and-atom-l.img",
+            spriteR: "player-fists-up-and-atom-r.img",
+        },
+    }),
+    fist_watermelon: defineMeleeSkin("fists", {
+        name: "Watermelon",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-watermelon.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-watermelon-l.img",
+            spriteR: "player-fists-watermelon-r.img",
+        },
+    }),
+    // == Resurviv-original ==
+    // = Bundles =
+    fist_living_galaxy: defineMeleeSkin("fists", {
+        name: "Living Galaxy Hands",
+        rarity: Rarity.Mythic,
+        lore: "Hold a piece of the endlessly moving night sky.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        galaxyEffect: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-first-galaxy.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-hands-king-galaxy.img",
+            spriteR: "player-hands-king-galaxy.img",
+        },
+        scale: {
+            x: 0.185,
+            y: 0.185,
+        },
+    }),
+    fist_checkmate: defineMeleeSkin("fists", {
+        name: "Checkmate",
+        rarity: Rarity.Rare,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-checkmate.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-hands-blue-zone.img",
+            spriteR: "player-hands-arctic-avenger.img",
+        },
+    }),
+    fist_paws: defineMeleeSkin("fists", {
+        name: "Paws",
+        rarity: Rarity.Epic,
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-paws.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-paws.img",
+            spriteR: "player-fists-paws.img",
+        },
+    }),
+    // = Other/Unused =
+    fist_acorn: defineMeleeSkin("fists", {
+        name: "Acorn Fists",
+        rarity: Rarity.Rare,
+        lore: "For those ready to go nuts on the battlefield.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-tiger-seed.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-acorn-l.img",
+            spriteR: "player-fists-acorn-r.img",
+        },
+    }),
+    fist_candyCorn: defineMeleeSkin("fists", {
+        name: "Candy Corn",
+        rarity: Rarity.Uncommon,
+        lore: "Sweet tooth.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-tiger-seed.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-candy-corn-l.img",
+            spriteR: "player-fists-candy-corn-r.img",
+        },
+    }),
+    fist_ovenMitts: defineMeleeSkin("fists", {
+        name: "Oven Mitts",
+        rarity: Rarity.Rare,
+        lore: "For handling heat on and off the battlefield.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-tiger-seed.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-oven-mitts-l.img",
+            spriteR: "player-fists-oven-mitts-r.img",
+        },
+    }),
+    fist_mapleLeaves: defineMeleeSkin("fists", {
+        name: "Maple Leaves",
+        rarity: Rarity.Epic,
+        lore: "For those who let their enemies fall like autumn leaves.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-tiger-seed.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-maple-leaves-l.img",
+            spriteR: "player-fists-maple-leaves-r.img",
+        },
+    }),
+    fist_pinecone: defineMeleeSkin("fists", {
+        name: "Pinecones",
+        rarity: Rarity.Rare,
+        lore: "For those who like their strikes extra prickly.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-tiger-seed.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-pinecone-l.img",
+            spriteR: "player-fists-pinecone-r.img",
+        },
+    }),
+    fist_pumpkin: defineMeleeSkin("fists", {
+        name: "Pumpkin",
+        rarity: Rarity.Rare,
+        lore: "For those ready to smash the competition this autumn.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-tiger-seed.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-pumpkin-l.img",
+            spriteR: "player-fists-pumpkin-r.img",
+        },
+    }),
+    fist_skeleton: defineMeleeSkin("fists", {
+        name: "Skeleton Knuckles",
+        rarity: Rarity.Epic,
+        lore: "For those who want to drop their opponents down to the bare bone.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-skeleton.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-skeleton-l.img",
+            spriteR: "player-fists-skeleton-r.img",
+        },
+    }),
+    fist_turkeyLeg: defineMeleeSkin("fists", {
+        name: "Turkey Legs",
+        rarity: Rarity.Rare,
+        lore: "The meat munchers.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-tiger-seed.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-turkey-leg-l.img",
+            spriteR: "player-fists-turkey-leg-r.img",
+        },
+    }),
+    // ==== Non-gloves ====
+    // === Surviv ===
     knuckles_rusted: defineMeleeSkin("knuckles", {
         name: "Knuckles Rusted",
         rarity: Rarity.Common,
@@ -2846,21 +2861,6 @@ const SkinDefs: Record<string, MeleeDef> = {
             sprite: "loot-melee-karambit-rugged.img",
         },
     }),
-    karambit_camo: defineMeleeSkin("karambit", {
-        name: "Karambit Camo",
-        rarity: Rarity.Epic,
-        noPotatoSwap: false,
-        anim: {
-            idlePose: "slash",
-            attackAnims: ["slash", "fists"],
-        },
-        lootImg: {
-            sprite: "loot-melee-karambit-camo.img",
-        },
-        worldImg: {
-            sprite: "loot-melee-karambit-camo.img",
-        },
-    }),
     karambit_prismatic: defineMeleeSkin("karambit", {
         name: "Karambit Prismatic",
         rarity: Rarity.Epic,
@@ -2894,7 +2894,6 @@ const SkinDefs: Record<string, MeleeDef> = {
             sprite: "loot-melee-bayonet-rugged.img",
         },
     }),
-
     bayonet_woodland: defineMeleeSkin("bayonet", {
         name: "Bayonet Woodland",
         rarity: Rarity.Mythic,
@@ -2904,161 +2903,6 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
         worldImg: {
             sprite: "loot-melee-bayonet-woodland.img",
-        },
-    }),
-
-    knife_bone: defineMeleeSkin("bayonet", {
-        name: "Bone Knife",
-        rarity: Rarity.Epic,
-        lore: "For those who prefer a primal touch to their combat style.",
-        noPotatoSwap: false,
-        lootImg: {
-            sprite: "loot-melee-knife-bone.img",
-        },
-        worldImg: {
-            sprite: "loot-melee-knife-bone.img",
-        },
-    }),
-
-    bayonet_gilded: defineMeleeSkin("bayonet", {
-        name: "Gilded Bayonet",
-        rarity: Rarity.Epic,
-        lore: "A luxurious take on the classic bayonet, perfect for those who appreciate both style and substance.",
-        noPotatoSwap: false,
-        lootImg: {
-            sprite: "loot-melee-bayonet-gilded.img",
-        },
-        worldImg: {
-            sprite: "loot-melee-bayonet-gilded.img",
-        },
-    }),
-
-    sickle_farmer: defineMeleeSkin("bayonet", {
-        name: "Farmer's Sickle",
-        rarity: Rarity.Rare,
-        lore: "Perfect for harvesting crops—or reaping victory on the field.",
-        noPotatoSwap: false,
-        lootImg: {
-            sprite: "loot-melee-sickle-farmer.img",
-        },
-        worldImg: {
-            sprite: "loot-melee-sickle-farmer.img",
-        },
-    }),
-
-    huntsman_bloodmoon: defineMeleeSkin("huntsman", {
-        name: "Bloodmoon Huntsman",
-        rarity: Rarity.Epic,
-        lore: "A vicious, ruby-tinted blade forged for fast strikes and ruthless accuracy.",
-        noPotatoSwap: false,
-        lootImg: {
-            sprite: "loot-melee-huntsman-bloodmoon.img",
-        },
-        worldImg: {
-            sprite: "loot-melee-huntsman-bloodmoon.img",
-        },
-    }),
-
-    knife_ben: defineMeleeSkin("bayonet", {
-        name: "Ben's Knife",
-        rarity: Rarity.Mythic,
-        lore: "A rare collector's item crafted by the serial killer & blacksmith Benny. - HXH",
-        noPotatoSwap: false,
-        lootImg: {
-            sprite: "loot-melee-knife-ben.img",
-        },
-        worldImg: {
-            sprite: "loot-melee-knife-ben.img",
-        },
-    }),
-
-    knife_toji: defineMeleeSkin("bayonet", {
-        name: "Toji's Knife",
-        rarity: Rarity.Mythic,
-        lore: "Even infinity can be pierced.",
-        noPotatoSwap: false,
-        lootImg: {
-            sprite: "loot-melee-knife-toji.img",
-        },
-        worldImg: {
-            sprite: "loot-melee-knife-toji.img",
-        },
-    }),
-
-    baton_police: defineMeleeSkin("machete", {
-        name: "Police Baton",
-        rarity: Rarity.Epic,
-        lore: "For maintaining order in the most chaotic situations.",
-        noPotatoSwap: false,
-        lootImg: {
-            sprite: "loot-melee-baton-police.img",
-        },
-        worldImg: {
-            sprite: "loot-melee-baton-police.img",
-        },
-    }),
-
-    rapier: defineMeleeSkin("machete", {
-        name: "Rapier",
-        rarity: Rarity.Epic,
-        lore: "For those who fight with elegance, speed, and undeniable finesse.",
-        noPotatoSwap: false,
-        lootImg: {
-            sprite: "loot-melee-rapier.img",
-        },
-        worldImg: {
-            sprite: "loot-melee-rapier.img",
-        },
-    }),
-
-    scythe_reaper: defineMeleeSkin("naginata", {
-        name: "Reaper's Scythe",
-        rarity: Rarity.Epic,
-        lore: "For those who reap victory with refined style.",
-        noPotatoSwap: false,
-        lootImg: {
-            sprite: "loot-melee-scythe-reaper.img",
-        },
-        worldImg: {
-            sprite: "loot-melee-scythe-reaper.img",
-        },
-    }),
-
-    carvingfork: defineMeleeSkin("bayonet", {
-        name: "Carving Fork",
-        rarity: Rarity.Epic,
-        lore: "For those who like to keep their opponents at a comfortable roasting distance.",
-        noPotatoSwap: false,
-        lootImg: {
-            sprite: "loot-melee-carvingfork.img",
-        },
-        worldImg: {
-            sprite: "loot-melee-carvingfork.img",
-        },
-    }),
-
-    kunai_shadow: defineMeleeSkin("bayonet", {
-        name: "Shadow Kunai",
-        rarity: Rarity.Mythic,
-        lore: "For those who move like shadows and strike with precision.",
-        noPotatoSwap: false,
-        lootImg: {
-            sprite: "loot-melee-kunai-shadow.img",
-        },
-        worldImg: {
-            sprite: "loot-melee-kunai-shadow.img",
-        },
-    }),
-    guthook_woodland: defineMeleeSkin("bayonet", {
-        name: "Guthook Woodland",
-        rarity: Rarity.Mythic,
-        lore: "Created by SigmaSanty1",
-        noPotatoSwap: false,
-        lootImg: {
-            sprite: "loot-melee-guthook-woodland.img",
-        },
-        worldImg: {
-            sprite: "loot-melee-guthook-woodland.img",
         },
     }),
     huntsman_rugged: defineMeleeSkin("huntsman", {
@@ -3114,6 +2958,131 @@ const SkinDefs: Record<string, MeleeDef> = {
             sprite: "loot-melee-bowie-frontier.img",
         },
     }),
+    // === Resurviv ===
+    karambit_camo: defineMeleeSkin("karambit", {
+        name: "Karambit Camo",
+        rarity: Rarity.Epic,
+        noPotatoSwap: false,
+        anim: {
+            idlePose: "slash",
+            attackAnims: ["slash", "fists"],
+        },
+        lootImg: {
+            sprite: "loot-melee-karambit-camo.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-karambit-camo.img",
+        },
+    }),
+    bayonet_gilded: defineMeleeSkin("bayonet", {
+        name: "Gilded Bayonet",
+        rarity: Rarity.Epic,
+        lore: "A luxurious take on the classic bayonet, perfect for those who appreciate both style and substance.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-bayonet-gilded.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-bayonet-gilded.img",
+        },
+    }),
+    carvingfork: defineMeleeSkin("bayonet", {
+        name: "Carving Fork",
+        rarity: Rarity.Epic,
+        lore: "For those who like to keep their opponents at a comfortable roasting distance.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-carvingfork.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-carvingfork.img",
+        },
+    }),
+    knife_ben: defineMeleeSkin("bayonet", {
+        name: "Ben's Knife",
+        rarity: Rarity.Mythic,
+        lore: "A rare collector's item crafted by the serial killer & blacksmith Benny. - HXH",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-knife-ben.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-knife-ben.img",
+        },
+    }),
+    knife_toji: defineMeleeSkin("bayonet", {
+        name: "Toji's Knife",
+        rarity: Rarity.Mythic,
+        lore: "Even infinity can be pierced.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-knife-toji.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-knife-toji.img",
+        },
+    }),
+    knife_bone: defineMeleeSkin("bayonet", {
+        name: "Bone Knife",
+        rarity: Rarity.Epic,
+        lore: "For those who prefer a primal touch to their combat style.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-knife-bone.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-knife-bone.img",
+        },
+    }),
+    kunai_shadow: defineMeleeSkin("bayonet", {
+        name: "Shadow Kunai",
+        rarity: Rarity.Mythic,
+        lore: "For those who move like shadows and strike with precision.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-kunai-shadow.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-kunai-shadow.img",
+        },
+    }),
+    guthook_woodland: defineMeleeSkin("bayonet", {
+        name: "Guthook Woodland",
+        rarity: Rarity.Mythic,
+        lore: "Created by SigmaSanty1",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-guthook-woodland.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-guthook-woodland.img",
+        },
+    }),
+    sickle_farmer: defineMeleeSkin("bayonet", {
+        name: "Farmer's Sickle",
+        rarity: Rarity.Rare,
+        lore: "Perfect for harvesting crops—or reaping victory on the field.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-sickle-farmer.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-sickle-farmer.img",
+        },
+    }),
+    huntsman_bloodmoon: defineMeleeSkin("huntsman", {
+        name: "Bloodmoon Huntsman",
+        rarity: Rarity.Epic,
+        lore: "A vicious, ruby-tinted blade forged for fast strikes and ruthless accuracy.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-huntsman-bloodmoon.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-huntsman-bloodmoon.img",
+        },
+    }),
+    // ===== Non-fist skins =====
     machete_taiga: defineMeleeSkin("machete", {
         name: "UVSR Taiga",
         noPotatoSwap: false,
@@ -3163,30 +3132,6 @@ const SkinDefs: Record<string, MeleeDef> = {
         lootImg: { sprite: "loot-melee-katana-orchid.img" },
         worldImg: {
             sprite: "loot-melee-katana-orchid.img",
-        },
-    }),
-    katana_living_galaxy: defineMeleeSkin("katana", {
-        name: "Living Galaxy Katana",
-        rarity: 5,
-        lore: "Its edge cuts across the night sky.",
-        noDropOnDeath: true,
-        galaxyEffect: true,
-        lootImg: {
-            sprite: "loot-melee-katana-orchid.img",
-            tint: 0x9b6cff,
-        },
-        worldImg: {
-            sprite: "loot-melee-katana.img",
-            tint: 0xffffff,
-        },
-    }),
-    katana_samurai: defineMeleeSkin("katana", {
-        name: "Katana Samurai",
-        quality: 1,
-        noDropOnDeath: true,
-        lootImg: { sprite: "loot-melee-katana-samurai.img" },
-        worldImg: {
-            sprite: "loot-melee-katana-samurai.img",
         },
     }),
     sledgehammer: defineMeleeSkin("stonehammer", {
@@ -3271,6 +3216,67 @@ const SkinDefs: Record<string, MeleeDef> = {
         perk: "pirate",
         lootImg: { sprite: "loot-melee-cutlass-gold.img" },
         worldImg: { sprite: "loot-melee-cutlass-gold.img" },
+    }),
+    // === Resurviv ===
+    baton_police: defineMeleeSkin("machete", {
+        name: "Police Baton",
+        rarity: Rarity.Epic,
+        lore: "For maintaining order in the most chaotic situations.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-baton-police.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-baton-police.img",
+        },
+    }),
+    rapier: defineMeleeSkin("machete", {
+        name: "Rapier",
+        rarity: Rarity.Epic,
+        lore: "For those who fight with elegance, speed, and undeniable finesse.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-rapier.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-rapier.img",
+        },
+    }),
+    katana_living_galaxy: defineMeleeSkin("katana", {
+        name: "Living Galaxy Katana",
+        rarity: 5,
+        lore: "Its edge cuts across the night sky.",
+        noDropOnDeath: true,
+        galaxyEffect: true,
+        lootImg: {
+            sprite: "loot-melee-katana-orchid.img",
+            tint: 0x9b6cff,
+        },
+        worldImg: {
+            sprite: "loot-melee-katana.img",
+            tint: 0xffffff,
+        },
+    }),
+    katana_samurai: defineMeleeSkin("katana", {
+        name: "Katana Samurai",
+        quality: 1,
+        noDropOnDeath: true,
+        lootImg: { sprite: "loot-melee-katana-samurai.img" },
+        worldImg: {
+            sprite: "loot-melee-katana-samurai.img",
+        },
+    }),
+    scythe_reaper: defineMeleeSkin("naginata", {
+        name: "Reaper's Scythe",
+        rarity: Rarity.Epic,
+        lore: "For those who reap victory with refined style.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-scythe-reaper.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-scythe-reaper.img",
+        },
     }),
 };
 
