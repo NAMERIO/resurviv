@@ -115,8 +115,7 @@ export const rotatedSprites: Record<string, number> = {
     "player/player-fists-bulls-eyes-l.svg": 90,
     "player/player-fists-bulls-eyes-r.svg": 90,
     // cattle battle
-    "player/player-fists-cattle-battle-l.svg": 90,
-    "player/player-fists-cattle-battle-r.svg": 90,
+    "player/player-fists-cattle-battle.svg": 90,
     // coco nut
     "player/player-fists-coco-nut-l.svg": 90,
     "player/player-fists-coco-nut-r.svg": 90,
@@ -133,8 +132,7 @@ export const rotatedSprites: Record<string, number> = {
     "player/player-fists-fritter-punch-l.svg": 90,
     "player/player-fists-fritter-punch-r.svg": 90,
     // fuzzy hooves
-    "player/player-fists-fuzzy-hooves-l.svg": 90,
-    "player/player-fists-fuzzy-hooves-r.svg": 90,
+    "player/player-fists-fuzzy-hooves.svg": 90,
     // gold drops
     "player/player-fists-gold-drops-l.svg": 90,
     "player/player-fists-gold-drops-r.svg": 90,
@@ -156,8 +154,7 @@ export const rotatedSprites: Record<string, number> = {
     // paws
     "player/player-fists-paws.svg": 90,
     // pine fury
-    "player/player-fists-pine-fury-l.svg": 90,
-    "player/player-fists-pine-fury-r.svg": 90,
+    "player/player-fists-pine-fury.svg": 90,
     // poke
     "player/player-fists-poke.svg": 90,
     // q fist
@@ -178,8 +175,7 @@ export const rotatedSprites: Record<string, number> = {
     "player/player-fists-tiger-seed-l.svg": 90,
     "player/player-fists-tiger-seed-r.svg": 90,
     // wrecked angle
-    "player/player-fists-wrecked-angle-l.svg": 90,
-    "player/player-fists-wrecked-angle-r.svg": 90,
+    "player/player-fists-wrecked-angle.svg": 90,
     // raptor
     "player/player-fists-dino-claws.svg": 90,
 };

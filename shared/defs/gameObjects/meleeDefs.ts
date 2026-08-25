@@ -1298,8 +1298,8 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-be-present-l.img",
-            spriteR: "player-fists-be-present-r.img",
+            spriteL: "player-fists-be-present.img",
+            spriteR: "player-fists-be-present.img",
         },
     }),
     fist_dreidel: defineMeleeSkin("fists", {
@@ -1314,8 +1314,8 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-dreidel-l.img",
-            spriteR: "player-fists-dreidel-r.img",
+            spriteL: "player-fists-dreidel.img",
+            spriteR: "player-fists-dreidel.img",
         },
     }),
     fist_pineFury: defineMeleeSkin("fists", {
@@ -1330,8 +1330,8 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-pine-fury-l.img",
-            spriteR: "player-fists-pine-fury-r.img",
+            spriteL: "player-fists-pine-fury.img",
+            spriteR: "player-fists-pine-fury.img",
         },
     }),
     // = Pass 2 =
@@ -1914,8 +1914,8 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-flashy-l.img",
-            spriteR: "player-fists-flashy-r.img",
+            spriteL: "player-fists-flashy.img",
+            spriteR: "player-fists-flashy.img",
         },
     }),
     fist_theOtherPong: defineMeleeSkin("fists", {
@@ -1946,8 +1946,8 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-make-a-choice-l.img",
-            spriteR: "player-fists-make-a-choice-r.img",
+            spriteL: "player-fists-make-a-choice.img",
+            spriteR: "player-fists-make-a-choice.img",
         },
     }),
     fist_paddle: defineMeleeSkin("fists", {
@@ -2011,8 +2011,8 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-purple-shutter-l.img",
-            spriteR: "player-fists-purple-shutter-r.img",
+            spriteL: "player-fists-purple-shutter.img",
+            spriteR: "player-fists-purple-shutter.img",
         },
     }),
     fist_shinyJello: defineMeleeSkin("fists", {
@@ -2059,8 +2059,8 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-washi-lamps-l.img",
-            spriteR: "player-fists-washi-lamps-r.img",
+            spriteL: "player-fists-washi-lamps.img",
+            spriteR: "player-fists-washi-lamps.img",
         },
     }),
     fist_getdowntonite: defineMeleeSkin("fists", {
@@ -2156,8 +2156,8 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-flaming-nucleus-l.img",
-            spriteR: "player-fists-flaming-nucleus-r.img",
+            spriteL: "player-fists-flaming-nucleus.img",
+            spriteR: "player-fists-flaming-nucleus.img",
         },
     }),
     fist_firstTool: defineMeleeSkin("fists", {
@@ -2204,8 +2204,8 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-fuzzy-hooves-l.img",
-            spriteR: "player-fists-fuzzy-hooves-r.img",
+            spriteL: "player-fists-fuzzy-hooves.img",
+            spriteR: "player-fists-fuzzy-hooves.img",
         },
     }),
     fist_stonedgy: defineMeleeSkin("fists", {
@@ -2414,8 +2414,8 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-wrecked-angle-l.img",
-            spriteR: "player-fists-wrecked-angle-r.img",
+            spriteL: "player-fists-wrecked-angle.img",
+            spriteR: "player-fists-wrecked-angle.img",
         },
     }),
     fist_woodyAllan: defineMeleeSkin("fists", {
@@ -2446,8 +2446,8 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-tawget-l.img",
-            spriteR: "player-fists-tawget-r.img",
+            spriteL: "player-fists-tawget.img",
+            spriteR: "player-fists-tawget.img",
         },
     }),
     fist_horsepower: defineMeleeSkin("fists", {
@@ -2462,8 +2462,8 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-horsepower-l.img",
-            spriteR: "player-fists-horsepower-r.img",
+            spriteL: "player-fists-horsepower.img",
+            spriteR: "player-fists-horsepower.img",
         },
     }),
     fist_milkshaked: defineMeleeSkin("fists", {
@@ -2494,8 +2494,8 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-cattle-battle-l.img",
-            spriteR: "player-fists-cattle-battle-r.img",
+            spriteL: "player-fists-cattle-battle.img",
+            spriteR: "player-fists-cattle-battle.img",
         },
     }),
     // = Probably unused =
@@ -2543,8 +2543,8 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-garbanjo-l.img",
-            spriteR: "player-fists-garbanjo-r.img",
+            spriteL: "player-fists-garbanjo.img",
+            spriteR: "player-fists-garbanjo.img",
         },
     }),
     fist_graphbars: defineMeleeSkin("fists", {
@@ -2623,8 +2623,8 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-fists-watermelon-l.img",
-            spriteR: "player-fists-watermelon-r.img",
+            spriteL: "player-fists-watermelon.img",
+            spriteR: "player-fists-watermelon.img",
         },
     }),
     // == Resurviv-original ==
@@ -2663,8 +2663,8 @@ const SkinDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
         },
         handSprites: {
-            spriteL: "player-hands-blue-zone.img",
-            spriteR: "player-hands-arctic-avenger.img",
+            spriteL: "player-fists-checkmate-l.img",
+            spriteR: "player-hands-checkmate-r.img",
         },
     }),
     fist_paws: defineMeleeSkin("fists", {
