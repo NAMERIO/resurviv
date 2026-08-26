@@ -109,7 +109,7 @@ export class BedWarManager {
     getSpawnPos(arenaTeam: ArenaTeam | undefined, teamId?: number): Vec2 | undefined {
         if (!this.enabled) return undefined;
         const def = this.game.map.mapDef.gameMode.bedWar;
-        const team = teamId === 1 ? "A" : teamId === 2 ? "B" : arenaTeam;
+        const team = arenaTeam ?? (teamId === 1 ? "A" : teamId === 2 ? "B" : undefined);
         if (team !== "A" && team !== "B") return undefined;
 
         const center =

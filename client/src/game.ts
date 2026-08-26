@@ -4042,13 +4042,8 @@ export class Game {
                 if (!this.m_map.getMapDef().gameMode.bedWar) break;
                 this.m_uiManager.setBedWarState(msg);
                 if (msg.event === net.BedWarEvent.BedDestroyed) {
-                    const localTeamId = this.m_playerBarn.getPlayerInfo(
-                        this.m_localId,
-                    ).teamId;
-                    const ourBed = msg.bedTeamId === localTeamId;
-                    const text = ourBed
-                        ? "Our Bed Was Destroyed - No More Respawns"
-                        : "Enemy Bed Destroyed";
+                    const teamName = msg.bedTeamId === 1 ? "Red" : "Blue";
+                    const text = `${teamName} Team Bed Destroyed - No More ${teamName} Respawns`;
                     this.m_ui2Manager.addKillFeedMessage(
                         text,
                         msg.bedTeamId === 1 ? "#ff6666" : "#66b7ff",
