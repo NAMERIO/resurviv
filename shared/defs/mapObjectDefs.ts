@@ -11276,7 +11276,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     }),
     bed_war_01: createBed({
         health: 1000,
-        incomingDamageMultiplier: 0.25,
+        incomingDamageMultiplier: 1 / 12,
         img: { residue: "map-bed-res-02.img" },
     }),
     bollard_01: {

@@ -782,12 +782,11 @@ export class UiManager {
                 redScore: bedHealth,
                 blueScore: bedHealth,
                 scoreLimit: bedHealth,
-                matchTimeLeft: 0,
+                matchTimeLeft: 600,
                 redAlive: true,
                 blueAlive: true,
                 receivedAt: performance.now(),
             };
-            this.captureTheFlagLastTimeText = "BED HP";
             this.updateCaptureTheFlagScoreboard(true);
             this.updateCaptureTheFlagScoreboardVisibility();
         } else if (ctfDef && this.captureTheFlagMode) {
@@ -1001,7 +1000,7 @@ export class UiManager {
             redScore: msg.redBedHealth,
             blueScore: msg.blueBedHealth,
             scoreLimit: math.max(1, msg.maxBedHealth),
-            matchTimeLeft: 0,
+            matchTimeLeft: msg.matchTimeLeft,
             redAlive: msg.redBedAlive,
             blueAlive: msg.blueBedAlive,
             receivedAt: performance.now(),
@@ -1079,10 +1078,17 @@ export class UiManager {
         this.captureTheFlagBlueProgress.css("width", `${bluePct}%`);
 
         if (this.bedWarMode) {
-            this.captureTheFlagLastTimeText = "BED HP";
-            this.captureTheFlagTime.text("BED HP");
+            const elapsed = (performance.now() - state.receivedAt) / 1000;
+            const matchTimeLeft = math.max(0, state.matchTimeLeft - elapsed);
+            const timeText = formatClockTime(matchTimeLeft);
+            if (force || timeText !== this.captureTheFlagLastTimeText) {
+                this.captureTheFlagLastTimeText = timeText;
+                this.captureTheFlagTime.text(timeText);
+            }
             this.captureTheFlagMatchTime.css("display", "none");
-            this.captureTheFlagScoreGoal.css("display", "none");
+            this.captureTheFlagScoreGoal
+                .text(matchTimeLeft > 0 ? "BEDS BREAK IN" : "SUDDEN DEATH")
+                .css("display", "block");
             return;
         }
 

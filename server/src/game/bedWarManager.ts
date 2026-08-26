@@ -1,4 +1,5 @@
 import type { ArenaTeam } from "../../../shared/defs/miniGame";
+import { DamageType } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import { ObjectType } from "../../../shared/net/objectSerializeFns";
 import { type Vec2, v2 } from "../../../shared/utils/v2";
@@ -22,6 +23,9 @@ export class BedWarManager {
     readonly beds: Record<BedTeam, BedObjective>;
     private lastRedHealth = -1;
     private lastBlueHealth = -1;
+    private lastBroadcastSecond = -1;
+    private suddenDeathStarted = false;
+    private destroyingBedsForSuddenDeath = false;
 
     constructor(readonly game: Game) {
         const def = game.map.mapDef.gameMode.bedWar;
@@ -44,9 +48,18 @@ export class BedWarManager {
         if (!this.enabled || this.game.over) return;
         this.bindMapBeds();
 
+        if (this.game.started && this.matchTimeLeft <= 0 && !this.suddenDeathStarted) {
+            this.startSuddenDeath();
+        }
+
         const redHealth = this.getBedHealth(this.beds.A);
         const blueHealth = this.getBedHealth(this.beds.B);
-        if (redHealth !== this.lastRedHealth || blueHealth !== this.lastBlueHealth) {
+        const secondsLeft = Math.ceil(this.matchTimeLeft);
+        if (
+            redHealth !== this.lastRedHealth ||
+            blueHealth !== this.lastBlueHealth ||
+            secondsLeft !== this.lastBroadcastSecond
+        ) {
             this.broadcast();
         }
     }
@@ -77,12 +90,14 @@ export class BedWarManager {
             params.source?.__type === ObjectType.Player
                 ? (params.source as Player)
                 : undefined;
-        this.broadcast(
-            net.BedWarEvent.BedDestroyed,
-            bed.teamId,
-            source ? this.getPlayerTeamId(source) : 0,
-            source?.__id ?? 0,
-        );
+        if (!this.destroyingBedsForSuddenDeath) {
+            this.broadcast(
+                net.BedWarEvent.BedDestroyed,
+                bed.teamId,
+                source ? this.getPlayerTeamId(source) : 0,
+                source?.__id ?? 0,
+            );
+        }
 
         for (const player of this.game.playerBarn.players) {
             if (
@@ -97,7 +112,9 @@ export class BedWarManager {
         }
 
         this.game.playerBarn.aliveCountDirty = true;
-        this.game.checkGameOver();
+        if (!this.destroyingBedsForSuddenDeath) {
+            this.game.checkGameOver();
+        }
     }
 
     canRespawn(player: Player): boolean {
@@ -138,6 +155,35 @@ export class BedWarManager {
             player.addGameOverMsg(winningTeamId, { gameOver: true });
         }
         return true;
+    }
+
+    get matchTimeLeft(): number {
+        if (!this.enabled || !this.settings || !this.game.started) {
+            return this.settings?.matchDuration ?? 600;
+        }
+        return Math.max(0, this.settings.matchDuration - this.game.startedTime);
+    }
+
+    private startSuddenDeath(): void {
+        this.suddenDeathStarted = true;
+        this.destroyingBedsForSuddenDeath = true;
+
+        for (const bed of Object.values(this.beds)) {
+            if (!bed.alive) continue;
+            if (bed.object && !bed.object.dead) {
+                bed.object.kill({
+                    damageType: DamageType.Gas,
+                    dir: v2.create(0, 0),
+                });
+            } else {
+                bed.alive = false;
+            }
+        }
+
+        this.destroyingBedsForSuddenDeath = false;
+        this.broadcast(net.BedWarEvent.SuddenDeath);
+        this.game.playerBarn.aliveCountDirty = true;
+        this.game.checkGameOver();
     }
 
     private createBed(teamId: 1 | 2): BedObjective {
@@ -219,12 +265,14 @@ export class BedWarManager {
             this.beds.B.object?.maxHealth ?? 0,
             1,
         );
+        msg.matchTimeLeft = this.matchTimeLeft;
         msg.event = event;
         msg.bedTeamId = bedTeamId;
         msg.actorTeamId = actorTeamId;
         msg.actorPlayerId = actorPlayerId;
         this.lastRedHealth = msg.redBedHealth;
         this.lastBlueHealth = msg.blueBedHealth;
+        this.lastBroadcastSecond = Math.ceil(msg.matchTimeLeft);
         this.game.broadcastMsg(net.MsgType.BedWar, msg);
     }
 }

@@ -4049,6 +4049,10 @@ export class Game {
                         msg.bedTeamId === 1 ? "#ff6666" : "#66b7ff",
                     );
                     this.m_uiManager.displayAnnouncement(text, 3500);
+                } else if (msg.event === net.BedWarEvent.SuddenDeath) {
+                    const text = "Sudden Death - Both Beds Destroyed";
+                    this.m_ui2Manager.addKillFeedMessage(text, "#ffcc66");
+                    this.m_uiManager.displayAnnouncement(text, 3500);
                 }
                 break;
             }
