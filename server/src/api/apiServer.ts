@@ -3,6 +3,7 @@ import type { UpgradeWebSocket } from "hono/ws";
 import { MapDefs } from "../../../shared/defs/mapDefs";
 import { TeamMode } from "../../../shared/gameConfig";
 import type { SiteInfoRes } from "../../../shared/types/api";
+import { getFeaturedBundleOffers } from "../../../shared/utils/featuredBundles";
 import { Config } from "../config";
 import { TeamMenu } from "../teamMenu";
 import { GIT_VERSION } from "../utils/gitRevision";
@@ -237,6 +238,10 @@ export class ApiServer {
             clientTheme: this.clientTheme,
             battlePassEndDate: Config.battlePassEndDate,
             battlePassEndTime: Config.battlePassEndTime,
+            featuredBundleRefreshAt: getFeaturedBundleOffers(
+                Date.now(),
+                Config.featuredBundleResetAt,
+            ).window.refreshesAt,
         };
 
         for (const region in this.regions) {

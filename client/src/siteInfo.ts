@@ -12,6 +12,7 @@ export class SiteInfo {
     info: SiteInfoRes = {} as SiteInfoRes;
     loaded = false;
     private battlePassTimerInterval: ReturnType<typeof setInterval> | null = null;
+    private featuredBundleTimerInterval: ReturnType<typeof setInterval> | null = null;
 
     constructor(
         public config: ConfigManager,
@@ -128,6 +129,7 @@ export class SiteInfo {
     updatePageFromInfo() {
         if (this.loaded) {
             this.updateBattlePassTimer();
+            this.updateFeaturedBundleTimer();
             const getGameModeStyles = this.getGameModeStyles();
             const modeSelector = $("#game-mode-select-main");
             modeSelector.empty();
@@ -322,6 +324,43 @@ export class SiteInfo {
                 if (!renderTimer() && this.battlePassTimerInterval) {
                     clearInterval(this.battlePassTimerInterval);
                     this.battlePassTimerInterval = null;
+                }
+            }, 1000);
+        }
+    }
+
+    private updateFeaturedBundleTimer() {
+        const timerElem = $("#index-offer-time-left");
+        if (!timerElem.length) return;
+
+        if (this.featuredBundleTimerInterval) {
+            clearInterval(this.featuredBundleTimerInterval);
+            this.featuredBundleTimerInterval = null;
+        }
+
+        const renderTimer = () => {
+            const refreshAt = Number(this.info.featuredBundleRefreshAt);
+            if (!Number.isFinite(refreshAt)) {
+                timerElem.text(" 00:00:00");
+                return false;
+            }
+
+            const remainingMs = refreshAt - Date.now();
+            const totalSeconds = Math.max(0, Math.floor(remainingMs / 1000));
+            const days = Math.floor(totalSeconds / 86400);
+            const hours = Math.floor((totalSeconds % 86400) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            timerElem.text(` ${days}d ${hours}h ${minutes}m ${seconds}s`);
+            return remainingMs > 0;
+        };
+
+        if (renderTimer()) {
+            this.featuredBundleTimerInterval = setInterval(() => {
+                if (!renderTimer() && this.featuredBundleTimerInterval) {
+                    clearInterval(this.featuredBundleTimerInterval);
+                    this.featuredBundleTimerInterval = null;
                 }
             }, 1000);
         }

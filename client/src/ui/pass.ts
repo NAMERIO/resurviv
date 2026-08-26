@@ -268,6 +268,11 @@ export class Pass {
     rewardedAdGpMessage = "";
     rewardedAdGpTimeout = 0;
     premiumPassModal = new MenuModal($("#modal-premium-pass-confirm"));
+    private passRewardPreviewObserver?: IntersectionObserver;
+    private passRewardPreviewFactories = new WeakMap<
+        HTMLElement,
+        () => JQuery<HTMLElement>
+    >();
 
     constructor(
         public account: Account,
@@ -747,11 +752,63 @@ export class Pass {
         });
     }
 
+    private resetPassRewardPreviewObserver() {
+        this.passRewardPreviewObserver?.disconnect();
+        this.passRewardPreviewObserver = undefined;
+        this.passRewardPreviewFactories = new WeakMap();
+    }
+
+    private createLazyPassRewardImage(
+        reward: PassRewardDef,
+        className: string,
+        skinScale: number,
+    ) {
+        if (!("IntersectionObserver" in window)) {
+            return createPassRewardImage(reward, className, skinScale);
+        }
+
+        if (!this.passRewardPreviewObserver) {
+            this.passRewardPreviewObserver = new IntersectionObserver(
+                (entries, observer) => {
+                    for (const entry of entries) {
+                        if (!entry.isIntersecting) continue;
+
+                        const element = entry.target as HTMLElement;
+                        const createPreview =
+                            this.passRewardPreviewFactories.get(element);
+                        observer.unobserve(element);
+                        this.passRewardPreviewFactories.delete(element);
+                        if (!createPreview) continue;
+
+                        $(element).replaceWith(createPreview());
+                    }
+                },
+                {
+                    root: null,
+                    rootMargin: "300px 600px",
+                    threshold: 0,
+                },
+            );
+        }
+
+        const placeholder = $("<div/>", {
+            class: `${className} pass-reward-preview-placeholder`,
+            "aria-hidden": "true",
+        });
+        const element = placeholder[0];
+        this.passRewardPreviewFactories.set(element, () =>
+            createPassRewardImage(reward, className, skinScale),
+        );
+        this.passRewardPreviewObserver.observe(element);
+        return placeholder;
+    }
+
     populatePassItems(options: { autoScroll?: boolean; preserveScroll?: boolean } = {}) {
         const passDef = PassDefs[this.pass.data.type as keyof typeof PassDefs];
         const passItemsList = $("#pass-items-list");
         const passItemsWrapper = $("#start-menu #pass-items-wrapper");
         const previousScrollLeft = passItemsWrapper.scrollLeft() || 0;
+        this.resetPassRewardPreviewObserver();
         passItemsList.empty();
         const basicPassItems = $(".pass-basic-items");
         const premiumPassItems = $(".pass-premium-items");
@@ -814,7 +871,7 @@ export class Pass {
                             itemLevel,
                         ),
                     ),
-                    createPassRewardImage(passItem, "pass-item-image", 0.7),
+                    this.createLazyPassRewardImage(passItem, "pass-item-image", 0.7),
                     $("<div/>", { class: "pass-item-name", text: itemName }),
                 );
 
@@ -836,7 +893,7 @@ export class Pass {
                       } else {
                           applyPassRewardRarityStyle(rewardItem, passItem);
                           rewardItem.append(
-                              createPassRewardImage(
+                              this.createLazyPassRewardImage(
                                   passItem,
                                   "pass-track-item-image",
                                   1.7,
@@ -938,7 +995,7 @@ export class Pass {
         } else {
             applyPassRewardRarityStyle(trackItem, passItem);
             trackItem.append(
-                createPassRewardImage(passItem, "pass-track-item-image", 1.7),
+                this.createLazyPassRewardImage(passItem, "pass-track-item-image", 1.7),
             );
         }
 

@@ -66,6 +66,7 @@ export interface SiteInfoRes {
     captchaEnabled: boolean;
     battlePassEndDate?: string;
     battlePassEndTime?: number;
+    featuredBundleRefreshAt: number;
     modes: Array<{
         mapName: string;
         teamMode: TeamMode;

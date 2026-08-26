@@ -5,7 +5,6 @@ import type { MeleeDef } from "../../shared/defs/gameObjects/meleeDefs";
 import {
     getOutfitLootImg,
     type OutfitDef,
-    OutfitDefs,
 } from "../../shared/defs/gameObjects/outfitDefs";
 import { MapDefs } from "../../shared/defs/mapDefs";
 import { Rarity } from "../../shared/gameConfig";
@@ -251,14 +250,6 @@ function queueOutfitSkinLootImage(type: string, def: OutfitDef) {
         });
     outfitSkinLootImagePromises.set(type, promise);
     return promise;
-}
-
-if (typeof window !== "undefined") {
-    for (const [type, def] of Object.entries(OutfitDefs)) {
-        if (def.lootImg.skinLootImg) {
-            queueOutfitSkinLootImage(type, def);
-        }
-    }
 }
 
 const rarityVisuals: Record<

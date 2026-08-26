@@ -45,8 +45,8 @@ import { proxy } from "./proxy";
 import { ResourceManager } from "./resources";
 import { SDK } from "./sdk/sdk";
 import { SiteInfo } from "./siteInfo";
-import { ClanUi } from "./ui/clanUi";
-import { FriendsUi } from "./ui/friendsUi";
+import type { ClanUi } from "./ui/clanUi";
+import type { FriendsUi } from "./ui/friendsUi";
 import { LoadoutMenu } from "./ui/loadoutMenu";
 import { Localization } from "./ui/localization";
 import Menu from "./ui/menu";
@@ -54,7 +54,7 @@ import { MenuModal } from "./ui/menuModal";
 import { LoadoutDisplay } from "./ui/opponentDisplay";
 import { Pass } from "./ui/pass";
 import { ProfileUi } from "./ui/profileUi";
-import { ShopMenu } from "./ui/shopMenu";
+import type { ShopMenu } from "./ui/shopMenu";
 import { TeamMenu } from "./ui/teamMenu";
 import { loadStaticDomImages } from "./ui/ui2";
 
@@ -172,9 +172,12 @@ export class Application {
     loadoutMenu!: LoadoutMenu;
     pass!: Pass;
     profileUi!: ProfileUi;
-    clanUi!: ClanUi;
-    friendsUi!: FriendsUi;
-    shopMenu!: ShopMenu;
+    clanUi?: ClanUi;
+    friendsUi?: FriendsUi;
+    shopMenu?: ShopMenu;
+    private clanUiPromise?: Promise<ClanUi>;
+    private friendsUiPromise?: Promise<FriendsUi>;
+    private shopMenuPromise?: Promise<ShopMenu>;
 
     pingTest = new PingTest();
     audioManager = new AudioManager();
@@ -340,7 +343,7 @@ export class Application {
         onLoadCompleteCb();
     }
 
-    tryLoad() {
+    async tryLoad() {
         if (this.domContentLoaded && this.configLoaded && !this.initialized) {
             this.initialized = true;
             if (window.discordRPC?.isElectron) {
@@ -365,6 +368,18 @@ export class Application {
             this.startPingTest();
             this.siteInfo.load();
             this.localization.localizeIndex();
+
+            const hasInitialInvite =
+                window.location.hash.length > 1 && !this.isGoogleFullscreenAdHash();
+            if (hasInitialInvite) {
+                // Direct invite links should connect before the account, shop, pass,
+                // renderer, and game systems perform their startup work.
+                this.nameInput.val(this.config.get("playerName") || "");
+                this.active = true;
+                this.tryJoinTeam(false, undefined, false, undefined, false);
+                await this.waitForInitialInviteUi();
+            }
+
             this.account.addEventListener("login", () => {
                 discordPresence.setHome(
                     this.account.profile.username ||
@@ -374,6 +389,12 @@ export class Application {
                 this.refreshUi();
                 this.newsManager.updateAccess();
             });
+            this.account.addEventListener("gpBalance", () => {
+                if (!this.shopMenu) {
+                    $("#start-gp-display-amount").text(String(this.account.gpBalance));
+                }
+            });
+            $("#start-gp-display-amount").text(String(this.account.gpBalance));
             this.newsManager.init();
             this.account.init();
 
@@ -384,27 +405,23 @@ export class Application {
                 this.loadoutMenu,
                 this.errorModal,
             );
-            this.shopMenu = new ShopMenu(this.account, this.localization);
-            this.friendsUi = new FriendsUi(
-                this.account,
-                this.profileUi,
-                () => this.active,
+            $("#start-shop-shortcut, #open-store-button").on(
+                "click.lazyShop",
+                (event) => {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    void this.openShopMenu();
+                    return false;
+                },
             );
-
-            // Initialize ClanUi
-            this.clanUi = new ClanUi(this.account, this.localization, () => this.active);
-            this.account.addEventListener("login", () => {
-                this.startSocialEvents();
+            $("#btn-friends").on("click.lazyFriends", (event) => {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                void this.openFriendsUi();
+                return false;
             });
-            this.startSocialEvents();
             $("#btn-clans").on("click", () => {
-                if (!this.account.loggedIn) {
-                    this.profileUi.showLoginMenu({
-                        modal: true,
-                    });
-                    return;
-                }
-                this.clanUi.showMainModal();
+                void this.openClanUi();
             });
 
             this.nameInput.attr("maxLength", net.Constants.PlayerNameMaxLen);
@@ -422,6 +439,9 @@ export class Application {
             this.serverSelect.on("change", () => {
                 const t = this.serverSelect.find(":selected").val();
                 this.config.set("region", t as string);
+            });
+            this.gameModeSelect.on("change", () => {
+                this.warmupSelectedGameAssets();
             });
             this.nameInput.on("blur", (_t) => {
                 this.setConfigFromDOM();
@@ -934,7 +954,6 @@ export class Application {
                 this.audioManager,
                 this.config,
             );
-            this.resourceManager.loadMapAssets("main");
             this.input = new InputHandler(document.getElementById("game-touch-area")!);
             this.inputBinds = new InputBinds(this.input, this.config);
             this.inputBindUi = new InputBindUi(
@@ -1021,14 +1040,38 @@ export class Application {
             );
             this.loadoutMenu.loadoutDisplay = this.loadoutDisplay;
             this.onResize();
-            this.tryJoinTeam(false);
             Menu.setupModals(this.inputBinds, this.inputBindUi);
             this.onConfigModified();
             this.config.addModifiedListener(this.onConfigModified.bind(this));
             loadStaticDomImages();
 
             SDK.gameLoadComplete();
+            this.scheduleInitialGameAssetWarmup();
         }
+    }
+
+    private scheduleInitialGameAssetWarmup() {
+        // Give the browser a chance to paint the usable menu/lobby before PIXI
+        // parses and uploads the large game atlases. This still starts
+        // automatically; entering a match never initiates the download.
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    if (!this.resourceManager) return;
+                    if (this.teamMenu.active && this.teamMenu.arena) {
+                        this.warmupArenaLobbyMapAssets();
+                    } else {
+                        this.warmupSelectedGameAssets();
+                    }
+                }, 0);
+            });
+        });
+    }
+
+    private warmupSelectedGameAssets() {
+        if (!this.resourceManager) return;
+        const mode = this.siteInfo.info.modes?.[this.getSelectedGameModeIdx()];
+        this.resourceManager.loadMapAssets(mode?.mapName || "main");
     }
 
     onUnload() {
@@ -1122,6 +1165,69 @@ export class Application {
         }
     }
 
+    private loadShopMenu() {
+        if (this.shopMenu) return Promise.resolve(this.shopMenu);
+        if (!this.shopMenuPromise) {
+            this.shopMenuPromise = import("./ui/shopMenu").then(({ ShopMenu }) => {
+                const menu = new ShopMenu(this.account, this.localization);
+                this.shopMenu = menu;
+                return menu;
+            });
+        }
+        return this.shopMenuPromise;
+    }
+
+    private async openShopMenu() {
+        const menu = await this.loadShopMenu();
+        $("#start-shop-shortcut, #open-store-button").off(".lazyShop");
+        menu.modal.show(true);
+    }
+
+    private loadFriendsUi() {
+        if (this.friendsUi) return Promise.resolve(this.friendsUi);
+        if (!this.friendsUiPromise) {
+            this.friendsUiPromise = import("./ui/friendsUi").then(({ FriendsUi }) => {
+                const ui = new FriendsUi(this.account, this.profileUi, () => this.active);
+                this.friendsUi = ui;
+                this.startSocialEvents();
+                return ui;
+            });
+        }
+        return this.friendsUiPromise;
+    }
+
+    private async openFriendsUi() {
+        if (!this.account.loggedIn) {
+            this.profileUi.showLoginMenu({ modal: true });
+            return;
+        }
+        const ui = await this.loadFriendsUi();
+        $("#btn-friends").off(".lazyFriends");
+        ui.show();
+    }
+
+    private loadClanUi() {
+        if (this.clanUi) return Promise.resolve(this.clanUi);
+        if (!this.clanUiPromise) {
+            this.clanUiPromise = import("./ui/clanUi").then(({ ClanUi }) => {
+                const ui = new ClanUi(this.account, this.localization, () => this.active);
+                this.clanUi = ui;
+                this.startSocialEvents();
+                return ui;
+            });
+        }
+        return this.clanUiPromise;
+    }
+
+    private async openClanUi() {
+        if (!this.account.loggedIn) {
+            this.profileUi.showLoginMenu({ modal: true });
+            return;
+        }
+        const ui = await this.loadClanUi();
+        ui.showMainModal();
+    }
+
     startSocialEvents() {
         if (this.socialEvents || !this.account.loggedIn || !("EventSource" in window)) {
             return;
@@ -1131,53 +1237,57 @@ export class Application {
             withCredentials: true,
         });
         events.addEventListener("friends_changed", () => {
-            this.account.loadFriends(undefined, true);
+            if (this.friendsUi) {
+                this.account.loadFriends(undefined, true);
+            }
         });
         events.addEventListener("clan_messages_changed", (event) => {
             const data = this.parseSocialEvent(event);
+            const clanUi = this.clanUi;
             if (
+                clanUi &&
                 data?.clanId &&
-                this.clanUi.viewingClan?.id === data.clanId &&
-                this.clanUi.clanPageModal.isVisible()
+                clanUi.viewingClan?.id === data.clanId &&
+                clanUi.clanPageModal.isVisible()
             ) {
-                this.clanUi.loadNewClanMessages();
+                clanUi.loadNewClanMessages();
             }
         });
         events.addEventListener("clan_mentions_changed", (event) => {
             const data = this.parseSocialEvent(event);
-            if (data?.clanId && this.clanUi.currentClan?.id === data.clanId) {
-                this.clanUi.loadMentionNotifications(true);
+            const clanUi = this.clanUi;
+            if (clanUi && data?.clanId && clanUi.currentClan?.id === data.clanId) {
+                clanUi.loadMentionNotifications(true);
             }
         });
         events.addEventListener("clan_join_requests_changed", (event) => {
             const data = this.parseSocialEvent(event);
-            if (data?.clanId && this.clanUi.currentClan?.id === data.clanId) {
-                this.clanUi.loadMyClan();
+            const clanUi = this.clanUi;
+            if (clanUi && data?.clanId && clanUi.currentClan?.id === data.clanId) {
+                clanUi.loadMyClan();
                 if (
-                    this.clanUi.viewingClan?.id === data.clanId &&
-                    this.clanUi.clanPageModal.isVisible()
+                    clanUi.viewingClan?.id === data.clanId &&
+                    clanUi.clanPageModal.isVisible()
                 ) {
-                    this.clanUi.loadClanDetail(
+                    clanUi.loadClanDetail(
                         data.clanId,
-                        this.clanUi.getSelectedClanDetailSeason(),
+                        clanUi.getSelectedClanDetailSeason(),
                     );
                 }
             }
         });
         events.addEventListener("clan_members_changed", (event) => {
             const data = this.parseSocialEvent(event);
-            if (!data?.clanId) return;
-            if (this.clanUi.currentClan?.id === data.clanId) {
-                this.clanUi.loadMyClan();
+            const clanUi = this.clanUi;
+            if (!clanUi || !data?.clanId) return;
+            if (clanUi.currentClan?.id === data.clanId) {
+                clanUi.loadMyClan();
             }
             if (
-                this.clanUi.viewingClan?.id === data.clanId &&
-                this.clanUi.clanPageModal.isVisible()
+                clanUi.viewingClan?.id === data.clanId &&
+                clanUi.clanPageModal.isVisible()
             ) {
-                this.clanUi.loadClanDetail(
-                    data.clanId,
-                    this.clanUi.getSelectedClanDetailSeason(),
-                );
+                clanUi.loadClanDetail(data.clanId, clanUi.getSelectedClanDetailSeason());
             }
         });
         events.onerror = () => {
@@ -3619,6 +3729,19 @@ export class Application {
         return { roomUrl, arena, preferredTeam, spectator, teamCode };
     }
 
+    private async waitForInitialInviteUi() {
+        const deadline = Date.now() + 1500;
+        while (this.teamMenu.active && !this.teamMenu.joined && Date.now() < deadline) {
+            await new Promise<void>((resolve) => setTimeout(resolve, 16));
+        }
+
+        // Allow the browser to paint the connecting/joined lobby before the heavier
+        // menu and renderer initialization continues.
+        await new Promise<void>((resolve) => {
+            requestAnimationFrame(() => setTimeout(resolve, 0));
+        });
+    }
+
     tryJoinTeam(
         create: boolean,
         url?: string,
@@ -3628,6 +3751,7 @@ export class Application {
             spectator?: boolean;
             teamCode?: string;
         },
+        syncConfigFromDom = true,
     ) {
         if (this.active && this.quickPlayPendingModeIdx === -1) {
             if (create && arena) {
@@ -3705,7 +3829,9 @@ export class Application {
                 // selected region. We will stash the menu values
                 // into the config so the team menu can read them.
                 this.prestigeArenaModalRequestedOpen = targetArena;
-                this.setConfigFromDOM();
+                if (syncConfigFromDom) {
+                    this.setConfigFromDOM();
+                }
                 this.teamMenu.connect(create, roomUrl, targetArena, effectiveJoinPrefs);
                 this.refreshUi();
             }
