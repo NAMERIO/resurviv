@@ -112,6 +112,7 @@ interface Emote {
     pos: Vec2;
     type: string;
     isPing: boolean;
+    broadcastToAll?: boolean;
     targetArenaTeam?: ArenaTeam;
     targetArenaTeams?: ArenaTeam[];
     /**
@@ -1172,6 +1173,7 @@ export class PlayerBarn {
         pos: Vec2,
         playerId = 0,
         targetArenaTeam?: ArenaTeam | ArenaTeam[],
+        broadcastToAll = false,
     ) {
         const targetArenaTeams = Array.isArray(targetArenaTeam)
             ? targetArenaTeam
@@ -1185,6 +1187,7 @@ export class PlayerBarn {
             pos,
             playerId,
             itemType: "",
+            broadcastToAll,
             targetArenaTeam: targetArenaTeamSingle,
             targetArenaTeams,
         });
@@ -4834,6 +4837,10 @@ export class Player extends BaseGameObject {
                 return player.__id === emote.playerId;
             }
 
+            if (emote.isPing && emote.broadcastToAll) {
+                return true;
+            }
+
             if (emote.targetArenaTeam && player.arenaTeam !== emote.targetArenaTeam) {
                 return false;
             }
@@ -4842,6 +4849,13 @@ export class Player extends BaseGameObject {
                 (!player.arenaTeam || !emote.targetArenaTeams.includes(player.arenaTeam))
             ) {
                 return false;
+            }
+            if (
+                emote.isPing &&
+                (emote.targetArenaTeam !== undefined ||
+                    emote.targetArenaTeams !== undefined)
+            ) {
+                return true;
             }
 
             if (emotePlayer) {

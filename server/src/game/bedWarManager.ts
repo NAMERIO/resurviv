@@ -28,6 +28,7 @@ export class BedWarManager {
     private lastBroadcastSecond = -1;
     private suddenDeathStarted = false;
     private destroyingBedsForSuddenDeath = false;
+    private revealPingTicker = 0;
 
     constructor(readonly game: Game) {
         const def = game.map.mapDef.gameMode.bedWar;
@@ -46,13 +47,14 @@ export class BedWarManager {
         this.broadcast();
     }
 
-    update(): void {
+    update(dt: number): void {
         if (!this.enabled || this.game.over) return;
         this.bindMapBeds();
 
         if (this.game.started && this.matchTimeLeft <= 0 && !this.suddenDeathStarted) {
             this.startSuddenDeath();
         }
+        this.updateBedlessTeamPings(dt);
 
         const redHealth = this.getBedHealth(this.beds.A);
         const blueHealth = this.getBedHealth(this.beds.B);
@@ -194,6 +196,31 @@ export class BedWarManager {
         this.broadcast(net.BedWarEvent.SuddenDeath);
         this.game.playerBarn.aliveCountDirty = true;
         this.game.checkGameOver();
+    }
+
+    private updateBedlessTeamPings(dt: number): void {
+        if (!this.game.started || (this.beds.A.alive && this.beds.B.alive)) {
+            this.revealPingTicker = 0;
+            return;
+        }
+
+        this.revealPingTicker -= dt;
+        if (this.revealPingTicker > 0) return;
+        this.revealPingTicker = this.settings?.revealPingInterval ?? 10;
+
+        for (const player of this.game.playerBarn.livingPlayers) {
+            if (player.dead || player.disconnected || player.spectatorOnly) continue;
+            const team = this.getPlayerBedTeam(player);
+            if (!team || this.beds[team].alive) continue;
+
+            this.game.playerBarn.addMapPing(
+                "ping_danger",
+                v2.copy(player.pos),
+                player.__id,
+                undefined,
+                true,
+            );
+        }
     }
 
     private createBed(teamId: 1 | 2): BedObjective {

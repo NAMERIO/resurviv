@@ -376,7 +376,7 @@ export class Game {
         this.profiler.endSample();
 
         this.profiler.addSample("bedWar");
-        this.bedWarManager.update();
+        this.bedWarManager.update(dt);
         this.profiler.endSample();
 
         this.profiler.addSample("map");

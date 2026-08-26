@@ -81,6 +81,7 @@ export interface BedWarSettings {
     respawnCooldown: number;
     matchDuration: number;
     grenadeDamageMultiplier: number;
+    revealPingInterval: number;
 }
 
 interface PrivateLobbyMiniGameServerSettings {
@@ -169,6 +170,7 @@ export const BedWarSettings: BedWarSettings = {
     respawnCooldown: 5,
     matchDuration: 600,
     grenadeDamageMultiplier: 0.1,
+    revealPingInterval: 10,
 };
 
 export const PrivateLobbyMiniGameServerSettings: Record<
