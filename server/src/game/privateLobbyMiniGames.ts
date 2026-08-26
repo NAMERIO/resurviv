@@ -80,6 +80,7 @@ export interface DominationSettings {
 export interface BedWarSettings {
     respawnCooldown: number;
     matchDuration: number;
+    grenadeDamageMultiplier: number;
 }
 
 interface PrivateLobbyMiniGameServerSettings {
@@ -167,6 +168,7 @@ export const DominationSettings: DominationSettings = {
 export const BedWarSettings: BedWarSettings = {
     respawnCooldown: 5,
     matchDuration: 600,
+    grenadeDamageMultiplier: 0.1,
 };
 
 export const PrivateLobbyMiniGameServerSettings: Record<

@@ -390,7 +390,10 @@ export class Obstacle extends BaseGameObject {
             if (def.stonePlated && !stonePiercing) return;
         }
 
-        this.health -= params.amount! * (def.incomingDamageMultiplier ?? 1);
+        this.health -=
+            params.amount! *
+            (def.incomingDamageMultiplier ?? 1) *
+            this.game.bedWarManager.getBedDamageMultiplier(this, params);
         this.health = math.max(0, this.health);
 
         this.healthT = math.clamp(this.health / this.maxHealth, 0, 1);

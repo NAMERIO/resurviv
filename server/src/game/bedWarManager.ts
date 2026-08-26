@@ -11,6 +11,8 @@ import { getBedWarSettings, isBedWarMiniGame } from "./privateLobbyMiniGames";
 
 type BedTeam = "A" | "B";
 
+const grenadeTypes = new Set(["frag", "mirv", "mirv_mini", "40mm_grenade"]);
+
 interface BedObjective {
     teamId: 1 | 2;
     alive: boolean;
@@ -77,6 +79,14 @@ export class BedWarManager {
         if (!source || source.dead || source.disconnected) return false;
         const sourceTeamId = this.getPlayerTeamId(source);
         return sourceTeamId !== 0 && sourceTeamId !== bed.teamId;
+    }
+
+    getBedDamageMultiplier(obstacle: Obstacle, params: DamageParams): number {
+        if (!this.enabled || !this.getBedForObject(obstacle)) return 1;
+        if (!params.isExplosion || !grenadeTypes.has(params.gameSourceType ?? "")) {
+            return 1;
+        }
+        return this.settings?.grenadeDamageMultiplier ?? 0.1;
     }
 
     onObstacleDestroyed(obstacle: Obstacle, params: DamageParams): void {
