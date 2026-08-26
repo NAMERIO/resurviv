@@ -67,18 +67,18 @@ class Smoke implements AbstractObject {
 
 const smokeParticles = ["part-smoke-02.img", "part-smoke-03.img"];
 const foamParticles = [
-    "foam1.img",
-    "foam2.img",
-    "foam3.img",
-    "foam4.img",
-    "foam5.img",
-    "foam6.img",
-    "foam7.img",
-    "foam8.img",
-    "foam9.img",
-    "foam10.img",
-    "foam11.img",
-    "foam12.img",
+    "part-foam-01.img",
+    "part-foam-02.img",
+    "part-foam-03.img",
+    "part-foam-04.img",
+    "part-foam-05.img",
+    "part-foam-06.img",
+    "part-foam-07.img",
+    "part-foam-08.img",
+    "part-foam-09.img",
+    "part-foam-10.img",
+    "part-foam-11.img",
+    "part-foam-12.img",
 ];
 export class SmokeParticle {
     active = false;

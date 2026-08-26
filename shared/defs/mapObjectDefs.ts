@@ -12277,6 +12277,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     } as unknown as Partial<ObstacleDef>),
     crate_30: createCrate({
         health: 140,
+        explodeParticle: "pyrePlank",
         loot: [autoLoot("pyro", 1), autoLoot("phoenix", 1), autoLoot("m9a17", 1)],
         map: { display: true, color: 0xcc0000 },
         terrain: { grass: true, beach: false },
