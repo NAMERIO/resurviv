@@ -4050,6 +4050,48 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+    outfitMugnificent: defineOutfitSkin("outfitBase", {
+        name: "Mugnificent",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-mugnificent.img",
+            handTint: 0x356b7c,
+            handSprite: "player-hands-01.img",
+            footTint: 0x356b7c,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x1f4b59,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitDeRanged: defineOutfitSkin("outfitBase", {
+        name: "De-Ranged",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        skinImg: {
+            baseTint: 0xf4b592,
+            baseSprite: "player-base-01.img",
+            handTint: 0xf4b592,
+            handSprite: "player-hands-01.img",
+            footTint: 0xf4b592,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x1c1511,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -4.3, y: 0 },
+            frontSprite: "player-accessory-de-ranged.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
     // ============ SURVEV OUTFITS ============
     outfitSnow: defineOutfitSkin("outfitBase", {
         name: "Snowed Over",
@@ -5594,6 +5636,28 @@ const SkinDefs: Record<string, OutfitDef> = {
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
             backpackTint: 0x2e1d0a,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitCandyCorn: defineOutfitSkin("outfitBase", {
+        name: "Peru",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "For those who work with polarizing tastes.",
+
+        skinImg: {
+            baseTint: 0xff6b00,
+            baseSprite: "player-base-01.img",
+            handTint: 0xffd000,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffd000,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xf4f4f4,
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {

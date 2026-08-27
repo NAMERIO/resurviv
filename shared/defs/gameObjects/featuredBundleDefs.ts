@@ -72,7 +72,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
     bundle_dragon: {
         name: "Dragon Set",
         size: "small",
-        items: ["outfitDragonTails", "bloodmoon_huntsman"],
+        items: ["outfitDragonTails", "huntsman_bloodmoon"],
         price: 1350,
         durationDays: 7,
     },
@@ -100,7 +100,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
     bundle_prince: {
         name: "Prince Set",
         size: "small",
-        items: ["outfitLustrousPaladin", "gilded_bayonet"],
+        items: ["outfitLustrousPaladin", "bayonet_gilded"],
         price: 1250,
         durationDays: 7,
     },

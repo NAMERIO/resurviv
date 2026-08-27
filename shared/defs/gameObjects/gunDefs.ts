@@ -4169,7 +4169,7 @@ export const BaseDefs: Record<string, GunDef> = {
             },
             onLoadComplete: "gun-rainbow-blaster-loaded.img",
             loadingBullet: {
-                sprite: "rainbow-ball.img",
+                sprite: "part-rainbow-ball-01.img",
                 pos: {
                     x: 0.5,
                     y: -65,
