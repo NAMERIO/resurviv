@@ -10,6 +10,7 @@ import { HalloweenAtlas } from "./defs/halloween";
 import { InfernoAtlas } from "./defs/inferno";
 import { LoadoutAtlas } from "./defs/loadout";
 import { MainAtlas } from "./defs/main";
+import { MayAtlas } from "./defs/may";
 import { PerksAtlas } from "./defs/perks";
 import { PotatoAtlas } from "./defs/potato";
 import { SavannahAtlas } from "./defs/savannah";
@@ -18,7 +19,6 @@ import { SnowAtlas } from "./defs/snow";
 import { TurkeyAtlas } from "./defs/turkey";
 import { ValentineAtlas } from "./defs/valentine";
 import { WoodsAtlas } from "./defs/woods";
-// import { MayAtlas } from "./defs/may";
 
 export interface AtlasDef {
     /**
@@ -48,7 +48,7 @@ export const Atlases: Record<Atlas, AtlasDef> = {
     woods: WoodsAtlas,
     cobalt: CobaltAtlas,
     savannah: SavannahAtlas,
-    // may: MayAtlas,
+    may: MayAtlas,
     turkey: TurkeyAtlas,
     perks: PerksAtlas,
     valentine: ValentineAtlas,

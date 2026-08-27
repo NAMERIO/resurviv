@@ -1157,6 +1157,10 @@ const Sounds: Record<string, Record<string, SoundDef>> = {
         },
     },
     sfx: {
+        metal_crate_break_01: {
+            path: "audio/sfx/metal_crate_break_01.mp3",
+            volume: 1,
+        },
         crate_break_01: {
             path: "audio/sfx/crate_break_01.mp3",
             volume: 1,

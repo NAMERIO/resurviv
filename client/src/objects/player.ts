@@ -399,6 +399,9 @@ export class Player implements AbstractObject {
     developerVitalsGfx = new PIXI.Graphics();
     auraContainer = new PIXI.Container();
     auraCircle = createSprite();
+    pulseEffectGfx = new PIXI.Graphics();
+    pulseEffectTicker = 0;
+    pulseEffectActive = false;
 
     // Anim
     bones: Pose[] = [];
@@ -527,6 +530,7 @@ export class Player implements AbstractObject {
         m_healEffect: boolean;
         m_burnEffect: boolean;
         m_nitroLaceEffect: boolean;
+        m_pulseEffect: boolean;
         m_poisonEffect: boolean;
         m_isTarget: boolean;
         m_infectedEffect: boolean;
@@ -657,6 +661,7 @@ export class Player implements AbstractObject {
         this.container.addChild(this.nameText);
         this.container.addChild(this.developerVitalsGfx);
 
+        this.auraContainer.addChild(this.pulseEffectGfx);
         this.auraContainer.addChild(this.auraCircle);
 
         this.initSubmergeSprites();
@@ -725,6 +730,7 @@ export class Player implements AbstractObject {
             m_healEffect: false,
             m_burnEffect: false,
             m_nitroLaceEffect: false,
+            m_pulseEffect: false,
             m_poisonEffect: false,
             m_isTarget: false,
             m_infectedEffect: false,
@@ -782,6 +788,10 @@ export class Player implements AbstractObject {
         this.container.visible = false;
         this.clearAnimImages();
         this.auraContainer.visible = false;
+        this.pulseEffectGfx.clear();
+        this.pulseEffectGfx.visible = false;
+        this.pulseEffectTicker = 0;
+        this.pulseEffectActive = false;
         if (this.useItemEmitter) {
             this.useItemEmitter.stop();
             this.useItemEmitter = null;
@@ -851,6 +861,7 @@ export class Player implements AbstractObject {
             this.m_netData.m_healEffect = data.healEffect;
             this.m_netData.m_burnEffect = data.burnEffect;
             this.m_netData.m_nitroLaceEffect = data.nitroLaceEffect;
+            this.m_netData.m_pulseEffect = data.pulseEffect;
             this.m_netData.m_poisonEffect = data.poisonEffect;
             this.m_netData.m_isTarget = data.isTarget;
             this.m_netData.m_infectedEffect = data.infectedEffect;
@@ -2562,54 +2573,32 @@ export class Player implements AbstractObject {
 
         // aura visual thing
 
-        if (this.m_action.type === Action.UseItem && this.m_action.item === "pulseBox") {
-            const sprite = "part-aura-circle-02.img";
-            const tint = 0x1996f0;
-            const auraScale = 0.11;
-            const auraRad = GameConfig.player.medicHealRange * auraScale;
-            this.auraPulseTicker += 0.1;
-            const totalDuration = 2.0;
-            const flickerCount = 3;
-            const flickerCycle = totalDuration / flickerCount;
-            const phase = this.auraPulseTicker % flickerCycle;
-            const isVisibleThisFrame = phase < flickerCycle / 2;
+        if (
+            (this.m_action.type != Action.UseItem &&
+                this.m_action.type != Action.Revive) ||
+            this.m_netData.m_dead ||
+            (this.m_netData.m_downed && !this.m_hasPerk("self_revive")) ||
+            !this.m_hasPerk("aoe_heal")
+        ) {
+            this.auraPulseTicker = 0;
+            this.auraPulseDir = 1;
+            this.auraCircle.visible = false;
+        } else {
+            const actionItemDef = GameObjectDefs[this.m_action.item] as
+                | HealDef
+                | BoostDef;
+            const sprite = actionItemDef?.aura?.sprite ?? "part-aura-circle-01.img";
+            const tint = actionItemDef?.aura?.tint ?? 0xff00ff;
+            const auraScale = 0.125;
+            let auraRad = actionItemDef
+                ? GameConfig.player.medicHealRange
+                : GameConfig.player.medicReviveRange;
+            auraRad *= auraScale;
             this.auraCircle.texture = PIXI.Texture.from(sprite);
             this.auraCircle.scale.set(auraRad, auraRad);
             this.auraCircle.tint = tint;
             this.auraCircle.alpha = 1;
-            this.auraCircle.visible = isVisibleThisFrame;
-            if (this.auraPulseTicker >= totalDuration) {
-                this.auraCircle.visible = false;
-                this.auraPulseTicker = 0;
-            }
-        } else {
-            if (
-                (this.m_action.type != Action.UseItem &&
-                    this.m_action.type != Action.Revive) ||
-                this.m_netData.m_dead ||
-                (this.m_netData.m_downed && !this.m_hasPerk("self_revive")) ||
-                !this.m_hasPerk("aoe_heal")
-            ) {
-                this.auraPulseTicker = 0;
-                this.auraPulseDir = 1;
-                this.auraCircle.visible = false;
-            } else {
-                const actionItemDef = GameObjectDefs[this.m_action.item] as
-                    | HealDef
-                    | BoostDef;
-                const sprite = actionItemDef?.aura?.sprite ?? "part-aura-circle-01.img";
-                const tint = actionItemDef?.aura?.tint ?? 0xff00ff;
-                const auraScale = 0.125;
-                let auraRad = actionItemDef
-                    ? GameConfig.player.medicHealRange
-                    : GameConfig.player.medicReviveRange;
-                auraRad *= auraScale;
-                this.auraCircle.texture = PIXI.Texture.from(sprite);
-                this.auraCircle.scale.set(auraRad, auraRad);
-                this.auraCircle.tint = tint;
-                this.auraCircle.alpha = 1;
-                this.auraCircle.visible = true;
-            }
+            this.auraCircle.visible = true;
         }
 
         // Class visors
@@ -2707,6 +2696,26 @@ export class Player implements AbstractObject {
             );
         }
         this.auraViewFade = math.lerp(dt * 6, this.auraViewFade, inView ? 1 : 0);
+
+        const pulseActive = this.m_netData.m_pulseEffect;
+        if (pulseActive && !this.pulseEffectActive) {
+            this.pulseEffectTicker = 0;
+        }
+        this.pulseEffectActive = pulseActive;
+        this.pulseEffectGfx.clear();
+        this.pulseEffectGfx.visible = pulseActive;
+        if (pulseActive) {
+            this.pulseEffectTicker = math.min(1, this.pulseEffectTicker + dt);
+            const progress = this.pulseEffectTicker;
+            const radius = math.lerp(progress, 1, GameConfig.player.medicHealRange);
+            const fade = 1 - progress;
+            const color = 0x62d9ff;
+
+            this.pulseEffectGfx.lineStyle(0.12, color, 0.28 * this.auraViewFade);
+            this.pulseEffectGfx.drawCircle(0, 0, GameConfig.player.medicHealRange);
+            this.pulseEffectGfx.lineStyle(0.3, color, fade * this.auraViewFade);
+            this.pulseEffectGfx.drawCircle(0, 0, radius);
+        }
 
         // Pulse healing circle
         if (this.auraCircle.visible) {

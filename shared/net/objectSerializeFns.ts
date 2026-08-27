@@ -107,6 +107,7 @@ export interface ObjectsFullData {
         healEffect: boolean;
         burnEffect: boolean;
         nitroLaceEffect: boolean;
+        pulseEffect: boolean;
         poisonEffect: boolean;
         isTarget: boolean;
         infectedEffect: boolean;
@@ -276,6 +277,7 @@ export const ObjectSerializeFns: {
             s.writeBoolean(data.healEffect);
             s.writeBoolean(data.burnEffect);
             s.writeBoolean(data.nitroLaceEffect);
+            s.writeBoolean(data.pulseEffect);
             s.writeBoolean(data.poisonEffect);
             s.writeBoolean(data.isTarget);
             s.writeBoolean(data.infectedEffect);
@@ -362,6 +364,7 @@ export const ObjectSerializeFns: {
             data.healEffect = s.readBoolean();
             data.burnEffect = s.readBoolean();
             data.nitroLaceEffect = s.readBoolean();
+            data.pulseEffect = s.readBoolean();
             data.poisonEffect = s.readBoolean();
             data.isTarget = s.readBoolean();
             data.infectedEffect = s.readBoolean();

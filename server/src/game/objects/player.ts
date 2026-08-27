@@ -125,6 +125,11 @@ interface Emote {
 const boostHeals: Array<{ maxBoost: number; heal: number }> = [];
 const amongUsInitialKillCooldown = 20;
 const amongUsEmergencyCallCooldown = 15;
+const PULSE_EFFECT_DURATION = 1;
+const PULSE_RADIUS = GameConfig.player.medicHealRange;
+const PULSE_MIN_PLAYER_SPEED = 8;
+const PULSE_MAX_PLAYER_SPEED = 24;
+const PULSE_MAX_ITEM_SPEED = 28;
 {
     const boostBreakPoints = GameConfig.player.boostBreakpoints;
     const max = GameConfig.player.boostBreakpoints.reduce((a, b) => a + b, 0);
@@ -1233,6 +1238,10 @@ export class Player extends BaseGameObject {
 
     pushBack: Vec2 = v2.create(0, 0);
     pushBackTime: number = 0;
+    pulseEffectTime = 0;
+    private readonly pulseAffectedPlayers = new Set<number>();
+    private readonly pulseAffectedProjectiles = new Set<number>();
+    private readonly pulseAffectedLoot = new Set<number>();
     private _firstShieldBrokenUntil: number = 0;
 
     posOld = v2.create(0, 0);
@@ -3615,6 +3624,17 @@ export class Player extends BaseGameObject {
             this.weaponManager.scheduledReload = true;
         }
 
+        // The Pulse Box remains active for one second after consumption. Each object is
+        // pushed once, including objects that enter the radius while the pulse is active.
+        if (this.pulseEffectTime > 0) {
+            this.applyPulseEffect();
+            this.pulseEffectTime = Math.max(0, this.pulseEffectTime - dt);
+            if (this.pulseEffectTime === 0) {
+                this.clearPulseAffectedObjects();
+                this.setDirty();
+            }
+        }
+
         // handle heal and boost actions
 
         if (this.actionType !== GameConfig.Action.None) {
@@ -3643,6 +3663,9 @@ export class Player extends BaseGameObject {
                         this.nitroLaceEffect = true;
                         this.nitroLaceDirty = true;
                         this.setDirty();
+                    }
+                    if (this.actionItem === "pulseBox") {
+                        this.usePulseEffect();
                     }
                     this.invManager.take(this.actionItem as InventoryItem, 1);
                     this.questManager.trackEvent("item_used", {
@@ -3865,9 +3888,16 @@ export class Player extends BaseGameObject {
             );
         }
 
-        const isDashing = this.dashSpeed > 0 && this.dashTimeLeft > 0;
-        const movementDt = isDashing ? Math.min(dt, this.dashTimeLeft) : dt;
-        if (isDashing) {
+        const isPushed = this.pushBackTime > 0 && v2.lengthSqr(this.pushBack) > 0;
+        const isDashing = !isPushed && this.dashSpeed > 0 && this.dashTimeLeft > 0;
+        const movementDt = isPushed
+            ? Math.min(dt, this.pushBackTime)
+            : isDashing
+              ? Math.min(dt, this.dashTimeLeft)
+              : dt;
+        if (isPushed) {
+            v2.set(movement, v2.normalizeSafe(this.pushBack, v2.create(0, 0)));
+        } else if (isDashing) {
             v2.set(movement, this.dashDir);
         }
 
@@ -3885,6 +3915,10 @@ export class Player extends BaseGameObject {
         if (this.vehicle) {
             this.speed = Math.abs(this.vehicle.speed);
             steps = Math.round(math.max(this.speed * dt + 5, 5));
+        } else if (isPushed) {
+            this.speed = v2.length(this.pushBack);
+            this.pushBackTime = Math.max(0, this.pushBackTime - dt);
+            steps = Math.round(math.max(this.speed * movementDt + 5, 5));
         } else if (isDashing) {
             // Spread the dash across its duration so it is visible while retaining the
             // normal substep collision solver for walls and players.
@@ -6146,54 +6180,83 @@ export class Player extends BaseGameObject {
     }
 
     usePulseEffect(): void {
-        const origin = this.pos;
-        const rad = 300;
-        const force = 4.5;
+        this.pulseEffectTime = PULSE_EFFECT_DURATION;
+        this.clearPulseAffectedObjects();
+        this.applyPulseEffect();
+        this.setDirty();
+    }
 
-        // this does not work rn
+    get pulseEffect(): boolean {
+        return this.pulseEffectTime > 0;
+    }
+
+    private clearPulseAffectedObjects(): void {
+        this.pulseAffectedPlayers.clear();
+        this.pulseAffectedProjectiles.clear();
+        this.pulseAffectedLoot.clear();
+    }
+
+    private applyPulseEffect(): void {
         for (const other of this.game.playerBarn.livingPlayers) {
-            if (other === this) continue;
-            const dx = other.pos.x - origin.x;
-            const dy = other.pos.y - origin.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist > rad || dist === 0) continue;
-            const f = (1 - dist / rad) * force;
-            const nx = dx / dist;
-            const ny = dy / dist;
-            other.pushBack = v2.create(nx * f * 0.2, ny * f * 0.2);
-            other.pushBackTime = 0.2;
+            if (
+                other === this ||
+                other.teamId === this.teamId ||
+                !util.sameLayer(other.layer, this.layer) ||
+                this.pulseAffectedPlayers.has(other.__id)
+            ) {
+                continue;
+            }
+            const offset = v2.sub(other.pos, this.pos);
+            const distance = v2.length(offset);
+            if (distance >= PULSE_RADIUS || distance === 0) continue;
+
+            const strength = 1 - distance / PULSE_RADIUS;
+            const speed =
+                PULSE_MIN_PLAYER_SPEED +
+                strength * (PULSE_MAX_PLAYER_SPEED - PULSE_MIN_PLAYER_SPEED);
+            other.pushBack = v2.mul(offset, speed / distance);
+            other.pushBackTime = PULSE_EFFECT_DURATION;
+            this.pulseAffectedPlayers.add(other.__id);
         }
 
-        // this probably need to be removed since surviv never had this
+        // The original event allowed a pulse to reveal hidden mines by throwing them
+        // along with nearby loot. Other projectiles are unaffected.
         for (const proj of this.game.projectileBarn.projectiles) {
-            const dx = proj.pos.x - origin.x;
-            const dy = proj.pos.y - origin.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist > rad || dist === 0) continue;
-
-            const f = (1 - dist / rad) * force;
-            const nx = dx / dist;
-            const ny = dy / dist;
-            proj.vel.x += nx * f;
-            proj.vel.y += ny * f;
+            if (
+                proj.type !== "mine" ||
+                !util.sameLayer(proj.layer, this.layer) ||
+                this.pulseAffectedProjectiles.has(proj.__id)
+            ) {
+                continue;
+            }
+            const offset = v2.sub(proj.pos, this.pos);
+            const distance = v2.length(offset);
+            if (distance >= PULSE_RADIUS || distance === 0) continue;
+            proj.vel = v2.add(
+                proj.vel,
+                v2.mul(
+                    offset,
+                    (PULSE_MAX_ITEM_SPEED * (1 - distance / PULSE_RADIUS)) / distance,
+                ),
+            );
+            this.pulseAffectedProjectiles.add(proj.__id);
         }
 
         for (const loot of this.game.lootBarn.loots) {
-            const dx = loot.pos.x - origin.x;
-            const dy = loot.pos.y - origin.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist > rad || dist === 0) continue;
-
-            const f = (1 - dist / rad) * force;
-            const nx = dx / dist;
-            const ny = dy / dist;
-
-            if (typeof loot.push === "function") {
-                loot.push(v2.create(nx, ny), f);
-            } else if (loot.vel) {
-                loot.vel.x += nx * f;
-                loot.vel.y += ny * f;
+            if (
+                !util.sameLayer(loot.layer, this.layer) ||
+                this.pulseAffectedLoot.has(loot.__id)
+            ) {
+                continue;
             }
+            const offset = v2.sub(loot.pos, this.pos);
+            const distance = v2.length(offset);
+            if (distance >= PULSE_RADIUS || distance === 0) continue;
+            loot.push(
+                v2.mul(offset, 1 / distance),
+                PULSE_MAX_ITEM_SPEED * (1 - distance / PULSE_RADIUS),
+            );
+            this.pulseAffectedLoot.add(loot.__id);
         }
     }
 
@@ -8231,14 +8294,5 @@ export class Player extends BaseGameObject {
 
     sendData(buffer: Uint8Array): void {
         this.game.sendSocketMsg(this.socketId, buffer);
-    }
-
-    usePulseItem(item: InventoryItem): void {
-        const itemDef = GameObjectDefs[item];
-        if (!itemDef || itemDef.type !== "boost") return;
-        if (!this.inventory[item]) return;
-
-        this.cancelAction();
-        this.doAction(item, GameConfig.Action.UseItem, itemDef.useTime);
     }
 }

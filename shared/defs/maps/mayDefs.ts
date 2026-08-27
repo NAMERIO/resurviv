@@ -1,16 +1,17 @@
 import { util } from "../../utils/util";
+import { MapId } from "../types/misc";
 import { Main, type PartialMapDef } from "./baseDefs";
 
-const mapDef: PartialMapDef = {
-    mapId: 5,
+export const MayThemeDef: PartialMapDef = {
+    mapId: MapId.May,
     desc: {
-        name: "May",
-        icon: "img/loot/loot-weapon-lasr-gun-dual.svg",
+        name: "May 4th",
+        icon: "img/gui/lasr-swrds-icn.svg",
         buttonCss: "btn-mode-may",
     },
     assets: {
         audio: [],
-        atlases: ["gradient", "loadout", "shared" /*"may"*/],
+        atlases: ["gradient", "loadout", "shared", "main", "may"],
     },
     biome: {
         colors: {
@@ -26,8 +27,28 @@ const mapDef: PartialMapDef = {
         },
         particles: {},
     },
-    gameMode: { maxPlayers: 80, sniperMode: true },
+    gameMode: { maxPlayers: 80, killLeaderEnabled: true, mayMode: true },
+    lootTable: {
+        tier_space: [
+            { name: "lasr_swrd_01", count: 1, weight: 0.29 },
+            { name: "lasr_swrd_02", count: 1, weight: 0.15 },
+            { name: "lasr_swrd_03", count: 1, weight: 0.15 },
+            { name: "lasr_gun", count: 1, weight: 0.27 },
+            { name: "lasr_gun_dual", count: 1, weight: 0.16 },
+            { name: "pulseBox", count: 2, weight: 0.2 },
+        ],
+    },
+};
+
+export const MayMapDef: PartialMapDef = util.mergeDeep({}, MayThemeDef, {
     mapGen: {
+        map: {
+            rivers: {
+                weights: [{ weight: 1, widths: [4] }],
+                smoothness: 0.8,
+                spawnCabins: false,
+            },
+        },
         densitySpawns: [
             {
                 stone_01: 350,
@@ -53,7 +74,6 @@ const mapDef: PartialMapDef = {
                 crate_23: 30,
             },
         ],
-        randomSpawns: [],
         spawnReplacements: [
             {
                 tree_01: "tree_01m",
@@ -61,16 +81,6 @@ const mapDef: PartialMapDef = {
             },
         ],
     },
-    lootTable: {
-        tier_space: [
-            { name: "lasr_swrd_01", count: 1, weight: 0.29 },
-            { name: "lasr_swrd_02", count: 1, weight: 0.15 },
-            { name: "lasr_swrd_03", count: 1, weight: 0.15 },
-            { name: "lasr_gun", count: 1, weight: 0.27 },
-            { name: "lasr_gun_dual", count: 1, weight: 0.16 },
-            { name: "pulseBox", count: 2, weight: 0.2 },
-        ],
-    },
-};
+} satisfies PartialMapDef);
 
-export const May = util.mergeDeep({}, Main, mapDef);
+export const May = util.mergeDeep({}, Main, MayMapDef);

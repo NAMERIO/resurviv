@@ -14287,11 +14287,17 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     crate_23: createCrate({
         health: 150,
         reflectBullets: true,
-        loot: [tierLoot("tier_space", 3, 5)],
+        hitParticle: "barrelChip",
+        explodeParticle: "barrelBreak",
+        loot: [tierLoot("tier_space", 2, 3)],
         map: { display: false },
         terrain: { grass: true, beach: false },
         img: { sprite: "space_crate.img" },
-        sound: { explode: "crate_break_01" },
+        sound: {
+            bullet: "wall_bullet",
+            punch: "metal_punch",
+            explode: "metal_crate_break_01",
+        },
     } as unknown as Partial<ObstacleDef>),
 
     tree_interior_01: createTree({ img: { zIdx: 200 } }),
@@ -35645,7 +35651,6 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         },
     },
     crate_01m: createCrate({
-        loot: [tierLoot("tier_soviet", 3, 5)],
         img: { sprite: "lasr_Swrds_Crate.img" },
     }),
     bush_01m: createBush({

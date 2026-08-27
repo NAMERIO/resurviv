@@ -243,6 +243,8 @@ export class Application {
         br_birthday: "Birthday",
         br_beach: "Beach",
         br_contact: "Contact",
+        may: "May 4th",
+        br_may: "May 4th",
         contact: "Contact",
         woods: "Woods",
         potato: "Potato",

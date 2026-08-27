@@ -397,6 +397,7 @@ export class LoadoutDisplay {
             healEffect: false,
             burnEffect: false,
             nitroLaceEffect: false,
+            pulseEffect: false,
             poisonEffect: false,
             isTarget: false,
             infectedEffect: false,

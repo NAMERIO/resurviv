@@ -114,6 +114,7 @@ export class Map {
     perkMode = false;
     turkeyMode = false;
     infernoMode = false;
+    mayMode = false;
     contactMode = false;
     seed = 0;
     width = 0;
@@ -198,6 +199,7 @@ export class Map {
         this.perkMode = !!this.mapDef.gameMode.perkMode;
         this.turkeyMode = !!this.mapDef.gameMode.turkeyMode;
         this.infernoMode = !!this.mapDef.gameMode.infernoMode;
+        this.mayMode = !!this.mapDef.gameMode.mayMode;
         this.contactMode =
             !!this.mapDef.gameMode.contactMode ||
             Object.values(this.mapDef.gameMode.npcSpawns ?? {}).some(

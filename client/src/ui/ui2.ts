@@ -1176,6 +1176,10 @@ export class UiManager2 {
         if (nitroLaceBtn) {
             nitroLaceBtn.style.display = map.infernoMode ? "" : "none";
         }
+        const pulseBoxBtn = document.getElementById("ui-loot-pulseBox");
+        if (pulseBoxBtn) {
+            pulseBoxBtn.style.display = map.mayMode ? "" : "none";
+        }
 
         for (let Te = 0; Te < state.gear.length; Te++) {
             const Me = state.gear[Te];
@@ -2114,7 +2118,7 @@ export function loadStaticDomImages() {
         "ui-loot-bandage": "img/loot/loot-medical-bandage.svg",
         "ui-loot-healthkit": "img/loot/loot-medical-healthkit.svg",
         "ui-loot-soda": "img/loot/loot-medical-soda.svg",
-        // "ui-loot-pulseBox": "img/loot/loot-pulseBox.svg",
+        "ui-loot-pulseBox": "img/loot/loot-medical-pulsebox.svg",
         "ui-loot-painkiller": "img/loot/loot-medical-pill.svg",
         "ui-loot-nitroLace": "img/loot/loot-medical-nitrolace.svg",
         "ui-loot-9mm": "img/loot/loot-ammo-box.svg",

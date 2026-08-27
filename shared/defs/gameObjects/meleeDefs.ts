@@ -1108,22 +1108,22 @@ const BaseDefs: Record<string, MeleeDef> = {
     lasr_swrd_01: {
         name: "Lasr Swrd",
         type: "melee",
-        quality: 1,
+        quality: 0,
         armorPiercing: true,
-        stonePiercing: true,
+        cleave: true,
+        noPotatoSwap: true,
         autoAttack: false,
         switchDelay: 0.25,
-        damage: 50, // 60, then 30
-        obstacleDamage: 1, // 1.5
+        damage: 60,
+        obstacleDamage: 1.5,
         attack: {
-            offset: { x: 2, y: 0 },
-            rad: 2.2,
+            offset: { x: 1.75, y: 0 },
+            rad: 2.1,
             damageTimes: [0.3],
             cooldownTime: 0.6,
         },
         speed: {
-            equip: -3,
-            attack: 7,
+            equip: 1,
         },
         anim: {
             idlePose: "meleeLasrSwrd",
@@ -1152,12 +1152,10 @@ const BaseDefs: Record<string, MeleeDef> = {
             tint: 0xffffff,
             leftHandOntop: true,
         },
-        /* Commenting out for now because this doesn't properly trigger sound or anim
         reflectArea: {
             offset: { x: 1.75, y: 0.0 },
-            rad: 1,
+            rad: 1.1,
         },
-        */
     },
     cutlass: {
         name: "Cutlass",

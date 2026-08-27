@@ -8,6 +8,7 @@ import { Faction as BattleRoyaleFaction } from "../../server/src/battleroyale/ma
 import { Halloween as BattleRoyaleHalloween } from "../../server/src/battleroyale/maps/maps/halloweenDefs";
 import { MainSpring as BattleRoyaleMainSpring } from "../../server/src/battleroyale/maps/maps/mainSpringDefs";
 import { MainSummer as BattleRoyaleMainSummer } from "../../server/src/battleroyale/maps/maps/mainSummerDefs";
+import { May as BattleRoyaleMay } from "../../server/src/battleroyale/maps/maps/mayDefs";
 import { Potato as BattleRoyalePotato } from "../../server/src/battleroyale/maps/maps/potatoDefs";
 import { PotatoSpring as BattleRoyalePotatoSpring } from "../../server/src/battleroyale/maps/maps/potatoSpringDefs";
 import { Savannah as BattleRoyaleSavannah } from "../../server/src/battleroyale/maps/maps/savannahDefs";
@@ -27,6 +28,7 @@ import { gun_game } from "../../server/src/deathmatch/maps/gun_game";
 import { DeatchmatchHalloween } from "../../server/src/deathmatch/maps/halloween";
 import { DeathmatchInferno } from "../../server/src/deathmatch/maps/inferno";
 import { DeatchmatchMain } from "../../server/src/deathmatch/maps/main";
+import { DeathmatchMay } from "../../server/src/deathmatch/maps/may";
 import { DeatchmatchPerks } from "../../server/src/deathmatch/maps/perks";
 import { DeatchmatchSnow } from "../../server/src/deathmatch/maps/snow";
 import { DeathmatchValentine } from "../../server/src/deathmatch/maps/valentine";
@@ -67,7 +69,8 @@ export type Atlas =
     | "inferno"
     | "beach"
     | "bed_war"
-    | "contact";
+    | "contact"
+    | "may";
 
 export const MapDefs = {
     main: DeatchmatchMain,
@@ -116,6 +119,8 @@ export const MapDefs = {
     beach: Beach,
     br_beach: BattleRoyaleBeach,
     br_contact: BattleRoyaleContact,
+    may: DeathmatchMay,
+    br_may: BattleRoyaleMay,
 
     /* STRIP_FROM_PROD_CLIENT:START */
     test_normal: testNormal,
@@ -182,6 +187,7 @@ export interface MapDef {
         turkeyMode?: boolean;
         spookyKillSounds?: boolean;
         infernoMode?: boolean;
+        mayMode?: boolean;
         contactMode?: boolean;
         npcSpawns?: Record<string, number>;
         amongUsMode?: boolean;

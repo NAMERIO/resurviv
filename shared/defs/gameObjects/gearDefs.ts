@@ -365,9 +365,8 @@ const BoostDefs: Record<string, BoostDef> = {
         type: "boost",
         useTime: 0.2,
         boost: 0.0,
-        hideUi: true,
         lootImg: {
-            sprite: "loot-medical-pulseBox.img",
+            sprite: "loot-medical-pulsebox.img",
             tint: 0xffffff,
             border: "loot-circle-outer-01.img",
             borderTint: 0x000000,

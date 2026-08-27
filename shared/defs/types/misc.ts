@@ -10,12 +10,13 @@ export enum MapId {
     Halloween = 6,
     Cobalt = 7,
     Birthday = 8,
+    Beach = 9,
+    May = 13,
     Contact = 17,
     Perks = 18,
     Valentine = 19,
     Inferno = 20,
     AprilFools = 21,
-    Beach = 9,
 }
 
 export const teamModesStrings = ["solo", "duo", "squad"] as const;
