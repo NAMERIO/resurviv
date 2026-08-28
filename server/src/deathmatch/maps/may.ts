@@ -38,3 +38,30 @@ export const DeathmatchMay = util.mergeDeep(
     MayThemeDef,
     mapDef,
 ) as MapDef;
+
+DeathmatchMay.lootTable = {
+    ...structuredClone(DeatchmatchMain.lootTable),
+    tier_space: structuredClone(
+        MayThemeDef.lootTable!.tier_space as MapDef["lootTable"][string],
+    ),
+    tier_world: [
+        ...structuredClone(DeatchmatchMain.lootTable.tier_world),
+        { name: "tier_space", count: 1, weight: 2 },
+    ],
+    tier_container: [
+        { name: "tier_world", count: 1, weight: 3 },
+        { name: "tier_space", count: 1, weight: 1 },
+    ],
+    tier_chest: [
+        ...structuredClone(DeatchmatchMain.lootTable.tier_chest),
+        { name: "tier_space", count: 2, weight: 2 },
+    ],
+    tier_airdrop_uncommon: [
+        ...structuredClone(DeatchmatchMain.lootTable.tier_airdrop_uncommon),
+        { name: "tier_space", count: 2, weight: 3 },
+    ],
+    tier_airdrop_rare: [
+        ...structuredClone(DeatchmatchMain.lootTable.tier_airdrop_rare),
+        { name: "tier_space", count: 2, weight: 4 },
+    ],
+};

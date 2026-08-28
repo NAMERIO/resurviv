@@ -41,6 +41,28 @@ export const MayThemeDef: PartialMapDef = {
 };
 
 export const MayMapDef: PartialMapDef = util.mergeDeep({}, MayThemeDef, {
+    lootTable: {
+        tier_world: [
+            ...structuredClone(Main.lootTable.tier_world),
+            { name: "tier_space", count: 1, weight: 0.11 },
+        ],
+        tier_container: [
+            ...structuredClone(Main.lootTable.tier_container),
+            { name: "tier_space", count: 1, weight: 0.15 },
+        ],
+        tier_chest: [
+            ...structuredClone(Main.lootTable.tier_chest),
+            { name: "tier_space", count: 1, weight: 1.5 },
+        ],
+        tier_airdrop_uncommon: [
+            ...structuredClone(Main.lootTable.tier_airdrop_uncommon),
+            { name: "tier_space", count: 2, weight: 3 },
+        ],
+        tier_airdrop_rare: [
+            ...structuredClone(Main.lootTable.tier_airdrop_rare),
+            { name: "tier_space", count: 2, weight: 4 },
+        ],
+    },
     mapGen: {
         map: {
             rivers: {
