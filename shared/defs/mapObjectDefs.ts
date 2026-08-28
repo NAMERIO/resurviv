@@ -11421,6 +11421,22 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         },
         sound: { enter: "bush_enter_02" },
     }),
+    bush_04i: createBush({
+        hitParticle: "leafRiver",
+        explodeParticle: "leafRiver",
+        img: {
+            sprite: "map-bush-04i.img",
+            residue: "map-bush-res-04i.img",
+            alpha: 1,
+            scale: 0.5,
+        },
+        map: { display: true, color: 0x2c382c, scale: 1.5 },
+        terrain: {
+            grass: false,
+            riverShore: false,
+        },
+        sound: { enter: "bush_enter_02" },
+    }),
     bush_04cb: createBush({
         hitParticle: "leafRiver",
         explodeParticle: "leafRiver",
@@ -11439,6 +11455,8 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         map: { color: 0x2a7b63 },
     } as unknown as Partial<ObstacleDef>),
     bush_05: createBush({
+        hitParticle: "tumbleweed",
+        explodeParticle: "tumbleweed",
         img: {
             sprite: "map-bush-05.img",
             residue: "map-bush-res-05.img",
@@ -11489,12 +11507,14 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         img: { sprite: "map-bush-13c.img" },
         map: { display: true, color: 0x24201c },
     }),
-    bush_14b: createBush({
+    bush_05i: createBush({
         collision: collider.createCircle(v2.create(0, 0), 2.5),
         map: { display: true, color: 0x4a4a4a, scale: 1 },
+        hitParticle: "tumbleweed",
+        explodeParticle: "tumbleweed",
         img: {
-            sprite: "map-bush-14b.img",
-            residue: "map-bush-res-14b.img",
+            sprite: "map-bush-05i.img",
+            residue: "map-bush-res-05i.img",
         },
     }),
     bush_06b: createBush({
@@ -11675,6 +11695,10 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     chest_03cb: createRiverChest({
         img: { sprite: "map-chest-03.img" },
         loot: [tierLoot("tier_chest", 3, 5)],
+    }),
+    chest_03cn: createRiverChest({
+        img: { sprite: "map-chest-03cn.img" },
+        loot: [tierLoot("tier_chest", 3, 5), autoLoot("outfitWaterElem", 1)],
     }),
     chest_03d: createRiverChest({
         img: { sprite: "map-chest-03d.img" },
@@ -12277,11 +12301,10 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     } as unknown as Partial<ObstacleDef>),
     crate_30: createCrate({
         health: 140,
-        explodeParticle: "pyrePlank",
         loot: [autoLoot("pyro", 1), autoLoot("phoenix", 1), autoLoot("m9a17", 1)],
-        map: { display: true, color: 0xcc0000 },
+        map: { display: true, color: 0xfe721e },
         terrain: { grass: true, beach: false },
-        img: { sprite: "map-pyre-01.img", residue: "map-crate-pyre-res.img" },
+        img: { sprite: "map-crate-pyre.img" },
         sound: { explode: "crate_break_01" },
     }),
     crate_11sv: createCrate({
@@ -13694,6 +13717,15 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     stone_01f: createStone({
         map: { display: true, color: 0x7d7d7d, scale: 1 },
     }),
+    stone_01i: createStone({
+        map: { display: true, color: 0x252221, scale: 1 },
+        hitParticle: "rockBlackChip",
+        explodeParticle: "rockBlackBreak",
+        img: {
+            sprite: "map-stone-01i.img",
+            residue: "map-stone-res-01i.img",
+        },
+    }),
     stone_01sv: createStone({
         scale: {
             createMin: 1.2,
@@ -13775,10 +13807,11 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             residue: "map-stone-res-02cb.img",
         },
     }),
-    stone_03l: createRiverStone({
+    stone_03i: createRiverStone({
+        explodeParticle: "rockBlackBreak",
         img: {
-            sprite: "map-stone-03l.img",
-            residue: "map-stone-res-01l.img",
+            sprite: "map-stone-03i.img",
+            residue: "map-stone-res-02i.img",
         },
     }),
     stone_03f: createRiverStone({
@@ -14485,15 +14518,17 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             zIdx: 801,
         },
     } as unknown as Partial<ObstacleDef>),
-    tree_20: createTree({
-        collision: collider.createCircle(v2.create(0, 0), 2.3),
+    tree_05i: createTree({
+        collision: collider.createCircle(v2.create(0, 0), 1.5),
         aabb: collider.createAabbExtents(v2.create(0, 0), v2.create(12, 12)),
         scale: { createMin: 1.2, createMax: 1.3 },
         health: 400,
         map: { color: 0x4a4a4a, scale: 3 },
+        hitParticle: "blackChip",
+        explodeParticle: "grayLog",
         img: {
-            sprite: "map-tree-20.img",
-            residue: "map-snowball-res.img",
+            sprite: "map-tree-05i.img",
+            residue: "map-tree-res-02.img",
             tint: 0xffffff,
             scale: 0.7,
             zIdx: 801,
@@ -14739,6 +14774,28 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             randomRotation: true,
         },
         terrain: { grass: true, beach: true },
+    } as unknown as Partial<ObstacleDef>),
+    tree_13i: createTree({
+        height: 10,
+        collidable: true,
+        destructible: true,
+        health: 175,
+        hitParticle: "blackChip",
+        explodeParticle: "grayLog",
+        reflectBullets: false,
+        isTree: true,
+        loot: [],
+        map: { display: true, color: 0x4a443d, scale: 2.5 },
+        scale: { createMin: 1.15, createMax: 1.3, destroy: 0.75 },
+        collision: collider.createCircle(v2.create(0, 0), 1),
+        img: {
+            sprite: "map-tree-13i.img",
+            scale: 0.35,
+            tint: 0xffffff,
+            zIdx: 801,
+            randomRotation: true,
+        },
+        terrain: { grass: false, beach: true },
     } as unknown as Partial<ObstacleDef>),
     tree_13x: createTree({
         scale: { createMin: 1.2, createMax: 1.4, destroy: 0.75 },
@@ -38757,10 +38814,6 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
 
 // Contact variants reuse the original geometry and object layouts while applying
 // the event-specific art, map colors, terrain rules, and linked layer names.
-MapObjectDefs.chest_03i = createRiverChest({
-    img: { sprite: "map-chest-03i.img" },
-    loot: [tierLoot("tier_chest", 3, 5), autoLoot("outfitWaterElem", 1)],
-});
 
 const conchCompartment = MapObjectDefs.bunker_conch_compartment_01 as BuildingDef;
 MapObjectDefs.bunker_conch_compartment_05 = util.mergeDeep({}, conchCompartment, {

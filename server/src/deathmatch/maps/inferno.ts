@@ -25,6 +25,9 @@ const mapDef: PartialMapDef = {
     },
     assets: {
         audio: [
+            { name: "club_music_01", channel: "ambient" },
+            { name: "club_music_02", channel: "ambient" },
+            { name: "ambient_steam_01", channel: "ambient" },
             { name: "vault_change_02", channel: "sfx" },
             { name: "footstep_08", channel: "sfx" },
             { name: "footstep_09", channel: "sfx" },
@@ -33,16 +36,17 @@ const mapDef: PartialMapDef = {
     },
     biome: {
         colors: {
-            background: 0x20536e,
+            background: 0x661c07,
             water: 0xfe8438,
-            waterRipple: 0xfe8438,
+            waterRipple: 0xffc39e,
             beach: 0x534d45,
             riverbank: 0x252525,
             grass: 0x3c3c3c,
             underground: 0x1b0d03,
-            playerSubmerge: 0xffffff,
-            playerGhillie: 0x83af50,
+            playerSubmerge: 0xa44f2b,
+            playerGhillie: 0x303030,
         },
+        particles: { camera: "falling_volcanic_ash" },
     },
     gameMode: { maxPlayers: 40, infernoMode: true },
     gameConfig: {
@@ -131,7 +135,6 @@ const mapDef: PartialMapDef = {
                 outhouse_01: 1,
                 loot_tier_1: 5,
                 loot_tier_beach: 3,
-                tree_01: 0,
             },
         ],
         randomSpawns: [
@@ -166,12 +169,16 @@ const mapDef: PartialMapDef = {
         ],
         spawnReplacements: [
             {
-                tree_01: "tree_20",
-                bush_01: "bush_14b",
-                bush_07: "bush_14b",
-                tree_07: "tree_20",
-                tree_03sv: "tree_20",
-                stone_03: "stone_03l",
+                tree_01: "tree_05i",
+                bush_01: "bush_05i",
+                bush_04: "bush_04i",
+                bush_07: "bush_05i",
+                tree_06: "tree_05i",
+                tree_07: "tree_05i",
+                tree_03sv: "tree_05i",
+                tree_13: "tree_13i",
+                stone_01: "stone_01i",
+                stone_03: "stone_03i",
             },
         ],
     },
@@ -214,7 +221,7 @@ DeathmatchInferno["lootTable"] = {
     tier_guns: [
         { name: "flare_gun", count: 1, weight: 0.5 },
         { name: "flare_gun_dual", count: 1, weight: 0.25 },
-        { name: "nitoLace", count: 2, weight: 0.8 },
+        { name: "nitroLace", count: 2, weight: 0.8 },
         { name: "machete_taiga", count: 1, weight: 0.6 },
         { name: "lasr_gun", count: 1, weight: 0.7 },
         { name: "lasr_gun_dual", count: 1, weight: 0.6 },

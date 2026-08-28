@@ -137,7 +137,7 @@ DeatchmatchCobalt.lootTable = {
     tier_guns: [
         { name: "flare_gun", count: 1, weight: 0.5 },
         { name: "flare_gun_dual", count: 1, weight: 0.25 },
-        { name: "nitoLace", count: 2, weight: 0.8 },
+        { name: "nitroLace", count: 2, weight: 0.8 },
         { name: "machete_taiga", count: 1, weight: 0.6 },
         { name: "lasr_gun", count: 1, weight: 0.7 },
         { name: "lasr_gun_dual", count: 1, weight: 0.6 },

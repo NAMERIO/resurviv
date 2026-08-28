@@ -117,7 +117,7 @@ export const PingDefs: Record<string, PingDef> = {
         worldDisplay: false,
         tint: 0x12ff00,
     },
-    ping_lavasking: {
+    ping_volcanoqueen: {
         type: "ping",
         texture: "player-king-lava.img",
         mapTexture: "ping-map-woods-king.img",

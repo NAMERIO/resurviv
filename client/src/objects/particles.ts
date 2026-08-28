@@ -1163,6 +1163,22 @@ const ParticleDefs: Record<string, ParticleDef> = {
             return util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.5, 0.75)));
         },
     }),
+    tumbleweed: createLeaf({
+        image: ["part-tumbleweed-01.img"],
+        scale: {
+            start: new Range(0.08, 0.12),
+            end: new Range(0.02, 0.03),
+        },
+        color: function () {
+            return util.rgbToInt(
+                util.hsvToRgb(
+                    util.random(0.05, 0.08),
+                    util.random(0.2, 0.3),
+                    util.random(0.25, 0.75),
+                ),
+            );
+        },
+    }),
     lockerBreak: createDepositBoxBreak({
         drag: new Range(7, 8),
         scale: {
@@ -1271,6 +1287,19 @@ const ParticleDefs: Record<string, ParticleDef> = {
         image: ["map-stone-01.img"],
         color: function () {
             return util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.5, 0.75)));
+        },
+    }),
+    rockBlackChip: createChip({
+        image: ["map-stone-01.img"],
+        drag: new Range(1, 10),
+        color: function () {
+            return util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.1, 0.3)));
+        },
+    }),
+    rockBlackBreak: createSmallBreak({
+        image: ["map-stone-01.img"],
+        color: function () {
+            return util.rgbToInt(util.hsvToRgb(0, 0, util.random(0.1, 0.3)));
         },
     }),
     rockEyeChip: createChip({
@@ -1624,14 +1653,15 @@ const ParticleDefs: Record<string, ParticleDef> = {
             return util.rgbToInt(util.hsvToRgb(0.05, 1, util.random(0.35, 0.45)));
         },
     }),
-    woodPlank: createPlank({}),
-    pyrePlank: createPlank({
+    grayLog: createPlank({
+        image: ["part-log-01.img"],
         color: function () {
             return util.rgbToInt(
-                util.hsvToRgb(util.random(0, 0.125), 1, util.random(0.6, 0.8)),
+                util.hsvToRgb(0.08, util.random(0.15, 0.45), util.random(0.2, 0.4)),
             );
         },
     }),
+    woodPlank: createPlank({}),
     woodShard: createPlank({
         image: ["part-spark-01.img"],
         drag: new Range(3, 5),
@@ -2099,6 +2129,15 @@ const ParticleDefs: Record<string, ParticleDef> = {
             end: new Range(0.05, 0.1),
         },
     }),
+    volcanicAsh: createAmbientLeaves({
+        image: ["part-snow-01.img"],
+        scale: {
+            start: new Range(0.07, 0.15),
+        },
+        color: function () {
+            return util.rgbToInt(util.hsvToRgb(0, 0, util.random(0, 0.5)));
+        },
+    }),
     snowball_impact: createThrowableImpact({}),
     potato_impact: createThrowableImpact({
         image: ["part-potato-01.img"],
@@ -2426,6 +2465,11 @@ const EmitterDefs: Record<string, EmitterDef> = {
         particle: "snow",
         radius: 70,
         speed: new Range(1, 1.5),
+    }),
+    falling_volcanic_ash: createAmbientLeafEmitter({
+        particle: "volcanicAsh",
+        rate: new Range(0.01, 0.02),
+        speed: new Range(1, 12),
     }),
     heal_basic: createHealEmitter({}),
     heal_heart: createHealEmitter({
