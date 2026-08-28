@@ -17,7 +17,7 @@ export const InfernoAtlas: AtlasDef = {
         "map/map-stone-03i.svg",
         "map/map-stone-res-02i.svg",
 
-        "map/map-tree-07.img",
+        "map/map-tree-07.svg",
 
         "particles/part-snow-01.svg",
     ],
