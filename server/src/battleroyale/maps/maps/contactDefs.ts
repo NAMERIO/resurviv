@@ -72,7 +72,7 @@ const mapDef: PartialMapDef = {
                 bush_04: "bush_13b",
                 cache_06: "cache_contact",
                 stone_03: "stone_03h",
-                chest_03: "chest_03i",
+                chest_03: "chest_03cn",
                 bunker_structure_04: "bunker_structure_04d",
                 bunker_structure_05: "bunker_structure_05d",
             },

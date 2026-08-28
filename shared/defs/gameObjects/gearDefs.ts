@@ -843,8 +843,8 @@ const SkinDefs = {
         },
     }),
     helmet03_lava: defineSkin("helmet03", {
-        name: "Shishigami no Kabuto",
-        role: "lava_king",
+        name: "Konohanasakuya-hime no Tsunokakushi",
+        role: "volcano_queen",
         mapIndicator: {
             sprite: "player-king-lava.img",
             tint: 0xff4500,
@@ -866,7 +866,7 @@ const SkinDefs = {
         },
     }),
     helmet03_samurai: defineSkin("helmet03", {
-        name: "Yuki no Kabuto", // I think this is correct? (The translation)
+        name: "Yūki no Kabuto", // I think this is correct? (The translation)
         noDrop: true,
         skinImg: {
             baseTint: 0xffffff,

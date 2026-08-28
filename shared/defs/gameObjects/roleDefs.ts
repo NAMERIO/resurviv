@@ -429,10 +429,10 @@ export const RoleDefs: Record<string, RoleDef> = {
         sound: { dead: "leader_dead_01" },
         perks: ["gotw", "windwalk"],
     },
-    lava_king: {
+    volcano_queen: {
         type: "role",
         announce: false,
-        killFeed: { dead: true, color: "#ff5e00ff" },
+        killFeed: { dead: true, color: "#ff5e00" },
         sound: { dead: "leader_dead_01" },
         perks: ["gotw", "windwalk", "phoenix", "pyro"],
     },

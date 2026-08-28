@@ -41,7 +41,7 @@ export const ContactAtlas: AtlasDef = {
         "map/map-stone-res-11.png",
         "map/map-target.png",
         "map/map-tree-19.png",
-        "map/map-chest-03i.png",
+        "map/map-chest-03cn.svg",
         "map/ping-map-motherShip.png",
         "map/slime.png",
         "map/skitter-walking-1.png",
