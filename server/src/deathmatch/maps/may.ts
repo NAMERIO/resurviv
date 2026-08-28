@@ -39,6 +39,7 @@ export const DeathmatchMay = util.mergeDeep(
     mapDef,
 ) as MapDef;
 
+/* STRIP_FROM_PROD_CLIENT:START */
 DeathmatchMay.lootTable = {
     ...structuredClone(DeatchmatchMain.lootTable),
     tier_space: structuredClone(
@@ -65,3 +66,4 @@ DeathmatchMay.lootTable = {
         { name: "tier_space", count: 2, weight: 4 },
     ],
 };
+/* STRIP_FROM_PROD_CLIENT:END */
