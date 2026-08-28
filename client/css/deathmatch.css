@@ -4,7 +4,12 @@
 
 #modal-content-left {
   width: 760px !important;
-  left: -20% !important;
+}
+
+@media (min-width: 901px), (min-width: 851px) and (max-resolution: 2.99dppx) {
+  #modal-content-left {
+    left: -20% !important;
+  }
 }
 
 #modal-content-right-crosshair,
@@ -14,15 +19,16 @@
   margin-right: -2px;
 }
 
-@media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
+@media (max-width: 850px) and (orientation: landscape),
+  (max-width: 900px) and (min-resolution: 3dppx) and (orientation: landscape) {
   #modal-content-left {
     width: 665px !important;
   }
+}
 
-  #modal-content-right-crosshair,
-  #modal-content-right-emote,
-  #modal-content-right-weapon,
-  #modal-content-right-weapon-skin {
-    margin-right: -83px !important;
+@media (max-width: 850px) and (orientation: portrait),
+  (max-width: 900px) and (min-resolution: 3dppx) and (orientation: portrait) {
+  #modal-content-left {
+    width: 100% !important;
   }
 }
