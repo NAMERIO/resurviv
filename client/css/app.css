@@ -20752,12 +20752,13 @@ div.roulette {
 
   #start-main-center {
     height: auto;
-    left: 50%;
-    margin: 0;
+    left: 0;
+    margin: 0 auto;
     max-width: 360px;
     position: absolute;
+    right: 0;
     top: 64px;
-    transform: translateX(-50%);
+    transform: none;
     transform-origin: top center;
     width: calc(100% - 24px);
   }
@@ -20776,9 +20777,34 @@ div.roulette {
   }
 
   #start-menu,
-  #pass-wrapper,
-  #start-rotate-reminder {
+  #pass-wrapper {
     display: none !important;
+  }
+
+  #start-rotate-reminder {
+    background: rgba(0, 0, 0, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 6px;
+    bottom: 10px;
+    box-sizing: border-box;
+    display: block !important;
+    left: 50%;
+    margin: 0;
+    padding: 7px 10px;
+    pointer-events: none;
+    position: fixed;
+    top: auto;
+    transform: translateX(-50%);
+    width: min(290px, calc(100vw - 84px));
+    z-index: 120;
+  }
+
+  #start-rotate-reminder > span {
+    color: #fff;
+    display: block;
+    font-size: 13px;
+    line-height: 16px;
+    text-align: center;
   }
 
   #right-column {
@@ -20868,6 +20894,82 @@ div.roulette {
     top: 8px;
     transform: scale(0.62);
     transform-origin: top right;
+  }
+
+  #modal-customize-wrapper {
+    height: calc(100dvh - 24px);
+    left: 50%;
+    max-height: calc(100dvh - 24px);
+    top: 12px;
+    transform: translateX(-50%);
+    transform-origin: top center;
+    width: calc(100% - 16px);
+  }
+
+  #modal-content-left {
+    grid-template-columns: 52px minmax(0, 1fr);
+    height: 100%;
+    max-height: 100%;
+    top: 0;
+    transform: none;
+    width: 100% !important;
+  }
+
+  #modal-customize-body {
+    min-height: 0;
+    padding: 44px 8px 8px;
+  }
+
+  #modal-customize-item-header {
+    margin-bottom: 8px;
+    min-height: 48px;
+    padding: 6px 8px;
+  }
+
+  #modal-customize-item-stats {
+    display: none !important;
+  }
+
+  #modal-customize-item-name {
+    font-size: 20px;
+  }
+
+  #modal-customize-item-rarity {
+    font-size: 14px;
+  }
+
+  #modal-customize-list {
+    flex: 1 1 auto;
+    height: auto !important;
+    margin: 0;
+    max-height: none;
+    min-height: 0;
+  }
+
+  .customize-list-item {
+    height: 68px;
+    margin: 8px 0 0 8px;
+    width: 68px;
+  }
+
+  .customize-list-item > .customize-item-image > .customize-item-sprite {
+    background-size: 52px;
+  }
+
+  .customize-list-section-header,
+  .customize-list-section-header:first-child {
+    font-size: 14px;
+    margin: 10px 8px 2px;
+  }
+
+  #modal-customize-cat-title {
+    left: 62px;
+  }
+
+  #modal-customize-sort {
+    font-size: 14px;
+    padding-left: 8px;
+    padding-right: 8px;
   }
 }
 
