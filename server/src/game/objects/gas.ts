@@ -20,9 +20,6 @@ interface StageData {
     timerOffset?: number;
 }
 
-const GAME_TIME_IN_MINUTES = 6;
-const MOVING_ZONE_PHASE_DURATION = 60;
-
 const GasStages: StageData[] = [
     {
         mode: GasMode.Inactive,
@@ -32,7 +29,7 @@ const GasStages: StageData[] = [
     },
     {
         mode: GasMode.Waiting,
-        duration: GAME_TIME_IN_MINUTES * 60,
+        duration: 360,
         rad: 0.7425,
         damage: 20,
     },
@@ -65,59 +62,51 @@ const MovingZoneGasStages: StageData[] = [
     },
     {
         mode: GasMode.Waiting,
-        duration: 2 * MOVING_ZONE_PHASE_DURATION,
+        duration: 120,
         rad: 0.7425,
         damage: 20,
-        timerOffset: 4 * MOVING_ZONE_PHASE_DURATION,
     },
     {
         mode: GasMode.Moving,
-        duration: MOVING_ZONE_PHASE_DURATION,
+        duration: 30,
         rad: 0.55,
         damage: 20,
-        timerOffset: 3 * MOVING_ZONE_PHASE_DURATION,
     },
     {
-        mode: GasMode.Moving,
-        duration: MOVING_ZONE_PHASE_DURATION,
-        rad: 0.35,
+        mode: GasMode.Waiting,
+        duration: 60,
+        rad: 0.55,
         damage: 20,
-        timerOffset: 2 * MOVING_ZONE_PHASE_DURATION,
     },
     {
         mode: GasMode.Moving,
-        duration: MOVING_ZONE_PHASE_DURATION,
-        rad: 0.35,
-        damage: 30,
-        moveCenter: true,
-        timerOffset: MOVING_ZONE_PHASE_DURATION,
-    },
-    {
-        mode: GasMode.Moving,
-        duration: MOVING_ZONE_PHASE_DURATION,
+        duration: 30,
         rad: 0.35,
         damage: 30,
         moveCenter: true,
     },
     {
+        mode: GasMode.Waiting,
+        duration: 60,
+        rad: 0.35,
+        damage: 30,
+    },
+    {
         mode: GasMode.Moving,
-        duration: MOVING_ZONE_PHASE_DURATION,
+        duration: 30,
         rad: 0.22,
         damage: 55,
         moveCenter: true,
-        timerDuration: 0,
     },
     {
-        mode: GasMode.Moving,
-        duration: MOVING_ZONE_PHASE_DURATION,
-        rad: 0.1,
+        mode: GasMode.Waiting,
+        duration: 30,
+        rad: 0.22,
         damage: 55,
-        moveCenter: true,
-        timerDuration: 0,
     },
     {
         mode: GasMode.Moving,
-        duration: MOVING_ZONE_PHASE_DURATION,
+        duration: 60,
         rad: 0,
         damage: 55,
         moveCenter: true,
