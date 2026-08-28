@@ -28,6 +28,7 @@ export const MayThemeDef: PartialMapDef = {
         particles: {},
     },
     gameMode: { maxPlayers: 80, killLeaderEnabled: true, mayMode: true },
+    /* STRIP_FROM_PROD_CLIENT:START */
     lootTable: {
         tier_space: [
             { name: "lasr_swrd_01", count: 1, weight: 0.29 },
@@ -38,9 +39,11 @@ export const MayThemeDef: PartialMapDef = {
             { name: "pulseBox", count: 2, weight: 0.2 },
         ],
     },
+    /* STRIP_FROM_PROD_CLIENT:END */
 };
 
 export const MayMapDef: PartialMapDef = util.mergeDeep({}, MayThemeDef, {
+    /* STRIP_FROM_PROD_CLIENT:START */
     lootTable: {
         tier_world: [
             ...structuredClone(Main.lootTable.tier_world),
@@ -63,6 +66,7 @@ export const MayMapDef: PartialMapDef = util.mergeDeep({}, MayThemeDef, {
             { name: "tier_space", count: 2, weight: 4 },
         ],
     },
+    /* STRIP_FROM_PROD_CLIENT:END */
     mapGen: {
         map: {
             rivers: {
