@@ -168,7 +168,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
     bundle_jjk: {
         name: "JJK Set",
         size: "large",
-        items: ["outfitGojo", "outfitMahoraga", "toji_knife"],
+        items: ["outfitGojo", "outfitMahoraga", "knife_toji"],
         price: 2850,
         durationDays: 7,
     },
@@ -238,7 +238,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
     bundle_farmer: {
         name: "Farmers Set",
         size: "small",
-        items: ["outfitHoldinHide", "farmers_sickle"],
+        items: ["outfitHoldinHide", "sickle_farmer"],
         price: 700,
         durationDays: 7,
     },
