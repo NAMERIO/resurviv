@@ -13,6 +13,20 @@ export interface FeaturedBundleDef {
 }
 
 export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
+    bundle_srandom1: {
+        name: "Random Mini",
+        size: "small",
+        items: ["outfitSunset", "outfitMilitary"],
+        price: 750,
+        durationDays: 7,
+    },
+    bundle_lrandom3: {
+        name: "Random Large",
+        size: "large",
+        items: ["outfitUrbanCamo", "outfitCow", "outfitDiamondy"],
+        price: 1700,
+        durationDays: 7,
+    },
     bundle_galaxy: {
         name: "Living Galaxy Set",
         size: "small",
@@ -239,16 +253,16 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
 
 export const FeaturedBundlePages = [
     {
-        small: "bundle_neondisk",
-        large: "bundle_void",
+        small: "bundle_srandom1",
+        large: "bundle_lrandom3",
     },
     {
-        small: "bundle_dragon",
-        large: "bundle_dinner",
+        small: "bundle_farmer",
+        large: "bundle_pastel",
     },
     {
-        small: "bundle_gridflag",
-        large: "bundle_lightning",
+        small: "bundle_wolf",
+        large: "bundle_jjk",
     },
 ] as const satisfies ReadonlyArray<
     Record<FeaturedBundleSize, keyof typeof FeaturedBundleDefs>
