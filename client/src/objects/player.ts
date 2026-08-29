@@ -2110,7 +2110,7 @@ export class Player implements AbstractObject {
             GameConfig.player.maxVisualRadius,
         );
         let onMask = false;
-        let onStairs = false;
+        let onStairs = !!(this.layer & 2);
         let occluded = false;
         const structures = map.m_structurePool.m_getPool();
         for (let i = 0; i < structures.length; i++) {
@@ -2177,6 +2177,10 @@ export class Player implements AbstractObject {
             (!onMask || activePlayer.layer == 0)
         ) {
             renderLayer |= 2;
+            renderZOrd += 100;
+        }
+        if (onStairs && this.layer === 2 && activePlayer.layer & 1) {
+            renderLayer = 3;
             renderZOrd += 100;
         }
         const renderZIdx =
