@@ -805,6 +805,8 @@ export class WeaponManager {
         if (curMeleeType === loadoutMelee) {
             return;
         }
+        if (this.player.streakActive && this.player.chosenStreakType === "streak_samurai")
+            return;
         const curMeleeDef = GameObjectDefs[curMeleeType] as MeleeDef | undefined;
         if (curMeleeDef?.handSprites || !curMeleeDef?.worldImg) {
             this.setWeapon(slot, loadoutMelee, 0);

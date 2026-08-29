@@ -2,7 +2,7 @@ export interface DamageStreakDef {
     readonly type: "streak";
     readonly name: string;
     readonly lore: string;
-    readonly rewardType: "perk" | "gun" | "dash" | "samurai";
+    readonly rewardType: "perk" | "gun" | "dash" | "role";
     readonly rewardItem: string;
     readonly duration: number;
     readonly dashDistance?: number;
@@ -99,7 +99,7 @@ export const DamageStreakDefs: Record<string, DamageStreakDef> = {
         type: "streak",
         name: "Samurai",
         lore: "Gain windwalk, melee runner, juggernaut, but become confined to a katana. Immune to snow.",
-        rewardType: "samurai",
+        rewardType: "role",
         rewardItem: "samurai",
         duration: 10,
         lootImg: {
