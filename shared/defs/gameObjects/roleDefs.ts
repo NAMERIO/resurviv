@@ -599,6 +599,13 @@ export const RoleDefs: Record<string, RoleDef> = {
         type: "role",
         defaultItems: createDefaultItems({
             helmet: "helmet03_samurai",
+            weapons: [
+                { type: "", ammo: 0 },
+                { type: "", ammo: 0 },
+                { type: "katana_samurai", ammo: 0 },
+                { type: "", ammo: 0 },
+            ],
+            outfit: "outfitMeteor",
         }),
         announce: false,
         sound: { assign: "spawn_01" },
