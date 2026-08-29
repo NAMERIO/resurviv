@@ -40,6 +40,7 @@ export const loadoutGunSections = [
             "mp220",
             // "saiga",
             "spas12",
+            // "spas16",
         ],
     },
     {
@@ -85,7 +86,7 @@ export const loadoutGunSections = [
             // "rainbow_blaster",
             // "bazooka",
             "flux_rifle",
-            "snow_cannon",
+            // "snow_cannon",
         ],
     },
 ] as const;

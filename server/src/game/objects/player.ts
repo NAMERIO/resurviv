@@ -207,6 +207,10 @@ export class PlayerBarn {
     nextKilledNumber = 0;
 
     constructor(readonly game: Game) {
+        if (this.game.mapName !== "snow") {
+            this.defaultItems.inventory.snowball = 0;
+        }
+
         this.bagSizes = util.mergeDeep(
             {},
             GameConfig.bagSizes,
