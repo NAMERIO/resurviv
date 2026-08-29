@@ -1796,7 +1796,7 @@ export class Player extends BaseGameObject {
             // for non faction modes where teamId > 2, just cycles between blue and red teamId
             const clampedTeamId = ((this.teamId - 1) % 2) + 1;
 
-            if (!this.game.map.perkMode || isBattleRoyaleMapName(this.game.mapName)){
+            if (!this.game.map.perkMode || isBattleRoyaleMapName(this.game.mapName)) {
                 // give backpack before heals/ammos
                 if (roleDef.defaultItems.backpack) {
                     if (this.backpack) {
