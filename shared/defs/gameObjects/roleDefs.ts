@@ -605,7 +605,7 @@ export const RoleDefs: Record<string, RoleDef> = {
                 { type: "katana_samurai", ammo: 0 },
                 { type: "", ammo: 0 },
             ],
-            outfit: "outfitMeteor"
+            outfit: "outfitMeteor",
         }),
         announce: false,
         sound: { assign: "spawn_01" },

@@ -2225,11 +2225,10 @@ export class Player extends BaseGameObject {
                 if (this.streakSavedWeapons.length > 0) {
                     this.restoreStreakWeapons();
                 }
+                this.removeRole();
                 this.promoteToRole(this.streakSavedRole);
-                this.role = this.streakSavedRole;
 
-                this.outfit = this.streakSavedOutfit;
-                this.setOutfit(this.outfit);
+                if(this.streakSavedOutfit.length > 0) this.setOutfit(this.streakSavedOutfit);
             }
         }
 
