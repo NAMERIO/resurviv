@@ -44,7 +44,7 @@ const mapDef: PartialMapDef = {
             grass: 0x3c3c3c,
             underground: 0x1b0d03,
             playerSubmerge: 0xa44f2b,
-            playerGhillie: 0x303030,
+            playerGhillie: 0x383838,
         },
         particles: { camera: "falling_volcanic_ash" },
     },
