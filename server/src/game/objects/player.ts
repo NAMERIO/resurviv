@@ -1795,18 +1795,20 @@ export class Player extends BaseGameObject {
         if (roleDef.defaultItems) {
             // for non faction modes where teamId > 2, just cycles between blue and red teamId
             const clampedTeamId = ((this.teamId - 1) % 2) + 1;
-
-            // give backpack before heals/ammos
-            if (roleDef.defaultItems.backpack) {
-                if (this.backpack) {
-                    this.dropBackPackCopy(this.backpack);
+            
+            if(!this.game.map.perkMode || isBattleRoyaleMapName(this.game.mapName)){
+                // give backpack before heals/ammos
+                if (roleDef.defaultItems.backpack) {
+                    if (this.backpack) {
+                        this.dropBackPackCopy(this.backpack);
+                    }
+                    this.backpack = roleDef.defaultItems.backpack;
                 }
-                this.backpack = roleDef.defaultItems.backpack;
-            }
 
-            // inventory and scope
-            for (const [key, value] of Object.entries(roleDef.defaultItems.inventory)) {
-                this.invManager.giveAndDrop(key as InventoryItem, value);
+                // inventory and scope
+                for (const [key, value] of Object.entries(roleDef.defaultItems.inventory)) {
+                    this.invManager.giveAndDrop(key as InventoryItem, value);
+                }
             }
 
             // outfit
@@ -2165,7 +2167,7 @@ export class Player extends BaseGameObject {
                           Number(this.moveUp) - Number(this.moveDown),
                       );
             this.dashDir = v2.normalizeSafe(dashMovement, this.dirNew);
-        } else if (streakDef.rewardType === "samurai") {
+        } else if (streakDef.rewardType === "role") {
             if (this.weaponManager.cookingThrowable) {
                 this.weaponManager.throwThrowable();
             }
@@ -2174,18 +2176,24 @@ export class Player extends BaseGameObject {
                 type: this.weapons[slot].type,
                 ammo: this.weapons[slot].ammo,
             }));
-            if (!(this.helmet === "helmet03")) {
-                this.dropArmor(this.helmet);
-            }
             this.streakSavedOutfit = this.outfit;
-            this.helmet = "helmet03_samurai";
-            this.weaponManager.setWeapon(0, "", 0);
-            this.weaponManager.setWeapon(1, "", 0);
-            this.weaponManager.setWeapon(2, "katana_samurai", 0);
-            this.weaponManager.setWeapon(3, "", 0);
-            this.setOutfit("outfitMeteor");
-            this.promoteToRole("samurai", true);
+            this.streakSavedRole = this.role;
+            this.stripPlayer();
+            this.promoteToRole(streakDef.rewardItem, true);
         }
+    }
+
+    stripPlayer(): void{
+        if (!(this.helmet === "helmet03")) {
+            this.dropArmor(this.helmet);
+        } else {
+            this.helmet = "";
+        }
+        this.weaponManager.setWeapon(0, "", 0);
+        this.weaponManager.setWeapon(1, "", 0);
+        this.weaponManager.setWeapon(2, "", 0);
+        this.weaponManager.setWeapon(3, "", 0);
+        this.setOutfit("outfitBase");
     }
 
     restoreStreakWeapons(): void {
@@ -2211,15 +2219,17 @@ export class Player extends BaseGameObject {
                 }
 
                 this.streakGunSlot = -1;
-            } else if (streakDef.rewardType === "samurai") {
+            } else if (streakDef.rewardType === "role") {
+                this.stripPlayer();
+                if(!(this.helmet === "helmet03")) this.helmet = "helmet03";
                 if (this.streakSavedWeapons.length > 0) {
                     this.restoreStreakWeapons();
                 }
+                this.promoteToRole(this.streakSavedRole);
+                this.role = this.streakSavedRole;
 
-                this.setOutfit(this.streakSavedOutfit);
-                this.removeRole();
-                this.hasRoleHelmet = false;
-                this.helmet = "helmet03";
+                this.outfit = this.streakSavedOutfit;
+                this.setOutfit(this.outfit);
             }
         }
 
@@ -2973,6 +2983,7 @@ export class Player extends BaseGameObject {
     streakSavedWeapons: { slot: number; type: string; ammo: number }[] = [];
     streakGunSlot: number = -1;
     streakSavedOutfit = "";
+    streakSavedRole = "";
     streakDirty = true;
     hideAndSeekBlindTicker = 0;
     hideAndSeekBlindDirty = false;

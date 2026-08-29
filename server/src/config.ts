@@ -14,11 +14,11 @@ util.mergeDeep(Config, {
     clientTheme: "may",
     modes: [
         // { mapName: "may", teamMode: TeamMode.Duo, enabled: true },
-        { mapName: "snow", teamMode: TeamMode.Duo, enabled: true },
+        { mapName: "cobalt", teamMode: TeamMode.Duo, enabled: true },
     ],
     br_modes: [
         // { mapName: "may", teamMode: TeamMode.Duo, enabled: true },
-        { mapName: "snow", teamMode: TeamMode.Duo, enabled: true },
+        { mapName: "cobalt", teamMode: TeamMode.Duo, enabled: true },
     ],
     debug: {
         spawnMode: process.env.NODE_ENV === "production" ? "default" : "fixed",
