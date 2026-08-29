@@ -1084,6 +1084,7 @@ export class Application {
         device.onResize();
         Menu.onResize();
         this.loadoutMenu.onResize();
+        this.updatePrestigeArenaScale();
         this.pixi?.renderer.resize(device.screenWidth, device.screenHeight);
         if (this.game?.initialized) {
             this.game.resize();
@@ -3446,6 +3447,32 @@ export class Application {
             display: visible ? "block" : "none",
             "pointer-events": visible ? "auto" : "none",
         });
+        if (visible) requestAnimationFrame(() => this.updatePrestigeArenaScale());
+    }
+
+    updatePrestigeArenaScale() {
+        const wrapper = this.prestigeArenaWrapper.get(0);
+        if (!wrapper) return;
+
+        if (window.innerWidth > 1080 && window.innerHeight > 760) {
+            wrapper.style.removeProperty("--arena-modal-scale");
+            return;
+        }
+
+        const isJoined = wrapper.classList.contains("arena-joined-shell");
+        const isBattleRoyale =
+            this.prestigeArenaBattlePane.hasClass("arena-battle-royale");
+        const naturalWidth = isJoined ? (isBattleRoyale ? 1210 : 1680) : 1040;
+        const naturalHeight = isJoined ? (isBattleRoyale ? 570 : 760) : 475;
+        const availableWidth = Math.max(1, window.innerWidth - 8);
+        const availableHeight = Math.max(1, window.innerHeight - 24);
+        const scale = Math.min(
+            1,
+            availableWidth / naturalWidth,
+            availableHeight / naturalHeight,
+        );
+
+        wrapper.style.setProperty("--arena-modal-scale", String(scale));
     }
 
     syncPrestigeArenaRoomUi() {

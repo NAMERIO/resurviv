@@ -7122,7 +7122,8 @@ a:active {
   display: none !important;
 }
 
-@media (max-width: 1080px) {
+/* The app scales the complete desktop lobby; these rules are a no-script fallback. */
+@media (scripting: none) and (max-width: 1080px) {
   #modal-prestige-arena #modal-prestige-wrapper,
   #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell,
   #modal-prestige-arena.is-open
@@ -7234,7 +7235,9 @@ a:active {
   }
 }
 
-@media (min-width: 900px) and (max-width: 1080px) and (min-height: 761px) {
+@media (scripting: none) and (min-width: 900px) and (max-width: 1080px) and (
+    min-height: 761px
+  ) {
   #modal-prestige-arena #modal-battle-window.arena-joined-layout {
     grid-template-areas: "left right";
     grid-template-columns: 326px minmax(0, 1fr);
@@ -7248,7 +7251,9 @@ a:active {
   }
 }
 
-@media (min-width: 701px) and (max-width: 899px) and (min-height: 621px) {
+@media (scripting: none) and (min-width: 701px) and (max-width: 899px) and (
+    min-height: 621px
+  ) {
   #modal-prestige-arena #modal-battle-window.arena-joined-layout {
     grid-template-areas: "left right";
     grid-template-columns: 280px minmax(0, 1fr);
@@ -7326,7 +7331,9 @@ a:active {
   }
 }
 
-@media (max-height: 760px) and (orientation: landscape) {
+@media (scripting: none) and (max-width: 1080px) and (max-height: 760px) and (
+    orientation: landscape
+  ) {
   #modal-prestige-arena #modal-prestige-wrapper,
   #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell,
   #modal-prestige-arena.is-open
@@ -7578,7 +7585,7 @@ a:active {
   }
 }
 
-@media (max-width: 700px) {
+@media (scripting: none) and (max-width: 700px) {
   #modal-prestige-arena #modal-prestige-wrapper,
   #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell,
   #modal-prestige-arena.is-open
@@ -7881,7 +7888,7 @@ a:active {
   }
 }
 
-@media (max-width: 520px) {
+@media (scripting: none) and (max-width: 520px) {
   #modal-prestige-arena #modal-prestige-wrapper,
   #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell,
   #modal-prestige-arena.is-open
@@ -7892,7 +7899,7 @@ a:active {
   }
 }
 
-@media (max-width: 420px), (max-height: 620px) {
+@media (scripting: none) and (max-width: 420px), (scripting: none) and (max-height: 620px) {
   #modal-prestige-arena #modal-prestige-wrapper,
   #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell,
   #modal-prestige-arena.is-open
@@ -7903,7 +7910,7 @@ a:active {
   }
 }
 
-@media (max-height: 565px) {
+@media (scripting: none) and (max-width: 1080px) and (max-height: 565px) {
   #modal-prestige-arena #modal-prestige-wrapper,
   #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell,
   #modal-prestige-arena.is-open
@@ -7912,10 +7919,11 @@ a:active {
     #modal-prestige-wrapper.arena-joined-shell:has(
       #modal-battle-window.arena-battle-royale
     ) {
-    --arena-modal-scale: 0.62;
-    height: calc((100vh - 192px) / 0.62);
+    --arena-modal-scale: 0.68;
+    height: calc((100vh - 12px) / 0.68);
     max-width: none;
-    width: calc((100vw - 490px) / 0.62);
+    top: 50%;
+    width: calc((100vw - 12px) / 0.68);
   }
 
   #modal-prestige-arena #arena-team-a-list,
@@ -8009,7 +8017,168 @@ a:active {
   }
 }
 
-@media (max-height: 482px) {
+@media (scripting: none) and (max-width: 1080px) and (max-height: 760px) and (
+    orientation: landscape
+  ) {
+  #modal-prestige-arena #modal-prestige-wrapper,
+  #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell,
+  #modal-prestige-arena.is-open
+    #modal-prestige-wrapper.arena-joined-shell.arena-large-teams,
+  #modal-prestige-arena.is-open
+    #modal-prestige-wrapper.arena-joined-shell:has(
+      #modal-battle-window.arena-battle-royale
+    ) {
+    --arena-modal-scale: 1;
+    height: calc(100vh - 8px);
+    top: 50%;
+    width: calc(100vw - 8px);
+  }
+
+  #modal-prestige-arena #modal-prestige-wrapper {
+    grid-template-rows: 36px minmax(0, 1fr);
+  }
+
+  #modal-prestige-arena #arena-modal-title {
+    height: 36px;
+    padding: 0 10px;
+  }
+
+  #modal-prestige-arena #arena-modal-title .arena-modal-title-main {
+    font-size: 17px;
+    line-height: 18px;
+  }
+
+  #modal-prestige-arena #arena-modal-title .arena-modal-title-sub {
+    font-size: 9px;
+    line-height: 10px;
+  }
+
+  #modal-prestige-arena #prestige-game-summary-button,
+  #modal-prestige-arena #prestige-battle-button,
+  #modal-prestige-arena #prestige-create-button,
+  #modal-prestige-arena #prestige-spectate-button {
+    background-position: 9px center;
+    background-size: 18px;
+    font-size: 14px;
+    height: 34px;
+    min-width: 92px;
+    padding: 0 10px 0 32px;
+  }
+
+  #modal-prestige-arena #modal-prestige-body,
+  #modal-prestige-arena .modal-prestige-body-inner {
+    padding: 4px;
+  }
+
+  #modal-prestige-arena #modal-battle-window.arena-joined-layout {
+    grid-template-columns: min(440px, 48vw) minmax(0, 1fr);
+  }
+
+  #modal-prestige-arena #modal-battle-window.arena-joined-layout .battle-left-panel {
+    gap: 4px;
+    grid-template-areas:
+      "counter code"
+      "region region"
+      "mode type"
+      "teams game"
+      "impostors impostors"
+      "options options"
+      "actions actions";
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+    padding: 6px;
+  }
+
+  #modal-prestige-arena
+    #modal-battle-window.arena-joined-layout.arena-battle-royale
+    .battle-left-panel {
+    grid-template-areas:
+      "counter code"
+      "region region"
+      "mode type"
+      "game game"
+      "options options"
+      "actions actions";
+  }
+
+  #modal-prestige-arena #modal-battle-window.arena-joined-layout .button-group {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #modal-prestige-arena #battle-player-counter,
+  #modal-prestige-arena #battle-code-row,
+  #modal-prestige-arena .battle-mode,
+  #modal-prestige-arena .battle-type,
+  #modal-prestige-arena .battle-team-count,
+  #modal-prestige-arena .battle-region,
+  #modal-prestige-arena .battle-minigame,
+  #modal-prestige-arena .battle-impostors,
+  #modal-prestige-arena #battle-loadout-button,
+  #modal-prestige-arena #game-status,
+  #modal-prestige-arena #battle-button {
+    height: 34px;
+    min-height: 34px;
+  }
+
+  #modal-prestige-arena #battle-player-counter,
+  #modal-prestige-arena #battle-player-counter div {
+    font-size: 20px;
+  }
+
+  #modal-prestige-arena #battle-private-options {
+    display: grid;
+    gap: 4px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #modal-prestige-arena #battle-private-options .private-option-toggle {
+    font-size: 10px;
+    gap: 3px;
+    height: 26px;
+    line-height: 11px;
+    min-width: 0;
+    padding: 2px 4px;
+    width: 100%;
+  }
+
+  #modal-prestige-arena #battle-private-options .private-option-toggle::before {
+    background-size: 14px;
+    flex-basis: 18px;
+    height: 18px;
+  }
+
+  #modal-prestige-arena #battle-mode-selection {
+    left: 8px;
+    right: calc(50% + 3px);
+    top: 120px;
+  }
+
+  #modal-prestige-arena #battle-type-selection {
+    left: calc(50% + 3px);
+    right: 8px;
+    top: 120px;
+  }
+
+  #modal-prestige-arena #battle-team-count-selection {
+    left: 8px;
+    right: calc(50% + 3px);
+    top: 158px;
+  }
+
+  #modal-prestige-arena #battle-minigame-selection {
+    left: calc(50% + 3px);
+    right: 8px;
+    top: 158px;
+  }
+
+  #modal-prestige-arena #battle-impostors-selection {
+    left: 8px;
+    right: 8px;
+    top: 196px;
+  }
+}
+
+@media (scripting: none) and (max-width: 1080px) and (max-height: 482px) {
   #modal-prestige-arena #arena-team-a-list,
   #modal-prestige-arena .arena-team-a .arena-team-list {
     gap: 3px;
@@ -8111,7 +8280,7 @@ a:active {
   }
 }
 
-@media (max-height: 435px) {
+@media (scripting: none) and (max-width: 1080px) and (max-height: 435px) {
   #modal-prestige-arena #arena-team-a-list,
   #modal-prestige-arena .arena-team-a .arena-team-list {
     gap: 2px;
@@ -8213,7 +8382,7 @@ a:active {
   }
 }
 
-@media (max-height: 428px) {
+@media (scripting: none) and (max-width: 1080px) and (max-height: 428px) {
   #modal-prestige-arena #arena-team-a-list,
   #modal-prestige-arena .arena-team-a .arena-team-list {
     gap: 1px;
@@ -8315,15 +8484,58 @@ a:active {
   }
 }
 
-@media (max-width: 850px) and (max-height: 374px),
-  (max-width: 850px) and (max-height: 320px) {
+@media (scripting: none) and (max-width: 850px) and (max-height: 374px),
+  (scripting: none) and (max-width: 850px) and (max-height: 320px) {
   #modal-prestige-arena #modal-prestige-wrapper,
   #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell,
   #modal-prestige-arena.is-open
     #modal-prestige-wrapper.arena-joined-shell.arena-large-teams {
-    --arena-modal-scale: 0.58;
-    height: calc((100vh - 34px) / 0.58);
-    width: calc((100vw - 8px) / 0.58);
+    --arena-modal-scale: 1;
+    height: calc(100vh - 8px);
+    top: 50%;
+    width: calc(100vw - 8px);
+  }
+}
+
+@media (scripting: none) and (max-width: 1080px) {
+  #modal-prestige-arena #modal-prestige-wrapper,
+  #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell,
+  #modal-prestige-arena.is-open
+    #modal-prestige-wrapper.arena-joined-shell.arena-large-teams,
+  #modal-prestige-arena.is-open
+    #modal-prestige-wrapper.arena-joined-shell:has(
+      #modal-battle-window.arena-battle-royale
+    ) {
+    --arena-modal-scale: 1;
+    inset: 4px;
+    height: auto;
+    max-width: none;
+    transform: none;
+    width: auto;
+  }
+}
+@media (max-width: 1080px), (max-height: 760px) {
+  #modal-prestige-arena #modal-prestige-wrapper {
+    --arena-modal-scale: 0.9;
+    height: 475px;
+    max-width: none;
+    top: calc(50% - 6px);
+    width: 1040px;
+  }
+
+  #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell,
+  #modal-prestige-arena.is-open
+    #modal-prestige-wrapper.arena-joined-shell.arena-large-teams {
+    height: 760px;
+    width: 1680px;
+  }
+
+  #modal-prestige-arena.is-open
+    #modal-prestige-wrapper.arena-joined-shell:has(
+      #modal-battle-window.arena-battle-royale
+    ) {
+    height: 570px;
+    width: 1210px;
   }
 }
 
