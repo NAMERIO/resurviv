@@ -1795,8 +1795,8 @@ export class Player extends BaseGameObject {
         if (roleDef.defaultItems) {
             // for non faction modes where teamId > 2, just cycles between blue and red teamId
             const clampedTeamId = ((this.teamId - 1) % 2) + 1;
-            
-            if(!this.game.map.perkMode || isBattleRoyaleMapName(this.game.mapName)){
+
+            if( !this.game.map.perkMode || isBattleRoyaleMapName(this.game.mapName)){
                 // give backpack before heals/ammos
                 if (roleDef.defaultItems.backpack) {
                     if (this.backpack) {
@@ -1806,7 +1806,9 @@ export class Player extends BaseGameObject {
                 }
 
                 // inventory and scope
-                for (const [key, value] of Object.entries(roleDef.defaultItems.inventory)) {
+                for (const [key, value] of Object.entries(
+                    roleDef.defaultItems.inventory
+                )) {
                     this.invManager.giveAndDrop(key as InventoryItem, value);
                 }
             }
@@ -2183,7 +2185,7 @@ export class Player extends BaseGameObject {
         }
     }
 
-    stripPlayer(): void{
+    stripPlayer(): void {
         if (!(this.helmet === "helmet03")) {
             this.dropArmor(this.helmet);
         } else {
@@ -2221,14 +2223,15 @@ export class Player extends BaseGameObject {
                 this.streakGunSlot = -1;
             } else if (streakDef.rewardType === "role") {
                 this.stripPlayer();
-                if(!(this.helmet === "helmet03")) this.helmet = "helmet03";
+                if (!(this.helmet === "helmet03")) this.helmet = "helmet03";
                 if (this.streakSavedWeapons.length > 0) {
                     this.restoreStreakWeapons();
                 }
                 this.removeRole();
                 this.promoteToRole(this.streakSavedRole);
 
-                if(this.streakSavedOutfit.length > 0) this.setOutfit(this.streakSavedOutfit);
+                if (this.streakSavedOutfit.length > 0)
+                    this.setOutfit(this.streakSavedOutfit);
             }
         }
 
