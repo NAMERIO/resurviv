@@ -2474,11 +2474,9 @@ const EmitterDefs: Record<string, EmitterDef> = {
     }),
     falling_snow_fast: createAmbientLeafEmitter({
         particle: "snow",
-        rate: new Range(0.12, 0.17),
-        maxRate: new Range(0.05, 0.07),
-        maxElapsed: 240,
+        rate: new Range(0.01, 0.02),
         radius: 70,
-        speed: new Range(1, 1.5),
+        speed: new Range(1, 12),
     }),
     falling_snow_slow: createAmbientLeafEmitter({
         particle: "snow",
