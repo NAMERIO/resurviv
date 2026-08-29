@@ -17,6 +17,8 @@ export const SnowAtlas: AtlasDef = {
         "map/map-chest-03x.svg",
         "map/map-chute-01x.svg",
 
+        "particles/part-snow-footprint.svg",
+
         "map/map-crate-01x.svg",
         "map/map-crate-02x.svg",
         "map/map-crate-03x.svg",

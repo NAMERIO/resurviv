@@ -2079,6 +2079,25 @@ const ParticleDefs: Record<string, ParticleDef> = {
         },
         color: 0xb3f0ff,
     },
+    snowFootprint: {
+        image: ["part-snow-footprint.img"],
+        zOrd: 10,
+        life: 3,
+        drag: 0,
+        rotVel: 0,
+        scale: {
+            start: 0.34,
+            end: 0.34,
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 0.42,
+            end: 0,
+            lerp: new Range(0.05, 1),
+        },
+        color: 0x637b86,
+        ignoreValueAdjust: true,
+    },
     leafAutumn: createAmbientLeaves({}),
     leafHalloween: createAmbientLeaves({
         color: function () {

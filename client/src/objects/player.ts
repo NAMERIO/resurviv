@@ -693,6 +693,7 @@ export class Player implements AbstractObject {
         this.lastInsideObstacleTime = 0;
         this.lastSwapIdx = -1;
         this.hasteSeq = -1;
+        this.stepDistance = 0;
         this.actionSoundInstance = null;
 
         this.m_action = {
@@ -1499,7 +1500,9 @@ export class Player implements AbstractObject {
 
         // Play a footstep if we've moved enough
         if (!this.m_netData.m_dead) {
-            this.stepDistance += v2.length(v2.sub(this.m_posOld, this.m_pos));
+            const movement = v2.sub(this.m_pos, this.m_posOld);
+            const movementDistance = v2.length(movement);
+            this.stepDistance += movementDistance;
             if ((this.stepDistance > 5 && inWater) || (inWater && !this.wasInWater)) {
                 this.stepDistance = 0;
                 particleBarn.addRippleParticle(
@@ -1515,6 +1518,36 @@ export class Player implements AbstractObject {
                 });
             } else if (this.stepDistance > 4 && !inWater) {
                 this.stepDistance = 0;
+                const isSnowMode = map.mapName === "snow" || map.mapName === "br_snow";
+                if (
+                    isSnowMode &&
+                    this.surface.type === "grass" &&
+                    !this.m_netData.m_downed &&
+                    this.m_netData.m_vehicleId === 0 &&
+                    !this.isNew &&
+                    movementDistance > 0
+                ) {
+                    const movementDir = v2.normalizeSafe(movement, this.m_dir);
+                    const footprintRotation = -Math.atan2(movementDir.y, movementDir.x);
+                    const footprintOffsets = [
+                        { back: 2.2, side: -0.32 },
+                        { back: 0.45, side: 0.32 },
+                    ];
+                    for (const offset of footprintOffsets) {
+                        const footprintPos = v2.add(
+                            v2.sub(this.m_pos, v2.mul(movementDir, offset.back)),
+                            v2.mul(v2.perp(movementDir), offset.side),
+                        );
+                        particleBarn.addParticle(
+                            "snowFootprint",
+                            this.layer,
+                            footprintPos,
+                            v2.create(0, 0),
+                            this.m_netData.m_scale,
+                            footprintRotation,
+                        );
+                    }
+                }
                 audioManager.playGroup(`footstep_${this.surface.type}`, {
                     soundPos: this.m_pos,
                     fallOff: 3,
