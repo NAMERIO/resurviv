@@ -14272,7 +14272,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         img: {
             sprite: "map-cactus-01.img",
             residue: "map-cactus-res-01.img",
-            scale: 0.42,
+            scale: 0.12,
             alpha: 1,
             tint: 0xffffff,
             zIdx: 800,
