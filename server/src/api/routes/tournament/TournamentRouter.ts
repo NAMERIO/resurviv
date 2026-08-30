@@ -14,6 +14,7 @@ import {
     type TournamentState,
 } from "../../../../../shared/types/tournament";
 import { Config } from "../../../config";
+import { logTournamentBetToDiscord } from "../../../utils/tournamentBetLogging";
 import { authMiddleware, validateParams } from "../../auth/middleware";
 import { db } from "../../db";
 import type { Context } from "../../index";
@@ -299,11 +300,23 @@ TournamentRouter.post("/bet", authMiddleware, validateParams(betSchema), async (
         return {
             success: true as const,
             balance: Number(updated.rows[0]!.gp_balance),
+            market: market.title,
+            selection: option.label,
+            oddsHundredths: option.oddsHundredths,
         };
     });
 
     if ("error" in result) return c.json({ error: result.error }, result.status);
-    return c.json(result);
+    void logTournamentBetToDiscord({
+        username: user.username,
+        slug: user.slug,
+        market: result.market,
+        selection: result.selection,
+        oddsHundredths: result.oddsHundredths,
+        amount: bet.amount,
+        balance: result.balance,
+    });
+    return c.json({ success: result.success, balance: result.balance });
 });
 
 const settleBetsSchema = z.object({
@@ -368,11 +381,7 @@ TournamentRouter.post(
             }
 
             const marginSelection =
-                loserScore <= 2
-                    ? "blowout"
-                    : loserScore <= 4
-                      ? "comfortable"
-                      : "close";
+                loserScore <= 2 ? "blowout" : loserScore <= 4 ? "comfortable" : "close";
             const winners: Record<TournamentBetMarketId, string> = {
                 winner: final.winner === 0 ? "player_a" : "player_b",
                 margin: marginSelection,

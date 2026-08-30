@@ -301,6 +301,11 @@ export interface ConfigType {
          * Webhook URL to log shop and market purchases.
          */
         shopLogs?: string;
+
+        /**
+         * Webhook URL to log tournament GP bets.
+         */
+        tournamentBets?: string;
     };
 
     /**
