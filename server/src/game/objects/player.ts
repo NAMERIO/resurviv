@@ -1763,6 +1763,7 @@ export class Player extends BaseGameObject {
 
         this.role = role;
         this.inventoryDirty = true;
+        this.playerStatusDirty = true;
         this.setDirty();
 
         const ctfFlagRole = role === "ctf_flag_red" || role === "ctf_flag_blue";
@@ -1962,6 +1963,7 @@ export class Player extends BaseGameObject {
         const def = GameObjectDefs[this.role] as RoleDef;
         if (!def) return;
         this.role = "";
+        this.playerStatusDirty = true;
 
         this.mapIndicator?.kill();
         for (let i = 0; i < this.perks.length; i++) {
@@ -6786,8 +6788,13 @@ export class Player extends BaseGameObject {
                 this.game.arenaPrivate && this.game.showEnemiesOnMap;
             const arenaHidesEnemies =
                 this.game.arenaPrivate && !this.game.showEnemiesOnMap;
+            const isCaptureTheFlagCarrier =
+                this.game.captureTheFlagManager.enabled &&
+                (p.role === "ctf_flag_red" || p.role === "ctf_flag_blue");
             const visible = arenaHidesEnemies
-                ? p === this || (!hiddenByDebug && p.teamId === this.teamId)
+                ? isCaptureTheFlagCarrier ||
+                  p === this ||
+                  (!hiddenByDebug && p.teamId === this.teamId)
                 : this.game.arenaPrivate && hideAndSeekSettings && this.arenaTeam
                   ? hideAndSeekVisible
                   : arenaShowsAllPlayers ||
