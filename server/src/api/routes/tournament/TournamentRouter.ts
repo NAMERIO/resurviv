@@ -4,8 +4,13 @@ import { z } from "zod";
 import {
     clearTournamentDescendants,
     createTournamentState,
+    getTournamentBetMarkets,
     getTournamentDescendantMatchIds,
     getTournamentPlayers,
+    type TournamentBet,
+    TournamentBetLimits,
+    type TournamentBetMarketId,
+    TournamentFinalMatchId,
     type TournamentState,
 } from "../../../../../shared/types/tournament";
 import { Config } from "../../../config";
@@ -45,6 +50,35 @@ async function ensureTournamentTable() {
             gp_awarded integer NOT NULL DEFAULT 5000,
             awarded_at timestamptz NOT NULL DEFAULT now(),
             PRIMARY KEY (tournament_id, user_id)
+        )
+    `);
+    await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS tournament_bets (
+            id serial PRIMARY KEY,
+            tournament_id integer NOT NULL DEFAULT 1,
+            user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            match_id integer NOT NULL,
+            market text NOT NULL,
+            selection text NOT NULL,
+            odds_hundredths integer NOT NULL CHECK (odds_hundredths BETWEEN 100 AND 500),
+            amount integer NOT NULL CHECK (amount BETWEEN 250 AND 2500),
+            status text NOT NULL DEFAULT 'pending'
+                CHECK (status IN ('pending', 'won', 'lost')),
+            payout integer NOT NULL DEFAULT 0,
+            created_at timestamptz NOT NULL DEFAULT now(),
+            settled_at timestamptz,
+            UNIQUE (tournament_id, user_id, match_id, market)
+        )
+    `);
+    await db.execute(sql`
+        CREATE TABLE IF NOT EXISTS tournament_bet_settlements (
+            tournament_id integer NOT NULL DEFAULT 1,
+            match_id integer NOT NULL,
+            grenade_kills integer NOT NULL CHECK (grenade_kills >= 0),
+            heal_off boolean NOT NULL,
+            settled_by text NOT NULL REFERENCES users(id),
+            settled_at timestamptz NOT NULL DEFAULT now(),
+            PRIMARY KEY (tournament_id, match_id)
         )
     `);
 }
@@ -123,6 +157,273 @@ TournamentRouter.get("/permissions", authMiddleware, (c) => {
     const slug = c.get("user")!.slug;
     return c.json({ canEdit: Config.debug.developerSlugs.includes(slug) });
 });
+
+type TournamentBetRow = {
+    market: TournamentBetMarketId;
+    selection: string;
+    odds_hundredths: number;
+    amount: number;
+    status: TournamentBet["status"];
+    payout: number;
+};
+
+function serializeBet(row: TournamentBetRow): TournamentBet {
+    return {
+        market: row.market,
+        selection: row.selection,
+        oddsHundredths: Number(row.odds_hundredths),
+        amount: Number(row.amount),
+        status: row.status,
+        payout: Number(row.payout),
+    };
+}
+
+TournamentRouter.get("/betting", authMiddleware, async (c) => {
+    await ensureTournamentTable();
+    const user = c.get("user")!;
+    const state = await readState();
+    const players = getTournamentPlayers(state, TournamentFinalMatchId);
+    const [balanceResult, betsResult, settlementResult] = await Promise.all([
+        db.execute<{ gp_balance: number }>(sql`
+            SELECT gp_balance FROM users WHERE id = ${user.id}
+        `),
+        db.execute<TournamentBetRow>(sql`
+            SELECT market, selection, odds_hundredths, amount, status, payout
+            FROM tournament_bets
+            WHERE tournament_id = 1
+                AND user_id = ${user.id}
+                AND match_id = ${TournamentFinalMatchId}
+            ORDER BY id
+        `),
+        db.execute<{ settled_at: Date | string }>(sql`
+            SELECT settled_at
+            FROM tournament_bet_settlements
+            WHERE tournament_id = 1 AND match_id = ${TournamentFinalMatchId}
+        `),
+    ]);
+
+    return c.json({
+        matchId: TournamentFinalMatchId,
+        players,
+        balance: Number(balanceResult.rows[0]?.gp_balance ?? 0),
+        limits: TournamentBetLimits,
+        open:
+            Boolean(players[0] && players[1]) &&
+            state.matches[TournamentFinalMatchId].winner === null,
+        settled: settlementResult.rows.length > 0,
+        bets: betsResult.rows.map(serializeBet),
+    });
+});
+
+const betSchema = z.object({
+    market: z.enum(["winner", "margin", "game_11", "grenade_kills", "heal_off"]),
+    selection: z.string().min(1).max(40),
+    amount: z
+        .number()
+        .int()
+        .min(TournamentBetLimits.minimum)
+        .max(TournamentBetLimits.maximum),
+});
+
+TournamentRouter.post("/bet", authMiddleware, validateParams(betSchema), async (c) => {
+    await ensureTournamentTable();
+    const user = c.get("user")!;
+    const bet = c.req.valid("json");
+    const result = await db.transaction(async (tx) => {
+        const stateResult = await tx.execute<{ state: TournamentState }>(sql`
+                SELECT state
+                FROM tournament_bracket_state
+                WHERE id = 1
+                FOR UPDATE
+            `);
+        const state = stateResult.rows[0]?.state;
+        if (!state) {
+            return { error: "Tournament betting is unavailable", status: 503 as const };
+        }
+
+        const players = getTournamentPlayers(state, TournamentFinalMatchId);
+        if (!players[0] || !players[1]) {
+            return { error: "The final matchup is not ready yet", status: 409 as const };
+        }
+        if (state.matches[TournamentFinalMatchId].winner !== null) {
+            return { error: "Betting is closed for this match", status: 409 as const };
+        }
+
+        const market = getTournamentBetMarkets(players).find(
+            (candidate) => candidate.id === bet.market,
+        );
+        const option = market?.options.find(
+            (candidate) => candidate.id === bet.selection,
+        );
+        if (!market || !option) {
+            return { error: "Choose a valid betting option", status: 400 as const };
+        }
+
+        const userResult = await tx.execute<{ gp_balance: number }>(sql`
+                SELECT gp_balance FROM users WHERE id = ${user.id} FOR UPDATE
+            `);
+        const balance = Number(userResult.rows[0]?.gp_balance ?? 0);
+        if (balance < bet.amount) {
+            return { error: "You do not have enough GP", status: 409 as const };
+        }
+
+        const existing = await tx.execute(sql`
+                SELECT id
+                FROM tournament_bets
+                WHERE tournament_id = 1
+                    AND user_id = ${user.id}
+                    AND match_id = ${TournamentFinalMatchId}
+                    AND market = ${bet.market}
+            `);
+        if (existing.rows.length) {
+            return {
+                error: "You already placed a bet in this category",
+                status: 409 as const,
+            };
+        }
+
+        await tx.execute(sql`
+                INSERT INTO tournament_bets
+                    (tournament_id, user_id, match_id, market, selection,
+                     odds_hundredths, amount)
+                VALUES
+                    (1, ${user.id}, ${TournamentFinalMatchId}, ${bet.market},
+                     ${bet.selection}, ${option.oddsHundredths}, ${bet.amount})
+            `);
+        const updated = await tx.execute<{ gp_balance: number }>(sql`
+                UPDATE users
+                SET gp_balance = gp_balance - ${bet.amount}
+                WHERE id = ${user.id}
+                RETURNING gp_balance
+            `);
+        return {
+            success: true as const,
+            balance: Number(updated.rows[0]!.gp_balance),
+        };
+    });
+
+    if ("error" in result) return c.json({ error: result.error }, result.status);
+    return c.json(result);
+});
+
+const settleBetsSchema = z.object({
+    grenadeKills: z.number().int().min(0).max(999),
+    healOff: z.boolean(),
+});
+
+TournamentRouter.post(
+    "/settle-bets",
+    authMiddleware,
+    validateParams(settleBetsSchema),
+    async (c) => {
+        const user = c.get("user")!;
+        if (!Config.debug.developerSlugs.includes(user.slug)) {
+            return c.json({ error: "Developer access required" }, 403);
+        }
+
+        await ensureTournamentTable();
+        const outcome = c.req.valid("json");
+        const result = await db.transaction(async (tx) => {
+            const stateResult = await tx.execute<{ state: TournamentState }>(sql`
+                SELECT state
+                FROM tournament_bracket_state
+                WHERE id = 1
+                FOR UPDATE
+            `);
+            const state = stateResult.rows[0]?.state;
+            if (!state) {
+                return {
+                    error: "Tournament betting is unavailable",
+                    status: 503 as const,
+                };
+            }
+
+            const final = state.matches[TournamentFinalMatchId];
+            if (final.winner === null || final.scoreA === null || final.scoreB === null) {
+                return {
+                    error: "Enter the final score and winner before settling bets",
+                    status: 409 as const,
+                };
+            }
+            const winnerScore = final.winner === 0 ? final.scoreA : final.scoreB;
+            const loserScore = final.winner === 0 ? final.scoreB : final.scoreA;
+            if (winnerScore !== 7 || loserScore < 0 || loserScore > 6) {
+                return {
+                    error: "The final score must be first to 7",
+                    status: 400 as const,
+                };
+            }
+
+            const inserted = await tx.execute(sql`
+                INSERT INTO tournament_bet_settlements
+                    (tournament_id, match_id, grenade_kills, heal_off, settled_by)
+                VALUES
+                    (1, ${TournamentFinalMatchId}, ${outcome.grenadeKills},
+                     ${outcome.healOff}, ${user.id})
+                ON CONFLICT (tournament_id, match_id) DO NOTHING
+                RETURNING match_id
+            `);
+            if (!inserted.rows.length) {
+                return { error: "These bets are already settled", status: 409 as const };
+            }
+
+            const marginSelection =
+                loserScore <= 2
+                    ? "blowout"
+                    : loserScore <= 4
+                      ? "comfortable"
+                      : "close";
+            const winners: Record<TournamentBetMarketId, string> = {
+                winner: final.winner === 0 ? "player_a" : "player_b",
+                margin: marginSelection,
+                game_11: loserScore >= 4 ? "yes" : "no",
+                grenade_kills: outcome.grenadeKills >= 3 ? "over" : "under",
+                heal_off: outcome.healOff ? "yes" : "no",
+            };
+            const bets = await tx.execute<
+                TournamentBetRow & { id: number; user_id: string }
+            >(
+                sql`
+                    SELECT id, user_id, market, selection, odds_hundredths,
+                           amount, status, payout
+                    FROM tournament_bets
+                    WHERE tournament_id = 1
+                        AND match_id = ${TournamentFinalMatchId}
+                        AND status = 'pending'
+                    FOR UPDATE
+                `,
+            );
+            const payouts = new Map<string, number>();
+            for (const bet of bets.rows) {
+                const won = winners[bet.market] === bet.selection;
+                const payout = won
+                    ? Math.floor((Number(bet.amount) * Number(bet.odds_hundredths)) / 100)
+                    : 0;
+                await tx.execute(sql`
+                    UPDATE tournament_bets
+                    SET status = ${won ? "won" : "lost"},
+                        payout = ${payout},
+                        settled_at = now()
+                    WHERE id = ${bet.id}
+                `);
+                if (payout > 0) {
+                    payouts.set(bet.user_id, (payouts.get(bet.user_id) ?? 0) + payout);
+                }
+            }
+            for (const [userId, payout] of payouts) {
+                await tx.execute(sql`
+                    UPDATE users
+                    SET gp_balance = gp_balance + ${payout}
+                    WHERE id = ${userId}
+                `);
+            }
+            return { success: true as const, settledBets: bets.rows.length };
+        });
+
+        if ("error" in result) return c.json({ error: result.error }, result.status);
+        return c.json(result);
+    },
+);
 
 TournamentRouter.get("/predictions", authMiddleware, async (c) => {
     await ensureTournamentTable();
@@ -268,6 +569,21 @@ TournamentRouter.post(
             if (update.winner !== null && !players[update.winner]) {
                 throw new Error("That bracket slot has no player yet");
             }
+            if (update.matchId === TournamentFinalMatchId) {
+                const settlement = await tx.execute(sql`
+                    SELECT match_id
+                    FROM tournament_bet_settlements
+                    WHERE tournament_id = 1
+                        AND match_id = ${TournamentFinalMatchId}
+                `);
+                const finalChanged =
+                    nextState.matches[update.matchId].scoreA !== update.scoreA ||
+                    nextState.matches[update.matchId].scoreB !== update.scoreB ||
+                    nextState.matches[update.matchId].winner !== update.winner;
+                if (settlement.rows.length && finalChanged) {
+                    throw new Error("Cannot change the final after bets were settled");
+                }
+            }
             const oldWinner = nextState.matches[update.matchId].winner;
             nextState.matches[update.matchId] = {
                 scoreA: update.scoreA,
@@ -275,9 +591,45 @@ TournamentRouter.post(
                 winner: update.winner,
             };
             if (oldWinner !== update.winner) {
-                for (const descendantId of getTournamentDescendantMatchIds(
-                    update.matchId,
-                )) {
+                const descendantIds = getTournamentDescendantMatchIds(update.matchId);
+                if (descendantIds.includes(TournamentFinalMatchId)) {
+                    const settlement = await tx.execute(sql`
+                        SELECT match_id
+                        FROM tournament_bet_settlements
+                        WHERE tournament_id = 1
+                            AND match_id = ${TournamentFinalMatchId}
+                    `);
+                    if (settlement.rows.length) {
+                        throw new Error(
+                            "Cannot change the bracket after final bets were settled",
+                        );
+                    }
+                    const refunds = await tx.execute<{
+                        user_id: string;
+                        amount: number | string;
+                    }>(sql`
+                        SELECT user_id, SUM(amount) AS amount
+                        FROM tournament_bets
+                        WHERE tournament_id = 1
+                            AND match_id = ${TournamentFinalMatchId}
+                            AND status = 'pending'
+                        GROUP BY user_id
+                    `);
+                    for (const refund of refunds.rows) {
+                        await tx.execute(sql`
+                            UPDATE users
+                            SET gp_balance = gp_balance + ${Number(refund.amount)}
+                            WHERE id = ${refund.user_id}
+                        `);
+                    }
+                    await tx.execute(sql`
+                        DELETE FROM tournament_bets
+                        WHERE tournament_id = 1
+                            AND match_id = ${TournamentFinalMatchId}
+                            AND status = 'pending'
+                    `);
+                }
+                for (const descendantId of descendantIds) {
                     await tx.execute(sql`
                         DELETE FROM tournament_predictions
                         WHERE tournament_id = 1 AND match_id = ${descendantId}

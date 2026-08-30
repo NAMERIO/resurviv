@@ -22,7 +22,10 @@
       <h1>Championship Bracket</h1>
       <a class="discord-info" href="https://discord.gg/pnmsY8DbvG" target="_blank" rel="noopener noreferrer"><img src="/img/clans/discord-logo.svg" alt="">Join the Discord server for more info</a>
       <div id="prediction-status" class="prediction-status">Sign in to make free predictions.</div>
-      <button id="prediction-stats-button" class="prediction-stats-button" type="button">Prediction Stats</button>
+      <div class="tournament-actions">
+        <button id="betting-button" class="betting-button" type="button"><img src="/img/gui/currency-golden-potato.svg" alt="">GP Betting</button>
+        <button id="prediction-stats-button" class="prediction-stats-button" type="button">Prediction Stats</button>
+      </div>
     </header>
     <section class="bracket-shell">
       <div class="round-labels" aria-hidden="true"><span>Round of 32</span><span>Round of 16</span><span>Quarterfinal</span><span>Semifinal</span><strong>Final</strong><span>Semifinal</span><span>Quarterfinal</span><span>Round of 16</span><span>Round of 32</span></div>
@@ -63,6 +66,38 @@
       <h2 id="prediction-stats-title">Prediction Statistics</h2>
       <p>See who the community thinks will win. Votes are anonymous.</p>
       <div id="prediction-stats-list" class="prediction-stats-list"><div class="prediction-stats-loading">Loading predictions...</div></div>
+    </div>
+  </div>
+  <div id="betting-backdrop" class="editor-backdrop" hidden>
+    <div class="betting-dialog" role="dialog" aria-modal="true" aria-labelledby="betting-title">
+      <button id="betting-close" class="editor-close" type="button" aria-label="Close">&times;</button>
+      <div class="editor-kicker">GP BETTING</div>
+      <h2 id="betting-title">Final Match</h2>
+      <div class="betting-topline">
+        <div id="betting-account" class="betting-account">Loading...</div>
+        <div class="betting-limits">250–2,500 GP&nbsp;&nbsp;·&nbsp;&nbsp;First to 7</div>
+      </div>
+      <form id="betting-form">
+        <div id="betting-markets" class="betting-markets"></div>
+        <div class="betting-slip">
+          <label>Amount <input id="betting-amount" type="number" min="250" max="2500" step="1" value="250"></label>
+          <div id="betting-selection" class="betting-selection">Choose an option above</div>
+          <button id="betting-submit" class="save-button" type="submit" disabled>Place Bet</button>
+        </div>
+        <div id="betting-error" class="editor-error"></div>
+      </form>
+      <details class="placed-bets">
+        <summary>Your Bets <span id="placed-bets-count">0</span></summary>
+        <div id="placed-bets-list">No bets placed yet.</div>
+      </details>
+      <form id="betting-settlement" class="betting-settlement" hidden>
+        <h3>Developer Settlement</h3>
+        <p>Save the final score first, then enter the two prop outcomes to settle every bet.</p>
+        <label>Grenade kills <input id="settlement-grenade-kills" type="number" min="0" max="999" value="0"></label>
+        <label>Final game heal-off <select id="settlement-heal-off"><option value="false">No</option><option value="true">Yes</option></select></label>
+        <button class="save-button" type="submit">Settle Bets</button>
+        <div id="settlement-error" class="editor-error"></div>
+      </form>
     </div>
   </div>
   <script type="module" src="../src/tournament.ts"></script>

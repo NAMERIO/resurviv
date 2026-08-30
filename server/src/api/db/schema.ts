@@ -20,7 +20,11 @@ import { TeamMode } from "../../../../shared/gameConfig";
 import type { ClanFont, ClanMemberRole, ClanRegion } from "../../../../shared/types/clan";
 import type { NewsDocument } from "../../../../shared/types/news";
 import { GameModeStatus } from "../../../../shared/types/stats";
-import type { TournamentState } from "../../../../shared/types/tournament";
+import type {
+    TournamentBetMarketId,
+    TournamentBetStatus,
+    TournamentState,
+} from "../../../../shared/types/tournament";
 import { ItemStatus, type Loadout, loadout } from "../../../../shared/utils/loadout";
 
 export const sessionTable = pgTable("session", {
@@ -131,6 +135,73 @@ export const tournamentPredictionRewardsTable = pgTable(
             foreignColumns: [usersTable.id],
             name: "tournament_prediction_rewards_user_id_fkey",
         }).onDelete("cascade"),
+    ],
+);
+
+export const tournamentBetsTable = pgTable(
+    "tournament_bets",
+    {
+        id: serial("id").primaryKey(),
+        tournamentId: integer("tournament_id").notNull().default(1),
+        userId: text("user_id").notNull(),
+        matchId: integer("match_id").notNull(),
+        market: text("market").$type<TournamentBetMarketId>().notNull(),
+        selection: text("selection").notNull(),
+        oddsHundredths: integer("odds_hundredths").notNull(),
+        amount: integer("amount").notNull(),
+        status: text("status").$type<TournamentBetStatus>().notNull().default("pending"),
+        payout: integer("payout").notNull().default(0),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        settledAt: timestamp("settled_at", { withTimezone: true }),
+    },
+    (table) => [
+        foreignKey({
+            columns: [table.userId],
+            foreignColumns: [usersTable.id],
+            name: "tournament_bets_user_id_fkey",
+        }).onDelete("cascade"),
+        uniqueIndex("tournament_bets_user_match_market_key").on(
+            table.tournamentId,
+            table.userId,
+            table.matchId,
+            table.market,
+        ),
+        check("tournament_bets_amount_check", sql`${table.amount} BETWEEN 250 AND 2500`),
+        check(
+            "tournament_bets_odds_check",
+            sql`${table.oddsHundredths} BETWEEN 100 AND 500`,
+        ),
+        check(
+            "tournament_bets_status_check",
+            sql`${table.status} IN ('pending', 'won', 'lost')`,
+        ),
+    ],
+);
+
+export const tournamentBetSettlementsTable = pgTable(
+    "tournament_bet_settlements",
+    {
+        tournamentId: integer("tournament_id").notNull().default(1),
+        matchId: integer("match_id").notNull(),
+        grenadeKills: integer("grenade_kills").notNull(),
+        healOff: boolean("heal_off").notNull(),
+        settledBy: text("settled_by").notNull(),
+        settledAt: timestamp("settled_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        primaryKey({
+            columns: [table.tournamentId, table.matchId],
+            name: "tournament_bet_settlements_pkey",
+        }),
+        foreignKey({
+            columns: [table.settledBy],
+            foreignColumns: [usersTable.id],
+            name: "tournament_bet_settlements_settled_by_fkey",
+        }),
+        check(
+            "tournament_bet_settlements_grenade_kills_check",
+            sql`${table.grenadeKills} >= 0`,
+        ),
     ],
 );
 

@@ -1,6 +1,10 @@
 import {
+    getTournamentBetMarkets,
     getTournamentPlayers,
     getTournamentRound,
+    type TournamentBet,
+    type TournamentBetMarketId,
+    TournamentFinalMatchId,
     type TournamentMatchResult,
     TournamentPlayerRegions,
     type TournamentState,
@@ -22,6 +26,33 @@ const predictionDialog = document.querySelector<HTMLElement>("#prediction-backdr
 const predictionStatsDialog = document.querySelector<HTMLElement>(
     "#prediction-stats-backdrop",
 )!;
+const bettingDialog = document.querySelector<HTMLElement>("#betting-backdrop")!;
+const bettingForm = document.querySelector<HTMLFormElement>("#betting-form")!;
+const bettingSettlementForm =
+    document.querySelector<HTMLFormElement>("#betting-settlement")!;
+
+interface BettingStatus {
+    matchId: number;
+    players: [string | null, string | null];
+    balance: number;
+    limits: {
+        minimum: number;
+        maximum: number;
+        maximumOddsHundredths: number;
+    };
+    open: boolean;
+    settled: boolean;
+    bets: TournamentBet[];
+}
+
+let bettingStatus: BettingStatus | null = null;
+let activeBetMarket: TournamentBetMarketId = "winner";
+let selectedBet: {
+    market: TournamentBetMarketId;
+    selection: string;
+    label: string;
+    oddsHundredths: number;
+} | null = null;
 
 interface PredictionMatchStats {
     matchId: number;
@@ -109,6 +140,165 @@ async function request<T>(path: string, options?: RequestInit) {
         throw new Error(body?.error || "Request failed");
     }
     return response.json() as Promise<T>;
+}
+
+function escapeHtml(value: string) {
+    return value.replace(
+        /[&<>'"]/g,
+        (character) =>
+            ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                "'": "&#39;",
+                '"': "&quot;",
+            })[character]!,
+    );
+}
+
+function formatOdds(oddsHundredths: number) {
+    return `${(oddsHundredths / 100).toFixed(2)}x`;
+}
+
+function formatGp(amount: number) {
+    return Math.floor(amount).toLocaleString();
+}
+
+function updateBettingSlip() {
+    const selection = document.querySelector<HTMLElement>("#betting-selection")!;
+    const submit = document.querySelector<HTMLButtonElement>("#betting-submit")!;
+    const amount = Number(
+        document.querySelector<HTMLInputElement>("#betting-amount")!.value,
+    );
+    if (!selectedBet) {
+        selection.textContent = "Pick an outcome";
+        submit.textContent = "Place Bet";
+        submit.disabled = true;
+        return;
+    }
+
+    const potentialPayout = Math.floor((amount * selectedBet.oddsHundredths) / 100);
+    selection.textContent = `${selectedBet.label} · ${formatOdds(selectedBet.oddsHundredths)} · Return ${formatGp(potentialPayout)} GP`;
+    submit.textContent = `Bet ${formatGp(amount)} GP`;
+    submit.disabled =
+        !bettingStatus?.open ||
+        !Number.isInteger(amount) ||
+        amount < bettingStatus.limits.minimum ||
+        amount > bettingStatus.limits.maximum ||
+        amount > bettingStatus.balance;
+}
+
+function renderBetting() {
+    const players =
+        bettingStatus?.players ?? getTournamentPlayers(state, TournamentFinalMatchId);
+    document.querySelector("#betting-title")!.textContent =
+        players[0] && players[1] ? `${players[0]} vs ${players[1]}` : "Final Match";
+
+    const account = document.querySelector<HTMLElement>("#betting-account")!;
+    const marketsElement = document.querySelector<HTMLElement>("#betting-markets")!;
+    const betsElement = document.querySelector<HTMLElement>("#placed-bets-list")!;
+    const markets = getTournamentBetMarkets(players);
+    const betsByMarket = new Map(
+        bettingStatus?.bets.map((bet) => [bet.market, bet]) ?? [],
+    );
+    const activeMarket =
+        markets.find((market) => market.id === activeBetMarket) ?? markets[0];
+    const activeBet = betsByMarket.get(activeMarket.id);
+    const tabLabels: Record<TournamentBetMarketId, string> = {
+        winner: "Winner",
+        margin: "Margin",
+        game_11: "Game 11",
+        grenade_kills: "Grenades",
+        heal_off: "Heal-Off",
+    };
+
+    if (bettingStatus) {
+        const stateText = bettingStatus.settled
+            ? "Settled"
+            : bettingStatus.open
+              ? "Open"
+              : players[0] && players[1]
+                ? "Closed"
+                : "Waiting for finalists";
+        account.innerHTML = `<strong><img src="/img/gui/currency-golden-potato.svg" alt="GP">${formatGp(bettingStatus.balance)}</strong><span>${stateText}</span>`;
+    } else {
+        account.textContent = "Sign in to bet";
+    }
+
+    const tabs = markets
+        .map((market) => {
+            const existing = betsByMarket.has(market.id);
+            return `<button class="betting-market-tab${market.id === activeMarket.id ? " active" : ""}${existing ? " locked" : ""}" type="button" data-market="${market.id}"><span>${tabLabels[market.id]}</span>${existing ? "<b>✓</b>" : ""}</button>`;
+        })
+        .join("");
+    const options = activeMarket.options
+        .map((option) => {
+            const picked = activeBet?.selection === option.id;
+            const selected =
+                selectedBet?.market === activeMarket.id &&
+                selectedBet.selection === option.id;
+            const disabled = !bettingStatus?.open || Boolean(activeBet);
+            return `<button class="betting-option${picked ? " picked" : ""}${selected ? " selected" : ""}" type="button" data-market="${activeMarket.id}" data-selection="${option.id}"${disabled ? " disabled" : ""}><span>${escapeHtml(option.label)}</span><strong>${formatOdds(option.oddsHundredths)}</strong></button>`;
+        })
+        .join("");
+    marketsElement.innerHTML = `<div class="betting-market-tabs">${tabs}</div><section class="betting-market${activeBet ? " locked" : ""}"><div class="betting-market-heading"><div><h3>${activeMarket.title}</h3><p>${activeMarket.description}</p></div>${activeBet ? '<b class="bet-locked">BET LOCKED</b>' : ""}</div><div class="betting-options">${options}</div></section>`;
+
+    if (bettingStatus?.bets.length) {
+        betsElement.innerHTML = bettingStatus.bets
+            .map((bet) => {
+                const market = markets.find((candidate) => candidate.id === bet.market);
+                const option = market?.options.find(
+                    (candidate) => candidate.id === bet.selection,
+                );
+                const returnAmount =
+                    bet.status === "pending"
+                        ? Math.floor((bet.amount * bet.oddsHundredths) / 100)
+                        : bet.payout;
+                const resultText =
+                    bet.status === "pending"
+                        ? `Potential ${formatGp(returnAmount)} GP`
+                        : bet.status === "won"
+                          ? `Won ${formatGp(returnAmount)} GP`
+                          : "Lost";
+                return `<div class="placed-bet ${bet.status}"><span><b>${market?.title ?? bet.market}</b>${escapeHtml(option?.label ?? bet.selection)} · ${formatOdds(bet.oddsHundredths)}</span><strong>${formatGp(bet.amount)} GP<small>${resultText}</small></strong></div>`;
+            })
+            .join("");
+    } else {
+        betsElement.textContent = "No bets placed yet.";
+    }
+    document.querySelector("#placed-bets-count")!.textContent = String(
+        bettingStatus?.bets.length ?? 0,
+    );
+
+    bettingSettlementForm.hidden =
+        !canEdit || !editMode || !bettingStatus || bettingStatus.settled;
+    if (selectedBet && (!bettingStatus?.open || betsByMarket.has(selectedBet.market))) {
+        selectedBet = null;
+    }
+    updateBettingSlip();
+}
+
+async function loadBetting() {
+    selectedBet = null;
+    document.querySelector("#betting-error")!.textContent = "";
+    bettingStatus = null;
+    renderBetting();
+    try {
+        bettingStatus = await request<BettingStatus>("/api/tournament/betting");
+        const lockedMarkets = new Set(bettingStatus.bets.map((bet) => bet.market));
+        activeBetMarket =
+            getTournamentBetMarkets(bettingStatus.players).find(
+                (market) => !lockedMarkets.has(market.id),
+            )?.id ?? "winner";
+        const amount = document.querySelector<HTMLInputElement>("#betting-amount")!;
+        amount.min = String(bettingStatus.limits.minimum);
+        amount.max = String(bettingStatus.limits.maximum);
+        amount.value = String(bettingStatus.limits.minimum);
+    } catch (error) {
+        document.querySelector("#betting-error")!.textContent =
+            error instanceof Error ? error.message : "Unable to load GP betting";
+    }
+    renderBetting();
 }
 
 async function load() {
@@ -287,6 +477,103 @@ document.querySelector("#prediction-stats-close")!.addEventListener("click", () 
 });
 predictionStatsDialog.addEventListener("click", (event) => {
     if (event.target === predictionStatsDialog) predictionStatsDialog.hidden = true;
+});
+
+document.querySelector("#betting-button")!.addEventListener("click", () => {
+    bettingDialog.hidden = false;
+    void loadBetting();
+});
+document.querySelector("#betting-close")!.addEventListener("click", () => {
+    bettingDialog.hidden = true;
+});
+bettingDialog.addEventListener("click", (event) => {
+    if (event.target === bettingDialog) bettingDialog.hidden = true;
+});
+document.querySelector("#betting-markets")!.addEventListener("click", (event) => {
+    const tab = (event.target as HTMLElement).closest<HTMLButtonElement>(
+        ".betting-market-tab",
+    );
+    if (tab) {
+        activeBetMarket = tab.dataset.market as TournamentBetMarketId;
+        selectedBet = null;
+        renderBetting();
+        return;
+    }
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>(
+        ".betting-option",
+    );
+    if (!button || button.disabled || !bettingStatus) return;
+    const marketId = button.dataset.market as TournamentBetMarketId;
+    const selectionId = button.dataset.selection!;
+    const market = getTournamentBetMarkets(bettingStatus.players).find(
+        (candidate) => candidate.id === marketId,
+    );
+    const option = market?.options.find((candidate) => candidate.id === selectionId);
+    if (!market || !option) return;
+
+    selectedBet = {
+        market: market.id,
+        selection: option.id,
+        label: option.label,
+        oddsHundredths: option.oddsHundredths,
+    };
+    document
+        .querySelectorAll(".betting-option.selected")
+        .forEach((candidate) => candidate.classList.remove("selected"));
+    button.classList.add("selected");
+    updateBettingSlip();
+});
+document.querySelector("#betting-amount")!.addEventListener("input", updateBettingSlip);
+bettingForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!selectedBet || !bettingStatus?.open) return;
+    const amount = Number(
+        document.querySelector<HTMLInputElement>("#betting-amount")!.value,
+    );
+    const error = document.querySelector<HTMLElement>("#betting-error")!;
+    error.textContent = "";
+    try {
+        await request<{ success: true; balance: number }>("/api/tournament/bet", {
+            method: "POST",
+            body: JSON.stringify({
+                market: selectedBet.market,
+                selection: selectedBet.selection,
+                amount,
+            }),
+        });
+        await loadBetting();
+    } catch (caught) {
+        error.textContent =
+            caught instanceof Error ? caught.message : "Unable to place bet";
+    }
+});
+bettingSettlementForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!window.confirm("Settle all final-match bets and award GP now?")) return;
+    const error = document.querySelector<HTMLElement>("#settlement-error")!;
+    error.textContent = "";
+    try {
+        await request<{ success: true; settledBets: number }>(
+            "/api/tournament/settle-bets",
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    grenadeKills: Number(
+                        document.querySelector<HTMLInputElement>(
+                            "#settlement-grenade-kills",
+                        )!.value,
+                    ),
+                    healOff:
+                        document.querySelector<HTMLSelectElement>("#settlement-heal-off")!
+                            .value === "true",
+                }),
+            },
+        );
+        await loadBetting();
+    } catch (caught) {
+        error.textContent =
+            caught instanceof Error ? caught.message : "Unable to settle bets";
+    }
 });
 
 form.addEventListener("submit", async (event) => {
