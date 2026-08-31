@@ -153,7 +153,7 @@ export class SmokeParticle {
             this.tint = util.rgbToInt(util.hsvToRgb(0.3, 0.9, util.random(0.45, 0.68)));
             if (this.poisonDots.length === 0) {
                 for (let i = 0; i < 120; i++) {
-                    const sprite = PIXI.Sprite.from("foam1.img");
+                    const sprite = PIXI.Sprite.from("part-foam-01.img");
                     sprite.anchor.set(0.5, 0.5);
                     this.poisonDots.push({
                         sprite,
