@@ -1842,11 +1842,13 @@ export class Player extends BaseGameObject {
                 this.hasRoleHelmet = true;
             }
 
-            if (roleDef.defaultItems.chest) {
-                if (this.chest) {
-                    this.dropArmor(this.chest);
+            if (!this.game.map.perkMode || isBattleRoyaleMapName(this.game.mapName)) {
+                if (roleDef.defaultItems.chest) {
+                    if (this.chest) {
+                        this.dropArmor(this.chest);
+                    }
+                    this.chest = roleDef.defaultItems.chest;
                 }
-                this.chest = roleDef.defaultItems.chest;
             }
 
             // weapons
