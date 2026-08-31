@@ -166,7 +166,7 @@ export function getTournamentBetMarkets(
             id: "game_11",
             title: "Will the Match Reach Game 11?",
             description:
-                "Will the series reach an eleventh game, meaning the score reaches 6-4?",
+                "Will the series reach an eleventh game?",
             options: [
                 { id: "yes", label: "Yes", oddsHundredths: 190 },
                 { id: "no", label: "No", oddsHundredths: 190 },

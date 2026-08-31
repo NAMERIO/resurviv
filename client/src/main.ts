@@ -118,6 +118,7 @@ export class Application {
     prestigeArenaSpectatorCodeNote = $("#battle-spectator-code-note");
     prestigeArenaRoomCode = $("#battle-room-code");
     prestigeArenaCopyCodeBtn = $("#battle-copy-code");
+    prestigeArenaHideCodeBtn = $("#battle-hide-code");
     prestigeArenaTeamsBoard = $("#arena-teams-board");
     prestigeArenaBrTeamBoard = $("#arena-br-team-board");
     prestigeArenaTeamAList = $("#arena-team-a-list");
@@ -630,6 +631,13 @@ export class Application {
                     this.prestigeArenaCopyCodeBtn.offset()?.left ?? e.pageX,
                     this.prestigeArenaCopyCodeBtn.offset()?.top ?? e.pageY,
                 );
+            });
+            this.prestigeArenaHideCodeBtn.on("click", () => {
+                const hidden = !this.config.get("teamInviteHidden");
+                this.config.set("teamInviteHidden", hidden);
+                this.teamMenu.hideUrl = hidden;
+                this.teamMenu.applyInviteCodeVisibility();
+                this.applyPrestigeArenaCodeVisibility();
             });
             this.prestigeArenaModeDropdown.on("click", () => {
                 const visible = this.prestigeArenaModeSelection.css("display") !== "none";
@@ -2649,6 +2657,20 @@ export class Application {
         this.updatePrestigeJoinButtonState();
     }
 
+    applyPrestigeArenaCodeVisibility() {
+        const hidden = !!this.config.get("teamInviteHidden");
+        this.prestigeArenaRoomCode
+            .add(this.prestigeArenaBrTeamBoard.find(".arena-br-team-code"))
+            .css("opacity", hidden ? 0 : 1);
+        this.prestigeArenaHideCodeBtn
+            .css(
+                "background-image",
+                hidden ? "url(/img/gui/hide.svg)" : "url(/img/gui/eye.svg)",
+            )
+            .attr("aria-label", hidden ? "Show invite code" : "Hide invite code")
+            .attr("title", hidden ? "Show invite code" : "Hide invite code");
+    }
+
     renderPrestigeArenaTeams() {
         this.prestigeArenaTeamAList.empty();
         this.prestigeArenaTeamBList.empty();
@@ -2988,6 +3010,7 @@ export class Application {
                 this.prestigeArenaBrTeamBoard.append(teamCard);
             }
             this.prestigeArenaTeamsBoard.removeClass("hide");
+            this.applyPrestigeArenaCodeVisibility();
             return;
         }
         this.prestigeArenaTeamsBoard.removeClass("arena-battle-royale-summary");
@@ -3532,6 +3555,7 @@ export class Application {
             this.prestigeArenaCodeInput.val(code);
         }
         this.prestigeArenaRoomCode.text(code);
+        this.applyPrestigeArenaCodeVisibility();
         this.prestigeArenaSelectedMiniGame =
             this.teamMenu.roomData.miniGame || DefaultPrivateLobbyMiniGame;
         this.prestigeArenaSelectedImpostorCount = normalizeAmongUsImpostorCount(
