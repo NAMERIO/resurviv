@@ -494,7 +494,7 @@ export const RoleDefs: Record<string, RoleDef> = {
     healer: {
         type: "role",
         defaultItems: createDefaultItems({
-            outfit: "outfitMedic",
+            //outfit: "outfitMedic",
             inventory: {
                 healthkit: 1,
             },
@@ -512,7 +512,7 @@ export const RoleDefs: Record<string, RoleDef> = {
     tank: {
         type: "role",
         defaultItems: createDefaultItems({
-            outfit: "outfitTank",
+            //outfit: "outfitTank",
             chest: "chest01",
         }),
         announce: false,
@@ -528,7 +528,7 @@ export const RoleDefs: Record<string, RoleDef> = {
     sniper: {
         type: "role",
         defaultItems: createDefaultItems({
-            outfit: "outfitSniper",
+            //outfit: "outfitSniper",
             inventory: {
                 "2xscope": 1,
             },
@@ -546,7 +546,7 @@ export const RoleDefs: Record<string, RoleDef> = {
     scout: {
         type: "role",
         defaultItems: createDefaultItems({
-            outfit: "outfitScout",
+            //outfit: "outfitScout",
             inventory: {
                 soda: 1,
             },
@@ -564,7 +564,7 @@ export const RoleDefs: Record<string, RoleDef> = {
     demo: {
         type: "role",
         defaultItems: createDefaultItems({
-            outfit: "outfitDemo",
+            //outfit: "outfitDemo",
             backpack: "backpack01",
         }),
         announce: false,
@@ -580,7 +580,7 @@ export const RoleDefs: Record<string, RoleDef> = {
     assault: {
         type: "role",
         defaultItems: createDefaultItems({
-            outfit: "outfitAssault",
+            //outfit: "outfitAssault",
             inventory: {
                 bandage: 5,
             },
