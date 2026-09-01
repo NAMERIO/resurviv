@@ -2181,8 +2181,8 @@ export class Player extends BaseGameObject {
                 ammo: this.weapons[slot].ammo,
             }));
             this.streakSavedOutfit = this.outfit;
-            this.streakSavedRole = this.role;
             this.stripPlayer();
+            this.streakSavedRole = this.role;
             this.promoteToRole(streakDef.rewardItem, true);
         }
     }
@@ -2225,7 +2225,10 @@ export class Player extends BaseGameObject {
                 this.streakGunSlot = -1;
             } else if (streakDef.rewardType === "role") {
                 this.stripPlayer();
-                if (!(this.helmet === "helmet03")) this.helmet = "helmet03";
+                if (!(this.helmet === "helmet03")) {
+                    this.helmet = "helmet03";
+                    this.hasRoleHelmet = false;
+                }
                 if (this.streakSavedWeapons.length > 0) {
                     this.restoreStreakWeapons();
                 }
