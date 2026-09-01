@@ -91,7 +91,7 @@ const mapDef = {
 
         randomSpawns: [
             {
-                spawns: ["club_complex_01", "memorial_park"],
+                spawns: ["club_complex_01", "memorial_park_01"],
                 choose: 1,
             },
             {

@@ -20081,7 +20081,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     }),
     logging_complex_01p: createLoggingComplex({
         groundTintLt: 4213882,
-        groundTintDk: 4016234,
+        groundTintDk: 0x2e364f,
     }),
     logging_complex_01sn: createLoggingComplex({
         groundTintLt: 0xa6a6a6,
@@ -20128,13 +20128,13 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
             {
                 bound: collider.createAabbExtents(v2.create(0, 0), v2.create(46, 10)),
-                color: 4016234,
+                color: 0x2e364f,
                 roughness: 0.1,
                 offsetDist: 1,
             },
             {
                 bound: collider.createAabbExtents(v2.create(0, 2), v2.create(5, 50.5)),
-                color: 4016234,
+                color: 0x2e364f,
                 roughness: 0.1,
                 offsetDist: 1,
             },
@@ -20236,7 +20236,31 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         tree: randomObstacleType({ tree_07: 1, tree_08: 1 }),
     }),
 
-    memorial_park: createMemorialPark({}),
+    memorial_park_01: createMemorialPark({}),
+    memorial_park_01cb: createMemorialPark({
+        groundTintDk: 0x2e363f,
+    }),
+    memorial_park_01d: createMemorialPark({
+        groundTintDk: 0x924514,
+    }),
+    memorial_park_01f: createMemorialPark({
+        groundTintDk: 0x653313,
+    }),
+    memorial_park_01h: createMemorialPark({
+        groundTintDk: 0x121401,
+    }),
+    memorial_park_01w: createMemorialPark({
+        groundTintDk: 0x5b5a0b,
+    }),
+    memorial_park_01x: createMemorialPark({
+        groundTintDk: 0x9e9e9e,
+    }),
+    memorial_park_01p: createMemorialPark({
+        groundTintDk: 0x2e364f,
+    }),
+    memorial_park_01i: createMemorialPark({
+        groundTintDk: 0x2e2e2e,
+    }),
 
     junkyard_01: {
         type: "building",
