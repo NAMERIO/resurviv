@@ -2073,7 +2073,7 @@ export class Application {
             this.prestigeArenaMiniGameLabel.text(miniGameDef.name);
             this.prestigeArenaMiniGameLabel.css(
                 "background-image",
-                "url(/img/gui/emote.svg)",
+                `url(${miniGameDef.icon})`,
             );
             this.applyBattleMiniGameStyle(miniGame);
             if (syncRoom && this.teamMenu.active && this.teamMenu.arena) {
@@ -2260,7 +2260,7 @@ export class Application {
                     "aria-pressed": "false",
                     text: miniGameDef.name,
                 });
-                btn.css("background-image", "url(/img/gui/emote.svg)");
+                btn.css("background-image", `url(${miniGameDef.icon})`);
                 btn.on("click", () => {
                     applyMiniGameSelection(miniGame);
                     this.prestigeArenaMiniGameSelection.css("display", "none");
@@ -2374,7 +2374,7 @@ export class Application {
         this.prestigeArenaBattleMiniGameLabel.text(miniGameDef.name);
         this.prestigeArenaBattleMiniGameLabel.css(
             "background-image",
-            "url(/img/gui/emote.svg)",
+            `url(${miniGameDef.icon})`,
         );
         this.syncPrestigeArenaAmongUsOptions();
     }

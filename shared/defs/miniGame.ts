@@ -27,6 +27,7 @@ export const DefaultAmongUsImpostorCount: AmongUsImpostorCount = 1;
 export interface PrivateLobbyMiniGameDef {
     id: PrivateLobbyMiniGame;
     name: string;
+    icon: string;
     singleTeam?: boolean;
     battleRoyale?: boolean;
     teamNames: Record<ArenaTeam, string>;
@@ -36,6 +37,7 @@ export const PrivateLobbyMiniGameDefs = {
     pvp: {
         id: "pvp",
         name: "Deathmatch",
+        icon: "/img/gui/crosshair.svg",
         teamNames: {
             A: "Team A",
             B: "Team B",
@@ -46,6 +48,7 @@ export const PrivateLobbyMiniGameDefs = {
     battle_royale: {
         id: "battle_royale",
         name: "Battle Royale",
+        icon: "/img/gui/skull.svg",
         battleRoyale: true,
         teamNames: {
             A: "Players",
@@ -57,6 +60,7 @@ export const PrivateLobbyMiniGameDefs = {
     hide_and_seek: {
         id: "hide_and_seek",
         name: "PROP HUNT",
+        icon: "/img/gui/eye.svg",
         teamNames: {
             A: "Hiders",
             B: "Seekers",
@@ -67,6 +71,7 @@ export const PrivateLobbyMiniGameDefs = {
     infected: {
         id: "infected",
         name: "INFECTED",
+        icon: "/img/gui/danger.svg",
         teamNames: {
             A: "Zombies",
             B: "Humans",
@@ -77,6 +82,7 @@ export const PrivateLobbyMiniGameDefs = {
     among_us: {
         id: "among_us",
         name: "AMONG US",
+        icon: "/img/gui/player-the-hunted.svg",
         singleTeam: true,
         teamNames: {
             A: "Players",
@@ -88,6 +94,7 @@ export const PrivateLobbyMiniGameDefs = {
     capture_the_flag: {
         id: "capture_the_flag",
         name: "Capture the Flag",
+        icon: "/img/gui/flag.svg",
         teamNames: {
             A: "Red",
             B: "Blue",
@@ -98,6 +105,7 @@ export const PrivateLobbyMiniGameDefs = {
     king_of_the_hill: {
         id: "king_of_the_hill",
         name: "King of the Hill",
+        icon: "/img/gui/crown.svg",
         teamNames: {
             A: "Red",
             B: "Blue",
@@ -108,6 +116,7 @@ export const PrivateLobbyMiniGameDefs = {
     domination: {
         id: "domination",
         name: "Domination",
+        icon: "/img/gui/target.svg",
         teamNames: {
             A: "Red",
             B: "Blue",
@@ -118,6 +127,7 @@ export const PrivateLobbyMiniGameDefs = {
     bed_war: {
         id: "bed_war",
         name: "Bed War",
+        icon: "/img/map/map-bed-01.svg",
         teamNames: {
             A: "Red",
             B: "Blue",
@@ -128,6 +138,7 @@ export const PrivateLobbyMiniGameDefs = {
     plant_the_bomb: {
         id: "plant_the_bomb",
         name: "Bomb Defusal",
+        icon: "/img/map/map-planted-bomb.svg",
         teamNames: {
             A: "Red",
             B: "Blue",
