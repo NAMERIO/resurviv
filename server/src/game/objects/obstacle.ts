@@ -585,6 +585,10 @@ export class Obstacle extends BaseGameObject {
 
         this.interactedBy = player;
 
+        if (player && this.game.plantTheBombManager.handleInteract(this, player)) {
+            return;
+        }
+
         if (this.isDoor && this.door) {
             if (!this.door.canUse) return;
             if (this.door.autoOpen && !auto) return;

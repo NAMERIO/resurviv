@@ -1918,7 +1918,8 @@ export class Application {
                 : miniGame === "capture_the_flag" ||
                     miniGame === "king_of_the_hill" ||
                     miniGame === "domination" ||
-                    miniGame === "bed_war"
+                    miniGame === "bed_war" ||
+                    miniGame === "plant_the_bomb"
                   ? [2, 4, 10, 15]
                   : [1, 2, 4, 10, 15];
         const mapStyleByName = new Map<
@@ -3039,7 +3040,8 @@ export class Application {
             miniGameDef.id === "capture_the_flag" ||
                 miniGameDef.id === "king_of_the_hill" ||
                 miniGameDef.id === "domination" ||
-                miniGameDef.id === "bed_war",
+                miniGameDef.id === "bed_war" ||
+                miniGameDef.id === "plant_the_bomb",
         );
         this.prestigeArenaTeamsBoard.css({
             "--arena-team-board-columns": String(Math.min(activeTeams.length, 2)),

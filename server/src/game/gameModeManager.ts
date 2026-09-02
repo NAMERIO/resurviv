@@ -184,6 +184,15 @@ export class GameModeManager {
 
     /** true if game needs to end */
     handleGameEnd(): boolean {
+        if (this.game.plantTheBombManager.enabled) {
+            if (!this.game.started || !this.game.plantTheBombManager.isMatchOver()) {
+                return false;
+            }
+            return this.game.plantTheBombManager.endWithWinner(
+                this.game.plantTheBombManager.getWinningTeamId(),
+            );
+        }
+
         if (this.game.bedWarManager.enabled) {
             if (!this.game.started || !this.game.bedWarManager.isMatchOver()) {
                 return false;
@@ -398,7 +407,8 @@ export class GameModeManager {
             this.game.captureTheFlagManager.enabled ||
             this.game.kingOfTheHillManager.enabled ||
             this.game.dominationManager.enabled ||
-            this.game.bedWarManager.enabled
+            this.game.bedWarManager.enabled ||
+            this.game.plantTheBombManager.enabled
         ) {
             let redAlive = false;
             let blueAlive = false;
@@ -433,7 +443,8 @@ export class GameModeManager {
             this.game.captureTheFlagManager.enabled ||
             this.game.kingOfTheHillManager.enabled ||
             this.game.dominationManager.enabled ||
-            this.game.bedWarManager.enabled
+            this.game.bedWarManager.enabled ||
+            this.game.plantTheBombManager.enabled
         ) {
             let redAlive = 0;
             let blueAlive = 0;
@@ -583,6 +594,23 @@ export class GameModeManager {
         // If there are no spectators, we have no need to run any logic.
         if (player.spectatorCount === 0) return;
 
+        if (this.game.plantTheBombManager.enabled) {
+            for (const spectator of player.spectators) {
+                const livingPlayers = this.game.playerBarn.livingPlayers.filter(
+                    (candidate) => candidate !== spectator,
+                );
+                const livingTeammates = livingPlayers.filter((candidate) =>
+                    spectator.arenaTeam
+                        ? candidate.arenaTeam === spectator.arenaTeam
+                        : candidate.teamId === spectator.teamId,
+                );
+                spectator.spectating = util.randomItem(
+                    livingTeammates.length > 0 ? livingTeammates : livingPlayers,
+                );
+            }
+            return;
+        }
+
         // Priority list of spectate targets.
         const spectateTargets = [
             player.getAliveKiller(),
@@ -620,6 +648,12 @@ export class GameModeManager {
         }));
     }
     handlePlayerDeath(player: Player, params: DamageParams): void {
+        if (this.game.plantTheBombManager.enabled) {
+            player.kill(params);
+            this.game.plantTheBombManager.onPlayerDeath(player);
+            return;
+        }
+
         if (this.game.bedWarManager.enabled) {
             player.kill(params);
             if (this.game.bedWarManager.canRespawn(player)) {

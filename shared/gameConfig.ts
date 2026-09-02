@@ -33,6 +33,8 @@ export enum Action {
     ReloadAlt,
     UseItem,
     Revive,
+    PlantBomb,
+    DefuseBomb,
     Count,
 }
 

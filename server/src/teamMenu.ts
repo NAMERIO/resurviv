@@ -499,7 +499,8 @@ class Room {
                 (this.data.miniGame === "capture_the_flag" ||
                     this.data.miniGame === "king_of_the_hill" ||
                     this.data.miniGame === "domination" ||
-                    this.data.miniGame === "bed_war") &&
+                    this.data.miniGame === "bed_war" ||
+                    this.data.miniGame === "plant_the_bomb") &&
                 modes[gameModeIdx]?.teamMode === TeamMode.Solo
             ) {
                 const fallbackModeIdx = this.data.enabledGameModeIdxs.find((idx) => {

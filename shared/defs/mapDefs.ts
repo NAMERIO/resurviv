@@ -206,6 +206,13 @@ export interface MapDef {
             kingOfTheHillLocations?: Vec2[];
             dominationLocations?: Vec2[];
         };
+        plantTheBomb?: {
+            redSpawn: Vec2;
+            blueSpawn: Vec2;
+            sites: [Vec2, Vec2];
+            spawnRadius?: number;
+            siteZoneSize?: Vec2;
+        };
         bedWar?: {
             redSpawn: Vec2;
             blueSpawn: Vec2;

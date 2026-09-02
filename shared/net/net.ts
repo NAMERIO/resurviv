@@ -371,6 +371,7 @@ export enum MsgType {
     KingOfTheHill,
     Domination,
     BedWar,
+    PlantTheBomb,
 }
 
 export enum PickupMsgType {
@@ -422,6 +423,12 @@ export { LeaderboardMsg } from "./leaderboardMsg";
 export { MapMsg } from "./mapMsg";
 export { PerkModeRoleSelectMsg } from "./perkModeRoleSelectMsg";
 export { PickupMsg } from "./pickupMsg";
+export {
+    PlantTheBombEvent,
+    PlantTheBombMsg,
+    PlantTheBombPhase,
+    PlantTheBombState,
+} from "./plantTheBombMsg";
 export { PlayerStatsMsg } from "./playerStatsMsg";
 export { RoleAnnouncementMsg } from "./roleAnnouncementMsg";
 export { SpectateMsg } from "./spectateMsg";

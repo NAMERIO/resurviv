@@ -1,9 +1,14 @@
 import { Config } from "../../server/src/config";
 import { Game } from "../../server/src/game/game";
+import type { ServerGameConfig } from "../../server/src/utils/types";
 import type { MapDefs } from "../../shared/defs/mapDefs";
 import type { TeamMode } from "../../shared/gameConfig";
 
-export async function createGame(teamMode: TeamMode, mapName: keyof typeof MapDefs) {
+export async function createGame(
+    teamMode: TeamMode,
+    mapName: keyof typeof MapDefs,
+    configOverrides: Partial<ServerGameConfig> = {},
+) {
     // we dont want vitest spammed with stdout logs so only log warns and errors
     Config.logging.logDate = false;
     Config.logging.debugLogs = false;
@@ -16,6 +21,7 @@ export async function createGame(teamMode: TeamMode, mapName: keyof typeof MapDe
         {
             mapName,
             teamMode,
+            ...configOverrides,
         },
         () => {},
         () => {},

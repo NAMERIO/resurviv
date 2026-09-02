@@ -83,6 +83,7 @@ import {
     isInfectedHuman,
     isInfectedZombie,
     isKingOfTheHillMiniGame,
+    isPlantTheBombMiniGame,
 } from "../privateLobbyMiniGames";
 import { QuestManager } from "../questManager";
 import { WeaponManager } from "../weaponManager";
@@ -265,7 +266,8 @@ export class PlayerBarn {
                 this.game.captureTheFlagManager.enabled ||
                 this.game.kingOfTheHillManager.enabled ||
                 this.game.dominationManager.enabled ||
-                this.game.bedWarManager.enabled) &&
+                this.game.bedWarManager.enabled ||
+                this.game.plantTheBombManager.enabled) &&
             !this.game.isTeamMode
                 ? this.getSmallestTeam()
                 : result?.team;
@@ -289,6 +291,10 @@ export class PlayerBarn {
                 ) ??
                 this.game.dominationManager.getSpawnPos(joinData.arenaTeam, team?.id) ??
                 this.game.bedWarManager.getSpawnPos(joinData.arenaTeam, team?.id) ??
+                this.game.plantTheBombManager.getSpawnPos(
+                    joinData.arenaTeam,
+                    team?.id,
+                ) ??
                 this.game.map.getSpawnPos(group, team, joinData.arenaTeam);
             if (group && !group.spawnPosition) {
                 group.spawnPosition = v2.copy(pos);
@@ -1076,7 +1082,8 @@ export class PlayerBarn {
         if (
             isCaptureTheFlagMiniGame(this.game.miniGame) ||
             isKingOfTheHillMiniGame(this.game.miniGame) ||
-            isDominationMiniGame(this.game.miniGame)
+            isDominationMiniGame(this.game.miniGame) ||
+            isPlantTheBombMiniGame(this.game.miniGame)
         ) {
             team =
                 groupData.groupHashToJoin.endsWith("-A") ||
@@ -1766,10 +1773,13 @@ export class Player extends BaseGameObject {
         this.playerStatusDirty = true;
         this.setDirty();
 
-        const ctfFlagRole = role === "ctf_flag_red" || role === "ctf_flag_blue";
+        const objectiveCarrierRole =
+            role === "ctf_flag_red" ||
+            role === "ctf_flag_blue" ||
+            role === "plant_bomb_carrier";
 
-        // CTF carriers are already drawn on the minimap from player role status.
-        if (roleDef.mapIndicator && !ctfFlagRole) {
+        // Objective carriers are already drawn on the minimap from player role status.
+        if (roleDef.mapIndicator && !objectiveCarrierRole) {
             this.mapIndicator?.kill();
             this.mapIndicator = this.game.mapIndicatorBarn.allocIndicator(role, true);
         }
@@ -2756,7 +2766,8 @@ export class Player extends BaseGameObject {
             !isCaptureTheFlagMiniGame(this.game.miniGame) &&
             !isKingOfTheHillMiniGame(this.game.miniGame) &&
             !isDominationMiniGame(this.game.miniGame) &&
-            !isBedWarMiniGame(this.game.miniGame)
+            !isBedWarMiniGame(this.game.miniGame) &&
+            !isPlantTheBombMiniGame(this.game.miniGame)
         ) {
             return;
         }
@@ -2779,6 +2790,7 @@ export class Player extends BaseGameObject {
             this.game.kingOfTheHillManager.getSpawnPos(this.arenaTeam, this.teamId) ??
             this.game.dominationManager.getSpawnPos(this.arenaTeam, this.teamId) ??
             this.game.bedWarManager.getSpawnPos(this.arenaTeam, this.teamId) ??
+            this.game.plantTheBombManager.getSpawnPos(this.arenaTeam, this.teamId) ??
             this.game.map.getSpawnPos(this.group, this.team, this.arenaTeam);
         v2.set(this.pos, spawnPos);
         this.collider.pos = this.pos;
@@ -2801,6 +2813,24 @@ export class Player extends BaseGameObject {
         this.setDirty();
         this.setGroupStatuses();
         this.game.updateData();
+    }
+
+    resetPlantTheBombRound(): void {
+        if (!isPlantTheBombMiniGame(this.game.miniGame)) return;
+        // Death clears the live perk list after kill() saves it for the next spawn.
+        // Only take a fresh snapshot for players who survived the round, otherwise
+        // we would replace the dead player's saved perks with an empty list.
+        if (!this.dead) {
+            this.captureTheFlagRespawnPerks = this.perks.map((perk) => ({ ...perk }));
+        }
+        this.cancelAction();
+        if (!this.dead) {
+            this.dead = true;
+            util.removeFrom(this.game.playerBarn.livingPlayers, this);
+            if (this.group) util.removeFrom(this.group.livingPlayers, this);
+            if (this.team) util.removeFrom(this.team.livingPlayers, this);
+        }
+        this.respawnCaptureTheFlagPlayer();
     }
 
     private applyCaptureTheFlagRespawnLoadout(): void {
@@ -3714,6 +3744,15 @@ export class Player extends BaseGameObject {
                         target.setGroupStatuses();
                         this.game.pluginManager.emit("playerRevived", target);
                     });
+                } else if (
+                    this.actionType === GameConfig.Action.PlantBomb ||
+                    this.actionType === GameConfig.Action.DefuseBomb
+                ) {
+                    this.game.plantTheBombManager.completeAction(
+                        this,
+                        this.actionType,
+                        this.action.targetId,
+                    );
                 }
 
                 // Prevent cancelAction from being called by revived players at the end of revive
@@ -5089,12 +5128,21 @@ export class Player extends BaseGameObject {
         }
 
         // livingPlayers is used here instead of a more "efficient" option because its sorted while other options are not
-        const spectatablePlayers = this.game.playerBarn.livingPlayers.filter(
-            (p) => this != p,
-            // !p.disconnected &&
-            // (this.game.modeManager.getPlayerAlivePlayersContext(this).length === 0 ||
-            //     p.teamId == this.teamId),
+        const livingPlayers = this.game.playerBarn.livingPlayers.filter(
+            (player) => player !== this,
         );
+        const plantTheBombTeammates = isPlantTheBombMiniGame(this.game.miniGame)
+            ? livingPlayers.filter((player) =>
+                  this.arenaTeam
+                      ? player.arenaTeam === this.arenaTeam
+                      : player.teamId === this.teamId,
+              )
+            : [];
+        const spectatablePlayers =
+            isPlantTheBombMiniGame(this.game.miniGame) &&
+            plantTheBombTeammates.length > 0
+                ? plantTheBombTeammates
+                : livingPlayers;
 
         let playerToSpec: Player | undefined;
         switch (true) {
@@ -5114,7 +5162,10 @@ export class Player extends BaseGameObject {
                     this.game.map.factionMode && this.team!.livingPlayers.length > 0;
                 const aliveKiller = this.getAliveKiller();
                 const shouldSpecRandom =
-                    groupExistsOrAlive || teamExistsOrAlive || !aliveKiller;
+                    groupExistsOrAlive ||
+                    teamExistsOrAlive ||
+                    isPlantTheBombMiniGame(this.game.miniGame) ||
+                    !aliveKiller;
 
                 if (!shouldSpecRandom) {
                     playerToSpec = aliveKiller;
@@ -5519,7 +5570,8 @@ export class Player extends BaseGameObject {
             isCaptureTheFlagMiniGame(this.game.miniGame) ||
             isKingOfTheHillMiniGame(this.game.miniGame) ||
             isDominationMiniGame(this.game.miniGame) ||
-            isBedWarMiniGame(this.game.miniGame);
+            isBedWarMiniGame(this.game.miniGame) ||
+            isPlantTheBombMiniGame(this.game.miniGame);
         if (isCaptureTheFlagDeath) {
             this.captureTheFlagRespawnPerks = this.perks.map((perk) => ({ ...perk }));
         }
@@ -6790,18 +6842,24 @@ export class Player extends BaseGameObject {
                 this.game.arenaPrivate && this.game.showEnemiesOnMap;
             const arenaHidesEnemies =
                 this.game.arenaPrivate && !this.game.showEnemiesOnMap;
-            const isCaptureTheFlagCarrier =
+            const isObjectiveCarrier =
                 this.game.captureTheFlagManager.enabled &&
                 (p.role === "ctf_flag_red" || p.role === "ctf_flag_blue");
-            const visible = arenaHidesEnemies
-                ? isCaptureTheFlagCarrier ||
-                  p === this ||
-                  (!hiddenByDebug && p.teamId === this.teamId)
-                : this.game.arenaPrivate && hideAndSeekSettings && this.arenaTeam
-                  ? hideAndSeekVisible
-                  : arenaShowsAllPlayers ||
-                    (!hiddenByDebug &&
-                        (p.teamId === this.teamId || p.timeUntilHidden > 0));
+            const isEnemyBombCarrier =
+                this.game.plantTheBombManager.enabled &&
+                p.role === "plant_bomb_carrier" &&
+                p.teamId !== this.teamId;
+            const visible =
+                !isEnemyBombCarrier &&
+                (arenaHidesEnemies
+                    ? isObjectiveCarrier ||
+                      p === this ||
+                      (!hiddenByDebug && p.teamId === this.teamId)
+                    : this.game.arenaPrivate && hideAndSeekSettings && this.arenaTeam
+                      ? hideAndSeekVisible
+                      : arenaShowsAllPlayers ||
+                        (!hiddenByDebug &&
+                            (p.teamId === this.teamId || p.timeUntilHidden > 0)));
             return {
                 hasData:
                     (arenaShowsAllPlayers && visible) ||

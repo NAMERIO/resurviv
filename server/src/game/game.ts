@@ -49,6 +49,7 @@ import { PlaneBarn } from "./objects/plane";
 import { PlayerBarn } from "./objects/player";
 import { ProjectileBarn } from "./objects/projectile";
 import { SmokeBarn } from "./objects/smoke";
+import { PlantTheBombManager } from "./plantTheBombManager";
 import { PluginManager } from "./pluginManager";
 import { Profiler } from "./profiler";
 
@@ -109,6 +110,7 @@ export class Game {
     kingOfTheHillManager: KingOfTheHillManager;
     dominationManager: DominationManager;
     bedWarManager: BedWarManager;
+    plantTheBombManager: PlantTheBombManager;
     arenaStartLockTimer = 0;
     arenaLastCountdownSecond = -1;
     arenaGoBroadcasted = false;
@@ -237,6 +239,7 @@ export class Game {
         this.kingOfTheHillManager = new KingOfTheHillManager(this);
         this.dominationManager = new DominationManager(this);
         this.bedWarManager = new BedWarManager(this);
+        this.plantTheBombManager = new PlantTheBombManager(this);
         this.modeManager = new GameModeManager(this);
 
         if (
@@ -244,13 +247,15 @@ export class Game {
             this.captureTheFlagManager.enabled ||
             this.kingOfTheHillManager.enabled ||
             this.dominationManager.enabled ||
-            this.bedWarManager.enabled
+            this.bedWarManager.enabled ||
+            this.plantTheBombManager.enabled
         ) {
             const teamCount =
                 this.captureTheFlagManager.enabled ||
                 this.kingOfTheHillManager.enabled ||
                 this.dominationManager.enabled ||
-                this.bedWarManager.enabled
+                this.bedWarManager.enabled ||
+                this.plantTheBombManager.enabled
                     ? 2
                     : this.map.mapDef.gameMode.factions!;
             for (let i = 1; i <= teamCount; i++) {
@@ -294,6 +299,7 @@ export class Game {
         this.kingOfTheHillManager.init();
         this.dominationManager.init();
         this.bedWarManager.init();
+        this.plantTheBombManager.init();
         this.pluginManager.emit("gameCreated", this);
 
         this.allowJoin = true;
@@ -377,6 +383,10 @@ export class Game {
 
         this.profiler.addSample("bedWar");
         this.bedWarManager.update(dt);
+        this.profiler.endSample();
+
+        this.profiler.addSample("plantTheBomb");
+        this.plantTheBombManager.update(dt);
         this.profiler.endSample();
 
         this.profiler.addSample("map");

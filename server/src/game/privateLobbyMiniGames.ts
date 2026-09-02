@@ -84,6 +84,16 @@ export interface BedWarSettings {
     revealPingInterval: number;
 }
 
+export interface PlantTheBombSettings {
+    totalRounds: number;
+    attackRoundsPerTeam: number;
+    roundDuration: number;
+    plantDuration: number;
+    defuseDuration: number;
+    bombDuration: number;
+    roundEndDelay: number;
+}
+
 interface PrivateLobbyMiniGameServerSettings {
     hideAndSeek?: HideAndSeekSettings;
     infected?: InfectedSettings;
@@ -91,6 +101,7 @@ interface PrivateLobbyMiniGameServerSettings {
     kingOfTheHill?: KingOfTheHillSettings;
     domination?: DominationSettings;
     bedWar?: BedWarSettings;
+    plantTheBomb?: PlantTheBombSettings;
     getWeaponOverride?: (
         arenaTeam: ArenaTeam | undefined,
     ) => PrivateLobbyMiniGameWeaponOverride | undefined;
@@ -173,6 +184,16 @@ export const BedWarSettings: BedWarSettings = {
     revealPingInterval: 10,
 };
 
+export const PlantTheBombSettings: PlantTheBombSettings = {
+    totalRounds: 10,
+    attackRoundsPerTeam: 5,
+    roundDuration: 120,
+    plantDuration: 5,
+    defuseDuration: 7,
+    bombDuration: 45,
+    roundEndDelay: 5,
+};
+
 export const PrivateLobbyMiniGameServerSettings: Record<
     PrivateLobbyMiniGame,
     PrivateLobbyMiniGameServerSettings
@@ -232,6 +253,9 @@ export const PrivateLobbyMiniGameServerSettings: Record<
     bed_war: {
         bedWar: BedWarSettings,
     },
+    plant_the_bomb: {
+        plantTheBomb: PlantTheBombSettings,
+    },
 };
 
 export function getPrivateLobbyMiniGameMapName(
@@ -242,6 +266,7 @@ export function getPrivateLobbyMiniGameMapName(
     if (miniGame === "king_of_the_hill") return "capture_the_flag";
     if (miniGame === "domination") return "capture_the_flag";
     if (miniGame === "bed_war") return "bed_war";
+    if (miniGame === "plant_the_bomb") return "bed_war";
     return undefined;
 }
 
@@ -321,6 +346,17 @@ export function getBedWarSettings(
 
 export function isBedWarMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
     return miniGame === "bed_war";
+}
+
+export function getPlantTheBombSettings(
+    miniGame: PrivateLobbyMiniGame | undefined,
+): PlantTheBombSettings | undefined {
+    if (!miniGame) return undefined;
+    return PrivateLobbyMiniGameServerSettings[miniGame].plantTheBomb;
+}
+
+export function isPlantTheBombMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
+    return miniGame === "plant_the_bomb";
 }
 
 export function isHideAndSeekHider(

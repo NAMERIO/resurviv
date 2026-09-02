@@ -491,6 +491,21 @@ export const RoleDefs: Record<string, RoleDef> = {
         },
         color: 0x007eff,
     },
+    plant_bomb_carrier: {
+        type: "role",
+        announce: false,
+        sound: {},
+        mapIcon: {
+            alive: "map-planted-bomb.img",
+        },
+        mapIndicator: {
+            sprite: "map-planted-bomb.img",
+            tint: 0xffffff,
+            pulse: true,
+            pulseTint: 0xffb52e,
+        },
+        color: 0xffb52e,
+    },
     healer: {
         type: "role",
         defaultItems: createDefaultItems({

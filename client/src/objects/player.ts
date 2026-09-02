@@ -2661,18 +2661,25 @@ export class Player implements AbstractObject {
         } else {
             this.visorSprite.visible = false;
         }
-        const ctfRoleDef =
+        const objectiveCarrierRoleDef =
             this.m_netData.m_role === "ctf_flag_red" ||
-            this.m_netData.m_role === "ctf_flag_blue"
+            this.m_netData.m_role === "ctf_flag_blue" ||
+            this.m_netData.m_role === "plant_bomb_carrier"
                 ? (GameObjectDefs[this.m_netData.m_role] as RoleDef)
                 : undefined;
-        if (ctfRoleDef?.mapIndicator) {
+        if (objectiveCarrierRoleDef?.mapIndicator) {
+            const isBombCarrier = this.m_netData.m_role === "plant_bomb_carrier";
             this.captureTheFlagSprite.texture = PIXI.Texture.from(
-                ctfRoleDef.mapIndicator.sprite,
+                objectiveCarrierRoleDef.mapIndicator.sprite,
             );
-            this.captureTheFlagSprite.tint =
-                ctfRoleDef.color ?? ctfRoleDef.mapIndicator.tint;
-            this.captureTheFlagSprite.scale.set(0.9, 0.9);
+            this.captureTheFlagSprite.tint = isBombCarrier
+                ? 0xffffff
+                : (objectiveCarrierRoleDef.color ??
+                  objectiveCarrierRoleDef.mapIndicator.tint);
+            this.captureTheFlagSprite.scale.set(
+                isBombCarrier ? 0.22 : 0.9,
+                isBombCarrier ? 0.22 : 0.9,
+            );
             this.captureTheFlagSprite.position.set(0, -34);
             this.captureTheFlagSprite.visible = !this.m_netData.m_dead;
         } else {

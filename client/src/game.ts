@@ -3807,7 +3807,9 @@ export class Game {
             const obj = msg.partObjects[i];
             this.m_objectCreator.m_updateObjPart(obj.__id, obj, ctx);
         }
-        this.m_spectating = this.m_activeId != this.m_localId;
+        // The server can keep sending updates briefly after the match ends. Do not
+        // let those updates reopen spectator mode over the final results screen.
+        this.m_spectating = this.m_activeId != this.m_localId && !this.m_gameOver;
         this.m_playerBarn.localPlayerId = this.m_localId;
         this.m_activePlayer = this.m_playerBarn.getPlayerById(this.m_activeId)!;
         this.m_activePlayer.m_setLocalData(msg.activePlayerData);
@@ -3822,6 +3824,8 @@ export class Game {
                 this.m_playerBarn,
             );
             this.m_touch.hideAll();
+        } else {
+            this.m_uiManager.setSpectating(false, this.teamMode);
         }
         this.m_activePlayer.layer = this.m_activePlayer.m_netData.m_layer;
         this.m_renderer.setActiveLayer(this.m_activePlayer.layer);
@@ -4053,6 +4057,40 @@ export class Game {
                     const text = "Sudden Death - Both Beds Destroyed";
                     this.m_ui2Manager.addKillFeedMessage(text, "#ffcc66");
                     this.m_uiManager.displayAnnouncement(text, 3500);
+                }
+                break;
+            }
+            case net.MsgType.PlantTheBomb: {
+                const msg = new net.PlantTheBombMsg();
+                msg.deserialize(stream);
+                if (!this.m_map.getMapDef().gameMode.plantTheBomb) break;
+                this.m_uiManager.setPlantTheBombState(msg);
+
+                let text = "";
+                let color = "#ffcc66";
+                if (msg.event === net.PlantTheBombEvent.PickedUp) {
+                    text = "Bomb picked up";
+                } else if (msg.event === net.PlantTheBombEvent.Dropped) {
+                    text = "Bomb dropped";
+                } else if (msg.event === net.PlantTheBombEvent.Planted) {
+                    text = `Bomb planted at Site ${msg.activeSite === 1 ? "A" : "B"}`;
+                    color = "#ff7b55";
+                } else if (msg.event === net.PlantTheBombEvent.Defused) {
+                    text = "Bomb defused";
+                    color = "#66b7ff";
+                } else if (msg.event === net.PlantTheBombEvent.Detonated) {
+                    text = "Bomb detonated";
+                    color = "#ff554d";
+                } else if (msg.event === net.PlantTheBombEvent.RoundDraw) {
+                    text = "Round draw - no points awarded";
+                    color = "#dddddd";
+                } else if (msg.event === net.PlantTheBombEvent.RoundWon) {
+                    text = `${msg.winningTeamId === 1 ? "Red" : "Blue"} Team won the round`;
+                    color = msg.winningTeamId === 1 ? "#ff6666" : "#66b7ff";
+                }
+                if (text) {
+                    this.m_ui2Manager.addKillFeedMessage(text, color);
+                    this.m_uiManager.displayAnnouncement(text, 3000);
                 }
                 break;
             }
@@ -4377,9 +4415,10 @@ export class Game {
                 const msg = new net.GameOverMsg();
                 msg.deserialize(stream);
                 this.m_gameOver = msg.gameOver;
-
-                discordPresence.matchEnd();
-
+                if (msg.gameOver) {
+                    this.m_spectating = false;
+                    this.m_uiManager.setSpectating(false, this.teamMode);
+                }
                 const localTeamId = this.m_playerBarn.getPlayerInfo(
                     this.m_localId,
                 ).teamId;
@@ -4395,6 +4434,17 @@ export class Game {
                         break;
                     }
                 }
+
+                if (this.m_privateMiniGame === "plant_the_bomb" && !msg.gameOver) {
+                    this.m_uiManager.beginSpectating();
+                    this.m_uiManager.setSpectating(true, this.teamMode);
+                    this.m_uiManager.clearStatsElems();
+                    this.m_uiManager.hideStats();
+                    break;
+                }
+
+                discordPresence.matchEnd();
+
                 this.m_uiManager.showStats(
                     msg.playerStats,
                     msg.teamId,

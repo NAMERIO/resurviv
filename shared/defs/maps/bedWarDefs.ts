@@ -21,6 +21,13 @@ export const BedWarMapDef: PartialMapDef = {
             blueSpawn: v2.create(57, 108),
             spawnRadius: 4,
         },
+        plantTheBomb: {
+            redSpawn: v2.create(316, 269),
+            blueSpawn: v2.create(57, 108),
+            sites: [v2.create(169, 255), v2.create(209, 125)],
+            spawnRadius: 4,
+            siteZoneSize: v2.create(14, 14),
+        },
         disableGas: true,
     },
     assets: {

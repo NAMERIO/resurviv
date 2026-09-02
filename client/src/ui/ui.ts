@@ -18,6 +18,9 @@ import {
     type DominationMsg,
     type KingOfTheHillMsg,
     KingOfTheHillPhase,
+    type PlantTheBombMsg,
+    PlantTheBombPhase,
+    PlantTheBombState,
 } from "../../../shared/net/net";
 import type { PlayerStatsMsg } from "../../../shared/net/playerStatsMsg";
 import type { MapIndicator, PlayerStatus } from "../../../shared/net/updateMsg";
@@ -116,6 +119,13 @@ type CaptureTheFlagScoreState = {
     redAlive?: boolean;
     blueAlive?: boolean;
     receivedAt: number;
+    roundNumber?: number;
+    attackerTeamId?: 1 | 2;
+    plantPhase?: PlantTheBombPhase;
+    bombState?: PlantTheBombState;
+    bombPos?: Vec2;
+    bombCarrierId?: number;
+    activeSite?: 0 | 1 | 2;
 };
 export class UiManager {
     m_pieTimer = new PieTimer();
@@ -275,6 +285,7 @@ export class UiManager {
     private kingOfTheHillMode = false;
     private dominationMode = false;
     private bedWarMode = false;
+    private plantTheBombMode = false;
     private kingOfTheHillLocked = false;
     private captureTheFlagZoneLabels = [
         this.createCaptureTheFlagZoneLabel(),
@@ -297,6 +308,8 @@ export class UiManager {
     captureTheFlagScoreGoal = $("#ui-ctf-score-goal");
     captureTheFlagRedScore = $("#ui-ctf-red-score");
     captureTheFlagBlueScore = $("#ui-ctf-blue-score");
+    captureTheFlagRedTeamName = $(".ui-ctf-red .ui-ctf-team-name");
+    captureTheFlagBlueTeamName = $(".ui-ctf-blue .ui-ctf-team-name");
     captureTheFlagRedProgress = $("#ui-ctf-red-progress");
     captureTheFlagBlueProgress = $("#ui-ctf-blue-progress");
     container = new PIXI.Container() as ContainerWithMask;
@@ -753,6 +766,7 @@ export class UiManager {
         this.kingOfTheHillMode = false;
         this.dominationMode = false;
         this.bedWarMode = false;
+        this.plantTheBombMode = false;
         this.kingOfTheHillLocked = false;
         this.clearCaptureTheFlagState();
         this.dead = false;
@@ -767,13 +781,38 @@ export class UiManager {
         this.clearAmongUsTaskMapMarkers();
         const ctfDef = map.getMapDef().gameMode.captureTheFlag;
         const bedWarDef = map.getMapDef().gameMode.bedWar;
+        const plantTheBombDef = map.getMapDef().gameMode.plantTheBomb;
+        this.plantTheBombMode =
+            !!plantTheBombDef && this.game.m_privateMiniGame === "plant_the_bomb";
         this.bedWarMode = !!bedWarDef && this.game.m_privateMiniGame === "bed_war";
         this.kingOfTheHillMode =
             !!ctfDef && this.game.m_privateMiniGame === "king_of_the_hill";
         this.dominationMode = !!ctfDef && this.game.m_privateMiniGame === "domination";
         this.captureTheFlagMode =
-            !!ctfDef && !this.kingOfTheHillMode && !this.dominationMode;
-        if (bedWarDef && this.bedWarMode) {
+            !!ctfDef &&
+            !this.kingOfTheHillMode &&
+            !this.dominationMode &&
+            !this.plantTheBombMode;
+        if (plantTheBombDef && this.plantTheBombMode) {
+            this.captureTheFlagZones = plantTheBombDef.sites.map((pos, idx) => ({
+                teamId: 0,
+                status: CaptureTheFlagFlagStatus.AtBase,
+                pos: v2.copy(pos),
+                label: String.fromCharCode(65 + idx),
+            }));
+            this.captureTheFlagScoreState = {
+                redScore: 0,
+                blueScore: 0,
+                scoreLimit: 10,
+                matchTimeLeft: 120,
+                roundNumber: 1,
+                attackerTeamId: 1,
+                plantPhase: PlantTheBombPhase.Round,
+                receivedAt: performance.now(),
+            };
+            this.updateCaptureTheFlagScoreboard(true);
+            this.updateCaptureTheFlagScoreboardVisibility();
+        } else if (bedWarDef && this.bedWarMode) {
             const bedHealth = (MapObjectDefs.bed_war_01 as ObstacleDef).health;
             this.captureTheFlagZones = [];
             this.captureTheFlagZoneOverlay.clear();
@@ -1009,6 +1048,43 @@ export class UiManager {
         this.updateCaptureTheFlagScoreboardVisibility();
     }
 
+    setPlantTheBombState(msg: PlantTheBombMsg) {
+        this.plantTheBombMode = true;
+        this.captureTheFlagMode = false;
+        this.kingOfTheHillMode = false;
+        this.dominationMode = false;
+        this.bedWarMode = false;
+        this.captureTheFlagScoreState = {
+            redScore: msg.redScore,
+            blueScore: msg.blueScore,
+            scoreLimit: math.max(1, msg.totalRounds),
+            matchTimeLeft:
+                msg.phase === PlantTheBombPhase.Planted
+                    ? msg.bombTimeLeft
+                    : msg.roundTimeLeft,
+            roundNumber: msg.roundNumber,
+            attackerTeamId: msg.attackerTeamId,
+            plantPhase: msg.phase,
+            bombState: msg.bombState,
+            bombPos: v2.copy(msg.bombPos),
+            bombCarrierId: msg.bombCarrierId,
+            activeSite: msg.activeSite,
+            receivedAt: performance.now(),
+        };
+        this.captureTheFlagZones = msg.sites.map((pos, idx) => ({
+            teamId:
+                msg.activeSite === idx + 1 && msg.phase === PlantTheBombPhase.Planted
+                    ? msg.attackerTeamId
+                    : 0,
+            status: CaptureTheFlagFlagStatus.AtBase,
+            pos: v2.copy(pos),
+            label: String.fromCharCode(65 + idx),
+            inactive: msg.activeSite !== 0 && msg.activeSite !== idx + 1,
+        }));
+        this.updateCaptureTheFlagScoreboard(true);
+        this.updateCaptureTheFlagScoreboardVisibility();
+    }
+
     private clearCaptureTheFlagState() {
         this.captureTheFlagZones = [];
         this.captureTheFlagZoneOverlay.clear();
@@ -1018,6 +1094,7 @@ export class UiManager {
         this.kingOfTheHillMode = false;
         this.dominationMode = false;
         this.bedWarMode = false;
+        this.plantTheBombMode = false;
         this.kingOfTheHillLocked = false;
         this.captureTheFlagScoreboard.css("display", "none");
         this.captureTheFlagMatchTime.css("display", "none");
@@ -1044,7 +1121,8 @@ export class UiManager {
             (this.captureTheFlagMode ||
                 this.kingOfTheHillMode ||
                 this.dominationMode ||
-                this.bedWarMode) &&
+                this.bedWarMode ||
+                this.plantTheBombMode) &&
                 this.hudVisible &&
                 !this.bigmapDisplayed
                 ? "block"
@@ -1076,6 +1154,20 @@ export class UiManager {
         );
         this.captureTheFlagRedProgress.css("width", `${redPct}%`);
         this.captureTheFlagBlueProgress.css("width", `${bluePct}%`);
+        this.captureTheFlagRedTeamName.text(
+            this.plantTheBombMode
+                ? state.attackerTeamId === 1
+                    ? "PLANTERS"
+                    : "DEFENDERS"
+                : "Red",
+        );
+        this.captureTheFlagBlueTeamName.text(
+            this.plantTheBombMode
+                ? state.attackerTeamId === 2
+                    ? "PLANTERS"
+                    : "DEFENDERS"
+                : "Blue",
+        );
 
         if (this.bedWarMode) {
             const elapsed = (performance.now() - state.receivedAt) / 1000;
@@ -1088,6 +1180,42 @@ export class UiManager {
             this.captureTheFlagMatchTime.css("display", "none");
             this.captureTheFlagScoreGoal
                 .text(matchTimeLeft > 0 ? "BEDS BREAK IN" : "SUDDEN DEATH")
+                .css("display", "block");
+            return;
+        }
+
+        if (this.plantTheBombMode) {
+            const elapsed = (performance.now() - state.receivedAt) / 1000;
+            const timeLeft = math.max(0, state.matchTimeLeft - elapsed);
+            const timeText = formatClockTime(timeLeft);
+            if (force || timeText !== this.captureTheFlagLastTimeText) {
+                this.captureTheFlagLastTimeText = timeText;
+                this.captureTheFlagTime.text(timeText);
+            }
+            this.captureTheFlagMatchTime.css("display", "none");
+            const carrierName = state.bombCarrierId
+                ? this.game.m_playerBarn.getPlayerName(
+                      state.bombCarrierId,
+                      this.game.m_localId,
+                      true,
+                  )
+                : "";
+            const objective =
+                state.bombState === PlantTheBombState.AtSpawn
+                    ? "PICK UP THE BOMB"
+                    : state.bombState === PlantTheBombState.Carried
+                      ? `${carrierName || "A PLANTER"} HAS THE BOMB · PLANT AT SITE A OR B`
+                      : state.bombState === PlantTheBombState.Dropped
+                        ? "BOMB DROPPED · RECOVER IT"
+                        : "BOMB ACTIVE";
+            this.captureTheFlagScoreGoal
+                .text(
+                    state.plantPhase === PlantTheBombPhase.Planted
+                        ? `BOMB ACTIVE · ROUND ${state.roundNumber}`
+                        : state.plantPhase === PlantTheBombPhase.RoundEnd
+                          ? `ROUND ${state.roundNumber} COMPLETE`
+                          : `ROUND ${state.roundNumber}/${state.scoreLimit} · ${objective}`,
+                )
                 .css("display", "block");
             return;
         }
@@ -1162,16 +1290,20 @@ export class UiManager {
         renderer: Renderer,
         activePlayer: Player,
     ) {
-        const ctfDef = map.getMapDef().gameMode.captureTheFlag;
+        const gameModeDef = map.getMapDef().gameMode;
+        const ctfDef = gameModeDef.captureTheFlag;
+        const plantTheBombDef = gameModeDef.plantTheBomb;
         const overlay = this.captureTheFlagZoneOverlay;
         overlay.clear();
         this.hideCaptureTheFlagZoneLabels();
 
-        if (!ctfDef || !this.hudVisible) return;
+        if ((!ctfDef && !plantTheBombDef) || !this.hudVisible) return;
 
-        const captureRadius = ctfDef.captureRadius ?? 4;
+        const captureRadius = ctfDef?.captureRadius ?? 4;
         const captureZoneSize =
-            ctfDef.captureZoneSize ?? v2.create(captureRadius * 2.5, captureRadius * 8.5);
+            (this.plantTheBombMode ? plantTheBombDef?.siteZoneSize : undefined) ??
+            ctfDef?.captureZoneSize ??
+            v2.create(captureRadius * 2.5, captureRadius * 8.5);
         const width = camera.m_scaleToScreen(captureZoneSize.x);
         const height = camera.m_scaleToScreen(captureZoneSize.y);
         const tileSize = math.max(14, camera.m_scaleToScreen(2));
@@ -1179,7 +1311,8 @@ export class UiManager {
         const dashSize = math.max(10, camera.m_scaleToScreen(1.4));
         const gapSize = dashSize * 0.72;
         const pulse = 0.82 + Math.sin(performance.now() / 260) * 0.12;
-        const controlPointMode = this.kingOfTheHillMode || this.dominationMode;
+        const controlPointMode =
+            this.kingOfTheHillMode || this.dominationMode || this.plantTheBombMode;
         let labelIdx = 0;
 
         for (let i = 0; i < this.captureTheFlagZones.length; i++) {
@@ -1187,9 +1320,9 @@ export class UiManager {
             const zonePos = controlPointMode
                 ? zone.pos
                 : zone.teamId === 1
-                  ? ctfDef.redFlag
+                  ? (ctfDef?.redFlag ?? zone.pos)
                   : zone.teamId === 2
-                    ? ctfDef.blueFlag
+                    ? (ctfDef?.blueFlag ?? zone.pos)
                     : zone.pos;
 
             const center = camera.m_pointToScreen(zonePos);
@@ -1262,27 +1395,42 @@ export class UiManager {
                     0,
                     (zone.captureDuration ?? 0) - (zone.progress ?? 0),
                 );
-                label.text = this.dominationMode
-                    ? zone.contested
-                        ? `${zone.label} · Contested`
-                        : zone.progress
-                          ? `${zone.label} · ${zone.resetting ? `Resetting ${zone.progress.toFixed(1)}` : `${timeLeft.toFixed(1)}s`}`
-                          : `${zone.label}`
-                    : this.kingOfTheHillMode
-                      ? zone.locked
-                          ? "Locked"
-                          : ""
-                      : "Flag Return";
+                label.text = this.plantTheBombMode
+                    ? zone.inactive
+                        ? `${zone.label} · INACTIVE`
+                        : zone.teamId
+                          ? `${zone.label} · BOMB`
+                          : `${zone.label} · PLANT SITE`
+                    : this.dominationMode
+                      ? zone.contested
+                          ? `${zone.label} · Contested`
+                          : zone.progress
+                            ? `${zone.label} · ${zone.resetting ? `Resetting ${zone.progress.toFixed(1)}` : `${timeLeft.toFixed(1)}s`}`
+                            : `${zone.label}`
+                      : this.kingOfTheHillMode
+                        ? zone.locked
+                            ? "Locked"
+                            : ""
+                        : "Flag Return";
                 label.x = center.x;
                 label.y = center.y;
                 label.visible =
-                    (this.dominationMode || !showFlag) && label.text.length > 0;
+                    (this.dominationMode || this.plantTheBombMode || !showFlag) &&
+                    label.text.length > 0;
                 label.alpha = (zone.locked ? 0.55 : 0.78) * pulse * zoneAlpha;
                 label.scale.set(math.clamp(camera.m_zoom / 1.5, 0.75, 1.15));
             }
             if (flagSprite) {
-                flagSprite.texture = PIXI.Texture.from("flag.img");
-                flagSprite.tint = this.getCaptureTheFlagZoneFlagTint(zone.teamId);
+                flagSprite.texture = PIXI.Texture.from(
+                    this.plantTheBombMode
+                        ? zone.label === "A"
+                            ? "map-bomb-site-a.img"
+                            : "map-bomb-site-b.img"
+                        : "flag.img",
+                );
+                flagSprite.tint = this.plantTheBombMode
+                    ? 0xffffff
+                    : this.getCaptureTheFlagZoneFlagTint(zone.teamId);
                 flagSprite.x = center.x;
                 flagSprite.y = center.y;
                 flagSprite.visible = showFlag;
@@ -1301,24 +1449,29 @@ export class UiManager {
     }
 
     private renderCaptureTheFlagMapZones(map: Map) {
-        const ctfDef = map.getMapDef().gameMode.captureTheFlag;
+        const gameModeDef = map.getMapDef().gameMode;
+        const ctfDef = gameModeDef.captureTheFlag;
+        const plantTheBombDef = gameModeDef.plantTheBomb;
         const overlay = this.display.captureTheFlagMapZones;
         overlay.clear();
         for (let i = 0; i < this.captureTheFlagMapFlagSprites.length; i++) {
             this.captureTheFlagMapFlagSprites[i].visible = false;
         }
 
-        if (!ctfDef) return;
+        if (!ctfDef && !plantTheBombDef) return;
 
-        const captureRadius = ctfDef.captureRadius ?? 4;
+        const captureRadius = ctfDef?.captureRadius ?? 4;
         const captureZoneSize =
-            ctfDef.captureZoneSize ?? v2.create(captureRadius * 2.5, captureRadius * 8.5);
+            (this.plantTheBombMode ? plantTheBombDef?.siteZoneSize : undefined) ??
+            ctfDef?.captureZoneSize ??
+            v2.create(captureRadius * 2.5, captureRadius * 8.5);
         const width = (captureZoneSize.x / map.width) * this.mapSprite.width;
         const height = (captureZoneSize.y / map.height) * this.mapSprite.height;
         const borderSize = math.max(1, math.min(width, height) * 0.08);
         const dashSize = math.max(3, math.min(width, height) * 0.22);
         const gapSize = dashSize * 0.72;
-        const controlPointMode = this.kingOfTheHillMode || this.dominationMode;
+        const controlPointMode =
+            this.kingOfTheHillMode || this.dominationMode || this.plantTheBombMode;
         let flagIdx = 0;
 
         for (let i = 0; i < this.captureTheFlagZones.length; i++) {
@@ -1326,9 +1479,9 @@ export class UiManager {
             const zonePos = controlPointMode
                 ? zone.pos
                 : zone.teamId === 1
-                  ? ctfDef.redFlag
+                  ? (ctfDef?.redFlag ?? zone.pos)
                   : zone.teamId === 2
-                    ? ctfDef.blueFlag
+                    ? (ctfDef?.blueFlag ?? zone.pos)
                     : zone.pos;
             const center = this.getMapPosFromWorldPos(zonePos, map);
             const x = center.x - width / 2;
@@ -1363,20 +1516,36 @@ export class UiManager {
 
             const flagSprite = this.captureTheFlagMapFlagSprites[flagIdx++];
             if (flagSprite) {
-                const showFlag = controlPointMode
-                    ? !zone.inactive
-                    : zone.status !== CaptureTheFlagFlagStatus.Taken;
+                const showFlag = this.plantTheBombMode
+                    ? true
+                    : controlPointMode
+                      ? !zone.inactive
+                      : zone.status !== CaptureTheFlagFlagStatus.Taken;
                 const flagCenter = controlPointMode
                     ? center
                     : this.getMapPosFromWorldPos(zone.pos, map);
                 const flagSize = math.max(6, math.min(width, height) * 0.72);
-                flagSprite.texture = PIXI.Texture.from("flag.img");
-                flagSprite.tint = this.getCaptureTheFlagZoneFlagTint(zone.teamId);
+                flagSprite.texture = PIXI.Texture.from(
+                    this.plantTheBombMode
+                        ? zone.label === "A"
+                            ? "map-bomb-site-a.img"
+                            : "map-bomb-site-b.img"
+                        : "flag.img",
+                );
+                flagSprite.tint = this.plantTheBombMode
+                    ? 0xffffff
+                    : this.getCaptureTheFlagZoneFlagTint(zone.teamId);
                 flagSprite.x = flagCenter.x;
                 flagSprite.y = flagCenter.y;
                 flagSprite.width = flagSize;
                 flagSprite.height = flagSize;
-                flagSprite.alpha = zone.locked ? 0.65 : 0.9;
+                flagSprite.alpha = this.plantTheBombMode
+                    ? zone.inactive
+                        ? 0.45
+                        : 1
+                    : zone.locked
+                      ? 0.65
+                      : 0.9;
                 flagSprite.visible = showFlag;
             }
         }
@@ -1500,6 +1669,12 @@ export class UiManager {
                     actionTxt2 = localPlayer.downed ? "" : targetName;
                     break;
                 }
+                case Action.PlantBomb:
+                    actionTxt1 = "Planting Bomb";
+                    break;
+                case Action.DefuseBomb:
+                    actionTxt1 = "Defusing Bomb";
+                    break;
             }
 
             if (actionTxt1 != "" || actionTxt2 != "") {
@@ -1767,9 +1942,10 @@ export class UiManager {
             mapSprite.sprite.texture = PIXI.Texture.from(texture);
             mapSprite.sprite.tint = tint;
         };
-        const isCaptureTheFlagRole = (role: string) =>
-            this.captureTheFlagMode &&
-            (role === "ctf_flag_red" || role === "ctf_flag_blue");
+        const isObjectiveCarrierRole = (role: string) =>
+            (this.captureTheFlagMode &&
+                (role === "ctf_flag_red" || role === "ctf_flag_blue")) ||
+            (this.plantTheBombMode && role === "plant_bomb_carrier");
         const keys = Object.keys(playerBarn.playerStatus);
         for (let i = 0; i < keys.length; i++) {
             const playerStatus = playerBarn.playerStatus[keys[i] as unknown as number];
@@ -1785,7 +1961,8 @@ export class UiManager {
             if (customMapIcon) {
                 zOrder += 65535;
             }
-            const ctfRole = isCaptureTheFlagRole(playerStatus.role);
+            const ctfRole = isObjectiveCarrierRole(playerStatus.role);
+            const bombCarrierRole = playerStatus.role === "plant_bomb_carrier";
             const livePlayer = ctfRole ? playerBarn.getPlayerById(playerId) : null;
             const mapPos =
                 ctfRole && livePlayer && !playerStatus.dead
@@ -1813,7 +1990,9 @@ export class UiManager {
                   : playerBarn.getTeamColor(playerInfo.teamId);
             const dotTint = tint;
             if (ctfRole) {
-                tint = roleDef?.color ?? roleDef?.mapIndicator?.tint ?? tint;
+                tint = bombCarrierRole
+                    ? 0xffffff
+                    : (roleDef?.color ?? roleDef?.mapIndicator?.tint ?? tint);
             } else if ((map.factionMode || teamColorVision) && customMapIcon) {
                 tint = playerBarn.getTeamColor(playerInfo.teamId);
             }
@@ -1824,7 +2003,9 @@ export class UiManager {
                 scale = playerStatus.dead
                     ? dotScale * 1.5
                     : ctfRole
-                      ? dotScale * 2
+                      ? bombCarrierRole
+                          ? dotScale * 0.7
+                          : dotScale * 2
                       : customMapIcon
                         ? dotScale * 1.25
                         : dotScale;
@@ -1833,7 +2014,9 @@ export class UiManager {
                     playerStatus.dead || playerStatus.downed
                         ? dotScale * 1.25
                         : ctfRole
-                          ? dotScale * 2
+                          ? bombCarrierRole
+                              ? dotScale * 0.7
+                              : dotScale * 2
                           : customMapIcon
                             ? dotScale * 1.25
                             : dotScale * 0.75;
@@ -1885,6 +2068,26 @@ export class UiManager {
                     0xffffff,
                 );
             }
+        }
+
+        const bombState = this.captureTheFlagScoreState;
+        const localTeamId = playerBarn.getPlayerInfo(this.game.m_localId).teamId;
+        if (
+            this.plantTheBombMode &&
+            bombState?.bombPos &&
+            localTeamId === bombState.attackerTeamId &&
+            (bombState.bombState === PlantTheBombState.AtSpawn ||
+                bombState.bombState === PlantTheBombState.Dropped)
+        ) {
+            addSprite(
+                bombState.bombPos,
+                device.uiLayout == device.UiLayout.Sm ? 0.12 : 0.14,
+                1,
+                true,
+                65535 * 5,
+                "map-planted-bomb.img",
+                0xffffff,
+            );
         }
 
         // Hide any sprites that weren't used
@@ -2357,10 +2560,12 @@ export class UiManager {
         const captureTheFlagMode =
             Boolean(map.getMapDef().gameMode.captureTheFlag) &&
             this.game.m_privateMiniGame !== "king_of_the_hill" &&
-            this.game.m_privateMiniGame !== "domination";
+            this.game.m_privateMiniGame !== "domination" &&
+            this.game.m_privateMiniGame !== "plant_the_bomb";
         const kingOfTheHillMode = this.game.m_privateMiniGame === "king_of_the_hill";
         const dominationMode = this.game.m_privateMiniGame === "domination";
-        if (amongUsMode && !gameOver && localStats?.dead) {
+        const plantTheBombMode = this.game.m_privateMiniGame === "plant_the_bomb";
+        if ((amongUsMode || plantTheBombMode) && !gameOver && localStats?.dead) {
             this.beginSpectating();
             this.clearStatsElems();
             this.hideStats();
@@ -2411,7 +2616,11 @@ export class UiManager {
                 : "";
             const S = amongUsMode
                 ? this.getAmongUsTitleText(localRole, isLocalTeamWinner)
-                : (captureTheFlagMode || kingOfTheHillMode || dominationMode) && gameOver
+                : (captureTheFlagMode ||
+                        kingOfTheHillMode ||
+                        dominationMode ||
+                        plantTheBombMode) &&
+                    gameOver
                   ? winningTeamId === 1
                       ? "Red Team Won"
                       : winningTeamId === 2
@@ -2439,7 +2648,8 @@ export class UiManager {
                 map.getMapDef().gameMode.factionMode! ||
                     captureTheFlagMode ||
                     kingOfTheHillMode ||
-                    dominationMode,
+                    dominationMode ||
+                    plantTheBombMode,
             );
             const I = $("<div/>").append(
                 $("<div/>", {
@@ -2452,7 +2662,8 @@ export class UiManager {
                 map.getMapDef().gameMode.factionMode ||
                 captureTheFlagMode ||
                 kingOfTheHillMode ||
-                dominationMode
+                dominationMode ||
+                plantTheBombMode
             ) {
                 I.append(
                     $("<div/>", {
@@ -2733,7 +2944,12 @@ export class UiManager {
 
     showTeamAd(playerStats: PlayerStatsMsg["playerStats"], _ui2Manager: unknown) {
         const amongUsMode = Boolean(this.game.m_map.getMapDef().gameMode.amongUsMode);
-        if (amongUsMode && playerStats.dead) {
+        const plantTheBombMode = this.game.m_privateMiniGame === "plant_the_bomb";
+        if (
+            (amongUsMode || plantTheBombMode) &&
+            !this.game.m_gameOver &&
+            playerStats.dead
+        ) {
             this.beginSpectating();
             this.setSpectating(true, this.game.teamMode);
             this.clearStatsElems();
@@ -2860,6 +3076,14 @@ export class UiManager {
     }
 
     setSpectating(spectating: boolean, teamMode?: TeamMode) {
+        if (!spectating) {
+            this.specBegin = false;
+            this.specTargetId = 0;
+            this.specNext = false;
+            this.specPrev = false;
+            this.spectatedPlayerId = 0;
+        }
+
         const freeCameraAvailable =
             spectating && this.game.m_arenaPrivate && this.game.m_spectatorOnly;
         this.specFreeCameraButton.css("display", freeCameraAvailable ? "block" : "none");
