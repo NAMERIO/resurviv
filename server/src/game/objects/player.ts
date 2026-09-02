@@ -291,10 +291,7 @@ export class PlayerBarn {
                 ) ??
                 this.game.dominationManager.getSpawnPos(joinData.arenaTeam, team?.id) ??
                 this.game.bedWarManager.getSpawnPos(joinData.arenaTeam, team?.id) ??
-                this.game.plantTheBombManager.getSpawnPos(
-                    joinData.arenaTeam,
-                    team?.id,
-                ) ??
+                this.game.plantTheBombManager.getSpawnPos(joinData.arenaTeam, team?.id) ??
                 this.game.map.getSpawnPos(group, team, joinData.arenaTeam);
             if (group && !group.spawnPosition) {
                 group.spawnPosition = v2.copy(pos);
@@ -5139,8 +5136,7 @@ export class Player extends BaseGameObject {
               )
             : [];
         const spectatablePlayers =
-            isPlantTheBombMiniGame(this.game.miniGame) &&
-            plantTheBombTeammates.length > 0
+            isPlantTheBombMiniGame(this.game.miniGame) && plantTheBombTeammates.length > 0
                 ? plantTheBombTeammates
                 : livingPlayers;
 
