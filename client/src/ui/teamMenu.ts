@@ -318,15 +318,15 @@ export class TeamMenu {
 
         setInterval(() => {
             if (this.joined) {
-                this.sendMessage("keepAlive", {});
+                this.sendKeepAlive();
             }
         }, 10 * 1000);
 
         document.addEventListener("visibilitychange", () => {
-            if (this.joined && document.visibilityState === "visible") {
-                this.sendMessage("keepAlive", {});
-            }
+            this.sendKeepAlive();
         });
+        window.addEventListener("focus", () => this.sendKeepAlive());
+        window.addEventListener("blur", () => this.sendKeepAlive());
 
         this.config.addModifiedListener((key) => {
             if (key === "loadout") {
@@ -542,6 +542,7 @@ export class TeamMenu {
         switch (type) {
             case "state": {
                 let stateData = data as TeamStateMsg["data"];
+                const wasJoined = this.joined;
                 this.joined = true;
                 const ourRoomData = this.roomData;
                 this.roomData = stateData.room;
@@ -587,6 +588,9 @@ export class TeamMenu {
                     ? `a:${stateData.room.roomUrl.replace("#", "")}`
                     : stateData.room.roomUrl.replace("#", "");
                 SDK.showInviteButton(inviteRoomId);
+                if (!wasJoined) {
+                    this.sendKeepAlive();
+                }
                 break;
             }
             case "joinGame":
@@ -595,6 +599,9 @@ export class TeamMenu {
                 this.joinGameCb(this.lastJoinGameData);
                 break;
             case "keepAlive":
+                if ((data as { request?: boolean }).request) {
+                    this.sendKeepAlive();
+                }
                 break;
             case "lobbyChat":
                 this.addLobbyMessage(data as TeamLobbyChatMsg["data"]);
@@ -1165,6 +1172,14 @@ export class TeamMenu {
                 this.ws.close();
             }
         }
+    }
+
+    sendKeepAlive() {
+        if (!this.joined) return;
+
+        this.sendMessage("keepAlive", {
+            inactive: document.visibilityState !== "visible" || !document.hasFocus(),
+        });
     }
 
     syncOutfit() {

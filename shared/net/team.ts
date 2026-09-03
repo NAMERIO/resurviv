@@ -57,7 +57,10 @@ export interface TeamStateMsg {
  */
 export interface TeamKeepAliveMsg {
     readonly type: "keepAlive";
-    data: {};
+    data: {
+        request?: boolean;
+        inactive?: boolean;
+    };
 }
 
 /**
