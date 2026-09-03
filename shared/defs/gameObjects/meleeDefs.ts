@@ -2918,6 +2918,42 @@ const SkinDefs: Record<string, MeleeDef> = {
             sprite: "loot-melee-bayonet-rugged.img",
         },
     }),
+    m9bayonet_rugged: defineMeleeSkin("bayonet", {
+        name: "M9 Bayonet Rugged",
+        rarity: Rarity.Rare,
+        noPotatoSwap: false,
+        lore: "Created by Flan Patissier.",
+        lootImg: {
+            sprite: "loot-melee-bayonet-m9-vanilla.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-bayonet-m9-vanilla.img",
+        },
+    }),
+    m9bayonet_pink: defineMeleeSkin("bayonet", {
+        name: "M9 Bayonet Pink",
+        rarity: Rarity.Epic,
+        noPotatoSwap: false,
+        lore: "Created by Flan Patissier.",
+        lootImg: {
+            sprite: "loot-melee-bayonet-m9-pink-crystal.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-bayonet-m9-pink-crystal.img",
+        },
+    }),
+    m9bayonet_autotronic: defineMeleeSkin("bayonet", {
+        name: "M9 Bayonet Autotronic",
+        rarity: Rarity.Mythic,
+        noPotatoSwap: false,
+        lore: "Created by Flan Patissier.",
+        lootImg: {
+            sprite: "loot-melee-bayonet-m9-autotronic.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-bayonet-m9-autotronic.img",
+        },
+    }),
     bayonet_woodland: defineMeleeSkin("bayonet", {
         name: "Bayonet Woodland",
         rarity: Rarity.Mythic,
