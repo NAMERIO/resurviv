@@ -4644,7 +4644,36 @@ const SkinDefs: Record<string, OutfitDef> = {
             skinLootImg: true,
             tint: 0xffffff,
         },
+
+    
     }),
+
+    outfitJinglyJester: defineOutfitSkin("outfitBase", {
+    name: "Jingly Jester",
+    noDropOnDeath: true,
+    moveEmitter: "jesterParticle",
+
+    rarity: 4,
+    lore: "A Troller. ",
+
+    skinImg: {
+        baseTint: 0xffffff,
+        baseSprite: "player-base-jingly-jester.img",
+        aboveHand: false,
+        handTint: 0xffffff,
+        handSprite: "player-hands-jingly-jester.img",
+        footTint: 0xffffff,
+        footSprite: "player-feet-01.img",
+        backpackTint: 0xffffff,
+        backpackSprite: "player-back-jingly-jester.img",
+        frontSpritePos: { x: -2.5, y: .18},
+        frontSprite: "player-accessory-jingly-jester.img",
+    },
+    lootImg: {
+        skinLootImg: true,
+        tint: 0xffffff,
+    },
+}),
     outfitMahoraga: defineOutfitSkin("outfitBase", {
         name: "Mahoraga",
         noDropOnDeath: true,
