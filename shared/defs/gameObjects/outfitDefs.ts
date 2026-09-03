@@ -4674,6 +4674,30 @@ const SkinDefs: Record<string, OutfitDef> = {
         tint: 0xffffff,
     },
 }),
+outfitToxicChomper: defineOutfitSkin("outfitBase", {
+    name: "Toxic Chomper",
+    noDropOnDeath: true,
+    rarity: 4,
+    lore: "Created by Friend. ",
+
+    skinImg: {
+        baseTint: 0xffffff,
+        baseSprite: "player-base-toxic-chomper.img",
+        aboveHand: false,
+        handTint: 0xffffff,
+        handSprite: "player-hands-toxic-chomper.img",
+        footTint: 0xffffff,
+        footSprite: "player-feet-01.img",
+        backpackTint: 0xffffff,
+        backpackSprite: "player-back-toxic-chomper.img",
+        frontSpritePos: { x: -1.0, y: -2.5},
+        frontSprite: "player-accessory-toxic-chomper.img",
+    },
+    lootImg: {  
+        skinLootImg: true,
+        tint: 0xffffff,
+    },
+}),
     outfitMahoraga: defineOutfitSkin("outfitBase", {
         name: "Mahoraga",
         noDropOnDeath: true,

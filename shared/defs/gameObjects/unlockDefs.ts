@@ -529,6 +529,7 @@ const _allowedOutfits = [
     // "outfitJinglyJester",
     // "outfitMahoraga",
     // "outfitToxicFire",
+    // "outfitToxicChomper",
     // "outfitCrimsonHibiscus",
     // "outfitDonut",
     // "outfitPolice",
