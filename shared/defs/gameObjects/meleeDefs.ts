@@ -2881,6 +2881,32 @@ const SkinDefs: Record<string, MeleeDef> = {
             sprite: "loot-melee-karambit-drowned.img",
         },
     }),
+    karambit_blazing: defineMeleeSkin("karambit", {
+        name: "Karambit Blazing",
+        rarity: Rarity.Epic,
+        lore: "Created by Flan Patissier.",
+
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-karambit-blazing.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-karambit-blazing.img",
+        },
+    }),
+    karambit_amethyst: defineMeleeSkin("karambit", {
+        name: "Karambit Amethyst",
+        rarity: Rarity.Mythic,
+        lore: "Created by Life.",
+
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-karambit-amethyst.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-karambit-amethyst.img",
+        },
+    }),
     bayonet_rugged: defineMeleeSkin("bayonet", {
         name: "Bayonet Rugged",
         rarity: Rarity.Rare,
@@ -2901,6 +2927,42 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
         worldImg: {
             sprite: "loot-melee-bayonet-woodland.img",
+        },
+    }),
+    fliptechnical_rugged: defineMeleeSkin("bayonet", {
+        name: "Flip Technical Rugged",
+        rarity: Rarity.Rare,
+        noPotatoSwap: false,
+        lore: "Created by Flan Patissier.",
+        lootImg: {
+            sprite: "loot-melee-flip-technical.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-flip-technical.img",
+        },
+    }),
+    skeleton_knife_rugged: defineMeleeSkin("bayonet", {
+        name: "Skeleton Knife Rugged",
+        rarity: Rarity.Rare,
+        noPotatoSwap: false,
+        lore: "Created by Flan Patissier.",
+        lootImg: {
+            sprite: "loot-melee-skeleton-knife-rugged.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-skeleton-knife-rugged.img",
+        },
+    }),
+    ursus_jade: defineMeleeSkin("bayonet", {
+        name: "Ursus Jade",
+        rarity: Rarity.Epic,
+        noPotatoSwap: false,
+        lore: "Created by Flan Patissier.",
+        lootImg: {
+            sprite: "loot-melee-ursus-jade.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-ursus-jade.img",
         },
     }),
     huntsman_rugged: defineMeleeSkin("huntsman", {
