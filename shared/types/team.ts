@@ -160,7 +160,12 @@ export type ClientRoomData = z.infer<typeof zClientRoomData>;
 
 export const zKeepAliveMsg = z.object({
     type: z.literal("keepAlive"),
-    data: z.object({}).optional(),
+    data: z
+        .object({
+            request: z.boolean().optional(),
+            inactive: z.boolean().optional(),
+        })
+        .optional(),
 });
 export type TeamKeepAliveMsg = z.infer<typeof zKeepAliveMsg>;
 

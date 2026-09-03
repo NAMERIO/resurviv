@@ -60,7 +60,7 @@ export const DeatchmatchCobalt: MapDef = util.mergeDeep(structuredClone(Cobalt),
             : {},
         randomSpawns: [
             {
-                spawns: ["club_complex_01", "memorial_park"],
+                spawns: ["club_complex_01", "memorial_park_01cb"],
                 choose: 1,
             },
             {

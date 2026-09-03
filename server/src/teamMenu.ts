@@ -65,6 +65,7 @@ class Player {
     clanTagColor = "";
 
     inGame = false;
+    inactive = false;
 
     get isLeader() {
         // first player is always leader
@@ -298,7 +299,9 @@ class Room {
                 break;
             }
             case "keepAlive": {
-                player.send("keepAlive", {});
+                if (typeof msg.data?.inactive === "boolean") {
+                    player.inactive = msg.data.inactive;
+                }
                 break;
             }
             case "gameComplete": {
@@ -1446,14 +1449,21 @@ export class TeamMenu {
                     room.sendState();
                 }
 
-                // kick players that haven't sent a keep alive msg in over a minute
-                // client sends it every 45 seconds
+                // Ask for a reply as well as relying on the client's timer. Browser
+                // timers can be heavily throttled while the lobby UI is hidden.
                 for (const player of room.players) {
                     if (player.lastServerKeepAliveTime < Date.now() - 15 * 1000) {
-                        player.send("keepAlive", {});
+                        player.send("keepAlive", { request: true });
                         player.lastServerKeepAliveTime = Date.now();
                     }
-                    if (player.lastMsgTime < Date.now() - 8 * 60 * 1000) {
+                    // A player in a match or an unfocused/minimized browser is
+                    // intentionally away from the lobby. Its open socket still owns
+                    // its membership and onClose removes it if the connection ends.
+                    if (
+                        !player.inGame &&
+                        !player.inactive &&
+                        player.lastMsgTime < Date.now() - 8 * 60 * 1000
+                    ) {
                         player.send("error", { type: "lost_conn" });
                         room.removePlayer(player);
                     }

@@ -276,6 +276,7 @@ export class Game {
     m_updateRecvCount!: number;
     m_localId!: number;
     m_activeId!: number;
+    m_requestedActiveId!: number;
     m_activePlayer!: Player;
     m_validateAlpha!: boolean;
     m_targetZoom!: number;
@@ -564,6 +565,7 @@ export class Game {
         this.m_updatePassDelay = 0;
         this.m_localId = 0;
         this.m_activeId = 0;
+        this.m_requestedActiveId = 0;
         this.m_activePlayer = null as unknown as Player;
         this.m_validateAlpha = false;
         this.m_targetZoom = 1;
@@ -662,6 +664,10 @@ export class Game {
     }
 
     update(dt: number) {
+        const activePlayer = this.m_playerBarn.getPlayerById(this.m_activeId);
+        if (!activePlayer) return;
+        this.m_activePlayer = activePlayer;
+
         this.debugHUD.m_update(dt, this);
 
         if (!this.editor && this.canUseDeveloper()) {
@@ -3753,7 +3759,7 @@ export class Game {
         }
         // Update active playerId
         if (msg.activePlayerIdDirty) {
-            this.m_activeId = msg.activePlayerId;
+            this.m_requestedActiveId = msg.activePlayerId;
         }
         // Update player infos
         for (let i = 0; i < msg.playerInfos.length; i++) {
@@ -3769,7 +3775,9 @@ export class Game {
         }
         // Update player status
         if (msg.playerStatusDirty) {
-            const teamId = this.m_playerBarn.getPlayerInfo(this.m_activeId).teamId;
+            const teamId = this.m_playerBarn.getPlayerInfo(
+                this.m_requestedActiveId,
+            ).teamId;
             const fullStatusMode =
                 this.m_map.factionMode ||
                 this.m_arenaPrivate ||
@@ -3783,7 +3791,9 @@ export class Game {
 
         // Update group status
         if (msg.groupStatusDirty) {
-            const groupId = this.m_playerBarn.getPlayerInfo(this.m_activeId).groupId;
+            const groupId = this.m_playerBarn.getPlayerInfo(
+                this.m_requestedActiveId,
+            ).groupId;
             this.m_playerBarn.updateGroupStatus(groupId, msg.groupStatus);
         }
 
@@ -3807,15 +3817,31 @@ export class Game {
             const obj = msg.partObjects[i];
             this.m_objectCreator.m_updateObjPart(obj.__id, obj, ctx);
         }
+        this.m_playerBarn.localPlayerId = this.m_localId;
+        const requestedActivePlayer = this.m_playerBarn.getPlayerById(
+            this.m_requestedActiveId,
+        );
+        const activePlayer =
+            requestedActivePlayer ||
+            this.m_playerBarn.getPlayerById(this.m_activeId) ||
+            this.m_playerBarn.getPlayerById(this.m_localId) ||
+            this.m_playerBarn.getFirstActivePlayer();
+        if (!activePlayer) return;
+        this.m_activeId = activePlayer.__id;
+        this.m_activePlayer = activePlayer;
+
+        // The requested spectator object can be removed one update before its
+        // replacement arrives. Keep rendering a valid player during that gap, but
+        // do not apply local data belonging to the missing target.
+        if (requestedActivePlayer) {
+            this.m_activePlayer.m_setLocalData(msg.activePlayerData);
+            if (msg.activePlayerData.weapsDirty) {
+                this.m_uiManager.weapsDirty = true;
+            }
+        }
         // The server can keep sending updates briefly after the match ends. Do not
         // let those updates reopen spectator mode over the final results screen.
         this.m_spectating = this.m_activeId != this.m_localId && !this.m_gameOver;
-        this.m_playerBarn.localPlayerId = this.m_localId;
-        this.m_activePlayer = this.m_playerBarn.getPlayerById(this.m_activeId)!;
-        this.m_activePlayer.m_setLocalData(msg.activePlayerData);
-        if (msg.activePlayerData.weapsDirty) {
-            this.m_uiManager.weapsDirty = true;
-        }
         if (this.m_spectating) {
             this.m_uiManager.setSpectateTarget(
                 this.m_activeId,

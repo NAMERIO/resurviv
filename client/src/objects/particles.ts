@@ -2278,7 +2278,7 @@ const ParticleDefs: Record<string, ParticleDef> = {
     crownParticle: createSkinTrail({
         image: ["part-armor-crown-01.img", "part-armor-crown-02.img"],
     }),
-     jesterParticle: createSkinTrail({
+    jesterParticle: createSkinTrail({
         image: ["armor-jester-particle-1.img", "armor-jester-particle-2.img"],
     }),
     silverParticle: createSkinTrail({
