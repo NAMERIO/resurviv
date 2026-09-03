@@ -186,7 +186,7 @@ const mapDef: PartialMapDef = {
         ],
         randomSpawns: [
             {
-                spawns: ["club_complex_01", "memorial_park"],
+                spawns: ["club_complex_01", "memorial_park_01f"],
                 choose: 1,
             },
         ],

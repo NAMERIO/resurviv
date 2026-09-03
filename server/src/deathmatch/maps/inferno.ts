@@ -120,7 +120,7 @@ const mapDef: PartialMapDef = {
               ) as [Record<string, number>?])
             : [],
 
-        importantSpawns: ["memorial_park", "desert_town_02i", "logging_complex_01i"],
+        importantSpawns: ["memorial_park_01i", "desert_town_02i", "logging_complex_01i"],
 
         fixedSpawns: [
             {
@@ -141,7 +141,7 @@ const mapDef: PartialMapDef = {
         ],
         randomSpawns: [
             {
-                spawns: ["memorial_park"],
+                spawns: ["memorial_park_01i"],
                 choose: 1,
             },
             {
