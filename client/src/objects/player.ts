@@ -3834,6 +3834,14 @@ export class PlayerBarn {
         return null;
     }
 
+    getFirstActivePlayer() {
+        const pool = this.playerPool.m_getPool();
+        for (let i = 0; i < pool.length; i++) {
+            if (pool[i].active) return pool[i];
+        }
+        return null;
+    }
+
     setPlayerInfo(info: PlayerInfo) {
         const existingInfo = this.playerInfo[info.playerId];
         this.playerInfo[info.playerId] = {
@@ -3942,7 +3950,8 @@ export class PlayerBarn {
         // In factionMode, playerStatus refers to all playerIds in the game.
         // In all other modes, playerStatus refers to only playerIds in our team.
         const team = this.getTeamInfo(teamId);
-        const playerIds = factionMode ? this.playerIds : team.playerIds;
+        const playerIds = factionMode ? this.playerIds : team?.playerIds;
+        if (!playerIds) return;
 
         if (playerIds.length != playerStatus.length) {
             errorLogManager.logError(
