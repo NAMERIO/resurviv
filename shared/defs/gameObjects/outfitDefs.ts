@@ -5139,6 +5139,72 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+    outfitUnoReverse: defineOutfitSkin("outfitBase", {
+        name: "Uno Reverse",
+        noDropOnDeath: true,
+
+        rarity: 2,
+        lore: "Created by Dantroil.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-uno-reverse.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-uno-reverse.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-uno-reverse.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitYinyangTakeover: defineOutfitSkin("outfitBase", {
+        name: "Yin Yang Takeover",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "Created by Picasso .",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-yinyang-takeover.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-yinyang-takeover.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-yinyang-takeover.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitOldArt: defineOutfitSkin("outfitBase", {
+        name: "Old Art",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "Created by TF]SHADOW_KINGYT.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-old-art.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-old-art.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-old-art.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
     outfitPaintSplat: defineOutfitSkin("outfitBase", {
         name: "Paint Splat",
         noDropOnDeath: true,
