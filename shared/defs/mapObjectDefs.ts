@@ -1530,7 +1530,7 @@ function createReactorSilo<T extends ObstacleDef>(e: Partial<T>): T {
     const t = {
         type: "obstacle",
         scale: { createMin: 1, createMax: 1, destroy: 1 },
-        collision: collider.createCircle(v2.create(0, 0), 5.5),
+        collision: collider.createCircle(v2.create(0, 0), 5.75),
         height: 7,
         collidable: true,
         destructible: false,
@@ -8299,62 +8299,62 @@ function createReactor<T extends ExtendedBuildingDef>(e: Partial<T>): T {
             shapes: [
                 {
                     collider: collider.createAabbExtents(
-                        v2.create(-11.5, 0),
-                        v2.create(10, 21),
+                        v2.create(-11, 0),
+                        v2.create(15, 15.5),
                     ),
-                    color: 2791335,
+                    color: 0x2a97a7,
                 },
                 {
                     collider: collider.createAabbExtents(
-                        v2.create(-11.5, 0),
-                        v2.create(20, 11),
+                        v2.create(-11, 0),
+                        v2.create(17, 8.5),
                     ),
-                    color: 2791335,
+                    color: 0x2a97a7,
                 },
                 {
                     collider: collider.createAabbExtents(
-                        v2.create(-0.9, 0),
-                        v2.create(5.5, 18.5),
+                        v2.create(-11, 0),
+                        v2.create(7.5, 17.5),
                     ),
-                    color: 2791335,
+                    color: 0x2a97a7,
                 },
                 {
                     collider: collider.createAabbExtents(
                         v2.create(-22, 0),
-                        v2.create(5.5, 18.5),
+                        v2.create(4, 4),
                     ),
-                    color: 2791335,
+                    color: 0x2a97a7,
                 },
                 {
                     collider: collider.createAabbExtents(
-                        v2.create(19.5, 14),
-                        v2.create(12, 11),
+                        v2.create(7.5, 0),
+                        v2.create(3, 6.5),
                     ),
-                    color: 1192276,
+                    color: 0x2a97a7,
                 },
                 {
                     collider: collider.createAabbExtents(
-                        v2.create(19, -14),
-                        v2.create(12, 11),
+                        v2.create(19, 14.5),
+                        v2.create(9, 9),
                     ),
-                    color: 1192276,
+                    color: 0x123154,
                 },
                 {
                     collider: collider.createAabbExtents(
-                        v2.create(7.6, 0),
-                        v2.create(4.5, 8),
+                        v2.create(19, -14.5),
+                        v2.create(9, 9),
                     ),
-                    color: 2791335,
+                    color: 0x123154,
                 },
                 {
                     collider: collider.createAabbExtents(
-                        v2.create(14.5, 0),
-                        v2.create(5.5, 8),
+                        v2.create(15, 0),
+                        v2.create(5, 6),
                     ),
-                    color: 1192276,
+                    color: 0x123154,
                 },
                 {
-                    collider: collider.createCircle(v2.create(-11, 0), 5),
+                    collider: collider.createCircle(v2.create(-11, 0), 5.5),
                     color: 0x2a2a2a,
                 },
             ],
@@ -8378,20 +8378,20 @@ function createReactor<T extends ExtendedBuildingDef>(e: Partial<T>): T {
                     collision: [
                         collider.createAabbExtents(v2.create(19, 14), v2.create(9, 8.5)),
                         collider.createAabbExtents(v2.create(19, -14), v2.create(9, 8.5)),
-                        collider.createAabbExtents(v2.create(14.5, 0), v2.create(3.8, 6)),
+                        collider.createAabbExtents(v2.create(15, 0), v2.create(5, 6)),
                     ],
                 },
                 {
                     type: "warehouse",
                     collision: [
                         collider.createAabbExtents(v2.create(7.5, 0), v2.create(3, 6)),
-                        collider.createAabbExtents(v2.create(-11.5, 0), v2.create(7, 17)),
-                        collider.createAabbExtents(v2.create(-11.5, 0), v2.create(16, 8)),
+                        collider.createAabbExtents(v2.create(-11, 0), v2.create(7, 17)),
+                        collider.createAabbExtents(v2.create(-11, 0), v2.create(17, 8)),
                         collider.createAabbExtents(
-                            v2.create(-0.9, 0),
-                            v2.create(3.7, 15),
+                            v2.create(0, 0),
+                            v2.create(4, 15),
                         ),
-                        collider.createAabbExtents(v2.create(-22, 0), v2.create(3.7, 15)),
+                        collider.createAabbExtents(v2.create(-22, 0), v2.create(4, 15)),
                     ],
                 },
             ],
@@ -8399,56 +8399,42 @@ function createReactor<T extends ExtendedBuildingDef>(e: Partial<T>): T {
                 {
                     sprite: "map-building-dock-floor-01a.img",
                     pos: v2.create(-24.5, 0),
-                    scale: 1.2,
+                    scale: 1.1,
                     alpha: 1,
-                    tint: 3618632,
+                    tint: 0x373748,
                 },
                 {
-                    sprite: "map-building-reactor.img",
+                    sprite: "map-building-reactor-floor-01.img",
                     pos: v2.create(0, 0),
                     scale: 0.5,
                     alpha: 1,
-                    tint: 16777215,
+                    tint: 0xffffff,
                 },
             ],
         },
         ceiling: {
             zoomRegions: [
                 {
-                    zoomIn: collider.createAabbExtents(
-                        v2.create(7.5, 0),
-                        v2.create(3, 6),
-                    ),
                     zoomOut: collider.createAabbExtents(
-                        v2.create(-28, 0),
-                        v2.create(4, 8),
+                        v2.create(-4, 0),
+                        v2.create(28, 8),
                     ),
                 },
                 {
                     zoomIn: collider.createAabbExtents(
-                        v2.create(-0.9, 0),
-                        v2.create(3.7, 15),
-                    ),
-                    zoomOut: collider.createAabbExtents(
-                        v2.create(20, 0),
-                        v2.create(3, 6),
+                        v2.create(-11, 0),
+                        v2.create(14.5, 15),
                     ),
                 },
                 {
                     zoomIn: collider.createAabbExtents(
-                        v2.create(-22, 0),
-                        v2.create(3.7, 15),
-                    ),
-                },
-                {
-                    zoomIn: collider.createAabbExtents(
-                        v2.create(-11.5, 0),
+                        v2.create(-11, 0),
                         v2.create(7, 17),
                     ),
                 },
                 {
                     zoomIn: collider.createAabbExtents(
-                        v2.create(-11.5, 0),
+                        v2.create(-11, 0),
                         v2.create(16, 8),
                     ),
                 },
@@ -8466,8 +8452,8 @@ function createReactor<T extends ExtendedBuildingDef>(e: Partial<T>): T {
                 },
                 {
                     zoomIn: collider.createAabbExtents(
-                        v2.create(14.5, 0),
-                        v2.create(3.8, 6),
+                        v2.create(12, 0),
+                        v2.create(8, 6),
                     ),
                 },
             ],
@@ -8488,103 +8474,100 @@ function createReactor<T extends ExtendedBuildingDef>(e: Partial<T>): T {
             ],
         },
         mapObjects: [
-            { type: "metal_wall_ext_13", pos: v2.create(17.5, 21.8), scale: 1, ori: 1 },
-            { type: "metal_wall_ext_13", pos: v2.create(17.5, -21.9), scale: 1, ori: 1 },
+            { type: "metal_wall_ext_16", pos: v2.create(19, 22), scale: 1, ori: 1 },
+            { type: "metal_wall_ext_16", pos: v2.create(19, -22), scale: 1, ori: 1 },
 
-            { type: "locker_03", pos: v2.create(17.3, -21.7), scale: 1, ori: 10 },
-            { type: "locker_02", pos: v2.create(13.3, -21.7), scale: 1, ori: 10 },
-            { type: "locker_01", pos: v2.create(21.4, -21.7), scale: 1, ori: 10 },
+            { type: "locker_03", pos: v2.create(17.1, 21.8), scale: 1, ori: 0 },
+            { type: "locker_02", pos: v2.create(13.4, 21.8), scale: 1, ori: 0 },
+            { type: "locker_01", pos: v2.create(20.8, 21.8), scale: 1, ori: 0 },
+            { type: "locker_01", pos: v2.create(24.5, 21.8), scale: 1, ori: 0 },
 
-            { type: "locker_03", pos: v2.create(17.3, 21.7), scale: 1, ori: 0 },
-            { type: "locker_02", pos: v2.create(13.3, 21.7), scale: 1, ori: 0 },
-            { type: "locker_01", pos: v2.create(21.4, 21.7), scale: 1, ori: 0 },
-            { type: "locker_01", pos: v2.create(25.4, 21.7), scale: 1, ori: 0 },
-            { type: "locker_01", pos: v2.create(25.1, -21.7), scale: 1, ori: 10 },
+            { type: "locker_03", pos: v2.create(17.1, -21.8), scale: 1, ori: 10 },
+            { type: "locker_02", pos: v2.create(13.4, -21.8), scale: 1, ori: 10 },
+            { type: "locker_01", pos: v2.create(20.8, -21.8), scale: 1, ori: 10 },
+            { type: "locker_01", pos: v2.create(24.5, -21.8), scale: 1, ori: 10 },
 
-            { type: "vat_brain", pos: v2.create(-1.3, 10.8), scale: 1, ori: 2.5 },
+            { type: "vat_brain", pos: v2.create(-0.5, 11), scale: 1, ori: 2.5 },
             { type: "vat_eye", pos: v2.create(-21.5, 11), scale: 1, ori: -8.5 },
 
-            { type: "vat_explosive", pos: v2.create(-1.3, -11), scale: 1, ori: 3 },
-            { type: "vat_cosmic_blue", pos: v2.create(-21.5, -10.8), scale: 1, ori: 8.5 },
+            { type: "vat_explosive", pos: v2.create(-0.5, -11.1), scale: 1, ori: 3 },
+            { type: "vat_cosmic_blue", pos: v2.create(-21.5, -11.1), scale: 1, ori: 8.5 },
 
-            { type: "gun_mount_lasr_swrd", pos: v2.create(11.7, 13), scale: 1, ori: 1 },
-            { type: "gun_mount_flux_rifle", pos: v2.create(11.7, -13), scale: 1, ori: 1 },
+            { type: "gun_mount_lasr_swrd", pos: v2.create(11.85, 13), scale: 1, ori: 1 },
+            { type: "gun_mount_flux_rifle", pos: v2.create(11.85, -13), scale: 1, ori: 1 },
 
-            { type: "house_window_01", pos: v2.create(-11.8, 17), scale: 1, ori: 3 },
-            { type: "house_window_01", pos: v2.create(-11.6, -17.15), scale: 1, ori: 3 },
+            { type: "house_window_01", pos: v2.create(-11, 17.25), scale: 1, ori: 3 },
+            { type: "house_window_01", pos: v2.create(-11, -17.25), scale: 1, ori: 3 },
 
-            { type: "reactor_wall_1", pos: v2.create(7.6, -6), scale: 1, ori: 1 },
-            { type: "reactor_wall_1", pos: v2.create(7.6, 5.8), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_4", pos: v2.create(8, 6), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_4", pos: v2.create(8, -6), scale: 1, ori: 1 },
 
-            { type: "reactor_wall_2", pos: v2.create(10.5, 14), scale: 1, ori: 1 },
-            { type: "brick_wall_ext_18", pos: v2.create(19, 22.9), scale: 1, ori: 1 },
-            { type: "reactor_wall_2", pos: v2.create(27.5, 14.5), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_21", pos: v2.create(10.5, 12.5), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_18", pos: v2.create(19, 23), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_17", pos: v2.create(27.5, 15), scale: 1, ori: 0 },
 
             { type: "brick_wall_ext_3", pos: v2.create(26.5, 6), scale: 1, ori: 1 },
-            { type: "brick_wall_ext_3", pos: v2.create(19.9, 6), scale: 1, ori: 1 },
-            { type: "brick_wall_ext_3", pos: v2.create(19.7, -6), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_3", pos: v2.create(20.5, 6), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_3", pos: v2.create(20.5, -6), scale: 1, ori: 1 },
             { type: "brick_wall_ext_3", pos: v2.create(26.5, -6), scale: 1, ori: 1 },
 
-            { type: "brick_wall_ext_5", pos: v2.create(18.75, 4.15), scale: 1, ori: 0 },
-            { type: "brick_wall_ext_5", pos: v2.create(18.75, -4.15), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_4", pos: v2.create(19.5, 4), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_4", pos: v2.create(19.5, -4), scale: 1, ori: 0 },
 
-            { type: "brick_wall_ext_4", pos: v2.create(10.5, 3.8), scale: 1, ori: 0 },
-            { type: "brick_wall_ext_4", pos: v2.create(10.5, -3.9), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_21", pos: v2.create(10.5, -12.5), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_18", pos: v2.create(19, -23), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_17", pos: v2.create(27.5, -15), scale: 1, ori: 0 },
 
-            { type: "brick_wall_ext_18", pos: v2.create(19, -22.9), scale: 1, ori: 1 },
-            { type: "reactor_wall_2", pos: v2.create(27.5, -14.5), scale: 1, ori: 1 },
-            { type: "reactor_wall_2", pos: v2.create(10.5, -14.3), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_3", pos: v2.create(5.5, 7), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_3", pos: v2.create(5.5, -7), scale: 1, ori: 0 },
 
-            { type: "brick_wall_ext_3", pos: v2.create(4.9, -7), scale: 1, ori: 0 },
-            { type: "brick_wall_ext_3", pos: v2.create(4.9, 6.8), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_2", pos: v2.create(4, 8), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_2", pos: v2.create(4, -8), scale: 1, ori: 1 },
 
-            { type: "brick_wall_ext_2", pos: v2.create(3.5, 7.85), scale: 1, ori: 1 },
-            { type: "brick_wall_ext_2", pos: v2.create(3.5, -7.95), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_7", pos: v2.create(3.5, 12), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_7", pos: v2.create(3.5, -12), scale: 1, ori: 0 },
 
-            { type: "brick_wall_ext_8", pos: v2.create(3, 11.37), scale: 1, ori: 0 },
-            { type: "brick_wall_ext_8", pos: v2.create(3, -11.37), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_8", pos: v2.create(-0.5, 15), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_8", pos: v2.create(-0.5, -15), scale: 1, ori: 1 },
 
-            { type: "brick_wall_ext_8", pos: v2.create(-1, -14.9), scale: 1, ori: 1 },
-            { type: "brick_wall_ext_8", pos: v2.create(-1, 14.9), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_2", pos: v2.create(-4, 16.5), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_2", pos: v2.create(-4, -16.5), scale: 1, ori: 0 },
 
-            { type: "brick_wall_ext_2", pos: v2.create(-4.5, -16.3), scale: 1, ori: 0 },
-            { type: "brick_wall_ext_2", pos: v2.create(-4.5, 16.15), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_5", pos: v2.create(-7, 17), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_5", pos: v2.create(-15, 17), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_5", pos: v2.create(-7, -17), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_5", pos: v2.create(-15, -17), scale: 1, ori: 1 },
 
-            { type: "brick_wall_ext_6", pos: v2.create(-7.4, 16.65), scale: 1, ori: 1 },
-            { type: "brick_wall_ext_5", pos: v2.create(-15.7, 16.65), scale: 1, ori: 1 },
-            { type: "brick_wall_ext_6", pos: v2.create(-7.2, -16.79), scale: 1, ori: 1 },
-            { type: "brick_wall_ext_5", pos: v2.create(-15.6, -16.85), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_2", pos: v2.create(-18, 16.5), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_2", pos: v2.create(-18, -16.5), scale: 1, ori: 0 },
 
-            { type: "brick_wall_ext_2", pos: v2.create(-18.1, 16.15), scale: 1, ori: 0 },
-            { type: "brick_wall_ext_2", pos: v2.create(-18.1, -16.15), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_8", pos: v2.create(-21.5, 15), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_8", pos: v2.create(-21.5, -15), scale: 1, ori: 1 },
 
-            { type: "brick_wall_ext_8", pos: v2.create(-21.6, -14.99), scale: 1, ori: 1 },
-            { type: "brick_wall_ext_8", pos: v2.create(-21.6, 14.99), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_7", pos: v2.create(-25.5, 12), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_7", pos: v2.create(-25.5, -12), scale: 1, ori: 0 },
 
-            { type: "brick_wall_ext_8", pos: v2.create(-25.59, -11.5), scale: 1, ori: 0 },
-            { type: "brick_wall_ext_8", pos: v2.create(-25.59, 11.5), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_2", pos: v2.create(-26, 8), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_2", pos: v2.create(-26, -8), scale: 1, ori: 1 },
 
-            { type: "brick_wall_ext_3", pos: v2.create(-26.5, 7.8), scale: 1, ori: 1 },
-            { type: "brick_wall_ext_3", pos: v2.create(-26.5, -7.9), scale: 1, ori: 1 },
+            { type: "brick_wall_ext_3", pos: v2.create(-27.5, 7), scale: 1, ori: 0 },
+            { type: "brick_wall_ext_3", pos: v2.create(-27.5, -7), scale: 1, ori: 0 },
 
-            { type: "brick_wall_ext_3", pos: v2.create(-27.5, -6.9), scale: 1, ori: 0 },
-            { type: "brick_wall_ext_3", pos: v2.create(-27.5, 6.9), scale: 1, ori: 0 },
+            { type: "house_window_01", pos: v2.create(23.5, 5.75), scale: 1, ori: 1 },
+            { type: "house_window_01", pos: v2.create(23.5, -5.75), scale: 1, ori: 1 },
 
-            { type: "house_window_01", pos: v2.create(23.3, 5.5), scale: 1, ori: 1 },
-            { type: "house_window_01", pos: v2.create(23.1, -5.5), scale: 1, ori: 1 },
+            { type: "house_door_01", pos: v2.create(19.5, -2), scale: 1, ori: 0 },
+            { type: "house_door_02", pos: v2.create(10.5, -2), scale: 1, ori: 0 },
 
-            { type: "house_door_01", pos: v2.create(18.7, -2), scale: 1, ori: 0 },
-            { type: "house_door_02", pos: v2.create(10.5, -2.11), scale: 1, ori: 0 },
+            { type: "silo_09", pos: v2.create(-10.9, 0), scale: 1, ori: 1 },
 
-            { type: "silo_09", pos: v2.create(-11.5, 0.3), scale: 1, ori: 1 },
+            { type: "sandbags_01", pos: v2.create(22.75, 14), scale: 1, ori: 0 },
+            { type: "sandbags_01", pos: v2.create(22.75, -14), scale: 1, ori: 0 },
 
-            { type: "sandbags_01", pos: v2.create(23.2, 14), scale: 1, ori: 0 },
-            { type: "sandbags_01", pos: v2.create(23.2, -13.5), scale: 1, ori: 0 },
-
-            { type: "barrel_01", pos: v2.create(-7.5, -14.4), scale: 1, ori: 0 },
-            { type: "barrel_01", pos: v2.create(-15.5, 14.2), scale: 1, ori: 0 },
-            { type: "barrel_02", pos: v2.create(-15.5, -14.4), scale: 1, ori: 0 },
-            { type: "barrel_02", pos: v2.create(-7.5, 14.2), scale: 1, ori: 0 },
+            { type: "barrel_01", pos: v2.create(-6.75, -14.25), scale: 1, ori: 0 },
+            { type: "barrel_01", pos: v2.create(-15.25, 14.25), scale: 1, ori: 0 },
+            { type: "barrel_02", pos: v2.create(-15.25, -14.25), scale: 1, ori: 0 },
+            { type: "barrel_02", pos: v2.create(-6.75, 14.25), scale: 1, ori: 0 },
         ],
     };
     return util.mergeDeep(t, e || {});
@@ -11578,8 +11561,8 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         explodeParticle: "leafRiver",
         map: { display: true, color: 1526631, scale: 1.5 },
         img: {
-            sprite: "map-bush-07-perk.img",
-            residue: "map-bush-res-perk.img",
+            sprite: "map-bush-07p.img",
+            residue: "map-bush-res-01p.img",
             alpha: 1,
             scale: 0.5,
         },
@@ -11590,8 +11573,8 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         explodeParticle: "leafRiver",
         map: { display: true, color: 2791335, scale: 1.5 },
         img: {
-            sprite: "map-bush-01-perk.img",
-            residue: "map-bush-res-perk.img",
+            sprite: "map-bush-01p.img",
+            residue: "map-bush-res-01p.img",
             alpha: 1,
             scale: 0.5,
         },
@@ -12137,7 +12120,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     },
     crate_01p: createCrate({
         loot: [tierLoot("tier_guns", 3, 3)],
-        img: { sprite: "map-crate-01-perk.img" },
+        img: { sprite: "map-crate-01p.img" },
     }),
     crate_01x: createCrate({ img: { sprite: "map-crate-01x.img" } }),
     crate_02: createCrate({
@@ -12157,7 +12140,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         ],
         map: { display: true, color: 1526631 },
         terrain: { grass: true, beach: false },
-        img: { sprite: "map-crate-02-perk.img" },
+        img: { sprite: "map-crate-02p.img" },
         sound: { explode: "crate_break_01" },
     } as unknown as Partial<ObstacleDef>),
     crate_02sv: createCrate({
@@ -12379,7 +12362,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         ],
         map: { display: false },
         img: {
-            sprite: "map-crate-10-perk.img",
+            sprite: "map-crate-10p.img",
             residue: "map-crate-res-03.img",
         },
         sound: { explode: "crate_break_01" },
@@ -12419,7 +12402,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         ],
         map: { display: false },
         img: {
-            sprite: "map-crate-11-perk.img",
+            sprite: "map-crate-11p.img",
             residue: "map-crate-res-03.img",
         },
         sound: { explode: "crate_break_01" },
@@ -12766,12 +12749,12 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     } as unknown as Partial<ObstacleDef>),
     airdrop_crate_01p: createAirdrop({
         button: {
-            useImg: "map-airdrop-02-perk.img",
+            useImg: "map-airdrop-02p.img",
             useParticle: "airdropCrate01",
             sound: { on: "airdrop_open_01", off: "" },
         },
         img: {
-            sprite: "map-airdrop-01-perk.img",
+            sprite: "map-airdrop-01p.img",
             residue: "none",
         },
         destroyType: "crate_10p",
@@ -12779,12 +12762,12 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     } as unknown as Partial<ObstacleDef>),
     airdrop_crate_02p: createAirdrop({
         button: {
-            useImg: "map-airdrop-02-perk.img",
+            useImg: "map-airdrop-02p.img",
             useParticle: "airdropCrate01",
             sound: { on: "airdrop_open_01", off: "" },
         },
         img: {
-            sprite: "map-airdrop-01-perk.img",
+            sprite: "map-airdrop-01p.img",
             residue: "none",
         },
         destroyType: "crate_11p",
@@ -13429,7 +13412,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     }),
     gun_mount_flux_rifle: createGunMount({
         loot: [autoLoot("flux_rifle", 1)],
-        img: { sprite: "map-gun-flux-rifle.img" },
+        img: { sprite: "map-gun-mount-flux-rifle.img" },
     }),
     gun_mount_lasr_swrd: createGunMount({
         loot: [autoLoot("lasr_swrd_03", 1)],
@@ -14513,7 +14496,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     tree_01p: createTree({
         map: { display: true, color: 1526631, scale: 2.5 },
         img: {
-            sprite: "map-tree-01-perk.img",
+            sprite: "map-tree-01p.img",
         },
     }),
     tree_interior_01bh: createTree({
@@ -14977,6 +14960,28 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             zIdx: 801,
             randomRotation: true,
         },
+    } as unknown as Partial<ObstacleDef>),
+    tree_13p: createTree({
+        height: 10,
+        collidable: true,
+        destructible: true,
+        health: 175,
+        hitParticle: "woodChip",
+        explodeParticle: "woodLog",
+        reflectBullets: false,
+        isTree: true,
+        loot: [],
+        map: { display: true, color: 0xffe4e1, scale: 2.5 },
+        scale: { createMin: 1.15, createMax: 1.3, destroy: 0.75 },
+        collision: collider.createCircle(v2.create(0, 0), 1),
+        img: {
+            sprite: "map-tree-13p.img",
+            scale: 0.35,
+            tint: 0xffffff,
+            zIdx: 801,
+            randomRotation: true,
+        },
+        terrain: { grass: false, beach: true },
     } as unknown as Partial<ObstacleDef>),
     // Coconut Palm
     tree_14: createTree({
@@ -22885,6 +22890,10 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         material: "metal",
         extents: v2.create(0.5, 6.5),
     }),
+    metal_wall_ext_16: createWall({
+        material: "metal",
+        extents: v2.create(0.5, 8),
+    }),
     metal_wall_ext_18: createWall({
         material: "metal",
         extents: v2.create(0.5, 9),
@@ -23947,14 +23956,6 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         stand: "stand_01",
     }),
     reactor_01: createReactor({}),
-    reactor_wall_1: createWall({
-        material: "brick",
-        extents: v2.create(0.5, 2.5),
-    }),
-    reactor_wall_2: createWall({
-        material: "brick",
-        extents: v2.create(8.5, 0.5),
-    }),
     house_red_01x: createHouseRed({
         ceiling: {
             imgs: [
