@@ -6819,6 +6819,12 @@ a:active {
   white-space: nowrap;
 }
 
+#modal-prestige-arena
+  #modal-battle-window.arena-joined-layout.arena-battle-royale
+  #battle-button {
+  display: none;
+}
+
 #modal-prestige-arena .arena-br-join-game {
   align-items: center;
   background: #477674;

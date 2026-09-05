@@ -800,11 +800,6 @@ class Room {
     }
 
     getBattleRoyaleArenaTeamCount() {
-        const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
-        if ((mode?.teamMode ?? 1) <= 1) {
-            return this.getBattleRoyaleArenaActivePlayerCount();
-        }
-
         const teamCodes = new Set<string>();
         let unassignedPlayers = 0;
         for (const p of this.players) {
@@ -816,23 +811,11 @@ class Room {
                 unassignedPlayers++;
             }
         }
-        return (
-            teamCodes.size + (this.hasBattleRoyaleArenaTeams() ? unassignedPlayers : 0)
-        );
-    }
-
-    hasBattleRoyaleArenaTeams() {
-        for (const p of this.players) {
-            if (this.arenaSpectators.has(p)) continue;
-            if (this.battleRoyaleTeams.has(p)) return true;
-        }
-        return false;
+        return teamCodes.size + unassignedPlayers;
     }
 
     getBattleRoyaleArenaRequiredPlayerCount() {
-        const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
-        const teamMode = Math.max(1, mode?.teamMode ?? 1);
-        return Math.max(2, teamMode === 2 ? 3 : teamMode);
+        return 2;
     }
 
     validateBattleRoyaleArenaStart(): TeamMenuErrorType | undefined {
@@ -843,10 +826,7 @@ class Room {
         ) {
             return "br_need_players";
         }
-        if (
-            this.hasBattleRoyaleArenaTeams() &&
-            this.getBattleRoyaleArenaTeamCount() < 2
-        ) {
+        if (this.getBattleRoyaleArenaTeamCount() < 2) {
             return "br_need_players";
         }
     }
@@ -920,8 +900,7 @@ class Room {
     getBattleRoyaleMatchRoomId(player: Player) {
         const teamCode = this.battleRoyaleTeams.get(player);
         if (teamCode) return `${this.id}-BR-${teamCode}`;
-        if (this.hasBattleRoyaleArenaTeams()) return `${this.id}-BR-${player.playerId}`;
-        return this.id;
+        return `${this.id}-BR-${player.playerId}`;
     }
 
     canBattleRoyaleArenaJoinInProgressAsPlayer() {

@@ -583,6 +583,10 @@ export class Application {
                 if (this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined) {
                     if (this.teamMenu.isLeader) {
                         this.teamMenu.tryStartGame();
+                    } else if (
+                        this.isBattleRoyaleMiniGame(this.teamMenu.roomData.miniGame)
+                    ) {
+                        this.teamMenu.joinCurrentArenaGame();
                     }
                     return;
                 }
@@ -2409,19 +2413,13 @@ export class Application {
         }
 
         if (this.teamMenu.isBattleRoyaleRoom() && error === "br_need_players") {
-            const mode = this.siteInfo.info.modes?.[this.teamMenu.roomData.gameModeIdx];
-            const teamMode = Math.max(1, mode?.teamMode ?? 1);
-            const requiredPlayers = Math.max(2, teamMode === 2 ? 3 : teamMode);
+            const requiredPlayers = 2;
             const activePlayers = this.teamMenu.players.filter(
                 (player) => !player.spectator,
             );
 
             if (activePlayers.length < requiredPlayers) {
                 return `Need ${requiredPlayers} players to start (${activePlayers.length}/${requiredPlayers}).`;
-            }
-
-            if (teamMode <= 1) {
-                return "Need more than one player to start.";
             }
 
             const teamCodes = new Set<string>();
@@ -2433,9 +2431,11 @@ export class Application {
                     unassignedPlayers++;
                 }
             }
-            if (teamCodes.size > 0 && teamCodes.size + unassignedPlayers < 2) {
+            if (teamCodes.size + unassignedPlayers < 2) {
                 return "Need more than one team to start.";
             }
+
+            return "";
         }
 
         const errorTextByType: Record<string, string> = {
@@ -2751,6 +2751,20 @@ export class Application {
                 : [];
             const gameStarted =
                 this.teamMenu.roomData.findingGame || players.some((p) => p.inGame);
+            const ownerActionEnabled = this.teamMenu.isLeader && !gameStarted;
+            const playerActionEnabled = !this.teamMenu.isLeader && gameStarted;
+            const actionEnabled = ownerActionEnabled || playerActionEnabled;
+            const startErrorText = this.getPrestigeArenaStartErrorText();
+            const actionLabel = this.teamMenu.isLeader
+                ? startErrorText ||
+                  (this.teamMenu.roomData.findingGame
+                      ? this.localization.translate("index-joining-game")
+                      : players.some((p) => p.inGame)
+                        ? this.localization.translate("index-game-in-progress")
+                        : "Start Game")
+                : gameStarted
+                  ? "Join Game"
+                  : this.localization.translate("index-waiting-for-leader");
             const teamChangingBlocked =
                 this.teamMenu.roomData.findingGame ||
                 players.some((p) => p.inGame) ||
@@ -2790,7 +2804,9 @@ export class Application {
                         .append(
                             $("<div>", {
                                 class: "arena-br-lobby-mode",
-                                text: "Private Battle Royale",
+                                text: mode
+                                    ? this.getModeDisplayName(mode.mapName)
+                                    : "Battle Royale",
                             }),
                         )
                         .append(
@@ -2857,15 +2873,19 @@ export class Application {
                 )
                 .append(
                     $("<button>", {
-                        class: `arena-br-join-game btn-darken${gameStarted ? " active" : ""}`,
+                        class: `arena-br-join-game btn-darken${actionEnabled ? " active" : ""}`,
                         type: "button",
-                        text: gameStarted ? "Join Game" : "Waiting to start...",
-                        disabled: !gameStarted,
+                        text: actionLabel,
+                        disabled: !actionEnabled,
                     }).on("click", (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        if (!gameStarted) return;
-                        this.teamMenu.joinCurrentArenaGame();
+                        if (!actionEnabled) return;
+                        if (this.teamMenu.isLeader) {
+                            this.teamMenu.tryStartGame();
+                        } else {
+                            this.teamMenu.joinCurrentArenaGame();
+                        }
                     }),
                 );
 
@@ -3590,6 +3610,10 @@ export class Application {
         ) {
             this.populatePrestigeArenaModes();
         }
+        const mode = this.siteInfo.info.modes?.[this.teamMenu.roomData.gameModeIdx];
+        if (mode) {
+            this.applyBattleModeStyleByIdx(this.teamMenu.roomData.gameModeIdx);
+        }
         this.warmupArenaLobbyMapAssets();
         this.renderPrestigeArenaTeams();
         this.syncPrestigeArenaRegions();
@@ -3597,10 +3621,6 @@ export class Application {
             "disabled",
             !this.canEditPrestigeArenaLiveOptions(),
         );
-        const mode = this.siteInfo.info.modes?.[this.teamMenu.roomData.gameModeIdx];
-        if (mode) {
-            this.prestigeArenaBattleModeLabel.text(this.getModeDisplayName(mode.mapName));
-        }
         const joinedCount = this.teamMenu.players.length;
         const maxPlayers = this.teamMenu.roomData.maxPlayers || 80;
         this.prestigeArenaPlayerCount.text(String(joinedCount));
@@ -3643,15 +3663,20 @@ export class Application {
             (p) => p.playerId === this.teamMenu.localPlayerId,
         );
         const localIsSpectator = !!localArenaPlayer?.spectator;
+        const battleRoyaleLobby = this.isBattleRoyaleMiniGame(
+            this.teamMenu.roomData.miniGame,
+        );
         if (this.teamMenu.isLeader) {
             const label = this.teamMenu.roomData.findingGame
                 ? this.localization.translate("index-joining-game")
-                : this.localization.translate("index-play");
+                : hasInGamePlayers
+                  ? this.localization.translate("index-game-in-progress")
+                  : this.localization.translate("index-play");
             this.prestigeArenaJoinBtn.text(label);
-            this.prestigeArenaJoinBtn.toggleClass(
-                "active",
-                !this.teamMenu.roomData.findingGame,
-            );
+            this.prestigeArenaJoinBtn.toggleClass("active", !started);
+        } else if (battleRoyaleLobby && started) {
+            this.prestigeArenaJoinBtn.text("Join Game");
+            this.prestigeArenaJoinBtn.addClass("active");
         } else {
             this.prestigeArenaJoinBtn.text(
                 localIsSpectator
