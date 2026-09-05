@@ -4,8 +4,8 @@
    height="640"
    version="1.1"
    id="svg15"
-   sodipodi:docname="map-building-police-ceiling-09x.svg"
-   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   sodipodi:docname="map-building-police-ceiling-01p.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -20,13 +20,13 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="0.2135131"
-     inkscape:cx="-131.13949"
-     inkscape:cy="658.03924"
-     inkscape:window-width="1920"
-     inkscape:window-height="991"
-     inkscape:window-x="-9"
-     inkscape:window-y="-9"
-     inkscape:window-maximized="1"
+     inkscape:cx="320.82341"
+     inkscape:cy="1006.964"
+     inkscape:window-width="1470"
+     inkscape:window-height="872"
+     inkscape:window-x="18"
+     inkscape:window-y="33"
+     inkscape:window-maximized="0"
      inkscape:current-layer="svg15" />
   <defs
      id="defs4">
@@ -91,6 +91,36 @@
       <path
          d="M 0,0 H 96 V 191.999 H 0 Z"
          id="path18" />
+    </clipPath>
+    <clipPath
+       id="a-5">
+      <path
+         d="M -155.67,-27.622 H 199.934 V 82.445 H -155.67 Z"
+         fill="#53525b"
+         stroke-width="6.35"
+         stroke-opacity="0.227"
+         id="path4-1" />
+    </clipPath>
+    <clipPath
+       id="b-9">
+      <path
+         d="m -155.67,82.445 h 304.8 v 59.267 H -43.487 l -3.175,-6.35 -5.292,-2.117 -5.291,3.175 -5.292,-5.292 -8.467,4.233 h -5.291 l -5.292,6.35 h -74.087 z"
+         fill="#53525b"
+         stroke-width="6.35"
+         stroke-opacity="0.227"
+         id="path3-2" />
+    </clipPath>
+    <clipPath
+       id="c-8">
+      <path
+         d="M 0,0 H 96 V 191.999 H 0 Z"
+         id="path1-4" />
+    </clipPath>
+    <clipPath
+       id="d-2">
+      <path
+         d="M 0,0 H 96 V 191.999 H 0 Z"
+         id="path2-6" />
     </clipPath>
   </defs>
   <path
@@ -178,11 +208,12 @@
      id="path27"
      style="fill:#185762;fill-opacity:1;stroke:#191919;stroke-opacity:1" />
   <path
-     d="m 191.0012,4.0020026 h 63.998 V 412.004 h -64 z M 1339.0082,178.002 v 63.999 h -1068.01 v -64 z"
+     d="m 191.0012,8 h 63.998 v 400 h -64 z M 1335,178.0005 v 63.999 l -1064.0018,10e-4 v -64 z"
      fill="#2e2d32"
      fill-opacity=".338"
      id="path28"
-     style="fill:#8ec1c6;fill-opacity:1" />
+     style="fill:#63bfc8;fill-opacity:0.60305345"
+     sodipodi:nodetypes="cccccccccc" />
   <path
      d="M 0,0 H 96 V 191.999 H 0 Z"
      clip-path="url(#X)"
@@ -231,9 +262,10 @@
      id="path35"
      style="stroke:#939393;stroke-opacity:1" />
   <path
-     d="m 198.9992,420.003 h 48 v 216.002 h -48 z m 769.00702,-165 h 63.99998 v 157.001 h -63.99998 z m 7,165 h 47.99998 v 216.002 h -47.99998 z"
+     d="m 199,424 h 48 l -8e-4,208 h -48 z M 968.00622,255.003 h 63.99998 V 408 H 968.00622 Z M 975.00001,424 H 1023 l 0,208 h -47.99999 z"
      fill="#2e2d32"
      fill-opacity=".338"
      id="path36"
-     style="fill:#8ec1c6;fill-opacity:1" />
+     style="fill:#63bfc8;fill-opacity:0.60305345"
+     sodipodi:nodetypes="ccccccccccccccc" />
 </svg>

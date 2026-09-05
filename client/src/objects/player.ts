@@ -2262,7 +2262,7 @@ export class Player implements AbstractObject {
         }
 
         if (map.contactMode && this.m_netData.m_infectedEffect) {
-            this.slimeSprite.texture = PIXI.Texture.from("slime.img");
+            this.slimeSprite.texture = PIXI.Texture.from("map-slime.img");
             this.slimeSprite.visible = true;
             this.slimeSprite.scale.set(0.75, 0.75);
             this.slimeSprite.tint = 0x9bff99;
