@@ -3,7 +3,7 @@ import { type Bin, MaxRectsPacker, type Rectangle } from "maxrects-packer";
 import type { ISpritesheetData } from "pixi.js-legacy";
 import sharp from "sharp";
 import type { Atlas } from "../../shared/defs/mapDefs";
-import { atlasLogger, ImageManager } from "./atlasBuilder";
+import { atlasLogger, ImageManager, type ImgCache } from "./atlasBuilder";
 import { type AtlasDef, Atlases, type AtlasRes, AtlasResolutions } from "./atlasDefs";
 import type { Edges } from "./detectEdges";
 
@@ -15,7 +15,10 @@ interface ImageData {
     height: number;
 }
 
-export type MainToWorkerMsg = Array<{ name: Atlas; hash: string }>;
+export interface MainToWorkerMsg {
+    atlases: Array<{ name: Atlas; hash: string }>;
+    imageCache: ImgCache;
+}
 
 export type WorkerToMainMsg = Array<{
     name: Atlas;
@@ -28,7 +31,6 @@ export type WorkerToMainMsg = Array<{
 }>;
 
 const cache = new ImageManager();
-cache.loadFromDisk();
 
 export class AtlasBuilder {
     packer: MaxRectsPacker;
@@ -219,9 +221,13 @@ export class AtlasBuilder {
 }
 
 process.on("message", async (msg: MainToWorkerMsg) => {
+    // Use the exact filename map produced by this build. Reading the shared cache
+    // file here can pick up an incomplete snapshot from another concurrent build.
+    cache.replaceCache(msg.imageCache);
+
     const res: WorkerToMainMsg = [];
 
-    for (const atlas of msg) {
+    for (const atlas of msg.atlases) {
         const builder = new AtlasBuilder(atlas.name);
         await builder.build();
         res.push({

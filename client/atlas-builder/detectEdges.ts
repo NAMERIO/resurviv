@@ -54,11 +54,15 @@ export function detectEdges(
     let top = -1;
     do {
         ++top;
-        pixels = context.getImageData(0, top, width, 1).data;
-
         if (top >= height) {
-            throw new Error("Can't detect edges.");
+            return {
+                top: 0,
+                right: 0,
+                bottom: 0,
+                left: 0,
+            };
         }
+        pixels = context.getImageData(0, top, width, 1).data;
     } while (isTransparent(pixels));
 
     // Left

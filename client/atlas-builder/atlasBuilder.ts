@@ -67,6 +67,14 @@ export class ImageManager {
         return this.cache[key];
     }
 
+    replaceCache(cache: ImgCache) {
+        this.cache = cache;
+    }
+
+    getCacheSnapshot(): ImgCache {
+        return structuredClone(this.cache);
+    }
+
     queueImage(path: string, hash: string) {
         this.imagesToRender.set(path, hash);
     }
@@ -465,7 +473,10 @@ export class AtlasManager {
             });
 
             const promise = new Promise<void>((resolve) => {
-                proc.send(atlases satisfies MainToWorkerMsg);
+                proc.send({
+                    atlases,
+                    imageCache: this.imageCache.getCacheSnapshot(),
+                } satisfies MainToWorkerMsg);
 
                 proc.on("message", (msg: WorkerToMainMsg) => {
                     const data = msg;
