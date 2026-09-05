@@ -18,7 +18,14 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         size: "small",
         items: ["outfitSunset", "outfitMilitary"],
         price: 750,
-        durationDays: 7,
+        durationDays: 7,    
+    },
+    bundle_srandom2: {
+    name: "Random Mini",
+    size: "small",
+    items: ["outfitPaintSplat", "outfitZebra"],
+    price: 1200,
+    durationDays: 7,
     },
     bundle_lrandom3: {
         name: "Random Large",
@@ -74,6 +81,13 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         size: "small",
         items: ["outfitYinYang", "fist_checkmate"],
         price: 1350,
+        durationDays: 7,
+    },
+    bundle_yinyangs: {
+        name: "Yin-Yangs Set",
+        size: "small",
+        items: ["outfitYinYang", "outfitYinyangTakeover"],
+        price: 950,
         durationDays: 7,
     },
     bundle_wolf: {
@@ -228,6 +242,13 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 950,
         durationDays: 7,
     },
+    bundle_lrandom4: {
+    name: "Random Large",
+    size: "large",
+    items: ["outfitCrusader", "outfitNeonEyesore", "outfitMojo", "outfitOldArt"],
+    price: 1950,
+    durationDays: 7,
+    },
     bundle_bullseye: {
         name: "Bullseye Set",
         size: "small",
@@ -235,11 +256,25 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 700,
         durationDays: 7,
     },
+    bundle_sakura: {
+        name: "Sakura  Set",
+        size: "large",
+        items: ["outfitHopelessRamentic", "outfitCrimsonHibiscus", "kunai_shadow"],
+        price: 2150,
+        durationDays: 7,
+    },
     bundle_farmer: {
         name: "Farmers Set",
         size: "small",
         items: ["outfitHoldinHide", "sickle_farmer"],
         price: 700,
+        durationDays: 7,
+    },
+    bundle_jester: {
+        name: "Jester Set",
+        size: "small",
+        items: ["outfitJinglyJester", "m9bayonet_pink"],
+        price: 1700,
         durationDays: 7,
     },
     bundle_desert: {
@@ -251,18 +286,19 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
     },
 };
 
+
 export const FeaturedBundlePages = [
     {
-        small: "bundle_srandom1",
-        large: "bundle_lrandom3",
+        small: "bundle_srandom2",
+        large: "bundle_lrandom4",
     },
     {
-        small: "bundle_farmer",
-        large: "bundle_pastel",
+        small: "bundle_prince",
+        large: "bundle_camo",
     },
     {
-        small: "bundle_wolf",
-        large: "bundle_jjk",
+        small: "bundle_jester",
+        large: "bundle_sakura",
     },
 ] as const satisfies ReadonlyArray<
     Record<FeaturedBundleSize, keyof typeof FeaturedBundleDefs>
