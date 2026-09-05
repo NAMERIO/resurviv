@@ -4262,6 +4262,1229 @@ function createShack3<T extends BuildingDef>(e: Partial<T>): T {
     };
     return util.mergeDeep(t, e || {});
 }
+function createBunkerConchSublevel<T extends BuildingDef>(e: Partial<T>): T {
+    const t = {
+        type: "building",
+        map: { display: false, color: 0x665a4e, scale: 1 },
+        terrain: { grass: true, beach: false },
+        zIdx: 1,
+        floor: {
+            surfaces: [
+                {
+                    type: "tile",
+                    collision: [
+                        collider.createAabbExtents(v2.create(1, 4), v2.create(12.5, 3.5)),
+                        collider.createAabbExtents(
+                            v2.create(28, -30),
+                            v2.create(13.5, 4.5),
+                        ),
+                    ],
+                },
+            ],
+            imgs: e.floor_images || [
+                {
+                    sprite: "map-bunker-conch-chamber-floor-01.img",
+                    pos: v2.create(4, 5),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+                {
+                    sprite: "map-bunker-conch-chamber-floor-02.img",
+                    pos: v2.create(34.86, -29.9),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+            ],
+        },
+        ceiling: {
+            zoomRegions: [
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(1, 3.5),
+                        v2.create(12.5, 5),
+                    ),
+                },
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(26.75, -30),
+                        v2.create(15.25, 4.5),
+                    ),
+                },
+            ],
+            imgs: [
+                {
+                    sprite: "map-bunker-conch-chamber-ceiling-01.img",
+                    pos: v2.create(-2, 3.5),
+                    scale: 1,
+                    alpha: 1,
+                    tint: 0x5f5f5f,
+                },
+                {
+                    sprite: "map-bunker-conch-chamber-ceiling-02.img",
+                    pos: v2.create(26.25, -29.9),
+                    scale: 1,
+                    alpha: 1,
+                    tint: 0x5f5f5f,
+                },
+            ],
+            vision: { dist: 7, width: 3 },
+        },
+        occupiedEmitters: [
+            {
+                type: "bunker_bubbles_01",
+                pos: v2.create(-2, -13.5),
+                rot: 0,
+                scale: 0.5,
+                layer: 0,
+            },
+        ],
+        mapObjects: [
+            {
+                type: "house_door_02",
+                pos: v2.create(13.5, 1.35),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "concrete_wall_ext_6",
+                pos: v2.create(20, 3.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_8",
+                pos: v2.create(16.5, 6.7),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_29",
+                pos: v2.create(7, 0),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_16",
+                pos: v2.create(5.5, 9),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_9",
+                pos: v2.create(-7, 7),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_10",
+                pos: v2.create(-13, 3.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "locker_01",
+                pos: v2.create(9.5, 7.85),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "locker_01",
+                pos: v2.create(5, 7.85),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "locker_01",
+                pos: v2.create(0.5, 7.85),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "decal_pipes_01",
+                pos: v2.create(-4.5, 5),
+                scale: 1,
+                ori: 2,
+            },
+            {
+                type: "house_door_02",
+                pos: v2.create(41.5, -34.55),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "concrete_wall_ext_6",
+                pos: v2.create(48, -32.4),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_20",
+                pos: v2.create(38.5, -35.9),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_13",
+                pos: v2.create(42, -29.2),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_8",
+                pos: v2.create(34, -26.7),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_8",
+                pos: v2.create(27, -33.4),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_11",
+                pos: v2.create(20, -30.9),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_18",
+                pos: v2.create(23.5, -23.9),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "decal_pipes_04",
+                pos: v2.create(22, -29.9),
+                scale: 1,
+                ori: 2,
+            },
+            {
+                type: "loot_tier_2",
+                pos: v2.create(31, -30),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: e.compartmentType || "bunker_conch_compartment_01",
+                pos: v2.create(-1.5, -12.4),
+                scale: 1,
+                ori: 0,
+            },
+        ],
+    };
+    return util.mergeDeep(t, e || {});
+}
+function createBunkerConchCompartment<T extends BuildingDef>(e: Partial<T>): T {
+    const t = {
+        type: "building",
+        map: { display: false, color: 0x665a4e, scale: 1 },
+        terrain: { grass: true, beach: false },
+        zIdx: 2,
+        floor: {
+            surfaces: [
+                {
+                    type: "water",
+                    collision: [
+                        collider.createAabbExtents(
+                            v2.create(1, -2.5),
+                            v2.create(15, 15.5),
+                        ),
+                    ],
+                },
+            ],
+            imgs: e.floor_images || [
+                {
+                    sprite: "map-bunker-conch-compartment-floor-01a.img",
+                    pos: v2.create(-3, -0.75),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+                {
+                    sprite: "map-bunker-conch-compartment-floor-01b.img",
+                    pos: v2.create(9.75, -17.5),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+            ],
+        },
+        ceiling: {
+            zoomRegions: [
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(-1.5, -1),
+                        v2.create(12.5, 12),
+                    ),
+                },
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(9.5, -14.5),
+                        v2.create(4, 2.5),
+                    ),
+                },
+            ],
+            imgs: [
+                {
+                    sprite: "map-bunker-conch-compartment-ceiling-01.img",
+                    pos: v2.create(-0.75, -5.5),
+                    scale: 1,
+                    alpha: 1,
+                    tint: 0x5f5f5f,
+                },
+            ],
+            vision: { dist: 7, width: 3 },
+        },
+        occupiedEmitters: [
+            {
+                type: "bunker_bubbles_01",
+                pos: v2.create(-0.5, -1),
+                rot: 0,
+                scale: 0.5,
+                layer: 0,
+            },
+        ],
+        mapObjects: [
+            {
+                type: "metal_wall_ext_thicker_5",
+                pos: v2.create(-11.5, 8.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_4",
+                pos: v2.create(-15, 7.5),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_11",
+                pos: v2.create(-15.5, 0.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_7",
+                pos: v2.create(-13.5, -6.5),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_7",
+                pos: v2.create(-11.5, -11.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_13",
+                pos: v2.create(-3.5, -13.5),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_5",
+                pos: v2.create(4.5, -14.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_13",
+                pos: v2.create(9.5, -18.5),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_7",
+                pos: v2.create(13.5, -11.5),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_19",
+                pos: v2.create(11.5, -0.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_19",
+                pos: v2.create(3.5, 10.5),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "lab_door_01",
+                pos: v2.create(-10, 11),
+                scale: 1,
+                ori: 3,
+            },
+            {
+                type: "control_panel_03",
+                pos: v2.create(-12.25, 4.25),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "control_panel_02",
+                pos: v2.create(-12, 0.25),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "fire_ext_01",
+                pos: v2.create(-3, 8.75),
+                scale: 1,
+                ori: 3,
+            },
+            {
+                type: "crate_09",
+                pos: v2.create(2.75, 6.25),
+                scale: 1,
+                ori: 0,
+                inheritOri: false,
+            },
+            {
+                type: "crate_01",
+                pos: v2.create(7.5, 6.25),
+                scale: 1,
+                ori: 0,
+                ignoreMapSpawnReplacement: true,
+            },
+            {
+                type: "decal_pipes_02",
+                pos: v2.create(7.25, 7.25),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "barrel_01",
+                pos: v2.create(-3.75, -2),
+                scale: 0.8,
+                ori: 0,
+                inheritOri: false,
+            },
+            {
+                type: "barrel_01",
+                pos: v2.create(-1.25, -4.25),
+                scale: 0.8,
+                ori: 0,
+                inheritOri: false,
+            },
+            {
+                type: "crate_01",
+                pos: v2.create(-7.5, -9.5),
+                scale: 1,
+                ori: 0,
+                ignoreMapSpawnReplacement: true,
+            },
+            {
+                type: "crate_01",
+                pos: v2.create(3.5, -9.5),
+                scale: 1,
+                ori: 0,
+                ignoreMapSpawnReplacement: true,
+            },
+            {
+                type: "decal_pipes_03",
+                pos: v2.create(-5.25, -9.25),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "lab_door_01",
+                pos: v2.create(13.5, -17),
+                scale: 1,
+                ori: 0,
+            },
+        ],
+    };
+    return util.mergeDeep(t, e || {});
+}
+function createBunkerConch<T extends StructureDef>(e: Partial<T>): T {
+    const t = {
+        type: "structure",
+        terrain: {
+            grass: true,
+            // waterEdge: {
+            //     dir: v2.create(-1, 0),
+            //     distMin: 15,
+            //     distMax: 16,
+            // },
+        },
+        ori: 0,
+        mapObstacleBounds: [
+            collider.createAabbExtents(v2.create(21, 3.5), v2.create(9.5, 8)),
+            collider.createAabbExtents(v2.create(48, -32.5), v2.create(10, 8)),
+        ],
+        layers: [
+            {
+                type: "bunker_conch_01",
+                pos: v2.create(0, 0),
+                ori: 0,
+            },
+            {
+                type: e.bunkerType || "bunker_conch_sublevel_01",
+                pos: v2.create(0, 0),
+                ori: 0,
+            },
+        ],
+        stairs: [
+            {
+                collision: collider.createAabbExtents(
+                    v2.create(16.9, 3.5),
+                    v2.create(2.6, 2),
+                ),
+                downDir: v2.create(-1, 0),
+            },
+            {
+                collision: collider.createAabbExtents(
+                    v2.create(44.9, -32.5),
+                    v2.create(2.6, 2),
+                ),
+                downDir: v2.create(-1, 0),
+            },
+        ],
+        mask: [
+            collider.createAabbExtents(v2.create(-1.5, -9.2), v2.create(15.7, 22)),
+            collider.createAabbExtents(v2.create(28.25, -32), v2.create(14, 8)),
+        ],
+    };
+    return util.mergeDeep(t, e || {});
+}
+function createBunkerCrossingSublevel<T extends BuildingDef>(e: Partial<T>): T {
+    const t = {
+        type: "building",
+        map: { display: false, color: 0x665a4e, scale: 1 },
+        terrain: { grass: true, beach: false },
+        zIdx: 1,
+        floor: {
+            surfaces: [
+                {
+                    type: "tile",
+                    collision: [
+                        collider.createAabbExtents(v2.create(0, 3.25), v2.create(38, 28)),
+                    ],
+                },
+            ],
+            imgs: e.floor_images || [
+                {
+                    sprite: "map-bunker-crossing-chamber-floor-01a.img",
+                    pos: v2.create(-11.44, 27),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                    rot: 2,
+                },
+                {
+                    sprite: "map-bunker-crossing-chamber-floor-01b.img",
+                    pos: v2.create(-9.38, 18.5),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                    rot: 2,
+                },
+                {
+                    sprite: "map-bunker-crossing-chamber-floor-01c.img",
+                    pos: v2.create(-36.44, 18.5),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                    rot: 2,
+                },
+                {
+                    sprite: "map-bunker-crossing-chamber-floor-03.img",
+                    pos: v2.create(28.5, 23.5),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                    rot: 2,
+                },
+                {
+                    sprite: "map-bunker-crossing-chamber-floor-02.img",
+                    pos: v2.create(-28.5, -17.5),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                    rot: 0,
+                },
+                {
+                    sprite: "map-bunker-crossing-chamber-floor-01a.img",
+                    pos: v2.create(11.45, -21),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                    rot: 0,
+                },
+                {
+                    sprite: "map-bunker-crossing-chamber-floor-01b.img",
+                    pos: v2.create(9.39, -12.5),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                    rot: 0,
+                },
+                {
+                    sprite: "map-bunker-crossing-chamber-floor-01c.img",
+                    pos: v2.create(36.45, -12.5),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                    rot: 0,
+                },
+            ],
+        },
+        ceiling: {
+            zoomRegions: [
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(-3, 27.5),
+                        v2.create(35.1, 5),
+                    ),
+                },
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(3, -21.5),
+                        v2.create(35.1, 5),
+                    ),
+                },
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(-4, 20.5),
+                        v2.create(3, 3),
+                    ),
+                },
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(4, -14.5),
+                        v2.create(3, 3),
+                    ),
+                },
+            ],
+            imgs: [
+                {
+                    sprite: "map-bunker-crossing-chamber-ceiling-01.img",
+                    pos: v2.create(-3.5, 24),
+                    scale: 1,
+                    alpha: 1,
+                    tint: 0x5f5f5f,
+                },
+                {
+                    sprite: "map-bunker-crossing-chamber-ceiling-01.img",
+                    pos: v2.create(3.5, -18),
+                    scale: 1,
+                    alpha: 1,
+                    tint: 0x5f5f5f,
+                    rot: 2,
+                },
+            ],
+            vision: { dist: 7, width: 3 },
+        },
+        mapObjects: [
+            {
+                type: "concrete_wall_ext_6",
+                pos: v2.create(38.5, 28.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "house_door_02",
+                pos: v2.create(32, 30.5),
+                scale: 1,
+                ori: 2,
+            },
+            {
+                type: "decal_pipes_05",
+                pos: v2.create(13, 28.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_48",
+                pos: v2.create(15, 32),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_35",
+                pos: v2.create(21.5, 25),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_6",
+                pos: v2.create(2.5, 23.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_6",
+                pos: v2.create(-0.5, 20.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_6",
+                pos: v2.create(-7.5, 20.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_32",
+                pos: v2.create(-22, 29),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_15",
+                pos: v2.create(-39.5, 23),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "concrete_wall_ext_6",
+                pos: v2.create(-36, 16),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "house_door_02",
+                pos: v2.create(-38, 22.5),
+                scale: 1,
+                ori: 3,
+            },
+            {
+                type: "metal_wall_ext_thicker_8",
+                pos: v2.create(-32.5, 19.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_22",
+                pos: v2.create(-20, 22),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "barrel_01",
+                pos: v2.create(-4.5, 29),
+                scale: 0.8,
+                ori: 0,
+            },
+            {
+                type: "concrete_wall_ext_6",
+                pos: v2.create(-38.5, -22.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "house_door_02",
+                pos: v2.create(-32, -20.5),
+                scale: 1,
+                ori: 2,
+            },
+            {
+                type: "decal_pipes_05",
+                pos: v2.create(-12, -22.5),
+                scale: 1,
+                ori: 2,
+            },
+            {
+                type: "metal_wall_ext_thicker_48",
+                pos: v2.create(-15, -26),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_15",
+                pos: v2.create(-31.5, -19),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_16",
+                pos: v2.create(-12, -19),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_6",
+                pos: v2.create(-2.5, -17.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_6",
+                pos: v2.create(0.5, -14.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_6",
+                pos: v2.create(7.5, -14.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_32",
+                pos: v2.create(22, -23),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_15",
+                pos: v2.create(39.5, -17),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "concrete_wall_ext_6",
+                pos: v2.create(36, -10),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "house_door_02",
+                pos: v2.create(38, -16.5),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_8",
+                pos: v2.create(32.5, -13.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_22",
+                pos: v2.create(20, -16),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "barrel_01",
+                pos: v2.create(4.5, -23),
+                scale: 0.8,
+                ori: 0,
+            },
+            {
+                type: "crate_06",
+                pos: v2.create(-12.5, -22.25),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "crate_06",
+                pos: v2.create(-7, -22.75),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: e.compartmentType || "bunker_crossing_compartment_01",
+                pos: v2.create(1.5, 0),
+                scale: 1,
+                ori: 0,
+            },
+        ],
+    };
+    return util.mergeDeep(t, e || {});
+}
+function createBunkerCrossingCompartment<T extends BuildingDef>(e: Partial<T>): T {
+    const t = {
+        type: "building",
+        map: { display: false, color: 0x665a4e, scale: 1 },
+        terrain: { grass: true, beach: false },
+        zIdx: 2,
+        floor: {
+            surfaces: [
+                {
+                    type: "water",
+                    collision: [
+                        collider.createAabbExtents(v2.create(-1, 3), v2.create(17, 17.5)),
+                    ],
+                },
+            ],
+            imgs: e.floor_images || [
+                {
+                    sprite: "map-bunker-crossing-compartment-floor-02.img",
+                    pos: v2.create(-22.5, -10),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+                {
+                    sprite: "map-bunker-crossing-compartment-floor-01.img",
+                    pos: v2.create(4, 3),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
+            ],
+        },
+        ceiling: {
+            zoomRegions: [
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(4, 3),
+                        v2.create(22, 14.5),
+                    ),
+                },
+                {
+                    zoomIn: collider.createAabbExtents(
+                        v2.create(-22, -11),
+                        v2.create(4.5, 9),
+                    ),
+                },
+            ],
+            imgs: [
+                {
+                    sprite: "map-bunker-crossing-compartment-ceiling-01a.img",
+                    pos: v2.create(-22.475, -11),
+                    scale: 1,
+                    alpha: 1,
+                    tint: 0x5f5f5f,
+                },
+                {
+                    sprite: "map-bunker-crossing-compartment-ceiling-01b.img",
+                    pos: v2.create(3.975, 3),
+                    scale: 1,
+                    alpha: 1,
+                    tint: 0x5f5f5f,
+                },
+            ],
+            vision: { dist: 7, width: 3 },
+        },
+        occupiedEmitters: [
+            {
+                type: "bunker_bubbles_02",
+                pos: v2.create(-1.5, 0),
+                rot: 0,
+                scale: 0.5,
+                layer: 0,
+            },
+        ],
+        mapObjects: [
+            {
+                type: "metal_wall_ext_thicker_13",
+                pos: v2.create(-14, 16),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "lab_door_01",
+                pos: v2.create(-7.5, 17.5),
+                scale: 1,
+                ori: 3,
+            },
+            {
+                type: "metal_wall_ext_thicker_18",
+                pos: v2.create(5.5, 16),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_8",
+                pos: v2.create(16, 13.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_15",
+                pos: v2.create(22, 8),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_4",
+                pos: v2.create(27, 4.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "lab_door_01",
+                pos: v2.create(17.5, 6.5),
+                scale: 1,
+                ori: 2,
+            },
+            {
+                type: "bunker_crossing_bathroom",
+                pos: v2.create(22, 4.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_15",
+                pos: v2.create(22, 1),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_11",
+                pos: v2.create(16, -6),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_10",
+                pos: v2.create(9.5, -10),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "lab_door_01",
+                pos: v2.create(4.5, -11.5),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_19",
+                pos: v2.create(-9, -10),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_4",
+                pos: v2.create(-19.5, -8),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_10",
+                pos: v2.create(-20, -14.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_17",
+                pos: v2.create(-27, -11),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "metal_wall_ext_thicker_11",
+                pos: v2.create(-23, -1),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "metal_wall_ext_thicker_14",
+                pos: v2.create(-19, 7.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "control_panel_04",
+                pos: v2.create(-15.25, 8.5),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "control_panel_03",
+                pos: v2.create(-15.5, 12.75),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "control_panel_03",
+                pos: v2.create(-15.5, 4.25),
+                scale: 1,
+                ori: 1,
+            },
+            {
+                type: "barrel_01",
+                pos: v2.create(-5, 10.25),
+                scale: 0.8,
+                ori: 0,
+            },
+            {
+                type: "barrel_01",
+                pos: v2.create(-3.25, 12.5),
+                scale: 0.8,
+                ori: 0,
+            },
+            {
+                type: "locker_01",
+                pos: v2.create(1.15, 14.85),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "locker_03",
+                pos: v2.create(4.5, 14.85),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "bookshelf_01",
+                pos: v2.create(10.5, 13),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "bed_sm_01",
+                pos: v2.create(10.5, 10),
+                scale: 1,
+                ori: 3,
+            },
+            {
+                type: "crate_01",
+                pos: v2.create(-5, -6.25),
+                scale: 0.8,
+                ori: 0,
+                ignoreMapSpawnReplacement: true,
+            },
+            {
+                type: "barrel_01",
+                pos: v2.create(-3, -2.5),
+                scale: 0.9,
+                ori: 0,
+            },
+            {
+                type: "vending_01",
+                pos: v2.create(-1.25, -6.5),
+                scale: 1,
+                ori: 2,
+            },
+            {
+                type: "fire_ext_01",
+                pos: v2.create(14, -0.5),
+                scale: 1,
+                ori: 2,
+            },
+            {
+                type: "refrigerator_01",
+                pos: v2.create(8.25, -6.5),
+                scale: 1,
+                ori: 2,
+            },
+            {
+                type: "oven_01",
+                pos: v2.create(12.25, -6.5),
+                scale: 1,
+                ori: 2,
+            },
+            {
+                type: "crossing_door_01",
+                pos: v2.create(-17.85, -2.5),
+                scale: 1,
+                ori: 2,
+            },
+            {
+                type: "couch_01",
+                pos: v2.create(-12, 0),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "screen_01",
+                pos: v2.create(-12, -7.5),
+                scale: 1,
+                ori: 0,
+            },
+            {
+                type: "crate_01",
+                pos: v2.create(-23.5, -4.5),
+                scale: 0.8,
+                ori: 0,
+                ignoreMapSpawnReplacement: true,
+            },
+            {
+                type: "loot_tier_woodaxe",
+                pos: v2.create(-23.5, -8.5),
+                scale: 0.8,
+                ori: 0,
+            },
+            {
+                type: "crate_01",
+                pos: v2.create(-23.5, -14),
+                scale: 0.8,
+                ori: 0,
+                ignoreMapSpawnReplacement: true,
+            },
+            {
+                type: "crossing_door_01",
+                pos: v2.create(-21.5, -20.15),
+                scale: 1,
+                ori: 1,
+            },
+        ],
+    };
+    return util.mergeDeep(t, e || {});
+}
+function createBunkerCrossing<T extends StructureDef>(e: Partial<T>): T {
+    const t = {
+        type: "structure",
+        terrain: {
+            grass: true,
+            // beach: false,
+            // bridge: { nearbyWidthMult: 1.2 },
+            // spawnPriority: 100,
+        },
+        mapObstacleBounds: [
+            collider.createAabbExtents(v2.create(35.5, 28.5), v2.create(6, 6)),
+            collider.createAabbExtents(v2.create(-36, 19), v2.create(6, 6)),
+            collider.createAabbExtents(v2.create(36, -13), v2.create(6, 6)),
+            collider.createAabbExtents(v2.create(-35.5, -22.5), v2.create(6, 6)),
+            collider.createAabbExtents(v2.create(0, 0), v2.create(6, 6)),
+        ],
+        bridgeLandBounds: [
+            collider.createAabbExtents(v2.create(35.5, 28.5), v2.create(5, 5)),
+            collider.createAabbExtents(v2.create(-36, 19), v2.create(5, 5)),
+            collider.createAabbExtents(v2.create(36, -13), v2.create(5, 5)),
+            collider.createAabbExtents(v2.create(-35.5, -22.5), v2.create(5, 5)),
+        ],
+        bridgeWaterBounds: [collider.createAabbExtents(v2.create(0, 0), v2.create(5, 5))],
+        layers: [
+            {
+                type: e.aboveGroundType || "bunker_crossing_01",
+                pos: v2.create(0, 0),
+                ori: 0,
+            },
+            {
+                type: e.bunkerType || "bunker_crossing_sublevel_01",
+                pos: v2.create(0, 0),
+                ori: 0,
+            },
+        ],
+        stairs: [
+            {
+                collision: collider.createAabbExtents(
+                    v2.create(35.6, 28.5),
+                    v2.create(2.6, 2),
+                ),
+                downDir: v2.create(-1, 0),
+            },
+            {
+                collision: collider.createAabbExtents(
+                    v2.create(-36, 19),
+                    v2.create(2, 2.6),
+                ),
+                downDir: v2.create(0, 1),
+            },
+            {
+                collision: collider.createAabbExtents(
+                    v2.create(36, -13),
+                    v2.create(2, 2.6),
+                ),
+                downDir: v2.create(0, -1),
+            },
+            {
+                collision: collider.createAabbExtents(
+                    v2.create(-35.5, -22.5),
+                    v2.create(2.6, 2),
+                ),
+                downDir: v2.create(1, 0),
+            },
+        ],
+        mask: [
+            collider.createAabbExtents(v2.create(-3.7, 27), v2.create(36.5, 5)),
+            collider.createAabbExtents(v2.create(3.7, -21), v2.create(36.5, 5)),
+            collider.createAabbExtents(v2.create(0, 3), v2.create(30, 18.95)),
+        ],
+    };
+    return util.mergeDeep(t, e || {});
+}
 function createGreenhouse<T extends BuildingDef>(e: Partial<T>): T {
     const t = {
         type: "building",
@@ -11510,7 +12733,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         img: { sprite: "map-bush-13.img" },
         map: { display: true, color: 0x24201c },
     }),
-    bush_13b: createBush({
+    bush_04ct: createBush({
         hitParticle: "leafRiver",
         explodeParticle: "leafRiver",
         terrain: {
@@ -11519,11 +12742,11 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             riverShore: true,
         },
         sound: { enter: "bush_enter_02" },
-        img: { sprite: "map-bush-13b.img" },
+        img: { sprite: "map-bush-04ct.img" },
         map: { display: true, color: 0x24201c },
     }),
-    bush_13c: createBush({
-        img: { sprite: "map-bush-13c.img" },
+    bush_07ct: createBush({
+        img: { sprite: "map-bush-07ct.img" },
         map: { display: true, color: 0x24201c },
     }),
     bush_05i: createBush({
@@ -11715,8 +12938,8 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         img: { sprite: "map-chest-03.img" },
         loot: [tierLoot("tier_chest", 3, 5)],
     }),
-    chest_03cn: createRiverChest({
-        img: { sprite: "map-chest-03cn.img" },
+    chest_03ct: createRiverChest({
+        img: { sprite: "map-chest-03ct.img" },
         loot: [tierLoot("tier_chest", 3, 5), autoLoot("outfitWaterElem", 1)],
     }),
     chest_03d: createRiverChest({
@@ -11885,12 +13108,12 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         terrain: { grass: true, beach: false },
         img: {
             sprite: "map-crate-egg.img",
-            residue: "map-contact-egg-res-01.img",
+            residue: "map-crate-res-egg.img",
             scale: 0.5,
         },
         sound: {
-            bullet: "egg_hit_01",
-            punch: "egg_hit_01",
+            bullet: "egg_hit",
+            punch: "egg_hit",
             explode: "egg_break_01",
             enter: "none",
         },
@@ -14439,7 +15662,8 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         },
     },
     tree_01: createTree({}),
-    tree_19: createTree({
+    tree_01ct: createTree({
+        collision: collider.createCircle(v2.create(0, 0), 2.25),
         img: { sprite: "map-tree-19.img" },
         map: { display: true, color: 0x24201c },
     }),
@@ -18790,7 +20014,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     cache_contact: createCache({
         mapObjects: [
             {
-                type: "bush_13c",
+                type: "bush_07ct",
                 pos: v2.create(0, 0),
                 scale: 1,
                 ori: 0,
@@ -18803,7 +20027,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 inheritOri: false,
             },
         ],
-        map: { displayType: "bush_13c" },
+        map: { displayType: "bush_07ct" },
     }),
     cache_06bh: createCache({
         mapObjects: [
@@ -20245,7 +21469,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     }),
     logging_complex_01ct: createLoggingComplex({
         groundTintLt: 0x35416b,
-        groundTintDk: 0x293354,
+        groundTintDk: 0x1e2642,
     }),
     logging_complex_02su: createLoggingComplex2({ groundTintDk: 0x4e7d13 }),
     logging_complex_02x: createLoggingComplex2({ groundTintDk: 0x9e9e9e }),
@@ -20355,13 +21579,13 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
             {
                 bound: collider.createAabbExtents(v2.create(0, 0), v2.create(46, 10)),
-                color: 0x293354,
+                color: 0x1e2642,
                 roughness: 0.1,
                 offsetDist: 1,
             },
             {
                 bound: collider.createAabbExtents(v2.create(0, 2), v2.create(5, 50.5)),
-                color: 0x293354,
+                color: 0x1e2642,
                 roughness: 0.1,
                 offsetDist: 1,
             },
@@ -20393,6 +21617,9 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     }),
     memorial_park_01x: createMemorialPark({
         groundTintDk: 0x9e9e9e,
+    }),
+    memorial_park_01ct: createMemorialPark({
+        groundTintDk: 0x1e2642,
     }),
     memorial_park_01p: createMemorialPark({
         groundTintDk: 0x2e364f,
@@ -31279,487 +32506,51 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
         ],
     },
-    bunker_conch_sublevel_01: {
-        type: "building",
-        map: { display: false, color: 0x665a4e, scale: 1 },
-        terrain: { grass: true, beach: false },
-        zIdx: 1,
-        floor: {
-            surfaces: [
-                {
-                    type: "tile",
-                    collision: [
-                        collider.createAabbExtents(v2.create(1, 4), v2.create(12.5, 3.5)),
-                        collider.createAabbExtents(
-                            v2.create(28, -30),
-                            v2.create(13.5, 4.5),
-                        ),
-                    ],
-                },
-            ],
-            imgs: [
-                {
-                    sprite: "map-bunker-conch-chamber-floor-01.img",
-                    pos: v2.create(4, 5),
-                    scale: 0.5,
-                    alpha: 1,
-                    tint: 0xffffff,
-                },
-                {
-                    sprite: "map-bunker-conch-chamber-floor-02.img",
-                    pos: v2.create(34.86, -29.9),
-                    scale: 0.5,
-                    alpha: 1,
-                    tint: 0xffffff,
-                },
-            ],
-        },
-        ceiling: {
-            zoomRegions: [
-                {
-                    zoomIn: collider.createAabbExtents(
-                        v2.create(1, 3.5),
-                        v2.create(12.5, 5),
-                    ),
-                },
-                {
-                    zoomIn: collider.createAabbExtents(
-                        v2.create(26.75, -30),
-                        v2.create(15.25, 4.5),
-                    ),
-                },
-            ],
-            imgs: [
-                {
-                    sprite: "map-bunker-conch-chamber-ceiling-01.img",
-                    pos: v2.create(-2, 3.5),
-                    scale: 1,
-                    alpha: 1,
-                    tint: 0x5f5f5f,
-                },
-                {
-                    sprite: "map-bunker-conch-chamber-ceiling-02.img",
-                    pos: v2.create(26.25, -29.9),
-                    scale: 1,
-                    alpha: 1,
-                    tint: 0x5f5f5f,
-                },
-            ],
-            vision: { dist: 7, width: 3 },
-        },
-        occupiedEmitters: [
+    bunker_conch_sublevel_01: createBunkerConchSublevel({}),
+    bunker_conch_compartment_01: createBunkerConchCompartment({}),
+    bunker_structure_04: createBunkerConch({
+        bunkerType: "bunker_conch_sublevel_01",
+    }),
+    bunker_conch_sublevel_01ct: createBunkerConchSublevel({
+        floor_images: [
             {
-                type: "bunker_bubbles_01",
-                pos: v2.create(-2, -13.5),
-                rot: 0,
+                sprite: "map-bunker-conch-chamber-floor-01ct.img",
+                pos: v2.create(4, 5),
                 scale: 0.5,
-                layer: 0,
-            },
-        ],
-        mapObjects: [
-            {
-                type: "house_door_02",
-                pos: v2.create(13.5, 1.35),
-                scale: 1,
-                ori: 0,
+                alpha: 1,
+                tint: 0xffffff,
             },
             {
-                type: "concrete_wall_ext_6",
-                pos: v2.create(20, 3.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_8",
-                pos: v2.create(16.5, 6.7),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_29",
-                pos: v2.create(7, 0),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_16",
-                pos: v2.create(5.5, 9),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_9",
-                pos: v2.create(-7, 7),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_10",
-                pos: v2.create(-13, 3.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "locker_01",
-                pos: v2.create(9.5, 7.85),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "locker_01",
-                pos: v2.create(5, 7.85),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "locker_01",
-                pos: v2.create(0.5, 7.85),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "decal_pipes_01",
-                pos: v2.create(-4.5, 5),
-                scale: 1,
-                ori: 2,
-            },
-            {
-                type: "house_door_02",
-                pos: v2.create(41.5, -34.55),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "concrete_wall_ext_6",
-                pos: v2.create(48, -32.4),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_20",
-                pos: v2.create(38.5, -35.9),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_13",
-                pos: v2.create(42, -29.2),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_8",
-                pos: v2.create(34, -26.7),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_8",
-                pos: v2.create(27, -33.4),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_11",
-                pos: v2.create(20, -30.9),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_18",
-                pos: v2.create(23.5, -23.9),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "decal_pipes_04",
-                pos: v2.create(22, -29.9),
-                scale: 1,
-                ori: 2,
-            },
-            {
-                type: "loot_tier_2",
-                pos: v2.create(31, -30),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "bunker_conch_compartment_01",
-                pos: v2.create(-1.5, -12.4),
-                scale: 1,
-                ori: 0,
-            },
-        ],
-    },
-    bunker_conch_compartment_01: {
-        type: "building",
-        map: { display: false, color: 0x665a4e, scale: 1 },
-        terrain: { grass: true, beach: false },
-        zIdx: 2,
-        floor: {
-            surfaces: [
-                {
-                    type: "water",
-                    collision: [
-                        collider.createAabbExtents(
-                            v2.create(1, -2.5),
-                            v2.create(15, 15.5),
-                        ),
-                    ],
-                },
-            ],
-            imgs: [
-                {
-                    sprite: "map-bunker-conch-compartment-floor-01a.img",
-                    pos: v2.create(-3, -0.75),
-                    scale: 0.5,
-                    alpha: 1,
-                    tint: 0xffffff,
-                },
-                {
-                    sprite: "map-bunker-conch-compartment-floor-01b.img",
-                    pos: v2.create(9.75, -17.5),
-                    scale: 0.5,
-                    alpha: 1,
-                    tint: 0xffffff,
-                },
-            ],
-        },
-        ceiling: {
-            zoomRegions: [
-                {
-                    zoomIn: collider.createAabbExtents(
-                        v2.create(-1.5, -1),
-                        v2.create(12.5, 12),
-                    ),
-                },
-                {
-                    zoomIn: collider.createAabbExtents(
-                        v2.create(9.5, -14.5),
-                        v2.create(4, 2.5),
-                    ),
-                },
-            ],
-            imgs: [
-                {
-                    sprite: "map-bunker-conch-compartment-ceiling-01.img",
-                    pos: v2.create(-0.75, -5.5),
-                    scale: 1,
-                    alpha: 1,
-                    tint: 0x5f5f5f,
-                },
-            ],
-            vision: { dist: 7, width: 3 },
-        },
-        occupiedEmitters: [
-            {
-                type: "bunker_bubbles_01",
-                pos: v2.create(-0.5, -1),
-                rot: 0,
+                sprite: "map-bunker-conch-chamber-floor-02ct.img",
+                pos: v2.create(34.86, -29.9),
                 scale: 0.5,
-                layer: 0,
+                alpha: 1,
+                tint: 0xffffff,
             },
         ],
-        mapObjects: [
+        compartmentType: "bunker_conch_compartment_01ct",
+    }),
+    bunker_conch_compartment_01ct: createBunkerConchCompartment({
+        floor_images: [
             {
-                type: "metal_wall_ext_thicker_5",
-                pos: v2.create(-11.5, 8.5),
-                scale: 1,
-                ori: 0,
+                sprite: "map-bunker-conch-compartment-floor-01a_ct.img",
+                pos: v2.create(-3, -0.75),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
             },
             {
-                type: "metal_wall_ext_thicker_4",
-                pos: v2.create(-15, 7.5),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_11",
-                pos: v2.create(-15.5, 0.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_7",
-                pos: v2.create(-13.5, -6.5),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_7",
-                pos: v2.create(-11.5, -11.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_13",
-                pos: v2.create(-3.5, -13.5),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_5",
-                pos: v2.create(4.5, -14.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_13",
-                pos: v2.create(9.5, -18.5),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_7",
-                pos: v2.create(13.5, -11.5),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_19",
-                pos: v2.create(11.5, -0.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_19",
-                pos: v2.create(3.5, 10.5),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "lab_door_01",
-                pos: v2.create(-10, 11),
-                scale: 1,
-                ori: 3,
-            },
-            {
-                type: "control_panel_03",
-                pos: v2.create(-12.25, 4.25),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "control_panel_02",
-                pos: v2.create(-12, 0.25),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "fire_ext_01",
-                pos: v2.create(-3, 8.75),
-                scale: 1,
-                ori: 3,
-            },
-            {
-                type: "crate_09",
-                pos: v2.create(2.75, 6.25),
-                scale: 1,
-                ori: 0,
-                inheritOri: false,
-            },
-            {
-                type: "crate_01",
-                pos: v2.create(7.5, 6.25),
-                scale: 1,
-                ori: 0,
-                ignoreMapSpawnReplacement: true,
-            },
-            {
-                type: "decal_pipes_02",
-                pos: v2.create(7.25, 7.25),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "barrel_01",
-                pos: v2.create(-3.75, -2),
-                scale: 0.8,
-                ori: 0,
-                inheritOri: false,
-            },
-            {
-                type: "barrel_01",
-                pos: v2.create(-1.25, -4.25),
-                scale: 0.8,
-                ori: 0,
-                inheritOri: false,
-            },
-            {
-                type: "crate_01",
-                pos: v2.create(-7.5, -9.5),
-                scale: 1,
-                ori: 0,
-                ignoreMapSpawnReplacement: true,
-            },
-            {
-                type: "crate_01",
-                pos: v2.create(3.5, -9.5),
-                scale: 1,
-                ori: 0,
-                ignoreMapSpawnReplacement: true,
-            },
-            {
-                type: "decal_pipes_03",
-                pos: v2.create(-5.25, -9.25),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "lab_door_01",
-                pos: v2.create(13.5, -17),
-                scale: 1,
-                ori: 0,
+                sprite: "map-bunker-conch-compartment-floor-01b_ct.img",
+                pos: v2.create(9.75, -17.5),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
             },
         ],
-    },
-    bunker_structure_04: {
-        type: "structure",
-        terrain: {
-            grass: true,
-            // waterEdge: {
-            //     dir: v2.create(-1, 0),
-            //     distMin: 15,
-            //     distMax: 16,
-            // },
-        },
-        mapObstacleBounds: [
-            collider.createAabbExtents(v2.create(21, 3.5), v2.create(9.5, 8)),
-            collider.createAabbExtents(v2.create(48, -32.5), v2.create(10, 8)),
-        ],
-        layers: [
-            {
-                type: "bunker_conch_01",
-                pos: v2.create(0, 0),
-                ori: 0,
-            },
-            {
-                type: "bunker_conch_sublevel_01",
-                pos: v2.create(0, 0),
-                ori: 0,
-            },
-        ],
-        stairs: [
-            {
-                collision: collider.createAabbExtents(
-                    v2.create(16.9, 3.5),
-                    v2.create(2.6, 2),
-                ),
-                downDir: v2.create(-1, 0),
-            },
-            {
-                collision: collider.createAabbExtents(
-                    v2.create(44.9, -32.5),
-                    v2.create(2.6, 2),
-                ),
-                downDir: v2.create(-1, 0),
-            },
-        ],
-        mask: [
-            collider.createAabbExtents(v2.create(-1.5, -9.2), v2.create(15.7, 22)),
-            collider.createAabbExtents(v2.create(28.25, -32), v2.create(14, 8)),
-        ],
-    },
+    }),
+    bunker_structure_04ct: createBunkerConch({
+        bunkerType: "bunker_conch_sublevel_01ct",
+    }),
     bunker_crossing_stairs_01: createBunkerStairs({}),
     bunker_crossing_stairs_01b: createBunkerStairs({
         ceiling: {
@@ -31839,340 +32630,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
         ],
     },
-    bunker_crossing_sublevel_01: {
-        type: "building",
-        map: { display: false, color: 0x665a4e, scale: 1 },
-        terrain: { grass: true, beach: false },
-        zIdx: 1,
-        floor: {
-            surfaces: [
-                {
-                    type: "tile",
-                    collision: [
-                        collider.createAabbExtents(v2.create(0, 3.25), v2.create(38, 28)),
-                    ],
-                },
-            ],
-            imgs: [
-                {
-                    sprite: "map-bunker-crossing-chamber-floor-01a.img",
-                    pos: v2.create(-11.44, 27),
-                    scale: 0.5,
-                    alpha: 1,
-                    tint: 0xffffff,
-                    rot: 2,
-                },
-                {
-                    sprite: "map-bunker-crossing-chamber-floor-01b.img",
-                    pos: v2.create(-9.38, 18.5),
-                    scale: 0.5,
-                    alpha: 1,
-                    tint: 0xffffff,
-                    rot: 2,
-                },
-                {
-                    sprite: "map-bunker-crossing-chamber-floor-01c.img",
-                    pos: v2.create(-36.44, 18.5),
-                    scale: 0.5,
-                    alpha: 1,
-                    tint: 0xffffff,
-                    rot: 2,
-                },
-                {
-                    sprite: "map-bunker-crossing-chamber-floor-03.img",
-                    pos: v2.create(28.5, 23.5),
-                    scale: 0.5,
-                    alpha: 1,
-                    tint: 0xffffff,
-                    rot: 2,
-                },
-                {
-                    sprite: "map-bunker-crossing-chamber-floor-02.img",
-                    pos: v2.create(-28.5, -17.5),
-                    scale: 0.5,
-                    alpha: 1,
-                    tint: 0xffffff,
-                    rot: 0,
-                },
-                {
-                    sprite: "map-bunker-crossing-chamber-floor-01a.img",
-                    pos: v2.create(11.45, -21),
-                    scale: 0.5,
-                    alpha: 1,
-                    tint: 0xffffff,
-                    rot: 0,
-                },
-                {
-                    sprite: "map-bunker-crossing-chamber-floor-01b.img",
-                    pos: v2.create(9.39, -12.5),
-                    scale: 0.5,
-                    alpha: 1,
-                    tint: 0xffffff,
-                    rot: 0,
-                },
-                {
-                    sprite: "map-bunker-crossing-chamber-floor-01c.img",
-                    pos: v2.create(36.45, -12.5),
-                    scale: 0.5,
-                    alpha: 1,
-                    tint: 0xffffff,
-                    rot: 0,
-                },
-            ],
-        },
-        ceiling: {
-            zoomRegions: [
-                {
-                    zoomIn: collider.createAabbExtents(
-                        v2.create(-3, 27.5),
-                        v2.create(35.1, 5),
-                    ),
-                },
-                {
-                    zoomIn: collider.createAabbExtents(
-                        v2.create(3, -21.5),
-                        v2.create(35.1, 5),
-                    ),
-                },
-                {
-                    zoomIn: collider.createAabbExtents(
-                        v2.create(-4, 20.5),
-                        v2.create(3, 3),
-                    ),
-                },
-                {
-                    zoomIn: collider.createAabbExtents(
-                        v2.create(4, -14.5),
-                        v2.create(3, 3),
-                    ),
-                },
-            ],
-            imgs: [
-                {
-                    sprite: "map-bunker-crossing-chamber-ceiling-01.img",
-                    pos: v2.create(-3.5, 24),
-                    scale: 1,
-                    alpha: 1,
-                    tint: 0x5f5f5f,
-                },
-                {
-                    sprite: "map-bunker-crossing-chamber-ceiling-01.img",
-                    pos: v2.create(3.5, -18),
-                    scale: 1,
-                    alpha: 1,
-                    tint: 0x5f5f5f,
-                    rot: 2,
-                },
-            ],
-            vision: { dist: 7, width: 3 },
-        },
-        mapObjects: [
-            {
-                type: "concrete_wall_ext_6",
-                pos: v2.create(38.5, 28.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "house_door_02",
-                pos: v2.create(32, 30.5),
-                scale: 1,
-                ori: 2,
-            },
-            {
-                type: "decal_pipes_05",
-                pos: v2.create(13, 28.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_48",
-                pos: v2.create(15, 32),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_35",
-                pos: v2.create(21.5, 25),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_6",
-                pos: v2.create(2.5, 23.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_6",
-                pos: v2.create(-0.5, 20.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_6",
-                pos: v2.create(-7.5, 20.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_32",
-                pos: v2.create(-22, 29),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_15",
-                pos: v2.create(-39.5, 23),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "concrete_wall_ext_6",
-                pos: v2.create(-36, 16),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "house_door_02",
-                pos: v2.create(-38, 22.5),
-                scale: 1,
-                ori: 3,
-            },
-            {
-                type: "metal_wall_ext_thicker_8",
-                pos: v2.create(-32.5, 19.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_22",
-                pos: v2.create(-20, 22),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "barrel_01",
-                pos: v2.create(-4.5, 29),
-                scale: 0.8,
-                ori: 0,
-            },
-            {
-                type: "concrete_wall_ext_6",
-                pos: v2.create(-38.5, -22.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "house_door_02",
-                pos: v2.create(-32, -20.5),
-                scale: 1,
-                ori: 2,
-            },
-            {
-                type: "decal_pipes_05",
-                pos: v2.create(-12, -22.5),
-                scale: 1,
-                ori: 2,
-            },
-            {
-                type: "metal_wall_ext_thicker_48",
-                pos: v2.create(-15, -26),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_15",
-                pos: v2.create(-31.5, -19),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_16",
-                pos: v2.create(-12, -19),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_6",
-                pos: v2.create(-2.5, -17.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_6",
-                pos: v2.create(0.5, -14.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_6",
-                pos: v2.create(7.5, -14.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_32",
-                pos: v2.create(22, -23),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_15",
-                pos: v2.create(39.5, -17),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "concrete_wall_ext_6",
-                pos: v2.create(36, -10),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "house_door_02",
-                pos: v2.create(38, -16.5),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_8",
-                pos: v2.create(32.5, -13.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_22",
-                pos: v2.create(20, -16),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "barrel_01",
-                pos: v2.create(4.5, -23),
-                scale: 0.8,
-                ori: 0,
-            },
-            {
-                type: "crate_06",
-                pos: v2.create(-12.5, -22.25),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "crate_06",
-                pos: v2.create(-7, -22.75),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "bunker_crossing_compartment_01",
-                pos: v2.create(1.5, 0),
-                scale: 1,
-                ori: 0,
-            },
-        ],
-    },
+    bunker_crossing_sublevel_01: createBunkerCrossingSublevel({}),
     bunker_crossing_bathroom: {
         type: "building",
         map: { display: false, color: 0x665a4e, scale: 1 },
@@ -32223,395 +32681,155 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
         ],
     },
-    bunker_crossing_compartment_01: {
+    bunker_crossing_compartment_01: createBunkerCrossingCompartment({}),
+    bunker_structure_05: createBunkerCrossing({}),
+    bunker_crossing_01ct: {
         type: "building",
-        map: { display: false, color: 0x665a4e, scale: 1 },
+        map: {
+            display: true,
+            shapes: [
+                {
+                    collider: collider.createAabbExtents(
+                        v2.create(0, 0),
+                        v2.create(5, 5),
+                    ),
+                    color: 0x56497d,
+                },
+            ],
+        },
         terrain: { grass: true, beach: false },
-        zIdx: 2,
+        zIdx: 0,
         floor: {
-            surfaces: [
-                {
-                    type: "water",
-                    collision: [
-                        collider.createAabbExtents(v2.create(-1, 3), v2.create(17, 17.5)),
-                    ],
-                },
-            ],
+            surfaces: [],
             imgs: [
                 {
-                    sprite: "map-bunker-crossing-compartment-floor-02.img",
-                    pos: v2.create(-22.5, -10),
-                    scale: 0.5,
-                    alpha: 1,
-                    tint: 0xffffff,
-                },
-                {
-                    sprite: "map-bunker-crossing-compartment-floor-01.img",
-                    pos: v2.create(4, 3),
+                    sprite: "map-bunker-crossing-floor-01ct.img",
+                    pos: v2.create(0, 0),
                     scale: 0.5,
                     alpha: 1,
                     tint: 0xffffff,
                 },
             ],
         },
-        ceiling: {
-            zoomRegions: [
-                {
-                    zoomIn: collider.createAabbExtents(
-                        v2.create(4, 3),
-                        v2.create(22, 14.5),
-                    ),
-                },
-                {
-                    zoomIn: collider.createAabbExtents(
-                        v2.create(-22, -11),
-                        v2.create(4.5, 9),
-                    ),
-                },
-            ],
-            imgs: [
-                {
-                    sprite: "map-bunker-crossing-compartment-ceiling-01a.img",
-                    pos: v2.create(-22.475, -11),
-                    scale: 1,
-                    alpha: 1,
-                    tint: 0x5f5f5f,
-                },
-                {
-                    sprite: "map-bunker-crossing-compartment-ceiling-01b.img",
-                    pos: v2.create(3.975, 3),
-                    scale: 1,
-                    alpha: 1,
-                    tint: 0x5f5f5f,
-                },
-            ],
-            vision: { dist: 7, width: 3 },
-        },
-        occupiedEmitters: [
-            {
-                type: "bunker_bubbles_02",
-                pos: v2.create(-1.5, 0),
-                rot: 0,
-                scale: 0.5,
-                layer: 0,
-            },
-        ],
+        ceiling: { zoomRegions: [], imgs: [] },
         mapObjects: [
             {
-                type: "metal_wall_ext_thicker_13",
-                pos: v2.create(-14, 16),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "lab_door_01",
-                pos: v2.create(-7.5, 17.5),
+                type: "bunker_crossing_stairs_01b",
+                pos: v2.create(34.5, 28.5),
                 scale: 1,
                 ori: 3,
             },
             {
-                type: "metal_wall_ext_thicker_18",
-                pos: v2.create(5.5, 16),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_8",
-                pos: v2.create(16, 13.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_15",
-                pos: v2.create(22, 8),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_4",
-                pos: v2.create(27, 4.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "lab_door_01",
-                pos: v2.create(17.5, 6.5),
+                type: "bunker_crossing_stairs_01b",
+                pos: v2.create(-36, 20),
                 scale: 1,
                 ori: 2,
             },
             {
-                type: "bunker_crossing_bathroom",
-                pos: v2.create(22, 4.5),
+                type: "bunker_crossing_stairs_01b",
+                pos: v2.create(36, -14),
                 scale: 1,
                 ori: 0,
             },
             {
-                type: "metal_wall_ext_thicker_15",
-                pos: v2.create(22, 1),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_11",
-                pos: v2.create(16, -6),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_10",
-                pos: v2.create(9.5, -10),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "lab_door_01",
-                pos: v2.create(4.5, -11.5),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_19",
-                pos: v2.create(-9, -10),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_4",
-                pos: v2.create(-19.5, -8),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_10",
-                pos: v2.create(-20, -14.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_17",
-                pos: v2.create(-27, -11),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "metal_wall_ext_thicker_11",
-                pos: v2.create(-23, -1),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "metal_wall_ext_thicker_14",
-                pos: v2.create(-19, 7.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "control_panel_04",
-                pos: v2.create(-15.25, 8.5),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "control_panel_03",
-                pos: v2.create(-15.5, 12.75),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "control_panel_03",
-                pos: v2.create(-15.5, 4.25),
-                scale: 1,
-                ori: 1,
-            },
-            {
-                type: "barrel_01",
-                pos: v2.create(-5, 10.25),
-                scale: 0.8,
-                ori: 0,
-            },
-            {
-                type: "barrel_01",
-                pos: v2.create(-3.25, 12.5),
-                scale: 0.8,
-                ori: 0,
-            },
-            {
-                type: "locker_01",
-                pos: v2.create(1.15, 14.85),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "locker_03",
-                pos: v2.create(4.5, 14.85),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "bookshelf_01",
-                pos: v2.create(10.5, 13),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "bed_sm_01",
-                pos: v2.create(10.5, 10),
-                scale: 1,
-                ori: 3,
-            },
-            {
-                type: "crate_01",
-                pos: v2.create(-5, -6.25),
-                scale: 0.8,
-                ori: 0,
-                ignoreMapSpawnReplacement: true,
-            },
-            {
-                type: "barrel_01",
-                pos: v2.create(-3, -2.5),
-                scale: 0.9,
-                ori: 0,
-            },
-            {
-                type: "vending_01",
-                pos: v2.create(-1.25, -6.5),
-                scale: 1,
-                ori: 2,
-            },
-            {
-                type: "fire_ext_01",
-                pos: v2.create(14, -0.5),
-                scale: 1,
-                ori: 2,
-            },
-            {
-                type: "refrigerator_01",
-                pos: v2.create(8.25, -6.5),
-                scale: 1,
-                ori: 2,
-            },
-            {
-                type: "oven_01",
-                pos: v2.create(12.25, -6.5),
-                scale: 1,
-                ori: 2,
-            },
-            {
-                type: "crossing_door_01",
-                pos: v2.create(-17.85, -2.5),
-                scale: 1,
-                ori: 2,
-            },
-            {
-                type: "couch_01",
-                pos: v2.create(-12, 0),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "screen_01",
-                pos: v2.create(-12, -7.5),
-                scale: 1,
-                ori: 0,
-            },
-            {
-                type: "crate_01",
-                pos: v2.create(-23.5, -4.5),
-                scale: 0.8,
-                ori: 0,
-                ignoreMapSpawnReplacement: true,
-            },
-            {
-                type: "loot_tier_woodaxe",
-                pos: v2.create(-23.5, -8.5),
-                scale: 0.8,
-                ori: 0,
-            },
-            {
-                type: "crate_01",
-                pos: v2.create(-23.5, -14),
-                scale: 0.8,
-                ori: 0,
-                ignoreMapSpawnReplacement: true,
-            },
-            {
-                type: "crossing_door_01",
-                pos: v2.create(-21.5, -20.15),
+                type: "bunker_crossing_stairs_01",
+                pos: v2.create(-34.5, -22.5),
                 scale: 1,
                 ori: 1,
             },
         ],
     },
-    bunker_structure_05: {
-        type: "structure",
-        terrain: {
-            grass: true,
-            // beach: false,
-            // bridge: { nearbyWidthMult: 1.2 },
-            // spawnPriority: 100,
-        },
-        mapObstacleBounds: [
-            collider.createAabbExtents(v2.create(35.5, 28.5), v2.create(6, 6)),
-            collider.createAabbExtents(v2.create(-36, 19), v2.create(6, 6)),
-            collider.createAabbExtents(v2.create(36, -13), v2.create(6, 6)),
-            collider.createAabbExtents(v2.create(-35.5, -22.5), v2.create(6, 6)),
-            collider.createAabbExtents(v2.create(0, 0), v2.create(6, 6)),
+    bunker_crossing_sublevel_01ct: createBunkerCrossingSublevel({
+        floor_images: [
+            {
+                sprite: "map-bunker-crossing-chamber-floor-01a.img",
+                pos: v2.create(-11.44, 27),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
+                rot: 2,
+            },
+            {
+                sprite: "map-bunker-crossing-chamber-floor-01b_ct.img",
+                pos: v2.create(-9.38, 18.5),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
+                rot: 2,
+            },
+            {
+                sprite: "map-bunker-crossing-chamber-floor-01c.img",
+                pos: v2.create(-36.44, 18.5),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
+                rot: 2,
+            },
+            {
+                sprite: "map-bunker-crossing-chamber-floor-03.img",
+                pos: v2.create(28.5, 23.5),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
+                rot: 2,
+            },
+            {
+                sprite: "map-bunker-crossing-chamber-floor-02.img",
+                pos: v2.create(-28.5, -17.5),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
+                rot: 0,
+            },
+            {
+                sprite: "map-bunker-crossing-chamber-floor-01a.img",
+                pos: v2.create(11.45, -21),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
+                rot: 0,
+            },
+            {
+                sprite: "map-bunker-crossing-chamber-floor-01b_ct.img",
+                pos: v2.create(9.39, -12.5),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
+                rot: 0,
+            },
+            {
+                sprite: "map-bunker-crossing-chamber-floor-01c.img",
+                pos: v2.create(36.45, -12.5),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
+                rot: 0,
+            },
         ],
-        bridgeLandBounds: [
-            collider.createAabbExtents(v2.create(35.5, 28.5), v2.create(5, 5)),
-            collider.createAabbExtents(v2.create(-36, 19), v2.create(5, 5)),
-            collider.createAabbExtents(v2.create(36, -13), v2.create(5, 5)),
-            collider.createAabbExtents(v2.create(-35.5, -22.5), v2.create(5, 5)),
-        ],
-        bridgeWaterBounds: [collider.createAabbExtents(v2.create(0, 0), v2.create(5, 5))],
-        layers: [
+        compartmentType: "bunker_crossing_compartment_01ct",
+    }),
+    bunker_crossing_compartment_01ct: createBunkerCrossingCompartment({
+        floor_images: [
             {
-                type: "bunker_crossing_01",
-                pos: v2.create(0, 0),
-                ori: 0,
+                sprite: "map-bunker-crossing-compartment-floor-02ct.img",
+                pos: v2.create(-22.5, -10),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
             },
             {
-                type: "bunker_crossing_sublevel_01",
-                pos: v2.create(0, 0),
-                ori: 0,
-            },
-        ],
-        stairs: [
-            {
-                collision: collider.createAabbExtents(
-                    v2.create(35.6, 28.5),
-                    v2.create(2.6, 2),
-                ),
-                downDir: v2.create(-1, 0),
-            },
-            {
-                collision: collider.createAabbExtents(
-                    v2.create(-36, 19),
-                    v2.create(2, 2.6),
-                ),
-                downDir: v2.create(0, 1),
-            },
-            {
-                collision: collider.createAabbExtents(
-                    v2.create(36, -13),
-                    v2.create(2, 2.6),
-                ),
-                downDir: v2.create(0, -1),
-            },
-            {
-                collision: collider.createAabbExtents(
-                    v2.create(-35.5, -22.5),
-                    v2.create(2.6, 2),
-                ),
-                downDir: v2.create(1, 0),
+                sprite: "map-bunker-crossing-compartment-floor-01ct.img",
+                pos: v2.create(4, 3),
+                scale: 0.5,
+                alpha: 1,
+                tint: 0xffffff,
             },
         ],
-        mask: [
-            collider.createAabbExtents(v2.create(-3.7, 27), v2.create(36.5, 5)),
-            collider.createAabbExtents(v2.create(3.7, -21), v2.create(36.5, 5)),
-            collider.createAabbExtents(v2.create(0, 3), v2.create(30, 18.95)),
-        ],
-    },
+    }),
+    bunker_structure_05ct: createBunkerCrossing({
+        aboveGroundType: "bunker_crossing_01ct",
+        bunkerType: "bunker_crossing_sublevel_01ct",
+    }),
     bunker_hatchet_01: {
         type: "building",
         map: {
@@ -39006,160 +39224,3 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     },
     ...NpcDefs,
 };
-
-// Contact variants reuse the original geometry and object layouts while applying
-// the event-specific art, map colors, terrain rules, and linked layer names.
-
-const conchCompartment = MapObjectDefs.bunker_conch_compartment_01 as BuildingDef;
-MapObjectDefs.bunker_conch_compartment_05 = util.mergeDeep({}, conchCompartment, {
-    floor: {
-        imgs: [
-            {
-                sprite: "map-bunker-conch-compartment-floor-03e.img",
-                pos: v2.create(-3, -0.75),
-                scale: 0.5,
-                alpha: 1,
-                tint: 0xffffff,
-            },
-            {
-                sprite: "map-bunker-conch-compartment-floor-03f.img",
-                pos: v2.create(9.75, -17.5),
-                scale: 0.5,
-                alpha: 1,
-                tint: 0xffffff,
-            },
-        ],
-    },
-}) as BuildingDef;
-
-const conchSublevel = MapObjectDefs.bunker_conch_sublevel_01 as BuildingDef;
-MapObjectDefs.bunker_conch_sublevel_05 = util.mergeDeep({}, conchSublevel, {
-    floor: {
-        imgs: [
-            {
-                sprite: "map-bunker-conch-chamber-floor-01e.img",
-                pos: v2.create(4, 5),
-                scale: 0.5,
-                alpha: 1,
-                tint: 0xffffff,
-            },
-            {
-                sprite: "map-bunker-conch-chamber-floor-02e.img",
-                pos: v2.create(34.86, -29.9),
-                scale: 0.5,
-                alpha: 1,
-                tint: 0xffffff,
-            },
-        ],
-    },
-    mapObjects: conchSublevel.mapObjects.map((obj, idx, objects) =>
-        idx === objects.length - 1 ? { ...obj, type: "bunker_conch_compartment_05" } : obj,
-    ),
-}) as BuildingDef;
-
-MapObjectDefs.bunker_structure_04d = util.mergeDeep(
-    {},
-    MapObjectDefs.bunker_structure_04,
-    {
-        terrain: {
-            grass: false,
-            waterEdge: {
-                dir: v2.create(-1, 0),
-                distMin: 15,
-                distMax: 16,
-            },
-        },
-        layers: [
-            { type: "bunker_conch_01", pos: v2.create(0, 0), ori: 0 },
-            { type: "bunker_conch_sublevel_05", pos: v2.create(0, 0), ori: 0 },
-        ],
-    },
-) as StructureDef;
-
-const crossing = MapObjectDefs.bunker_crossing_01 as BuildingDef;
-MapObjectDefs.bunker_crossing_05 = util.mergeDeep({}, crossing, {
-    map: {
-        display: true,
-        shapes: [
-            {
-                collider: collider.createAabbExtents(v2.create(0, 0), v2.create(5, 5)),
-                color: 0x562cff,
-            },
-        ],
-    },
-    floor: {
-        surfaces: [],
-        imgs: [
-            {
-                sprite: "map-bunker-crossing-floor-01e.img",
-                pos: v2.create(0, 0),
-                scale: 0.5,
-                alpha: 1,
-                tint: 0xffffff,
-            },
-        ],
-    },
-}) as BuildingDef;
-
-const crossingCompartment = MapObjectDefs.bunker_crossing_compartment_01 as BuildingDef;
-MapObjectDefs.bunker_crossing_compartment_01d = util.mergeDeep(
-    {},
-    crossingCompartment,
-    {
-        floor: {
-            imgs: [
-                {
-                    sprite: "map-bunker-crossing-compartment-floor-02e.img",
-                    pos: v2.create(-22.5, -10),
-                    scale: 0.5,
-                    alpha: 1,
-                    tint: 0xffffff,
-                },
-                {
-                    sprite: "map-bunker-crossing-compartment-floor-01e.img",
-                    pos: v2.create(4, 3),
-                    scale: 0.5,
-                    alpha: 1,
-                    tint: 0xffffff,
-                },
-            ],
-        },
-    },
-) as BuildingDef;
-
-const crossingSublevel = MapObjectDefs.bunker_crossing_sublevel_01 as BuildingDef;
-const crossingFloorImgs = crossingSublevel.floor.imgs.map((img, idx) =>
-    idx === 1 || idx === 6
-        ? { ...img, sprite: "map-bunker-crossing-chamber-floor-02e.img" }
-        : img,
-);
-MapObjectDefs.bunker_crossing_sublevel_01d = util.mergeDeep({}, crossingSublevel, {
-    floor: { imgs: crossingFloorImgs },
-    mapObjects: crossingSublevel.mapObjects.map((obj, idx, objects) =>
-        idx === objects.length - 1
-            ? { ...obj, type: "bunker_crossing_compartment_01d" }
-            : obj,
-    ),
-}) as BuildingDef;
-
-MapObjectDefs.bunker_structure_05d = util.mergeDeep(
-    {},
-    MapObjectDefs.bunker_structure_05,
-    {
-        map: { color: 0x684dd1 },
-        terrain: {
-            grass: true,
-            beach: false,
-            bridge: { nearbyWidthMult: 1.2 },
-            spawnPriority: 100,
-        },
-        layers: [
-            { type: "bunker_crossing_05", pos: v2.create(0, 0), ori: 0 },
-            {
-                type: "bunker_crossing_sublevel_01d",
-                pos: v2.create(0, 0),
-                ori: 0,
-            },
-        ],
-    },
-) as StructureDef;

@@ -14,7 +14,7 @@ util.mergeDeep(Config, {
     clientTheme: "may",
     modes: [
         // { mapName: "may", teamMode: TeamMode.Duo, enabled: true },
-        { mapName: "cobalt", teamMode: TeamMode.Duo, enabled: true },
+        { mapName: "contact", teamMode: TeamMode.Duo, enabled: true },
     ],
     br_modes: [
         // { mapName: "may", teamMode: TeamMode.Duo, enabled: true },
