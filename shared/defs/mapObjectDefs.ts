@@ -12042,7 +12042,7 @@ function createCandyStore<T extends BuildingDef>(e: Partial<T>): T {
             ],
             imgs: [
                 {
-                    sprite: "map-candy-store-firstfloor.img",
+                    sprite: "map-building-candy-store-floor-01.img",
                     pos: v2.create(0, 0),
                     scale: 0.5,
                     alpha: 1,
@@ -12063,7 +12063,7 @@ function createCandyStore<T extends BuildingDef>(e: Partial<T>): T {
             vision: { dist: 5.5, width: 2.76, linger: 0.5, fadeRate: 6.0 },
             imgs: [
                 {
-                    sprite: "map-candy-store-ceiling-01.img",
+                    sprite: "map-building-candy-store-ceiling-01.img",
                     pos: v2.create(0, 0.45),
                     scale: 0.485,
                     alpha: 1,
@@ -12202,7 +12202,7 @@ function createCandyStore<T extends BuildingDef>(e: Partial<T>): T {
             },
             { type: "vending_01", pos: v2.create(-19.0, -11.5), scale: 1.3, ori: 1 },
             { type: "control_panel_03", pos: v2.create(-19.5, 13.3), scale: 1, ori: 1 },
-            { type: "crate_02b", pos: v2.create(1.0, 10.5), scale: 1, ori: 0 },
+            { type: "crate_02v", pos: v2.create(1.0, 10.5), scale: 1, ori: 0 },
             { type: "crate_01", pos: v2.create(8.0, 12.5), scale: 1, ori: 0 },
         ],
     };
@@ -12242,7 +12242,7 @@ function createCandyStoreBasement<T extends BuildingDef>(e: Partial<T>): T {
             ],
             imgs: [
                 {
-                    sprite: "map-candy-store-basement-floor.img",
+                    sprite: "map-building-candy-store-basement-01.img",
                     pos: v2.create(0, 0),
                     scale: 0.5,
                     alpha: 1,
@@ -12329,8 +12329,8 @@ function createCandyStoreBasement<T extends BuildingDef>(e: Partial<T>): T {
             { type: "toilet_01", pos: v2.create(-18.0, -12.3), scale: 1, ori: 1 },
             { type: "crate_01", pos: v2.create(2.8, -4.6), scale: 1, ori: 0 },
             { type: "crate_01", pos: v2.create(9.0, -9.5), scale: 1, ori: 0 },
-            { type: "crate_02b", pos: v2.create(8.3, -4.8), scale: 1, ori: 0 },
-            { type: "crate_02b", pos: v2.create(2.7, -9.8), scale: 1, ori: 0 },
+            { type: "crate_02v", pos: v2.create(8.3, -4.8), scale: 1, ori: 0 },
+            { type: "crate_02v", pos: v2.create(2.7, -9.8), scale: 1, ori: 0 },
             {
                 type: "crate_frenemies_metal",
                 pos: v2.create(-17.0, -8.0),
@@ -12721,12 +12721,12 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             residue: "map-bush-res-06.img",
         },
     }),
-    bush_13_valentine: createBush({
+    bush_01v: createBush({
         collision: collider.createCircle(v2.create(0, 0), 2.5),
         map: { display: true, color: 14853306, scale: 1 },
         img: {
-            sprite: "map-bush-13.img",
-            residue: "map-bush-res-13.img",
+            sprite: "map-bush-01v.img",
+            residue: "map-bush-res-01v.img",
         },
     }),
     bush_13: createBush({
@@ -12807,8 +12807,8 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         hitParticle: "leafRiver",
         explodeParticle: "leafRiver",
         img: {
-            sprite: "bush-rose.img",
-            residue: "map-bush-res-13.img",
+            sprite: "map-bush-rose.img",
+            residue: "map-bush-res-01v.img",
             alpha: 1.0,
             scale: 0.5,
         },
@@ -13912,7 +13912,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         img: { sprite: "map-crate-22.img" },
         sound: { explode: "crate_break_01" },
     }),
-    crate_02b: createCrate({
+    crate_02v: createCrate({
         obstacleType: "crate",
         health: 140,
         loot: [tierLoot("tier_world", 3, 5), tierLoot("tier_valentine_box", 1, 2)],
@@ -13923,19 +13923,14 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         hitParticle: "woodChip",
         explodeParticle: "woodChip",
         img: {
-            sprite: "map-crate-02b.img",
+            sprite: "map-crate-02v.img",
             residue: "map-crate-res.img",
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
             zIdx: 10,
         },
-        sound: {
-            bullet: "wood_bullet",
-            punch: "wood_punch",
-            explode: "crate_break_01",
-            enter: "none",
-        },
+        sound: { explode: "crate_break_01" },
     } as unknown as Partial<ObstacleDef>),
     crate_frenemies_metal: createCrate({
         health: 350,
@@ -13947,7 +13942,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         map: { display: false },
         terrain: { grass: true, beach: false },
         img: {
-            sprite: "map-crate-frenemies-metal.img",
+            sprite: "map-case-frenemies-01.img",
             residue: "map-metal-crate-frenemies-res.img",
         },
         sound: {
@@ -15342,7 +15337,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         collidable: true,
         destructible: false,
         img: {
-            sprite: "map-candy-store-front-desk.img",
+            sprite: "map-candy-store-front-desk-01.img",
             residue: "map-table-res.img",
             scale: 0.5,
             alpha: 1.0,
@@ -15364,8 +15359,8 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         health: 90,
         collidable: true,
         img: {
-            sprite: "map-candy-store-basket.img",
-            residue: "map-candy-store-basket-res.img",
+            sprite: "map-candy-store-basket-01.img",
+            residue: "map-candy-store-basket-res-01.img",
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
@@ -15387,7 +15382,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         collidable: true,
         img: {
             sprite: "map-candy-store-display-01.img",
-            residue: "map-displays-res.img",
+            residue: "map-display-res-01.img",
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
@@ -15403,7 +15398,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         collidable: true,
         img: {
             sprite: "map-candy-store-display-02.img",
-            residue: "map-displays-res.img",
+            residue: "map-display-res-01.img",
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
@@ -15419,7 +15414,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         collidable: true,
         img: {
             sprite: "map-candy-store-display-03.img",
-            residue: "map-displays-res.img",
+            residue: "map-display-res-01.img",
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
@@ -15435,7 +15430,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         collidable: true,
         img: {
             sprite: "map-candy-store-display-04.img",
-            residue: "map-displays-res.img",
+            residue: "map-display-res-01.img",
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
@@ -15451,7 +15446,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         collidable: true,
         img: {
             sprite: "map-candy-store-display-05.img",
-            residue: "map-displays-res.img",
+            residue: "map-display-res-01.img",
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
@@ -15471,7 +15466,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         collidable: true,
         img: {
             sprite: "map-candy-store-display-06.img",
-            residue: "map-displays-res.img",
+            residue: "map-display-res-01.img",
             scale: 0.5,
             alpha: 1.0,
             tint: 0xffffff,
@@ -16522,7 +16517,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             },
             terrain: { grass: true, beach: true },
             img: {
-                sprite: "vending_01v.img",
+                sprite: "map-vending-chocolate-01.img",
                 residue: "map-vending-res.img",
                 scale: 0.5,
                 alpha: 1,
