@@ -54,10 +54,10 @@ const SpriteAnimDefs = {
     },
     skitter_base: {
         sprites: [
-            "skitter-walking-1.img",
-            "skitter-walking-2.img",
-            "skitter-walking-3.img",
-            "skitter-walking-4.img",
+            "map-skitter-walking-01.img",
+            "map-skitter-walking-02.img",
+            "map-skitter-walking-03.img",
+            "map-skitter-walking-04.img",
         ],
         loop: true,
         speed: 30,

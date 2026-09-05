@@ -52,7 +52,7 @@ const mapDef = {
         airdrop: {
             planeImg: "map-plane-01.img",
             planeSound: "airdrop_plane",
-            airdropImg: "map-chute-01-perk.img",
+            airdropImg: "map-chute-01p.img",
             tint: 0xffffff,
         },
     },
@@ -183,6 +183,7 @@ const mapDef = {
             {
                 tree_07: "tree_01p",
                 tree_01: "tree_01p",
+                tree_13: "tree_13p",
                 crate_01: "crate_01p",
                 silo_01: "silo_09",
                 bush_01: "bush_01p",

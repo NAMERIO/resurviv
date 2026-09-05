@@ -21,6 +21,7 @@ export interface StructureDef {
         lootOnly?: boolean;
     }>;
     mask: AABB[];
+    aboveGroundType?: string;
     bunkerType?: string;
     structureType?: string;
     interiorSound?: {

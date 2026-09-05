@@ -161,7 +161,7 @@ export const NpcDefs: Record<string, NpcDef> = {
         hitParticle: "skitterBlood",
         explodeParticle: "skitterBlood",
         img: {
-            sprite: "skitter-walking-1.img",
+            sprite: "map-skitter-walking-01.img",
             residue: "map-skitter-res.img",
             scale: 0.6,
             alpha: 1,

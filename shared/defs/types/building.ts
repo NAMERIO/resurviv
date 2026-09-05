@@ -67,6 +67,7 @@ export interface BuildingDef {
         inheritOri?: boolean;
         puzzlePiece?: string;
     }>;
+    compartmentType?: string;
     porch_01?: string;
     stand?: string;
     tree?: string | Record<string, number>;

@@ -339,7 +339,7 @@ export const BuildingSprites = {
         "map/map-building-police-ceiling-03p.svg",
         "map/map-building-police-floor-01p.svg",
         "map/map-building-police-floor-02p.svg",
-        "map/map-building-reactor.svg",
+        "map/map-building-reactor-floor-01.svg",
         "map/map-building-reactor-ceiling-01.svg",
     ],
 };
