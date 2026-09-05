@@ -15683,11 +15683,11 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
     } as unknown as Partial<ObstacleDef>),
     tree_01m: createTree({
         map: { color: 10306003 },
-        img: { sprite: "lasr_swrds_tree_01.img" },
+        img: { sprite: "map-tree-01m.img" },
     } as unknown as Partial<ObstacleDef>),
     tree_02m: createTree({
         map: { color: 4598631 },
-        img: { sprite: "lasr_swrds_tree_02.img" },
+        img: { sprite: "map-tree-02m.img" },
     } as unknown as Partial<ObstacleDef>),
     crate_23: createCrate({
         health: 150,
@@ -15697,7 +15697,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         loot: [tierLoot("tier_space", 2, 3)],
         map: { display: false },
         terrain: { grass: true, beach: false },
-        img: { sprite: "space_crate.img" },
+        img: { sprite: "map-crate-23.img" },
         sound: {
             bullet: "wall_bullet",
             punch: "metal_punch",
@@ -36116,10 +36116,10 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
         },
     },
     crate_01m: createCrate({
-        img: { sprite: "lasr_Swrds_Crate.img" },
+        img: { sprite: "map-crate-01m.img" },
     }),
     bush_01m: createBush({
-        img: { sprite: "lasr_swrds_bush.img" },
+        img: { sprite: "map-bush-01m.img" },
         map: { color: 61183 },
     } as unknown as Partial<ObstacleDef>),
     mode_arena_01: {
