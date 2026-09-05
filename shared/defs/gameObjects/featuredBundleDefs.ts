@@ -18,14 +18,14 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         size: "small",
         items: ["outfitSunset", "outfitMilitary"],
         price: 750,
-        durationDays: 7,    
+        durationDays: 7,
     },
     bundle_srandom2: {
-    name: "Random Mini",
-    size: "small",
-    items: ["outfitPaintSplat", "outfitZebra"],
-    price: 1200,
-    durationDays: 7,
+        name: "Random Mini",
+        size: "small",
+        items: ["outfitPaintSplat", "outfitZebra"],
+        price: 1200,
+        durationDays: 7,
     },
     bundle_lrandom3: {
         name: "Random Large",
@@ -243,11 +243,11 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         durationDays: 7,
     },
     bundle_lrandom4: {
-    name: "Random Large",
-    size: "large",
-    items: ["outfitCrusader", "outfitNeonEyesore", "outfitMojo", "outfitOldArt"],
-    price: 1950,
-    durationDays: 7,
+        name: "Random Large",
+        size: "large",
+        items: ["outfitCrusader", "outfitNeonEyesore", "outfitMojo", "outfitOldArt"],
+        price: 1950,
+        durationDays: 7,
     },
     bundle_bullseye: {
         name: "Bullseye Set",
@@ -285,7 +285,6 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         durationDays: 7,
     },
 };
-
 
 export const FeaturedBundlePages = [
     {
