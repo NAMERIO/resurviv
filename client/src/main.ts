@@ -2695,10 +2695,12 @@ export class Application {
         const battleRoyaleLobby = !!miniGameDef.battleRoyale;
         const singleTeam = !!miniGameDef.singleTeam;
         type ArenaLobbyPlayer = (typeof this.teamMenu.players)[number];
-        const formatArenaPlayerName = (player: ArenaLobbyPlayer) =>
-            player.clanName
-                ? `${helpers.getClanTagHtml(player.clanName, player.clanTagColor || "")} ${helpers.htmlEscape(player.name)}`
-                : helpers.htmlEscape(player.name);
+        const formatArenaPlayerName = (player: ArenaLobbyPlayer) => {
+            const playerName = helpers.htmlEscape(player.accountSlug || player.name);
+            return player.clanName
+                ? `${helpers.getClanTagHtml(player.clanName, player.clanTagColor || "")} ${playerName}`
+                : playerName;
+        };
         const appendArenaPlayerIdentity = (
             card: JQuery<HTMLElement>,
             player?: ArenaLobbyPlayer,
@@ -2830,11 +2832,7 @@ export class Application {
                         .append(
                             $("<span>", {
                                 class: "arena-br-lobby-value",
-                                html: owner
-                                    ? owner.clanName
-                                        ? `${helpers.getClanTagHtml(owner.clanName, owner.clanTagColor || "")} ${helpers.htmlEscape(owner.name)}`
-                                        : helpers.htmlEscape(owner.name)
-                                    : "Waiting",
+                                html: owner ? formatArenaPlayerName(owner) : "Waiting",
                             }),
                         ),
                 )

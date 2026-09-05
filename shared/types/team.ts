@@ -34,7 +34,8 @@ export type TeamMenuErrorType =
     | "arena_cooldown"
     | "arena_round_finished"
     | "arena_need_teams"
-    | "br_need_players";
+    | "br_need_players"
+    | "account_required";
 
 export interface RoomData {
     roomUrl: string;
@@ -72,6 +73,7 @@ export interface TeamJoinGameMsg {
 
 export interface TeamMenuPlayer {
     name: string;
+    accountSlug?: string;
     playerId: number;
     isLeader: boolean;
     inGame: boolean;

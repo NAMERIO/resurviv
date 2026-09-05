@@ -79,6 +79,9 @@ class Player {
     get data(): TeamMenuPlayer {
         return {
             name: this.name,
+            accountSlug: this.room?.data.arena
+                ? this.accountSlug || undefined
+                : undefined,
             inGame: this.inGame,
             isLeader: this.isLeader,
             playerId: this.playerId,
@@ -100,6 +103,7 @@ class Player {
         public socket: WSContext<SocketData>,
         public teamMenu: TeamMenu,
         public userId: string | null,
+        public accountSlug: string,
         public ip: string,
     ) {
         this.encodedIp = hashIp(ip);
@@ -1529,19 +1533,23 @@ export class TeamMenu {
                 wsRateLimit.ipConnected(ip!);
 
                 let userId: string | null = null;
+                let accountSlug = "";
                 const sessionId = getCookie(c, "session") ?? null;
 
                 if (sessionId) {
                     try {
                         const account = await validateSessionToken(sessionId);
                         userId = account.user?.id || null;
+                        accountSlug = account.user?.slug || "";
 
                         if (account.user?.banned) {
                             userId = null;
+                            accountSlug = "";
                         }
                     } catch (err) {
                         this.logger.error(`Failed to validate session:`, err);
                         userId = null;
+                        accountSlug = "";
                     }
                 }
 
@@ -1570,7 +1578,12 @@ export class TeamMenu {
                             ws.close();
                             return;
                         }
-                        teamMenu.onOpen(ws as WSContext<SocketData>, userId, ip!);
+                        teamMenu.onOpen(
+                            ws as WSContext<SocketData>,
+                            userId,
+                            accountSlug,
+                            ip!,
+                        );
                     },
 
                     onMessage(event, ws) {
@@ -1604,8 +1617,13 @@ export class TeamMenu {
         );
     }
 
-    onOpen(ws: WSContext<SocketData>, userId: string | null, ip: string) {
-        const player = new Player(ws, this, userId, ip);
+    onOpen(
+        ws: WSContext<SocketData>,
+        userId: string | null,
+        accountSlug: string,
+        ip: string,
+    ) {
+        const player = new Player(ws, this, userId, accountSlug, ip);
         ws.raw!.player = player;
 
         let players = this.playersByIp.get(player.encodedIp);
@@ -1662,7 +1680,7 @@ export class TeamMenu {
                     const arena = !!msg.data.arena || !!msg.data.roomData.arena;
                     if (arena && !player.userId) {
                         this.logger.warn("Guest attempted to create a private lobby");
-                        player.send("error", { type: "create_failed" });
+                        player.send("error", { type: "account_required" });
                         break;
                     }
                     // don't allow creating a team if there's no team mode enabled
@@ -1726,6 +1744,12 @@ export class TeamMenu {
                             `Join rejected: arena mismatch room=${room.data.arena} req=${!!msg.data.arena}`,
                         );
                         player.send("error", { type: "join_not_found" });
+                        break;
+                    }
+
+                    if (room.data.arena && !player.userId) {
+                        this.logger.warn("Guest attempted to join a private lobby");
+                        player.send("error", { type: "account_required" });
                         break;
                     }
 
