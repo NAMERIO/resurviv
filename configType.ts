@@ -157,6 +157,9 @@ export interface ConfigType {
      */
     lockClanJoins: boolean;
 
+    /** Blocks new tournament bets while preserving existing bets and settlement. */
+    lockTournamentBetting: boolean;
+
     /**
      * Clan GP scoring values. Kill CGP is awarded per kill and can be modified
      * by survival/matchup multipliers. Win CGP is awarded per win.
