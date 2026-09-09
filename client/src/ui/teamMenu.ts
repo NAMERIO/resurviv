@@ -98,6 +98,7 @@ function errorTypeToString(type: string, localization: Localization) {
         arena_round_finished: localization.translate("index-arena-round-finished"),
         arena_need_teams: localization.translate("index-arena-need-teams"),
         br_need_players: localization.translate("game-waiting-for-players"),
+        account_required: localization.translate("index-create-account-prompt-1"),
         kicked: localization.translate("index-team-kicked"),
         banned: localization.translate("index-ip-banned"),
         behind_proxy: "behind_proxy", // this will get passed to the main app to show a modal
@@ -140,6 +141,7 @@ export class TeamMenu {
         playerIcon?: string;
         clanName?: string;
         clanTagColor?: string;
+        accountSlug?: string;
         isLeader: boolean;
         team?: ArenaTeam;
         spectator?: boolean;
