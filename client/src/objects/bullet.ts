@@ -104,6 +104,15 @@ export class BulletBarn {
         );
     }
 
+    m_clear() {
+        for (const bullet of this.bullets) {
+            bullet.alive = false;
+            bullet.collided = false;
+            bullet.container.visible = false;
+            bullet.container.parent?.removeChild(bullet.container);
+        }
+    }
+
     addBullet(bullet: Bullet, playerBarn: PlayerBarn, renderer: Renderer) {
         let b: (typeof this.bullets)[number] | null = null;
 

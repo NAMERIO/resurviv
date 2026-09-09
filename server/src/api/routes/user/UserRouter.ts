@@ -104,6 +104,7 @@ import {
     syncDiscordServerTagReward,
 } from "./auth/authUtils";
 import { PassRouter } from "./PassRouter";
+import { ArenaReplayRouter } from "./ArenaReplayRouter";
 
 export const UserRouter = new Hono<Context>();
 
@@ -882,6 +883,7 @@ UserRouter.use(databaseEnabledMiddleware);
 UserRouter.use(rateLimitMiddleware(40, 60 * 1000));
 UserRouter.use(authMiddleware);
 UserRouter.route("/", PassRouter);
+UserRouter.route("/arena_replays", ArenaReplayRouter);
 
 UserRouter.post("/profile", async (c) => {
     const user = c.get("user")!;

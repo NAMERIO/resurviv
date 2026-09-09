@@ -210,9 +210,27 @@ export class BitStream extends bb.BitStream {
 
     writeBytes(src: BitStream, offset: number, length: number) {
         assert(this.index % 8 == 0);
-        const data = new Uint8Array(src._view.view.buffer, offset, length);
+        const sourceView = src._view.view;
+        const data = new Uint8Array(
+            sourceView.buffer,
+            sourceView.byteOffset + offset,
+            length,
+        );
         this._view.view.set(data, this.index / 8);
         this.index += length * 8;
+    }
+
+    readBytes(length: number): Uint8Array {
+        assert(this.index % 8 == 0);
+        const start = this.byteIndex;
+        const sourceView = this._view.view;
+        const data = new Uint8Array(
+            sourceView.buffer,
+            sourceView.byteOffset + start,
+            length,
+        ).slice();
+        this.index += length * 8;
+        return data;
     }
 
     writeAlignToNextByte() {
@@ -372,6 +390,7 @@ export enum MsgType {
     Domination,
     BedWar,
     PlantTheBomb,
+    Replay,
 }
 
 export enum PickupMsgType {
@@ -430,6 +449,7 @@ export {
     PlantTheBombState,
 } from "./plantTheBombMsg";
 export { PlayerStatsMsg } from "./playerStatsMsg";
+export { ReplayMsg } from "./replayMsg";
 export { RoleAnnouncementMsg } from "./roleAnnouncementMsg";
 export { SpectateMsg } from "./spectateMsg";
 export { getPlayerStatusUpdateRate, UpdateMsg } from "./updateMsg";

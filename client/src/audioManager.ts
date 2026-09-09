@@ -28,6 +28,8 @@ interface Options {
 }
 
 export class AudioManager {
+    /** Used while replay playback is seeking through historical ticks. */
+    suppressPlayback = false;
     mute = false;
     // Mute controlled by external systems (e.g. ads)
     forcedMute = false;
@@ -184,6 +186,9 @@ export class AudioManager {
     }
 
     playSound(sound: string, options = {} as Partial<Options>) {
+        if (this.suppressPlayback) {
+            return null;
+        }
         if (!sound || sound == "none") {
             return null;
         }
@@ -384,6 +389,18 @@ export class AudioManager {
 
     stopAll() {
         CreateJS.Sound.stop();
+    }
+
+    kill() {
+        this.stopAll();
+    }
+
+    pause() {
+        CreateJS.Sound.setMute(true);
+    }
+
+    resume() {
+        CreateJS.Sound.setMute(this.mute || this.forcedMute);
     }
 
     allLoaded() {

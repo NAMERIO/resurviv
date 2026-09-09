@@ -50,6 +50,13 @@
       "when": 1774560000000,
       "tag": "0012_april_thanks_reward",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1788900000000,
+      "tag": "0039_arena_replays",
+      "breakpoints": true
     }
   ]
 }

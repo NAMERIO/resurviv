@@ -1781,6 +1781,14 @@ export class UiManager2 {
         });
     }
 
+    clearKillFeed() {
+        for (const line of this.newState.killFeed) {
+            line.text = "";
+            line.opacity = 0;
+            line.ticker = Number.MAX_VALUE;
+        }
+    }
+
     getKillFeedText(
         targetName: string,
         killerName: string,

@@ -38,6 +38,7 @@ import { sendCurrentBundleRotation } from "../../../utils/bundleLogging";
 import { logIpToDiscord } from "../../../utils/ipLogging";
 import { isBehindProxy } from "../../../utils/serverHelpers";
 import {
+    type SaveArenaReplayBody,
     type SaveGameBody,
     zAddClanWarCgpBody,
     zListFeaturedYoutubersBody,
@@ -67,6 +68,8 @@ import { getRedisClient } from "../../cache";
 import { leaderboardCache } from "../../cache/leaderboard";
 import { db } from "../../db";
 import {
+    arenaReplayParticipantsTable,
+    arenaReplaysTable,
     auctionListingTable,
     clanMatchupHistoryTable,
     clanMemberStatsTable,
@@ -84,6 +87,11 @@ import {
     userQuestTable,
     usersTable,
 } from "../../db/schema";
+import {
+    deleteReplayObject,
+    replayStorageEnabled,
+    storeReplayObject,
+} from "../../replayStorage";
 import { getGlobalRankLeaderboard } from "../stats/global_rank";
 import { MOCK_USER_ID } from "../user/auth/mock";
 import { passType, premiumPassUnlockType } from "../user/PassRouter";
@@ -1048,6 +1056,75 @@ export const PrivateRouter = new Hono<Context>()
         await updateClanStats(matchData);
 
         server.logger.info(`Saved game data for ${matchData[0].gameId}`);
+        return c.json({}, 200);
+    })
+    .post("/save_arena_replay", databaseEnabledMiddleware, async (c) => {
+        if (!replayStorageEnabled()) {
+            return c.json({ error: "Replay storage is disabled" }, 503);
+        }
+
+        const data = (await c.req.json()) as SaveArenaReplayBody;
+        if (!data.gameId || !data.lobbyCode || !data.replay?.data) {
+            return c.json({ error: "Invalid replay payload" }, 400);
+        }
+
+        const existing = await db.query.arenaReplaysTable.findFirst({
+            where: eq(arenaReplaysTable.gameId, data.gameId),
+            columns: { gameId: true },
+        });
+        if (existing) return c.json({}, 200);
+
+        const replay = Buffer.from(data.replay.data, "base64");
+        const stored = await storeReplayObject(data.gameId, replay);
+        const participants = [
+            ...new Map(
+                data.participants
+                    .filter((participant) => participant.userId)
+                    .map((participant) => [participant.userId, participant]),
+            ).values(),
+        ];
+        const expiresAt = new Date(
+            Date.now() + Math.max(1, Config.replays.retentionDays) * 86_400_000,
+        );
+
+        try {
+            await db.transaction(async (tx) => {
+                await tx.insert(arenaReplaysTable).values({
+                    gameId: data.gameId,
+                    lobbyCode: data.lobbyCode,
+                    region: data.region,
+                    mapName: data.mapName,
+                    miniGame: data.miniGame,
+                    teamMode: data.teamMode,
+                    durationMs: Math.max(0, Math.round(data.durationMs)),
+                    playerCount: Math.max(0, Math.round(data.playerCount)),
+                    spectatorCount: Math.max(0, Math.round(data.spectatorCount)),
+                    replayVersion: data.replay.version,
+                    protocolVersion: data.replay.protocolVersion,
+                    objectKey: stored.objectKey,
+                    sizeBytes: stored.sizeBytes,
+                    compressedSizeBytes: stored.compressedSizeBytes,
+                    expiresAt,
+                });
+                if (participants.length) {
+                    await tx.insert(arenaReplayParticipantsTable).values(
+                        participants.map((participant) => ({
+                            gameId: data.gameId,
+                            userId: participant.userId,
+                            playerName: participant.playerName,
+                            spectator: participant.spectator,
+                        })),
+                    );
+                }
+            });
+        } catch (error) {
+            await deleteReplayObject(stored.objectKey).catch(() => undefined);
+            throw error;
+        }
+
+        server.logger.info(
+            `Saved compressed arena replay ${data.gameId} (${(stored.compressedSizeBytes / 1_000_000).toFixed(2)} MB)`,
+        );
         return c.json({}, 200);
     })
     .post(

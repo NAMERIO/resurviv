@@ -188,6 +188,14 @@ export class PlaneBarn {
         }
     }
 
+    m_clear() {
+        this.m_free();
+        for (const zone of this.airstrikeZones) {
+            zone.active = false;
+            zone.gfx.visible = false;
+        }
+    }
+
     updatePlanes(planeData: PlaneData[], map: Map) {
         // Mark existing planes as dirty
         for (let i = 0; i < this.planes.length; i++) {

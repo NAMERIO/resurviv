@@ -34,6 +34,7 @@ import { cleanupOldLogs, isBanned } from "./routes/private/ModerationRouter";
 import { PrivateRouter } from "./routes/private/private";
 import { StatsRouter } from "./routes/stats/StatsRouter";
 import { TournamentRouter } from "./routes/tournament/TournamentRouter";
+import { purgeExpiredArenaReplayMetadata } from "./routes/user/ArenaReplayRouter";
 import { AuthRouter } from "./routes/user/AuthRouter";
 import { UserRouter } from "./routes/user/UserRouter";
 
@@ -305,7 +306,8 @@ new Cron("0 0 * * *", async () => {
     try {
         await cleanupOldLogs();
         await deleteExpiredSessions();
-        server.logger.info("Deleted old logs and expired sessions");
+        await purgeExpiredArenaReplayMetadata();
+        server.logger.info("Deleted old logs, expired sessions, and replay metadata");
     } catch (err) {
         server.logger.error("Failed to run cleanup script", err);
     }

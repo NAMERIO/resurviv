@@ -8,7 +8,7 @@ import {
     type ObjectType,
 } from "./objectSerializeFns";
 
-function serializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
+export function serializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     s.writeBoolean(data.healthDirty);
     if (data.healthDirty) s.writeFloat(data.health, 0, 100, 8);
 
@@ -101,7 +101,7 @@ function serializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     s.writeAlignToNextByte();
 }
 
-function deserializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
+export function deserializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     data.healthDirty = s.readBoolean();
     if (data.healthDirty) {
         data.health = s.readFloat(0, 100, 8);
@@ -330,7 +330,7 @@ export interface GasData {
     radNew: number;
 }
 
-function serializeGasData(s: BitStream, data: GasData) {
+export function serializeGasData(s: BitStream, data: GasData) {
     s.writeUint8(data.mode);
     s.writeFloat32(data.duration);
     s.writeFloat32(data.timerDuration);
@@ -341,7 +341,7 @@ function serializeGasData(s: BitStream, data: GasData) {
     s.writeFloat(data.radNew, 0, 2048, 16);
 }
 
-function deserializeGasData(s: BitStream, data: GasData) {
+export function deserializeGasData(s: BitStream, data: GasData) {
     data.mode = s.readUint8();
     data.duration = s.readFloat32();
     data.timerDuration = s.readFloat32();

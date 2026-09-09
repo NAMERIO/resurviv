@@ -137,6 +137,8 @@ export const GameConfig = {
     // remember to bump this every time a serialization function is changed
     // or a definition item added, removed or moved
     protocolVersion: 1036,
+    replayVersion: 3,
+    replayMinVersion: 2,
     Input,
     EmoteSlot,
     WeaponSlot,

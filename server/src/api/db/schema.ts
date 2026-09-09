@@ -61,6 +61,50 @@ export const usersTable = pgTable("users", {
         .$type<Loadout>(),
 });
 
+export const arenaReplaysTable = pgTable(
+    "arena_replays",
+    {
+        gameId: uuid("game_id").primaryKey(),
+        lobbyCode: text("lobby_code").notNull(),
+        region: text("region").notNull(),
+        mapName: text("map_name").notNull(),
+        miniGame: text("mini_game").notNull(),
+        teamMode: integer("team_mode").notNull(),
+        durationMs: integer("duration_ms").notNull(),
+        playerCount: integer("player_count").notNull(),
+        spectatorCount: integer("spectator_count").notNull(),
+        replayVersion: integer("replay_version").notNull(),
+        protocolVersion: integer("protocol_version").notNull(),
+        objectKey: text("object_key").notNull(),
+        sizeBytes: integer("size_bytes").notNull(),
+        compressedSizeBytes: integer("compressed_size_bytes").notNull(),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    },
+    (table) => [
+        index("arena_replays_lobby_created_idx").on(table.lobbyCode, table.createdAt),
+        index("arena_replays_expires_idx").on(table.expiresAt),
+    ],
+);
+
+export const arenaReplayParticipantsTable = pgTable(
+    "arena_replay_participants",
+    {
+        gameId: uuid("game_id")
+            .notNull()
+            .references(() => arenaReplaysTable.gameId, { onDelete: "cascade" }),
+        userId: text("user_id")
+            .notNull()
+            .references(() => usersTable.id, { onDelete: "cascade" }),
+        playerName: text("player_name").notNull(),
+        spectator: boolean("spectator").notNull(),
+    },
+    (table) => [
+        primaryKey({ columns: [table.gameId, table.userId] }),
+        index("arena_replay_participants_user_idx").on(table.userId),
+    ],
+);
+
 export type UsersTableInsert = typeof usersTable.$inferInsert;
 export type UsersTableSelect = typeof usersTable.$inferSelect;
 

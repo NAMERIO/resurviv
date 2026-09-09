@@ -97,6 +97,14 @@ interface ContainerWithMask extends PIXI.Container {
 }
 
 type PrevStatus = Pick<PlayerStatus, "downed" | "dead" | "disconnected" | "role">;
+type ScrubberEvent = { kind: "down" } | { kind: "input"; value: number } | { kind: "up" };
+
+export type EventMarker = {
+    progress: number;
+    value: number;
+    icon: string;
+    backgroundColor: string;
+};
 type CaptureTheFlagZone = {
     teamId: 0 | 1 | 2;
     status: CaptureTheFlagFlagStatus;
@@ -231,6 +239,34 @@ export class UiManager {
     specFreeCameraButton = $("#btn-spectate-free-camera");
     specFreeCameraUnderground = false;
     specFreeCameraLayerButton = $("#btn-spectate-free-camera-layer");
+
+    replayInputs = {
+        markerClicked: undefined as number | undefined,
+        scrubberEvents: [] as ScrubberEvent[],
+        playback: false,
+        seekForward: false,
+        seekBackward: false,
+        toFreecam: false,
+        copyLink: false,
+        download: false,
+        cyclePlaybackSpeed: false,
+    };
+    replayElements = {
+        track: $("#ui-replay-track"),
+        scrubber: $("#replay-scrubber"),
+        timeLabel: { elapsed: $("#replay-elapsed"), total: $("#replay-total") },
+        playbackButton: $("#btn-replay-playback"),
+        seekForwardButton: $("#btn-replay-seek-forward"),
+        seekBackwardButton: $("#btn-replay-seek-backward"),
+        toFreecamButton: $("#btn-replay-to-freecam"),
+        copyLinkButton: $("#btn-replay-copy-link"),
+        downloadButton: $("#btn-replay-download"),
+        cyclePlaybackSpeedButton: $("#btn-replay-cycle-playback-speed"),
+    };
+    // The markup originates near the start-menu modals, but that entire wrapper is
+    // hidden while playing. Move replay controls into the visible game overlay.
+    replayMenu = $("#ui-replay-menu-wrapper").appendTo("#game-area-wrapper");
+    replayMenuDisplayed = false;
 
     // Touch specific buttons
     interactionElems = $("#ui-interaction-press, #ui-interaction");
@@ -688,7 +724,45 @@ export class UiManager {
                 },
             });
         }
+        this.bindReplayControls();
         this.init();
+    }
+
+    private bindReplayControls() {
+        this.replayElements.scrubber.on("keydown", (event) => event.preventDefault());
+        this.replayElements.scrubber.on("input", (event) => {
+            this.replayInputs.scrubberEvents.push({
+                kind: "input",
+                value: Number((event.target as HTMLInputElement).value),
+            });
+        });
+        this.replayElements.scrubber.on("pointerdown", () => {
+            this.replayInputs.scrubberEvents.push({ kind: "down" });
+        });
+        this.replayElements.scrubber.on("pointerup", () => {
+            this.replayInputs.scrubberEvents.push({ kind: "up" });
+        });
+        this.replayElements.playbackButton.on("click", () => {
+            this.replayInputs.playback = true;
+        });
+        this.replayElements.seekForwardButton.on("click", () => {
+            this.replayInputs.seekForward = true;
+        });
+        this.replayElements.seekBackwardButton.on("click", () => {
+            this.replayInputs.seekBackward = true;
+        });
+        this.replayElements.toFreecamButton.on("click", () => {
+            this.replayInputs.toFreecam = true;
+        });
+        this.replayElements.copyLinkButton.on("click", () => {
+            this.replayInputs.copyLink = true;
+        });
+        this.replayElements.downloadButton.on("click", () => {
+            this.replayInputs.download = true;
+        });
+        this.replayElements.cyclePlaybackSpeedButton.on("click", () => {
+            this.replayInputs.cyclePlaybackSpeed = true;
+        });
     }
 
     m_free() {
@@ -725,6 +799,14 @@ export class UiManager {
         this.specPrevButton.off("click");
         this.specFreeCameraButton.off("click");
         this.specFreeCameraLayerButton.off("click");
+        this.replayElements.scrubber.off();
+        this.replayElements.playbackButton.off();
+        this.replayElements.seekForwardButton.off();
+        this.replayElements.seekBackwardButton.off();
+        this.replayElements.toFreecamButton.off();
+        this.replayElements.copyLinkButton.off();
+        this.replayElements.downloadButton.off();
+        this.replayElements.cyclePlaybackSpeedButton.off();
         this.interactionElems.off("touchstart");
         this.reloadElems.off("touchstart");
         this.weapSwitches.off("mousedown");
@@ -3683,6 +3765,66 @@ export class UiManager {
                 }
             }
         }
+    }
+
+    setReplayScrubberMax(max: number) {
+        this.replayElements.scrubber.prop("max", max);
+    }
+
+    setReplayScrubberValue(value: number) {
+        this.replayElements.scrubber.prop("value", value);
+    }
+
+    setReplayElapsedTimeLabel(seconds: number) {
+        this.replayElements.timeLabel.elapsed.text(formatClockTime(seconds));
+    }
+
+    setReplayTotalTimeLabel(seconds: number) {
+        this.replayElements.timeLabel.total.text(formatClockTime(seconds));
+    }
+
+    setReplayCyclePlaybackSpeedLabel(value: number) {
+        this.replayElements.cyclePlaybackSpeedButton.text(`${value.toFixed(2)}x`);
+    }
+
+    displayReplayMenu(display = !this.replayMenuDisplayed) {
+        this.replayMenuDisplayed = display;
+        this.replayMenu.css("display", display ? "block" : "none");
+    }
+
+    setReplayPlaybackIconState(state: "play" | "pause" | "restart") {
+        const label =
+            state === "pause" ? "Pause" : state === "restart" ? "Restart" : "Play";
+        this.replayElements.playbackButton
+            .removeClass("btn-replay-play btn-replay-pause btn-replay-restart")
+            .addClass(`btn-replay-${state}`)
+            .attr({ "aria-label": label, title: label });
+    }
+
+    setReplayGuideKeybinds(_keybinds: globalThis.Map<number, string>) {}
+
+    displayReplayGuide() {}
+
+    setReplayEventMarkers(markers: EventMarker[]) {
+        this.replayElements.track.find(".ui-replay-event-marker-group").remove();
+        for (const marker of markers) {
+            const element = $("<button>", {
+                class: "ui-replay-event-marker-group",
+                type: "button",
+                title: "Jump to event",
+            }).css({
+                left: `${marker.progress * 100}%`,
+                backgroundColor: marker.backgroundColor,
+            });
+            element.on("click", () => {
+                this.replayInputs.markerClicked = marker.value;
+            });
+            this.replayElements.track.append(element);
+        }
+    }
+
+    setReplayCopyLinkVisibility(visible: boolean) {
+        this.replayElements.copyLinkButton.toggle(visible);
     }
 
     setCurrentGameTab(tab: string) {

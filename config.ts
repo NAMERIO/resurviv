@@ -69,6 +69,12 @@ export function getConfig(isProduction: boolean, dir: string) {
             database: "survev",
             port: 5432,
         },
+        replays: {
+            enabled: false,
+            endpoint: "",
+            bucket: "arena-replays",
+            retentionDays: 30,
+        },
         oauthRedirectURI: "",
         oauthBasePath: "/",
         secrets: {

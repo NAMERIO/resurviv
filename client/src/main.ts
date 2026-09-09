@@ -24,6 +24,10 @@ import type {
     FindGameResponse,
 } from "../../shared/types/api";
 import type { NewsResponse } from "../../shared/types/news";
+import type {
+    ArenaReplayHistoryEntry,
+    ArenaReplayHistoryResponse,
+} from "../../shared/types/replay";
 import { math } from "../../shared/utils/math";
 import { Account } from "./account";
 import { type GoogleH5AdPlacementInfo, googleH5Ads } from "./ads/googleH5Ads";
@@ -42,6 +46,7 @@ import { InputBinds, InputBindUi } from "./inputBinds";
 import { appendNewsDocument, NewsManager } from "./newsManager";
 import { PingTest } from "./pingTest";
 import { proxy } from "./proxy";
+import { Replay, type ReplaySource } from "./replay";
 import { ResourceManager } from "./resources";
 import { SDK } from "./sdk/sdk";
 import { SiteInfo } from "./siteInfo";
@@ -82,8 +87,12 @@ export class Application {
     prestigeArenaModal = $("#modal-prestige-arena");
     prestigeArenaWrapper = $("#modal-prestige-wrapper");
     prestigeArenaBattleTab = $("#prestige-battle-button");
+    prestigeArenaHistoryTab = $("#prestige-history-button");
     prestigeArenaCreateTab = $("#prestige-create-button");
     prestigeArenaBattlePane = $("#modal-battle-window");
+    prestigeArenaHistoryPane = $("#modal-history-window");
+    prestigeArenaHistoryStatus = $("#arena-history-status");
+    prestigeArenaHistoryList = $("#arena-history-list");
     prestigeArenaCreatePane = $("#modal-create-window");
     prestigeArenaBattleModeRow = $("#modal-battle-window .battle-mode");
     prestigeArenaBattleTypeRow = $("#modal-battle-window .battle-type");
@@ -193,6 +202,7 @@ export class Application {
     inputBinds: InputBinds | null = null;
     inputBindUi: InputBindUi | null = null;
     game: Game | null = null;
+    replay?: Replay;
     loadoutDisplay: LoadoutDisplay | null = null;
     socialEvents: EventSource | null = null;
     domContentLoaded = false;
@@ -223,6 +233,7 @@ export class Application {
     prestigeArenaSelectedMiniGame: PrivateLobbyMiniGame = DefaultPrivateLobbyMiniGame;
     prestigeArenaSelectedImpostorCount = DefaultAmongUsImpostorCount;
     prestigeArenaModalRequestedOpen = false;
+    prestigeArenaCurrentTab: "battle" | "history" = "battle";
     modeDisplayNameByMap: Record<string, string> = {
         main: "Normal",
         br_main: "Normal",
@@ -559,6 +570,16 @@ export class Application {
                 ) {
                     this.setPrestigeArenaUnjoinedUi();
                 }
+            });
+            this.prestigeArenaHistoryTab.on("click", () => {
+                this.setPrestigeArenaTab("history");
+                void this.loadArenaReplayHistory();
+            });
+            $("#arena-replay-import").on("change", (event) => {
+                const input = event.currentTarget as HTMLInputElement;
+                const file = input.files?.[0];
+                input.value = "";
+                if (file) void this.importArenaReplay(file);
             });
             this.prestigeArenaCreateTab.on("click", () => {
                 if (this.teamMenu.active && this.teamMenu.arena && this.teamMenu.joined) {
@@ -987,6 +1008,8 @@ export class Application {
                 }
             };
             const onQuit = (errMsg?: string) => {
+                this.replay?.free();
+                this.replay = undefined;
                 if (this.account.loggedIn) {
                     this.pass.scheduleUpdatePass(
                         this.game!.m_updatePass ? this.game!.m_updatePassDelay : 1,
@@ -1061,6 +1084,13 @@ export class Application {
 
             SDK.gameLoadComplete();
             this.scheduleInitialGameAssetWarmup();
+
+            const replayGameId = new URLSearchParams(window.location.search).get(
+                "replay",
+            );
+            if (replayGameId) {
+                await this.startServerReplay(replayGameId);
+            }
         }
     }
 
@@ -1089,6 +1119,7 @@ export class Application {
     }
 
     onUnload() {
+        this.replay?.free();
         this.teamMenu.leave();
     }
 
@@ -1653,6 +1684,7 @@ export class Application {
 
     syncPrestigeArenaCreatePaneVisibility() {
         const showCreatePane =
+            this.prestigeArenaCurrentTab !== "history" &&
             this.account.loggedIn &&
             (!this.teamMenu.active || !this.teamMenu.arena || !this.teamMenu.joined);
         this.prestigeArenaCreatePane.toggleClass("hide", !showCreatePane);
@@ -1666,11 +1698,28 @@ export class Application {
         );
     }
 
-    setPrestigeArenaTab(_tab: "battle" | "create", preserveSelections = false) {
+    setPrestigeArenaTab(
+        tab: "battle" | "create" | "history",
+        preserveSelections = false,
+    ) {
+        this.prestigeArenaCurrentTab = tab === "history" ? "history" : "battle";
         this.prestigeArenaSummaryTab.addClass("hide");
         this.prestigeArenaSpectateTab.addClass("hide");
+        this.prestigeArenaHistoryTab.removeClass("hide");
+        this.prestigeArenaHistoryTab.toggleClass("selected", tab === "history");
+        this.prestigeArenaHistoryPane.toggleClass("hide", tab !== "history");
+        if (tab === "history") {
+            this.prestigeArenaWrapper
+                .addClass("arena-combined-shell arena-history-tab")
+                .removeClass("arena-battle-tab arena-create-tab");
+            this.prestigeArenaBattleTab.removeClass("selected");
+            this.prestigeArenaCreateTab.addClass("hide").removeClass("selected");
+            this.prestigeArenaBattlePane.addClass("hide");
+            this.prestigeArenaCreatePane.addClass("hide");
+            return;
+        }
         this.prestigeArenaWrapper.addClass("arena-combined-shell arena-battle-tab");
-        this.prestigeArenaWrapper.removeClass("arena-create-tab");
+        this.prestigeArenaWrapper.removeClass("arena-create-tab arena-history-tab");
         this.prestigeArenaBattleTab.addClass("selected");
         this.prestigeArenaCreateTab.addClass("hide");
         this.prestigeArenaCreateTab.removeClass("selected");
@@ -1684,6 +1733,196 @@ export class Application {
             this.prestigeArenaImpostorCountSelection.css("display", "none");
             this.hidePrestigeArenaBattleSelections();
         }
+    }
+
+    private async loadArenaReplayHistory() {
+        this.prestigeArenaHistoryList.empty();
+        if (!this.account.loggedIn) {
+            this.prestigeArenaHistoryStatus
+                .text("Log in to see private arena replays.")
+                .removeClass("hide");
+            return;
+        }
+
+        this.prestigeArenaHistoryStatus
+            .text("Loading replay history...")
+            .removeClass("hide");
+        try {
+            const response = await fetch(api.resolveUrl("/api/user/arena_replays"), {
+                credentials: "include",
+            });
+            if (!response.ok)
+                throw new Error(`Replay history returned ${response.status}`);
+            const history = (await response.json()) as ArenaReplayHistoryResponse;
+            if (!history.storageEnabled) {
+                this.prestigeArenaHistoryStatus.text(
+                    "Replay storage is not configured on this server yet.",
+                );
+                return;
+            }
+            if (!history.replays.length) {
+                this.prestigeArenaHistoryStatus.text(
+                    "No private arena replays yet. Finished games will appear here.",
+                );
+                return;
+            }
+
+            this.prestigeArenaHistoryStatus.addClass("hide");
+            for (const replay of history.replays) {
+                this.prestigeArenaHistoryList.append(
+                    this.createArenaReplayHistoryCard(replay),
+                );
+            }
+        } catch (error) {
+            console.error(error);
+            this.prestigeArenaHistoryStatus.text(
+                "Could not load replay history. Try again in a moment.",
+            );
+        }
+    }
+
+    private createArenaReplayHistoryCard(replay: ArenaReplayHistoryEntry) {
+        const card = $("<div>").addClass("arena-history-card");
+        const primary = $("<div>").addClass("arena-history-primary");
+        const modeName = this.modeDisplayNameByMap[replay.mapName] || replay.mapName;
+        primary.append(
+            $("<div>").addClass("arena-history-map").text(modeName),
+            $("<div>")
+                .addClass("arena-history-game-id")
+                .attr("title", replay.gameId)
+                .text(`Game ${replay.gameId.slice(0, 8)}`),
+        );
+        card.append(
+            primary,
+            this.createArenaReplayHistoryField("Lobby", replay.lobbyCode || "Unknown"),
+            this.createArenaReplayHistoryField(
+                "Date",
+                new Date(replay.createdAt).toLocaleString(),
+            ),
+            this.createArenaReplayHistoryField(
+                replay.spectator ? "Spectated" : "Played",
+                `${replay.miniGame} | ${replay.region} | ${this.formatReplayDuration(replay.durationMs)} | ${replay.playerCount} players | ${Math.max(1, Math.round(replay.compressedSizeBytes / 1024))} KB`,
+            ),
+        );
+
+        const actions = $("<div>").addClass("arena-history-actions");
+        $("<button>")
+            .addClass("btn-darken arena-history-watch")
+            .attr("type", "button")
+            .text("Watch")
+            .on("click", () => {
+                const url = new URL(window.location.href);
+                url.search = "";
+                url.searchParams.set("replay", replay.gameId);
+                url.hash = "";
+                window.history.pushState({}, "", url);
+                void this.startServerReplay(replay.gameId);
+            })
+            .appendTo(actions);
+        $("<button>")
+            .addClass("btn-darken arena-history-export")
+            .attr("type", "button")
+            .text("Export")
+            .on("click", () => void this.exportArenaReplay(replay.gameId))
+            .appendTo(actions);
+        card.append(actions);
+        return card;
+    }
+
+    private createArenaReplayHistoryField(label: string, value: string) {
+        return $("<div>").append(
+            $("<div>").addClass("arena-history-label").text(label),
+            $("<div>").addClass("arena-history-value").text(value),
+        );
+    }
+
+    private formatReplayDuration(durationMs: number) {
+        const seconds = Math.max(0, Math.round(durationMs / 1000));
+        return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+    }
+
+    private async exportArenaReplay(gameId: string) {
+        try {
+            const response = await fetch(
+                api.resolveUrl(`/api/user/arena_replays/${gameId}/file`),
+                { credentials: "include" },
+            );
+            if (!response.ok)
+                throw new Error(`Replay export returned ${response.status}`);
+            const url = URL.createObjectURL(await response.blob());
+            const anchor = document.createElement("a");
+            anchor.href = url;
+            anchor.download = `${gameId}.surv`;
+            anchor.click();
+            setTimeout(() => URL.revokeObjectURL(url), 0);
+        } catch (error) {
+            console.error(error);
+            this.showReplayError("This replay could not be downloaded.");
+        }
+    }
+
+    private async importArenaReplay(file: File) {
+        try {
+            const buffer = new Uint8Array(
+                await file.arrayBuffer(),
+            ) as Uint8Array<ArrayBuffer>;
+            this.startReplay(buffer, { kind: "local" });
+        } catch (error) {
+            console.error(error);
+            this.showReplayError("That replay file is invalid or out of date.");
+        }
+    }
+
+    private async startServerReplay(gameId: string) {
+        try {
+            const response = await fetch(
+                api.resolveUrl(`/api/user/arena_replays/${gameId}/file`),
+                { credentials: "include" },
+            );
+            if (!response.ok) throw new Error(`Replay returned ${response.status}`);
+            const buffer = new Uint8Array(
+                await response.arrayBuffer(),
+            ) as Uint8Array<ArrayBuffer>;
+            const params = new URLSearchParams(window.location.search);
+            this.startReplay(buffer, {
+                kind: "server",
+                gameId,
+                playerId: params.has("player") ? Number(params.get("player")) : undefined,
+                startSecond: params.has("t") ? Number(params.get("t")) : undefined,
+            });
+        } catch (error) {
+            console.error(error);
+            this.showReplayError(
+                error instanceof Error && error.message.startsWith("Replay ")
+                    ? error.message
+                    : "Replay not found, expired, or unavailable for this account.",
+            );
+        }
+    }
+
+    private startReplay(buffer: Uint8Array<ArrayBuffer>, source: ReplaySource) {
+        if (!this.game) throw new Error("Game client is not ready");
+        if (this.teamMenu.active) this.teamMenu.leave();
+        this.hidePrestigeArenaModal();
+        const replay = new Replay(buffer, this.game, source);
+        try {
+            replay.start();
+            this.replay = replay;
+            this.setAppActive(false);
+            this.setPlayLockout(true);
+        } catch (error) {
+            replay.free();
+            this.game.free();
+            this.replay = undefined;
+            this.setAppActive(true);
+            this.setPlayLockout(false);
+            throw error;
+        }
+    }
+
+    private showReplayError(message: string) {
+        this.errorModal.selector.find(".modal-body-text").text(message);
+        this.errorModal.show(true);
     }
 
     canEditPrestigeArenaLiveOptions() {
@@ -3445,6 +3684,7 @@ export class Application {
         this.prestigeArenaSummaryTab.addClass("hide");
         this.prestigeArenaSpectateTab.addClass("hide");
         this.prestigeArenaBattleTab.removeClass("hide");
+        this.prestigeArenaHistoryTab.removeClass("hide");
         this.prestigeArenaCreateTab.addClass("hide");
         this.syncPrestigeArenaRegions();
         this.setPrestigeArenaTab("battle");
@@ -3555,12 +3795,16 @@ export class Application {
             this.prestigeArenaBattleTab.removeClass("hide");
             this.prestigeArenaCreateTab.addClass("hide");
             if (this.teamMenu.create) {
-                this.setPrestigeArenaTab("battle");
+                if (this.prestigeArenaCurrentTab !== "history") {
+                    this.setPrestigeArenaTab("battle");
+                }
                 this.prestigeArenaCreateBtn.text(
                     this.localization.translate("index-creating-team"),
                 );
             } else {
-                this.setPrestigeArenaTab("battle");
+                if (this.prestigeArenaCurrentTab !== "history") {
+                    this.setPrestigeArenaTab("battle");
+                }
                 this.prestigeArenaCreateBtn.text(
                     this.localization.translate("prestige-create-battle"),
                 );
@@ -3655,7 +3899,9 @@ export class Application {
         );
         this.prestigeArenaBattleTab.removeClass("hide");
         this.prestigeArenaCreateTab.addClass("hide");
-        this.setPrestigeArenaTab("battle", true);
+        if (this.prestigeArenaCurrentTab !== "history") {
+            this.setPrestigeArenaTab("battle", true);
+        }
         this.syncPrestigeArenaCreateOptions();
         const localArenaPlayer = this.teamMenu.players.find(
             (p) => p.playerId === this.teamMenu.localPlayerId,
@@ -4238,12 +4484,16 @@ export class Application {
         }
 
         // Game update
-        if (this.game?.initialized && this.game.m_playing) {
+        if (this.game?.initialized && (this.game.m_playing || this.replay)) {
             if (this.active) {
                 this.setAppActive(false);
                 this.setPlayLockout(true);
             }
-            this.game.update(dt);
+            if (this.replay) {
+                this.replay.update(dt);
+            } else {
+                this.game.update(dt);
+            }
         }
 
         // LoadoutDisplay update

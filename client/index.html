@@ -1695,6 +1695,23 @@
           <div class="btn-start-mute btn-sound-toggle menu-option btn-darken btn-start-option audio-on-icon"></div>
         </div>
       </div>
+      <div id="ui-replay-menu-wrapper" style="display: none">
+        <div id="ui-replay-menu">
+          <div id="ui-replay-track">
+            <input type="range" id="replay-scrubber" min="0" max="100" step="any" value="0" aria-label="Replay position" />
+          </div>
+          <div class="ui-replay-time"><span id="replay-elapsed">0:00</span><span>/</span><span id="replay-total">0:00</span></div>
+          <div class="ui-replay-controls">
+            <button id="btn-replay-seek-backward" class="replay-icon-btn replay-seek-back" type="button" aria-label="Back 5 seconds" title="Back 5 seconds"><span>5</span></button>
+            <button id="btn-replay-playback" class="replay-icon-btn btn-replay-pause" type="button" aria-label="Pause" title="Pause"></button>
+            <button id="btn-replay-seek-forward" class="replay-icon-btn replay-seek-forward" type="button" aria-label="Forward 5 seconds" title="Forward 5 seconds"><span>5</span></button>
+            <button id="btn-replay-to-freecam" class="replay-icon-btn replay-camera" type="button" aria-label="Toggle player camera" title="Toggle player camera"></button>
+            <button id="btn-replay-cycle-playback-speed" class="replay-speed-btn" type="button" aria-label="Playback speed" title="Playback speed">1.00x</button>
+            <button id="btn-replay-copy-link" class="replay-icon-btn replay-copy-link" type="button" aria-label="Copy replay link" title="Copy replay link"></button>
+            <button id="btn-replay-download" class="replay-icon-btn replay-download" type="button" aria-label="Export replay" title="Export replay"></button>
+          </div>
+        </div>
+      </div>
       <!-- Modals -->
       <div id="modal-prestige-arena" class="modal">
         <div id="modal-prestige-wrapper">
@@ -1706,6 +1723,7 @@
             <div class="arena-modal-tabs">
               <div id="prestige-game-summary-button" data-l10n="prestige-game-summary-button"></div>
               <div id="prestige-battle-button" data-l10n="prestige-battle-button"></div>
+              <div id="prestige-history-button"><span class="arena-history-tab-icon"></span><span>History</span></div>
               <div id="prestige-create-button" data-l10n="prestige-create-button"></div>
               <div id="prestige-spectate-button" data-l10n="prestige-spectate-button"></div>
             </div>
@@ -1844,6 +1862,18 @@
                     </div>
                   </div>
                 </div>
+              </div>
+              <div id="modal-history-window" class="hide">
+                <div class="arena-history-header">
+                  <div>
+                    <div class="arena-history-title">Match History</div>
+                    <div class="arena-history-subtitle">Private arena games you played or spectated</div>
+                  </div>
+                  <label class="arena-history-import btn-darken" for="arena-replay-import">Import Replay</label>
+                  <input id="arena-replay-import" type="file" accept=".surv,application/octet-stream" />
+                </div>
+                <div id="arena-history-status" role="status">Loading replay history...</div>
+                <div id="arena-history-list"></div>
               </div>
               <div id="modal-create-window" class="hide">
                 <div class="input-group hide-admin-filter">

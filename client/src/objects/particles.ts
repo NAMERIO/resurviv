@@ -233,6 +233,15 @@ export class ParticleBarn {
         }
     }
 
+    m_clear() {
+        for (const emitter of this.emitters) {
+            emitter.free();
+        }
+        for (const particle of this.particles) {
+            particle.free();
+        }
+    }
+
     addParticle(
         type: string,
         layer: number,

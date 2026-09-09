@@ -126,4 +126,10 @@ export class Creator {
             delete this.m_idToObj[id];
         }
     }
+
+    m_clear() {
+        for (const id of Object.keys(this.m_idToObj)) {
+            this.m_deleteObj(Number(id));
+        }
+    }
 }

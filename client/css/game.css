@@ -3975,6 +3975,204 @@ body[data-input-method="controller"] #game-area-wrapper {
   }
 }
 
+#ui-replay-menu-wrapper {
+  bottom: 16px;
+  left: 50%;
+  pointer-events: auto;
+  position: fixed;
+  transform: translateX(-50%);
+  width: min(520px, calc(100vw - 24px));
+  z-index: 1200;
+}
+
+#ui-replay-menu {
+  background: rgba(30, 30, 30, 0.92);
+  border: 2px solid #111;
+  border-bottom-width: 4px;
+  border-radius: 4px;
+  padding: 8px 10px 10px;
+}
+
+#ui-replay-track {
+  position: relative;
+}
+
+#replay-scrubber {
+  accent-color: #83b34e;
+  cursor: pointer;
+  margin: 0;
+  width: 100%;
+}
+
+.ui-replay-time {
+  color: #fff;
+  display: flex;
+  font-family: "Roboto Condensed", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 5px;
+  justify-content: center;
+  margin: 2px 0 6px;
+  text-shadow: 0 1px 2px #000;
+}
+
+.ui-replay-controls {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+.ui-replay-controls button {
+  background-color: #555;
+  border: 0;
+  border-bottom: 3px solid #2e2e2e;
+  border-radius: 3px;
+  box-shadow: inset 0 -2px #3b3b3b;
+  box-sizing: border-box;
+  color: white;
+  cursor: pointer;
+  height: 38px;
+  padding: 0;
+  position: relative;
+  text-shadow: 0 1px 2px #000;
+  width: 42px;
+}
+
+.ui-replay-controls button:hover {
+  background-color: #666;
+}
+
+.ui-replay-controls button:active {
+  border-bottom-width: 1px;
+  padding-top: 2px;
+}
+
+.ui-replay-controls .replay-speed-btn {
+  font-family: "Roboto Condensed", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  width: 58px;
+}
+
+.replay-icon-btn::before {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  content: "";
+  height: 24px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -55%);
+  width: 24px;
+}
+
+.btn-replay-play::before {
+  background-image: url(/img/gui/resume.svg);
+}
+
+.btn-replay-pause::before {
+  background: linear-gradient(
+    to right,
+    transparent 15%,
+    #fff 15% 39%,
+    transparent 39% 61%,
+    #fff 61% 85%,
+    transparent 85%
+  );
+}
+
+.btn-replay-restart::before {
+  background-image: url(/img/gui/return-arrow.svg);
+}
+
+.replay-camera::before {
+  background-image: url(/img/gui/eye.svg);
+}
+
+.replay-copy-link::before {
+  background-image: url(/img/gui/link.svg);
+}
+
+.replay-download::before {
+  content: "\2193";
+  font:
+    700 26px / 20px Arial,
+    sans-serif;
+  height: 25px;
+  text-align: center;
+}
+
+.replay-download::after {
+  background: #fff;
+  bottom: 7px;
+  content: "";
+  height: 3px;
+  left: 11px;
+  position: absolute;
+  width: 20px;
+}
+
+.replay-seek-back::before,
+.replay-seek-forward::before {
+  background: none;
+  border-bottom: 8px solid transparent;
+  border-top: 8px solid transparent;
+  height: 0;
+  width: 0;
+}
+
+.replay-seek-back::before {
+  border-right: 11px solid #fff;
+  left: 13px;
+}
+
+.replay-seek-forward::before {
+  border-left: 11px solid #fff;
+  left: 29px;
+}
+
+.replay-seek-back span,
+.replay-seek-forward span {
+  font:
+    700 12px / 1 "Roboto Condensed",
+    Arial,
+    sans-serif;
+  position: absolute;
+  top: 12px;
+}
+
+.replay-seek-back span {
+  right: 7px;
+}
+
+.replay-seek-forward span {
+  left: 7px;
+}
+
+.ui-replay-event-marker-group {
+  border: 0;
+  border-radius: 50%;
+  height: 9px;
+  padding: 0;
+  position: absolute;
+  top: 4px;
+  transform: translateX(-50%);
+  width: 9px;
+  z-index: 2;
+}
+
+@media (max-width: 640px) {
+  .ui-replay-controls button {
+    height: 36px;
+    width: 39px;
+  }
+
+  .ui-replay-controls .replay-speed-btn {
+    width: 52px;
+  }
+}
+
 #ui-perk-0 {
   left: 4px;
 }

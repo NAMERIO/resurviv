@@ -333,6 +333,14 @@ export interface ConfigType {
         port: number;
     };
 
+    /** Compressed private-arena replay storage (Cloudflare R2 or another S3-compatible service). */
+    replays: {
+        enabled: boolean;
+        endpoint: string;
+        bucket: string;
+        retentionDays: number;
+    };
+
     /**
      * Used for account oauth2 redirects (https://www.oauth.com/oauth2-servers/redirect-uris/).
      * Should be the full hosted website url, example: https://mycoolsurvevserver.io.
@@ -368,6 +376,10 @@ export interface ConfigType {
          * Used to encode IP addresses on the database
          */
         SURVEV_IP_SECRET: string;
+
+        /** S3-compatible credentials used only by the API server for replay objects. */
+        REPLAY_STORAGE_ACCESS_KEY_ID?: string;
+        REPLAY_STORAGE_SECRET_ACCESS_KEY?: string;
 
         /**
          * Discord client ID.

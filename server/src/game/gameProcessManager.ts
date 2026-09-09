@@ -165,7 +165,7 @@ class GameProcess implements GameData {
         this.showEnemiesOnMap = config.showEnemiesOnMap !== false;
         this.stopped = false;
         this.creating = true;
-        this.groupHash = undefined;
+        this.groupHash = config.groupHash;
 
         const mapDef = MapDefs[this.mapName as keyof typeof MapDefs] as MapDef;
         this.avaliableSlots = mapDef.gameMode.maxPlayers;
@@ -464,6 +464,7 @@ export class GameProcessManager implements GameManager {
                 teamMode: body.teamMode,
                 mapName: body.mapName as keyof typeof MapDefs,
                 arenaPrivate: !!body.arenaPrivate,
+                groupHash: requestedGroupHash,
                 miniGame: body.miniGame ?? DefaultPrivateLobbyMiniGame,
                 amongUsImpostorCount: normalizeAmongUsImpostorCount(
                     body.amongUsImpostorCount,

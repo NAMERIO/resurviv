@@ -5403,6 +5403,7 @@ a:active {
 
 #modal-prestige-arena #prestige-game-summary-button,
 #modal-prestige-arena #prestige-battle-button,
+#modal-prestige-arena #prestige-history-button,
 #modal-prestige-arena #prestige-create-button,
 #modal-prestige-arena #prestige-spectate-button {
   align-items: center;
@@ -5431,6 +5432,7 @@ a:active {
 
 #modal-prestige-arena #prestige-game-summary-button.selected,
 #modal-prestige-arena #prestige-battle-button.selected,
+#modal-prestige-arena #prestige-history-button.selected,
 #modal-prestige-arena #prestige-create-button.selected,
 #modal-prestige-arena #prestige-spectate-button.selected {
   background-color: #030303;
@@ -5438,6 +5440,7 @@ a:active {
 
 #modal-prestige-arena #prestige-game-summary-button.hide,
 #modal-prestige-arena #prestige-battle-button.hide,
+#modal-prestige-arena #prestige-history-button.hide,
 #modal-prestige-arena #prestige-create-button.hide,
 #modal-prestige-arena #prestige-spectate-button.hide {
   display: none;
@@ -5482,6 +5485,7 @@ a:active {
 
 #modal-prestige-arena #modal-summary-window,
 #modal-prestige-arena #modal-battle-window,
+#modal-prestige-arena #modal-history-window,
 #modal-prestige-arena #modal-create-window,
 #modal-prestige-arena #modal-spectate-window {
   min-height: 0;
@@ -5499,6 +5503,375 @@ a:active {
   grid-template-columns: minmax(0, 660px) 352px;
   justify-content: center;
   padding: 14px;
+}
+
+#modal-prestige-arena #modal-history-window:not(.hide) {
+  align-content: start;
+  background: #303030;
+  border-radius: 5px;
+  display: grid;
+  gap: 12px;
+  grid-column: 1 / -1;
+  height: 100%;
+  overflow: hidden;
+  padding: 18px;
+}
+
+#modal-prestige-arena #modal-prestige-wrapper.arena-history-tab #modal-battle-window,
+#modal-prestige-arena #modal-prestige-wrapper.arena-history-tab #modal-create-window {
+  display: none !important;
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-history-tab
+  .modal-prestige-body-inner {
+  display: block;
+  padding: 14px;
+}
+
+#modal-prestige-arena .arena-history-header {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  padding-right: 38px;
+}
+
+#modal-prestige-arena .arena-history-title {
+  color: #fff;
+  font:
+    700 24px / 28px "Roboto Condensed",
+    sans-serif;
+  text-transform: uppercase;
+}
+
+#modal-prestige-arena .arena-history-subtitle,
+#modal-prestige-arena #arena-history-status {
+  color: #aaa;
+  font:
+    14px / 20px "Roboto Condensed",
+    sans-serif;
+}
+
+#modal-prestige-arena #arena-replay-import {
+  display: none;
+}
+
+#modal-prestige-arena .arena-history-import {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  flex: 0 0 auto;
+  height: 38px;
+  padding: 0 16px;
+}
+
+#modal-prestige-arena #arena-history-list {
+  align-content: start;
+  display: grid;
+  gap: 9px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+#modal-prestige-arena .arena-history-card {
+  align-items: center;
+  background: #222;
+  border: 1px solid #4a4a4a;
+  border-radius: 5px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(155px, 1.4fr) repeat(3, minmax(90px, 1fr)) auto;
+  padding: 12px 14px;
+}
+
+#modal-prestige-arena .arena-history-primary {
+  min-width: 0;
+}
+
+#modal-prestige-arena .arena-history-map {
+  color: #fff;
+  font:
+    700 18px / 22px "Roboto Condensed",
+    sans-serif;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+#modal-prestige-arena .arena-history-game-id,
+#modal-prestige-arena .arena-history-value {
+  color: #d9d9d9;
+  font:
+    14px / 18px "Roboto Condensed",
+    sans-serif;
+}
+
+#modal-prestige-arena .arena-history-label {
+  color: #777;
+  font:
+    700 11px / 15px "Roboto Condensed",
+    sans-serif;
+  text-transform: uppercase;
+}
+
+#modal-prestige-arena .arena-history-actions {
+  display: flex;
+  gap: 7px;
+}
+
+#modal-prestige-arena .arena-history-actions button {
+  min-width: 72px;
+  padding: 9px 12px;
+}
+
+/* Private replay library */
+#modal-prestige-arena #prestige-history-button {
+  background-image: none;
+  gap: 11px;
+  padding-left: 17px;
+}
+
+#modal-prestige-arena .arena-history-tab-icon {
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  display: block;
+  flex: 0 0 22px;
+  height: 22px;
+  opacity: 0.95;
+  position: relative;
+  width: 22px;
+}
+
+#modal-prestige-arena .arena-history-tab-icon::before,
+#modal-prestige-arena .arena-history-tab-icon::after {
+  background: currentColor;
+  border-radius: 2px;
+  content: "";
+  left: 9px;
+  position: absolute;
+  top: 4px;
+  transform-origin: 1px 7px;
+  width: 2px;
+}
+
+#modal-prestige-arena .arena-history-tab-icon::before {
+  height: 7px;
+}
+
+#modal-prestige-arena .arena-history-tab-icon::after {
+  height: 6px;
+  transform: rotate(125deg);
+}
+
+#modal-prestige-arena
+  #modal-prestige-wrapper.arena-history-tab
+  .modal-prestige-body-inner {
+  background: #3f3f3f;
+  padding: 14px;
+}
+
+#modal-prestige-arena #modal-history-window:not(.hide) {
+  background: #303030;
+  border: 1px solid #4a4a4a;
+  border-radius: 5px;
+  gap: 12px;
+  grid-template-rows: auto minmax(0, 1fr);
+  padding: 18px;
+}
+
+#modal-prestige-arena .arena-history-header {
+  border-bottom: 2px solid #1f1f1f;
+  min-height: 58px;
+  padding: 0 42px 12px 0;
+}
+
+#modal-prestige-arena .arena-history-title {
+  font-size: 24px;
+  line-height: 28px;
+}
+
+#modal-prestige-arena .arena-history-subtitle {
+  color: #aaa;
+}
+
+#modal-prestige-arena .arena-history-import {
+  background: #555;
+  border: 1px solid #696969;
+  border-bottom: 3px solid #242424;
+  border-radius: 4px;
+  box-sizing: border-box;
+  color: #fff;
+  font:
+    700 15px / 16px "Roboto Condensed",
+    sans-serif;
+  height: 40px;
+  justify-content: center;
+  min-width: 126px;
+  padding: 0 15px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+#modal-prestige-arena .arena-history-import:hover {
+  background: #626262;
+}
+
+#modal-prestige-arena .arena-history-import:active {
+  border-bottom-width: 1px;
+}
+
+#modal-prestige-arena #arena-history-status {
+  align-self: stretch;
+  background: #282828;
+  border: 1px solid #464646;
+  border-radius: 4px;
+  color: #aaa;
+  grid-column: 1;
+  grid-row: 2;
+  min-height: 0;
+  padding: 13px 14px;
+  text-align: left;
+}
+
+#modal-prestige-arena #arena-history-status::before {
+  align-items: center;
+  background: linear-gradient(145deg, #263133, #192021);
+  border: 1px solid #455254;
+  border-radius: 50%;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 7px rgba(0, 0, 0, 0.12);
+  color: #5acac4;
+  content: "▶";
+  display: flex;
+  font:
+    24px / 1 Arial,
+    sans-serif;
+  height: 74px;
+  justify-content: center;
+  margin-bottom: 17px;
+  padding-left: 4px;
+  width: 74px;
+}
+
+#modal-prestige-arena #arena-history-list {
+  align-self: stretch;
+  grid-column: 1;
+  grid-row: 2;
+  padding: 18px 20px 22px;
+}
+
+#modal-prestige-arena #arena-history-list:empty {
+  display: none;
+}
+
+#modal-prestige-arena #arena-history-status {
+  align-items: flex-start;
+  background: #282828;
+  border: 1px solid #464646;
+  border-radius: 4px;
+  color: #aaa;
+  justify-content: flex-start;
+  min-height: 0;
+  padding: 13px 14px;
+  text-align: left;
+}
+
+#modal-prestige-arena #arena-history-status::before {
+  display: none;
+}
+
+#modal-prestige-arena #arena-history-list {
+  padding: 0 4px 0 0;
+}
+
+#modal-prestige-arena .arena-history-card {
+  background: #222;
+  border-color: #4a4a4a;
+  border-left: 4px solid #55b8b2;
+  border-radius: 5px;
+  min-height: 68px;
+  padding: 12px 13px 12px 15px;
+}
+
+#modal-prestige-arena .arena-history-card:hover {
+  background: #292929;
+}
+
+#modal-prestige-arena .arena-history-map {
+  color: #fff;
+  font-size: 19px;
+}
+
+#modal-prestige-arena .arena-history-game-id {
+  color: #999;
+  font-size: 12px;
+}
+
+#modal-prestige-arena .arena-history-label {
+  color: #55b8b2;
+}
+
+#modal-prestige-arena .arena-history-actions button {
+  border: 1px solid #666;
+  border-bottom: 3px solid #1c1c1c;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  font:
+    700 13px / 16px "Roboto Condensed",
+    sans-serif;
+  text-transform: uppercase;
+}
+
+#modal-prestige-arena .arena-history-actions .arena-history-watch {
+  background: #699f43;
+  border-color: #83b95c;
+}
+
+#modal-prestige-arena .arena-history-actions .arena-history-export {
+  background: #555;
+}
+
+@media (max-width: 780px) {
+  #modal-prestige-arena .arena-history-header {
+    align-items: flex-start;
+    min-height: 52px;
+    padding: 0 34px 10px 0;
+  }
+
+  #modal-prestige-arena .arena-history-title {
+    font-size: 20px;
+    line-height: 23px;
+  }
+
+  #modal-prestige-arena .arena-history-subtitle {
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  #modal-prestige-arena .arena-history-import {
+    font-size: 12px;
+    height: 38px;
+    min-width: 105px;
+    padding: 0 9px;
+  }
+
+  #modal-prestige-arena .arena-history-card {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #modal-prestige-arena .arena-history-primary,
+  #modal-prestige-arena .arena-history-actions {
+    grid-column: 1 / -1;
+  }
+
+  #modal-prestige-arena .arena-history-actions button {
+    flex: 1;
+  }
 }
 
 #modal-prestige-arena
@@ -7370,6 +7743,7 @@ a:active {
 
   #modal-prestige-arena #prestige-game-summary-button,
   #modal-prestige-arena #prestige-battle-button,
+  #modal-prestige-arena #prestige-history-button,
   #modal-prestige-arena #prestige-create-button,
   #modal-prestige-arena #prestige-spectate-button {
     height: 44px;
@@ -7632,6 +8006,7 @@ a:active {
 
   #modal-prestige-arena #prestige-game-summary-button,
   #modal-prestige-arena #prestige-battle-button,
+  #modal-prestige-arena #prestige-history-button,
   #modal-prestige-arena #prestige-create-button,
   #modal-prestige-arena #prestige-spectate-button {
     background-position: 12px center;
@@ -8072,6 +8447,7 @@ a:active {
 
   #modal-prestige-arena #prestige-game-summary-button,
   #modal-prestige-arena #prestige-battle-button,
+  #modal-prestige-arena #prestige-history-button,
   #modal-prestige-arena #prestige-create-button,
   #modal-prestige-arena #prestige-spectate-button {
     background-position: 9px center;

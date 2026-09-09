@@ -24,6 +24,7 @@ import { apiPrivateRouter, HTTPRateLimit } from "../utils/serverHelpers";
 import {
     type FindGamePrivateBody,
     ProcessMsgType,
+    type SaveArenaReplayBody,
     type SaveGameBody,
     type ServerGameConfig,
     type UpdateDataMsg,
@@ -52,6 +53,7 @@ import { SmokeBarn } from "./objects/smoke";
 import { PlantTheBombManager } from "./plantTheBombManager";
 import { PluginManager } from "./pluginManager";
 import { Profiler } from "./profiler";
+import { Recorder } from "./replay";
 
 const mergeWeaponStats = (
     left: Record<string, number> = {},
@@ -183,6 +185,9 @@ export class Game {
 
     profiler = new Profiler();
 
+    recorder?: Recorder;
+    readonly arenaLobbyCode: string;
+
     constructor(
         id: string,
         config: ServerGameConfig,
@@ -196,6 +201,7 @@ export class Game {
 
         this.config = config;
         this.arenaPrivate = !!config.arenaPrivate;
+        this.arenaLobbyCode = config.groupHash ?? "";
         this.miniGame = config.miniGame ?? DefaultPrivateLobbyMiniGame;
         this.amongUsImpostorCount =
             this.miniGame === "among_us"
@@ -206,6 +212,10 @@ export class Game {
         this.disablePerks = !!config.disablePerks;
         this.disableLooting = !!config.disableLooting;
         this.showEnemiesOnMap = config.showEnemiesOnMap !== false;
+
+        if (this.arenaPrivate && Config.replays.enabled) {
+            this.recorder = new Recorder(this);
+        }
 
         this.teamMode = config.teamMode;
         this.mapName = config.mapName;
@@ -348,6 +358,7 @@ export class Game {
         if (!this.started) {
             this.started = this.modeManager.isGameStarted();
             if (this.started) {
+                this.recorder?.start();
                 this.gas.advanceGasStage();
             }
         }
@@ -477,6 +488,7 @@ export class Game {
 
         // serialize objects and send msgs
         this.objectRegister.serializeObjs();
+        this.recorder?.recordTick();
         this.playerBarn.sendMsgs();
 
         this.leaderboardDirty = false;
@@ -939,11 +951,69 @@ export class Game {
                 player.disconnect();
             }
         }
+        this.recorder?.stop();
         this.logger.info("Game Ended");
         this.joinTokens.clear();
         this.joinSpamRateLimit.dispose();
         this.updateData();
+        void this._saveArenaReplay();
         this._saveGameToDatabase();
+    }
+
+    private async _saveArenaReplay() {
+        if (!this.arenaPrivate || !this.recorder || !this.arenaLobbyCode) return;
+
+        const byUserId = new Map<string, SaveArenaReplayBody["participants"][number]>();
+        const allParticipants = new Map<string, boolean>();
+        for (const player of this.playerBarn.matchPlayers) {
+            const participantKey = player.userId || player.socketId;
+            const wasSpectator = allParticipants.get(participantKey);
+            if (wasSpectator === undefined || (wasSpectator && !player.spectatorOnly)) {
+                allParticipants.set(participantKey, player.spectatorOnly);
+            }
+            if (!player.userId) continue;
+            const participant = {
+                userId: player.userId,
+                playerName: player.name,
+                spectator: player.spectatorOnly,
+            };
+            const previous = byUserId.get(player.userId);
+            if (!previous || (previous.spectator && !participant.spectator)) {
+                byUserId.set(player.userId, participant);
+            }
+        }
+        if (!byUserId.size) return;
+
+        const replay = this.recorder.getBuffer();
+        if (!replay.byteLength) return;
+        try {
+            const response = await apiPrivateRouter.save_arena_replay.$post({
+                json: {
+                    gameId: this.id,
+                    lobbyCode: this.arenaLobbyCode,
+                    region: Config.gameServer.thisRegion,
+                    mapName: this.mapName,
+                    miniGame: this.miniGame,
+                    teamMode: this.teamMode,
+                    durationMs: Math.round(this.startedTime * 1000),
+                    playerCount: [...allParticipants.values()].filter(
+                        (spectator) => !spectator,
+                    ).length,
+                    spectatorCount: [...allParticipants.values()].filter(Boolean).length,
+                    participants: [...byUserId.values()],
+                    replay: {
+                        version: GameConfig.replayVersion,
+                        protocolVersion: GameConfig.protocolVersion,
+                        data: Buffer.from(replay).toString("base64"),
+                    },
+                },
+            });
+            if (!response.ok) {
+                this.logger.error(`Failed to save arena replay: HTTP ${response.status}`);
+            }
+        } catch (error) {
+            this.logger.error("Failed to save arena replay:", error);
+        }
     }
 
     private async _saveGameToDatabase() {

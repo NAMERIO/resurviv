@@ -99,10 +99,33 @@ export interface SaveGameBody {
     })[];
 }
 
+export interface SaveArenaReplayBody {
+    gameId: string;
+    lobbyCode: string;
+    region: string;
+    mapName: string;
+    miniGame: PrivateLobbyMiniGame;
+    teamMode: TeamMode;
+    durationMs: number;
+    playerCount: number;
+    spectatorCount: number;
+    participants: Array<{
+        userId: string;
+        playerName: string;
+        spectator: boolean;
+    }>;
+    replay: {
+        version: number;
+        protocolVersion: number;
+        data: string;
+    };
+}
+
 export interface ServerGameConfig {
     readonly mapName: keyof typeof MapDefs;
     readonly teamMode: TeamMode;
     readonly arenaPrivate?: boolean;
+    readonly groupHash?: string;
     readonly miniGame?: PrivateLobbyMiniGame;
     readonly amongUsImpostorCount?: AmongUsImpostorCount;
     readonly disableAirstrikes?: boolean;
