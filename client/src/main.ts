@@ -1815,8 +1815,7 @@ export class Application {
                 url.search = "";
                 url.searchParams.set("replay", replay.gameId);
                 url.hash = "";
-                window.history.pushState({}, "", url);
-                void this.startServerReplay(replay.gameId);
+                window.open(url, "_blank", "noopener");
             })
             .appendTo(actions);
         $("<button>")
