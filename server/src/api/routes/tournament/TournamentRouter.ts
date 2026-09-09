@@ -209,6 +209,8 @@ TournamentRouter.get("/betting", authMiddleware, async (c) => {
         balance: Number(balanceResult.rows[0]?.gp_balance ?? 0),
         limits: TournamentBetLimits,
         open:
+            !Config.lockTournamentBetting &&
+            settlementResult.rows.length === 0 &&
             Boolean(players[0] && players[1]) &&
             state.matches[TournamentFinalMatchId].winner === null,
         settled: settlementResult.rows.length > 0,
@@ -246,7 +248,10 @@ TournamentRouter.post("/bet", authMiddleware, validateParams(betSchema), async (
         if (!players[0] || !players[1]) {
             return { error: "The final matchup is not ready yet", status: 409 as const };
         }
-        if (state.matches[TournamentFinalMatchId].winner !== null) {
+        if (
+            Config.lockTournamentBetting ||
+            state.matches[TournamentFinalMatchId].winner !== null
+        ) {
             return { error: "Betting is closed for this match", status: 409 as const };
         }
 

@@ -41,6 +41,7 @@ export function getConfig(isProduction: boolean, dir: string) {
         battleRoyaleMode: true,
         pauseClanStats: false,
         lockClanJoins: false,
+        lockTournamentBetting: false,
         clanCgp: {
             killValue: 0.25,
             winValue: 5,
