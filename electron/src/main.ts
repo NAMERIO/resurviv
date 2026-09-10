@@ -1,7 +1,7 @@
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { app, BrowserWindow, type IpcMainEvent, ipcMain } from "electron";
-import { initAutoUpdater } from "./autoUpdater.js";
 import {
     destroyDiscordRPC,
     initDiscordRPC,
@@ -19,6 +19,11 @@ const PROD_CLIENT_URL =
     process.env.SURVEV_PROD_URL ||
     "https://resurviv.biz";
 const IS_DEV = !app.isPackaged;
+const IS_STEAM_BUILD =
+    process.argv.includes("--steam") ||
+    Boolean(process.env.SteamAppId || process.env.SteamGameId) ||
+    (app.isPackaged &&
+        existsSync(path.join(process.resourcesPath, "steam-build")));
 
 let mainWindow: BrowserWindow | null = null;
 let quitting = false;
@@ -78,7 +83,14 @@ function registerIPC(): void {
 app.whenReady().then(async () => {
     createWindow();
     registerIPC();
-    initAutoUpdater(() => mainWindow);
+    // Steam owns updates for depot builds. Running electron-updater as well can
+    // replace files behind Steam's back and cause unnecessary repair downloads.
+    if (IS_STEAM_BUILD) {
+        console.log("[Steam] Steam build detected; GitHub auto-updates disabled");
+    } else {
+        const { initAutoUpdater } = await import("./autoUpdater.js");
+        initAutoUpdater(() => mainWindow);
+    }
 
     await initDiscordRPC();
 

@@ -11,6 +11,7 @@
     "dev:electron": "pnpm --filter resurviv-desktop dev",
     "build:electron": "pnpm --filter resurviv-desktop build",
     "package:electron": "pnpm --filter resurviv-desktop package",
+    "package:steam": "pnpm --filter resurviv-desktop package:steam",
     "build": "cd server && pnpm build && cd ../client && pnpm build",
     "stressTest": "cd server && pnpm stressTest",
     "lint": "biome check --write",

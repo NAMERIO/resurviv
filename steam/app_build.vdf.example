@@ -1,0 +1,21 @@
+"AppBuild"
+{
+    "AppID" ""
+    "Desc" "Resurviv Windows build"
+    "ContentRoot" ".\\content\\win-unpacked"
+    "BuildOutput" ".\\output"
+    "SetLive" ""
+
+    "Depots"
+    {
+        ""
+        {
+            "FileMapping"
+            {
+                "LocalPath" "*"
+                "DepotPath" "."
+                "recursive" "1"
+            }
+        }
+    }
+}

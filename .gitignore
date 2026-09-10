@@ -12,6 +12,11 @@ survev-config.hjson
 # env file
 .env
 
+# Local Steam build output and SteamPipe config/cache
+steam/app_build.vdf
+steam/content/
+steam/output/
+
 # sqlite db
 game.db
 *.db
@@ -19,6 +24,7 @@ lost_game_data/
 
 # Compiled source
 dist/
+electron/release/
 
 # Node modules
 node_modules/

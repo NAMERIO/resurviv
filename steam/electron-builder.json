@@ -1,0 +1,14 @@
+{
+  "extends": "../electron/electron-builder.json",
+  "directories": {
+    "output": "../steam/content"
+  },
+  "extraResources": [
+    { "from": "../steam/steam-build", "to": "steam-build" }
+  ],
+  "win": {
+    "target": "dir",
+    "icon": "assets/tree-01.png",
+    "signAndEditExecutable": false
+  }
+}
