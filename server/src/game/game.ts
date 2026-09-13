@@ -780,7 +780,11 @@ export class Game {
         if (removeBattleRoyalePlayer) {
             player.game.playerBarn.removePlayer(player);
         } else if (!keepBattleRoyaleBody) {
-            if (!player.dead && player.health < 50 && player.lastDamagedBy && player.disconnectTime == -1) {
+            if (!player.dead &&
+                player.health < 50 &&
+                player.lastDamagedBy &&
+                player.disconnectTime == -1
+            ) {
                 player.startDisconnectTimer();
             } else {
                 player.kill({
