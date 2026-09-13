@@ -3374,7 +3374,7 @@ export class Player extends BaseGameObject {
             0,
             this.obstacleContactDamageTicker - dt,
         );
-        if(this.disconnectTime > -1){
+        if(this.disconnectTime > -1) {
             this.disconnectTime += dt;
             if (this.disconnectTime >= 5) {
                 this.kill({
