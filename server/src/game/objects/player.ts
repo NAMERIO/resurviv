@@ -3384,7 +3384,6 @@ export class Player extends BaseGameObject {
                 return;
             }
         }
-        if(this.disconnectTime >= 0) console.log(this.disconnectTime);
 
         if (
             this.game.map.amongUsMode &&
