@@ -2415,6 +2415,7 @@ export class Player implements AbstractObject {
                         : helmetSkin.baseTintBlue;
             }
             this.helmetSprite.tint = helmetTint;
+            this.helmetSprite.alpha = helmetDef.baseType ? 1 : 0.45;
             this.helmetSprite.visible = true;
         }
 
