@@ -19,13 +19,14 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         items: ["outfitSunset", "outfitMilitary"],
         price: 750,
         durationDays: 7,
+    
     },
     bundle_srandom2: {
-        name: "Random Mini",
-        size: "small",
-        items: ["outfitPaintSplat", "outfitZebra"],
-        price: 1200,
-        durationDays: 7,
+    name: "Random Mini",
+    size: "small",
+    items: ["outfitDeRanged", "outfitSplotchfest"],
+    price: 1250,
+    durationDays: 7,
     },
     bundle_lrandom3: {
         name: "Random Large",
@@ -245,8 +246,8 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
     bundle_lrandom4: {
         name: "Random Large",
         size: "large",
-        items: ["outfitCrusader", "outfitNeonEyesore", "outfitMojo", "outfitOldArt"],
-        price: 1950,
+        items: ["outfitAstronaut", "outfitWaves", "outfitSunset", "outfitUnoReverse"],
+        price: 1900,
         durationDays: 7,
     },
     bundle_bullseye: {
@@ -277,11 +278,25 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1700,
         durationDays: 7,
     },
+    bundle_rainbow: {
+        name: "Rainbow Set",
+        size: "small",
+        items: ["outfitHuedini", "fist_rainbowhands"],
+        price: 750,
+        durationDays: 7,
+    },
     bundle_desert: {
         name: "Desert Set",
         size: "large",
         items: ["outfitDesertCamo", "outfitCaptnCactus", "outfitTheySeeMeRolling"],
-        price: 850,
+        price: 950,
+        durationDays: 7,
+    },
+    bundle_custom: {
+        name: "Custom Set",
+        size: "large",
+        items: ["outfitDiamond", "outfitBullyGear", "outfitStepz"],
+        price: 2000,
         durationDays: 7,
     },
 };
@@ -292,12 +307,12 @@ export const FeaturedBundlePages = [
         large: "bundle_lrandom4",
     },
     {
-        small: "bundle_prince",
-        large: "bundle_camo",
+        small: "bundle_rainbow",
+        large: "bundle_desert",
     },
     {
-        small: "bundle_jester",
-        large: "bundle_sakura",
+        small: "bundle_bullseye",
+        large: "bundle_custom",
     },
 ] as const satisfies ReadonlyArray<
     Record<FeaturedBundleSize, keyof typeof FeaturedBundleDefs>
