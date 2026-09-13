@@ -3,9 +3,7 @@
   "directories": {
     "output": "../steam/content"
   },
-  "extraResources": [
-    { "from": "../steam/steam-build", "to": "steam-build" }
-  ],
+  "extraResources": [{ "from": "../steam/steam-build", "to": "steam-build" }],
   "win": {
     "target": "dir",
     "icon": "assets/tree-01.png",
