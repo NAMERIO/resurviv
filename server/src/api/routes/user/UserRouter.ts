@@ -96,6 +96,7 @@ import {
     usersTable,
 } from "../../db/schema";
 import type { Context } from "../../index";
+import { ArenaReplayRouter } from "./ArenaReplayRouter";
 import {
     ensureUserAuthIdentities,
     getTimeUntilNextUsernameChange,
@@ -104,7 +105,6 @@ import {
     syncDiscordServerTagReward,
 } from "./auth/authUtils";
 import { PassRouter } from "./PassRouter";
-import { ArenaReplayRouter } from "./ArenaReplayRouter";
 
 export const UserRouter = new Hono<Context>();
 

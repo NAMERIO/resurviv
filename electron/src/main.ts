@@ -22,8 +22,7 @@ const IS_DEV = !app.isPackaged;
 const IS_STEAM_BUILD =
     process.argv.includes("--steam") ||
     Boolean(process.env.SteamAppId || process.env.SteamGameId) ||
-    (app.isPackaged &&
-        existsSync(path.join(process.resourcesPath, "steam-build")));
+    (app.isPackaged && existsSync(path.join(process.resourcesPath, "steam-build")));
 
 let mainWindow: BrowserWindow | null = null;
 let quitting = false;
