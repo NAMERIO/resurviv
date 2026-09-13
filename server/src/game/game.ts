@@ -780,15 +780,16 @@ export class Game {
         if (removeBattleRoyalePlayer) {
             player.game.playerBarn.removePlayer(player);
         } else if (!keepBattleRoyaleBody) {
-            if (player.health < GameConfig.player.reviveHealth && player.lastDamagedBy) {
-                player.lastDamagedBy.health += GameConfig.player.reviveHealth;
+            if (!player.dead && player.health < 50 && player.lastDamagedBy && player.disconnectTime == -1) {
+                player.startDisconnectTimer();
+            } else {
+                player.kill({
+                    damageType: GameConfig.DamageType.Bleeding,
+                    dir: player.dir,
+                    source: player.downedBy,
+                });
+                player.game.playerBarn.removePlayer(player);
             }
-            player.kill({
-                damageType: GameConfig.DamageType.Bleeding,
-                dir: player.dir,
-                source: player.downedBy,
-            });
-            player.game.playerBarn.removePlayer(player);
         } else if (player.group) {
             player.group.locked = true;
             player.group.autoFill = false;
