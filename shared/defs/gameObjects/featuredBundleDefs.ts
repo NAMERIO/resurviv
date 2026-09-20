@@ -24,8 +24,8 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
     bundle_srandom2: {
     name: "Random Mini",
     size: "small",
-    items: ["outfitDeRanged", "outfitSplotchfest"],
-    price: 1250,
+    items: ["outfitVikingHelm", "outfitChromaticCTR"],
+    price: 800,
     durationDays: 7,
     },
     bundle_lrandom3: {
@@ -123,7 +123,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         name: "Jule Verny Set",
         size: "small",
         items: ["outfitJuleVerny", "fist_golden_lobster"],
-        price: 1625,
+        price: 1350,
         durationDays: 7,
     },
     bundle_prince: {
@@ -138,6 +138,13 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         size: "large",
         items: ["outfitMaxAttack", "outfitBitplosion", "fist_squareyCerry"],
         price: 2850,
+        durationDays: 7,
+    },
+    bundle_mask: {
+        name: "Mask Set",
+        size: "large",
+        items: ["outfitMachoLucha2", "outfitCalaca", "outfitTribeMask"],
+        price: 2000,
         durationDays: 7,
     },
     bundle_bugcat: {
@@ -246,8 +253,8 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
     bundle_lrandom4: {
         name: "Random Large",
         size: "large",
-        items: ["outfitAstronaut", "outfitWaves", "outfitSunset", "outfitUnoReverse"],
-        price: 1900,
+        items: ["outfitHowPitaful", "outfitSnow", "outfitChewieCheese", "outfitSoapPods"],
+        price: 2500,
         durationDays: 7,
     },
     bundle_bullseye: {
@@ -285,11 +292,60 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 750,
         durationDays: 7,
     },
+    bundle_kinggalaxy: {
+        name: "King Galaxy Set",
+        size: "small",
+        items: ["outfitKingGalaxy", "fist_bloody"],
+        price: 1250,
+        durationDays: 7,
+    },
     bundle_desert: {
         name: "Desert Set",
         size: "large",
         items: ["outfitDesertCamo", "outfitCaptnCactus", "outfitTheySeeMeRolling"],
         price: 950,
+        durationDays: 7,
+    },
+    bundle_solarsytem: {
+        name: "Solar System Set",
+        size: "large",
+        items: ["outfitTerra", "outfitLuna", "outfitVitaminD"],
+        price: 1750,
+        durationDays: 7,
+    },
+    bundle_geometry: {
+        name: "Geometry Set",
+        size: "small",
+        items: ["outfitGeometric", "fliptechnical_rugged"],
+        price: 950,
+        durationDays: 7,
+    },
+    bundle_coffee: {
+        name: "Coffee Break Set",
+        size: "small",
+        items: ["outfitMugnificent", "outfitDonut"],
+        price: 1250,
+        durationDays: 7,
+    },
+    bundle_art: {
+        name: "Artistic Set",
+        size: "small",
+        items: ["outfitMondrian", "outfitPaintSplat"],
+        price: 850,
+        durationDays: 7,
+    },
+    bundle_watermelon: {
+        name: "Watermelon Set",
+        size: "small",
+        items: ["outfitMelonWater", "fist_watermelon"],
+        price: 1000,
+        durationDays: 7,
+    },
+    bundle_poinsetee: {
+        name: "Poinsetee Set",
+        size: "small",
+        items: ["outfitPoinsetee", "fist_leaf"],
+        price: 1050,
         durationDays: 7,
     },
     bundle_custom: {
@@ -307,12 +363,12 @@ export const FeaturedBundlePages = [
         large: "bundle_lrandom4",
     },
     {
-        small: "bundle_rainbow",
-        large: "bundle_desert",
+        small: "bundle_juleverny",
+        large: "bundle_mask",
     },
     {
-        small: "bundle_bullseye",
-        large: "bundle_custom",
+        small: "bundle_geometry",
+        large: "bundle_solarsytem",
     },
 ] as const satisfies ReadonlyArray<
     Record<FeaturedBundleSize, keyof typeof FeaturedBundleDefs>

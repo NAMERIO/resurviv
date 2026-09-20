@@ -15,7 +15,12 @@ export const privateOutfits = [
 ];
 
 const _allowedHealEffects = ["heal_basic", "boost_basic"];
-const _allowedDeathEffects = ["death_none", "death_basic"];
+const _allowedDeathEffects = [
+    "death_none",
+    "death_basic",
+    // "death_halloween_treats",
+    // "death_maple_leaves",
+];
 const _allowedStreaks = [
     "streak_rapid_fire",
     "streak_heavy_hitter",
@@ -326,6 +331,7 @@ const _allowedMeleeSkins = [
     // "kunai_shadow",
     // "sickle_farmer",
     // "huntsman_bloodmoon",
+    // "barbell_ikou",
 ];
 const _allowedOutfits = [
     "outfitBase",
@@ -536,6 +542,7 @@ const _allowedOutfits = [
     // "outfitMahoraga",
     // "outfitToxicFire",
     // "outfitToxicChomper",
+    // "outfitIkouIronbelt",
     // "outfitCrimsonHibiscus",
     // "outfitDonut",
     // "outfitPolice",
@@ -567,6 +574,7 @@ const _allowedOutfits = [
     // "outfitPie",
     // "outfitMondrian",
     // "outfitLuna",
+    // "outfitTerra",
     // "outfitNightshadeStalker",
     // "outfitFishBowl",
     // "outfitAutumnForest",
@@ -601,6 +609,7 @@ const _allowedEmotes = [
     // "emote_facepalm",
     // "emote_eyebags",
     // "emote_victory",
+    // "emote_mikementzer",
     "emote_shockface",
     "emote_shur",
     "emote_sobface",

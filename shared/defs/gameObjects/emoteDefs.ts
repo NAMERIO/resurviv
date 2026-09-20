@@ -414,6 +414,16 @@ export const EmotesDefs: Record<string, EmoteDef> = {
         teamOnly: false,
         category: EmoteCategory.Faces,
     },
+    emote_mikementzer: {
+        type: "emote",
+        name: "Mike Mentzer",
+        rarity: Rarity.Mythic,
+        texture: "emote-mike-mentzer.img",
+        sound: "emote_01",
+        channel: "ui",
+        teamOnly: false,
+        category: EmoteCategory.Faces,
+    },
     emote_shockface: {
         type: "emote",
         name: "Shock & Awe",

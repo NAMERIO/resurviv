@@ -3374,6 +3374,18 @@ const SkinDefs: Record<string, MeleeDef> = {
             sprite: "loot-melee-scythe-reaper.img",
         },
     }),
+    barbell_ikou: defineMeleeSkin("naginata", {
+        name: "Ikou's Barbell",
+        rarity: Rarity.Epic,
+        lore: "For those who lift the weight of victory.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-barbell-ikou.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-barbell-ikou.img",
+        },
+    }),
 };
 
 export const MeleeDefs: Record<string, MeleeDef> = { ...BaseDefs, ...SkinDefs };
