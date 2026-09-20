@@ -28,8 +28,8 @@ const _allowedStreaks = [
     "streak_dash",
     "streak_samurai",
 ];
-//  const _allowedGunSkins = [
-//     "mosin_gilded"
+// const _allowedGunSkins = [
+//     "mosin_gilded",
 //     "mosin_camo"
 // ];
 const _featuredBundleUnlocks = [

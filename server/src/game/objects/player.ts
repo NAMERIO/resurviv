@@ -3027,6 +3027,7 @@ export class Player extends BaseGameObject {
     hideAndSeekPropSwitchesLeft = 0;
     hideAndSeekNoiseTicker = 0;
     infectedHumanNoiseTicker = 0;
+    disconnectTime = -1;
     get hideAndSeekBlindTime(): number {
         return this.hideAndSeekBlindTicker;
     }
@@ -3373,6 +3374,16 @@ export class Player extends BaseGameObject {
             0,
             this.obstacleContactDamageTicker - dt,
         );
+        if (this.disconnectTime > -1) {
+            this.disconnectTime += dt;
+            if (this.disconnectTime >= 5) {
+                this.kill({
+                    damageType: GameConfig.DamageType.Bleeding,
+                    dir: this.dir,
+                });
+                return;
+            }
+        }
 
         if (
             this.game.map.amongUsMode &&
@@ -5410,6 +5421,10 @@ export class Player extends BaseGameObject {
                 this.game.modeManager.handlePlayerDeath(this, params);
             }
         }
+    }
+
+    startDisconnectTimer() {
+        this.disconnectTime = 0;
     }
 
     /**
