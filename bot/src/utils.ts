@@ -20,6 +20,10 @@ import {
 
 // we love enums
 export const enum Command {
+    WhrAdd = "whr_add",
+    WhrVoid = "whr_void",
+    WhrSeason = "whr_season",
+    WhrLeaderboard = "whr_leaderboard",
     BanIp = "ban_ip",
     FindDiscordUserSlug = "find_discord_user_slug",
     BanAccount = "ban_account",

@@ -31,6 +31,8 @@ esbuild.buildSync({
     ],
 });
 
+fs.copyFileSync("./src/api/competitive/LICENSE-StarCubey", "./dist/LICENSE-StarCubey");
+
 if (fs.existsSync(pluginDir)) {
     const pluginPaths = readDirectory(pluginDir);
 

@@ -57,6 +57,13 @@
       "when": 1788900000000,
       "tag": "0039_arena_replays",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1789980000000,
+      "tag": "0040_competitive_whr",
+      "breakpoints": true
     }
   ]
 }

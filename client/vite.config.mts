@@ -25,7 +25,8 @@ function mpaRouteRedirectPlugin(): Plugin {
             pathname === "/animation-maker" ||
             pathname === "/building-maker" ||
             pathname === "/loot-table-maker" ||
-            pathname === "/tournament"
+            pathname === "/tournament" ||
+            pathname === "/competitive"
         ) {
             res.statusCode = 302;
             res.setHeader("Location", `${pathname}/${query ? `?${query}` : ""}`);
@@ -134,6 +135,7 @@ export default defineConfig(({ mode }) => {
                         "loot-table-maker/index.html",
                     ),
                     tournament: resolve(import.meta.dirname, "tournament/index.html"),
+                    competitive: resolve(import.meta.dirname, "competitive/index.html"),
                 },
                 output: {
                     assetFileNames(assetInfo) {

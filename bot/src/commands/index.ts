@@ -42,6 +42,12 @@ import { listGameModesHandler } from "./list-game-modes";
 import { searchIpHandler } from "./search-ip";
 import { searchPlayersHandler } from "./search-player";
 import { topRankPlayersHandler } from "./top-rank-players";
+import {
+    whrAddHandler,
+    whrLeaderboardHandler,
+    whrSeasonHandler,
+    whrVoidHandler,
+} from "./whr";
 
 /**
  * for generic commands that only makes an api call and return it's meessage
@@ -596,6 +602,10 @@ const commands = {
         | "gp_leaderboard"
         | "rank_leadrboard"
         | "list_game_modes"
+        | "whr_add"
+        | "whr_void"
+        | "whr_season"
+        | "whr_leaderboard"
     >,
     ReturnType<typeof createCommand>
 >;
@@ -621,6 +631,10 @@ export const commandHandlers: CommandHandlers = (
     },
     {
         // add non generic commands here
+        [Command.WhrAdd]: whrAddHandler.execute,
+        [Command.WhrVoid]: whrVoidHandler.execute,
+        [Command.WhrSeason]: whrSeasonHandler.execute,
+        [Command.WhrLeaderboard]: whrLeaderboardHandler.execute,
         [Command.SearchPlayer]: searchPlayersHandler.execute,
         [Command.SearchIp]: searchIpHandler.execute,
         [Command.CoinFlip]: coinFlipHandler.execute,
@@ -636,6 +650,10 @@ export const commandHandlers: CommandHandlers = (
 export const commandsToRegister: SlashCommandOptionsOnlyBuilder[] = [
     ...Object.values(commands).map(createSlashCommand),
     // add non generic commands here
+    whrAddHandler.command,
+    whrVoidHandler.command,
+    whrSeasonHandler.command,
+    whrLeaderboardHandler.command,
     searchPlayersHandler.command,
     searchIpHandler.command,
     coinFlipHandler.command,

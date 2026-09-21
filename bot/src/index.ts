@@ -7,6 +7,7 @@ import {
 } from "discord.js";
 import { commandHandlers } from "./commands";
 import { sendNoPermissionMessage } from "./commands/helpers";
+import { handleWhrAddInteraction } from "./commands/whr-add";
 import { DISCORD_BOT_TOKEN, DISCORD_GUILD_ID } from "./config";
 import { botLogger, Command, hasBotPermission } from "./utils";
 
@@ -14,6 +15,21 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 function setupInteractionHandlers() {
     client.on(Events.InteractionCreate, async (interaction) => {
+        try {
+            if (await handleWhrAddInteraction(interaction)) return;
+        } catch (error) {
+            botLogger.error("Error handling competitive match form:", error);
+            if (interaction.isRepliable()) {
+                const message = {
+                    content: "Could not process this form. Try its latest button again.",
+                    flags: MessageFlags.Ephemeral as const,
+                };
+                if (interaction.deferred || interaction.replied)
+                    await interaction.followUp(message).catch(() => {});
+                else await interaction.reply(message).catch(() => {});
+            }
+            return;
+        }
         if (!interaction.isChatInputCommand()) return;
 
         const commandName = interaction.commandName as Command;
@@ -26,6 +42,7 @@ function setupInteractionHandlers() {
                 Command.Balance,
                 Command.GpLeaderboard,
                 Command.TopRankPlayers,
+                Command.WhrLeaderboard,
             ].includes(commandName) &&
                 !hasBotPermission(interaction))
         ) {

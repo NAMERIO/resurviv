@@ -18,6 +18,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { TeamMode } from "../../../../shared/gameConfig";
 import type { ClanFont, ClanMemberRole, ClanRegion } from "../../../../shared/types/clan";
+import type { CompetitiveRating } from "../../../../shared/types/competitive";
 import type { NewsDocument } from "../../../../shared/types/news";
 import { GameModeStatus } from "../../../../shared/types/stats";
 import type {
@@ -39,6 +40,46 @@ export const sessionTable = pgTable("session", {
 });
 
 export type SessionTableSelect = typeof sessionTable.$inferSelect;
+
+export const competitiveSeasonsTable = pgTable("competitive_seasons", {
+    id: serial("id").primaryKey(),
+    name: text("name").notNull(),
+    ratings: jsonb("ratings").$type<CompetitiveRating[]>().notNull().default([]),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }),
+});
+
+export const competitiveMatchesTable = pgTable(
+    "competitive_matches",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+        seasonId: integer("season_id")
+            .notNull()
+            .references(() => competitiveSeasonsTable.id),
+        reference: text("reference").notNull(),
+        requestId: text("request_id").notNull().unique(),
+        playedOn: text("played_on").notNull(),
+        teams: jsonb("teams").$type<string[][]>().notNull(),
+        slugs: jsonb("slugs").$type<string[][]>().notNull(),
+        scores: jsonb("scores").$type<number[]>(),
+        note: text("note").notNull(),
+        submittedBy: text("submitted_by").notNull(),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        voidReason: text("void_reason"),
+        voidedBy: text("voided_by"),
+        voidedAt: timestamp("voided_at", { withTimezone: true }),
+    },
+    (table) => [
+        uniqueIndex("competitive_match_reference_idx")
+            .on(table.seasonId, table.reference)
+            .where(sql`${table.voidedAt} IS NULL`),
+        index("competitive_match_history_idx").on(
+            table.seasonId,
+            table.playedOn,
+            table.createdAt,
+        ),
+    ],
+);
 
 export const usersTable = pgTable("users", {
     id: text("id").notNull().primaryKey(),

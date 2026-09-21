@@ -95,6 +95,7 @@ import {
 import { getGlobalRankLeaderboard } from "../stats/global_rank";
 import { MOCK_USER_ID } from "../user/auth/mock";
 import { passType, premiumPassUnlockType } from "../user/PassRouter";
+import { competitivePrivateRouter } from "./competitive";
 import { isBanned, logPlayerIPs, ModerationRouter } from "./ModerationRouter";
 
 function getSurvivalKillCgpMultiplier(timeAlive: number) {
@@ -728,6 +729,7 @@ function getConfiguredModeSummary(
 
 export const PrivateRouter = new Hono<Context>()
     .use(privateMiddleware)
+    .route("/competitive", competitivePrivateRouter)
     .route("/moderation", ModerationRouter)
     .post("/update_region", validateParams(zUpdateRegionBody), (c) => {
         const { regionId, data } = c.req.valid("json");

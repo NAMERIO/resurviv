@@ -2,6 +2,7 @@ import {
     ApplicationCommandOptionType,
     type ChatInputCommandInteraction,
     MessageFlags,
+    type RepliableInteraction,
     SlashCommandBuilder,
 } from "discord.js";
 import type z from "zod";
@@ -152,7 +153,7 @@ export function createSlashCommand(config: ReturnType<typeof createCommand>) {
     return builder;
 }
 
-export async function sendNoPermissionMessage(interaction: ChatInputCommandInteraction) {
+export async function sendNoPermissionMessage(interaction: RepliableInteraction) {
     if (!interaction.isRepliable()) return;
     const errorMessage = {
         content: "You do not have permission to use this action.",

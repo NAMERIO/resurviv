@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { competitiveRouter } from "./competitive";
 import { leaderboardRouter } from "./leaderboard";
 import { matchDataRouter } from "./match_data";
 import { matchHistoryRouter } from "./match_history";
@@ -6,6 +7,7 @@ import { UserStatsRouter } from "./user_stats";
 import { weaponHistoryRouter } from "./weapon_history";
 
 export const StatsRouter = new Hono();
+StatsRouter.route("/competitive", competitiveRouter);
 
 StatsRouter.route("/user_stats", UserStatsRouter);
 StatsRouter.route("/match_history", matchHistoryRouter);

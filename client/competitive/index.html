@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#83af50">
+  <meta name="description" content="The Resurviv competitive leaderboard. Explore season standings, player ratings, and rated match results.">
+  <title>Competitive · Resurviv</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,700" rel="stylesheet">
+  <link href="./competitive.css" rel="stylesheet">
+</head>
+<body>
+  <main class="arena">
+    <nav class="topbar" aria-label="Main navigation">
+      <a class="home-button" href="/">← Back to Game</a>
+      <a class="site-logo" href="/" aria-label="Resurviv home"><img src="/img/resurviv_logo_full.png" alt="Resurviv"></a>
+      <a class="tournament-button" href="/tournament/">Tournament</a>
+    </nav>
+
+    <header class="hero">
+      <p class="eyebrow">RESURVIV COMPETITIVE</p>
+      <h1>Competitive Leaderboard</h1>
+      <p>Season standings, player ratings, and rated match results.</p>
+    </header>
+
+    <div class="season-toolbar">
+      <div class="season-control"><label for="season">SEASON</label><select id="season" disabled><option>Loading…</option></select></div>
+      <div class="season-meta"><span>Whole History Rating</span><span id="player-count">— players</span></div>
+      <button id="refresh" class="text-button" type="button">↻ Refresh</button>
+    </div>
+    <div id="load-status" class="load-status" role="status" aria-live="polite">Loading competitive standings…</div>
+
+    <div id="competition" class="competition" hidden>
+      <section class="standings" aria-labelledby="standings-title">
+        <div class="section-heading"><h2 id="standings-title">Standings</h2></div>
+        <label class="search-field"><span aria-hidden="true">⌕</span><input id="player-search" type="search" placeholder="Search players" aria-label="Search players" autocomplete="off"></label>
+        <div class="standings-labels" aria-hidden="true"><span>RANK</span><span>PLAYER</span><span>WHR</span></div>
+        <div id="standings-list" class="standings-list" aria-label="Player standings"></div>
+      </section>
+
+      <section class="player-panel" aria-labelledby="player-title">
+        <div class="section-heading"><h2 id="player-title">Player Stats</h2></div>
+        <div id="player-empty" class="player-empty"><img src="/img/gui/player-gui.svg" alt=""><h3>No player selected</h3><p>Once results are recorded, select a player to see their season stats.</p></div>
+        <div id="player-detail" hidden>
+          <div class="player-identity"><div class="player-avatar"><img id="player-icon" src="/img/gui/player-gui.svg" alt=""></div><div><span id="player-status" class="player-status"></span><h3 id="player-name"></h3><p id="player-slug"></p></div></div>
+          <div class="player-data">
+            <dl class="stat-list">
+              <div><dt>Matches played</dt><dd id="stat-games">—</dd></div>
+              <div><dt>Wins</dt><dd id="stat-wins">—</dd></div>
+              <div><dt>Draws</dt><dd id="stat-draws">—</dd></div>
+              <div><dt>Losses</dt><dd id="stat-losses">—</dd></div>
+              <div><dt>Avg. team placement</dt><dd id="stat-placement">—</dd></div>
+            </dl>
+            <div class="rating-block"><div id="win-ring" class="win-ring"><div class="rating-core"><span id="stat-rating">—</span><small>WHR RATING</small></div></div><p class="win-caption"><span></span><strong id="stat-win-rate">—</strong> WIN RATE</p></div>
+          </div>
+          <div class="player-banner"><div><small>SELECTED PLAYER</small><span id="spotlight-name"></span></div><a id="player-profile" href="/stats/">View Profile</a></div>
+          <p class="rating-note" id="rating-note"></p>
+        </div>
+      </section>
+    </div>
+
+    <section id="match-section" class="match-section" aria-labelledby="match-title" hidden>
+      <div class="section-heading"><h2 id="match-title">Match History</h2><span class="match-feed-label">All season matches · Newest first</span></div>
+      <p class="match-history-help">See who won at a glance. Open Details for the full result.</p>
+      <div id="match-list" class="match-list"></div>
+      <nav class="pagination" aria-label="Match history pages"><button id="newer" class="outline-button" type="button">← Newer matches</button><span id="match-page"></span><button id="older" class="outline-button" type="button">Older matches →</button></nav>
+    </section>
+
+    <footer><p>Competitive ratings<span>Ratings consider your entire match history and can change as opponents compete.</span></p><span id="last-updated">Season standings</span></footer>
+  </main>
+  <script type="module" src="/src/competitive.ts"></script>
+</body>
+</html>

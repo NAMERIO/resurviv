@@ -85,6 +85,14 @@ export class App {
         this.adManager = new Ads();
 
         window.addEventListener("load", () => {
+            if (helpers.getParameterByName("type") === "whr") {
+                const params = new URLSearchParams(window.location.search);
+                params.delete("type");
+                window.location.replace(
+                    `/competitive/${params.size ? `?${params}` : ""}`,
+                );
+                return;
+            }
             if (helpers.getParameterByName("slug")) {
                 this.setView("player");
             } else {
