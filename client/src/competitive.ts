@@ -297,6 +297,7 @@ async function load() {
         ]);
         if (pending !== controller) return;
         board = result;
+        el("about-placement-count").textContent = String(result.placementGames);
         seasonSelect.replaceChildren(
             ...seasons.map((season) => {
                 const option = node("option", "", season.name);

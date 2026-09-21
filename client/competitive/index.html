@@ -17,9 +17,22 @@
     <nav class="topbar" aria-label="Main navigation">
       <a class="home-button" href="/">← Back to Game</a>
       <a class="site-logo" href="/" aria-label="Resurviv home"><img src="/img/resurviv_logo_full.png" alt="Resurviv"></a>
-      <a class="tournament-button" href="/tournament/">Tournament</a>
     </nav>
 
+    <div class="competitive-layout">
+      <aside class="about-panel" aria-labelledby="about-title">
+        <h2 id="about-title">About the Leaderboard</h2>
+        <a class="discord-button" href="https://discord.gg/pnmsY8DbvG" target="_blank" rel="noopener noreferrer"><img src="/img/clans/discord-logo.svg" alt="">Join the Discord</a>
+        <ol class="about-steps">
+          <li><h3>Join Discord</h3><p>Check the server for available rated matches.</p></li>
+          <li><h3>Play a staff hosted match</h3><p>Mods or owners organize matches. Owners record the results.</p></li>
+          <li><h3>Play <span id="about-placement-count">3</span> matches to rank</h3><p>Until then, your rating is provisional (<strong>PROV.</strong>).</p></li>
+        </ol>
+        <div class="about-rating">
+          <p>WHR reflects your results and opponents' strength. Only recorded, non-voided matches count. Each season starts fresh.</p>
+        </div>
+      </aside>
+      <div class="leaderboard-main">
     <header class="hero">
       <p class="eyebrow">RESURVIV COMPETITIVE</p>
       <h1>Competitive Leaderboard</h1>
@@ -70,6 +83,8 @@
     </section>
 
     <footer><p>Competitive ratings<span>Ratings consider your entire match history and can change as opponents compete.</span></p><span id="last-updated">Season standings</span></footer>
+      </div>
+    </div>
   </main>
   <script type="module" src="/src/competitive.ts"></script>
 </body>
