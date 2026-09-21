@@ -1400,6 +1400,44 @@ const ParticleDefs: Record<string, ParticleDef> = {
             return 0xffffff;
         },
     },
+    mapleLeavesDeath: {
+        image: ["part-death-maple-leaves-01.img", "part-death-maple-leaves-02.img"],
+        life: new Range(1, 1.5),
+        drag: new Range(1, 10),
+        rotVel: new Range(0, Math.PI * 3),
+        scale: {
+            start: new Range(0.15, 0.25),
+            end: new Range(0.12, 0.2),
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 1,
+            end: 0,
+            lerp: new Range(0.95, 1),
+        },
+        color: function () {
+            return 0xffffff;
+        },
+    },
+    halloweenTreatsDeath: {
+        image: ["part-death-halloween-treats-01.img", "part-death-halloween-treats-02.img"],
+        life: new Range(1, 1.5),
+        drag: new Range(1, 10),
+        rotVel: new Range(0, Math.PI * 3),
+        scale: {
+            start: new Range(0.15, 0.25),
+            end: new Range(0.12, 0.2),
+            lerp: new Range(0, 1),
+        },
+        alpha: {
+            start: 1,
+            end: 0,
+            lerp: new Range(0.95, 1),
+        },
+        color: function () {
+            return 0xffffff;
+        },
+    },
     deathSplash: {
         image: ["part-splat-01.img", "part-splat-02.img", "part-splat-03.img"],
         life: new Range(0.8, 1.2),

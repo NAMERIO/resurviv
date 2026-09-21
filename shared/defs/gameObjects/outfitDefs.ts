@@ -4696,6 +4696,30 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+    outfitIkouIronbelt: defineOutfitSkin("outfitBase", {
+        name: "Ikou Ironbelt",
+        noDropOnDeath: true,
+        rarity: 4,
+        lore: "Ikou's iron belt.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-ikou-ironbelt.img",
+            aboveHand: false,
+            handTint: 0xffffff,
+            handSprite: "player-hands-ikou-ironbelt.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-ikou-ironbelt.img",
+            frontSpritePos: { x: 2, y: 0 },
+            frontSprite: "player-accessory-ikou-ironbelt.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
     outfitMahoraga: defineOutfitSkin("outfitBase", {
         name: "Mahoraga",
         noDropOnDeath: true,
@@ -5574,6 +5598,29 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0x211b39,
             backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitTerra: defineOutfitSkin("outfitBase", {
+        name: "Terra",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "For those who move silently in the shadows of the battlefield.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-terra.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-terra.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-terra.img",
         },
         lootImg: {
             skinLootImg: true,
