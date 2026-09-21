@@ -1420,7 +1420,10 @@ const ParticleDefs: Record<string, ParticleDef> = {
         },
     },
     halloweenTreatsDeath: {
-        image: ["part-death-halloween-treats-01.img", "part-death-halloween-treats-02.img"],
+        image: [
+            "part-death-halloween-treats-01.img",
+            "part-death-halloween-treats-02.img",
+        ],
         life: new Range(1, 1.5),
         drag: new Range(1, 10),
         rotVel: new Range(0, Math.PI * 3),
