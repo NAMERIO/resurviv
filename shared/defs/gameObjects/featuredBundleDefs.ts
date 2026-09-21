@@ -19,14 +19,13 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         items: ["outfitSunset", "outfitMilitary"],
         price: 750,
         durationDays: 7,
-    
     },
     bundle_srandom2: {
-    name: "Random Mini",
-    size: "small",
-    items: ["outfitVikingHelm", "outfitChromaticCTR"],
-    price: 800,
-    durationDays: 7,
+        name: "Random Mini",
+        size: "small",
+        items: ["outfitDeRanged", "outfitSplotchfest"],
+        price: 1250,
+        durationDays: 7,
     },
     bundle_lrandom3: {
         name: "Random Large",

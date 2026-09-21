@@ -39,7 +39,7 @@ export const DeathEffectDefs: Record<string, DeathEffectDef> = {
         type: "death_effect",
         name: "Blood Explosion",
         rarity: Rarity.Epic,
-        texture: "loot-blood-explosion.img",
+        texture: "loot-death-blood-explosion.img",
         particle: "bloodExplosion",
         particleCount: 15,
         isParticle: false,
