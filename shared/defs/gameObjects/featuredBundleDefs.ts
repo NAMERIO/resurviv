@@ -362,7 +362,7 @@ export const FeaturedBundlePages = [
         large: "bundle_lrandom4",
     },
     {
-        small: "bundle_juleverny",
+        small: "bundle_donut",
         large: "bundle_mask",
     },
     {
