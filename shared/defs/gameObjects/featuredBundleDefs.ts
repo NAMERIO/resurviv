@@ -21,7 +21,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         durationDays: 7,
     
     },
-    bundle_srandom2: {
+    bundle_srandom3: {
     name: "Random Mini",
     size: "small",
     items: ["outfitVikingHelm", "outfitChromaticCTR"],
@@ -359,11 +359,11 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
 
 export const FeaturedBundlePages = [
     {
-        small: "bundle_srandom2",
+        small: "bundle_srandom3",
         large: "bundle_lrandom4",
     },
     {
-        small: "bundle_juleverny",
+        small: "bundle_coffee",
         large: "bundle_mask",
     },
     {
