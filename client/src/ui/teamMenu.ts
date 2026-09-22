@@ -1251,6 +1251,18 @@ export class TeamMenu {
         this.sendMessage("createBattleRoyaleTeam", {});
     }
 
+    changeArenaRoster(action: "spectateAll" | "shuffleTeams") {
+        if (
+            !this.joined ||
+            !this.arena ||
+            !this.isLeader ||
+            this.roomData.findingGame ||
+            this.players.some((player) => player.inGame)
+        )
+            return;
+        this.sendMessage("rosterAction", { action });
+    }
+
     joinBattleRoyaleTeam(teamCode: string) {
         if (!this.joined || !this.arena) return;
         this.battleRoyaleTeamError = "";

@@ -102,6 +102,7 @@ export class Application {
     prestigeArenaBattleInputGroup = $("#modal-battle-window .input-group");
     prestigeArenaJoinBtn = $("#battle-button");
     prestigeArenaLoadoutBtn = $("#battle-loadout-button");
+    prestigeArenaRosterActions = $("#battle-roster-actions");
     prestigeArenaCreateBtn = $("#create-button");
     prestigeArenaDisableAirstrikesBtn = $<HTMLButtonElement>(
         "#create-disable-airstrikes",
@@ -629,6 +630,12 @@ export class Application {
                 this.loadoutMenu.show();
                 return false;
             });
+            $("#battle-spectate-all").on("click", () =>
+                this.teamMenu.changeArenaRoster("spectateAll"),
+            );
+            $("#battle-shuffle-teams").on("click", () =>
+                this.teamMenu.changeArenaRoster("shuffleTeams"),
+            );
             $("#battle-search-button").on("click", () => {
                 this.prestigeArenaJoinBtn.trigger("click");
             });
@@ -2861,6 +2868,7 @@ export class Application {
     }
 
     setPrestigeArenaUnjoinedUi() {
+        this.prestigeArenaRosterActions.addClass("hide");
         this.prestigeArenaWrapper.addClass("arena-unjoined-shell");
         this.prestigeArenaWrapper.removeClass("arena-joined-shell");
         this.syncPrestigeArenaCreatePaneVisibility();
@@ -2911,6 +2919,8 @@ export class Application {
     }
 
     renderPrestigeArenaTeams() {
+        // Preserve the owner controls and their handlers when rebuilding headings.
+        this.prestigeArenaRosterActions.detach();
         this.prestigeArenaTeamAList.empty();
         this.prestigeArenaTeamBList.empty();
         this.prestigeArenaBrTeamBoard.empty();
@@ -3025,7 +3035,16 @@ export class Application {
             this.prestigeArenaSpectatorList.empty();
             this.prestigeArenaTeamsBoard.find(".arena-team-column").addClass("hide");
             this.prestigeArenaTeamsBoard.find(".arena-team-a").removeClass("hide");
-            this.prestigeArenaSpectatorsBoard.addClass("hide");
+            const spectators = players.filter((player) => player.spectator);
+            this.prestigeArenaSpectatorsBoard.toggleClass("hide", !spectators.length);
+            $("#arena-spectators-title").text(`Spectators (${spectators.length})`);
+            for (const spectator of spectators) {
+                const row = $("<div>", {
+                    class: "arena-spectator-item arena-player-card",
+                });
+                appendArenaPlayerIdentity(row, spectator, "Spectator");
+                this.prestigeArenaSpectatorList.append(row);
+            }
             this.prestigeArenaBrTeamBoard.toggleClass("hide", teamSize <= 1);
             this.setPrestigeArenaMobilePanel("spectators");
 
@@ -3037,7 +3056,8 @@ export class Application {
                         class: "arena-team-count",
                         text: `${players.length}/${maxPlayers}`,
                     }),
-                );
+                )
+                .append(this.prestigeArenaRosterActions);
             const summaryCard = $("<div>", { class: "arena-br-lobby-card" })
                 .append(
                     $("<div>", { class: "arena-br-lobby-hero" })
@@ -3383,6 +3403,7 @@ export class Application {
             );
             if (target === "A") {
                 titleEl.append(buildLockButton());
+                titleEl.append(this.prestigeArenaRosterActions);
             }
             titleEl.append(buildJoinButton(target, label));
         };
@@ -3869,6 +3890,8 @@ export class Application {
         this.prestigeArenaPlayerCounter.toggleClass("active", joinedCount > 0);
         const hasInGamePlayers = this.teamMenu.players.some((player) => player.inGame);
         const started = this.teamMenu.roomData.findingGame || hasInGamePlayers;
+        this.prestigeArenaRosterActions.toggleClass("hide", !this.teamMenu.isLeader);
+        this.prestigeArenaRosterActions.find("button").prop("disabled", started);
         const startErrorText = this.getPrestigeArenaStartErrorText();
         if (hasInGamePlayers && !this.teamMenu.roomData.findingGame) {
             this.prestigeArenaGameStatusStarted.text(

@@ -266,6 +266,12 @@ export const zTeamSwapTeamMsg = z.object({
 
 export type TeamSwapTeamMsg = z.infer<typeof zTeamSwapTeamMsg>;
 
+export const zTeamRosterActionMsg = z.object({
+    type: z.literal("rosterAction"),
+    data: z.object({ action: z.enum(["spectateAll", "shuffleTeams"]) }),
+});
+export type TeamRosterActionMsg = z.infer<typeof zTeamRosterActionMsg>;
+
 export const zTeamCreateBattleRoyaleTeamMsg = z.object({
     type: z.literal("createBattleRoyaleTeam"),
     data: z.object({}).optional(),
@@ -318,6 +324,7 @@ export const zTeamClientMsg = z.discriminatedUnion("type", [
     zTeamKickMsg,
     zTeamTransferOwnerMsg,
     zTeamSwapTeamMsg,
+    zTeamRosterActionMsg,
     zTeamCreateBattleRoyaleTeamMsg,
     zTeamJoinBattleRoyaleTeamMsg,
     zTeamJoinCurrentArenaGameMsg,
@@ -339,6 +346,7 @@ export type ClientToServerTeamMsg =
     | TeamKickMsg
     | TeamTransferOwnerMsg
     | TeamSwapTeamMsg
+    | TeamRosterActionMsg
     | TeamCreateBattleRoyaleTeamMsg
     | TeamJoinBattleRoyaleTeamMsg
     | TeamJoinCurrentArenaGameMsg

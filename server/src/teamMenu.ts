@@ -37,6 +37,7 @@ import {
     isBattleRoyaleMiniGame,
     isSingleTeamMiniGame,
 } from "./game/privateLobbyMiniGames";
+import { applyArenaRosterAction } from "./utils/arenaRoster";
 import { ServerLogger } from "./utils/logger";
 import { getFindGamePlayerData } from "./utils/playerData";
 import {
@@ -400,6 +401,11 @@ class Room {
                 this.arenaSpectators.delete(targetPlayer);
                 this.arenaTeams.set(targetPlayer, targetTeam);
                 this.sendState();
+                break;
+            }
+            case "rosterAction": {
+                if (applyArenaRosterAction(this, player, msg.data.action))
+                    this.sendState();
                 break;
             }
             case "createBattleRoyaleTeam": {
@@ -953,13 +959,7 @@ class Room {
         }
         if (this.isBattleRoyaleArena()) {
             this.arenaTeams.clear();
-            if (
-                !this.currentArenaGameId &&
-                !this.data.findingGame &&
-                !this.players.some((p) => p.inGame)
-            ) {
-                this.arenaSpectators.clear();
-            }
+            // Keep the owner's spectator assignments when lobby settings change.
             const cap = this.getBattleRoyaleTeamCapacity();
             const teamCounts = new Map<string, number>();
             for (const p of this.players) {
