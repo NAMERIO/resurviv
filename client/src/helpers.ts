@@ -66,14 +66,14 @@ function getOutfitSkinLayers(def: OutfitDef): OutfitSkinImageLayer[] {
         {
             sprite: img.handSprite,
             tint: img.handTint,
-            scale: 0.175,
+            scale: 0.205,
             x: 14,
             y: -12.25,
         },
         {
             sprite: img.handSprite,
             tint: img.handTint,
-            scale: 0.175,
+            scale: 0.205,
             x: 14,
             y: 12.25,
         },

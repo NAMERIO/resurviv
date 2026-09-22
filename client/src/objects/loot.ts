@@ -195,13 +195,13 @@ export class Loot implements AbstractObject {
 
                 this.skinHandLSprite.texture = PIXI.Texture.from(outfitImg.handSprite);
                 this.skinHandLSprite.position.set(14, -12.25);
-                this.skinHandLSprite.scale.set(0.175);
+                this.skinHandLSprite.scale.set(0.205);
                 this.skinHandLSprite.tint = outfitImg.handTint;
                 this.skinHandLSprite.visible = true;
 
                 this.skinHandRSprite.texture = PIXI.Texture.from(outfitImg.handSprite);
                 this.skinHandRSprite.position.set(14, 12.25);
-                this.skinHandRSprite.scale.set(0.175);
+                this.skinHandRSprite.scale.set(0.205);
                 this.skinHandRSprite.tint = outfitImg.handTint;
                 this.skinHandRSprite.visible = true;
 
