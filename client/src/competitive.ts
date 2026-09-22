@@ -210,21 +210,6 @@ function renderMatches() {
         );
         summary.append(time, result, score, node("span", "match-expand", "Details"));
         const body = node("div", "match-body");
-        body.append(
-            node(
-                "p",
-                "match-explanation",
-                voided
-                    ? "This match does not affect ratings or player stats."
-                    : scores
-                      ? match.winnerTeam != null
-                          ? match.winnerTeam === -1
-                              ? "Recorded as a draw. WHR uses the entered scores."
-                              : "Match winner selected by staff, independently of scores. Other teams are ordered by score. WHR uses the entered scores."
-                          : "Highest score wins; equal top scores are a draw. Players on the same row are teammates."
-                      : "Teams are listed in finishing order, from first to last.",
-            ),
-        );
         const labels = node("div", "match-team-labels");
         labels.append(
             node("span", "", "Place"),

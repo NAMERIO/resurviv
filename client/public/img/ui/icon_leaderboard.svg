@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Transformed by: SVG Repo Mixer Tools -->
+
+<svg
+   width="800px"
+   height="800px"
+   viewBox="-2.4 -2.4 28.80 28.80"
+   fill="none"
+   stroke="#ffffff"
+   version="1.1"
+   id="svg8"
+   sodipodi:docname="icon_leaderboard.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs8" />
+  <sodipodi:namedview
+     id="namedview8"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.35664698"
+     inkscape:cx="161.22385"
+     inkscape:cy="758.45307"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg8" />
+  <g
+     id="SVGRepo_bgCarrier"
+     stroke-width="0"
+     style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1"
+     transform="matrix(1.3837444,0,0,1.3837444,-4.6554039,-4.6554034)" />
+  <g
+     id="SVGRepo_tracerCarrier"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     stroke="#fcfcfc"
+     stroke-width="4.8"
+     style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1"
+     transform="matrix(1.3837444,0,0,1.3837444,-4.6554039,-4.6554034)">
+    <path
+       d="M 15,21 H 9 V 12.6 C 9,12.2686 9.26863,12 9.6,12 h 4.8 c 0.3314,0 0.6,0.2686 0.6,0.6 z"
+       stroke="#ffffff"
+       stroke-width="1.728"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path1"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1" />
+    <path
+       d="M 20.4,21 H 15 v -2.9 c 0,-0.3314 0.2686,-0.6 0.6,-0.6 h 4.8 c 0.3314,0 0.6,0.2686 0.6,0.6 v 2.3 c 0,0.3314 -0.2686,0.6 -0.6,0.6 z"
+       stroke="#ffffff"
+       stroke-width="1.728"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path2"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1" />
+    <path
+       d="M 9,21 V 16.1 C 9,15.7686 8.73137,15.5 8.4,15.5 H 3.6 C 3.26863,15.5 3,15.7686 3,16.1 v 4.3 C 3,20.7314 3.26863,21 3.6,21 Z"
+       stroke="#ffffff"
+       stroke-width="1.728"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path3"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1" />
+    <path
+       d="M 10.8056,5.11325 11.7147,3.1856 c 0.1167,-0.24747 0.4539,-0.24747 0.5706,0 l 0.9091,1.92765 2.0331,0.31102 c 0.2609,0.03991 0.3648,0.3755 0.176,0.56802 l -1.4709,1.49941 0.3471,2.11829 c 0.0446,0.27203 -0.2282,0.47951 -0.4616,0.351 L 12,8.96031 10.1819,9.96099 C 9.94851,10.0895 9.67568,9.88202 9.72026,9.60999 L 10.0674,7.4917 8.59651,5.99229 C 8.40766,5.79977 8.51163,5.46418 8.77248,5.42427 Z"
+       stroke="#ffffff"
+       stroke-width="1.728"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path4"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1" />
+  </g>
+  <g
+     id="SVGRepo_iconCarrier"
+     style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1;stroke-width:0.09201988;stroke-dasharray:none"
+     transform="matrix(1.3837444,0,0,1.3837444,-4.6554039,-4.6554034)">
+    <path
+       d="M 15,21 H 9 V 12.6 C 9,12.2686 9.26863,12 9.6,12 h 4.8 c 0.3314,0 0.6,0.2686 0.6,0.6 z"
+       stroke="#ffffff"
+       stroke-width="1.728"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path5"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1;stroke-width:0.09201988;stroke-dasharray:none" />
+    <path
+       d="M 20.4,21 H 15 v -2.9 c 0,-0.3314 0.2686,-0.6 0.6,-0.6 h 4.8 c 0.3314,0 0.6,0.2686 0.6,0.6 v 2.3 c 0,0.3314 -0.2686,0.6 -0.6,0.6 z"
+       stroke="#ffffff"
+       stroke-width="1.728"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path6"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1;stroke-width:0.09201988;stroke-dasharray:none" />
+    <path
+       d="M 9,21 V 16.1 C 9,15.7686 8.73137,15.5 8.4,15.5 H 3.6 C 3.26863,15.5 3,15.7686 3,16.1 v 4.3 C 3,20.7314 3.26863,21 3.6,21 Z"
+       stroke="#ffffff"
+       stroke-width="1.728"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path7"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1;stroke-width:0.09201988;stroke-dasharray:none" />
+    <path
+       d="M 10.8056,5.11325 11.7147,3.1856 c 0.1167,-0.24747 0.4539,-0.24747 0.5706,0 l 0.9091,1.92765 2.0331,0.31102 c 0.2609,0.03991 0.3648,0.3755 0.176,0.56802 l -1.4709,1.49941 0.3471,2.11829 c 0.0446,0.27203 -0.2282,0.47951 -0.4616,0.351 L 12,8.96031 10.1819,9.96099 C 9.94851,10.0895 9.67568,9.88202 9.72026,9.60999 L 10.0674,7.4917 8.59651,5.99229 C 8.40766,5.79977 8.51163,5.46418 8.77248,5.42427 Z"
+       stroke="#ffffff"
+       stroke-width="1.728"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path8"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-opacity:1;stroke-width:0.09201988;stroke-dasharray:none" />
+  </g>
+</svg>

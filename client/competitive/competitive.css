@@ -727,13 +727,21 @@ h2 {
   color: #e6c47b;
 }
 .match-expand {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
   text-align: right;
 }
 .match-expand::after {
-  content: " +";
+  content: "";
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  background: url(/img/ui/expand.svg) center / contain no-repeat;
 }
 .match-card[open] .match-expand::after {
-  content: " −";
+  transform: rotate(180deg);
 }
 .match-body {
   padding: 4px 18px 18px;
