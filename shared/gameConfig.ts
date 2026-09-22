@@ -136,7 +136,7 @@ export const GameConfig = {
     // the protocol we originated from was 78
     // remember to bump this every time a serialization function is changed
     // or a definition item added, removed or moved
-    protocolVersion: 1036,
+    protocolVersion: 1037,
     replayVersion: 3,
     replayMinVersion: 2,
     Input,
@@ -211,6 +211,7 @@ export const GameConfig = {
         killLeaderMinKills: 3,
         minSpawnRad: 25,
         perkModeRoleSelectDuration: 20,
+        perkSelectDuration: 10,
 
         /* STRIP_FROM_PROD_CLIENT:START */
         defaultItems: {

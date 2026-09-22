@@ -143,6 +143,123 @@ body[data-input-method="controller"] #game-area-wrapper {
   width: 160px;
 }
 
+#ui-role-menu.ui-perk-menu {
+  background-color: #3a445a;
+  border-color: #1b2d4a;
+  color: #f1f5fa;
+}
+
+#ui-role-menu.ui-perk-menu #ui-role-header {
+  background: #2b374d;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 200px;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.ui-perk-option {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  height: 172px;
+  padding: 4px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #f1f5fa;
+  cursor: pointer;
+  font: inherit;
+  opacity: 0.5;
+}
+
+.ui-perk-option:hover,
+.ui-perk-option:focus-visible {
+  background: transparent;
+  opacity: 1;
+}
+
+.ui-perk-option.selected {
+  background: transparent;
+  opacity: 1;
+  color: #8edbe5;
+}
+
+.ui-perk-option:focus-visible {
+  outline: 2px solid #8edbe5;
+  outline-offset: -2px;
+}
+
+.ui-perk-option-icon {
+  width: 88px;
+  height: 96px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 68px;
+}
+
+.ui-perk-option.selected .ui-perk-option-icon {
+  background-size: 88px;
+}
+
+.ui-perk-option-name {
+  font-size: 19px;
+  font-weight: bold;
+  min-height: 44px;
+}
+
+#ui-role-menu.ui-perk-menu #ui-role-body {
+  height: 450px;
+  display: flex;
+  align-items: center;
+}
+
+#ui-role-menu.ui-perk-menu .ui-role-body-left,
+#ui-role-menu.ui-perk-menu .ui-role-body-right {
+  margin-top: 0;
+}
+
+#ui-role-menu.ui-perk-menu .ui-role-body-name {
+  font-size: 48px;
+  padding: 0 24px;
+  margin-bottom: 20px;
+}
+
+.ui-perk-details-desc {
+  padding: 0 36px;
+  font-size: 38px;
+  line-height: 1.4;
+  text-shadow: 2px 2px #132338;
+}
+
+#ui-role-menu.ui-perk-menu #ui-role-footer {
+  background: #253247;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#ui-role-menu.ui-perk-menu #ui-role-footer-desc {
+  display: none;
+}
+
+#ui-role-menu.ui-perk-menu #ui-role-footer-enter {
+  margin: 0;
+  background: #184e64;
+  color: #e5f4f7;
+  box-shadow: inset 0 0 0 3px #2b9cae;
+  text-shadow: 2px 2px #132338;
+}
+
+#ui-role-menu.ui-perk-menu #ui-role-footer-enter:hover {
+  background: #20657b;
+}
+
 #ui-role-body {
   background-color: rgba(118, 146, 176, 0);
   height: 450px;

@@ -1,4 +1,5 @@
 import { allowedGuns } from "../../deathmatch/loadoutItems";
+import { selectablePerks } from "../../deathmatch/perks";
 import { CrosshairDefs } from "./crosshairDefs";
 
 export const privateOutfits = [
@@ -796,20 +797,6 @@ const _allowedEmotes = [
     // "emote_tuff",
 ];
 
-const _allowedPerks = [
-    "melee_runner",
-    "armor_master",
-    "quick_reload",
-    "melee_striker",
-    "gun_master",
-    "first_hit",
-    "throw_slow",
-    "low_hp_surge",
-    "chambered",
-    "mine_master",
-    "leadership2",
-];
-
 export interface UnlockDef {
     readonly type: "unlock";
     name: string;
@@ -829,7 +816,7 @@ export const UnlockDefs: Record<UnlockDefKey, UnlockDef> = {
                 ..._allowedEmotes,
                 ..._allowedHealEffects,
                 ..._allowedDeathEffects,
-                ..._allowedPerks,
+                ...selectablePerks,
                 ..._allowedStreaks,
                 ...Object.keys(CrosshairDefs).filter(
                     (key) => key !== "crosshair_custom_image",

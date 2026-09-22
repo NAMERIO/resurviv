@@ -522,6 +522,7 @@ export class Player implements AbstractObject {
         m_layer: number;
         m_dead: boolean;
         m_downed: boolean;
+        m_perkSelectionPending: boolean;
         m_animType: Anim;
         m_animSeq: number;
         m_actionType: Action;
@@ -723,6 +724,7 @@ export class Player implements AbstractObject {
             m_layer: 0,
             m_dead: false,
             m_downed: false,
+            m_perkSelectionPending: false,
             m_animType: Anim.None,
             m_animSeq: 0,
             m_actionType: Action.None,
@@ -825,6 +827,14 @@ export class Player implements AbstractObject {
         isNew: boolean,
         _ctx: Ctx,
     ) {
+        if (
+            fullUpdate &&
+            this.m_netData.m_perkSelectionPending &&
+            !data.perkSelectionPending
+        ) {
+            // Snap to the actual spawn instead of interpolating from the menu camera.
+            isNew = true;
+        }
         if (!v2.eq(data.pos, this.m_visualPosOld)) {
             this.m_visualPosOld = v2.copy(isNew ? data.pos : this.m_pos);
             this.posInterpTicker = 0;
@@ -853,6 +863,7 @@ export class Player implements AbstractObject {
             this.m_netData.m_layer = data.layer;
             this.m_netData.m_dead = data.dead;
             this.m_netData.m_downed = data.downed;
+            this.m_netData.m_perkSelectionPending = data.perkSelectionPending;
             this.m_netData.m_animType = data.animType;
             this.m_netData.m_animSeq = data.animSeq;
             this.m_netData.m_actionType = data.actionType;
@@ -1971,7 +1982,11 @@ export class Player implements AbstractObject {
             (activePlayer.layer & 1) == 1 ||
             (this.layer & 1) == 0;
 
-        this.auraContainer.visible = Boolean(!this.m_netData.m_dead && auraLayerMatch);
+        this.auraContainer.visible = Boolean(
+            !this.m_netData.m_dead &&
+                !this.m_netData.m_perkSelectionPending &&
+                auraLayerMatch,
+        );
 
         renderer.addPIXIObj(
             this.container,
@@ -2053,7 +2068,8 @@ export class Player implements AbstractObject {
         this.container.position.set(screenPos.x, screenPos.y);
         this.container.scale.set(screenScale, screenScale);
         const inVehicle = this.m_netData.m_vehicleId !== 0;
-        this.container.visible = !this.m_netData.m_dead;
+        this.container.visible =
+            !this.m_netData.m_dead && !this.m_netData.m_perkSelectionPending;
         this.bodyContainer.visible = !this.propDisguiseActive && !inVehicle;
         if (inVehicle) {
             this.auraContainer.visible = false;

@@ -1,5 +1,6 @@
 import $ from "jquery";
 import * as PIXI from "pixi.js-legacy";
+import { getSelectedPerk, selectablePerks } from "../../../shared/deathmatch/perks";
 import type { AmongUsTaskId } from "../../../shared/defs/amongUsTaskDefs";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import { PingDefs } from "../../../shared/defs/gameObjects/pingDefs";
@@ -155,6 +156,7 @@ export class UiManager {
     roleMenuFooterEnterElem = $("#ui-role-footer-enter");
     roleMenuFooterHtml = "";
     roleMenuActive = false;
+    perkMenuMode = false;
     roleMenuDisplayed = false;
     roleMenuTicker = 0;
     roleDisplayed = "";
@@ -1977,8 +1979,9 @@ export class UiManager {
         if (this.roleMenuActive) {
             this.roleMenuTicker -= dt;
 
-            const seconds = Math.ceil(this.roleMenuTicker);
-            const html = `${this.localization.translate("game-enter-game")} (${seconds})`;
+            const seconds = Math.max(0, Math.ceil(this.roleMenuTicker));
+            const label = this.perkMenuMode ? "game-perk-continue" : "game-enter-game";
+            const html = `${this.localization.translate(label)} (${seconds})`;
             if (html != this.roleMenuFooterHtml) {
                 this.roleMenuFooterEnterElem.html(html);
                 this.roleMenuFooterHtml = html;
@@ -3843,7 +3846,12 @@ export class UiManager {
     setRoleMenuActive(active: boolean) {
         this.roleMenuActive = active;
         if (this.roleMenuActive) {
-            this.roleMenuTicker = GameConfig.player.perkModeRoleSelectDuration;
+            this.roleMenuTicker = this.perkMenuMode
+                ? GameConfig.player.perkSelectDuration
+                : GameConfig.player.perkModeRoleSelectDuration;
+            const label = this.perkMenuMode ? "game-perk-continue" : "game-enter-game";
+            this.roleMenuFooterHtml = `${this.localization.translate(label)} (${this.roleMenuTicker})`;
+            this.roleMenuFooterEnterElem.text(this.roleMenuFooterHtml);
             this.displayRoleMenu();
         } else {
             if (this.roleMenuInst) {
@@ -3863,6 +3871,11 @@ export class UiManager {
     }
 
     setRoleMenuOptions(role: string, roles: string[]) {
+        this.perkMenuMode = false;
+        this.roleMenuElem.removeClass("ui-perk-menu");
+        $("#ui-role-footer-desc")
+            .attr("data-l10n", "game-select-class")
+            .text(this.localization.translate("game-select-class"));
         $("#ui-role-header").html("");
 
         for (let a = 0; a < roles.length; a++) {
@@ -3889,6 +3902,70 @@ export class UiManager {
             selectedRole = role;
         }
         this.setRoleMenuInfo(selectedRole);
+    }
+
+    setPerkMenuOptions(savedPerk: string) {
+        this.perkMenuMode = true;
+        this.roleMenuElem.addClass("ui-perk-menu").css("border-color", "");
+        $("#ui-role-footer-desc")
+            .attr("data-l10n", "game-select-perk")
+            .text(this.localization.translate("game-select-perk"));
+        const header = $("#ui-role-header").empty();
+        for (const perk of selectablePerks) {
+            const name = this.localization.translate(`game-${perk}`);
+            const option = $("<button/>", {
+                type: "button",
+                class: "ui-perk-option",
+                "data-perk": perk,
+                "aria-label": name,
+                title: name,
+            });
+            option.append(
+                $("<span/>", { class: "ui-perk-option-icon" }).css(
+                    "background-image",
+                    `url('${helpers.getSvgFromGameType(perk)}')`,
+                ),
+                $("<span/>", { class: "ui-perk-option-name", text: name }),
+            );
+            option.on("click", (e) => {
+                e.stopPropagation();
+                this.setPerkMenuInfo(perk);
+            });
+            header.append(option);
+        }
+        this.setPerkMenuInfo(getSelectedPerk(savedPerk));
+    }
+
+    setPerkMenuInfo(perk: string) {
+        $(".ui-perk-option").each((_idx, element) => {
+            const selected = $(element).data("perk") === perk;
+            $(element)
+                .toggleClass("selected", selected)
+                .attr("aria-pressed", String(selected));
+        });
+        $("#ui-role-body")
+            .empty()
+            .append(
+                $("<div/>", { class: "ui-role-body-left" }).append(
+                    $("<div/>", {
+                        class: "ui-role-body-name",
+                        text: this.localization.translate(`game-${perk}`),
+                    }),
+                    $("<div/>", { class: "ui-role-body-image" }).css(
+                        "background-image",
+                        `url('${helpers.getSvgFromGameType(perk)}')`,
+                    ),
+                ),
+                $("<div/>", { class: "ui-role-body-right" }).append(
+                    $("<div/>", {
+                        class: "ui-perk-details-desc",
+                        text: this.localization
+                            .translate(`game-${perk}-desc`)
+                            .replace(/<\/?br\s*\/?>/gi, " "),
+                    }),
+                ),
+            );
+        this.roleDisplayed = perk;
     }
 
     setRoleMenuInfo(role: string) {

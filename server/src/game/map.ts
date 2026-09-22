@@ -2350,6 +2350,7 @@ export class GameMap {
 
                 for (let i = 0; i < this.game.playerBarn.livingPlayers.length; i++) {
                     const player = this.game.playerBarn.livingPlayers[i];
+                    if (player.perkSelectionPending) continue;
                     if (group && player.groupId === group.id) continue;
                     if (team && player.teamId === team.id) continue;
 

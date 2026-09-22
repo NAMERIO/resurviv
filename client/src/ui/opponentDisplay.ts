@@ -388,6 +388,7 @@ export class LoadoutDisplay {
             layer: 0,
             dead: false,
             downed: false,
+            perkSelectionPending: false,
             animType: options.animType || 0,
             animSeq: options.animSeq || 0,
             actionSeq: options.actionSeq || 0,

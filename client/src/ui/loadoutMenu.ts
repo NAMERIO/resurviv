@@ -254,11 +254,6 @@ export class LoadoutMenu {
             categoryImage: "img/loot/loot-weapon-ak.svg",
         },
         {
-            loadoutType: "perk",
-            gameType: "perk",
-            categoryImage: "img/loot/loot-perk-splinter.svg",
-        },
-        {
             loadoutType: "streak",
             gameType: "streak",
             categoryImage: "img/loot/loot-perk-firepower.svg",

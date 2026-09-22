@@ -56,7 +56,7 @@ const mapDef = {
             tint: 0xffffff,
         },
     },
-    gameMode: { maxPlayers: 80, allowLoadoutPerks: true },
+    gameMode: { maxPlayers: 80, perkSelection: true },
     gameConfig: {
         /* STRIP_FROM_PROD_CLIENT:START */
         gameConfig: {

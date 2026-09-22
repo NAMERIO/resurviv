@@ -183,7 +183,7 @@ export interface MapDef {
         sniperMode?: boolean;
         perkMode?: boolean;
         perkModeRoles?: string[];
-        allowLoadoutPerks?: boolean;
+        perkSelection?: boolean;
         turkeyMode?: boolean;
         spookyKillSounds?: boolean;
         infernoMode?: boolean;

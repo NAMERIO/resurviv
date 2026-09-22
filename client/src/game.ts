@@ -1,4 +1,5 @@
 import * as PIXI from "pixi.js-legacy";
+import { getSelectedPerk } from "../../shared/deathmatch/perks";
 import { AmongUsSecurityCameraDefs } from "../../shared/defs/amongUsSecurityCameraDefs";
 import {
     type AmongUsTaskDef,
@@ -378,7 +379,9 @@ export class Game {
                         boost: playerLoadout.boost || "boost_basic",
                         perk: battleRoyaleMode
                             ? ""
-                            : playerLoadout.perk || "quick_reload",
+                            : getSelectedPerk(
+                                  this.m_config.get("perkModePerk") || playerLoadout.perk,
+                              ),
                         streak: battleRoyaleMode
                             ? ""
                             : playerLoadout.streak || "streak_rapid_fire",
@@ -667,6 +670,13 @@ export class Game {
         const activePlayer = this.m_playerBarn.getPlayerById(this.m_activeId);
         if (!activePlayer) return;
         this.m_activePlayer = activePlayer;
+        if (
+            this.m_uiManager.perkMenuMode &&
+            this.m_uiManager.roleMenuActive &&
+            !activePlayer.m_netData.m_perkSelectionPending
+        ) {
+            this.m_uiManager.setRoleMenuActive(false);
+        }
 
         this.debugHUD.m_update(dt, this);
 
@@ -1186,7 +1196,10 @@ export class Game {
                     roleSelectMessage,
                     128,
                 );
-                this.m_config.set("perkModeRole", roleSelectMessage.role);
+                this.m_config.set(
+                    this.m_uiManager.perkMenuMode ? "perkModePerk" : "perkModeRole",
+                    roleSelectMessage.role,
+                );
             }
         }
 
@@ -4154,7 +4167,20 @@ export class Game {
                 if (this.m_map.getMapDef().gameMode.amongUsMode) {
                     this.m_uiManager.setWaitingForPlayers(false);
                 }
-                if (this.m_map.perkMode) {
+                if (
+                    this.m_map.getMapDef().gameMode.perkSelection &&
+                    this.connected &&
+                    !isBattleRoyaleMap &&
+                    !this.m_spectatorOnly
+                ) {
+                    this.m_uiManager.setPerkMenuOptions(
+                        getSelectedPerk(
+                            this.m_config.get("perkModePerk") ||
+                                this.m_config.get("loadout")?.perk,
+                        ),
+                    );
+                    this.m_uiManager.setRoleMenuActive(true);
+                } else if (this.m_map.perkMode) {
                     const role = this.m_config.get("perkModeRole")!;
                     this.m_uiManager.setRoleMenuOptions(
                         role,

@@ -62,6 +62,7 @@ const perks = [
 const droppablePerks = ["ap_rounds", "self_revive", "pyro", "phoenix"];
 
 export function onPlayerKill(data: Omit<PlayerDamageEvent, "amount">) {
+    if (data.player.perkSelectionPending) return;
     if (isBattleRoyaleMapName(data.player.game.mapName)) return;
 
     const amongUsMode =

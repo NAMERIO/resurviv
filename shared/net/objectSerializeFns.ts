@@ -96,6 +96,7 @@ export interface ObjectsFullData {
         layer: number;
         dead: boolean;
         downed: boolean;
+        perkSelectionPending: boolean;
 
         animType: Anim;
         animSeq: number;
@@ -266,6 +267,7 @@ export const ObjectSerializeFns: {
             s.writeBits(data.layer, 2);
             s.writeBoolean(data.dead);
             s.writeBoolean(data.downed);
+            s.writeBoolean(data.perkSelectionPending);
 
             s.writeBits(data.animType, BitSizes.Anim);
             s.writeBits(data.animSeq, 3);
@@ -353,6 +355,7 @@ export const ObjectSerializeFns: {
             data.layer = s.readBits(2);
             data.dead = s.readBoolean();
             data.downed = s.readBoolean();
+            data.perkSelectionPending = s.readBoolean();
 
             data.animType = s.readBits(BitSizes.Anim);
             data.animSeq = s.readBits(3);

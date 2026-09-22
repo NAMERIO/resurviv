@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { generateUsername } from "unique-username-generator";
+import { getSelectedPerk, selectablePerks } from "../../../../shared/deathmatch/perks";
 import type { AmongUsRole } from "../../../../shared/defs/amongUsRoleDefs";
 import {
     GameObjectDefs,
@@ -231,6 +232,17 @@ export class PlayerBarn {
         return livingPlayers[util.randomInt(0, livingPlayers.length - 1)];
     }
 
+    getSpawnPos(group?: Group, team?: Team, arenaTeam?: JoinTokenData["arenaTeam"]) {
+        return (
+            this.game.captureTheFlagManager.getSpawnPos(arenaTeam, team?.id) ??
+            this.game.kingOfTheHillManager.getSpawnPos(arenaTeam, team?.id) ??
+            this.game.dominationManager.getSpawnPos(arenaTeam, team?.id) ??
+            this.game.bedWarManager.getSpawnPos(arenaTeam, team?.id) ??
+            this.game.plantTheBombManager.getSpawnPos(arenaTeam, team?.id) ??
+            this.game.map.getSpawnPos(group, team, arenaTeam)
+        );
+    }
+
     addPlayer(socketId: string, joinMsg: net.JoinMsg, ip: string) {
         const joinData = this.game.joinTokens.get(joinMsg.matchPriv);
 
@@ -274,25 +286,17 @@ export class PlayerBarn {
 
         let pos: Vec2;
         let layer: number;
-        if (this.game.map.perkMode && this.game.map.perkModeTwinsBunker) {
+        if (this.game.map.mapDef.gameMode.perkSelection) {
+            // Only a camera position: the player enters the world after confirmation.
+            pos = v2.create(this.game.map.width / 2, this.game.map.height / 2);
+            layer = 0;
+        } else if (this.game.map.perkMode && this.game.map.perkModeTwinsBunker) {
             // intermediate spawn point while the player chooses a role before theyre moved to their real spawn point
             const spawnBuilding = this.game.map.perkModeTwinsBunker;
             pos = spawnBuilding.pos;
             layer = spawnBuilding.layer;
         } else {
-            pos =
-                this.game.captureTheFlagManager.getSpawnPos(
-                    joinData.arenaTeam,
-                    team?.id,
-                ) ??
-                this.game.kingOfTheHillManager.getSpawnPos(
-                    joinData.arenaTeam,
-                    team?.id,
-                ) ??
-                this.game.dominationManager.getSpawnPos(joinData.arenaTeam, team?.id) ??
-                this.game.bedWarManager.getSpawnPos(joinData.arenaTeam, team?.id) ??
-                this.game.plantTheBombManager.getSpawnPos(joinData.arenaTeam, team?.id) ??
-                this.game.map.getSpawnPos(group, team, joinData.arenaTeam);
+            pos = this.getSpawnPos(group, team, joinData.arenaTeam);
             if (group && !group.spawnPosition) {
                 group.spawnPosition = v2.copy(pos);
             }
@@ -380,6 +384,10 @@ export class PlayerBarn {
 
         this.newPlayers.push(player);
         this.game.objectRegister.register(player);
+        if (player.perkSelectionPending) {
+            // Keep the network identity, but no hitbox or world visibility while choosing.
+            this.game.grid.remove(player);
+        }
         this.players.push(player);
         this.matchPlayers.push(player);
         this.livingPlayers.push(player);
@@ -1720,6 +1728,12 @@ export class Player extends BaseGameObject {
 
     /** for cobalt mode role menu, will spawn the player by force if timer runs out */
     roleMenuTicker = 0;
+    perkSelectionPending = false;
+    perkMenuTicker = 0;
+
+    get awaitingSelection(): boolean {
+        return this.perkSelectionPending || (this.game.map.perkMode && !this.role);
+    }
 
     /** for the perk fabricate, fills inventory with frags every 12 seconds */
     fabricateRefillTicker = 0;
@@ -1947,6 +1961,11 @@ export class Player extends BaseGameObject {
     }
 
     roleSelect(role: string): void {
+        // The same selection message serves Cobalt classes and Perks mode.
+        if (this.game.map.mapDef.gameMode.perkSelection) {
+            this.selectPerk(role);
+            return;
+        }
         if (!this.game.map.perkModeTwinsBunker || this.role) return;
 
         // so the client can't be manipulated to send lone survivr or something
@@ -1965,6 +1984,33 @@ export class Player extends BaseGameObject {
         this.layer = 0; // player was underground before this
 
         this.game.grid.updateObject(this);
+        this.setDirty();
+    }
+
+    selectPerk(perk: string): void {
+        if (
+            !this.perkSelectionPending ||
+            this.dead ||
+            this.disconnected ||
+            !selectablePerks.includes(perk)
+        )
+            return;
+
+        // Choose a safe position now, rather than reserving a spot on initial join.
+        v2.set(
+            this.pos,
+            this.game.playerBarn.getSpawnPos(this.group, this.team, this.arenaTeam),
+        );
+        this.layer = 0;
+        if (this.group && !this.group.spawnPosition) {
+            this.group.spawnPosition = v2.copy(this.pos);
+        }
+        this.perkSelectionPending = false;
+        this.perkMenuTicker = 0;
+        this.loadout.perk = perk;
+        this.addPerk(perk, false);
+        this.game.grid.addObject(this);
+        this.playerStatusDirty = true;
         this.setDirty();
     }
 
@@ -3287,7 +3333,16 @@ export class Player extends BaseGameObject {
             this.invManager.set(item as InventoryItem, amount);
         }
 
+        this.perkSelectionPending =
+            !!this.game.map.mapDef.gameMode.perkSelection &&
+            !isBattleRoyaleMapName(this.game.mapName);
+        this.perkMenuTicker = this.perkSelectionPending
+            ? GameConfig.player.perkSelectDuration + 5
+            : 0;
         this.setLoadout(loadout ? loadout : joinMsg.loadout, !loadout);
+        if (this.perkSelectionPending) {
+            this.loadout.perk = getSelectedPerk(joinMsg.loadout.perk);
+        }
         if (getInfectedSettings(this.game.miniGame)) {
             this.applyInfectedLoadout();
         } else if (isAmongUsMiniGame(this.game.miniGame) || this.game.map.amongUsMode) {
@@ -3426,6 +3481,13 @@ export class Player extends BaseGameObject {
             }
         }
 
+        if (this.perkSelectionPending) {
+            this.perkMenuTicker -= dt;
+            if (this.perkMenuTicker <= 0) {
+                this.selectPerk(getSelectedPerk(this.loadout.perk));
+            }
+        }
+
         if (this.roleMenuTicker > 0) {
             this.roleMenuTicker -= dt;
             if (this.roleMenuTicker <= 0) {
@@ -3437,7 +3499,7 @@ export class Player extends BaseGameObject {
         }
 
         // players are still choosing a perk from the perk select menu
-        if (this.game.map.perkMode && !this.role) return;
+        if (this.awaitingSelection) return;
 
         //
         // Direction
@@ -4686,7 +4748,7 @@ export class Player extends BaseGameObject {
     visibleMapIndicators = new Set<MapIndicator>();
 
     isInvisibleTo(viewer: Player) {
-        return this !== viewer && this.debug.invisible;
+        return this.perkSelectionPending || (this !== viewer && this.debug.invisible);
     }
 
     msgStream = new net.MsgStream(new ArrayBuffer(65536));
@@ -5212,8 +5274,8 @@ export class Player extends BaseGameObject {
         if (this._health < 0) this._health = 0;
         if (this.dead) return;
         if (this.downed && this.downedDamageTicker > 0) return;
-        // cobalt players on role picker menu
-        if (this.game.map.perkMode && !this.role) return;
+        // Protect players while they are choosing a class or perk.
+        if (this.awaitingSelection) return;
 
         // Phoenix perk: immune to burn DoT damage (Burning effect and Flamethrower)
         if (
@@ -5879,7 +5941,14 @@ export class Player extends BaseGameObject {
             }
         }
 
-        this.game.deadBodyBarn.addDeadBody(this.pos, this.__id, this.layer, params.dir);
+        if (!this.perkSelectionPending) {
+            this.game.deadBodyBarn.addDeadBody(
+                this.pos,
+                this.__id,
+                this.layer,
+                params.dir,
+            );
+        }
         this.game.playerBarn.refreshAmongUsMeetingAfterParticipantChange();
 
         //
@@ -5913,6 +5982,7 @@ export class Player extends BaseGameObject {
         const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
         const isHideAndSeekHiderDeath =
             !!hideAndSeekSettings && this.arenaTeam === hideAndSeekSettings.hiderTeam;
+        const shouldDropLoot = !isCaptureTheFlagDeath && !this.perkSelectionPending;
 
         for (let i = 0; i < GameConfig.WeaponSlot.Count; i++) {
             const weap = this.weapons[i];
@@ -5921,7 +5991,7 @@ export class Player extends BaseGameObject {
             switch (def.type) {
                 case "gun":
                     if (
-                        !isCaptureTheFlagDeath &&
+                        shouldDropLoot &&
                         (!isHideAndSeekHiderDeath ||
                             weap.type !== hideAndSeekSettings.hiderPrimaryWeapon)
                     ) {
@@ -5931,7 +6001,7 @@ export class Player extends BaseGameObject {
                     break;
                 case "melee":
                     if (def.noDropOnDeath || weap.type === "fists") break;
-                    if (!isCaptureTheFlagDeath) {
+                    if (shouldDropLoot) {
                         this.game.lootBarn.addLoot(weap.type, this.pos, this.layer, 1);
                     }
                     weap.type = "fists";
@@ -5950,12 +6020,12 @@ export class Player extends BaseGameObject {
             }
 
             const amount = this.invManager.get(item);
-            if (amount > 0 && !isCaptureTheFlagDeath) {
+            if (amount > 0 && shouldDropLoot) {
                 this.game.lootBarn.addLoot(item, this.pos, this.layer, amount);
             }
         }
 
-        if (!isCaptureTheFlagDeath) {
+        if (shouldDropLoot) {
             for (const item of GEAR_TYPES) {
                 const type = this[item];
                 if (!type) continue;
@@ -5973,7 +6043,7 @@ export class Player extends BaseGameObject {
         }
 
         if (
-            !isCaptureTheFlagDeath &&
+            shouldDropLoot &&
             !this.game.disablePerks &&
             !isAmongUsMiniGame(this.game.miniGame) &&
             !this.game.map.amongUsMode
@@ -6002,6 +6072,7 @@ export class Player extends BaseGameObject {
 
         // death emote
         this.sendDeathEmoteTicker = 0.3;
+        if (this.perkSelectionPending) this.sentDeathEmote = true;
 
         // Building gore region (club pool)
         const objs = this.game.grid.intersectGameObject(this);
@@ -6406,7 +6477,7 @@ export class Player extends BaseGameObject {
         }
 
         if (this.dead) return;
-        if (this.game.map.perkMode && !this.role) return;
+        if (this.awaitingSelection) return;
         if (this.game.playerBarn.isAmongUsMeetingLocked) {
             this.moveLeft = false;
             this.moveRight = false;
@@ -6864,6 +6935,7 @@ export class Player extends BaseGameObject {
                 p.role === "plant_bomb_carrier" &&
                 p.teamId !== this.teamId;
             const visible =
+                !p.perkSelectionPending &&
                 !isEnemyBombCarrier &&
                 (arenaHidesEnemies
                     ? isObjectiveCarrier ||
@@ -7545,7 +7617,7 @@ export class Player extends BaseGameObject {
         if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
 
         const battleRoyaleMode = isBattleRoyaleMapName(this.game.mapName);
-        if (this.game.map.perkMode && !this.role && !battleRoyaleMode) return;
+        if (this.awaitingSelection && !battleRoyaleMode) return;
 
         const itemDef = GameObjectDefs[dropMsg.item] as LootDef;
         if (!itemDef) return;
@@ -7703,13 +7775,16 @@ export class Player extends BaseGameObject {
             this.loadout.emotes[i] = emote;
         }
 
-        // Only allow perks if the current map supports perkMode
+        // Defer Perks mode's grant until confirmation; retain Cobalt's loadout behavior.
         if (
             !battleRoyaleMode &&
+            !this.perkSelectionPending &&
             loadout.perk &&
             loadout.perk !== "" &&
             isItemInLoadout(loadout.perk, "perk") &&
-            (this.game.map.perkMode || !!this.game.map.mapDef.gameMode.allowLoadoutPerks)
+            (this.game.map.perkMode ||
+                (this.game.map.mapDef.gameMode.perkSelection &&
+                    selectablePerks.includes(loadout.perk)))
         ) {
             this.loadout.perk = loadout.perk;
             this.addPerk(loadout.perk, false);
@@ -7849,7 +7924,7 @@ export class Player extends BaseGameObject {
 
     emoteFromMsg(msg: net.EmoteMsg) {
         if (this.dead) return;
-        if (this.game.map.perkMode && !this.role) return;
+        if (this.awaitingSelection) return;
         if (this.emoteHardTicker > 0) return;
 
         const emoteMsg = msg as net.EmoteMsg;
