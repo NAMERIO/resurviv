@@ -1,18 +1,18 @@
-import type { CompetitivePlayerStats } from "../../../../shared/types/competitive";
+import {
+    type CompetitivePlayerStats,
+    competitivePlaces,
+} from "../../../../shared/types/competitive";
 
 /** Aggregate the entire accepted season, independently of the match-feed page. */
 export function summarizeCompetitivePlayers(
-    matches: { teams: string[][]; scores: number[] | null }[],
+    matches: { teams: string[][]; scores: number[] | null; winnerTeam?: number | null }[],
 ): Map<string, CompetitivePlayerStats> {
     const totals = new Map<string, CompetitivePlayerStats & { games: number }>();
     for (const match of matches) {
-        const bestScore = match.scores ? Math.max(...match.scores) : 0;
-        const tiedWinners =
-            match.scores?.filter((score) => score === bestScore).length ?? 1;
+        const places = competitivePlaces(match);
+        const tiedWinners = places.filter((place) => place === 1).length;
         match.teams.forEach((team, index) => {
-            const place = match.scores
-                ? 1 + match.scores.filter((score) => score > match.scores![index]).length
-                : index + 1;
+            const place = places[index];
             for (const userId of team) {
                 const stats = totals.get(userId) ?? {
                     wins: 0,

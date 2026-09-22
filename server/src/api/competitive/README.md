@@ -17,11 +17,26 @@ match stats, GP, clan points, or automatically rate public/private arena games.
    seasons, and a paginated match feed. Old `/stats/?type=whr` links redirect here.
 
 Player stats cover the entire accepted season, not just the displayed match-feed
-page. Highest scores win; tied highest scores count as draws. With placements,
-the first team wins. Average team placement uses finishing order or score rank.
+page. Staff select the match winner independently of scores/kills, or select Draw.
+The winner takes first; other teams use score order. With placements, the first
+team wins. Legacy results without a winner choice retain their score-based outcome.
 The ring shows win rate; WHR itself has no fixed maximum. Voided results are excluded.
 
 No live migration or Discord registration is performed by the implementation tests.
+
+## Website developer mode
+
+The website also has **Dev mode** for signed-in accounts in
+`debug.developerSlugs`, using the same developer list as the tournament page.
+Turn it on to add a result in the current season or open a match's Details to
+edit or void it. The editor shows every team on one scrollable form. It checks
+real account slugs, equal team sizes, scores, and unique Battle Royale places.
+Corrections atomically void the previous result and insert its replacement in
+the same season, preserving the reference and audit trail. Ratings are rebuilt
+before the transaction commits. The API authenticates and checks developer access
+on every write; the browser never receives the private bot API key. Website
+actions are attributed to the signed-in game account. They update the website
+directly and do not send a Discord announcement.
 
 ## Bot commands
 
@@ -58,6 +73,17 @@ publicly in the same Discord channel after saving. Large scoreboards are split
 across messages. The result footer includes the competitive Match ID for voiding.
 No main-game match ID is required. Drafts expire after 30 minutes of inactivity
 and are lost when the bot restarts; permissions are checked on every interaction.
+
+Every Deathmatch submission requires a named winner or **Draw** before saving.
+The website editor offers the same choices under **Who won?** with no default for
+new matches. Any participating team can win, regardless of its score or kills.
+The choice controls the public result and win/loss/placement stats. WHR still uses
+the original scores, so selecting a winner does not add rating points.
+Battle Royale's winner is determined by its first-place finish. Existing matches
+keep their results until corrected. `winnerTeam` is a zero-based team index, -1
+for an explicit draw, or null for legacy score-based results. Apply
+`0041_competitive_winner.sql` when
+updating an existing database (also included in `db:migrate`).
 
 A reference is generated from the original command ID. Repeated submissions or
 save retries for that form use the same idempotency key. After an uncertain save,

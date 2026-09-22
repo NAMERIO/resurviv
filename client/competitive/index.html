@@ -17,21 +17,35 @@
     <nav class="topbar" aria-label="Main navigation">
       <a class="home-button" href="/">← Back to Game</a>
       <a class="site-logo" href="/" aria-label="Resurviv home"><img src="/img/resurviv_logo_full.png" alt="Resurviv"></a>
+      <button id="dev-status" class="text-button" type="button" aria-pressed="false" hidden>Dev mode OFF</button>
     </nav>
 
     <div class="competitive-layout">
+      <div class="competitive-sidebar">
       <aside class="about-panel" aria-labelledby="about-title">
         <h2 id="about-title">About the Leaderboard</h2>
         <a class="discord-button" href="https://discord.gg/pnmsY8DbvG" target="_blank" rel="noopener noreferrer"><img src="/img/clans/discord-logo.svg" alt="">Join the Discord</a>
         <ol class="about-steps">
           <li><h3>Join Discord</h3><p>Check the server for available rated matches.</p></li>
-          <li><h3>Play a staff hosted match</h3><p>Mods or owners organize matches. Owners record the results.</p></li>
+          <li><h3>Play a staff hosted match</h3><p>Mods or owners organize matches. Owners or developers record the results.</p></li>
           <li><h3>Play <span id="about-placement-count">3</span> matches to rank</h3><p>Until then, your rating is provisional (<strong>PROV.</strong>).</p></li>
         </ol>
         <div class="about-rating">
           <p>WHR reflects your results and opponents' strength. Only recorded, non voided matches count. Each season starts fresh.</p>
         </div>
       </aside>
+      <section class="competitive-ad" aria-label="Advertisement">
+        <p class="competitive-ad-label">Advertisement</p>
+        <div class="competitive-ad-square">
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-client="ca-pub-1712213211562891"
+               data-ad-slot="5283105478"
+               data-ad-format="rectangle"
+               data-full-width-responsive="false"></ins>
+        </div>
+      </section>
+      </div>
       <div class="leaderboard-main">
     <header class="hero">
       <p class="eyebrow">RESURVIV COMPETITIVE</p>
@@ -45,6 +59,7 @@
       <button id="refresh" class="text-button" type="button">↻ Refresh</button>
     </div>
     <div id="load-status" class="load-status" role="status" aria-live="polite">Loading competitive standings…</div>
+    <div id="dev-tools" class="dev-tools" hidden><p id="dev-help"></p><button id="add-result" class="text-button" type="button">Add result</button></div>
 
     <div id="competition" class="competition" hidden>
       <section class="standings" aria-labelledby="standings-title">
@@ -86,6 +101,41 @@
       </div>
     </div>
   </main>
+  <dialog id="whr-editor" class="whr-editor" aria-labelledby="editor-title" aria-describedby="editor-help">
+    <form id="whr-editor-form">
+      <div class="editor-heading"><div><p class="eyebrow">DEVELOPER CONTROL</p><h2 id="editor-title">Add Result</h2></div><button id="editor-close" class="text-button" type="button" aria-label="Close editor">Close</button></div>
+      <p id="editor-help" class="editor-help"></p>
+      <fieldset id="editor-fields" class="editor-fields">
+        <fieldset id="editor-result-fields" class="editor-fields">
+          <div class="editor-settings">
+            <label>Match type<select id="editor-mode"><option value="deathmatch">Deathmatch</option><option value="battle_royale">Battle Royale</option></select></label>
+            <label>Teams<select id="editor-team-count"></select></label>
+            <label>Players per team<select id="editor-team-size"></select></label>
+            <label>Match date (UTC)<input id="editor-date" type="date" required></label>
+          </div>
+          <p class="editor-help">Use game account slugs from profile URLs. Each player can appear once. Select the match winner separately from Deathmatch scores; enter unique finishing places for Battle Royale.</p>
+          <div id="editor-teams" class="editor-teams"></div>
+          <section id="editor-outcome" class="editor-outcome" aria-labelledby="editor-outcome-title">
+            <h3 id="editor-outcome-title">Who won?</h3>
+            <p id="editor-outcome-help" class="editor-help"></p>
+            <div id="editor-winner-options" class="editor-winner-options" role="group" aria-label="Match winner"></div>
+          </section>
+        </fieldset>
+        <fieldset id="editor-void-fields" class="editor-fields" hidden disabled><label>Reason for voiding<textarea id="editor-void-reason" minlength="3" maxlength="300" rows="3"></textarea></label></fieldset>
+      </fieldset>
+      <div class="editor-footer"><p id="editor-error" class="editor-error" role="alert"></p><button id="editor-save" class="text-button" type="submit">Save result</button></div>
+    </form>
+  </dialog>
   <script type="module" src="/src/competitive.ts"></script>
+  <script>
+    if ("%VITE_H5_GAMES_ADS_ENABLED%" === "true" && !["localhost", "127.0.0.1", "[::1]"].includes(location.hostname)) {
+      const adsScript = document.createElement("script");
+      adsScript.async = true;
+      adsScript.crossOrigin = "anonymous";
+      adsScript.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1712213211562891";
+      document.head.appendChild(adsScript);
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    }
+  </script>
 </body>
 </html>

@@ -64,6 +64,13 @@
       "when": 1789980000000,
       "tag": "0040_competitive_whr",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1790010000000,
+      "tag": "0041_competitive_winner",
+      "breakpoints": true
     }
   ]
 }

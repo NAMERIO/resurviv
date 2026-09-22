@@ -39,6 +39,8 @@ type Session = {
     saved?: { id: string };
     published: number;
     complete: boolean;
+    winnerTeam?: number;
+    winnerPage?: number;
 };
 
 const sessions = new Map<string, Session>();
@@ -55,7 +57,69 @@ function customId(session: Session, action: string) {
     return `whr-add:${session.id}:${session.revision}:${action}`;
 }
 
+function winnerCandidates(session: Session) {
+    if (session.mode !== "deathmatch" || session.teams.length !== session.count)
+        return [];
+    return session.teams.map((_, i) => i);
+}
+function needsWinner(session: Session) {
+    return session.winnerTeam === undefined && winnerCandidates(session).length > 1;
+}
+
+function winnerControls(session: Session) {
+    const leaders = winnerCandidates(session);
+    const start = (session.winnerPage ?? 0) * 15;
+    const buttons = leaders.slice(start, start + 15).map((i) =>
+        new ButtonBuilder()
+            .setCustomId(customId(session, `winner-${i}`))
+            .setLabel(`Team ${i + 1}: ${session.teams[i].slugs.join(" + ")}`.slice(0, 80))
+            .setStyle(ButtonStyle.Primary),
+    );
+    const rows: ActionRowBuilder<ButtonBuilder>[] = [];
+    for (let i = 0; i < buttons.length; i += 5)
+        rows.push(
+            new ActionRowBuilder<ButtonBuilder>().addComponents(buttons.slice(i, i + 5)),
+        );
+    const navigation = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+            .setCustomId(customId(session, "draw"))
+            .setLabel("Draw - no winner")
+            .setStyle(ButtonStyle.Secondary),
+    );
+    if (start > 0)
+        navigation.addComponents(
+            new ButtonBuilder()
+                .setCustomId(customId(session, "winner-prev"))
+                .setLabel("Previous teams")
+                .setStyle(ButtonStyle.Secondary),
+        );
+    if (start + 15 < leaders.length)
+        navigation.addComponents(
+            new ButtonBuilder()
+                .setCustomId(customId(session, "winner-next"))
+                .setLabel("More teams")
+                .setStyle(ButtonStyle.Secondary),
+        );
+    rows.push(
+        navigation,
+        new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+                .setCustomId(customId(session, "back"))
+                .setLabel("Edit previous team")
+                .setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder()
+                .setCustomId(customId(session, "cancel"))
+                .setLabel("Cancel")
+                .setStyle(ButtonStyle.Secondary),
+        ),
+    );
+    return rows;
+}
+const winnerPrompt =
+    "Who won the match? Select any team, even if they had fewer kills, or choose Draw. WHR still uses the entered scores. Your choice will be saved and posted publicly.";
+
 function controls(session: Session) {
+    if (!session.frozen && needsWinner(session)) return winnerControls(session);
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
             .setCustomId(
@@ -169,11 +233,13 @@ function validateTeam(session: Session, team: Team) {
 }
 
 function matchInput(session: Session) {
+    if (needsWinner(session)) throw new Error("Choose the match winner or Draw first.");
     const ordered =
         session.mode === "battle_royale"
             ? [...session.teams].sort((a, b) => Number(a.result) - Number(b.result))
             : session.teams;
     return zAddCompetitiveMatch.parse({
+        ...(session.winnerTeam != null ? { winnerTeam: session.winnerTeam } : {}),
         teams: ordered.map((team) => team.slugs),
         scores:
             session.mode === "deathmatch"
@@ -191,9 +257,13 @@ function scoreboard(session: Session) {
     const values = session.teams.map((team) => Number(team.result));
     const best =
         session.mode === "deathmatch" ? Math.max(...values) : Math.min(...values);
-    const tied = values.filter((value) => value === best).length > 1;
+    const tied = session.winnerTeam === -1;
     const lines = session.teams.map((team, i) => {
-        const winning = values[i] === best;
+        const winning =
+            tied ||
+            (session.winnerTeam !== undefined
+                ? i === session.winnerTeam
+                : values[i] === best);
         const result =
             session.mode === "deathmatch"
                 ? `Score: ${values[i]}`
@@ -420,11 +490,43 @@ export async function handleWhrAddInteraction(
             } else if ((action === "team" || action === "back") && !session.frozen) {
                 if (action === "back" && session.teams.length) {
                     session.draft = session.teams.pop();
+                    session.winnerTeam = undefined;
+                    session.winnerPage = 0;
                     session.revision++;
                 }
                 if (session.teams.length >= session.count)
                     throw new Error("All teams are already entered.");
                 await interaction.showModal(teamModal(session));
+            } else if (
+                !session.frozen &&
+                needsWinner(session) &&
+                (action === "winner-prev" || action === "winner-next")
+            ) {
+                session.winnerPage = Math.max(
+                    0,
+                    Math.min(
+                        Math.floor((winnerCandidates(session).length - 1) / 15),
+                        (session.winnerPage ?? 0) + (action === "winner-next" ? 1 : -1),
+                    ),
+                );
+                session.revision++;
+                await interaction.update({
+                    content: winnerPrompt,
+                    components: controls(session),
+                    allowedMentions,
+                });
+            } else if (
+                !session.frozen &&
+                needsWinner(session) &&
+                (action === "draw" || /^winner-\d+$/.test(action))
+            ) {
+                const winner = action === "draw" ? -1 : Number(action.slice(7));
+                if (winner !== -1 && !winnerCandidates(session).includes(winner))
+                    throw new Error("Choose one of the participating teams.");
+                session.winnerTeam = winner;
+                session.revision++;
+                await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+                await saveAndPublish(interaction, session);
             } else if (action === "publish" && session.teams.length === session.count) {
                 await interaction.deferReply({ flags: MessageFlags.Ephemeral });
                 await saveAndPublish(interaction, session);
@@ -452,7 +554,13 @@ export async function handleWhrAddInteraction(
             session.teams.push(team);
             session.draft = undefined;
             session.revision++;
-            if (session.teams.length === session.count)
+            if (needsWinner(session))
+                await interaction.editReply({
+                    content: winnerPrompt,
+                    components: controls(session),
+                    allowedMentions,
+                });
+            else if (session.teams.length === session.count)
                 await saveAndPublish(interaction, session);
             else
                 await interaction.editReply({

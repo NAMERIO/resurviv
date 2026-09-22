@@ -1,6 +1,7 @@
 import { EmotesDefs } from "../../shared/defs/gameObjects/emoteDefs";
-import type { CompetitiveBoard } from "../../shared/types/competitive";
+import { type CompetitiveBoard, competitivePlaces } from "../../shared/types/competitive";
 import { api } from "./api";
+import { createCompetitiveEditor } from "./competitiveEditor";
 
 type Player = CompetitiveBoard["players"][number];
 const el = <T extends HTMLElement = HTMLElement>(id: string) =>
@@ -13,6 +14,7 @@ const older = el<HTMLButtonElement>("older");
 let board: CompetitiveBoard | undefined;
 let selectedSlug = "";
 let pending: AbortController | undefined;
+let currentSeasonId: number | undefined;
 
 function node<K extends keyof HTMLElementTagNameMap>(
     tag: K,
@@ -134,7 +136,7 @@ function highlightMatches() {
             card.classList.toggle("is-selected", included);
             const label = card.querySelector<HTMLElement>(".match-selected-player")!;
             label.hidden = !included;
-            label.textContent = player ? `Includes ${player.username}` : "";
+            label.textContent = player ? `Selected player: ${player.username}` : "";
         });
 }
 
@@ -152,9 +154,7 @@ function renderMatches() {
             team.map((slug) => names.get(slug) ?? slug).join(" & "),
         );
         const scores = match.scores;
-        const ranks = match.teams.map((_, i) =>
-            scores ? 1 + scores.filter((score) => score > scores[i]).length : i + 1,
-        );
+        const ranks = competitivePlaces(match);
         const order = match.teams.map((_, i) => i).sort((a, b) => ranks[a] - ranks[b]);
         const winners = order.filter((i) => ranks[i] === 1);
         const tied = winners.length > 1;
@@ -217,7 +217,11 @@ function renderMatches() {
                 voided
                     ? "This match does not affect ratings or player stats."
                     : scores
-                      ? "Highest score wins. Players on the same row are teammates."
+                      ? match.winnerTeam != null
+                          ? match.winnerTeam === -1
+                              ? "Recorded as a draw. WHR uses the entered scores."
+                              : "Match winner selected by staff, independently of scores. Other teams are ordered by score. WHR uses the entered scores."
+                          : "Highest score wins; equal top scores are a draw. Players on the same row are teammates."
                       : "Teams are listed in finishing order, from first to last.",
             ),
         );
@@ -246,6 +250,7 @@ function renderMatches() {
             body.append(node("p", "match-void-reason", `Voided: ${match.voidReason}`));
         const id = node("code", "", `Match ID: ${match.id}`);
         body.append(id);
+        editor.decorate(body, match);
         card.append(summary, body);
         return card;
     });
@@ -297,6 +302,8 @@ async function load() {
         ]);
         if (pending !== controller) return;
         board = result;
+        currentSeasonId = seasons[0]?.id;
+        editor.update();
         el("about-placement-count").textContent = String(result.placementGames);
         seasonSelect.replaceChildren(
             ...seasons.map((season) => {
@@ -326,6 +333,7 @@ async function load() {
     } catch {
         if (pending !== controller) return;
         board = undefined;
+        editor.update();
         status.classList.add("error");
         status.setAttribute("role", "alert");
         status.textContent = "The standings couldn’t be loaded. Try again in a moment.";
@@ -338,6 +346,17 @@ async function load() {
         }
     }
 }
+
+const editor = createCompetitiveEditor({
+    board: () => board,
+    currentSeason: () => currentSeasonId,
+    onToggle: renderMatches,
+    onSaved: async () => {
+        updateURL({ offset: null });
+        await load();
+    },
+});
+void editor.refreshAccess();
 
 seasonSelect.addEventListener("change", () => {
     updateURL({ season: seasonSelect.value, offset: null, player: null });

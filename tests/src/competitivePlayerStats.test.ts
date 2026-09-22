@@ -1,5 +1,48 @@
 import { expect, test } from "vitest";
 import { summarizeCompetitivePlayers } from "../../server/src/api/competitive/playerStats";
+import { competitivePlaces, zCompetitiveResult } from "../../shared/types/competitive";
+
+test("a tiebreak winner resolves the tied result without changing the scores", () => {
+    const match = {
+        teams: [["namerio"], ["clover"], ["third"]],
+        scores: [5, 5, 2],
+        winnerTeam: 1,
+    };
+    expect(zCompetitiveResult.parse(match)).toEqual(match);
+    expect(competitivePlaces(match)).toEqual([2, 1, 3]);
+    const stats = summarizeCompetitivePlayers([match]);
+    expect(stats.get("clover")).toMatchObject({ wins: 1, draws: 0, losses: 0 });
+    expect(stats.get("namerio")).toMatchObject({ wins: 0, draws: 0, losses: 1 });
+    expect(match.scores).toEqual([5, 5, 2]);
+    expect(competitivePlaces({ ...match, winnerTeam: null })).toEqual([1, 1, 3]);
+    for (const winnerTeam of [-2, 3, 0.5])
+        expect(zCompetitiveResult.safeParse({ ...match, winnerTeam }).success).toBe(
+            false,
+        );
+    expect(zCompetitiveResult.safeParse({ ...match, scores: undefined }).success).toBe(
+        false,
+    );
+});
+
+test("a lower-scoring team can win, and unequal scores can be recorded as a draw", () => {
+    const match = { teams: [["a"], ["b"], ["c"]], scores: [10, 3, 7], winnerTeam: 1 };
+    expect(zCompetitiveResult.parse(match)).toEqual(match);
+    expect(competitivePlaces(match)).toEqual([2, 1, 3]);
+    expect(summarizeCompetitivePlayers([match]).get("b")).toMatchObject({
+        wins: 1,
+        draws: 0,
+        losses: 0,
+    });
+    const draw = { ...match, winnerTeam: -1 };
+    expect(zCompetitiveResult.parse(draw)).toEqual(draw);
+    expect(competitivePlaces(draw)).toEqual([1, 1, 1]);
+    expect(
+        [...summarizeCompetitivePlayers([draw]).values()].every(
+            (stats) => stats.draws === 1 && stats.wins === 0 && stats.losses === 0,
+        ),
+    ).toBe(true);
+    expect(competitivePlaces({ ...match, winnerTeam: null })).toEqual([1, 3, 2]);
+});
 
 test("season stats combine score wins, draws, losses and team placements", () => {
     const stats = summarizeCompetitivePlayers([

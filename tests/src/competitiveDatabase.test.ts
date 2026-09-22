@@ -51,6 +51,15 @@ describe.skipIf(!connectionString)("competitive PostgreSQL transactions", () => 
             ),
         );
         await pool.query(
+            readFileSync(
+                new URL(
+                    "../../server/src/api/db/drizzle/0041_competitive_winner.sql",
+                    import.meta.url,
+                ),
+                "utf8",
+            ),
+        );
+        await pool.query(
             "INSERT INTO users (id,slug) VALUES ('a','alice'),('b','bob'),('c','carol')",
         );
         service = await import("../../server/src/api/competitive/service");
@@ -217,5 +226,187 @@ describe.skipIf(!connectionString)("competitive PostgreSQL transactions", () => 
         expect((await service.getCompetitiveBoard(previous.season.id)).matches).toEqual(
             previous.matches,
         );
+    });
+    test("website corrections replace results atomically and retry without duplicating games", async () => {
+        const season = (await service.getCompetitiveBoard()).season;
+        const original = await service.addCompetitiveMatch(
+            input("web-original", [["bob"], ["carol"]]),
+        );
+        const correction = {
+            ...input("unused", [["bob"], ["carol"]]),
+            scores: [3, 10],
+            executorId: "web:developer",
+        };
+        const options = { seasonId: season.id, replacesMatchId: original.id };
+        const saved = await service.addCompetitiveMatch(correction, options);
+        expect(saved.reference).toBe("web-original");
+        expect(await service.addCompetitiveMatch(correction, options)).toEqual({
+            ...saved,
+            duplicate: true,
+        });
+        const board = await service.getCompetitiveBoard();
+        expect(board.matches.filter((match) => !match.voidReason)).toHaveLength(1);
+        expect(board.players.every((player) => player.games === 1)).toBe(true);
+        expect(board.players.find((player) => player.slug === "carol")?.stats.wins).toBe(
+            1,
+        );
+        expect(
+            (
+                await pool.query(
+                    "SELECT voided_by FROM competitive_matches WHERE id=$1",
+                    [original.id],
+                )
+            ).rows[0].voided_by,
+        ).toBe("web:developer");
+        expect(
+            (
+                await pool.query(
+                    "SELECT submitted_by FROM competitive_matches WHERE id=$1",
+                    [saved.id],
+                )
+            ).rows[0].submitted_by,
+        ).toBe("web:developer");
+    });
+    test("invalid corrections and failed calculations leave the original result intact", async () => {
+        const original = await service.addCompetitiveMatch(
+            input("web-rollback", [["bob"], ["carol"]]),
+        );
+        const before = await service.getCompetitiveBoard();
+        const options = { seasonId: before.season.id, replacesMatchId: original.id };
+        await expect(
+            service.addCompetitiveMatch(input("bad", [["missing"], ["carol"]]), options),
+        ).rejects.toThrow("does not exist");
+        expect(await service.getCompetitiveBoard()).toEqual(before);
+        const whr = await import("../../server/src/api/competitive/whr");
+        const fail = vi
+            .spyOn(whr, "calculateWHR")
+            .mockRejectedValueOnce(new Error("Solver unavailable"));
+        try {
+            await expect(
+                service.addCompetitiveMatch(
+                    input("bad-solver", [["bob"], ["carol"]]),
+                    options,
+                ),
+            ).rejects.toThrow("Solver unavailable");
+        } finally {
+            fail.mockRestore();
+        }
+        expect(await service.getCompetitiveBoard()).toEqual(before);
+    });
+    test("two developers cannot silently overwrite the same result", async () => {
+        const original = await service.addCompetitiveMatch(
+            input("web-concurrent", [["bob"], ["carol"]]),
+        );
+        const seasonId = (await service.getCompetitiveBoard()).season.id;
+        const outcomes = await Promise.allSettled([
+            service.addCompetitiveMatch(input("edit-one", [["bob"], ["carol"]]), {
+                seasonId,
+                replacesMatchId: original.id,
+            }),
+            service.addCompetitiveMatch(input("edit-two", [["bob"], ["carol"]]), {
+                seasonId,
+                replacesMatchId: original.id,
+            }),
+        ]);
+        expect(outcomes.filter((outcome) => outcome.status === "fulfilled")).toHaveLength(
+            1,
+        );
+        expect(outcomes.filter((outcome) => outcome.status === "rejected")).toHaveLength(
+            1,
+        );
+        const history = (await service.getCompetitiveBoard()).matches.filter(
+            (match) => match.reference === "web-concurrent",
+        );
+        expect(history).toHaveLength(2);
+        expect(history.filter((match) => !match.voidReason)).toHaveLength(1);
+    });
+    test("account suggestions match names or slugs, exclude bans, and escape wildcard text", async () => {
+        await pool.query(
+            "INSERT INTO users (id,slug,username,banned) VALUES ('search1','lookup-target','LOUD Name',false),('search2','lookup-banned','LOUD banned',true),('search3','literal_%','Wildcard',false),('search4','literalZZ','Other',false)",
+        );
+        expect(await service.searchCompetitivePlayers("LOOKUP")).toEqual([
+            { slug: "lookup-target", username: "LOUD Name" },
+        ]);
+        expect(await service.searchCompetitivePlayers("loud")).toEqual([
+            { slug: "lookup-target", username: "LOUD Name" },
+        ]);
+        expect(
+            (await service.searchCompetitivePlayers("literal_")).map((p) => p.slug),
+        ).toEqual(["literal_%"]);
+        expect(await service.searchCompetitivePlayers("literal_%extra")).toEqual([]);
+        await pool.query(
+            "INSERT INTO users(id,slug) SELECT 'suggest' || n, 'suggest-' || n FROM generate_series(1,12) n",
+        );
+        expect(await service.searchCompetitivePlayers("suggest")).toHaveLength(8);
+        expect((await service.searchCompetitivePlayers("suggest-1"))[0].slug).toBe(
+            "suggest-1",
+        );
+    });
+    test("website new results cannot silently enter a different season", async () => {
+        const season = (await service.getCompetitiveBoard()).season;
+        await service.startCompetitiveSeason("Next season");
+        await expect(
+            service.addCompetitiveMatch(input("wrong-season", [["bob"], ["carol"]]), {
+                seasonId: season.id,
+            }),
+        ).rejects.toThrow("current season");
+        expect((await service.getCompetitiveBoard()).matches).toHaveLength(0);
+    });
+    test("independent winner choices persist through corrections, retries and voids without changing score-based ratings", async () => {
+        const draw = await service.addCompetitiveMatch({
+            ...input("tiebreak", [["bob"], ["carol"]]),
+            scores: [10, 5],
+        });
+        const before = await service.getCompetitiveBoard();
+        expect(before.matches[0].winnerTeam).toBeNull();
+        const correction = {
+            ...input("correction", [["bob"], ["carol"]]),
+            scores: [10, 5],
+            winnerTeam: 1,
+        };
+        const options = { seasonId: before.season.id, replacesMatchId: draw.id };
+        const winner = await service.addCompetitiveMatch(correction, options);
+        expect(await service.addCompetitiveMatch(correction, options)).toMatchObject({
+            id: winner.id,
+            duplicate: true,
+        });
+        const after = await service.getCompetitiveBoard();
+        expect(after.matches.find((match) => match.id === winner.id)).toMatchObject({
+            scores: [10, 5],
+            winnerTeam: 1,
+            voidReason: null,
+        });
+        expect(
+            after.players.find((player) => player.slug === "carol")!.stats,
+        ).toMatchObject({ wins: 1, losses: 0, draws: 0 });
+        expect(
+            after.players.find((player) => player.slug === "bob")!.stats,
+        ).toMatchObject({ wins: 0, losses: 1, draws: 0 });
+        expect(after.players.map((player) => player.rating)).toEqual(
+            before.players.map((player) => player.rating),
+        );
+        const restored = await service.addCompetitiveMatch(
+            {
+                ...input("restore-draw", [["bob"], ["carol"]]),
+                scores: [10, 5],
+                winnerTeam: -1,
+            },
+            { seasonId: before.season.id, replacesMatchId: winner.id },
+        );
+        const restoredBoard = await service.getCompetitiveBoard();
+        expect(
+            restoredBoard.players.every(
+                (player) =>
+                    player.stats.draws === 1 &&
+                    player.stats.wins === 0 &&
+                    player.stats.losses === 0,
+            ),
+        ).toBe(true);
+        await service.voidCompetitiveMatch({
+            matchId: restored.id,
+            executorId: correction.executorId,
+            reason: "Test cleanup",
+        });
+        expect((await service.getCompetitiveBoard()).players).toEqual([]);
     });
 });

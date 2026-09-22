@@ -62,6 +62,7 @@ export const competitiveMatchesTable = pgTable(
         teams: jsonb("teams").$type<string[][]>().notNull(),
         slugs: jsonb("slugs").$type<string[][]>().notNull(),
         scores: jsonb("scores").$type<number[]>(),
+        winnerTeam: integer("winner_team"),
         note: text("note").notNull(),
         submittedBy: text("submitted_by").notNull(),
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

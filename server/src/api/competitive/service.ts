@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 import type { z } from "zod";
 import {
@@ -83,7 +83,28 @@ export async function validateCompetitivePlayers(
     return users;
 }
 
-export function addCompetitiveMatch(input: z.infer<typeof zAddCompetitiveMatch>) {
+export function searchCompetitivePlayers(query: string) {
+    const prefix = `${query.replace(/[\\%_]/g, "\\$&")}%`;
+    return db
+        .select({ slug: usersTable.slug, username: usersTable.username })
+        .from(usersTable)
+        .where(
+            and(
+                eq(usersTable.banned, false),
+                or(ilike(usersTable.slug, prefix), ilike(usersTable.username, prefix)),
+            ),
+        )
+        .orderBy(
+            sql`CASE WHEN lower(${usersTable.slug}) = lower(${query}) THEN 0 ELSE 1 END`,
+            asc(usersTable.slug),
+        )
+        .limit(8);
+}
+
+export function addCompetitiveMatch(
+    input: z.infer<typeof zAddCompetitiveMatch>,
+    options: { seasonId?: number; replacesMatchId?: string } = {},
+) {
     return db.transaction(async (tx) => {
         const season = await currentSeason(tx);
         const [retried] = await tx
@@ -92,13 +113,49 @@ export function addCompetitiveMatch(input: z.infer<typeof zAddCompetitiveMatch>)
             .where(eq(matches.requestId, input.requestId));
         if (retried)
             return { id: retried.id, reference: retried.reference, duplicate: true };
+        let seasonId = season.id;
+        let reference = input.reference;
+        let note = input.note;
+        if (options.replacesMatchId) {
+            const [original] = await tx
+                .select()
+                .from(matches)
+                .where(eq(matches.id, options.replacesMatchId));
+            if (!original)
+                throw new HTTPException(404, { message: "Rated match not found." });
+            if (original.voidedAt)
+                throw new HTTPException(409, {
+                    message:
+                        "This result was already voided or corrected. Refresh the history.",
+                });
+            if (original.seasonId !== options.seasonId)
+                throw new HTTPException(409, {
+                    message: "The result belongs to a different season.",
+                });
+            seasonId = original.seasonId;
+            reference = original.reference;
+            note = original.note;
+            await tx
+                .update(matches)
+                .set({
+                    voidedAt: new Date(),
+                    voidedBy: input.executorId,
+                    voidReason: "Replaced by a corrected result from the website.",
+                })
+                .where(eq(matches.id, original.id));
+        } else if (options.seasonId !== undefined && options.seasonId !== season.id) {
+            throw new HTTPException(409, {
+                message:
+                    "New matches must go in the current season. Refresh and select the latest season.",
+            });
+        }
         const [duplicate] = await tx
             .select({ id: matches.id })
             .from(matches)
             .where(
                 and(
-                    eq(matches.seasonId, season.id),
-                    eq(matches.reference, input.reference),
+                    eq(matches.seasonId, seasonId),
+                    eq(matches.reference, reference),
                     isNull(matches.voidedAt),
                 ),
             );
@@ -109,7 +166,7 @@ export function addCompetitiveMatch(input: z.infer<typeof zAddCompetitiveMatch>)
         const [{ count }] = await tx
             .select({ count: sql<number>`count(*)::int` })
             .from(matches)
-            .where(and(eq(matches.seasonId, season.id), isNull(matches.voidedAt)));
+            .where(and(eq(matches.seasonId, seasonId), isNull(matches.voidedAt)));
         if (count >= 10000)
             throw new HTTPException(409, {
                 message: "This season has reached 10,000 matches. Start a new season.",
@@ -120,8 +177,8 @@ export function addCompetitiveMatch(input: z.infer<typeof zAddCompetitiveMatch>)
         const [match] = await tx
             .insert(matches)
             .values({
-                seasonId: season.id,
-                reference: input.reference,
+                seasonId,
+                reference,
                 requestId: input.requestId,
                 playedOn: input.playedOn,
                 teams: input.teams.map((team) =>
@@ -129,12 +186,13 @@ export function addCompetitiveMatch(input: z.infer<typeof zAddCompetitiveMatch>)
                 ),
                 slugs: input.teams,
                 scores: input.scores ?? null,
-                note: input.note,
+                winnerTeam: input.winnerTeam ?? null,
+                note,
                 submittedBy: input.executorId,
             })
             .returning({ id: matches.id });
-        await recalculate(tx, season.id);
-        return { id: match.id, reference: input.reference, duplicate: false };
+        await recalculate(tx, seasonId);
+        return { id: match.id, reference, duplicate: false };
     });
 }
 
@@ -223,7 +281,11 @@ export async function getCompetitiveBoard(
                 : [];
             const byId = new Map(users.map((user) => [user.id, user]));
             const acceptedMatches = await tx
-                .select({ teams: matches.teams, scores: matches.scores })
+                .select({
+                    teams: matches.teams,
+                    scores: matches.scores,
+                    winnerTeam: matches.winnerTeam,
+                })
                 .from(matches)
                 .where(and(eq(matches.seasonId, season.id), isNull(matches.voidedAt)));
             const playerStats = summarizeCompetitivePlayers(acceptedMatches);
@@ -270,6 +332,7 @@ export async function getCompetitiveBoard(
                         team.map((id, j) => byId.get(id)?.slug ?? match.slugs[i][j]),
                     ),
                     scores: match.scores,
+                    winnerTeam: match.winnerTeam,
                     note: match.note,
                     voidReason: match.voidReason,
                 })),

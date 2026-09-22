@@ -175,10 +175,22 @@ async function click(id: string) {
     await handleWhrAddInteraction(button);
     return button;
 }
-async function submit(id: string, slugs: string[], result: string) {
+async function submit(
+    id: string,
+    slugs: string[],
+    result: string,
+    chooseFirstWinner = true,
+) {
     const values = Object.fromEntries(slugs.map((slug, i) => [`player_${i}`, slug]));
     const request = formInteraction("modal", id, { ...values, result });
     await handleWhrAddInteraction(request);
+    // Most workflow tests finish the new required winner step by choosing Team 1.
+    // Outcome-specific tests opt out to inspect and operate the choice themselves.
+    const winner = request.editReply.mock.calls
+        .at(-1)?.[0]
+        .components?.flatMap((row: any) => row.toJSON().components)
+        .find((button: any) => button.custom_id.endsWith(":winner-0"));
+    if (chooseFirstWinner && winner) return click(winner.custom_id);
     return request;
 }
 
@@ -230,6 +242,7 @@ describe("guided competitive entry", () => {
                     ["carol-slug", "dave-slug"],
                 ],
                 scores: [10, 7],
+                winnerTeam: 0,
                 reference: `discord-${initial.id}`,
                 playedOn: "2026-08-01",
                 note: "",
@@ -327,17 +340,24 @@ describe("guided competitive entry", () => {
     });
     test("public-post retries reuse the saved result without recording it twice", async () => {
         const initial = await start();
-        const first = await submit(modalId(initial), ["alice"], "8");
+        const first = await submit(modalId(initial), ["alice"], "10");
         const next = await click(buttonId(first, "team"));
         const last = formInteraction("modal", modalId(next), {
             player_0: "bob",
             result: "8",
         });
-        last.followUp.mockRejectedValueOnce(new Error("Cannot send message"));
         await handleWhrAddInteraction(last);
-        expect(last.editReply.mock.calls.at(-1)[0].content).toContain("result is saved");
-        const retry = await click(buttonId(last, "publish"));
+        expect(mocks.add).not.toHaveBeenCalled();
+        const draw = formInteraction("button", buttonId(last, "draw"));
+        draw.followUp.mockRejectedValueOnce(new Error("Cannot send message"));
+        await handleWhrAddInteraction(draw);
+        expect(draw.editReply.mock.calls.at(-1)[0].content).toContain("result is saved");
+        const retry = await click(buttonId(draw, "publish"));
         expect(mocks.add).toHaveBeenCalledTimes(1);
+        expect(mocks.add.mock.calls[0][0].json).toMatchObject({
+            scores: [10, 8],
+            winnerTeam: -1,
+        });
         expect(retry.followUp).toHaveBeenCalledOnce();
         expect(retry.followUp.mock.calls[0][0].embeds[0].toJSON().description).toContain(
             "(Draw)",
@@ -354,6 +374,62 @@ describe("guided competitive entry", () => {
         ).toHaveLength(1);
         await click(buttonId(last, "publish"));
         expect(mocks.add.mock.calls[1][0]).toEqual(mocks.add.mock.calls[0][0]);
+    });
+    test("a lower-scoring winner requires an authorized choice and stays frozen on retry", async () => {
+        const initial = await start();
+        const first = await submit(modalId(initial), ["namerio"], "10");
+        const next = await click(buttonId(first, "team"));
+        const last = await submit(modalId(next), ["clover"], "5", false);
+        expect(mocks.add).not.toHaveBeenCalled();
+        expect(last.followUp).not.toHaveBeenCalled();
+        const id = buttonId(last, "winner-1");
+        mocks.owner = false;
+        await click(id);
+        expect(mocks.deny).toHaveBeenCalledOnce();
+        expect(mocks.add).not.toHaveBeenCalled();
+        mocks.owner = true;
+        mocks.add.mockRejectedValueOnce(new Error("Connection lost"));
+        const winner = await click(id);
+        const retry = await click(buttonId(winner, "publish"));
+        expect(mocks.add.mock.calls[0][0].json).toMatchObject({
+            scores: [10, 5],
+            winnerTeam: 1,
+        });
+        expect(mocks.add.mock.calls[1][0]).toEqual(mocks.add.mock.calls[0][0]);
+        const description =
+            retry.followUp.mock.calls[0][0].embeds[0].toJSON().description;
+        expect(description).toContain("Team 2 - Score: 5 (Winner)");
+        expect(description).not.toContain("Team 1 - Score: 10 (Winner)");
+        expect(description).not.toContain("(Draw)");
+        await click(id);
+        expect(mocks.add).toHaveBeenCalledTimes(2);
+    });
+    test("32 tied teams have paged winner buttons within Discord's component limits", async () => {
+        let current = await start("deathmatch", 32);
+        let last: any;
+        for (let team = 0; team < 32; team++) {
+            last = await submit(modalId(current), [`player-${team}`], "5", false);
+            if (team < 31) current = await click(buttonId(last, "team"));
+        }
+        expect(mocks.add).not.toHaveBeenCalled();
+        let payload = last.editReply.mock.calls.at(-1)[0];
+        for (let page = 0; page < 2; page++) {
+            expect(payload.components.length).toBeLessThanOrEqual(5);
+            const rows = payload.components.map((row: any) => row.toJSON());
+            for (const row of rows) expect(row.components.length).toBeLessThanOrEqual(5);
+            const nextId = rows
+                .flatMap((row: any) => row.components)
+                .find((button: any) =>
+                    button.custom_id.endsWith(":winner-next"),
+                ).custom_id;
+            const next = await click(nextId);
+            payload = next.update.mock.calls[0][0];
+        }
+        const winnerId = payload.components
+            .flatMap((row: any) => row.toJSON().components)
+            .find((button: any) => button.custom_id.endsWith(":winner-31")).custom_id;
+        await click(winnerId);
+        expect(mocks.add.mock.calls[0][0].json.winnerTeam).toBe(31);
     });
     test("editing a previous team invalidates old forms and keeps its values", async () => {
         const initial = await start();
@@ -401,7 +477,10 @@ describe("guided competitive entry", () => {
         for (const page of pages)
             expect(page.description.length).toBeLessThanOrEqual(3500);
         expect(pages.map((page: any) => page.description).join("\n")).toContain(
-            "Team 32 - Score: 32 (Winner)",
+            "Team 32 - Score: 32",
+        );
+        expect(pages.map((page: any) => page.description).join("\n")).toContain(
+            "Team 1 - Score: 1 (Winner)",
         );
     });
     test("invalid team sizes and impossible dates never open a form", async () => {
