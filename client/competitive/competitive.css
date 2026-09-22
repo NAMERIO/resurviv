@@ -64,17 +64,24 @@ button:disabled {
   padding: 18px 24px 24px;
 }
 .topbar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
+  justify-content: space-between;
   gap: 20px;
   align-items: center;
   min-height: 58px;
   margin-bottom: 18px;
 }
+.site-logo {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto 18px;
+}
 .site-logo img {
   display: block;
-  width: 145px;
-  max-height: 58px;
+  width: 260px;
+  max-width: 100%;
+  height: auto;
   object-fit: contain;
 }
 .home-button,
@@ -928,13 +935,7 @@ footer > span {
   }
   .topbar {
     gap: 10px;
-    grid-template-columns: 1fr 1fr;
-  }
-  .site-logo {
-    grid-column: 1 / -1;
-    grid-row: 1;
-    justify-self: center;
-    margin-bottom: 6px;
+    flex-wrap: wrap;
   }
   .home-button,
   .tournament-button {
