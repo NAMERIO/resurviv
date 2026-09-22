@@ -7665,6 +7665,13 @@ span.ui-stats-header-value {
   justify-content: space-between;
 }
 
+.gun-game-weapon {
+  display: block;
+  color: #cde9ac;
+  font-size: 12px;
+  margin: 1px 16px 5px 0;
+}
+
 #ui-streak-wrapper {
   display: flex;
   flex-direction: row;

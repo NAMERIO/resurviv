@@ -1,5 +1,6 @@
 import $ from "jquery";
 import * as PIXI from "pixi.js-legacy";
+import { GunGameWeapons } from "../../../shared/deathmatch/gunGame";
 import { getSelectedPerk, selectablePerks } from "../../../shared/deathmatch/perks";
 import type { AmongUsTaskId } from "../../../shared/defs/amongUsTaskDefs";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
@@ -988,6 +989,11 @@ export class UiManager {
 
         $("#ui-kill-leader-container").css("display", displayLeader ? "block" : "none");
         $("#ui-kill-leaderboard-title").css("display", displayLeaderboard ? "" : "none");
+        $("#ui-kill-leaderboard-title").text(
+            this.game.m_privateMiniGame === "gun_game"
+                ? "Gun Game · Weapons completed"
+                : "Leaderboard",
+        );
         $("#ui-kill-leaderboard").css("display", displayLeaderboard ? "" : "none");
         if (!displayLeaderboard) {
             this.clearLeaderboard();
@@ -2209,12 +2215,30 @@ export class UiManager {
 
         container.empty();
 
-        players.forEach((p, index) => {
+        players.slice(0, 5).forEach((p, index) => {
             const item = $("<div>").addClass("leaderboard-item");
             $("<div>")
                 .text(`${index + 1}. ${p.name}`)
                 .appendTo(item);
-            $("<div>").text(p.kills).appendTo(item);
+            const gunGame = this.game.m_privateMiniGame === "gun_game";
+            $("<div>")
+                .text(gunGame ? `${p.kills}/${GunGameWeapons.length}` : p.kills)
+                .appendTo(item);
+            if (gunGame) {
+                const weapon =
+                    GunGameWeapons[Math.min(p.kills, GunGameWeapons.length - 1)];
+                const def = GameObjectDefs[weapon];
+                const name =
+                    def.type === "gun" || def.type === "melee" ? def.name : weapon;
+                item.children()
+                    .first()
+                    .append(
+                        $("<small>", {
+                            class: "gun-game-weapon",
+                            text: p.kills >= GunGameWeapons.length ? "Winner" : name,
+                        }),
+                    );
+            }
             container.append(item);
         });
     }

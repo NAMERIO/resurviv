@@ -4156,7 +4156,9 @@ export class Game {
                 );
                 this.m_config.set("serverPerkMode", !!this.m_map.perkMode);
                 const isBattleRoyaleMap = this.m_map.mapName.startsWith("br_");
-                this.m_ui2Manager.setStreakEnabled(!isBattleRoyaleMap);
+                this.m_ui2Manager.setStreakEnabled(
+                    !isBattleRoyaleMap && this.m_privateMiniGame !== "gun_game",
+                );
                 this.m_ui2Manager.setAmmoInventoryEnabled(isBattleRoyaleMap);
                 this.m_ui2Manager.setPerkDropEnabled(isBattleRoyaleMap);
                 this.m_resourceManager.loadMapAssets(this.m_map.mapName);

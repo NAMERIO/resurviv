@@ -620,7 +620,7 @@ class Room {
                 version: GameConfig.protocolVersion,
                 autoFill: false,
                 mapName,
-                teamMode: mode.teamMode,
+                teamMode: this.data.miniGame === "gun_game" ? 1 : mode.teamMode,
                 arenaPrivate: true,
                 miniGame: this.data.miniGame,
                 amongUsImpostorCount:
@@ -731,6 +731,7 @@ class Room {
     findGameCooldown = 0;
 
     getArenaTeamCapacity() {
+        if (this.data.miniGame === "gun_game") return 15;
         const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
         const cap = Math.max(1, mode?.teamMode ?? 2);
         const miniGameMapName = getPrivateLobbyMiniGameMapName(this.data.miniGame);
@@ -1072,6 +1073,15 @@ class Room {
         }
 
         if (this.data.arena && !this.isBattleRoyaleArena()) {
+            if (
+                this.data.miniGame === "gun_game" &&
+                this.getArenaTeamPlayerCount("A") < 2
+            ) {
+                this.data.lastError = "arena_need_teams";
+                this.data.findingGame = false;
+                this.sendState();
+                return;
+            }
             const activeTeams = this.getActiveArenaTeams();
             if (activeTeams.some((team) => this.getArenaTeamPlayerCount(team) < 1)) {
                 this.data.lastError = "arena_need_teams";
@@ -1187,7 +1197,7 @@ class Room {
 
         const res = await this.teamMenu.server.findGame({
             mapName,
-            teamMode: mode.teamMode,
+            teamMode: this.data.miniGame === "gun_game" ? 1 : mode.teamMode,
             autoFill: this.data.arena ? false : this.data.autoFill,
             region: region,
             version: data.version,
@@ -1307,7 +1317,7 @@ class Room {
 
         const res = await this.teamMenu.server.findGame({
             mapName,
-            teamMode: mode.teamMode,
+            teamMode: this.data.miniGame === "gun_game" ? 1 : mode.teamMode,
             autoFill: false,
             region: this.data.region,
             version: GameConfig.protocolVersion,
@@ -1497,7 +1507,7 @@ export class TeamMenu {
         return {
             gameModeIdx: room.data.gameModeIdx,
             mapName: mode.mapName,
-            teamMode: mode.teamMode,
+            teamMode: room.data.miniGame === "gun_game" ? 1 : mode.teamMode,
             miniGame: room.data.miniGame,
             findingGame: room.data.findingGame,
             teamCount: room.data.teamCount,

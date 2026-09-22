@@ -14,6 +14,11 @@ const config = {
 } as const;
 
 export const gun_game: MapDef = util.mergeDeep(structuredClone(Main), {
+    gameMode: { killLeaderEnabled: false },
+    desc: {
+        name: "Gun Game",
+        icon: "img/loot/loot-weapon-m9.svg",
+    },
     biome: {
         particles: { camera: "falling_leaf_spring" },
     },

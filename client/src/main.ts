@@ -280,6 +280,7 @@ export class Application {
     }
 
     getArenaTeamModeDisplayName(teamMode: number, miniGame?: PrivateLobbyMiniGame) {
+        if (miniGame === "gun_game") return "15 players";
         if (this.isBattleRoyaleMiniGame(miniGame)) {
             const teamModeMap: Record<number, string> = {
                 1: "Solo",
@@ -2162,15 +2163,17 @@ export class Application {
             return deathmatchArenaModes.length ? deathmatchArenaModes : arenaModes;
         };
         const getTeamModesForMiniGame = (miniGame: PrivateLobbyMiniGame) =>
-            this.isBattleRoyaleMiniGame(miniGame)
-                ? [1, 2, 4]
-                : miniGame === "capture_the_flag" ||
-                    miniGame === "king_of_the_hill" ||
-                    miniGame === "domination" ||
-                    miniGame === "bed_war" ||
-                    miniGame === "plant_the_bomb"
-                  ? [2, 4, 10, 15]
-                  : [1, 2, 4, 10, 15];
+            miniGame === "gun_game"
+                ? [1]
+                : this.isBattleRoyaleMiniGame(miniGame)
+                  ? [1, 2, 4]
+                  : miniGame === "capture_the_flag" ||
+                      miniGame === "king_of_the_hill" ||
+                      miniGame === "domination" ||
+                      miniGame === "bed_war" ||
+                      miniGame === "plant_the_bomb"
+                    ? [2, 4, 10, 15]
+                    : [1, 2, 4, 10, 15];
         const mapStyleByName = new Map<
             string,
             {
@@ -2638,6 +2641,12 @@ export class Application {
 
         const miniGame = this.teamMenu.roomData.miniGame;
         if (
+            miniGame === "gun_game" &&
+            (error === "waiting_for_players" || error === "arena_need_teams")
+        ) {
+            return "Gun Game needs at least 2 players to start.";
+        }
+        if (
             miniGame === "among_us" &&
             (error === "waiting_for_players" || error === "arena_need_teams")
         ) {
@@ -2938,7 +2947,10 @@ export class Application {
         }
 
         const mode = this.siteInfo.info.modes?.[this.teamMenu.roomData.gameModeIdx];
-        const teamSize = Math.max(1, mode?.teamMode ?? 2);
+        const teamSize =
+            this.teamMenu.roomData.miniGame === "gun_game"
+                ? 15
+                : Math.max(1, mode?.teamMode ?? 2);
         const miniGameDef = getPrivateLobbyMiniGameDef(this.teamMenu.roomData.miniGame);
         const battleRoyaleLobby = !!miniGameDef.battleRoyale;
         const singleTeam = !!miniGameDef.singleTeam;

@@ -223,6 +223,7 @@ export class WeaponManager {
     }
 
     swapWeaponSlots() {
+        if (this.player.game.gunGameManager.enabled) return;
         if (this.player.streakActive) return;
 
         const primary = {

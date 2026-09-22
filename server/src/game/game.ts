@@ -34,6 +34,7 @@ import { CaptureTheFlagManager } from "./captureTheFlagManager";
 import { DominationManager } from "./dominationManager";
 import { GameModeManager } from "./gameModeManager";
 import { Grid } from "./grid";
+import { GunGameManager } from "./gunGameManager";
 import { KingOfTheHillManager } from "./kingOfTheHillManager";
 import { GameMap } from "./map";
 import { AirdropBarn } from "./objects/airdrop";
@@ -111,6 +112,7 @@ export class Game {
     captureTheFlagManager: CaptureTheFlagManager;
     kingOfTheHillManager: KingOfTheHillManager;
     dominationManager: DominationManager;
+    gunGameManager: GunGameManager;
     bedWarManager: BedWarManager;
     plantTheBombManager: PlantTheBombManager;
     arenaStartLockTimer = 0;
@@ -209,15 +211,15 @@ export class Game {
                 : DefaultAmongUsImpostorCount;
         this.disableAirstrikes = !!config.disableAirstrikes;
         this.movingZone = !!config.movingZone;
-        this.disablePerks = !!config.disablePerks;
-        this.disableLooting = !!config.disableLooting;
+        this.disablePerks = this.miniGame === "gun_game" || !!config.disablePerks;
+        this.disableLooting = this.miniGame === "gun_game" || !!config.disableLooting;
         this.showEnemiesOnMap = config.showEnemiesOnMap !== false;
 
         if (this.arenaPrivate && Config.replays.enabled) {
             this.recorder = new Recorder(this);
         }
 
-        this.teamMode = config.teamMode;
+        this.teamMode = this.miniGame === "gun_game" ? TeamMode.Solo : config.teamMode;
         this.mapName = config.mapName;
         this.isTeamMode = this.teamMode !== TeamMode.Solo;
 
@@ -248,6 +250,7 @@ export class Game {
         this.captureTheFlagManager = new CaptureTheFlagManager(this);
         this.kingOfTheHillManager = new KingOfTheHillManager(this);
         this.dominationManager = new DominationManager(this);
+        this.gunGameManager = new GunGameManager(this);
         this.bedWarManager = new BedWarManager(this);
         this.plantTheBombManager = new PlantTheBombManager(this);
         this.modeManager = new GameModeManager(this);
@@ -359,7 +362,7 @@ export class Game {
             this.started = this.modeManager.isGameStarted();
             if (this.started) {
                 this.recorder?.start();
-                this.gas.advanceGasStage();
+                if (!this.gunGameManager.enabled) this.gas.advanceGasStage();
             }
         }
 
@@ -369,7 +372,8 @@ export class Game {
         // Update modules
         //
         this.profiler.addSample("gas");
-        this.gas.update(dt);
+        if (!this.gunGameManager.enabled) this.gas.update(dt);
+        this.gunGameManager.update(dt);
         this.profiler.endSample();
 
         this.profiler.addSample("players");

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { generateUsername } from "unique-username-generator";
+import { GunGameWeapons } from "../../../../shared/deathmatch/gunGame";
 import { getSelectedPerk, selectablePerks } from "../../../../shared/deathmatch/perks";
 import type { AmongUsRole } from "../../../../shared/defs/amongUsRoleDefs";
 import {
@@ -406,6 +407,7 @@ export class PlayerBarn {
         this.aliveCountDirty = true;
         // this.game.pluginManager.emit("playerJoin", player);
         onPlayerJoin(player);
+        player.applyGunGameLoadout();
 
         // update leaderboard entry
         const leaderboardKey = player.getLeaderboardKey();
@@ -497,7 +499,8 @@ export class PlayerBarn {
                     (isCaptureTheFlagMiniGame(this.game.miniGame) ||
                         isKingOfTheHillMiniGame(this.game.miniGame) ||
                         isDominationMiniGame(this.game.miniGame) ||
-                        isBedWarMiniGame(this.game.miniGame)) &&
+                        isBedWarMiniGame(this.game.miniGame) ||
+                        this.game.gunGameManager.enabled) &&
                     player.captureTheFlagRespawnTicker > 0
                 ) {
                     continue;
@@ -1640,6 +1643,7 @@ export class Player extends BaseGameObject {
     aimLayer = 0;
     dead = false;
     infectedRespawnTicker = 0;
+    gunGameStage = 0;
     captureTheFlagRespawnTicker = 0;
     private captureTheFlagRespawnPerks: Array<{
         type: string;
@@ -2160,6 +2164,7 @@ export class Player extends BaseGameObject {
     }
 
     checkDamageStreaks(): void {
+        if (this.game.gunGameManager.enabled) return;
         if (isBattleRoyaleMapName(this.game.mapName)) return;
         if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
         // If already ready or active, nothing to check
@@ -2172,6 +2177,7 @@ export class Player extends BaseGameObject {
     }
 
     activateStreak(requestedIdx: number = -1): void {
+        if (this.game.gunGameManager.enabled) return;
         if (isBattleRoyaleMapName(this.game.mapName)) return;
         if (!this.streakReady) return;
         if (this.streakActive) return;
@@ -2807,13 +2813,57 @@ export class Player extends BaseGameObject {
         this.game.updateData();
     }
 
+    applyGunGameLoadout(): void {
+        if (!this.game.gunGameManager.enabled) return;
+        this.cancelAction();
+        this.shootHold = false;
+        this.shootStart = false;
+        this.invManager.emptyAll();
+        for (const perk of [...this.perks]) this.removePerk(perk.type);
+        this.addPerk("endless_ammo", false);
+        const weapon = GunGameWeapons[this.gunGameStage];
+        const def = GameObjectDefs[weapon];
+        for (let slot = 0; slot < GameConfig.WeaponSlot.Count; slot++) {
+            this.weaponManager.setWeapon(slot, "", 0);
+        }
+        this.weaponManager.setWeapon(
+            GameConfig.WeaponSlot.Melee,
+            def.type === "melee" ? weapon : "fists",
+            0,
+        );
+        this.meleeSkin = def.type === "melee" ? weapon : "fists";
+        if (def.type === "gun") {
+            this.weaponManager.setWeapon(
+                GameConfig.WeaponSlot.Primary,
+                weapon,
+                def.maxClip,
+            );
+        }
+        this.weaponManager.setCurWeapIndex(
+            def.type === "gun"
+                ? GameConfig.WeaponSlot.Primary
+                : GameConfig.WeaponSlot.Melee,
+        );
+        this.helmet = "helmet02";
+        this.chest = "chest02";
+        this.scope = "4xscope";
+        this.invManager.set("4xscope", 1);
+        this.streakReady = false;
+        this.streakDirty = true;
+        this.inventoryDirty = true;
+        this.weapsDirty = true;
+        this.setDirty();
+    }
+
     respawnCaptureTheFlagPlayer(): void {
+        if (this.game.over || this.disconnected) return;
         if (
             !isCaptureTheFlagMiniGame(this.game.miniGame) &&
             !isKingOfTheHillMiniGame(this.game.miniGame) &&
             !isDominationMiniGame(this.game.miniGame) &&
             !isBedWarMiniGame(this.game.miniGame) &&
-            !isPlantTheBombMiniGame(this.game.miniGame)
+            !isPlantTheBombMiniGame(this.game.miniGame) &&
+            !this.game.gunGameManager.enabled
         ) {
             return;
         }
@@ -2842,6 +2892,7 @@ export class Player extends BaseGameObject {
         this.collider.pos = this.pos;
         this.removeRole();
         this.applyCaptureTheFlagRespawnLoadout();
+        this.applyGunGameLoadout();
 
         this.game.playerBarn.livingPlayers.push(this);
         if (this.group && !this.group.livingPlayers.includes(this)) {
@@ -5269,6 +5320,8 @@ export class Player extends BaseGameObject {
     lastDamagedBy: Player | undefined;
 
     damage(params: DamageParams) {
+        if (this.game.gunGameManager.enabled && (!this.game.started || this.game.over))
+            return;
         if (this.debug.godMode) return;
         if (this.vehicle && NpcDefs[this.vehicle.type].vehicle?.airborne) return;
         if (this._health < 0) this._health = 0;
@@ -5425,6 +5478,17 @@ export class Player extends BaseGameObject {
             const breakMs = PerkProperties.first_hit?.firstShieldBreakMs ?? 300;
             this._firstShieldBrokenUntil = this.game.now + breakMs;
         }
+
+        if (
+            this.game.gunGameManager.enabled &&
+            playerSource &&
+            playerSource !== this &&
+            playerSource.gunGameStage === GunGameWeapons.length - 1 &&
+            params.gameSourceType === GunGameWeapons[GunGameWeapons.length - 1] &&
+            params.damageType === GameConfig.DamageType.Player &&
+            !params.isExplosion
+        )
+            finalDamage = this.health;
 
         if (this._health - finalDamage < 0) finalDamage = this.health;
 
@@ -5620,6 +5684,8 @@ export class Player extends BaseGameObject {
     }
 
     private getKillsLeaderboardMsg() {
+        if (this.game.gunGameManager.enabled)
+            return this.game.gunGameManager.getLeaderboard();
         const killLeaderboardPlayers = Array.from(this.game.leaderboard.entries())
             .map(([userId, value]) => ({ userId, value }))
             .sort((a, b) => {
@@ -5647,7 +5713,8 @@ export class Player extends BaseGameObject {
             isKingOfTheHillMiniGame(this.game.miniGame) ||
             isDominationMiniGame(this.game.miniGame) ||
             isBedWarMiniGame(this.game.miniGame) ||
-            isPlantTheBombMiniGame(this.game.miniGame);
+            isPlantTheBombMiniGame(this.game.miniGame) ||
+            this.game.gunGameManager.enabled;
         if (isCaptureTheFlagDeath) {
             this.captureTheFlagRespawnPerks = this.perks.map((perk) => ({ ...perk }));
         }
@@ -5916,7 +5983,8 @@ export class Player extends BaseGameObject {
         }
 
         // this.game.pluginManager.emit("playerKill", { ...params, player: this });
-        onPlayerKill({ ...params, player: this });
+        this.game.gunGameManager.onKill(this, params);
+        if (!this.game.gunGameManager.enabled) onPlayerKill({ ...params, player: this });
 
         //
         // Give spectators someone new to spectate
@@ -7011,6 +7079,7 @@ export class Player extends BaseGameObject {
 
     pickupTicker = 0;
     pickupLoot(obj: Loot) {
+        if (this.game.gunGameManager.enabled) return;
         if (obj.destroyed) return;
 
         const def = GameObjectDefs[obj.type];
@@ -7613,6 +7682,7 @@ export class Player extends BaseGameObject {
         }
     }
     dropItem(dropMsg: net.DropItemMsg): void {
+        if (this.game.gunGameManager.enabled) return;
         if (this.dead) return;
         if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
 

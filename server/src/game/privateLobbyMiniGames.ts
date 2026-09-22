@@ -199,6 +199,7 @@ export const PrivateLobbyMiniGameServerSettings: Record<
     PrivateLobbyMiniGameServerSettings
 > = {
     pvp: {},
+    gun_game: {},
     battle_royale: {},
     hide_and_seek: {
         hideAndSeek: HideAndSeekSettings,
@@ -261,6 +262,7 @@ export const PrivateLobbyMiniGameServerSettings: Record<
 export function getPrivateLobbyMiniGameMapName(
     miniGame: PrivateLobbyMiniGame | undefined,
 ) {
+    if (miniGame === "gun_game") return "gun_game";
     if (miniGame === "among_us") return "among_us";
     if (miniGame === "capture_the_flag") return "capture_the_flag";
     if (miniGame === "king_of_the_hill") return "capture_the_flag";
@@ -275,7 +277,7 @@ export function isAmongUsMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
 }
 
 export function isSingleTeamMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {
-    return isAmongUsMiniGame(miniGame);
+    return isAmongUsMiniGame(miniGame) || miniGame === "gun_game";
 }
 
 export function isBattleRoyaleMiniGame(miniGame: PrivateLobbyMiniGame | undefined) {

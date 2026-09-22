@@ -1,3 +1,4 @@
+import { GunGameRespawnSeconds } from "../../../shared/deathmatch/gunGame";
 import type { AmongUsRole } from "../../../shared/defs/amongUsRoleDefs";
 import { TeamColor } from "../../../shared/defs/maps/factionDefs";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
@@ -102,6 +103,17 @@ export class GameModeManager {
         // once, using their latest session, so changing names or reconnecting
         // cannot create duplicate teams/placements in match results.
         const players = this.getMatchParticipants();
+        if (this.game.gunGameManager.enabled) {
+            return players
+                .sort(
+                    (a, b) =>
+                        Number(b === this.game.gunGameManager.winner) -
+                            Number(a === this.game.gunGameManager.winner) ||
+                        b.gunGameStage - a.gunGameStage ||
+                        b.kills - a.kills,
+                )
+                .map((player, idx) => ({ player, rank: idx + 1 }));
+        }
 
         if (this.game.map.amongUsMode && this.game.amongUsWinningRole) {
             const winningRole = this.game.amongUsWinningRole;
@@ -184,6 +196,8 @@ export class GameModeManager {
 
     /** true if game needs to end */
     handleGameEnd(): boolean {
+        if (this.game.gunGameManager.enabled)
+            return this.game.gunGameManager.handleGameEnd();
         if (this.game.plantTheBombManager.enabled) {
             if (!this.game.started || !this.game.plantTheBombManager.isMatchOver()) {
                 return false;
@@ -648,6 +662,11 @@ export class GameModeManager {
         }));
     }
     handlePlayerDeath(player: Player, params: DamageParams): void {
+        if (this.game.gunGameManager.enabled) {
+            player.captureTheFlagRespawnTicker = GunGameRespawnSeconds;
+            player.kill(params);
+            return;
+        }
         if (this.game.plantTheBombManager.enabled) {
             player.kill(params);
             this.game.plantTheBombManager.onPlayerDeath(player);

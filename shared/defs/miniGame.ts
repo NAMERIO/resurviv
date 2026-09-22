@@ -1,5 +1,6 @@
 export const PrivateLobbyMiniGameIds = [
     "pvp",
+    "gun_game",
     "battle_royale",
     "hide_and_seek",
     "infected",
@@ -34,6 +35,13 @@ export interface PrivateLobbyMiniGameDef {
 }
 
 export const PrivateLobbyMiniGameDefs = {
+    gun_game: {
+        id: "gun_game",
+        name: "Gun Game",
+        icon: "/img/loot/loot-weapon-m9.svg",
+        singleTeam: true,
+        teamNames: { A: "Players", B: "", C: "", D: "" },
+    },
     pvp: {
         id: "pvp",
         name: "Deathmatch",
