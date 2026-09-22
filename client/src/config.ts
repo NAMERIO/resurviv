@@ -95,7 +95,7 @@ const defaultConfig = {
     musicVolume: 1,
     highResTex: true,
     interpolation: true,
-    localRotation: false,
+    localRotation: true,
     screenShake: true,
     controllerDeadZone: 0.18,
     controllerAimSensitivity: 1,
