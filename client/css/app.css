@@ -9816,6 +9816,39 @@ input [type="image"]:focus {
   margin-top: 12px;
 }
 
+.customize-weapon-shelf {
+  --shelf-item-size: 96px;
+  --shelf-gap: 12px;
+  margin: 12px;
+  min-width: 0;
+  border: 1px solid #292929;
+  border-bottom: 5px solid #292929;
+  border-radius: 5px;
+  background: #444;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.25);
+}
+
+.customize-weapon-shelf > .customize-list-section-header:first-child {
+  margin: 0;
+  padding: 10px 12px;
+  border-bottom: 1px solid #292929;
+  border-radius: 4px 4px 0 0;
+  background: #333;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.customize-weapon-shelf-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, var(--shelf-item-size));
+  gap: var(--shelf-gap);
+  padding: var(--shelf-gap);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.customize-weapon-shelf-items > .customize-list-item {
+  margin: 0;
+}
+
 .customize-list-item-unlocked {
   opacity: 0.8;
 }
@@ -21619,6 +21652,12 @@ div.roulette {
   .customize-list-section-header:first-child {
     font-size: 14px;
     margin: 10px 8px 2px;
+  }
+
+  .customize-weapon-shelf {
+    --shelf-item-size: 68px;
+    --shelf-gap: 8px;
+    margin: 8px;
   }
 
   #modal-customize-cat-title {

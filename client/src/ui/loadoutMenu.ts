@@ -1794,6 +1794,7 @@ export class LoadoutMenu {
         let loadoutItemDiv: JQuery<HTMLElement> | "" = "";
         const listItems = $("<div/>");
         let currentWeaponSection = "";
+        let itemContainer = listItems;
         const displayLoadoutItems = isWeaponCat
             ? loadoutGunSections.flatMap((section) =>
                   loadoutItems.filter(
@@ -1810,12 +1811,19 @@ export class LoadoutMenu {
                 : "";
             if (weaponSection && weaponSection != currentWeaponSection) {
                 currentWeaponSection = weaponSection;
-                listItems.append(
+                const shelf = $("<section/>", {
+                    class: "customize-weapon-shelf",
+                    "aria-label": weaponSection,
+                });
+                shelf.append(
                     $("<div/>", {
                         class: "customize-list-section-header",
                         text: weaponSection,
                     }),
                 );
+                itemContainer = $("<div/>", { class: "customize-weapon-shelf-items" });
+                shelf.append(itemContainer);
+                listItems.append(shelf);
             }
 
             const objDef = GameObjectDefs[item.type] as MeleeDef;
@@ -1899,7 +1907,7 @@ export class LoadoutMenu {
                 crosshair.setElemCrosshair(outerDiv, crosshairDef);
             }
 
-            listItems.append(outerDiv);
+            itemContainer.append(outerDiv);
 
             // Add the itemInfo to the currently selected items array
             itemInfo.outerDiv = outerDiv;
