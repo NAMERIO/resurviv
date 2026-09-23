@@ -71,6 +71,13 @@
       "when": 1790010000000,
       "tag": "0041_competitive_winner",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1790190000000,
+      "tag": "0042_native_auth",
+      "breakpoints": true
     }
   ]
 }

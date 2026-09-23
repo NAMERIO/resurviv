@@ -3,6 +3,7 @@ import { eq, lt } from "drizzle-orm";
 import { Config } from "../../config";
 import { db } from "../db";
 import {
+    nativeAuthRequestsTable,
     type SessionTableSelect,
     sessionTable,
     type UsersTableSelect,
@@ -72,6 +73,9 @@ export async function invalidateAllSessions(userId: string): Promise<void> {
 
 export async function deleteExpiredSessions(): Promise<void> {
     await db.delete(sessionTable).where(lt(sessionTable.expiresAt, new Date()));
+    await db
+        .delete(nativeAuthRequestsTable)
+        .where(lt(nativeAuthRequestsTable.expiresAt, new Date()));
 }
 
 export type SessionValidationResult =

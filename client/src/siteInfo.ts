@@ -6,6 +6,7 @@ import type { SiteInfoRes } from "../../shared/types/api";
 import { api } from "./api";
 import type { ConfigManager } from "./config";
 import { device } from "./device";
+import { nativeClientConfig } from "./nativePlatform";
 import type { Localization } from "./ui/localization";
 
 export class SiteInfo {
@@ -29,8 +30,9 @@ export class SiteInfo {
         const mainSelector = $("#server-opts");
         const teamSelector = $("#team-server-opts");
 
-        for (const region in GAME_REGIONS) {
-            const data = GAME_REGIONS[region];
+        const regions = nativeClientConfig?.regions ?? GAME_REGIONS;
+        for (const region in regions) {
+            const data = regions[region];
             const name = this.localization.translate(data.l10n);
             const elm = `<option value='${region}' data-l10n='${data.l10n}' data-label='${name}'>${name}</option>`;
             mainSelector.append(elm);

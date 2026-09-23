@@ -8,6 +8,7 @@ import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 import { version } from "../../../package.json";
+import { nativeApp } from "../../../shared/nativeApp";
 import {
     type FindGameResponse,
     type SiteInfoRes,
@@ -67,7 +68,7 @@ app.onError((err: unknown, c) => {
 app.use(
     "/api/*",
     cors({
-        origin: "*",
+        origin: (origin) => (origin === nativeApp.origin ? nativeApp.origin : "*"),
         credentials: true,
         allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allowHeaders: ["Origin", "Content-Type", "Accept", "X-Requested-With"],
@@ -80,6 +81,22 @@ app.use(
 
 app.route("/api/user/", UserRouter);
 app.route("/api/auth/", AuthRouter);
+app.get("/api/mobile/config", (c) =>
+    c.json({
+        regions: Object.fromEntries(
+            Object.entries(Config.regions).map(([id, region]) => [
+                id,
+                {
+                    address: region.address,
+                    https: region.https,
+                    l10n: region.l10n,
+                },
+            ]),
+        ),
+        google: !!(Config.secrets.GOOGLE_CLIENT_ID && Config.secrets.GOOGLE_SECRET_ID),
+        discord: !!(Config.secrets.DISCORD_CLIENT_ID && Config.secrets.DISCORD_SECRET_ID),
+    }),
+);
 app.route("/api/clan/", ClanRouter);
 app.route("/api/tournament/", TournamentRouter);
 app.route("/api/news", NewsRouter);

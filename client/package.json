@@ -10,6 +10,9 @@
     "lint": "cd .. && pnpm lint"
   },
   "dependencies": {
+    "@capacitor/core": "8.5.2",
+    "@capacitor/app": "8.1.1",
+    "@capacitor/browser": "8.0.4",
     "@kobalte/core": "^0.13.11",
     "@taufik-nurrohman/color-picker": "1.4.2",
     "base64-js": "^1.5.1",

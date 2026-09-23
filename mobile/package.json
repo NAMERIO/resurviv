@@ -1,0 +1,22 @@
+{
+  "name": "@resurviv/mobile",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.0.0" },
+  "scripts": {
+    "build:web": "pnpm --filter @survev/client build",
+    "sync": "pnpm build:web && cap sync android",
+    "add": "pnpm build:web && cap add android",
+    "update": "cap update android",
+    "open": "cap open android",
+    "bundle": "pnpm sync && node scripts/gradle.mjs bundleRelease",
+    "apk": "pnpm sync && node scripts/gradle.mjs assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.2",
+    "@capacitor/core": "8.5.2",
+    "@capacitor/app": "8.1.1",
+    "@capacitor/browser": "8.0.4"
+  },
+  "devDependencies": { "@capacitor/cli": "8.5.2" }
+}

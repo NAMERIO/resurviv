@@ -1,15 +1,18 @@
 import { OAuth2RequestError } from "arctic";
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 import { Config } from "../../../config";
 import { server } from "../../apiServer";
 import { databaseEnabledMiddleware, rateLimitMiddleware } from "../../auth/middleware";
 import { DiscordRouter } from "./auth/discord";
 import { GoogleRouter } from "./auth/google";
 import { MockRouter } from "./auth/mock";
+import { NativeAuthRouter } from "./auth/native";
 
 export const AuthRouter = new Hono();
 
 AuthRouter.onError((err, c) => {
+    if (err instanceof HTTPException) return err.getResponse();
     server.logger.error(`${c.req.path} Error:`, err);
     if (err instanceof OAuth2RequestError && err.message === "bad_verification_code") {
         // invalid code
@@ -23,6 +26,7 @@ AuthRouter.use(rateLimitMiddleware(5, 60 * 1000));
 
 AuthRouter.route("/discord", DiscordRouter);
 AuthRouter.route("/google", GoogleRouter);
+AuthRouter.route("/native", NativeAuthRouter);
 
 if (Config.debug.allowMockAccount) {
     AuthRouter.route("/mock", MockRouter);

@@ -10,6 +10,7 @@ import {
     handleAuthUser,
     syncDiscordServerTagReward,
 } from "./authUtils";
+import { beginNativeOAuth, finishNativeOAuth, readNativeOAuth } from "./native";
 
 export const discord = new Discord(
     Config.secrets.DISCORD_CLIENT_ID!,
@@ -30,7 +31,8 @@ DiscordRouter.use(async (c, next) => {
     await next();
 });
 
-DiscordRouter.get("/", (c) => {
+DiscordRouter.get("/", async (c) => {
+    await beginNativeOAuth(c, "discord");
     const state = generateState();
     const codeVerifier = generateCodeVerifier();
     const linkAccount = c.req.query("link") === "1";
@@ -74,7 +76,7 @@ DiscordRouter.get("/", (c) => {
         });
     }
 
-    url.searchParams.append("prompt", "none");
+    if (!c.req.query("native")) url.searchParams.append("prompt", "none");
     return c.redirect(url);
 });
 
@@ -89,28 +91,46 @@ DiscordRouter.get("/callback", async (c) => {
         domain: cookieDomain,
     });
 
-    if (!code || !state || !storedCodeVerifier || !storedState || state !== storedState) {
+    if (!state || !storedCodeVerifier || !storedState || state !== storedState) {
         return c.json({}, 400);
     }
 
-    const tokens = await discord.validateAuthorizationCode(code, storedCodeVerifier);
+    deleteCookie(c, stateCookieName, { path: "/", domain: cookieDomain });
+    deleteCookie(c, codeVerifierCookieName, { path: "/", domain: cookieDomain });
+    const native = await readNativeOAuth(c, "discord");
+    if (!code)
+        return native
+            ? finishNativeOAuth(c, native, { error: "login_cancelled" })
+            : c.json({}, 400);
+    try {
+        const tokens = await discord.validateAuthorizationCode(code, storedCodeVerifier);
 
-    const discordUserResponse = await fetch("https://discord.com/api/users/@me", {
-        headers: {
-            Authorization: `Bearer ${tokens.accessToken()}`,
-        },
-    });
+        const discordUserResponse = await fetch("https://discord.com/api/users/@me", {
+            headers: {
+                Authorization: `Bearer ${tokens.accessToken()}`,
+            },
+        });
 
-    const resData = (await discordUserResponse.json()) as DiscordUserWithPrimaryGuild;
+        const resData = (await discordUserResponse.json()) as DiscordUserWithPrimaryGuild;
 
-    if (!resData.verified) {
-        return c.json({ error: "verified_email_required" }, 400);
+        if (!resData.verified) {
+            if (native)
+                return finishNativeOAuth(c, native, { error: "verified_email_required" });
+            return c.json({ error: "verified_email_required" }, 400);
+        }
+
+        const result = await handleAuthUser(c, "discord", resData.id, {
+            linkAccount: native ? !!native.request.linkSessionId : linkAccount,
+            nativeSession: native ? { user: native.user } : undefined,
+        });
+        if (!result.error && result.user) {
+            await syncDiscordServerTagReward(result.user, resData.id, resData);
+        }
+
+        if (native) return finishNativeOAuth(c, native, result);
+        return c.redirect(getOAuthRedirect(result.error));
+    } catch (error) {
+        if (native) return finishNativeOAuth(c, native, { error: "login_failed" });
+        throw error;
     }
-
-    const result = await handleAuthUser(c, "discord", resData.id, { linkAccount });
-    if (!result.error && result.user) {
-        await syncDiscordServerTagReward(result.user, resData.id, resData);
-    }
-
-    return c.redirect(getOAuthRedirect(result.error));
 });

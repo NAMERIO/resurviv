@@ -1,9 +1,20 @@
+import { nativeApp } from "../../shared/nativeApp";
 import type { ProxyDef } from "../../shared/types/api";
+import { isNativeAndroid, nativeClientConfig } from "./nativePlatform";
 
 declare const PROXY_DEFS: Record<string, ProxyDef>;
 
 export const proxy = {
     getProxyDef() {
+        if (isNativeAndroid())
+            return {
+                proxy: "android",
+                def: {
+                    apiUrl: nativeApp.apiOrigin,
+                    google: nativeClientConfig?.google ?? true,
+                    discord: nativeClientConfig?.discord ?? true,
+                } as ProxyDef,
+            };
         for (const proxy in PROXY_DEFS) {
             if (window.location.hostname.indexOf(proxy) !== -1) {
                 return { proxy: proxy, def: PROXY_DEFS[proxy] };

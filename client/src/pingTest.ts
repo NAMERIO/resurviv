@@ -1,3 +1,5 @@
+import { nativeClientConfig } from "./nativePlatform";
+
 declare const PING_TEST_URLS: Array<{
     region: string;
     zone: string;
@@ -7,7 +9,16 @@ declare const PING_TEST_URLS: Array<{
 
 export class PingTest {
     ptcDataBuf = new ArrayBuffer(1);
-    tests = PING_TEST_URLS.map((config) => {
+    tests = (
+        nativeClientConfig
+            ? Object.entries(nativeClientConfig.regions).map(([region, data]) => ({
+                  region,
+                  zone: region,
+                  url: data.address,
+                  https: data.https,
+              }))
+            : PING_TEST_URLS
+    ).map((config) => {
         return {
             region: config.region,
             zone: config.zone,
@@ -140,8 +151,8 @@ export class PingTest {
 
     getRegionList() {
         const regions: string[] = [];
-        for (let i = 0; i < PING_TEST_URLS.length; i++) {
-            const region = PING_TEST_URLS[i].region;
+        for (let i = 0; i < this.tests.length; i++) {
+            const region = this.tests[i].region;
             if (!regions.includes(region)) {
                 regions.push(region);
             }

@@ -9,6 +9,13 @@
     "dev:server": "cd server && pnpm dev",
     "dev:client": "cd client && pnpm dev",
     "dev:electron": "pnpm --filter resurviv-desktop dev",
+    "build:client": "pnpm --filter @survev/client build",
+    "android:add": "pnpm --filter @resurviv/mobile run add",
+    "android:sync": "pnpm --filter @resurviv/mobile run sync",
+    "android:update": "pnpm --filter @resurviv/mobile run update",
+    "android:open": "pnpm --filter @resurviv/mobile run open",
+    "android:bundle": "pnpm --filter @resurviv/mobile run bundle",
+    "android:apk": "pnpm --filter @resurviv/mobile run apk",
     "build:electron": "pnpm --filter resurviv-desktop build",
     "package:electron": "pnpm --filter resurviv-desktop package",
     "package:steam": "pnpm --filter resurviv-desktop package:steam",
@@ -37,6 +44,7 @@
   "workspaces": [
     "client",
     "electron",
+    "mobile",
     "server",
     "shared"
   ],

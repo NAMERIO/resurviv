@@ -76,6 +76,7 @@ import { api } from "./api";
 import type { ConfigManager } from "./config";
 import { errorLogManager } from "./errorLogs";
 import { helpers } from "./helpers";
+import { isNativeAndroid } from "./nativePlatform";
 import { proxy } from "./proxy";
 import type { Item } from "./ui/loadoutMenu";
 
@@ -232,7 +233,7 @@ export class Account {
             this.setSessionCookies();
         }
 
-        if (helpers.getCookie("app-data")) {
+        if (isNativeAndroid() || helpers.getCookie("app-data")) {
             this.login();
             return;
         }
@@ -257,7 +258,7 @@ export class Account {
     }
 
     login() {
-        if (helpers.getCookie("app-data")) {
+        if (isNativeAndroid() || helpers.getCookie("app-data")) {
             this.loadProfile();
             this.getPass(true);
         }

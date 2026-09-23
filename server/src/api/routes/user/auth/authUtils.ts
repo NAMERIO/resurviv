@@ -375,18 +375,24 @@ export async function handleAuthUser(
     c: Context,
     provider: AuthProvider,
     authId: string,
-    options?: { linkAccount?: boolean },
+    options?: {
+        linkAccount?: boolean;
+        nativeSession?: { user: UsersTableSelect | null };
+    },
 ) {
     const existingIdentity = await findIdentityOwner(provider, authId);
     const sessionToken = getCookie(c, "session");
-    const currentUser = sessionToken
-        ? (await validateSessionToken(sessionToken)).user
-        : null;
+    const currentUser = options?.nativeSession
+        ? options.nativeSession.user
+        : sessionToken
+          ? (await validateSessionToken(sessionToken)).user
+          : null;
 
-    setCookie(c, "app-data", "1", {
-        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
-        domain: cookieDomain,
-    });
+    if (!options?.nativeSession)
+        setCookie(c, "app-data", "1", {
+            expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+            domain: cookieDomain,
+        });
 
     if (options?.linkAccount && !currentUser) {
         return { error: "link_login_required" };
@@ -427,12 +433,13 @@ export async function handleAuthUser(
             )
             .where(eq(usersTable.id, currentUser.id));
 
-        await setSessionTokenCookie(currentUser.id, c);
+        if (!options?.nativeSession) await setSessionTokenCookie(currentUser.id, c);
         return { user: currentUser };
     }
 
     if (existingIdentity) {
-        await setSessionTokenCookie(existingIdentity.userId, c);
+        if (!options?.nativeSession)
+            await setSessionTokenCookie(existingIdentity.userId, c);
         const user = await db.query.usersTable.findFirst({
             where: eq(usersTable.id, existingIdentity.userId),
         });
@@ -473,7 +480,7 @@ export async function handleAuthUser(
         { provider, authId },
     );
 
-    await setSessionTokenCookie(userId, c);
+    if (!options?.nativeSession) await setSessionTokenCookie(userId, c);
     const user = await db.query.usersTable.findFirst({
         where: eq(usersTable.id, userId),
     });

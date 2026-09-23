@@ -5,6 +5,7 @@ import type { Account } from "../account";
 import { api } from "../api";
 import { device } from "../device";
 import { createLootPreview, helpers } from "../helpers";
+import { isNativeAndroid } from "../nativePlatform";
 import { proxy } from "../proxy";
 import { SDK } from "../sdk/sdk";
 import type { LoadoutMenu } from "./loadoutMenu";
@@ -98,6 +99,17 @@ function createLoginOptions(
         addLoginOption(
             provider,
             () => {
+                if (isNativeAndroid()) {
+                    void import("../native")
+                        .then(({ startNativeLogin }) =>
+                            startNativeLogin(provider, !!linkAccount),
+                        )
+                        .catch((error) => {
+                            account.emit("error", "server_error");
+                            console.error("Android sign-in failed", error);
+                        });
+                    return;
+                }
                 const linkQuery = linkAccount ? "?link=1" : "";
                 window.location.href = api.resolveUrl(
                     `/api/auth/${provider}${linkQuery}`,

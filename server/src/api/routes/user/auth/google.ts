@@ -8,6 +8,7 @@ import {
     getRedirectUri,
     handleAuthUser,
 } from "./authUtils";
+import { beginNativeOAuth, finishNativeOAuth, readNativeOAuth } from "./native";
 
 const google = new Google(
     Config.secrets.GOOGLE_CLIENT_ID!,
@@ -28,7 +29,8 @@ GoogleRouter.use(async (c, next) => {
     await next();
 });
 
-GoogleRouter.get("/", (c) => {
+GoogleRouter.get("/", async (c) => {
+    await beginNativeOAuth(c, "google");
     const state = generateState();
     const codeVerifier = generateCodeVerifier();
     const linkAccount = c.req.query("link") === "1";
@@ -84,27 +86,45 @@ GoogleRouter.get("/callback", async (c) => {
         domain: cookieDomain,
     });
 
-    if (!code || !state || !storedCodeVerifier || !storedState || state !== storedState) {
+    if (!state || !storedCodeVerifier || !storedState || state !== storedState) {
         return c.json({}, 400);
     }
 
-    const tokens = await google.validateAuthorizationCode(code, storedCodeVerifier);
-    const response = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
-        headers: {
-            Authorization: `Bearer ${tokens.accessToken()}`,
-        },
-    });
+    deleteCookie(c, stateCookieName, { path: "/", domain: cookieDomain });
+    deleteCookie(c, codeVerifierCookieName, { path: "/", domain: cookieDomain });
+    const native = await readNativeOAuth(c, "google");
+    if (!code)
+        return native
+            ? finishNativeOAuth(c, native, { error: "login_cancelled" })
+            : c.json({}, 400);
+    try {
+        const tokens = await google.validateAuthorizationCode(code, storedCodeVerifier);
+        const response = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
+            headers: {
+                Authorization: `Bearer ${tokens.accessToken()}`,
+            },
+        });
 
-    const resData = (await response.json()) as {
-        sub: string;
-        email_verified: boolean;
-    };
+        const resData = (await response.json()) as {
+            sub: string;
+            email_verified: boolean;
+        };
 
-    if (!resData.email_verified) {
-        return c.json({ error: "verified_email_required" }, 400);
+        if (!resData.email_verified) {
+            if (native)
+                return finishNativeOAuth(c, native, { error: "verified_email_required" });
+            return c.json({ error: "verified_email_required" }, 400);
+        }
+
+        const result = await handleAuthUser(c, "google", resData.sub, {
+            linkAccount: native ? !!native.request.linkSessionId : linkAccount,
+            nativeSession: native ? { user: native.user } : undefined,
+        });
+        if (native) return finishNativeOAuth(c, native, result);
+
+        return c.redirect(getOAuthRedirect(result.error));
+    } catch (error) {
+        if (native) return finishNativeOAuth(c, native, { error: "login_failed" });
+        throw error;
     }
-
-    const result = await handleAuthUser(c, "google", resData.sub, { linkAccount });
-
-    return c.redirect(getOAuthRedirect(result.error));
 });

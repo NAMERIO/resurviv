@@ -43,6 +43,7 @@ import { Game } from "./game";
 import { createLootPreview, helpers } from "./helpers";
 import { InputHandler } from "./input";
 import { InputBinds, InputBindUi } from "./inputBinds";
+import { isNativeAndroid, prepareNativeClient } from "./nativePlatform";
 import { appendNewsDocument, NewsManager } from "./newsManager";
 import { PingTest } from "./pingTest";
 import { proxy } from "./proxy";
@@ -4350,6 +4351,10 @@ export class Application {
     }
 
     joinGame(matchData: FindGameMatchData) {
+        if (isNativeAndroid() && !matchData.useHttps) {
+            this.onJoinGameError("join_game_failed");
+            return;
+        }
         window.scrollTo(0, 0);
         document.documentElement.scrollLeft = 0;
         document.body.scrollLeft = 0;
@@ -4552,7 +4557,22 @@ export class Application {
     }
 }
 
+await prepareNativeClient();
 const App = new Application();
+if (isNativeAndroid()) {
+    void import("./native").then(({ attachNativeApp }) =>
+        attachNativeApp(
+            () => {
+                if (App.game?.initialized) {
+                    App.game.m_uiManager.toggleEscMenu();
+                    return true;
+                }
+                return !!App.game?.connecting;
+            },
+            () => window.location.reload(),
+        ),
+    );
+}
 
 function onPageLoad() {
     App.domContentLoaded = true;
@@ -4560,6 +4580,7 @@ function onPageLoad() {
 }
 
 document.addEventListener("DOMContentLoaded", onPageLoad);
+if (document.readyState !== "loading") onPageLoad();
 window.addEventListener("load", onPageLoad);
 window.addEventListener("unload", (_e) => {
     App.onUnload();

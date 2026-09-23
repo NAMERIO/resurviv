@@ -11,6 +11,22 @@ survev-config.hjson
 
 # env file
 .env
+.env.*.local
+
+# Android build products, local SDK paths and signing material
+*.apk
+*.aab
+*.ap_
+mobile/android/.gradle/
+mobile/android/.kotlin/
+mobile/android/**/build/
+mobile/android/local.properties
+mobile/android/capacitor-cordova-android-plugins/
+mobile/android/app/src/main/assets/
+mobile/android/app/src/main/res/xml/config.xml
+*.keystore
+*.jks
+mobile/keystore.properties
 
 # Local Steam build output and SteamPipe config/cache
 steam/app_build.vdf

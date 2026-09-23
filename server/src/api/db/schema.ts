@@ -41,6 +41,25 @@ export const sessionTable = pgTable("session", {
 
 export type SessionTableSelect = typeof sessionTable.$inferSelect;
 
+export const nativeAuthRequestsTable = pgTable(
+    "native_auth_requests",
+    {
+        id: text("id").primaryKey(),
+        provider: text("provider").notNull().$type<"google" | "discord">(),
+        challenge: text("challenge").notNull(),
+        codeHash: text("code_hash"),
+        linkSessionId: text("link_session_id").references(() => sessionTable.id, {
+            onDelete: "cascade",
+        }),
+        userId: text("user_id").references(() => usersTable.id, { onDelete: "cascade" }),
+        started: boolean("started").notNull().default(false),
+        completed: boolean("completed").notNull().default(false),
+        error: text("error"),
+        expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    },
+    (table) => [index("native_auth_requests_expiry_idx").on(table.expiresAt)],
+);
+
 export const competitiveSeasonsTable = pgTable("competitive_seasons", {
     id: serial("id").primaryKey(),
     name: text("name").notNull(),
