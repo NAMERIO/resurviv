@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/resurviv_launcher_background" />
+    <foreground>
+        <!-- Fit the existing square artwork into the 72dp viewport of the 108dp layer.
+             Android applies its own circle/squircle mask, without a legacy white plate. -->
+        <inset
+            android:drawable="@drawable/resurviv_icon"
+            android:inset="16.666667%" />
+    </foreground>
+</adaptive-icon>
