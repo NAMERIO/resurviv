@@ -3,6 +3,10 @@ import { type AbstractMsg, type BitStream, Constants } from "./net";
 export class LeaderboardMsg implements AbstractMsg {
     players: { name: string; kills: number }[] = [];
 
+    get byteLength() {
+        return 1 + 2 + this.players.length * (Constants.PlayerNameMaxLen + 1);
+    }
+
     serialize(s: BitStream) {
         s.writeArray(this.players, 16, (p) => {
             s.writeString(p.name, Constants.PlayerNameMaxLen);

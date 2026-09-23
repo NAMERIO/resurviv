@@ -4824,7 +4824,11 @@ export class Player extends BaseGameObject {
 
             if (!isBattleRoyaleMapName(this.game.mapName)) {
                 const leaderboardMsg = this.getKillsLeaderboardMsg();
-                this.sendMsg(net.MsgType.Leaderboard, leaderboardMsg);
+                this.sendMsg(
+                    net.MsgType.Leaderboard,
+                    leaderboardMsg,
+                    leaderboardMsg.byteLength,
+                );
             }
 
             const mapStream = game.map.mapStream.stream;
