@@ -4,7 +4,7 @@ import { type Context, Hono } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
-import { nativeApp } from "../../../../../../shared/nativeApp";
+import { isNativeAppOrigin, nativeApp } from "../../../../../../shared/nativeApp";
 import { validateSessionToken } from "../../../auth";
 import { db } from "../../../db";
 import {
@@ -29,7 +29,7 @@ export const NativeAuthRouter = new Hono();
 NativeAuthRouter.use(async (c, next) => {
     c.header("Cache-Control", "no-store");
     if (
-        c.req.header("Origin") !== nativeApp.origin ||
+        !isNativeAppOrigin(c.req.header("Origin")) ||
         c.req.header("X-Requested-With") !== "XMLHttpRequest"
     ) {
         return c.json({ error: "invalid_origin" }, 403);

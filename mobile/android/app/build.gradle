@@ -9,7 +9,7 @@ android {
         applicationId "biz.resurviv.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode providers.gradleProperty('resurvivVersionCode').getOrElse('1').toInteger()
+        versionCode providers.gradleProperty('resurvivVersionCode').getOrElse('2').toInteger()
         versionName webPackage.version
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {

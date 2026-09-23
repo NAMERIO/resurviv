@@ -8,7 +8,7 @@ import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { z } from "zod";
 import { version } from "../../../package.json";
-import { nativeApp } from "../../../shared/nativeApp";
+import { isNativeAppOrigin } from "../../../shared/nativeApp";
 import {
     type FindGameResponse,
     type SiteInfoRes,
@@ -68,7 +68,7 @@ app.onError((err: unknown, c) => {
 app.use(
     "/api/*",
     cors({
-        origin: (origin) => (origin === nativeApp.origin ? nativeApp.origin : "*"),
+        origin: (origin) => (isNativeAppOrigin(origin) ? origin : "*"),
         credentials: true,
         allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allowHeaders: ["Origin", "Content-Type", "Accept", "X-Requested-With"],

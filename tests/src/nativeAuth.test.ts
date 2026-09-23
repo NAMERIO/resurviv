@@ -132,11 +132,36 @@ describe("Android OAuth handoff", () => {
         expect(mocks.setSession).not.toHaveBeenCalled();
     });
 
-    test("rejects a request from another web origin", async () => {
+    test("the hosted client can start and exchange a login", async () => {
+        const hostedHeaders = { ...headers, Origin: nativeApp.apiOrigin };
+        const response = await post(
+            "/request",
+            { provider: "google", challenge, link: false },
+            hostedHeaders,
+        );
+        expect(response.status).toBe(200);
+        mocks.consume.mockResolvedValue([{ userId: "owner", error: null }]);
+        const exchange = await post(
+            "/exchange",
+            { request: requestId, code, verifier },
+            hostedHeaders,
+        );
+        expect(exchange.status).toBe(200);
+        expect(mocks.setSession).toHaveBeenCalledWith("owner", expect.anything());
+    });
+
+    test.each([
+        "https://evil.example",
+        "https://resurviv.biz.evil.example",
+        "http://resurviv.biz",
+        "https://resurviv.biz:8443",
+        "null",
+        "",
+    ])("rejects untrusted origin %s", async (origin) => {
         const result = await post(
             "/request",
             { provider: "google", challenge, link: false },
-            { ...headers, Origin: "https://evil.example" },
+            { ...headers, Origin: origin },
         );
         expect(result.status).toBe(403);
         expect(mocks.insert).not.toHaveBeenCalled();

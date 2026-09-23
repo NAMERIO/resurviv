@@ -2,9 +2,32 @@
 
 This is a Capacitor container for the existing Vite client, not a separate frontend.
 Application ID: `biz.resurviv.app`. App name: **Resurviv**.
-`capacitor.config.ts` copies `../client/dist`, the output of the existing client production
-build. Native Android sources live in `mobile/android`; web assets and generated build
-products are ignored by Git. Normal web/server development and deployment stay unchanged.
+The Android WebView loads **https://resurviv.biz**, like the Electron client. Deploying
+the website updates the Android game's HTML, JavaScript, CSS and assets on its next page
+load; returning to an already-running match does not interrupt it with a reload.
+Native Android sources live in `mobile/android`. Normal web/server development and deployment
+stay unchanged. `webDir` remains `../client/dist`; Capacitor copies that build to provide
+the local `android-offline.html` retry page when the website cannot load. It does not
+silently fall back to an old bundled game.
+
+## Which updates need Google Play?
+
+- Game client and server changes: deploy the website/API normally. No Android build needed.
+- Java, manifest, Capacitor/native plugin, icon, signing or SDK changes: build and upload a
+  new signed AAB with a higher version code. The hosted client must remain compatible with
+  the plugins installed in older Android releases until those releases are retired.
+
+Serve HTML with revalidation (`Cache-Control: no-cache`), and keep Vite's hashed assets
+available for existing sessions. Do not cache the root HTML indefinitely at the CDN.
+Only the exact HTTPS production site is configured; there is no broad `allowNavigation`.
+External links and OAuth open in the system browser. Site scripts run with the app's
+native bridge privileges, so only trusted content should be deployed to this origin.
+
+Capacitor documents `server.url` as a live-reload option, not its recommended production
+configuration: https://capacitorjs.com/docs/config. Hosted loading is an intentional
+project choice to match Electron's update workflow. Startup requires the production site
+to be reachable. Remote web content must continue to comply with Google Play policies;
+this configuration does not guarantee store approval.
 
 ## Build and open
 
@@ -51,19 +74,22 @@ Deploy the matching server changes **before testing the app against production**
 3. Configure production regions with publicly reachable TLS addresses and `https: true`.
    Ping tests use WSS, matchmaking must return `useHttps: true`, and lobby connections
    use `wss://resurviv.biz/team_v2`. No cleartext fallback is enabled.
-4. Preserve credentialed CORS for the exact origin `https://app.resurviv.biz`, including
+4. Deploy the native-auth origin change accepting `https://resurviv.biz` before releasing
+   the hosted app. Keep `https://app.resurviv.biz` accepted for the first bundled release.
+   Preserve credentialed CORS for these exact origins, including
    OPTIONS, `Content-Type`, and `X-Requested-With`. The API now handles that origin;
    reverse proxies/CDNs must not replace its response with `Access-Control-Allow-Origin: *`
    when credentials are used. Return `Vary: Origin` normally (Hono's CORS middleware does this).
 5. Keep `oauthRedirectURI` set to the production HTTPS origin and the normal production
    `oauthBasePath`/cookie-domain configuration. Preserve secure HttpOnly session cookies.
-   If Turnstile is enabled, permit `app.resurviv.biz` in its public site-key domain settings
-   and build with the same public Turnstile configuration used by the production web client.
+   If Turnstile is enabled, permit `resurviv.biz` and retain `app.resurviv.biz` for the
+   older bundled app in its public site-key domain settings.
 
-`https://app.resurviv.biz` is Capacitor's **virtual origin for locally bundled files**, not
-a remote `server.url` and not a website to deploy. Reserve that subdomain; do not host
-untrusted content there. It shares a site with the API, so the existing SameSite=Lax
-session cookies work without weakening them or enabling a broad native HTTP bypass.
+`https://app.resurviv.biz` remains the **virtual origin for locally bundled files**, including
+the retry page and the old bundled release. Reserve that subdomain; do not host untrusted
+content there. The hosted game's requests are same-origin with the API, preserving Secure
+HttpOnly SameSite=Lax cookies. Existing bundled installations may need to sign in again
+when updating because local storage moves to the production origin.
 The production API origin and callback are public constants in `shared/nativeApp.ts`.
 
 ## Google and Discord sign-in
@@ -126,7 +152,7 @@ version code for each Play upload. For example, after `pnpm android:sync`:
 
 ```sh
 cd mobile/android
-./gradlew bundleRelease -PresurvivVersionCode=2
+./gradlew bundleRelease -PresurvivVersionCode=3
 ```
 
 On Windows use `gradlew.bat`. The release bundle is intentionally unsigned. Use Android
