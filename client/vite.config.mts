@@ -26,7 +26,8 @@ function mpaRouteRedirectPlugin(): Plugin {
             pathname === "/building-maker" ||
             pathname === "/loot-table-maker" ||
             pathname === "/tournament" ||
-            pathname === "/competitive"
+            pathname === "/competitive" ||
+            pathname === "/account-deletion"
         ) {
             res.statusCode = 302;
             res.setHeader("Location", `${pathname}/${query ? `?${query}` : ""}`);
@@ -136,6 +137,10 @@ export default defineConfig(({ mode }) => {
                     ),
                     tournament: resolve(import.meta.dirname, "tournament/index.html"),
                     competitive: resolve(import.meta.dirname, "competitive/index.html"),
+                    "account-deletion": resolve(
+                        import.meta.dirname,
+                        "account-deletion/index.html",
+                    ),
                 },
                 output: {
                     assetFileNames(assetInfo) {

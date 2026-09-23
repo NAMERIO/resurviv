@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Privacy Policy - Survev.io</title>
+  <title>Privacy Policy - Resurviv</title>
+  <meta name="description" content="Resurviv privacy information, account deletion, and data retention.">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -17,6 +18,7 @@
 
     .container {
       width: 80%;
+      max-width: 960px;
       margin: 20px auto;
       padding: 20px;
       background: #fff;
@@ -41,27 +43,36 @@
     a:hover {
       text-decoration: underline;
     }
+    @media (max-width: 600px) {
+      .container { box-sizing: border-box; width: calc(100% - 24px); margin: 12px; }
+    }
   </style>
 
   <script async src="https://cdn.fuseplatform.net/publift/tags/2/4018/fuse.js"></script>
 </head>
 
 <body>
-  <div class="container">
+  <main class="container">
+    <h1>Resurviv Privacy Policy</h1>
+    <p>This policy describes account and gameplay data handled by Resurviv at resurviv.biz.</p>
+    <p><strong>Want to delete your account?</strong> Visit our
+      <a href="https://resurviv.biz/account-deletion">Resurviv Account Deletion page</a> for instructions, details of what is
+      deleted and retained, and Discord support. You can delete your account from the browser game without
+      installing the app.</p>
     <h2>Personal Identification Information</h2>
     <p>We may collect personal identification information from Users in various ways, including when they
       voluntarily provide it or through our authentication systems. We collect the following types of information:
     </p>
     <ul>
       <li>Username chosen by players when they interact with our game</li>
-      <li>OAuth2 Account IDs when using Discord or Google login (we do not collect or store email addresses)</li>
-      <li>IP addresses (temporarily stored in unencrypted format for logging purposes, and encrypted for IP ban
-        enforcement)</li>
+      <li>Account identifiers, profile names, linked Google or Discord sign-in identifiers and sessions</li>
+      <li>IP addresses and connection details in security logs, and hashed IP addresses for ban enforcement
+        and certain reward checks</li>
     </ul>
-    <p>The information collected is used solely for gameplay purposes, account management, security enforcement, and
-      is not shared with third parties except as described in this policy.</p>
-    <p>Users can request the deletion of their account data by contacting us at <strong>[email protected]</strong>.
-      Upon receiving such a request, we will take appropriate action to remove their data promptly.</p>
+    <p>We use this information for gameplay, account management, rewards and security enforcement. Sign-in
+      providers may return an email address and other profile information during authentication. Resurviv checks
+      whether the provider reports a verified email, but does not store email addresses in its account records.
+      If you contact the support team, the information you provide is also available to that team.</p>
 
     <h2>Game-Related Data Collection</h2>
     <p>In addition to personal identification information, we collect and store the following game-related data
@@ -69,6 +80,10 @@
     <ul>
       <li>Virtual items owned by the user (including skins, emotes, and other customization options)</li>
       <li>Complete match history (records of all games played with the account)</li>
+      <li>Friends, clan memberships and messages, GP balances, gifts, market transactions, auctions, rewards,
+        and pass and quest progress</li>
+      <li>Competitive results, ratings, tournament predictions and bets, and stored arena recordings when
+        replay storage is enabled</li>
     </ul>
     <p>This data is stored securely and is used to enhance the gaming experience, track player progression, and
       enable account-specific features.</p>
@@ -79,16 +94,16 @@
       technical data related to how Users interact with our Site.</p>
 
     <h2>Web Browser Cookies</h2>
-    <p>Our Site may use "cookies" to improve the User experience. Cookies are stored on Users' devices for
-      record-keeping and tracking purposes. Users can adjust their web browser settings to refuse cookies or alert
-      them when cookies are sent. However, disabling cookies may impact the functionality of some parts of the
-      Site.</p>
+    <p>Resurviv uses cookies and browser storage for sign-in, account state and game preferences. Advertising
+      services may also use cookies as described below. You can manage cookies and site data through your browser;
+      blocking them can affect sign-in and other features. Deleting your Resurviv account does not itself clear
+      every preference or third-party cookie stored on your device.</p>
 
     <h2>How We Use Collected Information</h2>
-    <p><strong>Survev.io</strong> may collect and use Users' information for the following purposes:</p>
+    <p><strong>Resurviv</strong> uses information for the following purposes:</p>
     <ul>
       <li>To improve the functionality and user experience of our Site</li>
-      <li>To respond to user inquiries sent via email</li>
+      <li>To respond to requests made through the Discord support server</li>
       <li>To support gameplay features such as usernames and account management</li>
       <li>To authenticate users through Discord and Google login systems</li>
       <li>To manage user accounts and maintain game progression data</li>
@@ -101,47 +116,60 @@
       safeguard your information from unauthorized access, alteration, disclosure, or destruction. Specifically:
     </p>
     <ul>
-      <li>IP addresses used for security enforcement are stored in encrypted format</li>
-      <li>Temporary logs containing IP addresses are automatically purged after a reasonable period</li>
-      <li>OAuth2 Account IDs are securely stored and used only for authentication purposes</li>
+      <li>IP ban records use hashed IP addresses; security logs also contain raw IP addresses</li>
+      <li>Daily cleanup is scheduled to remove security logs older than 30 days</li>
+      <li>Linked sign-in identities support authentication and account linking; Discord information can also
+        be used to check eligibility for Discord-related rewards</li>
     </ul>
 
-    <h2>Data Retention</h2>
-    <p>We retain user account data and associated game information for as long as the account remains active.
-      Temporary logs containing IP addresses are retained for a limited period necessary for security monitoring
-      and system troubleshooting. Users may request deletion of their account data at any time.</p>
+    <h2 id="account-deletion">Account Deletion and Data Retention</h2>
+    <p>To delete your Resurviv account, sign in, open Account Settings, select <strong>Delete Account</strong>,
+      enter <strong>DELETE</strong>, and select <strong>Confirm</strong>. This concerns your Resurviv account,
+      not your Google or Discord account. For assistance, contact the team through the
+      <a href="https://discord.gg/Tm2Rmp9aFR">Resurviv Discord support server</a>.</p>
+    <p>Successful deletion removes your account and its linked sign-in, session, friend, inventory, progress,
+      reward and other account-linked records. A clan you own is also deleted. Match history is disconnected
+      from your account but retains player names and gameplay results; it is not fully anonymized. Separately
+      stored competitive and tournament history, published records and some administrative or transaction
+      records can also retain names or identifiers without an automatic expiry.</p>
+    <p>Security logs remain until the daily cleanup removes entries older than 30 days. Temporary IP bans stop
+      applying at their expiry and are deleted when checked after expiry; permanent IP bans have no automatic
+      expiry. Shared arena replay files, when enabled, remain until their scheduled expiry and subsequent
+      daily cleanup (30 days from upload by default, subject to the server's replay retention setting).
+      Account deletion does not erase recordings or transaction logs already sent to Discord.</p>
+    <p>The <a href="https://resurviv.biz/account-deletion">Account Deletion page</a> provides the detailed breakdown of removed
+      and retained records. Contact the support team to request help with retained information.</p>
+    <p><strong>Reset Stats</strong> keeps your account and pass progress while removing the link to your match
+      history. It does not delete the underlying match records or stored player names and is not a complete
+      erasure of gameplay data.</p>
 
     <h2>Sharing Your Personal Information</h2>
-    <p>We do not sell, trade, or rent Users' personal identification information. We may share non-personally
-      identifiable aggregated demographic information with our partners, affiliates, and advertisers for purposes
-      such as improving our Site and user experience.</p>
-
-    <h2>Social Media Integration</h2>
-    <p>Our Site may include social media integrations, such as a Facebook share button, to enhance the User's social
-      experience. We do not collect personal information related to social media interactions. Any issues or
-      liabilities related to social media buttons are subject to the respective platform's policies.</p>
+    <p>Profiles, leaderboards, match results and other public game features display player names and gameplay
+      information to other users. Friends and clan features share information with the relevant players.
+      Service providers handle data needed for hosting, authentication, advertising and support.</p>
+    <p>When Discord transaction logging is enabled, market purchases and gifts send player profile identifiers,
+      item or GP details and transaction times to configured Discord channels. These messages are not removed
+      by account deletion and have no automatic expiry in Resurviv. Information you submit to Discord support
+      is also subject to Discord's privacy practices.</p>
 
     <h2>Third-Party Authentication</h2>
-    <p>We use Discord and Google OAuth2 for user authentication. When you choose to log in using these services, we
-      only receive and store the OAuth2 Account ID provided by these platforms. We do not receive access to your
-      email address, password, or other personal details stored with these services. The use of these third-party
-      authentication services is subject to their respective privacy policies.</p>
+    <p>We use Discord and Google OAuth2 for sign-in. These services provide a user identifier and authentication
+      information, including verified-email status. Discord may also supply profile and server-tag information
+      for reward checks. We store linked provider identifiers, not your Google or Discord password, and do not
+      store provider email addresses in account records. These services have their own privacy policies.</p>
 
     <h2>Advertising</h2>
     <p>Ads served on our Site may be delivered by third-party advertising partners who may use cookies to track
-      non-personal information. These cookies help deliver targeted advertisements believed to be relevant to
+      information about browsers and visits. These cookies help deliver advertisements believed to be relevant to
       Users.</p>
-    <p>We use third-party advertising companies to serve ads. These companies may use aggregated, non-personal
+    <p>We use third-party advertising companies to serve ads. These companies may use
       information about your visits to this and other websites to provide advertisements about goods and services
       of interest to you. For more information, visit the <a
         href="http://www.networkadvertising.org/managing/opt_out.asp" target="_blank">Network Advertising
         Initiative</a>.</p>
 
-    <h3>Google Adsense</h3>
-    <p>Google may serve ads on our Site. The DART cookie allows Google to deliver ads based on Users' visits to our
-      Site and other websites. DART cookies use only non-personally identifiable information. Users can opt out of
-      DART cookies by visiting the <a href="https://www.google.com/privacy_ads.html" target="_blank">Google Ads
-        Privacy Policy</a>.</p>
+    <p>For Google's advertising data practices and controls, see
+      <a href="https://policies.google.com/technologies/ads">Google's advertising information</a>.</p>
 
     <h2>Children's Privacy</h2>
     <p>Our Site and services are not directed to children under the age of 13. We do not knowingly collect personal
@@ -149,19 +177,18 @@
       information, we will promptly delete such information from our servers.</p>
 
     <h2>Changes to This Privacy Policy</h2>
-    <p><strong>Survev.io</strong> reserves the right to update this Privacy Policy at any time. When updated, the
+    <p><strong>Resurviv</strong> reserves the right to update this Privacy Policy at any time. When updated, the
       revised date will be displayed at the bottom of this page. Users are encouraged to check this page
       frequently to stay informed about any changes. Your continued use of the Site following updates to this
       policy constitutes your acknowledgment and acceptance of those changes.</p>
 
     <h2>Contacting Us</h2>
-    <p>If you have any questions about this Privacy Policy or your interactions with our Site, please contact us at:
-    </p>
-    <p><strong>[email protected]</strong></p>
+    <p>For privacy questions, account deletion or requests concerning retained data, contact the team through
+      the <a href="https://discord.gg/Tm2Rmp9aFR">Resurviv Discord support server</a>.
+      Do not post passwords, sign-in codes or sensitive account information in public channels.</p>
 
-    <p><em>This document was last updated: May 19, 2025.</em></p>
-  </div>
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+    <p><em>This document was last updated: September 23, 2026.</em></p>
+  </main>
 
   <div id="fuse-privacy-container">
       <style>
