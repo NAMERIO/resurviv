@@ -5,7 +5,7 @@ import type { Account } from "../account";
 import { api } from "../api";
 import { device } from "../device";
 import { createLootPreview, helpers } from "../helpers";
-import { isNativeAndroid } from "../nativePlatform";
+import { isNativeMobile } from "../nativePlatform";
 import { proxy } from "../proxy";
 import { SDK } from "../sdk/sdk";
 import type { LoadoutMenu } from "./loadoutMenu";
@@ -99,7 +99,7 @@ function createLoginOptions(
         addLoginOption(
             provider,
             () => {
-                if (isNativeAndroid()) {
+                if (isNativeMobile()) {
                     void import("../native")
                         .then(({ startNativeLogin }) =>
                             startNativeLogin(provider, !!linkAccount),

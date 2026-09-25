@@ -1,0 +1,167 @@
+name: iOS Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Build only, export a signed IPA, or also upload to App Store Connect
+        type: choice
+        default: unsigned
+        options:
+          - unsigned
+          - export
+          - upload
+      build_number:
+        description: Optional CFBundleVersion override; default is run_number.run_attempt
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 60
+    # Store signing secrets here; restrict allowed branches in GitHub environment settings.
+    environment: ios-release
+    defaults:
+      run:
+        shell: bash
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - name: Verify Xcode and SDK
+        run: |
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+          test "$(xcrun --sdk iphoneos --show-sdk-version | cut -d. -f1)" -ge 26
+
+      - name: Set version and build number
+        id: metadata
+        env:
+          IOS_BUILD_NUMBER: ${{ inputs.build_number }}
+        run: python3 mobile/scripts/ios-release.py metadata
+
+      - name: Test signing input validation
+        run: python3 -B -m unittest discover -s mobile/scripts -p test_ios_release.py
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test native login behavior
+        run: pnpm --filter @survev/tests exec vitest run src/nativeClient.test.ts src/nativePlatform.test.ts
+
+      - name: Build web assets and sync iOS only
+        run: pnpm ios:sync
+
+      - name: Validate native metadata and resolve Swift packages
+        run: |
+          plutil -lint mobile/ios/App/App/Info.plist mobile/ios/App/App/PrivacyInfo.xcprivacy
+          xcodebuild -resolvePackageDependencies \
+            -project mobile/ios/App/App.xcodeproj -scheme App \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/ios-packages"
+
+      - name: Install distribution certificate and provisioning profile
+        if: inputs.mode != 'unsigned'
+        env:
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          IOS_CERTIFICATE_P12_BASE64: ${{ secrets.IOS_CERTIFICATE_P12_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+        run: python3 mobile/scripts/ios-release.py signing
+
+      - name: Archive for iOS devices
+        env:
+          RELEASE_MODE: ${{ inputs.mode }}
+          APP_VERSION: ${{ steps.metadata.outputs.version }}
+          BUILD_NUMBER: ${{ steps.metadata.outputs.build }}
+        run: |
+          mkdir -p mobile/ios/build
+          signing=(CODE_SIGNING_ALLOWED=NO)
+          if [[ "$RELEASE_MODE" != unsigned ]]; then
+            signing=(
+              "RESURVIV_TEAM_ID=$RESURVIV_TEAM_ID"
+              "RESURVIV_PROFILE_UUID=$RESURVIV_PROFILE_UUID"
+              "RESURVIV_SIGNING_IDENTITY=$RESURVIV_SIGNING_IDENTITY"
+            )
+          fi
+          set -o pipefail
+          xcodebuild archive \
+            -project mobile/ios/App/App.xcodeproj -scheme App \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath "$PWD/mobile/ios/build/Resurviv.xcarchive" \
+            -derivedDataPath "$RUNNER_TEMP/ios-derived-data" \
+            -clonedSourcePackagesDirPath "$RUNNER_TEMP/ios-packages" \
+            "MARKETING_VERSION=$APP_VERSION" "CURRENT_PROJECT_VERSION=$BUILD_NUMBER" \
+            "${signing[@]}" | tee mobile/ios/build/archive.log
+
+      - name: Export App Store IPA
+        if: inputs.mode != 'unsigned'
+        run: |
+          set -o pipefail
+          xcodebuild -exportArchive \
+            -archivePath "$PWD/mobile/ios/build/Resurviv.xcarchive" \
+            -exportPath "$PWD/mobile/ios/build/export" \
+            -exportOptionsPlist "$RUNNER_TEMP/resurviv-ios-signing/ExportOptions.plist" \
+            | tee mobile/ios/build/export.log
+
+      - name: Package archive and dSYMs
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent \
+            mobile/ios/build/Resurviv.xcarchive mobile/ios/build/Resurviv.xcarchive.zip
+
+      - name: Save distribution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Resurviv-iOS-${{ steps.metadata.outputs.version }}-${{ steps.metadata.outputs.build }}-${{ inputs.mode }}
+          path: |
+            mobile/ios/build/Resurviv.xcarchive.zip
+            mobile/ios/build/export/*.ipa
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload build to App Store Connect
+        if: inputs.mode == 'upload'
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY_BASE64: ${{ secrets.ASC_PRIVATE_KEY_BASE64 }}
+        run: |
+          python3 mobile/scripts/ios-release.py upload-key
+          set -o pipefail
+          xcodebuild -exportArchive \
+            -archivePath "$PWD/mobile/ios/build/Resurviv.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/resurviv-ios-signing/UploadOptions.plist" \
+            -authenticationKeyPath "$RUNNER_TEMP/resurviv-ios-signing/AuthKey_${ASC_KEY_ID}.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            -allowProvisioningUpdates | tee mobile/ios/build/upload.log
+
+      - name: Save build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: iOS-logs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: mobile/ios/build/*.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Remove signing material
+        if: always()
+        run: python3 mobile/scripts/ios-release.py cleanup

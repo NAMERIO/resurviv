@@ -43,7 +43,7 @@ import { Game } from "./game";
 import { createLootPreview, helpers } from "./helpers";
 import { InputHandler } from "./input";
 import { InputBinds, InputBindUi } from "./inputBinds";
-import { isNativeAndroid, prepareNativeClient } from "./nativePlatform";
+import { isNativeMobile, prepareNativeClient } from "./nativePlatform";
 import { appendNewsDocument, NewsManager } from "./newsManager";
 import { PingTest } from "./pingTest";
 import { proxy } from "./proxy";
@@ -4351,7 +4351,7 @@ export class Application {
     }
 
     joinGame(matchData: FindGameMatchData) {
-        if (isNativeAndroid() && !matchData.useHttps) {
+        if (isNativeMobile() && !matchData.useHttps) {
             this.onJoinGameError("join_game_failed");
             return;
         }
@@ -4559,7 +4559,7 @@ export class Application {
 
 await prepareNativeClient();
 const App = new Application();
-if (isNativeAndroid()) {
+if (isNativeMobile()) {
     void import("./native").then(({ attachNativeApp }) =>
         attachNativeApp(
             () => {

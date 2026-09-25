@@ -11,7 +11,7 @@ function isIpad() {
 }
 
 function detectiOS() {
-    return isMobile.apple.phone || isMobile.apple.ipod;
+    return isMobile.apple.phone || isMobile.apple.ipod || isIpad();
 }
 
 function detectAndroid() {

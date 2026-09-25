@@ -4,9 +4,11 @@ import { nativeApp } from "../../shared/nativeApp";
 const mocks = vi.hoisted(() => ({
     listeners: {} as Record<string, (...args: any[]) => any>,
     open: vi.fn(),
+    close: vi.fn(),
     exit: vi.fn(),
     launch: vi.fn(),
     native: vi.fn(),
+    ios: vi.fn(),
 }));
 vi.mock("../../client/node_modules/@capacitor/app", () => ({
     App: {
@@ -19,9 +21,13 @@ vi.mock("../../client/node_modules/@capacitor/app", () => ({
     },
 }));
 vi.mock("../../client/node_modules/@capacitor/browser", () => ({
-    Browser: { open: mocks.open },
+    Browser: { open: mocks.open, close: mocks.close },
 }));
-vi.mock("../../client/src/nativePlatform", () => ({ isNativeAndroid: mocks.native }));
+vi.mock("../../client/src/nativePlatform", () => ({
+    isNativeMobile: mocks.native,
+    isNativeAndroid: () => mocks.native() && !mocks.ios(),
+    isNativeIOS: mocks.ios,
+}));
 
 import { attachNativeApp, startNativeLogin } from "../../client/src/native";
 
@@ -35,6 +41,8 @@ beforeEach(() => {
     storage.clear();
     mocks.listeners = {};
     mocks.native.mockReturnValue(true);
+    mocks.ios.mockReturnValue(false);
+    mocks.close.mockResolvedValue(undefined);
     mocks.launch.mockResolvedValue(undefined);
     mocks.open.mockResolvedValue(undefined);
     fetchMock.mockResolvedValue({ ok: true, json: async () => ({ request }) });
@@ -87,6 +95,7 @@ test("a cold-start return exchanges only the saved matching request and refreshe
         }),
     );
     expect(loggedIn).toHaveBeenCalledOnce();
+    expect(mocks.close).not.toHaveBeenCalled();
     expect(storage.size).toBe(0);
 });
 
@@ -143,6 +152,29 @@ test("ordinary web startup does not install native handlers", async () => {
     expect(mocks.listeners).toEqual({});
     expect(window.open).toBe(originalOpen);
     expect(document.addEventListener).not.toHaveBeenCalled();
+});
+
+test.each([
+    "cold",
+    "warm",
+])("iOS %s return closes the browser and never installs Android Back", async (start) => {
+    mocks.ios.mockReturnValue(true);
+    await startNativeLogin("google", false);
+    const result = { url: `${nativeApp.callback}?request=${request}&code=${code}` };
+    if (start === "cold") {
+        mocks.launch.mockResolvedValue(result);
+        mocks.close.mockRejectedValue(new Error("No active window to close!"));
+    }
+    const loggedIn = vi.fn();
+    await attachNativeApp(() => false, loggedIn);
+    if (start === "warm") {
+        mocks.listeners.appUrlOpen(result);
+        await vi.waitFor(() => expect(loggedIn).toHaveBeenCalledOnce());
+    }
+    expect(loggedIn).toHaveBeenCalledOnce();
+    expect(mocks.close).toHaveBeenCalledOnce();
+    expect(mocks.listeners.backButton).toBeUndefined();
+    expect(mocks.exit).not.toHaveBeenCalled();
 });
 
 test("relative links and scripted external links use the production system browser", async () => {

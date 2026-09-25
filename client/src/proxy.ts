@@ -1,14 +1,14 @@
 import { nativeApp } from "../../shared/nativeApp";
 import type { ProxyDef } from "../../shared/types/api";
-import { isNativeAndroid, nativeClientConfig } from "./nativePlatform";
+import { isNativeAndroid, isNativeMobile, nativeClientConfig } from "./nativePlatform";
 
 declare const PROXY_DEFS: Record<string, ProxyDef>;
 
 export const proxy = {
     getProxyDef() {
-        if (isNativeAndroid())
+        if (isNativeMobile())
             return {
-                proxy: "android",
+                proxy: isNativeAndroid() ? "android" : "ios",
                 def: {
                     apiUrl: nativeApp.apiOrigin,
                     google: nativeClientConfig?.google ?? true,

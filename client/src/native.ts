@@ -1,7 +1,7 @@
 import { App } from "@capacitor/app";
 import { Browser } from "@capacitor/browser";
 import { nativeApp } from "../../shared/nativeApp";
-import { isNativeAndroid } from "./nativePlatform";
+import { isNativeAndroid, isNativeIOS, isNativeMobile } from "./nativePlatform";
 
 const pendingKey = "resurviv-native-oauth";
 const ttl = 10 * 60 * 1000;
@@ -91,6 +91,11 @@ async function handleNativeReturn(raw: string, onLogin: () => void) {
                 "Sign-in was cancelled or expired. Please try signing in again.",
             );
         localStorage.removeItem(pendingKey);
+        // SFSafariViewController stays presented after a custom-scheme return on iOS.
+        if (isNativeIOS()) {
+            // On a cold start there is no browser view left to dismiss.
+            await Browser.close().catch(() => {});
+        }
         onLogin();
     } catch (error) {
         alert(
@@ -102,11 +107,13 @@ async function handleNativeReturn(raw: string, onLogin: () => void) {
 }
 
 export async function attachNativeApp(onBackInGame: () => boolean, onLogin: () => void) {
-    if (!isNativeAndroid()) return;
-    await App.addListener("backButton", () => {
-        if (onBackInGame()) return;
-        if (confirm("Exit Resurviv?")) void App.exitApp();
-    });
+    if (!isNativeMobile()) return;
+    if (isNativeAndroid()) {
+        await App.addListener("backButton", () => {
+            if (onBackInGame()) return;
+            if (confirm("Exit Resurviv?")) void App.exitApp();
+        });
+    }
     await App.addListener("appUrlOpen", ({ url }) => {
         void handleNativeReturn(url, onLogin);
     });

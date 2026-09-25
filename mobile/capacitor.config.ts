@@ -13,5 +13,14 @@ const config: CapacitorConfig = {
         errorPath: "android-offline.html",
     },
     android: { allowMixedContent: false, webContentsDebuggingEnabled: false },
+    ios: {
+        scheme: "App",
+        preferredContentMode: "mobile",
+        contentInset: "automatic",
+        backgroundColor: "#162019",
+        allowsLinkPreview: false,
+        webContentsDebuggingEnabled: false,
+        loggingBehavior: "debug",
+    },
 };
 export default config;

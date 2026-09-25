@@ -28,6 +28,15 @@ mobile/android/app/src/main/res/xml/config.xml
 *.jks
 mobile/keystore.properties
 
+# Apple signing material and distribution outputs
+*.p12
+*.p8
+*.mobileprovision
+*.certSigningRequest
+*.ipa
+*.xcarchive/
+mobile/ios/build/
+
 # Local Steam build output and SteamPipe config/cache
 steam/app_build.vdf
 steam/content/

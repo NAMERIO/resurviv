@@ -4,18 +4,31 @@ import { type NativeClientConfig, nativeApp } from "../../shared/nativeApp";
 export const isNativeAndroid = () =>
     Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android";
 
+export const isNativeIOS = () =>
+    Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios";
+
+export const isNativeMobile = () => isNativeAndroid() || isNativeIOS();
+
 export let nativeClientConfig: NativeClientConfig | undefined;
 
 export async function prepareNativeClient() {
-    if (!isNativeAndroid()) return;
+    if (!isNativeMobile()) return;
     // Read only the public settings exposed by the production API, never local server config.
     for (;;) {
         try {
-            const response = await fetch(`${nativeApp.apiOrigin}/api/mobile/config`, {
-                signal: AbortSignal.timeout(15000),
-            });
-            if (!response.ok) throw new Error("Mobile configuration unavailable");
-            const config: NativeClientConfig = await response.json();
+            // AbortSignal.timeout is unavailable on the oldest supported iOS versions.
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 15000);
+            let config: NativeClientConfig;
+            try {
+                const response = await fetch(`${nativeApp.apiOrigin}/api/mobile/config`, {
+                    signal: controller.signal,
+                });
+                if (!response.ok) throw new Error("Mobile configuration unavailable");
+                config = await response.json();
+            } finally {
+                clearTimeout(timeout);
+            }
             if (!config.regions || Object.keys(config.regions).length === 0) {
                 throw new Error("No production regions configured");
             }
@@ -25,7 +38,7 @@ export async function prepareNativeClient() {
                     !region.https ||
                     /^(localhost|127\.|0\.|\[::1\])/.test(url.hostname)
                 ) {
-                    throw new Error("Android requires public HTTPS game regions");
+                    throw new Error("Native apps require public HTTPS game regions");
                 }
             }
             nativeClientConfig = config;

@@ -22,7 +22,10 @@
     "build": "cd server && pnpm build && cd ../client && pnpm build",
     "stressTest": "cd server && pnpm stressTest",
     "lint": "biome check --write",
-    "lint:ci": "biome check"
+    "lint:ci": "biome check",
+    "ios:sync": "pnpm --filter @resurviv/mobile run ios:sync",
+    "ios:update": "pnpm --filter @resurviv/mobile run ios:update",
+    "ios:open": "pnpm --filter @resurviv/mobile run ios:open"
   },
   "engines": {
     "node": ">=20.19.0"
