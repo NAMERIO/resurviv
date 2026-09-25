@@ -63,12 +63,17 @@ class ReleaseInputs(unittest.TestCase):
     def test_metadata_and_malicious_input(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "output"
-            env = {"GITHUB_OUTPUT": str(output), "GITHUB_RUN_NUMBER": "12", "GITHUB_RUN_ATTEMPT": "2", "IOS_BUILD_NUMBER": ""}
+            env = {"GITHUB_OUTPUT": str(output), "GITHUB_RUN_NUMBER": "12", "GITHUB_RUN_ATTEMPT": "2", "IOS_BUILD_NUMBER": "", "IOS_APP_VERSION": "1.0"}
             with patch.dict(os.environ, env):
                 release.metadata()
+                self.assertIn("version=1.0\n", output.read_text())
                 self.assertIn("build=12.2\n", output.read_text())
                 for invalid in ["$(echo unsafe)", "1\nbuild=2", "10000", "1.100", "0", "1.2.3.4"]:
                     with self.subTest(build=invalid), patch.dict(os.environ, {"IOS_BUILD_NUMBER": invalid}):
+                        with self.assertRaises(ValueError):
+                            release.metadata()
+                for invalid in ["1.0-beta", "1.0\nbuild=2", "$(echo unsafe)", "1.2.3.4"]:
+                    with self.subTest(version=invalid), patch.dict(os.environ, {"IOS_APP_VERSION": invalid}):
                         with self.assertRaises(ValueError):
                             release.metadata()
 

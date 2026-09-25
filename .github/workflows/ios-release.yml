@@ -3,6 +3,11 @@ name: iOS Release
 on:
   workflow_dispatch:
     inputs:
+      app_version:
+        description: Version shown in App Store Connect (for example, 1.0)
+        type: string
+        required: true
+        default: "1.0"
       mode:
         description: Build only, export a signed IPA, or also upload to App Store Connect
         type: choice
@@ -55,6 +60,7 @@ jobs:
       - name: Set version and build number
         id: metadata
         env:
+          IOS_APP_VERSION: ${{ inputs.app_version }}
           IOS_BUILD_NUMBER: ${{ inputs.build_number }}
         run: python3 mobile/scripts/ios-release.py metadata
 

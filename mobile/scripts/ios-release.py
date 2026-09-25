@@ -14,7 +14,6 @@ import subprocess
 import sys
 
 BUNDLE_ID = "biz.resurviv.app"
-ROOT = Path(__file__).resolve().parents[2]
 
 
 def required(name):
@@ -38,9 +37,9 @@ def decode_secret(name):
 
 
 def metadata():
-    version = json.loads((ROOT / "package.json").read_text())["version"]
-    if not re.fullmatch(r"\d+\.\d+\.\d+", version):
-        raise ValueError("package.json version must be an App Store version: X.Y.Z")
+    version = required("IOS_APP_VERSION")
+    if not re.fullmatch(r"\d+\.\d+(?:\.\d+)?", version):
+        raise ValueError("App Store version must be X.Y or X.Y.Z")
     build = os.environ.get("IOS_BUILD_NUMBER") or (
         f'{required("GITHUB_RUN_NUMBER")}.{required("GITHUB_RUN_ATTEMPT")}'
     )
