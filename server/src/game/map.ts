@@ -34,6 +34,7 @@ import { RiverCreator } from "./riverCreator";
 
 const BattleRoyaleBridgeSpawns = {
     bunker_structure_05: { nearbyWidthMult: 1.2 },
+    bunker_structure_05ct: { nearbyWidthMult: 1.2 },
 } satisfies Record<string, { nearbyWidthMult: number }>;
 
 const PrivateLobbySpawnAnchors = [

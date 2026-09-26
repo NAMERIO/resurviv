@@ -16,6 +16,8 @@ export async function createGame(
     Config.logging.warnLogs = true;
     Config.logging.errorLogs = true;
 
+    if (Config.webhooks) Config.webhooks.mapGeneration = "";
+
     const game = new Game(
         "test",
         {
