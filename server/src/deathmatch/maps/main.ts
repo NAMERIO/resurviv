@@ -266,7 +266,7 @@ DeatchmatchMain["lootTable"] = {
         { name: "stonehammer", count: 1, weight: 0.3 },
         { name: "explosive", count: 1, weight: 0.2 },
     ],
-    tier_imperial_outfit: [{ name: "tier_spetnaz_outfit", count: 1, weight: 1 }],
+    tier_imperial_outfit: [{ name: "tier_spetsnaz_outfit", count: 1, weight: 1 }],
     tier_leaf_pile: [{ name: "tier_world", count: 1, weight: 1 }],
     tier_lumber_outfit: [
         { name: "firepower", count: 1, weight: 1 },
@@ -313,7 +313,7 @@ DeatchmatchMain["lootTable"] = {
         { name: "sv98", count: 1, weight: 1 },
     ],
     tier_sledgehammer: [{ name: "sledgehammer", count: 1, weight: 1 }],
-    tier_spetnaz_outfit: [
+    tier_spetsnaz_outfit: [
         { name: "mirv", count: 4, weight: 1 },
         { name: "mine", count: 4, weight: 1 },
         { name: "smoke", count: 4, weight: 1 },
