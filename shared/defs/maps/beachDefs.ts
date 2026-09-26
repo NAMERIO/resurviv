@@ -4,6 +4,7 @@ import { v2 } from "../../utils/v2";
 import type { MapDef } from "../mapDefs";
 import { MapId } from "../types/misc";
 import { Main, type PartialMapDef } from "./baseDefs";
+import { createDeathmatchLootTiers } from "./deathmatchLoot";
 
 const mapDef: PartialMapDef = {
     mapId: MapId.Beach,
@@ -267,4 +268,11 @@ const mapDef: PartialMapDef = {
     /* STRIP_FROM_PROD_CLIENT:END */
 };
 
-export const Beach = util.mergeDeep({}, Main, mapDef) as MapDef;
+export const Beach = util.mergeDeep(
+    {},
+    Main,
+    mapDef,
+    /* STRIP_FROM_PROD_CLIENT:START */
+    { lootTable: createDeathmatchLootTiers() },
+    /* STRIP_FROM_PROD_CLIENT:END */
+) as MapDef;

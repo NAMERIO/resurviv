@@ -1,8 +1,10 @@
 import { util } from "../../utils/util";
 import type { MapDef } from "../mapDefs";
 import { Main, type PartialMapDef } from "./baseDefs";
+import { createDeathmatchLootTiers } from "./deathmatchLoot";
 
 export const testNormal = util.mergeDeep({}, Main, {
+    lootTable: createDeathmatchLootTiers(),
     mapGen: {
         map: {
             baseWidth: 128,

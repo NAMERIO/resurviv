@@ -1,6 +1,7 @@
 import { util } from "../../utils/util";
 import type { MapDef } from "../mapDefs";
 import { Main, type PartialMapDef } from "./baseDefs";
+import { createDeathmatchLootTiers } from "./deathmatchLoot";
 
 const mapDef: PartialMapDef = {
     desc: {
@@ -97,4 +98,11 @@ const mapDef: PartialMapDef = {
     /* STRIP_FROM_PROD_CLIENT:END */
 };
 
-export const MainSpring = util.mergeDeep({}, Main, mapDef) as MapDef;
+export const MainSpring = util.mergeDeep(
+    {},
+    Main,
+    mapDef,
+    /* STRIP_FROM_PROD_CLIENT:START */
+    { lootTable: createDeathmatchLootTiers() },
+    /* STRIP_FROM_PROD_CLIENT:END */
+) as MapDef;

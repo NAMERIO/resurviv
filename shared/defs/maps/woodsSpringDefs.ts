@@ -2,6 +2,7 @@ import { util } from "../../utils/util";
 import { v2 } from "../../utils/v2";
 import type { MapDef } from "../mapDefs";
 import type { PartialMapDef } from "./baseDefs";
+import { createDeathmatchLootTiers } from "./deathmatchLoot";
 import { Woods } from "./woodsDefs";
 
 const mapDef: PartialMapDef = {
@@ -121,4 +122,11 @@ const mapDef: PartialMapDef = {
     /* STRIP_FROM_PROD_CLIENT:END */
 };
 
-export const WoodsSpring = util.mergeDeep({}, Woods, mapDef) as MapDef;
+export const WoodsSpring = util.mergeDeep(
+    {},
+    Woods,
+    mapDef,
+    /* STRIP_FROM_PROD_CLIENT:START */
+    { lootTable: createDeathmatchLootTiers() },
+    /* STRIP_FROM_PROD_CLIENT:END */
+) as MapDef;

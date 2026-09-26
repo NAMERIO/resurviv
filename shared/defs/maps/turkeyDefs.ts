@@ -1,5 +1,6 @@
 import { util } from "../../utils/util";
 import { Main, type PartialMapDef } from "./baseDefs";
+import { createDeathmatchLootTiers } from "./deathmatchLoot";
 
 const mapDef: PartialMapDef = {
     desc: {
@@ -112,4 +113,11 @@ const mapDef: PartialMapDef = {
     /* STRIP_FROM_PROD_CLIENT:END */
 };
 
-export const Turkey = util.mergeDeep({}, Main, mapDef);
+export const Turkey = util.mergeDeep(
+    {},
+    Main,
+    mapDef,
+    /* STRIP_FROM_PROD_CLIENT:START */
+    { lootTable: createDeathmatchLootTiers() },
+    /* STRIP_FROM_PROD_CLIENT:END */
+);

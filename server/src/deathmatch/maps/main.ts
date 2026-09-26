@@ -1,5 +1,6 @@
 import type { MapDef } from "../../../../shared/defs/mapDefs";
 import { Main, type PartialMapDef } from "../../../../shared/defs/maps/baseDefs";
+import { createDeathmatchLootTiers } from "../../../../shared/defs/maps/deathmatchLoot";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { util } from "../../../../shared/utils/util";
 
@@ -152,6 +153,7 @@ export const mapDef: PartialMapDef = {
 export const DeatchmatchMain: MapDef = util.mergeDeep({}, Main, mapDef);
 
 DeatchmatchMain["lootTable"] = {
+    ...createDeathmatchLootTiers(),
     tier_airdrop_uncommon: [
         { name: "sv98", count: 1, weight: 1 },
         { name: "outfitGhillie", count: 1, weight: 1 },
@@ -311,23 +313,6 @@ DeatchmatchMain["lootTable"] = {
         { name: "sv98", count: 1, weight: 1 },
     ],
     tier_sledgehammer: [{ name: "sledgehammer", count: 1, weight: 1 }],
-    tier_soviet: [
-        { name: "poison_gas", count: 4, weight: 0.25 },
-        { name: "mine", count: 4, weight: 0.25 },
-        { name: "mirv", count: 4, weight: 0.25 },
-        { name: "smoke", count: 4, weight: 0.25 },
-        { name: "bonesaw_rusted", count: 1, weight: 0.25 },
-        { name: "fireaxe", count: 1, weight: 0.25 },
-        { name: "kukri_trad", count: 1, weight: 0.25 },
-        { name: "katana_rusted", count: 1, weight: 0.25 },
-        { name: "sv98", count: 1, weight: 0.05 },
-        { name: "saiga", count: 1, weight: 0.05 },
-        { name: "strobe", count: 1, weight: 0.05 },
-        { name: "flare_gun", count: 1, weight: 0.05 },
-        { name: "frag", count: 15, weight: 0.05 },
-        { name: "m249", count: 1, weight: 0.05 },
-        { name: "pkp", count: 1, weight: 0.05 },
-    ],
     tier_spetnaz_outfit: [
         { name: "mirv", count: 4, weight: 1 },
         { name: "mine", count: 4, weight: 1 },
@@ -369,19 +354,6 @@ DeatchmatchMain["lootTable"] = {
         { name: "woodaxe", count: 1, weight: 0.8 },
         { name: "sledgehammer", count: 1, weight: 0.15 },
         { name: "warhammer_tank", count: 1, weight: 0.05 },
-    ],
-    tier_world: [
-        { name: "frag", count: 3, weight: 0.5 },
-        { name: "smoke", count: 1, weight: 0.5 },
-        { name: "bandage", count: 5, weight: 0.25 },
-        { name: "healthkit", count: 1, weight: 0.25 },
-        { name: "soda", count: 1, weight: 0.25 },
-        { name: "painkiller", count: 1, weight: 0.25 },
-        { name: "crowbar", count: 1, weight: 0.5 },
-        { name: "spade", count: 1, weight: 0.5 },
-        { name: "", count: 1, weight: 3.5 },
-        { name: "smoke", count: 10, weight: 0.2 },
-        { name: "tier_soviet", count: 1, weight: 0.3 },
     ],
     tier_saloon: [
         { name: "tier_soviet", count: 1, weight: 0.4 },

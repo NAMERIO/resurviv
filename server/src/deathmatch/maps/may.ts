@@ -45,10 +45,6 @@ DeathmatchMay.lootTable = {
     tier_space: structuredClone(
         MayThemeDef.lootTable!.tier_space as MapDef["lootTable"][string],
     ),
-    tier_world: [
-        ...structuredClone(DeatchmatchMain.lootTable.tier_world),
-        { name: "tier_space", count: 1, weight: 2 },
-    ],
     tier_container: [
         { name: "tier_world", count: 1, weight: 3 },
         { name: "tier_space", count: 1, weight: 1 },

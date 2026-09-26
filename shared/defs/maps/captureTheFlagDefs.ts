@@ -3,6 +3,7 @@ import { util } from "../../utils/util";
 import { v2 } from "../../utils/v2";
 import type { MapDef } from "../mapDefs";
 import { Main, type PartialMapDef } from "./baseDefs";
+import { createDeathmatchLootTiers } from "./deathmatchLoot";
 
 const mapWidth = 225;
 
@@ -110,6 +111,9 @@ export const DeathmatchCaptureTheFlag = util.mergeDeep(
     {},
     Main,
     CaptureTheFlagMapDef,
+    /* STRIP_FROM_PROD_CLIENT:START */
+    { lootTable: createDeathmatchLootTiers() },
+    /* STRIP_FROM_PROD_CLIENT:END */
 ) as MapDef;
 
 DeathmatchCaptureTheFlag.gameConfig.bagSizes = GameConfig.bagSizes;
