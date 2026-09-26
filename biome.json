@@ -1,6 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.7/schema.json",
   "files": {
+    "maxSize": 4194304,
     "includes": ["**", "!**/client/atlas-builder/out/**/*.json"]
   },
   "assist": { "actions": { "source": { "organizeImports": "on" } } },

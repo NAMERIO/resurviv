@@ -2,7 +2,6 @@ import { collider } from "../utils/collider";
 import { util } from "../utils/util";
 import { v2 } from "../utils/v2";
 import { AmongUsSecurityCameraDefs } from "./amongUsSecurityCameraDefs";
-import { NpcDefs } from "./npcDefs";
 import type {
     BuildingDef,
     LootSpawnDef,
@@ -10,6 +9,7 @@ import type {
     ObstacleDef,
     StructureDef,
 } from "./mapObjectsTyping";
+import { NpcDefs } from "./npcDefs";
 
 // some errors could be fixed by this but opted to using Partial and casting instead to avoid choking the lsp server
 // type DeepPartial<T> = T extends object ? {
@@ -6726,7 +6726,10 @@ function createMemorialPark<T extends BuildingDef>(e: Partial<T>): T {
                 offsetDist: 1,
             },
             {
-                bound: collider.createAabbExtents(v2.create(-12, -2.5), v2.create(9, 7.5)),
+                bound: collider.createAabbExtents(
+                    v2.create(-12, -2.5),
+                    v2.create(9, 7.5),
+                ),
                 color: e.groundTintDk || 0x733818,
                 roughness: 0.25,
                 offsetDist: 1.5,
@@ -6738,7 +6741,10 @@ function createMemorialPark<T extends BuildingDef>(e: Partial<T>): T {
                 offsetDist: 1,
             },
             {
-                bound: collider.createAabbExtents(v2.create(9.5, -2.5), v2.create(7.5, 8)),
+                bound: collider.createAabbExtents(
+                    v2.create(9.5, -2.5),
+                    v2.create(7.5, 8),
+                ),
                 color: e.groundTintDk || 0x733818,
                 roughness: 0.25,
                 offsetDist: 1.5,
@@ -9610,10 +9616,7 @@ function createReactor<T extends ExtendedBuildingDef>(e: Partial<T>): T {
                         collider.createAabbExtents(v2.create(7.5, 0), v2.create(3, 6)),
                         collider.createAabbExtents(v2.create(-11, 0), v2.create(7, 17)),
                         collider.createAabbExtents(v2.create(-11, 0), v2.create(17, 8)),
-                        collider.createAabbExtents(
-                            v2.create(0, 0),
-                            v2.create(4, 15),
-                        ),
+                        collider.createAabbExtents(v2.create(0, 0), v2.create(4, 15)),
                         collider.createAabbExtents(v2.create(-22, 0), v2.create(4, 15)),
                     ],
                 },
@@ -9674,10 +9677,7 @@ function createReactor<T extends ExtendedBuildingDef>(e: Partial<T>): T {
                     ),
                 },
                 {
-                    zoomIn: collider.createAabbExtents(
-                        v2.create(12, 0),
-                        v2.create(8, 6),
-                    ),
+                    zoomIn: collider.createAabbExtents(v2.create(12, 0), v2.create(8, 6)),
                 },
             ],
             vision: {
@@ -9717,7 +9717,12 @@ function createReactor<T extends ExtendedBuildingDef>(e: Partial<T>): T {
             { type: "vat_cosmic_blue", pos: v2.create(-21.5, -11.1), scale: 1, ori: 8.5 },
 
             { type: "gun_mount_lasr_swrd", pos: v2.create(11.85, 13), scale: 1, ori: 1 },
-            { type: "gun_mount_flux_rifle", pos: v2.create(11.85, -13), scale: 1, ori: 1 },
+            {
+                type: "gun_mount_flux_rifle",
+                pos: v2.create(11.85, -13),
+                scale: 1,
+                ori: 1,
+            },
 
             { type: "house_window_01", pos: v2.create(-11, 17.25), scale: 1, ori: 3 },
             { type: "house_window_01", pos: v2.create(-11, -17.25), scale: 1, ori: 3 },
@@ -16788,14 +16793,18 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 },
             ],
             imgs: [
-                { sprite: "map-cafeteria.img", pos: v2.create(-5.875, -5.469), scale: 0.5, alpha: 1, tint: 0xffffff },
+                {
+                    sprite: "map-cafeteria.img",
+                    pos: v2.create(-5.875, -5.469),
+                    scale: 0.5,
+                    alpha: 1,
+                    tint: 0xffffff,
+                },
             ],
         },
         ceiling: {
-            zoomRegions: [
-            ],
-            imgs: [
-            ],
+            zoomRegions: [],
+            imgs: [],
         },
         mapObjects: [
             {
@@ -36152,7 +36161,10 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 useAsMapShape: true,
             },
             {
-                bound: collider.createAabbExtents(v2.create(-0.125, -0.125), v2.create(18, 18)),
+                bound: collider.createAabbExtents(
+                    v2.create(-0.125, -0.125),
+                    v2.create(18, 18),
+                ),
                 color: 0x5e8e2f,
                 roughness: 0.02,
                 offsetDist: 0.5,
@@ -36174,18 +36186,14 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
             surfaces: [
                 {
                     type: "wood",
-                    collision: [
-                    ],
+                    collision: [],
                 },
             ],
-            imgs: [
-            ],
+            imgs: [],
         },
         ceiling: {
-            zoomRegions: [
-            ],
-            imgs: [
-            ],
+            zoomRegions: [],
+            imgs: [],
         },
         mapObjects: [
             {
@@ -39094,10 +39102,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 {
                     type: "grass",
                     collision: [
-                        collider.createAabbExtents(
-                            v2.create(0, 0),
-                            v2.create(12, 16),
-                        ),
+                        collider.createAabbExtents(v2.create(0, 0), v2.create(12, 16)),
                     ],
                 },
             ],
@@ -39142,10 +39147,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 {
                     type: "grass",
                     collision: [
-                        collider.createAabbExtents(
-                            v2.create(0, 0),
-                            v2.create(12, 11),
-                        ),
+                        collider.createAabbExtents(v2.create(0, 0), v2.create(12, 11)),
                     ],
                 },
             ],
@@ -39190,10 +39192,7 @@ export const MapObjectDefs: Record<string, MapObjectDef> = {
                 {
                     type: "grass",
                     collision: [
-                        collider.createAabbExtents(
-                            v2.create(0, 0),
-                            v2.create(8, 12),
-                        ),
+                        collider.createAabbExtents(v2.create(0, 0), v2.create(8, 12)),
                     ],
                 },
             ],
