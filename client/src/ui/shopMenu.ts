@@ -14,6 +14,7 @@ import {
     getAuctionPriceBounds,
     getMarketPriceBounds,
     getMarketReferencePrice,
+    marketListingDurationMs,
 } from "../../../shared/utils/marketPricing";
 import type { Account } from "../account";
 import { googleH5Ads } from "../ads/googleH5Ads";
@@ -68,8 +69,6 @@ type AuctionViewListing = {
     activities: AuctionListing["activities"];
     action: "bid" | "auction" | "auction_live";
 };
-
-const marketListingDurationMs = 24 * 60 * 60 * 1000;
 
 const supportedMarketTypes = new Set([
     "outfit",
@@ -613,6 +612,7 @@ export class ShopMenu {
 
     buildMarketBuyListings() {
         return this.account.marketListings
+            .filter((listing) => getMarketPriceBounds(listing.itemType) !== null)
             .map((listing) => {
                 const def = GameObjectDefs[listing.itemType] as any;
                 if (!def || !supportedMarketTypes.has(def.type)) return null;
@@ -710,6 +710,7 @@ export class ShopMenu {
             .filter((item): item is Listing => item !== null);
 
         const sellableItems = this.account.items
+            .filter((item) => getMarketPriceBounds(item.type) !== null)
             .map((item) => {
                 const def = GameObjectDefs[item.type] as any;
                 if (!def || !supportedMarketTypes.has(def.type)) return null;
@@ -759,6 +760,7 @@ export class ShopMenu {
             })
             .filter((item): item is AuctionViewListing => item !== null);
         const publicAuctions = this.account.auctionListings
+            .filter((auction) => getAuctionPriceBounds(auction.itemType) !== null)
             .filter((auction) => auction.sellerSlug !== this.account.profile.slug)
             .map((auction) => this.mapAuctionToViewListing(auction, "bid"))
             .filter((item): item is AuctionViewListing => item !== null);

@@ -1,4 +1,5 @@
 import { GameObjectDefs } from "../defs/gameObjectDefs";
+import { isSkinLocked } from "../defs/gameObjects/unlockDefs";
 import { Rarity } from "../gameConfig";
 
 const supportedMarketTypes = new Set([
@@ -11,8 +12,6 @@ const supportedMarketTypes = new Set([
     "death_effect",
 ]);
 
-const unsellableMarketItems = new Set(["outfitReTag"]);
-
 export const marketMinPriceByRarity: Record<Rarity, number> = {
     [Rarity.Stock]: 1,
     [Rarity.Common]: 1,
@@ -24,6 +23,7 @@ export const marketMinPriceByRarity: Record<Rarity, number> = {
 
 export const marketMaxSellPrice = 10000;
 export const auctionStartPriceCapPercent = 0.6;
+export const marketListingDurationMs = 24 * 60 * 60 * 1000;
 
 export const marketReferenceValueByRarity: Record<Rarity, number> = {
     [Rarity.Stock]: 0,
@@ -35,7 +35,7 @@ export const marketReferenceValueByRarity: Record<Rarity, number> = {
 };
 
 export function getMarketItemRarity(itemType: string) {
-    if (unsellableMarketItems.has(itemType)) return null;
+    if (isSkinLocked(itemType)) return null;
 
     const def = GameObjectDefs[itemType] as
         | { type?: string; rarity?: Rarity }

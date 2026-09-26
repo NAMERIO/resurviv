@@ -2,6 +2,17 @@ import { allowedGuns } from "../../deathmatch/loadoutItems";
 import { selectablePerks } from "../../deathmatch/perks";
 import { CrosshairDefs } from "./crosshairDefs";
 
+export const lockedSkins: readonly string[] = [
+    "outfitReTag",
+    "outfitDev",
+    "outfitMod",
+    "outfitGD",
+];
+
+export function isSkinLocked(itemType: string): boolean {
+    return lockedSkins.includes(itemType);
+}
+
 export const privateOutfits = [
     "outfitToilet",
     "outfitGreenEyes",

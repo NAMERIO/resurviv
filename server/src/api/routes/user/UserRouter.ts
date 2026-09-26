@@ -96,6 +96,7 @@ import {
     usersTable,
 } from "../../db/schema";
 import type { Context } from "../../index";
+import { expireAuctionListings, expireMarketListings } from "../../marketListings";
 import { ArenaReplayRouter } from "./ArenaReplayRouter";
 import {
     ensureUserAuthIdentities,
@@ -108,8 +109,6 @@ import { PassRouter } from "./PassRouter";
 
 export const UserRouter = new Hono<Context>();
 
-const MARKET_LISTING_EXPIRY_MS = 24 * 60 * 60 * 1000;
-const AUCTION_LISTING_EXPIRY_MS = 24 * 60 * 60 * 1000;
 const APRIL_THANKS_REWARD_KEY = "thanks_gift_april_2026";
 const APRIL_THANKS_REWARD_GP = 500;
 const APRIL_THANKS_REWARD_IP_LIMIT = 2;
@@ -622,130 +621,12 @@ async function getCurrentItemHolderCounts(itemTypes: string[], tx: any = db) {
     return counts;
 }
 
-async function expireMarketListings(tx: any, targetUserId?: string) {
-    const cutoff = new Date(Date.now() - MARKET_LISTING_EXPIRY_MS);
-    const expiredNow = await tx
-        .update(marketListingTable)
-        .set({
-            status: "expired",
-            canceledAt: new Date(),
-        })
-        .where(
-            and(
-                eq(marketListingTable.status, "active"),
-                sql`${marketListingTable.createdAt} <= ${cutoff}`,
-            ),
-        )
-        .returning({
-            sellerUserId: marketListingTable.sellerUserId,
-            itemId: marketListingTable.itemId,
-            itemType: marketListingTable.itemType,
-            itemMaker: marketListingTable.itemMaker,
-            itemKills: marketListingTable.itemKills,
-            itemWins: marketListingTable.itemWins,
-            itemHolders: marketListingTable.itemHolders,
-        });
-
-    if (expiredNow.length === 0) {
-        return [];
-    }
-
-    await tx
-        .insert(itemsTable)
-        .values(
-            expiredNow.map(
-                (listing: {
-                    sellerUserId: string;
-                    itemId: string;
-                    itemType: string;
-                    itemMaker: string;
-                    itemKills: number;
-                    itemWins: number;
-                    itemHolders: number;
-                }) => ({
-                    id: listing.itemId,
-                    userId: listing.sellerUserId,
-                    type: listing.itemType,
-                    maker: listing.itemMaker,
-                    kills: listing.itemKills,
-                    wins: listing.itemWins,
-                    holders: listing.itemHolders,
-                    source: "Item expired",
-                    timeAcquired: Date.now(),
-                }),
-            ),
-        )
-        .onConflictDoNothing();
-
-    if (!targetUserId) {
-        return [];
-    }
-
-    return expiredNow
-        .filter(
-            (listing: { sellerUserId: string; itemType: string }) =>
-                listing.sellerUserId === targetUserId,
-        )
-        .map((listing: { sellerUserId: string; itemType: string }) => listing.itemType);
-}
-
-async function expireAuctionListings(tx: any) {
-    const cutoff = new Date(Date.now() - AUCTION_LISTING_EXPIRY_MS);
-    const expiredAuctions = await tx.query.auctionListingTable.findMany({
-        where: and(
-            eq(auctionListingTable.status, "active"),
-            sql`${auctionListingTable.createdAt} <= ${cutoff}`,
-        ),
-    });
-
-    for (const auction of expiredAuctions) {
-        await tx
-            .update(auctionListingTable)
-            .set({
-                status: auction.highestBidUserId ? "sold" : "expired",
-                soldAt: auction.highestBidUserId ? new Date() : auction.soldAt,
-                canceledAt: !auction.highestBidUserId ? new Date() : auction.canceledAt,
-            })
-            .where(eq(auctionListingTable.id, auction.id));
-
-        if (auction.highestBidUserId && auction.highestBid > 0) {
-            await tx.insert(itemsTable).values({
-                id: auction.itemId,
-                userId: auction.highestBidUserId,
-                type: auction.itemType,
-                maker: auction.itemMaker,
-                kills: auction.itemKills,
-                wins: auction.itemWins,
-                holders: auction.itemHolders,
-                source: "auction_win",
-                timeAcquired: Date.now(),
-            });
-
-            await tx
-                .update(usersTable)
-                .set({
-                    gpBalance: sql`${usersTable.gpBalance} + ${auction.highestBid}`,
-                })
-                .where(eq(usersTable.id, auction.sellerUserId));
-        } else {
-            await tx.insert(itemsTable).values({
-                id: auction.itemId,
-                userId: auction.sellerUserId,
-                type: auction.itemType,
-                maker: auction.itemMaker,
-                kills: auction.itemKills,
-                wins: auction.itemWins,
-                holders: auction.itemHolders,
-                source: "auction_expired",
-                timeAcquired: Date.now(),
-            });
-        }
-    }
-}
-
 async function buildMarketState(userId: string) {
-    const expiredItemTypes = await expireMarketListings(db, userId);
-    await expireAuctionListings(db);
+    const expiredItemTypes = await db.transaction(async (tx) => {
+        const expired = await expireMarketListings(tx, userId);
+        await expireAuctionListings(tx);
+        return expired;
+    });
     const [
         { offers },
         publicListings,
@@ -2076,7 +1957,7 @@ UserRouter.post(
                     ),
                 });
 
-                if (!listing) {
+                if (!listing || !isSupportedMarketItem(listing.itemType)) {
                     return { ok: false as const, error: "listing_not_found" as const };
                 }
                 if (listing.sellerUserId === user.id) {
@@ -2317,13 +2198,17 @@ UserRouter.post(
             const result = await db.transaction(async (tx) => {
                 await expireAuctionListings(tx);
 
-                const auction = await tx.query.auctionListingTable.findFirst({
-                    where: and(
-                        eq(auctionListingTable.id, auctionId),
-                        eq(auctionListingTable.status, "active"),
-                    ),
-                });
-                if (!auction) {
+                const [auction] = await tx
+                    .select()
+                    .from(auctionListingTable)
+                    .where(
+                        and(
+                            eq(auctionListingTable.id, auctionId),
+                            eq(auctionListingTable.status, "active"),
+                        ),
+                    )
+                    .for("update");
+                if (!auction || !isSupportedMarketItem(auction.itemType)) {
                     return { ok: false as const, error: "auction_not_found" as const };
                 }
                 if (auction.sellerUserId === user.id) {
