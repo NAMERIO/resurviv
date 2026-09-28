@@ -4,7 +4,7 @@
   </a>
 </p>
 
-## Production server: https://resurviv.biz
+## Link: https://resurviv.biz
 
 # Open sourced surviv.io
 resurviv.biz is an open source recreation of a hit web game "surviv.io" that has been permanently shut down.
