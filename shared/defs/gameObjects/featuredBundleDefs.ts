@@ -27,6 +27,13 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 800,
         durationDays: 7,
     },
+    bundle_srandom9: {
+        name: "Random Mini",
+        size: "small",
+        items: ["outfitPhoebonachi", "outfitPeru"],
+        price: 850,
+        durationDays: 7,
+    },
     bundle_lrandom3: {
         name: "Random Large",
         size: "large",
@@ -34,11 +41,32 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1700,
         durationDays: 7,
     },
+    bundle_lrandom9: {
+        name: "Random Large",
+        size: "large",
+        items: ["outfitBraaains", "outfitPanda", "outfitPolice"],
+        price: 2500,
+        durationDays: 7,
+    },
     bundle_galaxy: {
         name: "Living Galaxy Set",
         size: "small",
         items: ["outfitLivingGalaxy", "fist_living_galaxy"],
         price: 5000,
+        durationDays: 7,
+    },
+    bundle_bitplosion: {
+        name: "Bitplosion Set",
+        size: "small",
+        items: ["outfitBitplosion", "karambit_blazing"],
+        price: 1250,
+        durationDays: 7,
+    },
+    bundle_eventhorizon: {
+        name: "Event Horizon Set",
+        size: "small",
+        items: ["outfitEventHorizon", "karambit_amethyst"],
+        price: 2000,
         durationDays: 7,
     },
     bundle_snowman: {
@@ -60,6 +88,13 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         size: "small",
         items: ["outfitGreenTeaRex", "fist_dinoclaws"],
         price: 1500,
+        durationDays: 7,
+    },
+    bundle_dinos: {
+        name: "Dino Set",
+        size: "small",
+        items: ["outfitGreenTeaRex", "fist_dinoclaws","outfitDisasteroid"],
+        price: 2350,
         durationDays: 7,
     },
     bundle_neondisk: {
@@ -358,16 +393,16 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
 
 export const FeaturedBundlePages = [
     {
-        small: "bundle_srandom3",
-        large: "bundle_lrandom4",
+        small: "bundle_srandom9",
+        large: "bundle_lrandom9",
     },
     {
-        small: "bundle_coffee",
-        large: "bundle_mask",
+        small: "bundle_watermelon",
+        large: "bundle_ninja",
     },
     {
-        small: "bundle_geometry",
-        large: "bundle_solarsytem",
+        small: "bundle_bitplosion",
+        large: "bundle_dinos",
     },
 ] as const satisfies ReadonlyArray<
     Record<FeaturedBundleSize, keyof typeof FeaturedBundleDefs>
