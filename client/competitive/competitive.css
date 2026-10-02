@@ -64,25 +64,22 @@ button:disabled {
   padding: 18px 24px 24px;
 }
 .topbar {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 16px;
   align-items: center;
-  min-height: 58px;
-  margin-bottom: 18px;
+  margin: 0;
 }
-.site-logo {
-  display: block;
-  width: fit-content;
-  max-width: 100%;
-  margin: 0 auto 18px;
+.topbar > h1 {
+  grid-column: 2;
 }
-.site-logo img {
-  display: block;
-  width: 260px;
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
+.topbar > button {
+  grid-column: 3;
+  justify-self: end;
+}
+.topbar > a,
+.topbar > button {
+  flex-shrink: 0;
 }
 .home-button,
 .discord-button,
@@ -929,13 +926,21 @@ footer > span {
     grid-row: 2;
   }
 }
+@media (max-width: 900px) {
+  .topbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .topbar > h1,
+  .topbar > button {
+    grid-column: 1;
+  }
+}
 @media (max-width: 480px) {
   .arena {
     padding: 14px 12px 20px;
   }
   .topbar {
     gap: 10px;
-    flex-wrap: wrap;
   }
   .home-button,
   .tournament-button {
