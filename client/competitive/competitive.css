@@ -664,16 +664,10 @@ h2 {
 .match-card {
   min-width: 0;
   border: 1px solid #ffffff12;
-  border-left: 3px solid #666;
+  border-left: 0;
   border-bottom: 2px solid #0006;
   border-radius: 2px 5px 5px 2px;
   background: rgba(0, 0, 0, 0.26);
-}
-.match-card.is-selected {
-  border-left: 1px solid #ffffff12;
-}
-.match-card.is-void {
-  border-left-color: #cca75d;
 }
 .match-summary {
   display: grid;
