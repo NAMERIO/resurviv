@@ -391,6 +391,7 @@ export enum MsgType {
     BedWar,
     PlantTheBomb,
     Replay,
+    DeathmatchRound,
 }
 
 export enum PickupMsgType {
@@ -427,6 +428,7 @@ export {
     CaptureTheFlagFlagStatus,
     CaptureTheFlagMsg,
 } from "./captureTheFlagMsg";
+export { DeathmatchRoundMsg } from "./deathmatchRoundMsg";
 export { DisconnectMsg } from "./disconnectMsg";
 export { DominationMsg, type DominationPointNetState } from "./dominationMsg";
 export { DropItemMsg } from "./dropItemMsg";

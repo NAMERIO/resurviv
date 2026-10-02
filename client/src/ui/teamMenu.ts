@@ -406,6 +406,7 @@ export class TeamMenu {
                 arena,
                 teamsLocked: false,
                 teamCount: this.roomData.teamCount || DefaultArenaTeamCount,
+                deathmatchFirstTo: this.roomData.deathmatchFirstTo || 1,
                 miniGame: this.roomData.miniGame || DefaultPrivateLobbyMiniGame,
                 amongUsImpostorCount:
                     this.roomData.amongUsImpostorCount || DefaultAmongUsImpostorCount,
@@ -575,6 +576,7 @@ export class TeamMenu {
                     this.roomData.autoFill = ourRoomData.autoFill;
                     this.roomData.teamsLocked = ourRoomData.teamsLocked;
                     this.roomData.teamCount = ourRoomData.teamCount;
+                    this.roomData.deathmatchFirstTo = ourRoomData.deathmatchFirstTo;
                     this.roomData.miniGame = ourRoomData.miniGame;
                     this.roomData.amongUsImpostorCount = ourRoomData.amongUsImpostorCount;
                     this.roomData.disableAirstrikes = ourRoomData.disableAirstrikes;

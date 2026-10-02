@@ -298,6 +298,7 @@ export class Game {
     m_freeCameraZoom = GameConfig.player.spectatorFreeCamZoom;
     m_freeCameraLayer = 0;
     m_privateMiniGame = "";
+    m_deathmatchFirstTo = 0;
     debugPingTime!: number;
     lastUpdateTime!: number;
     updateIntervals!: number[];
@@ -558,6 +559,7 @@ export class Game {
         this.m_disconnectMsg = "";
         this.m_playing = false;
         this.m_gameOver = false;
+        this.m_deathmatchFirstTo = 0;
         this.m_spectating = false;
         this.m_spectateCooldown = 0;
         this.m_inputMsgTimeout = 0;
@@ -4099,6 +4101,13 @@ export class Game {
                 }
                 break;
             }
+            case net.MsgType.DeathmatchRound: {
+                const msg = new net.DeathmatchRoundMsg();
+                msg.deserialize(stream);
+                this.m_deathmatchFirstTo = msg.firstTo;
+                this.m_uiManager.setDeathmatchRoundState(msg);
+                break;
+            }
             case net.MsgType.PlantTheBomb: {
                 const msg = new net.PlantTheBombMsg();
                 msg.deserialize(stream);
@@ -4489,7 +4498,11 @@ export class Game {
                     }
                 }
 
-                if (this.m_privateMiniGame === "plant_the_bomb" && !msg.gameOver) {
+                if (
+                    (this.m_privateMiniGame === "plant_the_bomb" ||
+                        this.m_deathmatchFirstTo > 0) &&
+                    !msg.gameOver
+                ) {
                     this.m_uiManager.beginSpectating();
                     this.m_uiManager.setSpectating(true, this.teamMode);
                     this.m_uiManager.clearStatsElems();

@@ -1,6 +1,7 @@
 import type { WebSocket } from "uWebSockets.js";
 import { type ChildProcess, fork } from "child_process";
 import { randomUUID } from "crypto";
+import { normalizeDeathmatchFirstTo } from "../../../shared/deathmatch/rounds";
 import { type MapDef, MapDefs } from "../../../shared/defs/mapDefs";
 import {
     type AmongUsImpostorCount,
@@ -44,6 +45,7 @@ class GameProcess implements GameData {
     disablePerks = false;
     disableLooting = false;
     showEnemiesOnMap = true;
+    deathmatchFirstTo = 1;
     id = "";
     aliveCount = 0;
     startedTime = 0;
@@ -96,6 +98,9 @@ class GameProcess implements GameData {
                     this.disablePerks = !!msg.disablePerks;
                     this.disableLooting = !!msg.disableLooting;
                     this.showEnemiesOnMap = msg.showEnemiesOnMap !== false;
+                    this.deathmatchFirstTo = normalizeDeathmatchFirstTo(
+                        msg.deathmatchFirstTo,
+                    );
                     if (this.id !== msg.id) {
                         this.manager.processById.delete(this.id);
                         this.id = msg.id;
@@ -163,6 +168,7 @@ class GameProcess implements GameData {
         this.disablePerks = !!config.disablePerks;
         this.disableLooting = !!config.disableLooting;
         this.showEnemiesOnMap = config.showEnemiesOnMap !== false;
+        this.deathmatchFirstTo = normalizeDeathmatchFirstTo(config.deathmatchFirstTo);
         this.stopped = false;
         this.creating = true;
         this.groupHash = config.groupHash;
@@ -409,6 +415,8 @@ export class GameProcessManager implements GameManager {
                 proc.disablePerks === !!body.disablePerks &&
                 proc.disableLooting === !!body.disableLooting &&
                 proc.showEnemiesOnMap === (body.showEnemiesOnMap !== false) &&
+                proc.deathmatchFirstTo ===
+                    normalizeDeathmatchFirstTo(body.deathmatchFirstTo) &&
                 (requestedGroupHash
                     ? proc.groupHash === requestedGroupHash
                     : !proc.groupHash)
@@ -474,6 +482,7 @@ export class GameProcessManager implements GameManager {
                 disablePerks: !!body.disablePerks,
                 disableLooting: !!body.disableLooting,
                 showEnemiesOnMap: body.showEnemiesOnMap !== false,
+                deathmatchFirstTo: normalizeDeathmatchFirstTo(body.deathmatchFirstTo),
             });
         }
 

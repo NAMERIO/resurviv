@@ -31,6 +31,7 @@ import {
 } from "../utils/types";
 import { BedWarManager } from "./bedWarManager";
 import { CaptureTheFlagManager } from "./captureTheFlagManager";
+import { DeathmatchRoundManager } from "./deathmatchRoundManager";
 import { DominationManager } from "./dominationManager";
 import { GameModeManager } from "./gameModeManager";
 import { Grid } from "./grid";
@@ -115,6 +116,7 @@ export class Game {
     gunGameManager: GunGameManager;
     bedWarManager: BedWarManager;
     plantTheBombManager: PlantTheBombManager;
+    deathmatchRoundManager: DeathmatchRoundManager;
     arenaStartLockTimer = 0;
     arenaLastCountdownSecond = -1;
     arenaGoBroadcasted = false;
@@ -253,6 +255,7 @@ export class Game {
         this.gunGameManager = new GunGameManager(this);
         this.bedWarManager = new BedWarManager(this);
         this.plantTheBombManager = new PlantTheBombManager(this);
+        this.deathmatchRoundManager = new DeathmatchRoundManager(this);
         this.modeManager = new GameModeManager(this);
 
         if (
@@ -402,6 +405,7 @@ export class Game {
 
         this.profiler.addSample("plantTheBomb");
         this.plantTheBombManager.update(dt);
+        this.deathmatchRoundManager.update(dt);
         this.profiler.endSample();
 
         this.profiler.addSample("map");
@@ -945,6 +949,7 @@ export class Game {
             disablePerks: this.disablePerks,
             disableLooting: this.disableLooting,
             showEnemiesOnMap: this.showEnemiesOnMap,
+            deathmatchFirstTo: this.deathmatchRoundManager.firstTo,
             canJoin: this.canJoin,
             aliveCount: this.aliveCount,
             startedTime: this.startedTime,

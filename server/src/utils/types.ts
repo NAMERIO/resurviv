@@ -133,6 +133,7 @@ export interface ServerGameConfig {
     readonly disablePerks?: boolean;
     readonly disableLooting?: boolean;
     readonly showEnemiesOnMap?: boolean;
+    readonly deathmatchFirstTo?: number;
 }
 
 export interface GameData {
@@ -147,6 +148,7 @@ export interface GameData {
     disablePerks?: boolean;
     disableLooting?: boolean;
     showEnemiesOnMap?: boolean;
+    deathmatchFirstTo?: number;
     canJoin: boolean;
     aliveCount: number;
     startedTime: number;
@@ -167,6 +169,7 @@ export const zFindGamePrivateBody = z.object({
     disablePerks: z.boolean().optional(),
     disableLooting: z.boolean().optional(),
     showEnemiesOnMap: z.boolean().optional(),
+    deathmatchFirstTo: z.union([z.literal(1), z.literal(3), z.literal(5)]).optional(),
     groupHash: z.string().optional(),
     targetGameId: z.string().optional(),
     playerData: z.array(

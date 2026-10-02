@@ -6160,11 +6160,14 @@ a:active {
 #modal-prestige-arena .battle-type,
 #modal-prestige-arena .battle-team-count,
 #modal-prestige-arena .battle-minigame,
+#modal-prestige-arena .battle-first-to,
 #modal-prestige-arena .battle-impostors,
 #modal-prestige-arena #create-mode,
 #modal-prestige-arena #create-type,
 #modal-prestige-arena #create-team-count,
 #modal-prestige-arena #create-minigame,
+#modal-prestige-arena #create-first-to-control,
+#modal-prestige-arena .battle-first-to,
 #modal-prestige-arena #create-impostors,
 #modal-prestige-arena .spectate-mode,
 #modal-prestige-arena .spectate-type {
@@ -6214,7 +6217,10 @@ a:active {
   box-shadow: inset 0 -2px #3f2544;
 }
 
+#modal-prestige-arena .battle-first-to,
 #modal-prestige-arena .battle-impostors,
+#modal-prestige-arena #create-first-to-control,
+#modal-prestige-arena .battle-first-to,
 #modal-prestige-arena #create-impostors {
   background: #8a3a3a;
   box-shadow: inset 0 -2px #642b2b;
@@ -6229,6 +6235,8 @@ a:active {
 #modal-prestige-arena .create-game-type,
 #modal-prestige-arena .create-game-team-count,
 #modal-prestige-arena .create-game-minigame,
+#modal-prestige-arena .create-game-first-to,
+#modal-prestige-arena .battle-game-first-to,
 #modal-prestige-arena .create-game-impostors,
 #modal-prestige-arena .spectate-game-mode,
 #modal-prestige-arena .spectate-game-type {
@@ -6614,7 +6622,7 @@ a:active {
 }
 
 #modal-prestige-arena
-  #modal-battle-window.arena-joined-layout.arena-among-us
+  #modal-battle-window.arena-joined-layout:is(.arena-among-us, .arena-deathmatch-rounds)
   .battle-left-panel {
   grid-template-areas:
     "counter"
@@ -8146,10 +8154,13 @@ a:active {
   #modal-prestige-arena .battle-type,
   #modal-prestige-arena .battle-region,
   #modal-prestige-arena .battle-minigame,
+  #modal-prestige-arena .battle-first-to,
   #modal-prestige-arena .battle-impostors,
   #modal-prestige-arena #create-mode,
   #modal-prestige-arena #create-type,
   #modal-prestige-arena #create-minigame,
+  #modal-prestige-arena #create-first-to-control,
+  #modal-prestige-arena .battle-first-to,
   #modal-prestige-arena #create-impostors {
     height: 44px;
   }
@@ -8540,6 +8551,7 @@ a:active {
   #modal-prestige-arena .battle-team-count,
   #modal-prestige-arena .battle-region,
   #modal-prestige-arena .battle-minigame,
+  #modal-prestige-arena .battle-first-to,
   #modal-prestige-arena .battle-impostors,
   #modal-prestige-arena #battle-loadout-button,
   #modal-prestige-arena #game-status,
@@ -24075,5 +24087,57 @@ div.roulette {
     bottom: 29px;
     right: 4px;
     top: auto;
+  }
+}
+
+#modal-prestige-arena .create-first-to-group,
+#modal-prestige-arena .battle-first-to {
+  grid-area: impostors;
+  min-width: 0;
+}
+
+#modal-prestige-arena .deathmatch-first-to-select {
+  appearance: auto;
+  background: transparent;
+  border: 0;
+  color: white;
+  cursor: pointer;
+  flex: 1;
+  font:
+    700 20px "Roboto Condensed",
+    sans-serif;
+  height: 100%;
+  min-width: 0;
+  padding: 0 14px;
+}
+
+#modal-prestige-arena .deathmatch-first-to-select option {
+  background: #202020;
+  color: white;
+}
+
+#modal-prestige-arena .deathmatch-first-to-select:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+@media (min-width: 901px) {
+  #modal-prestige-arena
+    #modal-battle-window.arena-joined-layout.arena-deathmatch-rounds
+    .battle-left-panel {
+    grid-template-rows: 52px 44px repeat(6, 42px) auto auto;
+  }
+
+  #modal-prestige-arena
+    #modal-battle-window.arena-deathmatch-rounds
+    :is(
+      .battle-mode,
+      .battle-type,
+      .battle-team-count,
+      .battle-region,
+      .battle-minigame,
+      .battle-first-to
+    ) {
+    height: 42px;
   }
 }

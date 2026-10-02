@@ -50,6 +50,7 @@ export interface RoomData {
     arena: boolean;
     teamsLocked: boolean;
     teamCount: ArenaTeamCount;
+    deathmatchFirstTo: number;
     miniGame: PrivateLobbyMiniGame;
     amongUsImpostorCount: AmongUsImpostorCount;
     disableAirstrikes: boolean;
@@ -148,6 +149,7 @@ export const zClientRoomData = z.object({
     gameModeIdx: z.number(),
     arena: z.boolean().optional(),
     teamsLocked: z.boolean().optional(),
+    deathmatchFirstTo: z.union([z.literal(1), z.literal(3), z.literal(5)]).optional(),
     teamCount: z.number().int().min(2).max(4).optional(),
     miniGame: z.enum(PrivateLobbyMiniGameIds).optional(),
     amongUsImpostorCount: z.number().int().min(1).max(3).optional(),

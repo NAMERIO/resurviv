@@ -353,6 +353,7 @@ export class PlayerBarn {
             }
         }
 
+        this.game.deathmatchRoundManager.registerPlayer(player);
         return player;
     }
 
@@ -2863,7 +2864,8 @@ export class Player extends BaseGameObject {
             !isDominationMiniGame(this.game.miniGame) &&
             !isBedWarMiniGame(this.game.miniGame) &&
             !isPlantTheBombMiniGame(this.game.miniGame) &&
-            !this.game.gunGameManager.enabled
+            !this.game.gunGameManager.enabled &&
+            !this.game.deathmatchRoundManager.enabled
         ) {
             return;
         }
@@ -2881,7 +2883,11 @@ export class Player extends BaseGameObject {
         this.emoteCounter = 0;
         this.layer = 0;
 
+        const roundSpawn = this.game.deathmatchRoundManager.enabled
+            ? this.game.deathmatchRoundManager.getSpawn(this)
+            : undefined;
         const spawnPos =
+            roundSpawn?.pos ??
             this.game.captureTheFlagManager.getSpawnPos(this.arenaTeam, this.teamId) ??
             this.game.kingOfTheHillManager.getSpawnPos(this.arenaTeam, this.teamId) ??
             this.game.dominationManager.getSpawnPos(this.arenaTeam, this.teamId) ??
@@ -2890,6 +2896,7 @@ export class Player extends BaseGameObject {
             this.game.map.getSpawnPos(this.group, this.team, this.arenaTeam);
         v2.set(this.pos, spawnPos);
         this.collider.pos = this.pos;
+        this.layer = roundSpawn?.layer ?? 0;
         this.removeRole();
         this.applyCaptureTheFlagRespawnLoadout();
         this.applyGunGameLoadout();
@@ -2914,6 +2921,10 @@ export class Player extends BaseGameObject {
 
     resetPlantTheBombRound(): void {
         if (!isPlantTheBombMiniGame(this.game.miniGame)) return;
+        this.resetEliminationRound();
+    }
+
+    resetEliminationRound(): void {
         // Death clears the live perk list after kill() saves it for the next spawn.
         // Only take a fresh snapshot for players who survived the round, otherwise
         // we would replace the dead player's saved perks with an empty list.
@@ -2921,6 +2932,20 @@ export class Player extends BaseGameObject {
             this.captureTheFlagRespawnPerks = this.perks.map((perk) => ({ ...perk }));
         }
         this.cancelAction();
+        this.vehicle?.dismount(this, false);
+        this.shootHold = false;
+        this.shootStart = false;
+        this.moveLeft = this.moveRight = this.moveUp = this.moveDown = false;
+        this.burnEffect = this.poisonEffect = this.frozen = false;
+        this.burnTicker =
+            this.burnDuration =
+            this.poisonTicker =
+            this.poisonDuration =
+            this.frozenTicker =
+                0;
+        this.poisonSource = undefined;
+        this.poisonSourceTeamId = undefined;
+        this.downedBy = undefined;
         if (!this.dead) {
             this.dead = true;
             util.removeFrom(this.game.playerBarn.livingPlayers, this);
@@ -4821,6 +4846,12 @@ export class Player extends BaseGameObject {
             joinedMsg.teamMode = game.teamMode;
             joinedMsg.emotes = this.loadout.emotes;
             this.sendMsg(net.MsgType.Joined, joinedMsg);
+            if (game.deathmatchRoundManager.enabled) {
+                this.sendMsg(
+                    net.MsgType.DeathmatchRound,
+                    game.deathmatchRoundManager.getState(),
+                );
+            }
 
             if (!isBattleRoyaleMapName(this.game.mapName)) {
                 const leaderboardMsg = this.getKillsLeaderboardMsg();
@@ -5259,7 +5290,10 @@ export class Player extends BaseGameObject {
         const livingPlayers = this.game.playerBarn.livingPlayers.filter(
             (player) => player !== this,
         );
-        const plantTheBombTeammates = isPlantTheBombMiniGame(this.game.miniGame)
+        const roundSpectating =
+            isPlantTheBombMiniGame(this.game.miniGame) ||
+            this.game.deathmatchRoundManager.enabled;
+        const plantTheBombTeammates = roundSpectating
             ? livingPlayers.filter((player) =>
                   this.arenaTeam
                       ? player.arenaTeam === this.arenaTeam
@@ -5267,7 +5301,7 @@ export class Player extends BaseGameObject {
               )
             : [];
         const spectatablePlayers =
-            isPlantTheBombMiniGame(this.game.miniGame) && plantTheBombTeammates.length > 0
+            roundSpectating && plantTheBombTeammates.length > 0
                 ? plantTheBombTeammates
                 : livingPlayers;
 
@@ -5291,7 +5325,7 @@ export class Player extends BaseGameObject {
                 const shouldSpecRandom =
                     groupExistsOrAlive ||
                     teamExistsOrAlive ||
-                    isPlantTheBombMiniGame(this.game.miniGame) ||
+                    roundSpectating ||
                     !aliveKiller;
 
                 if (!shouldSpecRandom) {
@@ -5325,6 +5359,13 @@ export class Player extends BaseGameObject {
 
     damage(params: DamageParams) {
         if (this.game.gunGameManager.enabled && (!this.game.started || this.game.over))
+            return;
+        if (
+            this.game.deathmatchRoundManager.enabled &&
+            (!this.game.started ||
+                this.game.over ||
+                this.game.deathmatchRoundManager.roundOver)
+        )
             return;
         if (this.debug.godMode) return;
         if (this.vehicle && NpcDefs[this.vehicle.type].vehicle?.airborne) return;
@@ -5718,7 +5759,8 @@ export class Player extends BaseGameObject {
             isDominationMiniGame(this.game.miniGame) ||
             isBedWarMiniGame(this.game.miniGame) ||
             isPlantTheBombMiniGame(this.game.miniGame) ||
-            this.game.gunGameManager.enabled;
+            this.game.gunGameManager.enabled ||
+            this.game.deathmatchRoundManager.enabled;
         if (isCaptureTheFlagDeath) {
             this.captureTheFlagRespawnPerks = this.perks.map((perk) => ({ ...perk }));
         }
@@ -6563,7 +6605,12 @@ export class Player extends BaseGameObject {
             this.shootStart = false;
             return;
         }
-        if (this.game.arenaPrivate && this.game.arenaStartLockTimer > 0) {
+        if (
+            this.game.arenaPrivate &&
+            (this.game.arenaStartLockTimer > 0 ||
+                (this.game.deathmatchRoundManager.enabled &&
+                    this.game.deathmatchRoundManager.roundOver))
+        ) {
             this.moveLeft = false;
             this.moveRight = false;
             this.moveUp = false;

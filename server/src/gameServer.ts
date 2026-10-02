@@ -93,6 +93,7 @@ class GameServer {
             disablePerks: !!data.disablePerks,
             disableLooting: !!data.disableLooting,
             showEnemiesOnMap: data.showEnemiesOnMap !== false,
+            deathmatchFirstTo: data.deathmatchFirstTo,
             playerData: data.playerData,
             groupHash: data.groupHash,
             targetGameId: data.targetGameId,

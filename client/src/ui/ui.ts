@@ -14,6 +14,7 @@ import {
     CaptureTheFlagFlagStatus,
     type CaptureTheFlagMsg,
 } from "../../../shared/net/captureTheFlagMsg";
+import type { DeathmatchRoundMsg } from "../../../shared/net/deathmatchRoundMsg";
 import type { LeaderboardMsg } from "../../../shared/net/leaderboardMsg";
 import {
     type BedWarMsg,
@@ -2208,7 +2209,43 @@ export class UiManager {
         return 4;
     }
 
+    setDeathmatchRoundState(msg: DeathmatchRoundMsg) {
+        const container = $("#ui-kill-leaderboard").empty().removeClass("hide-on-mobile");
+        $("#ui-kill-leaderboard-title").text("Round scores");
+        $("<div>", {
+            class: "deathmatch-round-heading",
+            text: `ROUND ${msg.roundNumber} | FIRST TO ${msg.firstTo}`,
+        }).appendTo(container);
+        for (const { team, teamId, wins } of msg.teams) {
+            const row = $("<div>", {
+                class: "leaderboard-item deathmatch-team-score",
+            }).css(
+                "border-left-color",
+                helpers.colorToHexString(this.game.m_playerBarn.getTeamColor(teamId)),
+            );
+            $("<div>", { text: `Team ${team}` }).appendTo(row);
+            $("<div>", { text: `${wins} / ${msg.firstTo}` }).appendTo(row);
+            row.toggleClass(
+                "deathmatch-team-winner",
+                msg.matchOver && team === msg.winner,
+            );
+            container.append(row);
+        }
+        if (msg.roundOver) {
+            const result = msg.winner
+                ? `Team ${msg.winner} wins${msg.matchOver ? " the match" : " the round"}`
+                : "Round draw";
+            $("<div>", {
+                class: "deathmatch-round-status",
+                text: msg.matchOver
+                    ? result
+                    : `${result} | Next round in ${msg.nextRoundIn}s`,
+            }).appendTo(container);
+        }
+    }
+
     updateLeaderboard(players: LeaderboardMsg["players"]) {
+        if (this.game.m_deathmatchFirstTo > 0) return;
         if (!players.length) return;
 
         const container = $("#ui-kill-leaderboard");
@@ -2244,7 +2281,7 @@ export class UiManager {
     }
 
     clearLeaderboard() {
-        $("#ui-kill-leaderboard").empty();
+        $("#ui-kill-leaderboard").empty().addClass("hide-on-mobile");
     }
 
     clearAmongUsTaskMapMarkers() {
@@ -2674,7 +2711,11 @@ export class UiManager {
         const kingOfTheHillMode = this.game.m_privateMiniGame === "king_of_the_hill";
         const dominationMode = this.game.m_privateMiniGame === "domination";
         const plantTheBombMode = this.game.m_privateMiniGame === "plant_the_bomb";
-        if ((amongUsMode || plantTheBombMode) && !gameOver && localStats?.dead) {
+        if (
+            (amongUsMode || plantTheBombMode || this.game.m_deathmatchFirstTo > 0) &&
+            !gameOver &&
+            localStats?.dead
+        ) {
             this.beginSpectating();
             this.clearStatsElems();
             this.hideStats();
@@ -3055,7 +3096,7 @@ export class UiManager {
         const amongUsMode = Boolean(this.game.m_map.getMapDef().gameMode.amongUsMode);
         const plantTheBombMode = this.game.m_privateMiniGame === "plant_the_bomb";
         if (
-            (amongUsMode || plantTheBombMode) &&
+            (amongUsMode || plantTheBombMode || this.game.m_deathmatchFirstTo > 0) &&
             !this.game.m_gameOver &&
             playerStats.dead
         ) {

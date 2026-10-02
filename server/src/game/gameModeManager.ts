@@ -103,6 +103,19 @@ export class GameModeManager {
         // once, using their latest session, so changing names or reconnecting
         // cannot create duplicate teams/placements in match results.
         const players = this.getMatchParticipants();
+        if (this.game.deathmatchRoundManager.enabled) {
+            const manager = this.game.deathmatchRoundManager;
+            const teams = [...manager.score.keys()].sort(
+                (a, b) =>
+                    Number(b === manager.winner && manager.isMatchOver()) -
+                        Number(a === manager.winner && manager.isMatchOver()) ||
+                    (manager.score.get(b) ?? 0) - (manager.score.get(a) ?? 0),
+            );
+            return players.map((player) => ({
+                player,
+                rank: teams.indexOf(player.arenaTeam!) + 1,
+            }));
+        }
         if (this.game.gunGameManager.enabled) {
             return players
                 .sort(
@@ -196,6 +209,8 @@ export class GameModeManager {
 
     /** true if game needs to end */
     handleGameEnd(): boolean {
+        if (this.game.deathmatchRoundManager.enabled)
+            return this.game.deathmatchRoundManager.handleGameEnd();
         if (this.game.gunGameManager.enabled)
             return this.game.gunGameManager.handleGameEnd();
         if (this.game.plantTheBombManager.enabled) {
@@ -608,7 +623,10 @@ export class GameModeManager {
         // If there are no spectators, we have no need to run any logic.
         if (player.spectatorCount === 0) return;
 
-        if (this.game.plantTheBombManager.enabled) {
+        if (
+            this.game.plantTheBombManager.enabled ||
+            this.game.deathmatchRoundManager.enabled
+        ) {
             for (const spectator of player.spectators) {
                 const livingPlayers = this.game.playerBarn.livingPlayers.filter(
                     (candidate) => candidate !== spectator,
@@ -662,6 +680,10 @@ export class GameModeManager {
         }));
     }
     handlePlayerDeath(player: Player, params: DamageParams): void {
+        if (this.game.deathmatchRoundManager.enabled) {
+            player.kill(params);
+            return;
+        }
         if (this.game.gunGameManager.enabled) {
             player.captureTheFlagRespawnTicker = GunGameRespawnSeconds;
             player.kill(params);

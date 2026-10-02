@@ -695,6 +695,17 @@ export class Application {
                     this.hidePrestigeArenaBattleSelections();
                 }
             });
+            $("#create-first-to, #battle-first-to").on("change", (event) => {
+                if (this.teamMenu.joined && !this.canEditPrestigeArenaLiveOptions())
+                    return;
+                const firstTo = Number($(event.currentTarget).val());
+                if (this.teamMenu.active && this.teamMenu.arena) {
+                    this.teamMenu.setRoomProperty("deathmatchFirstTo", firstTo);
+                } else {
+                    this.teamMenu.roomData.deathmatchFirstTo = firstTo;
+                }
+                this.syncPrestigeArenaAmongUsOptions();
+            });
             this.prestigeArenaTeamCountDropdown.on("click", () => {
                 const visible =
                     this.prestigeArenaTeamCountSelection.css("display") !== "none";
@@ -2745,6 +2756,20 @@ export class Application {
         const isAmongUs = miniGame === "among_us";
         const isBattleRoyale = this.isBattleRoyaleMiniGame(miniGame);
         const canSelectTeamCount = miniGame === "pvp";
+        $(".create-first-to-group, .battle-first-to").toggleClass(
+            "hide",
+            !canSelectTeamCount,
+        );
+        $("#create-first-to, #battle-first-to")
+            .val(String(this.teamMenu.roomData.deathmatchFirstTo || 1))
+            .prop(
+                "disabled",
+                this.teamMenu.joined && !this.canEditPrestigeArenaLiveOptions(),
+            );
+        this.prestigeArenaBattlePane.toggleClass(
+            "arena-deathmatch-rounds",
+            canSelectTeamCount,
+        );
         const impostorCount = normalizeAmongUsImpostorCount(
             this.teamMenu.roomData.amongUsImpostorCount ||
                 this.prestigeArenaSelectedImpostorCount,

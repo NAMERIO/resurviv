@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import type { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 import type { UpgradeWebSocket, WSContext } from "hono/ws";
+import { normalizeDeathmatchFirstTo } from "../../shared/deathmatch/rounds";
 import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
 import { MapDefs } from "../../shared/defs/mapDefs";
 import {
@@ -167,6 +168,7 @@ class Room {
         arena: false,
         teamsLocked: false,
         teamCount: DefaultArenaTeamCount,
+        deathmatchFirstTo: 1,
         miniGame: DefaultPrivateLobbyMiniGame,
         amongUsImpostorCount: DefaultAmongUsImpostorCount,
         disableAirstrikes: false,
@@ -530,6 +532,7 @@ class Room {
                 }
             }
         }
+        this.data.deathmatchFirstTo = normalizeDeathmatchFirstTo(props.deathmatchFirstTo);
         this.data.amongUsImpostorCount = normalizeAmongUsImpostorCount(
             props.amongUsImpostorCount,
         );
@@ -611,7 +614,7 @@ class Room {
         if (!mode) return;
         const mapName =
             getPrivateLobbyMiniGameMapName(this.data.miniGame) ?? mode.mapName;
-        const warmupKey = `${this.data.region}:${mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.amongUsImpostorCount}:${this.data.disableAirstrikes}:${this.data.movingZone}:${this.data.disablePerks}:${this.data.disableLooting}:${this.data.showEnemiesOnMap}`;
+        const warmupKey = `${this.data.region}:${mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.amongUsImpostorCount}:${this.data.disableAirstrikes}:${this.data.movingZone}:${this.data.disablePerks}:${this.data.disableLooting}:${this.data.showEnemiesOnMap}:${this.data.deathmatchFirstTo}`;
         if (this.arenaWarmupKey === warmupKey) return;
         this.arenaWarmupKey = warmupKey;
         void this.teamMenu.server
@@ -632,6 +635,7 @@ class Room {
                 disablePerks: this.data.disablePerks,
                 disableLooting: this.data.disableLooting,
                 showEnemiesOnMap: this.data.showEnemiesOnMap,
+                deathmatchFirstTo: this.data.deathmatchFirstTo,
                 groupHash: this.id,
                 playerData: [],
             } satisfies FindGamePrivateBody)
@@ -1212,6 +1216,7 @@ class Room {
             disablePerks: this.data.arena ? this.data.disablePerks : false,
             disableLooting: this.data.arena ? this.data.disableLooting : false,
             showEnemiesOnMap: this.data.arena ? this.data.showEnemiesOnMap : true,
+            deathmatchFirstTo: this.data.deathmatchFirstTo,
             groupHash: this.data.arena ? this.id : undefined,
             playerData,
         });
@@ -1332,6 +1337,7 @@ class Room {
             disablePerks: this.data.disablePerks,
             disableLooting: this.data.disableLooting,
             showEnemiesOnMap: this.data.showEnemiesOnMap,
+            deathmatchFirstTo: this.data.deathmatchFirstTo,
             groupHash: this.id,
             targetGameId: this.currentArenaGameId,
             playerData,

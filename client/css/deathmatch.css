@@ -32,3 +32,17 @@
     width: 100% !important;
   }
 }
+
+.deathmatch-round-heading,
+.deathmatch-round-status {
+  padding: 6px 8px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.deathmatch-team-score {
+  border-left: 3px solid;
+}
+.deathmatch-team-winner {
+  background: rgba(255, 215, 80, 0.25);
+}
