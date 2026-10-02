@@ -670,7 +670,7 @@ h2 {
   background: rgba(0, 0, 0, 0.26);
 }
 .match-card.is-selected {
-  border-left-color: var(--green);
+  border-left: 1px solid #ffffff12;
 }
 .match-card.is-void {
   border-left-color: #cca75d;
