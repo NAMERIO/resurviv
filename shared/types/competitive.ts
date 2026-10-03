@@ -5,7 +5,7 @@ export const WHR_SETTINGS = {
     w: 0.0215,
     mean: 5000,
     scale: 1000,
-    placementGames: 3,
+    placementGames: 5,
 } as const;
 
 const slug = z.string().trim().min(1).max(100);
