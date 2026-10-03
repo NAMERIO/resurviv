@@ -31,6 +31,7 @@ import { Obstacle } from "./objects/obstacle";
 import type { Player } from "./objects/player";
 import { Structure } from "./objects/structure";
 import { RiverCreator } from "./riverCreator";
+import { RoundMapState } from "./roundMapState";
 
 const BattleRoyaleBridgeSpawns = {
     bunker_structure_05: { nearbyWidthMult: 1.2 },
@@ -229,6 +230,7 @@ export class GameMap {
     beachBounds: AABB;
 
     seed!: number;
+    private roundMapState?: RoundMapState;
     msg!: net.MapMsg;
     terrain!: ReturnType<typeof generateTerrain>;
     riverDescs!: MapRiverData[];
@@ -443,10 +445,18 @@ export class GameMap {
         }
         this.timerEnd("Generating all objects");
 
+        if (this.game.deathmatchRoundManager.enabled) {
+            this.roundMapState = new RoundMapState(this);
+        }
+
         this.mapStream.stream.index = 0;
         this.mapStream.serializeMsg(MsgType.Map, this.msg);
 
         renderMap(this.msg);
+    }
+
+    resetRound() {
+        this.roundMapState?.restore();
     }
 
     regenerate(seed?: number) {

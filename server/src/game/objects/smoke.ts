@@ -82,7 +82,7 @@ export class SmokeBarn {
     update(dt: number) {
         for (let i = 0; i < this.smokes.length; i++) {
             const smoke = this.smokes[i];
-            smoke.update(dt);
+            if (!smoke.destroyed) smoke.update(dt);
 
             if (smoke.destroyed) {
                 this.smokes.splice(i, 1);

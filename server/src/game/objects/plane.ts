@@ -179,6 +179,15 @@ export class PlaneBarn {
         this.newAirstrikeZones.length = 0;
     }
 
+    resetRound() {
+        for (const plane of this.planes) this.freeIds.push(plane.id);
+        this.planes.length = 0;
+        this.scheduledPlanes.length = 0;
+        this.airstrikeZones.length = 0;
+        this.newAirstrikeZones.length = 0;
+        this.sentHelp = false;
+    }
+
     schedulePlane(time: number, options: PlaneOptions) {
         this.scheduledPlanes.push({
             time,

@@ -1,5 +1,6 @@
 import $ from "jquery";
 import * as PIXI from "pixi.js-legacy";
+import { normalizeDeathmatchFirstTo } from "../../shared/deathmatch/rounds";
 import {
     AmongUsImpostorCounts,
     type ArenaTeam,
@@ -698,7 +699,9 @@ export class Application {
             $("#create-first-to, #battle-first-to").on("change", (event) => {
                 if (this.teamMenu.joined && !this.canEditPrestigeArenaLiveOptions())
                     return;
-                const firstTo = Number($(event.currentTarget).val());
+                const firstTo = normalizeDeathmatchFirstTo(
+                    Number($(event.currentTarget).val()),
+                );
                 if (this.teamMenu.active && this.teamMenu.arena) {
                     this.teamMenu.setRoomProperty("deathmatchFirstTo", firstTo);
                 } else {

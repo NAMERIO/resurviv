@@ -108,6 +108,15 @@ export class DeathmatchRoundManager {
             projectile.destroy();
         for (const smoke of this.game.smokeBarn.smokes) smoke.destroy();
         this.game.smokeBarn.emitters.length = 0;
+        this.game.explosionBarn.explosions.length = 0;
+        this.game.explosionBarn.newExplosions.length = 0;
+        for (const airdrop of this.game.airdropBarn.airdrops) {
+            if (!airdrop.destroyed) airdrop.destroy();
+        }
+        this.game.airdropBarn.airdrops.length = 0;
+        this.game.planeBarn.resetRound();
+        this.game.deadBodyBarn.clear();
+        this.game.map.resetRound();
         this.game.gas = new Gas(this.game);
         this.game.gas.advanceGasStage();
         this.roundNumber++;

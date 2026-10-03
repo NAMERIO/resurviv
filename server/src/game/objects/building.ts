@@ -305,7 +305,7 @@ export class Building extends BaseGameObject {
                     obj.type === puzzleDef.completeUseType
                 ) {
                     setTimeout(() => {
-                        obj.toggleDoor();
+                        if (!obj.destroyed) obj.toggleDoor();
                     }, puzzleDef.completeUseDelay * 1000);
                 }
             }
@@ -328,6 +328,7 @@ export class Building extends BaseGameObject {
             );
         } else {
             this.puzzleResetTimeout = setTimeout(() => {
+                if (this.destroyed) return;
                 this.puzzleErrSeq++;
                 this.setPartDirty();
                 setTimeout(
@@ -349,6 +350,7 @@ export class Building extends BaseGameObject {
     }
 
     resetPuzzle(): void {
+        if (this.destroyed) return;
         this.puzzleOrder.length = 0;
         for (const piece of this.childObjects) {
             if (

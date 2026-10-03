@@ -1,6 +1,7 @@
 // /api/team_v2 websocket msgs typing
 
 import { z } from "zod";
+import type { DeathmatchFirstTo } from "../deathmatch/rounds";
 import {
     type AmongUsImpostorCount,
     type ArenaTeam,
@@ -50,7 +51,7 @@ export interface RoomData {
     arena: boolean;
     teamsLocked: boolean;
     teamCount: ArenaTeamCount;
-    deathmatchFirstTo: number;
+    deathmatchFirstTo: DeathmatchFirstTo;
     miniGame: PrivateLobbyMiniGame;
     amongUsImpostorCount: AmongUsImpostorCount;
     disableAirstrikes: boolean;
