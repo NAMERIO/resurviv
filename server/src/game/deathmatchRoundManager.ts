@@ -73,7 +73,7 @@ export class DeathmatchRoundManager {
                     this.nextRoundIn = 3;
                     for (const player of this.game.playerBarn.livingPlayers) {
                         player.cancelAction();
-                        player.shootHold = player.shootStart = false;
+                        player.weaponManager.cancelCombat();
                         player.moveLeft =
                             player.moveRight =
                             player.moveUp =
@@ -103,6 +103,7 @@ export class DeathmatchRoundManager {
         }
         // Clear attacks from the previous round before restoring health and spawns.
         for (const bullet of this.game.bulletBarn.bullets) bullet.active = false;
+        this.game.bulletBarn.flush();
         this.game.bulletBarn.damages.length = 0;
         for (const projectile of this.game.projectileBarn.projectiles)
             projectile.destroy();
@@ -117,6 +118,7 @@ export class DeathmatchRoundManager {
         this.game.planeBarn.resetRound();
         this.game.deadBodyBarn.clear();
         this.game.map.resetRound();
+        this.game.npcBarn.resetRound();
         this.game.gas = new Gas(this.game);
         this.game.gas.advanceGasStage();
         this.roundNumber++;

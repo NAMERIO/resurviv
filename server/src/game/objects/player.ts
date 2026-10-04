@@ -409,6 +409,7 @@ export class PlayerBarn {
         // this.game.pluginManager.emit("playerJoin", player);
         onPlayerJoin(player);
         player.applyGunGameLoadout();
+        player.saveDeathmatchSpawnLoadout();
 
         // update leaderboard entry
         const leaderboardKey = player.getLeaderboardKey();
@@ -1652,6 +1653,14 @@ export class Player extends BaseGameObject {
         replaceOnDeath?: string;
         isFromRole?: boolean;
     }> = [];
+    private deathmatchSpawnLoadout?: Pick<
+        Player,
+        "inventory" | "chest" | "scope" | "helmet" | "backpack" | "outfit" | "meleeSkin"
+    > & {
+        weapons: Array<{ type: string; ammo: number }>;
+        displayWeapons: string[];
+        perks: Player["_perks"];
+    };
     downed = false;
 
     downedCount = 0;
@@ -2014,6 +2023,7 @@ export class Player extends BaseGameObject {
         this.perkMenuTicker = 0;
         this.loadout.perk = perk;
         this.addPerk(perk, false);
+        this.saveDeathmatchSpawnLoadout();
         this.game.grid.addObject(this);
         this.playerStatusDirty = true;
         this.setDirty();
@@ -2925,10 +2935,11 @@ export class Player extends BaseGameObject {
     }
 
     resetEliminationRound(): void {
-        // Death clears the live perk list after kill() saves it for the next spawn.
-        // Only take a fresh snapshot for players who survived the round, otherwise
-        // we would replace the dead player's saved perks with an empty list.
-        if (!this.dead) {
+        this.weaponManager.cancelCombat();
+        this.reloadAgain = false;
+        // Other elimination modes retain end-of-round perks. Deathmatch restores
+        // the original spawn snapshot for both survivors and eliminated players.
+        if (!this.dead && !this.game.deathmatchRoundManager.enabled) {
             this.captureTheFlagRespawnPerks = this.perks.map((perk) => ({ ...perk }));
         }
         this.cancelAction();
@@ -2955,12 +2966,41 @@ export class Player extends BaseGameObject {
         this.respawnCaptureTheFlagPlayer();
     }
 
+    saveDeathmatchSpawnLoadout(): void {
+        if (
+            !this.game.deathmatchRoundManager.enabled ||
+            this.perkSelectionPending ||
+            this.deathmatchSpawnLoadout
+        )
+            return;
+
+        this.deathmatchSpawnLoadout = {
+            weapons: this.weapons.map(({ type, ammo }) => ({ type, ammo })),
+            displayWeapons: [...this.aprilFoolsDisplayWeapons],
+            inventory: { ...this.inventory },
+            perks: this.perks.map((perk) => ({ ...perk })),
+            chest: this.chest,
+            scope: this.scope,
+            helmet: this.helmet,
+            backpack: this.backpack,
+            outfit: this.outfit,
+            meleeSkin: this.meleeSkin,
+        };
+    }
+
     private applyCaptureTheFlagRespawnLoadout(): void {
-        const defaultItems = this.game.playerBarn.defaultItems;
+        const spawnLoadout = this.game.deathmatchRoundManager.enabled
+            ? this.deathmatchSpawnLoadout
+            : undefined;
+        const defaultItems = spawnLoadout ?? this.game.playerBarn.defaultItems;
 
         this.invManager.emptyAll();
-        this._perks.length = 0;
-        this._perkTypes.length = 0;
+        if (spawnLoadout) {
+            for (const perk of [...this.perks]) this.removePerk(perk.type);
+        } else {
+            this._perks.length = 0;
+            this._perkTypes.length = 0;
+        }
         this.hasRoleHelmet = false;
         this.streakReady = false;
         this.streakActive = false;
@@ -2990,14 +3030,20 @@ export class Player extends BaseGameObject {
             this.invManager.set(item as InventoryItem, amount as number);
         }
 
-        this.setLoadout(this.loadout as net.JoinMsg["loadout"]);
+        if (spawnLoadout) {
+            this.aprilFoolsDisplayWeapons = [...spawnLoadout.displayWeapons];
+            this.meleeSkin = spawnLoadout.meleeSkin;
+        } else {
+            this.setLoadout(this.loadout as net.JoinMsg["loadout"]);
+        }
         this._perks.length = 0;
         this._perkTypes.length = 0;
-        for (const perk of this.captureTheFlagRespawnPerks) {
+        for (const perk of spawnLoadout?.perks ?? this.captureTheFlagRespawnPerks) {
             this.addPerk(perk.type, perk.droppable, perk.replaceOnDeath, perk.isFromRole);
         }
         this.weaponManager.setCurWeapIndex(GameConfig.WeaponSlot.Primary);
-        this.weaponManager.showNextThrowable();
+        if (!spawnLoadout) this.weaponManager.showNextThrowable();
+        if (spawnLoadout) this.scope = spawnLoadout.scope;
         this.recalculateScale();
         this.healthDirty = true;
         this.boostDirty = true;

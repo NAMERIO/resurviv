@@ -51,6 +51,7 @@ interface DoorRoute {
 
 export class NpcBarn {
     npcs: Npc[] = [];
+    private roundSpawns: Array<{ type: string; pos: Vec2; layer: number }> = [];
 
     constructor(readonly game: Game) {}
 
@@ -66,6 +67,23 @@ export class NpcBarn {
                 const spawnPos = this.getNpcSpawnPos(type);
                 this.addNpc(type, spawnPos);
             }
+        }
+        if (this.game.deathmatchRoundManager.enabled) {
+            this.roundSpawns = this.npcs.map((npc) => ({
+                type: npc.type,
+                pos: v2.copy(npc.pos),
+                layer: npc.layer,
+            }));
+        }
+    }
+
+    resetRound() {
+        for (const npc of this.npcs) {
+            if (!npc.destroyed) npc.destroy();
+        }
+        this.npcs = [];
+        for (const spawn of this.roundSpawns) {
+            this.addNpc(spawn.type, v2.copy(spawn.pos), spawn.layer);
         }
     }
 
@@ -1118,6 +1136,13 @@ export class Npc extends BaseGameObject {
         if (state === this.state) return;
         this.state = state;
         this.setPartDirty();
+    }
+
+    override destroy() {
+        if (this.destroyed) return;
+        if (this.driver) this.dismount(this.driver, false);
+        this.mapIndicator?.kill();
+        super.destroy();
     }
 
     override damage(params: DamageParams) {

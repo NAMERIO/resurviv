@@ -403,14 +403,20 @@ export class WeaponManager {
     }
 
     cancelVehicleCombat() {
+        this.cancelCombat();
+    }
+
+    cancelCombat() {
         this.player.shootStart = false;
         this.player.shootHold = false;
         this.bufferInput = false;
         this.bursts.length = 0;
         this.meleeAttacks.length = 0;
+        this.scheduledReload = false;
         this.loadingBlasterCharge = 0;
         this.wasHolding = false;
         this.cookingThrowable = false;
+        this.cookTicker = 0;
         this.autoThrowFast = false;
         this.autoShootFast = false;
         this.autoPunchFast = false;
