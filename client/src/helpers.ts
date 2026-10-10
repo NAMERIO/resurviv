@@ -1,7 +1,10 @@
 import $ from "jquery";
 import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
 import type { GunSkinDef } from "../../shared/defs/gameObjects/gunSkinDefs";
-import type { MeleeDef } from "../../shared/defs/gameObjects/meleeDefs";
+import {
+    getMeleeSkinLootLayers,
+    type MeleeDef,
+} from "../../shared/defs/gameObjects/meleeDefs";
 import {
     getOutfitLootImg,
     type OutfitDef,
@@ -12,12 +15,24 @@ import * as net from "../../shared/net/net";
 import { device } from "./device";
 
 const truncateCanvas = document.createElement("canvas");
-const outfitSkinLootImageCache = new Map<string, string>();
-const outfitSkinLootImagePromises = new Map<string, Promise<string>>();
+const skinLootImageCache = new Map<string, string>();
+const skinLootImagePromises = new Map<string, Promise<string>>();
 
 function getPlayerSpritePath(sprite: string) {
     const path = `img/player/${sprite.slice(0, -4)}.svg`;
     return GIT_VERSION ? `${path}?v=${encodeURIComponent(GIT_VERSION)}` : path;
+}
+
+/**
+ * Encode an SVG as a data URL that also works inside an unquoted CSS `url()`:
+ * encodeURIComponent leaves ( ) ' as-is, which ends or breaks the url() token.
+ */
+function toSvgDataUrl(svg: string) {
+    const encoded = encodeURIComponent(svg).replace(
+        /[()']/g,
+        (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`,
+    );
+    return `data:image/svg+xml,${encoded}`;
 }
 
 interface OutfitSkinImageLayer {
@@ -185,7 +200,7 @@ export function createLootPreview(
         isGunSkin && options.gunSkinScale !== undefined
             ? `rotate(45deg) scale(${options.gunSkinScale})`
             : helpers.getCssTransformFromGameType(gameType);
-    return $("<div/>", {
+    const preview = $("<div/>", {
         class: `${className}${isGunSkin ? " loot-preview-gun-skin" : ""}`,
         css: {
             "background-image": `url(${helpers.getSvgFromGameType(gameType)})`,
@@ -197,6 +212,18 @@ export function createLootPreview(
             width: "100%",
         },
     });
+
+    // Built melee skin loot images load async; swap in once ready.
+    if (
+        def?.type === "melee" &&
+        getMeleeSkinLootLayers(def as MeleeDef).length &&
+        !skinLootImageCache.has(gameType)
+    ) {
+        skinLootImagePromises.get(gameType)?.then((image) => {
+            if (image) preview.css("background-image", `url(${image})`);
+        });
+    }
+    return preview;
 }
 
 async function buildOutfitSkinLootImage(def: OutfitDef) {
@@ -226,29 +253,49 @@ async function buildOutfitSkinLootImage(def: OutfitDef) {
 
         const scaledWidth = width * layer.scale;
         const scaledHeight = height * layer.scale;
-        const sourceUrl = `data:image/svg+xml,${encodeURIComponent(source)}`;
+        const sourceUrl = toSvgDataUrl(source);
         const filter = layer.tint === 0xffffff ? "" : ` filter="url(#${filterId})"`;
         return `<image href="${sourceUrl}" x="${layer.x - scaledWidth / 2}" y="${layer.y - scaledHeight / 2}" width="${scaledWidth}" height="${scaledHeight}"${filter}/>`;
     });
 
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="-44 -44 88 88"><defs>${filters.join("")}</defs><g transform="translate(0 3) rotate(90)">${images.join("")}</g></svg>`;
-    return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+    return toSvgDataUrl(svg);
 }
 
-function queueOutfitSkinLootImage(type: string, def: OutfitDef) {
-    const existing = outfitSkinLootImagePromises.get(type);
+async function buildMeleeSkinLootImage(def: MeleeDef) {
+    const layers = getMeleeSkinLootLayers(def);
+    const images = await Promise.all(
+        layers.map(async (layer) => {
+            const path = getPlayerSpritePath(layer.sprite);
+            const response = await fetch(path);
+            if (!response.ok) {
+                throw new Error(`Failed loading melee skin sprite ${path}`);
+            }
+            const sourceUrl = toSvgDataUrl(await response.text());
+            const half = layer.size / 2;
+            const rotDeg = (layer.rot * 180) / Math.PI;
+            return `<g transform="translate(${layer.x} ${layer.y}) rotate(${rotDeg})"><image href="${sourceUrl}" x="${-half}" y="${-half}" width="${layer.size}" height="${layer.size}"/></g>`;
+        }),
+    );
+
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">${images.join("")}</svg>`;
+    return toSvgDataUrl(svg);
+}
+
+function queueSkinLootImage(type: string, build: () => Promise<string>) {
+    const existing = skinLootImagePromises.get(type);
     if (existing) return existing;
 
-    const promise = buildOutfitSkinLootImage(def)
+    const promise = build()
         .then((image) => {
-            outfitSkinLootImageCache.set(type, image);
+            skinLootImageCache.set(type, image);
             return image;
         })
         .catch((error) => {
             console.error(`Failed generating skin loot image for ${type}`, error);
             return "";
         });
-    outfitSkinLootImagePromises.set(type, promise);
+    skinLootImagePromises.set(type, promise);
     return promise;
 }
 
@@ -516,8 +563,18 @@ export const helpers = {
         switch (defType) {
             case "gun_skin":
                 return `img/guns/${def.worldImg.sprite.slice(0, -4)}.svg`;
+            case "melee": {
+                const meleeDef = def as MeleeDef;
+                if (meleeDef.lootImg.skinLootImg && meleeDef.handSprites) {
+                    queueSkinLootImage(gameType, () => buildMeleeSkinLootImage(meleeDef));
+                    return (
+                        skinLootImageCache.get(gameType) ??
+                        getPlayerSpritePath(meleeDef.handSprites.spriteR)
+                    );
+                }
+                return `img/loot/${meleeDef.lootImg.sprite.slice(0, -4)}.svg`;
+            }
             case "gun":
-            case "melee":
             case "throwable":
             case "heal":
             case "boost":
@@ -542,9 +599,11 @@ export const helpers = {
                 const outfitDef = def as OutfitDef;
                 const lootImg = getOutfitLootImg(outfitDef);
                 if (outfitDef.lootImg.skinLootImg) {
-                    queueOutfitSkinLootImage(gameType, outfitDef);
+                    queueSkinLootImage(gameType, () =>
+                        buildOutfitSkinLootImage(outfitDef),
+                    );
                     return (
-                        outfitSkinLootImageCache.get(gameType) ??
+                        skinLootImageCache.get(gameType) ??
                         `img/player/${lootImg.sprite.slice(0, -4)}.svg`
                     );
                 }
@@ -570,7 +629,8 @@ export const helpers = {
             return "rotate(45deg) scale(0.72)";
         }
         let transform = "";
-        if (def?.type === "melee" && def.lootImg) {
+        // Built fist loot images are already laid out upright.
+        if (def?.type === "melee" && def.lootImg && !getMeleeSkinLootLayers(def).length) {
             transform = `rotate(${def.lootImg.rot || 0}rad) scaleX(${
                 def.lootImg.mirror ? -1 : 1
             })`;
