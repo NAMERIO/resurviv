@@ -38,6 +38,11 @@ export interface MeleeDef {
     //     bullet?: string
     // }
     lootImg: {
+        /**
+         * Build the loot image from the skin's own sprites instead of a separate loot sprite:
+         * fist skins show both hand sprites side by side, other melees use their worldImg sprite.
+         */
+        skinLootImg?: boolean;
         sprite: string;
         scale: number;
         rad?: number;
@@ -93,8 +98,37 @@ export interface Img {
     renderOnHand?: boolean;
 }
 
+export interface MeleeSkinLootLayer {
+    sprite: string;
+    /** Center of the sprite in the 128x128 loot image. */
+    x: number;
+    y: number;
+    /** Drawn width and height of the sprite in the 128x128 loot image. */
+    size: number;
+    /** Rotation of the sprite around its center, in radians. */
+    rot: number;
+}
+
+/**
+ * Hand sprite layout for fist skins that build their loot image with `skinLootImg`.
+ * Hand sprites face forward (right) in game, so they're turned upright like the
+ * hand-drawn fist loot images; `lootImg.rot` adds to that for sprites drawn another way.
+ */
+export function getMeleeSkinLootLayers(def: MeleeDef): MeleeSkinLootLayer[] {
+    if (!def.lootImg.skinLootImg || !def.handSprites) return [];
+    const rot = -Math.PI / 2 + (def.lootImg.rot ?? 0);
+    return [
+        { sprite: def.handSprites.spriteL, x: 33, y: 64, size: 72, rot },
+        { sprite: def.handSprites.spriteR, x: 95, y: 64, size: 72, rot },
+    ];
+}
+
 function defineMeleeSkin(baseType: string, params: DeepPartial<MeleeDef>): MeleeDef {
-    return util.mergeDeep({}, BaseDefs[baseType], params);
+    const def: MeleeDef = util.mergeDeep({}, BaseDefs[baseType], params);
+    if (def.lootImg.skinLootImg && !def.handSprites && def.worldImg) {
+        def.lootImg.sprite = def.worldImg.sprite;
+    }
+    return def;
 }
 
 const BaseDefs: Record<string, MeleeDef> = {
@@ -2689,7 +2723,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-tiger-seed.img",
+            skinLootImg: true,
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2706,7 +2740,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-tiger-seed.img",
+            skinLootImg: true,
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2723,7 +2757,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-tiger-seed.img",
+            skinLootImg: true,
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2740,7 +2774,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-tiger-seed.img",
+            skinLootImg: true,
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2757,7 +2791,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-tiger-seed.img",
+            skinLootImg: true,
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2774,7 +2808,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-tiger-seed.img",
+            skinLootImg: true,
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2791,7 +2825,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-skeleton.img",
+            skinLootImg: true,
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,
@@ -2808,7 +2842,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         noPotatoSwap: true,
         noDropOnDeath: true,
         lootImg: {
-            sprite: "loot-weapon-fists-tiger-seed.img",
+            skinLootImg: true,
             scale: 0.3,
             rad: 25,
             tint: 0xffffff,

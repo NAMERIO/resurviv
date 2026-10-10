@@ -4,6 +4,10 @@ import { type CanvasRenderingContext2D, createCanvas, loadImage } from "canvas";
 import sharp from "sharp";
 import { GameObjectDefs } from "../../../shared/defs/gameObjectDefs";
 import {
+    getMeleeSkinLootLayers,
+    type MeleeDef,
+} from "../../../shared/defs/gameObjects/meleeDefs";
+import {
     getOutfitLootImg,
     type OutfitDef,
 } from "../../../shared/defs/gameObjects/outfitDefs";
@@ -302,6 +306,34 @@ async function drawOutfitPreview(
     ctx.restore();
 }
 
+async function drawMeleeSkinPreview(
+    ctx: CanvasRenderingContext2D,
+    def: MeleeDef,
+    x: number,
+    y: number,
+    size: number,
+) {
+    // Layers are laid out in a 128x128 loot image; fit it like other item images.
+    const scale = (size * 0.85) / 128;
+    const originX = x + (size - 128 * scale) / 2;
+    const originY = y + (size - 128 * scale) / 2;
+
+    for (const layer of getMeleeSkinLootLayers(def)) {
+        const imagePath = playerSpritePath(layer.sprite);
+        if (!imagePath) continue;
+
+        try {
+            const image = await loadAssetImage(imagePath);
+            const drawSize = layer.size * scale;
+            ctx.save();
+            ctx.translate(originX + layer.x * scale, originY + layer.y * scale);
+            ctx.rotate(layer.rot);
+            ctx.drawImage(image, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+            ctx.restore();
+        } catch {}
+    }
+}
+
 function itemTypeIconPath(itemType: string) {
     const def = GameObjectDefs[itemType] as { type?: string } | undefined;
     const relativePath = (() => {
@@ -385,6 +417,8 @@ async function drawItem(
 
     if (def?.type === "outfit" && (def as OutfitDef).lootImg.skinLootImg) {
         await drawOutfitPreview(ctx, def as OutfitDef, x, y, size);
+    } else if (def?.type === "melee" && getMeleeSkinLootLayers(def as MeleeDef).length) {
+        await drawMeleeSkinPreview(ctx, def as MeleeDef, x, y, size);
     } else {
         const imagePath = getBundleItemImagePath(itemType);
         if (imagePath) {

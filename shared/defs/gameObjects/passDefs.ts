@@ -583,10 +583,9 @@ export const PassDefs: Record<string, PassDef> = {
                 level: 50,
                 gp: 200,
             },
-            // TODO: needs to be added (not in the game yet) - new SPAS-12 svg design
             {
                 level: 65,
-                item: "spas12_harvest",
+                item: "spas16_jackolantern",
             },
             {
                 level: 80,

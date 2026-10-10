@@ -1646,12 +1646,11 @@ export class LoadoutMenu {
             $("#weapon-stats-rarity")
                 .html(rarityNames[rarity] || "stock")
                 .css("color", rarityColors[rarity] || "#c5c5c5");
-            const sprite = meleeDef.lootImg.sprite;
-            if (sprite) {
-                const svgName = sprite.replace(/\.img$/, "");
+            const imagePath = helpers.getSvgFromGameType(type);
+            if (imagePath) {
                 $("#weapon-stats-image-inner").css(
                     "background-image",
-                    `url(img/loot/${svgName}.svg)`,
+                    `url(${imagePath})`,
                 );
             }
             $(".weapon-stat-bar-inner").css("width", "0%");

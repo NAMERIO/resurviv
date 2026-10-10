@@ -42,7 +42,8 @@ const _allowedStreaks = [
 ];
 // const _allowedGunSkins = [
 //     "mosin_gilded",
-//     "mosin_camo"
+//     "mosin_camo",
+//     "spas16_jackolantern",
 // ];
 const _featuredBundleUnlocks = [
     "outfitDemo",
