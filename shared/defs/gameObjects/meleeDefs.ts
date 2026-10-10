@@ -2699,6 +2699,40 @@ const SkinDefs: Record<string, MeleeDef> = {
             spriteR: "player-fists-acorn-r.img",
         },
     }),
+    fist_chainfist: defineMeleeSkin("fists", {
+        name: "Chainfists",
+        rarity: Rarity.Rare,
+        lore: "Knuckle Up. Lock down.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-tiger-seed.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-chainfist-l.img",
+            spriteR: "player-fists-chainfist-r.img",
+        },
+    }),
+    fist_caughtYou: defineMeleeSkin("fists", {
+        name: "Caught You",
+        rarity: Rarity.Rare,
+        lore: "For those who like to catch their enemies off guard.",
+        noPotatoSwap: true,
+        noDropOnDeath: true,
+        lootImg: {
+            sprite: "loot-weapon-fists-tiger-seed.img",
+            scale: 0.3,
+            rad: 25,
+            tint: 0xffffff,
+        },
+        handSprites: {
+            spriteL: "player-fists-spiderweb-l.img",
+            spriteR: "player-fists-spiderweb-r.img",
+        },
+    }),
     fist_candyCorn: defineMeleeSkin("fists", {
         name: "Candy Corn",
         rarity: Rarity.Uncommon,
