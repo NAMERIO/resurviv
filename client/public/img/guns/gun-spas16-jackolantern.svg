@@ -20,9 +20,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="12.912"
-     inkscape:cx="23.892503"
-     inkscape:cy="70.748141"
+     inkscape:zoom="1.614"
+     inkscape:cx="-156.44362"
+     inkscape:cy="145.2912"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -72,7 +72,7 @@
        y1="107.4896"
        x2="78.458753"
        y2="107.4896"
-       gradientTransform="matrix(0.6436503,0,0,1.5536387,1.7524332,-16.648115)"
+       gradientTransform="matrix(0.6436503,0,0,1.5536387,1.7524332,-39.572526)"
        gradientUnits="userSpaceOnUse" />
     <radialGradient
        inkscape:collect="always"
@@ -81,7 +81,7 @@
        cx="27.58747"
        cy="240.77604"
        r="4.7761981"
-       gradientTransform="matrix(1.3085651,0,0,0.76419585,1.7524332,-16.648115)"
+       gradientTransform="matrix(1.3085651,0,0,0.76419585,1.7524332,-39.572526)"
        fx="27.58747"
        fy="240.77604"
        gradientUnits="userSpaceOnUse" />
@@ -92,7 +92,7 @@
        cx="26.925728"
        cy="254.38499"
        r="5.6543978"
-       gradientTransform="matrix(1.3289271,0.07748098,-0.04477714,0.76800217,12.96314,-18.402572)"
+       gradientTransform="matrix(1.3289271,0.07748098,-0.04477714,0.76800217,12.96314,-41.326983)"
        fx="26.925728"
        fy="254.38499"
        gradientUnits="userSpaceOnUse" />
@@ -104,7 +104,7 @@
        y1="59.810011"
        x2="74.402324"
        y2="59.810011"
-       gradientTransform="matrix(0.67202262,0,0,1.4880452,1.7524332,-16.648115)"
+       gradientTransform="matrix(0.67202262,0,0,1.4880452,1.7524332,-39.572526)"
        gradientUnits="userSpaceOnUse" />
   </defs>
   <!-- stock -->
@@ -114,14 +114,14 @@
      width="16"
      height="44"
      x="29.752434"
-     y="216.35188" />
+     y="193.42747" />
   <rect
      style="fill:#1a1a1a;stroke:none"
      id="stock-butt"
      width="18"
      height="14"
      x="28.752434"
-     y="258.35187" />
+     y="235.42746" />
   <!-- receiver: carved pumpkin -->
   <rect
      style="fill:url(#linearGradient1);stroke:#000000;stroke-width:8;stroke-linecap:round"
@@ -129,28 +129,28 @@
      width="21"
      height="62"
      x="27.252434"
-     y="154.35188" />
+     y="131.42747" />
   <path
      style="fill:none;stroke:#b4500d;stroke-width:1.6;stroke-linecap:round"
-     d="m 34.252433,186.35188 v 24 m 7,-24 v 24"
+     d="m 34.252433,163.42747 v 24 m 7,-24 v 24"
      id="receiver-ribs" />
   <path
      style="fill:url(#radialGradient1);stroke:#3a1604;stroke-width:1.3;stroke-linejoin:round"
-     d="m 32.252433,170.35188 2.6,-6 2.6,6 z m 6,0 2.6,-6 2.6,6 z"
+     d="m 32.252433,147.42747 2.6,-6 2.6,6 z m 6,0 2.6,-6 2.6,6 z"
      id="eyes" />
   <path
      style="fill:url(#radialGradient2);stroke:#3a1604;stroke-width:1.3;stroke-linejoin:round"
-     d="m 32.854832,175.35188 2.2,2.6 2.2,-2.6 2.2,2.6 2.2,-2.6 2.692872,3.53098 c -0.650933,1.52746 -1.609814,2.33469 -2.692872,3.86902 l -2.2,-2.6 -2.2,2.6 -2.2,-2.6 -2.2,2.6 -2.2,-3.2 z"
+     d="m 32.854832,152.42747 2.2,2.6 2.2,-2.6 2.2,2.6 2.2,-2.6 2.692872,3.53098 c -0.650933,1.52746 -1.609814,2.33469 -2.692872,3.86902 l -2.2,-2.6 -2.2,2.6 -2.2,-2.6 -2.2,2.6 -2.2,-3.2 z"
      id="mouth"
      sodipodi:nodetypes="ccccccccccccc" />
   <!-- pump / forend -->
   <path
      style="fill:url(#linearGradient2);stroke:#000000;stroke-width:8;stroke-miterlimit:10"
-     d="m 47.752475,81.701176 -9e-5,42.105234 -3.33333,6.54546 H 31.085723 l -3.333333,-6.54546 8.8e-5,-42.105234 3.333245,-5.349294 h 13.333332 z"
+     d="m 47.752475,58.776765 -9e-5,42.105235 -3.33333,6.54546 H 31.085723 l -3.333333,-6.54546 8.8e-5,-42.105235 3.333245,-5.349294 h 13.333332 z"
      id="forend" />
   <path
      style="fill:none;stroke:#b4500d;stroke-width:1.6;stroke-linecap:round"
-     d="m 32.752433,83.351885 v 39.999995 m 10,-39.999995 v 39.999995"
+     d="m 32.752433,60.427474 v 39.999996 m 10,-39.999996 v 39.999996"
      id="forend-ribs" />
   <!-- barrel -->
   <rect
@@ -159,14 +159,14 @@
      width="6"
      height="14"
      x="34.75243"
-     y="85.351883" />
+     y="62.427471" />
   <rect
      style="fill:#1a1a1a;stroke:none"
      id="barrel"
      width="12"
      height="18"
      x="31.752434"
-     y="57.351887" />
+     y="34.427475" />
   <!-- muzzle: pumpkin stem -->
   <rect
      style="fill:#2f4a16;stroke:#000000;stroke-width:2"
@@ -174,17 +174,17 @@
      width="15"
      height="5"
      x="30.252434"
-     y="55.351887" />
+     y="32.427475" />
   <rect
      style="fill:#5a8a2b;stroke:#000000;stroke-width:2.5"
      id="stem"
      width="11"
      height="19"
      x="32.252434"
-     y="37.851883" />
+     y="14.927471" />
   <path
      style="fill:none;stroke:#3a5c1a;stroke-width:1.5;stroke-linecap:round"
-     d="m 35.752433,41.351885 v 12 m 4,-12 v 12"
+     d="m 35.752433,18.427474 v 12 m 4,-12 v 12"
      id="stem-lines" />
   <!-- vine curling off the stem -->
   <!-- receiver top -->
@@ -194,37 +194,37 @@
      width="17"
      height="24"
      x="29.252434"
-     y="130.35188" />
+     y="107.42747" />
   <rect
      style="fill:#ff9a2e;stroke:none"
      id="receiver-top-stripe"
      width="9"
      height="3"
      x="33.252434"
-     y="140.85188" />
+     y="117.92747" />
   <circle
      style="fill:#000000;stroke:none"
      id="pump-pin"
      cx="37.75243"
-     cy="114.85188"
+     cy="91.927475"
      r="3.5" />
   <!-- side saddle: candy corn shells -->
   <circle
      style="fill:#fff3d6;stroke:#000000;stroke-width:4"
      id="shell-1"
      cx="55.75243"
-     cy="170.35188"
+     cy="147.42747"
      r="5" />
   <circle
      style="fill:#ff8a1f;stroke:#000000;stroke-width:4"
      id="shell-2"
      cx="55.75243"
-     cy="181.35188"
+     cy="158.42747"
      r="5" />
   <circle
      style="fill:#ffd23f;stroke:#000000;stroke-width:4"
      id="shell-3"
      cx="55.75243"
-     cy="191.35188"
+     cy="168.42747"
      r="5" />
 </svg>

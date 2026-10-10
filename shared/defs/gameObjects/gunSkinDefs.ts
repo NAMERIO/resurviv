@@ -34,10 +34,10 @@ export const GunSkinDefs: Record<string, GunSkinDef> = {
     },
     spas16_jackolantern: {
         type: "gun_skin",
-        name: "Jack-o'-Lantern SPAS-16",
+        name: "Jack-o'-Lantern SPAS-12",
         lore: "Carved fresh every Halloween. Loaded with candy corn.",
         rarity: Rarity.Mythic,
-        gunType: "spas16",
+        gunType: "spas12",
         worldImg: {
             sprite: "gun-spas16-jackolantern.img",
         },
