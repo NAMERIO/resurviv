@@ -18,7 +18,7 @@ export type PassRewardDef =
           gp: number;
       };
 
-export const CurrentPassType = "pass_survivr3";
+export const CurrentPassType = "pass_survivr4";
 
 export const PassDefs: Record<string, PassDef> = {
     pass_survivr1: {
@@ -483,6 +483,180 @@ export const PassDefs: Record<string, PassDef> = {
             {
                 level: 80,
                 item: "outfitBeru",
+            },
+        ],
+    },
+    pass_survivr4: {
+        type: "pass",
+        premiumPrice: 1500,
+        unlockAllPrice: 3000,
+        xp: [
+            50, 50, 50, 50, 50, 50, 50, 50, 75, 75, 75, 75, 75, 75, 100, 100, 100, 125,
+            125, 150, 75, 75, 75,
+        ],
+        items: [
+            {
+                level: 2,
+                item: "outfitItsMeCoin",
+            },
+            {
+                level: 3,
+                item: "fist_candyCorn",
+            },
+            {
+                level: 4,
+                item: "emote_facepalm",
+            },
+            {
+                level: 5,
+                gp: 25,
+            },
+            {
+                level: 6,
+                item: "outfitHazard",
+            },
+            {
+                level: 7,
+                item: "emote_wifail",
+            },
+            {
+                level: 8,
+                item: "fist_skeleton",
+            },
+            {
+                level: 9,
+                item: "outfitAutumnSweater",
+            },
+            {
+                level: 10,
+                gp: 50,
+            },
+            {
+                level: 11,
+                item: "emote_friend_ghost",
+            },
+            {
+                level: 12,
+                item: "outfitMummy",
+            },
+            {
+                level: 13,
+                item: "fist_acorn",
+            },
+            {
+                level: 14,
+                item: "emote_loot_bones",
+            },
+            {
+                level: 15,
+                gp: 50,
+            },
+            {
+                level: 16,
+                item: "outfitForestPlaid",
+            },
+            {
+                level: 17,
+                item: "fist_mapleLeaves",
+            },
+            {
+                level: 19,
+                item: "outfitStickySituation",
+            },
+            {
+                level: 20,
+                gp: 75,
+            },
+            {
+                level: 21,
+                item: "carvingfork",
+            },
+            {
+                level: 30,
+                item: "outfitPie",
+            },
+            {
+                level: 40,
+                item: "fist_ovenMitts",
+            },
+            {
+                level: 50,
+                gp: 200,
+            },
+            // TODO: needs to be added (not in the game yet) - new SPAS-12 svg design
+            {
+                level: 65,
+                item: "spas12_harvest",
+            },
+            {
+                level: 80,
+                item: "outfitGobble",
+            },
+        ],
+        premiumItems: [
+            {
+                level: 2,
+                item: "emote_eyebags",
+            },
+            {
+                level: 3,
+                gp: 100,
+            },
+            {
+                level: 5,
+                item: "outfitAutumnForest",
+            },
+            {
+                level: 6,
+                gp: 120,
+            },
+            {
+                level: 7,
+                item: "outfitGhost",
+            },
+            {
+                level: 9,
+                item: "death_halloween_treats",
+            },
+            {
+                level: 10,
+                gp: 130,
+            },
+            {
+                level: 12,
+                item: "emote_victory",
+            },
+            {
+                level: 14,
+                item: "knife_bone",
+            },
+            {
+                level: 15,
+                gp: 140,
+            },
+            {
+                level: 17,
+                item: "fist_pumpkin",
+            },
+            {
+                level: 20,
+                item: "outfitCandy",
+            },
+            {
+                level: 30,
+                gp: 145,
+            },
+            {
+                level: 40,
+                item: "death_maple_leaves",
+            },
+            {
+                level: 65,
+                gp: 150,
+            },
+            {
+                level: 80,
+                item: "outfitPlaqueDoctor",
             },
         ],
     },
