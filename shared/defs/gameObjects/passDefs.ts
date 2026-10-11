@@ -588,8 +588,16 @@ export const PassDefs: Record<string, PassDef> = {
                 item: "spas16_jackolantern",
             },
             {
-                level: 80,
+                level: 70,
                 item: "outfitGobble",
+            },
+            {
+                level: 75,
+                gp: 250,
+            },
+            {
+                level: 80,
+                item: "outfitCrimsonOni",
             },
         ],
         premiumItems: [
@@ -651,6 +659,10 @@ export const PassDefs: Record<string, PassDef> = {
             },
             {
                 level: 65,
+                item: "outfitEclipse",
+            },
+            {
+                level: 70,
                 gp: 150,
             },
             {
