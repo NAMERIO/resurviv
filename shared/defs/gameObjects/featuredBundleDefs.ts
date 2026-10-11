@@ -393,8 +393,8 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
 
 export const FeaturedBundlePages = [
     {
-        small: "bundle_srandom9",
-        large: "bundle_lrandom9",
+        small: "bundle_srandom1",
+        large: "bundle_lrandom3",
     },
     {
         small: "bundle_watermelon",
