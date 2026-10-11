@@ -1,0 +1,43 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g transform="translate(190 72) rotate(28) scale(0.95)">
+  <path d="M0 18 Q2 34 -4 46" stroke="#1A1A1A" stroke-width="11.00" stroke-linecap="round" fill="none"/>
+  <path d="M0 18 Q2 34 -4 46" stroke="#E8432E" stroke-width="5.00" stroke-linecap="round" fill="none"/>
+  <path d="M0 -50 L9 -33 L19 -38 L15 -14 L30 -27 L33 -20 L48 -24 L42 -8 L50 -3 L26 15 L30 26 L4 21 L-4 21 L-30 26 L-26 15 L-50 -3 L-42 -8 L-48 -24 L-33 -20 L-30 -27 L-15 -14 L-19 -38 L-9 -33Z" fill="#E8432E" stroke="#1A1A1A" stroke-width="6.00" stroke-linejoin="round"/>
+  <path d="M0 18 L0 -40 M0 10 L34 -18 M0 10 L-34 -18 M0 -6 L13 -26 M0 -6 L-13 -26 M0 16 L22 20 M0 16 L-22 20"
+        stroke="#A82A1C" stroke-width="3.16" stroke-linecap="round" fill="none"/>
+</g>
+<g transform="translate(70 188) rotate(-32) scale(0.85)">
+  <path d="M0 18 Q2 34 -4 46" stroke="#1A1A1A" stroke-width="11.00" stroke-linecap="round" fill="none"/>
+  <path d="M0 18 Q2 34 -4 46" stroke="#F28A1E" stroke-width="5.00" stroke-linecap="round" fill="none"/>
+  <path d="M0 -50 L9 -33 L19 -38 L15 -14 L30 -27 L33 -20 L48 -24 L42 -8 L50 -3 L26 15 L30 26 L4 21 L-4 21 L-30 26 L-26 15 L-50 -3 L-42 -8 L-48 -24 L-33 -20 L-30 -27 L-15 -14 L-19 -38 L-9 -33Z" fill="#F28A1E" stroke="#1A1A1A" stroke-width="6.00" stroke-linejoin="round"/>
+  <path d="M0 18 L0 -40 M0 10 L34 -18 M0 10 L-34 -18 M0 -6 L13 -26 M0 -6 L-13 -26 M0 16 L22 20 M0 16 L-22 20"
+        stroke="#B85F0C" stroke-width="3.53" stroke-linecap="round" fill="none"/>
+</g>
+<g transform="translate(122 118) rotate(-6) scale(1.35)">
+  <path d="M0 18 Q2 34 -4 46" stroke="#1A1A1A" stroke-width="11.00" stroke-linecap="round" fill="none"/>
+  <path d="M0 18 Q2 34 -4 46" stroke="#FFCB1F" stroke-width="5.00" stroke-linecap="round" fill="none"/>
+  <path d="M0 -50 L9 -33 L19 -38 L15 -14 L30 -27 L33 -20 L48 -24 L42 -8 L50 -3 L26 15 L30 26 L4 21 L-4 21 L-30 26 L-26 15 L-50 -3 L-42 -8 L-48 -24 L-33 -20 L-30 -27 L-15 -14 L-19 -38 L-9 -33Z" fill="#FFCB1F" stroke="#1A1A1A" stroke-width="6.00" stroke-linejoin="round"/>
+  <path d="M0 18 L0 -40 M0 10 L34 -18 M0 10 L-34 -18 M0 -6 L13 -26 M0 -6 L-13 -26 M0 16 L22 20 M0 16 L-22 20"
+        stroke="#C99A0A" stroke-width="2.22" stroke-linecap="round" fill="none"/>
+</g>
+<g transform="translate(205 190) rotate(60) scale(0.5)">
+  <path d="M0 18 Q2 34 -4 46" stroke="#1A1A1A" stroke-width="14.00" stroke-linecap="round" fill="none"/>
+  <path d="M0 18 Q2 34 -4 46" stroke="#FFCB1F" stroke-width="6.00" stroke-linecap="round" fill="none"/>
+  <path d="M0 -50 L9 -33 L19 -38 L15 -14 L30 -27 L33 -20 L48 -24 L42 -8 L50 -3 L26 15 L30 26 L4 21 L-4 21 L-30 26 L-26 15 L-50 -3 L-42 -8 L-48 -24 L-33 -20 L-30 -27 L-15 -14 L-19 -38 L-9 -33Z" fill="#FFCB1F" stroke="#1A1A1A" stroke-width="7.00" stroke-linejoin="round"/>
+  <path d="M0 18 L0 -40 M0 10 L34 -18 M0 10 L-34 -18 M0 -6 L13 -26 M0 -6 L-13 -26 M0 16 L22 20 M0 16 L-22 20"
+        stroke="#C99A0A" stroke-width="6.00" stroke-linecap="round" fill="none"/>
+</g>
+<g transform="translate(52 62) rotate(-55) scale(0.5)">
+  <path d="M0 18 Q2 34 -4 46" stroke="#1A1A1A" stroke-width="14.00" stroke-linecap="round" fill="none"/>
+  <path d="M0 18 Q2 34 -4 46" stroke="#E8432E" stroke-width="6.00" stroke-linecap="round" fill="none"/>
+  <path d="M0 -50 L9 -33 L19 -38 L15 -14 L30 -27 L33 -20 L48 -24 L42 -8 L50 -3 L26 15 L30 26 L4 21 L-4 21 L-30 26 L-26 15 L-50 -3 L-42 -8 L-48 -24 L-33 -20 L-30 -27 L-15 -14 L-19 -38 L-9 -33Z" fill="#E8432E" stroke="#1A1A1A" stroke-width="7.00" stroke-linejoin="round"/>
+  <path d="M0 18 L0 -40 M0 10 L34 -18 M0 10 L-34 -18 M0 -6 L13 -26 M0 -6 L-13 -26 M0 16 L22 20 M0 16 L-22 20"
+        stroke="#A82A1C" stroke-width="6.00" stroke-linecap="round" fill="none"/>
+</g>
+<circle cx="36" cy="130" r="5" fill="#F28A1E" stroke="#1A1A1A" stroke-width="2.5"/>
+<circle cx="222" cy="128" r="6" fill="#E8432E" stroke="#1A1A1A" stroke-width="2.5"/>
+<circle cx="150" cy="224" r="5" fill="#FFCB1F" stroke="#1A1A1A" stroke-width="2.5"/>
+<circle cx="110" cy="30" r="4" fill="#F28A1E" stroke="#1A1A1A" stroke-width="2.5"/>
+<circle cx="240" cy="30" r="4" fill="#FFCB1F" stroke="#1A1A1A" stroke-width="2.5"/>
+<circle cx="20" cy="230" r="4" fill="#E8432E" stroke="#1A1A1A" stroke-width="2.5"/>
+</svg>
