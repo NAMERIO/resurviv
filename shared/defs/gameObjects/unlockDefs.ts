@@ -585,7 +585,7 @@ const _allowedOutfits = [
     // "outfitVikingHelm",
     // "outfitGhost",
     // "outfitSpider",
-    // "outfitUnagi", 
+    // "outfitUnagi",
     // "outfitFrankenMonster",
     // "outfitBullyGear",
     // "outfitGobble",

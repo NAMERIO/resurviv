@@ -93,7 +93,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
     bundle_dinos: {
         name: "Dino Set",
         size: "small",
-        items: ["outfitGreenTeaRex", "fist_dinoclaws","outfitDisasteroid"],
+        items: ["outfitGreenTeaRex", "fist_dinoclaws", "outfitDisasteroid"],
         price: 2350,
         durationDays: 7,
     },
@@ -329,7 +329,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
     bundle_spooky: {
         name: "Spooky Set",
         size: "large",
-        items: ["outfitFrankenMonster", "outfitSpider","fist_caughtYou"],
+        items: ["outfitFrankenMonster", "outfitSpider", "fist_caughtYou"],
         price: 950,
         durationDays: 7,
     },

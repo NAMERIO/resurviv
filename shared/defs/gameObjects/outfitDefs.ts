@@ -4940,7 +4940,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             handSprite: "player-hands-outfitSzn3.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
-            backpackTint: 0x102B25,
+            backpackTint: 0x102b25,
             backpackSprite: "player-circle-base-01.img",
             frontSpritePos: { x: -12.5, y: 0 },
             frontSprite: "player-accessory-outfitSzn3.img",
@@ -5480,7 +5480,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-franken-monster.img",
-            frontSpritePos: { x: 0, y: -.2 },
+            frontSpritePos: { x: 0, y: -0.2 },
             frontSprite: "player-accessory-franken-monster.img",
         },
         lootImg: {
@@ -5505,7 +5505,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-unagi.img",
-            frontSpritePos: { x: -2, y: -.2 },
+            frontSpritePos: { x: -2, y: -0.2 },
             frontSprite: "player-accessory-unagi.img",
         },
         lootImg: {
