@@ -326,6 +326,13 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 750,
         durationDays: 7,
     },
+    bundle_spooky: {
+        name: "Spooky Set",
+        size: "large",
+        items: ["outfitFrankenMonster", "outfitSpider","fist_caughtYou"],
+        price: 950,
+        durationDays: 7,
+    },
     bundle_kinggalaxy: {
         name: "King Galaxy Set",
         size: "small",
@@ -397,12 +404,12 @@ export const FeaturedBundlePages = [
         large: "bundle_lrandom9",
     },
     {
-        small: "bundle_watermelon",
-        large: "bundle_ninja",
+        small: "bundle_farmer",
+        large: "bundle_spooky",
     },
     {
-        small: "bundle_bitplosion",
-        large: "bundle_dinos",
+        small: "bundle_sirloin",
+        large: "bundle_bugcat",
     },
 ] as const satisfies ReadonlyArray<
     Record<FeaturedBundleSize, keyof typeof FeaturedBundleDefs>
