@@ -4927,6 +4927,29 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+    outfitSzn3: defineOutfitSkin("outfitBase", {
+        name: "Season 3 Winner",
+        noDropOnDeath: true,
+        moveEmitter: "silverParticle",
+        lore: "Season 3 Clan Champions — [EL1TE] Clan",
+        rarity: 5,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitSzn3.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-outfitSzn3.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x102B25,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -12.5, y: 0 },
+            frontSprite: "player-accessory-outfitSzn3.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
     // === Private ===
     outfitPreacher: defineOutfitSkin("outfitBase", {
         name: "Preacher",
@@ -5410,6 +5433,80 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
             frontSpritePos: { x: 0, y: 0 },
             frontSprite: "player-accessory-viking-helm.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitSpider: defineOutfitSkin("outfitBase", {
+        name: "Arachnid",
+        noDropOnDeath: true,
+
+        rarity: 5,
+        lore: "For those who weave their web around the battlefield.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-spider.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-spider.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-spider.img",
+            frontSpritePos: { x: 0, y: 0 },
+            frontSprite: "player-accessory-spider.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitFrankenMonster: defineOutfitSkin("outfitBase", {
+        name: "Franken Monster",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "Stitched together from forgotten remnants.",
+
+        skinImg: {
+            aboveHand: true,
+            baseTint: 0xffffff,
+            baseSprite: "player-base-franken-monster.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-franken-monster.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-franken-monster.img",
+            frontSpritePos: { x: 0, y: -.2 },
+            frontSprite: "player-accessory-franken-monster.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitUnagi: defineOutfitSkin("outfitBase", {
+        name: "Unagi",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "The evil hopper.",
+
+        skinImg: {
+            aboveHand: true,
+            baseTint: 0xffffff,
+            baseSprite: "player-base-unagi.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-unagi.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-unagi.img",
+            frontSpritePos: { x: -2, y: -.2 },
+            frontSprite: "player-accessory-unagi.img",
         },
         lootImg: {
             skinLootImg: true,
