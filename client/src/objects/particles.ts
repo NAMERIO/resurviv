@@ -2337,6 +2337,9 @@ const ParticleDefs: Record<string, ParticleDef> = {
     bronzeParticle: createSkinTrail({
         image: ["part-armor-bronze-01.img", "part-armor-bronze-02.img"],
     }),
+    cosmicParticle: createSkinTrail({
+        image: ["part-asteroid-blue.img", "part-asteroid-red.img"],
+    }),
     diamondParticle: createSkinTrail({
         image: ["part-armor-diamond-01.img", "part-armor-diamond-02.img"],
     }),
@@ -2591,6 +2594,9 @@ const EmitterDefs: Record<string, EmitterDef> = {
     }),
     diamondParticle: createSkinTrailEmitter({
         particle: "diamondParticle",
+    }),
+    cosmicParticle: createSkinTrailEmitter({
+        particle: "cosmicParticle",
     }),
     windwalk: createHealEmitter({
         particle: "leafStim",
