@@ -6015,6 +6015,27 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+    outfitCosmicCollide: defineOutfitSkin("outfitBase", {
+        name: "Cosmic Collide",
+        noDropOnDeath: false,
+        moveEmitter: "cosmicParticle",
+        rarity: 5,
+        lore: "Zcore Had A Stupid Idea",
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-cosmic-collide.img",
+            handTint: 0xffffff,
+            handSprite: "player-fists-cosmic-collide.img",
+            footTint: 0xffffff,
+            footSprite: "player-hands-starry-night.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-cosmic-collide.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
 };
 
 export const OutfitDefs = { ...BaseDefs, ...SkinDefs };
