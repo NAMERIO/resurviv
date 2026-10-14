@@ -652,6 +652,11 @@ export class WeaponManager {
             return;
         }
 
+        if (this.player.debug.reloadFast) {
+            this.reload(this.curWeapIdx, true);
+            return;
+        }
+
         let duration = weaponDef.reloadTime;
         let action: number = GameConfig.Action.Reload;
 
