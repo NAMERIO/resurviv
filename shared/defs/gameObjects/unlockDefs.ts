@@ -382,6 +382,7 @@ const _allowedOutfits = [
     // "outfitDev",
     // "outfitGD",
     // "outfitMod",
+    // "outfitCosmicCollide",
     // "outfitTree",
     // "outfitParma",
     // "outfitWhite",
