@@ -199,7 +199,7 @@ function getClanRoleTitle(role: EffectiveClanRole) {
         case "owner":
             return "Owner: can manage clan settings, roles, requests, members, and messages.";
         case "admin":
-            return "Admin: can delete clan messages, kick members and mods, and add or remove mods.";
+            return "Admin: can manage join requests, delete clan messages, kick members and mods, and add or remove mods.";
         case "mod":
             return "Mod: can delete clan messages.";
         default:
@@ -1268,7 +1268,7 @@ export class ClanUi {
 
                 if (!res.success) {
                     const errorMessages: Record<string, string> = {
-                        not_owner: "Only the clan owner can manage requests.",
+                        not_allowed: "Only the clan owner or admins can manage requests.",
                         request_not_found: "This request no longer exists.",
                         clan_full: "This clan is full.",
                         already_in_clan: "This player is already in a clan.",
@@ -1579,6 +1579,8 @@ export class ClanUi {
             ? getEffectiveClanRole(currentMember)
             : "member";
         const isOwner = clan.isCurrentSeason && currentRole === "owner";
+        const canManageRequests =
+            clan.isCurrentSeason && (currentRole === "owner" || currentRole === "admin");
         if (clan.discordInviteUrl) {
             $("#clan-detail-discord-row").css("display", "flex");
         } else {
@@ -1625,17 +1627,19 @@ export class ClanUi {
             ).prop("checked", true);
             $("#clan-lock-control").show();
             $("#btn-clan-page-settings-tab").show();
-            $("#btn-clan-page-requests-tab").show();
         } else {
             $("#btn-clan-edit-icon").hide();
             $("#clan-tag-color-input").hide();
             $("#clan-tag-color-input-2").hide();
             $("#clan-lock-control").hide();
             $("#btn-clan-page-settings-tab").hide();
-            $("#btn-clan-page-requests-tab").hide();
-            if (this.clanPageTab === "settings" || this.clanPageTab === "requests") {
+            if (this.clanPageTab === "settings") {
                 this.clanPageTab = "details";
             }
+        }
+        $("#btn-clan-page-requests-tab").toggle(canManageRequests);
+        if (!canManageRequests && this.clanPageTab === "requests") {
+            this.clanPageTab = "details";
         }
         if (!clan.isCurrentSeason && clan.members.length === 0) {
             membersContainer.append(

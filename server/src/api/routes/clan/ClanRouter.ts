@@ -296,6 +296,26 @@ async function notifyClanMembersChanged(clanId: string) {
     });
 }
 
+async function notifyClanJoinRequestsChanged(clan: { id: string; ownerId: string }) {
+    const managers = await db
+        .select({ userId: clanMembersTable.userId })
+        .from(clanMembersTable)
+        .where(
+            and(
+                eq(clanMembersTable.clanId, clan.id),
+                or(
+                    eq(clanMembersTable.userId, clan.ownerId),
+                    eq(clanMembersTable.role, "admin"),
+                ),
+            ),
+        );
+
+    server.notifyUsersSocialEvent(
+        managers.map((member) => member.userId),
+        { type: "clan_join_requests_changed", clanId: clan.id },
+    );
+}
+
 async function userHasPendingClanRequest(clanId: string, userId?: string | null) {
     if (!userId) return false;
 
@@ -1145,7 +1165,14 @@ async function getClanDetail(
         createdAt: war.createdAt.getTime(),
     }));
 
-    const canViewRequests = !!viewerUserId && viewerUserId === clanInfo.ownerId;
+    const canViewRequests =
+        clanInfo.isCurrentSeason &&
+        !!viewerUserId &&
+        members.some(
+            (member) =>
+                member.odUserId === viewerUserId &&
+                (member.isOwner || member.role === "admin"),
+        );
     const joinRequests: ClanJoinRequest[] = canViewRequests
         ? (
               await db
@@ -1469,10 +1496,7 @@ ClanRouter.post("/request_join", validateParams(zRequestJoinClanRequest), async 
         `${user.username} requested to join the clan.`,
     );
 
-    server.notifyUsersSocialEvent([clan.ownerId], {
-        type: "clan_join_requests_changed",
-        clanId,
-    });
+    await notifyClanJoinRequestsChanged(clan);
 
     return c.json<RequestJoinClanResponse>({
         success: true,
@@ -1507,10 +1531,7 @@ ClanRouter.post("/cancel_request", validateParams(zCancelClanJoinRequest), async
         where: eq(clansTable.id, clanId),
     });
     if (clan) {
-        server.notifyUsersSocialEvent([clan.ownerId], {
-            type: "clan_join_requests_changed",
-            clanId,
-        });
+        await notifyClanJoinRequestsChanged(clan);
     }
 
     return c.json<CancelClanJoinRequestResponse>({ success: true });
@@ -1790,7 +1811,7 @@ ClanRouter.post(
 
         if (!membership) {
             return c.json<RespondClanJoinRequestResponse>(
-                { success: false, error: "not_owner" },
+                { success: false, error: "not_allowed" },
                 403,
             );
         }
@@ -1799,9 +1820,9 @@ ClanRouter.post(
             where: eq(clansTable.id, membership.clanId),
         });
 
-        if (!clan || clan.ownerId !== user.id) {
+        if (!clan || (clan.ownerId !== user.id && membership.role !== "admin")) {
             return c.json<RespondClanJoinRequestResponse>(
-                { success: false, error: "not_owner" },
+                { success: false, error: "not_allowed" },
                 403,
             );
         }
@@ -1824,6 +1845,7 @@ ClanRouter.post(
             await db
                 .delete(clanJoinRequestsTable)
                 .where(eq(clanJoinRequestsTable.id, request.id));
+            await notifyClanJoinRequestsChanged(clan);
             return c.json<RespondClanJoinRequestResponse>({ success: true });
         }
 
@@ -1835,6 +1857,7 @@ ClanRouter.post(
             await db
                 .delete(clanJoinRequestsTable)
                 .where(eq(clanJoinRequestsTable.id, request.id));
+            await notifyClanJoinRequestsChanged(clan);
             return c.json<RespondClanJoinRequestResponse>(
                 { success: false, error: "already_in_clan" },
                 400,
@@ -1858,6 +1881,7 @@ ClanRouter.post(
         });
 
         await addClanMember(clan.id, request.userId, requester?.username || "A member");
+        await notifyClanJoinRequestsChanged(clan);
 
         return c.json<RespondClanJoinRequestResponse>({ success: true });
     },

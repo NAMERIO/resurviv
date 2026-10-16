@@ -342,7 +342,7 @@ export type RespondClanJoinRequestResponse =
     | {
           success: false;
           error:
-              | "not_owner"
+              | "not_allowed"
               | "request_not_found"
               | "clan_full"
               | "already_in_clan"
