@@ -304,6 +304,7 @@ export class Bullet {
 
             if (
                 obj.__type !== ObjectType.Obstacle ||
+                (obj.isSkin && !obj.isPropDisguise) ||
                 obj.dead ||
                 obj.height < GameConfig.bullet.height ||
                 !util.sameLayer(obj.layer, this.layer) ||
@@ -432,6 +433,7 @@ export class Bullet {
 
             if (obj.__type === ObjectType.Obstacle) {
                 if (
+                    (obj.isSkin && !obj.isPropDisguise) ||
                     obj.dead ||
                     !util.sameLayer(obj.layer, this.layer) ||
                     obj.height < GameConfig.bullet.height ||

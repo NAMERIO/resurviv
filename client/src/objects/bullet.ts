@@ -276,6 +276,7 @@ export class BulletBarn {
                     const obstacle = obstacles[i];
                     if (
                         !!obstacle.active &&
+                        (!obstacle.isSkin || obstacle.isPropDisguise) &&
                         !obstacle.dead &&
                         !!util.sameLayer(obstacle.layer, b.layer) &&
                         obstacle.height >= GameConfig.bullet.height &&
