@@ -107,7 +107,7 @@ function clanRequest<T>(
         opts.contentType = "application/json; charset=utf-8";
         opts.data = JSON.stringify(data);
     }
-    $.ajax(opts)
+    return $.ajax(opts)
         .done((res) => callback(null, res))
         .fail((err) => callback(err));
 }
@@ -276,6 +276,9 @@ export class ClanUi {
     gifStillFrameCache = new Map<string, string | null>();
     viewingClanId: string | null = null;
     clansLocked = false;
+    clanSearchTimer: ReturnType<typeof setTimeout> | null = null;
+    clanListRequest: JQuery.jqXHR | null = null;
+    clanListRequestId = 0;
 
     constructor(
         public account: Account,
@@ -289,6 +292,7 @@ export class ClanUi {
         this.clanPageModal.onHide(() => {
             this.stopClanMessagePolling();
         });
+        this.mainModal.onHide(() => this.cancelClanSearch());
 
         this.populateClanRegionSelects();
         this.initUi();
@@ -478,8 +482,10 @@ export class ClanUi {
             this.loadClanList(1);
         });
 
-        $("#clan-search-input").on("keypress", (e) => {
+        $("#clan-search-input").on("input", () => this.scheduleClanSearch());
+        $("#clan-search-input").on("keydown", (e) => {
             if (e.key === "Enter") {
+                e.preventDefault();
                 this.loadClanList(1);
             }
         });
@@ -690,11 +696,14 @@ export class ClanUi {
         $("#clan-page-detail").toggle(tab === "details");
         $("#clan-settings-section").toggle(tab === "settings");
         $("#clan-requests-section").toggle(tab === "requests");
-        $("#clan-chat-section").toggle(
+        const showChat =
             tab === "details" &&
-                !!this.viewingClan &&
-                this.canUseClanChat(this.viewingClan),
-        );
+            !!this.viewingClan &&
+            this.canUseClanChat(this.viewingClan);
+        $("#clan-chat-section").toggle(showChat);
+        this.clanPageModal.selector
+            .attr("data-clan-tab", tab)
+            .toggleClass("clan-page-has-chat", showChat);
     }
 
     showLeaderboard() {
@@ -962,11 +971,37 @@ export class ClanUi {
         );
     }
 
+    cancelClanSearch() {
+        if (this.clanSearchTimer !== null) {
+            clearTimeout(this.clanSearchTimer);
+            this.clanSearchTimer = null;
+        }
+        this.clanListRequestId++;
+        this.clanListRequest?.abort();
+        this.clanListRequest = null;
+        $("#clan-list-container").attr("aria-busy", "false");
+        $("#clan-search-status").text("");
+    }
+
+    scheduleClanSearch() {
+        this.cancelClanSearch();
+        $("#clan-list-container").attr("aria-busy", "true");
+        $("#clan-search-status").text("Searching clans...");
+        this.clanSearchTimer = setTimeout(() => {
+            this.clanSearchTimer = null;
+            this.loadClanList(1);
+        }, 300);
+    }
+
     loadClanList(page: number) {
+        this.cancelClanSearch();
+        const requestId = this.clanListRequestId;
         const search = (($("#clan-search-input").val() as string) || "").trim();
         const region = ($("#clan-region-filter").val() as ClanRegion | "") || undefined;
+        $("#clan-list-container").attr("aria-busy", "true");
+        $("#clan-search-status").text(search ? "Searching clans..." : "Loading clans...");
 
-        clanRequest<ListClansResponse>(
+        this.clanListRequest = clanRequest<ListClansResponse>(
             "/api/clan/list",
             {
                 page,
@@ -975,8 +1010,12 @@ export class ClanUi {
                 region,
             },
             (err, res) => {
+                if (requestId !== this.clanListRequestId) return;
+                this.clanListRequest = null;
+                $("#clan-list-container").attr("aria-busy", "false");
                 if (err || !res) {
-                    console.error("Failed to load clan list");
+                    $("#clan-search-status").text("Couldn't load clans. Try again.");
+                    $("#clan-list-container").empty();
                     return;
                 }
 
@@ -984,6 +1023,9 @@ export class ClanUi {
                 this.updateClanJoinLockNotice();
                 this.updateCreateClanLockState();
                 this.renderClanList(res.clans, res.page, res.totalPages);
+                $("#clan-search-status").text(
+                    `${res.totalCount} ${search ? "matching " : ""}clan${res.totalCount === 1 ? "" : "s"}`,
+                );
             },
         );
     }
@@ -1010,7 +1052,6 @@ export class ClanUi {
             $("<div/>", { class: "clan-list-header-row" }).append(
                 $("<div/>"),
                 $("<div/>", { text: "Clan" }),
-                $("<div/>", { text: "Stats" }),
                 $("<div/>"),
             ),
         );
@@ -1033,7 +1074,11 @@ export class ClanUi {
                 }).append(
                     $("<div/>", { class: "clan-list-name-row" }).append(
                         applyClanNameStyle(
-                            $("<div/>", { class: "clan-list-name", text: clan.name }),
+                            $("<div/>", {
+                                class: "clan-list-name",
+                                text: clan.name,
+                                title: clan.name,
+                            }),
                             clan,
                         ),
                         createClanRegionBadge(clan.region),
@@ -1052,11 +1097,11 @@ export class ClanUi {
                         $("<strong/>", { text: formatCgp(clan.totalCgp) }),
                     ),
                     $("<div/>", { class: "clan-list-stat" }).append(
-                        $("<span/>", { text: "K" }),
+                        $("<span/>", { text: "Kills" }),
                         $("<strong/>", { text: clan.totalKills.toLocaleString() }),
                     ),
                     $("<div/>", { class: "clan-list-stat" }).append(
-                        $("<span/>", { text: "W" }),
+                        $("<span/>", { text: "Wins" }),
                         $("<strong/>", { text: clan.totalWins.toLocaleString() }),
                     ),
                 ),

@@ -2901,13 +2901,14 @@
                   </div>
                 </div>
                 <div class="clan-invite-input-group">
-                  <input type="text" id="clan-search-input" class="clan-invite-input" placeholder="Search clans..." />
-                  <div id="btn-clan-search" class="clan-search-btn"></div>
+                  <input type="search" id="clan-search-input" class="clan-invite-input" placeholder="Search clans..." aria-label="Search clans" aria-controls="clan-list-container" aria-describedby="clan-search-status" autocomplete="off" />
+                  <button type="button" id="btn-clan-search" class="clan-search-btn" aria-label="Search clans"></button>
                 </div>
                 <select id="clan-region-filter" class="clan-style-select" title="Filter clans by region">
                   <option value="">All Regions</option>
                 </select>
-                <div id="clan-list-container" class="clan-list-container"></div>
+                <div id="clan-search-status" class="clan-search-status" role="status" aria-live="polite"></div>
+                <div id="clan-list-container" class="clan-list-container" aria-busy="false"></div>
               </div>
             </div>
           </div>
@@ -2958,7 +2959,7 @@
                 <div id="clan-war-history-list" class="clan-war-history-list"></div>
               </div>
             </div>
-            <div id="clan-page-detail" class="clan-column" style="flex: 1;">
+            <div id="clan-page-detail" class="clan-column">
               <div class="clan-season-bar">
                 <div id="clan-detail-season-label" class="clan-season-label">Current Season</div>
                 <select id="clan-detail-season" class="clan-season-select"></select>
@@ -3014,7 +3015,7 @@
                 <div id="clan-members-list" class="clan-members-list"></div>
               </div>
             </div>
-            <div id="clan-settings-section" class="clan-column" style="flex: 1; display: none;">
+            <div id="clan-settings-section" class="clan-column" style="display: none;">
               <div class="clan-settings-panel">
                 <div class="clan-members-header">
                   <div class="clan-members-title">Clan Settings</div>
@@ -3096,7 +3097,7 @@
                 </div>
               </div>
             </div>
-            <div id="clan-requests-section" class="clan-column" style="flex: 1; display: none;">
+            <div id="clan-requests-section" class="clan-column" style="display: none;">
               <div class="clan-members-section">
                 <div class="clan-members-header">
                   <div class="clan-members-title">Join Requests</div>
