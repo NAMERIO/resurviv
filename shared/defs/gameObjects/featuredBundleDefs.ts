@@ -263,6 +263,13 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1800,
         durationDays: 7,
     },
+    bundle_gpdude: {
+        name: "GP Dude Set",
+        size: "large",
+        items: ["outfitGoldenPotatoDude", "karambit_gilded", "spas16_gilded"],
+        price: 3000,
+        durationDays: 7,
+    },
     bundle_pastel: {
         name: "Pastel Set",
         size: "large",
@@ -389,6 +396,27 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1050,
         durationDays: 7,
     },
+    bundle_iceage: {
+        name: "Stone Age Set",
+        size: "small",
+        items: ["outfitCavePaintings", "outfitMultiTusking"],
+        price: 1000,
+        durationDays: 7,
+    },
+    bundle_chiikawa: {
+        name: "Chiikawa Set",
+        size: "small",
+        items: ["outfitHachiware", "outfitUnagi"],
+        price: 1750,
+        durationDays: 7,
+    },
+    bundle_ref: {
+        name: "Referee Set",
+        size: "small",
+        items: ["outfitReferee", "emote_whistle"],
+        price: 1250,
+        durationDays: 7,
+    },
     bundle_custom: {
         name: "Custom Set",
         size: "large",
@@ -400,16 +428,16 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
 
 export const FeaturedBundlePages = [
     {
-        small: "bundle_srandom1",
-        large: "bundle_lrandom3",
+        small: "bundle_iceage",
+        large: "bundle_gpdude",
     },
     {
-        small: "bundle_farmer",
-        large: "bundle_spooky",
+        small: "bundle_chiikawa",
+        large: "bundle_flame",
     },
     {
-        small: "bundle_sirloin",
-        large: "bundle_bugcat",
+        small: "bundle_ref",
+        large: "bundle_lightning",
     },
 ] as const satisfies ReadonlyArray<
     Record<FeaturedBundleSize, keyof typeof FeaturedBundleDefs>

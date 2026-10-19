@@ -42,4 +42,14 @@ export const GunSkinDefs: Record<string, GunSkinDef> = {
             sprite: "gun-spas16-jackolantern.img",
         },
     },
+    spas16_gilded: {
+        type: "gun_skin",
+        name: "Gilded SPAS-12",
+        lore: "Covered in a layer of gold. Shines brighter than the sun.",
+        rarity: Rarity.Mythic,
+        gunType: "spas12",
+        worldImg: {
+            sprite: "gun-spas16-gilded.img",
+        },
+    },
 };

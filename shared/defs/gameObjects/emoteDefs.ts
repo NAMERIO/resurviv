@@ -404,6 +404,16 @@ export const EmotesDefs: Record<string, EmoteDef> = {
         teamOnly: false,
         category: EmoteCategory.Faces,
     },
+    emote_whistle: {
+        type: "emote",
+        name: "Whistle",
+        rarity: Rarity.Rare,
+        texture: "emotes-whistle.img",
+        sound: "emote_01",
+        channel: "ui",
+        teamOnly: false,
+        category: EmoteCategory.Faces,
+    },
     emote_victory: {
         type: "emote",
         name: "Victory",
@@ -429,6 +439,16 @@ export const EmotesDefs: Record<string, EmoteDef> = {
         name: "Shock & Awe",
         rarity: Rarity.Stock,
         texture: "face-shock.img",
+        sound: "emote_01",
+        channel: "ui",
+        teamOnly: false,
+        category: EmoteCategory.Faces,
+    },
+    emote_inLove: {
+        type: "emote",
+        name: "In Love",
+        rarity: Rarity.Epic,
+        texture: "face-in-love.img",
         sound: "emote_01",
         channel: "ui",
         teamOnly: false,
@@ -2723,5 +2743,5 @@ export const EmotesDefs: Record<string, EmoteDef> = {
         channel: "ui",
         teamOnly: false,
         category: EmoteCategory.Faces,
-    },
+    }
 };
