@@ -1,6 +1,7 @@
 import { EmotesDefs } from "../../shared/defs/gameObjects/emoteDefs";
 import { type CompetitiveBoard, competitivePlaces } from "../../shared/types/competitive";
 import { api } from "./api";
+import { getVersionedImageUrl } from "./assetUrls";
 import { createCompetitiveEditor } from "./competitiveEditor";
 
 type Player = CompetitiveBoard["players"][number];
@@ -53,7 +54,9 @@ function selectPlayer(player?: Player, save = true) {
         icon.onerror = null;
         icon.src = fallback;
     };
-    icon.src = texture ? `/img/emotes/${texture.slice(0, -4)}.svg` : fallback;
+    icon.src = texture
+        ? getVersionedImageUrl(`/img/emotes/${texture.slice(0, -4)}.svg`)
+        : fallback;
     el("player-name").textContent = player.username;
     el("player-slug").textContent = `@${player.slug}`;
     el("player-status").textContent =

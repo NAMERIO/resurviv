@@ -38,6 +38,7 @@ import {
 } from "../../../shared/types/stats";
 import type { Account } from "../account";
 import { api } from "../api";
+import { getVersionedImageUrl } from "../assetUrls";
 import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
 
@@ -115,7 +116,7 @@ function clanRequest<T>(
 function getClanIconUrl(iconType: string): string {
     const def = GameObjectDefs[iconType] as EmoteDef | undefined;
     if (def && def.type === "emote" && def.texture) {
-        return `img/emotes/${def.texture.slice(0, -4)}.svg`;
+        return getVersionedImageUrl(`img/emotes/${def.texture.slice(0, -4)}.svg`);
     }
     return "img/gui/player-gui.svg";
 }

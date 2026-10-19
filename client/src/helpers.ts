@@ -12,6 +12,7 @@ import {
 import { MapDefs } from "../../shared/defs/mapDefs";
 import { Rarity } from "../../shared/gameConfig";
 import * as net from "../../shared/net/net";
+import { getVersionedImageUrl } from "./assetUrls";
 import { device } from "./device";
 
 const truncateCanvas = document.createElement("canvas");
@@ -19,8 +20,7 @@ const skinLootImageCache = new Map<string, string>();
 const skinLootImagePromises = new Map<string, Promise<string>>();
 
 function getPlayerSpritePath(sprite: string) {
-    const path = `img/player/${sprite.slice(0, -4)}.svg`;
-    return GIT_VERSION ? `${path}?v=${encodeURIComponent(GIT_VERSION)}` : path;
+    return getVersionedImageUrl(`img/player/${sprite.slice(0, -4)}.svg`);
 }
 
 /**
@@ -555,14 +555,18 @@ export const helpers = {
         return timeSurv;
     },
     emoteImgToSvg(img: string) {
-        return img && img.length > 4 ? `../img/emotes/${img.slice(0, -4)}.svg` : "";
+        return img && img.length > 4
+            ? getVersionedImageUrl(`../img/emotes/${img.slice(0, -4)}.svg`)
+            : "";
     },
     getSvgFromGameType: function (gameType: string) {
         const def = GameObjectDefs[gameType] as any;
         const defType = def ? def.type : "";
         switch (defType) {
             case "gun_skin":
-                return `img/guns/${def.worldImg.sprite.slice(0, -4)}.svg`;
+                return getVersionedImageUrl(
+                    `img/guns/${def.worldImg.sprite.slice(0, -4)}.svg`,
+                );
             case "melee": {
                 const meleeDef = def as MeleeDef;
                 if (meleeDef.lootImg.skinLootImg && meleeDef.handSprites) {
@@ -572,7 +576,9 @@ export const helpers = {
                         getPlayerSpritePath(meleeDef.handSprites.spriteR)
                     );
                 }
-                return `img/loot/${meleeDef.lootImg.sprite.slice(0, -4)}.svg`;
+                return getVersionedImageUrl(
+                    `img/loot/${meleeDef.lootImg.sprite.slice(0, -4)}.svg`,
+                );
             }
             case "gun":
             case "throwable":
@@ -585,16 +591,22 @@ export const helpers = {
             case "perk":
             case "xp":
             case "streak":
-                return `img/loot/${def.lootImg?.sprite.slice(0, -4)}.svg`;
+                return getVersionedImageUrl(
+                    `img/loot/${def.lootImg?.sprite.slice(0, -4)}.svg`,
+                );
             case "heal_effect":
             case "boost_effect":
-                return `img/particles/${def.texture?.slice(0, -4)}.svg`;
+                return getVersionedImageUrl(
+                    `img/particles/${def.texture?.slice(0, -4)}.svg`,
+                );
             case "death_effect":
-                return `img/loot/${def.texture?.slice(0, -4)}.svg`;
+                return getVersionedImageUrl(`img/loot/${def.texture?.slice(0, -4)}.svg`);
             case "emote":
-                return `img/emotes/${def.texture.slice(0, -4)}.svg`;
+                return getVersionedImageUrl(`img/emotes/${def.texture.slice(0, -4)}.svg`);
             case "crosshair":
-                return `img/crosshairs/${def.texture.slice(0, -4)}.svg`;
+                return getVersionedImageUrl(
+                    `img/crosshairs/${def.texture.slice(0, -4)}.svg`,
+                );
             case "outfit": {
                 const outfitDef = def as OutfitDef;
                 const lootImg = getOutfitLootImg(outfitDef);
@@ -604,12 +616,14 @@ export const helpers = {
                     );
                     return (
                         skinLootImageCache.get(gameType) ??
-                        `img/player/${lootImg.sprite.slice(0, -4)}.svg`
+                        getPlayerSpritePath(lootImg.sprite)
                     );
                 }
 
                 if (lootImg.sprite !== "loot-outfit-01.img") {
-                    return `img/loot/${lootImg.sprite.slice(0, -4)}.svg`;
+                    return getVersionedImageUrl(
+                        `img/loot/${lootImg.sprite.slice(0, -4)}.svg`,
+                    );
                 }
 
                 // tint outfits using loot-outfit-01
