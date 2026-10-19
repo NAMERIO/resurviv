@@ -55,6 +55,11 @@ import {
     zUpdateClanRequest,
 } from "../../../../../shared/types/clan";
 import { ALL_GAME_MODE_STATUS } from "../../../../../shared/types/stats";
+import {
+    canKickClanMember,
+    canManageClan,
+    canSetClanMemberRole,
+} from "../../../../../shared/utils/clanPermissions";
 import { Config } from "../../../config";
 import { checkForBadWords, validateUserName } from "../../../utils/serverHelpers";
 import { server } from "../../apiServer";
@@ -254,30 +259,8 @@ function getEffectiveClanRole(
     return membership.userId === clan.ownerId ? "owner" : membership.role;
 }
 
-function canKickClanMember(
-    actorRole: ClanMemberRole | "owner",
-    targetRole: ClanMemberRole | "owner",
-) {
-    if (actorRole === "owner") return targetRole !== "owner";
-    if (actorRole === "admin") return targetRole === "mod" || targetRole === "member";
-    return false;
-}
-
 function canDeleteClanMessage(actorRole: ClanMemberRole | "owner") {
     return actorRole === "owner" || actorRole === "admin" || actorRole === "mod";
-}
-
-function canSetClanMemberRole(
-    actorRole: ClanMemberRole | "owner",
-    targetRole: ClanMemberRole,
-    nextRole: ClanMemberRole,
-) {
-    if (actorRole === "owner") return true;
-    return (
-        actorRole === "admin" &&
-        ((targetRole === "member" && nextRole === "mod") ||
-            (targetRole === "mod" && nextRole === "member"))
-    );
 }
 
 async function getClanMemberUserIds(clanId: string) {
@@ -1904,7 +1887,7 @@ ClanRouter.post("/update", validateParams(zUpdateClanRequest), async (c) => {
         where: eq(clansTable.id, membership.clanId),
     });
 
-    if (!clan || clan.ownerId !== user.id) {
+    if (!clan || !canManageClan(getEffectiveClanRole(membership, clan))) {
         return c.json<UpdateClanResponse>({ success: false, error: "not_owner" }, 403);
     }
 

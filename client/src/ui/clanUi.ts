@@ -36,6 +36,12 @@ import {
     GameModeStatus,
     type GameModeStatus as GameModeStatusType,
 } from "../../../shared/types/stats";
+import {
+    canKickClanMember,
+    canManageClan,
+    canSetClanMemberRole,
+    type EffectiveClanRole,
+} from "../../../shared/utils/clanPermissions";
 import type { Account } from "../account";
 import { api } from "../api";
 import { getVersionedImageUrl } from "../assetUrls";
@@ -189,8 +195,6 @@ function normalizeMentionValue(value: string) {
     return value.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
-type EffectiveClanRole = ClanMemberRole | "owner";
-
 function getEffectiveClanRole(member: ClanMember): EffectiveClanRole {
     return member.isOwner ? "owner" : member.role;
 }
@@ -200,32 +204,12 @@ function getClanRoleTitle(role: EffectiveClanRole) {
         case "owner":
             return "Owner: can manage clan settings, roles, requests, members, and messages.";
         case "admin":
-            return "Admin: can manage join requests, delete clan messages, kick members and mods, and add or remove mods.";
+            return "Admin: can customize the clan and manage requests, members, roles, and messages. Cannot appoint admins, transfer ownership, or delete the clan.";
         case "mod":
             return "Mod: can delete clan messages.";
         default:
             return "Member";
     }
-}
-
-function canKickClanMember(actor: EffectiveClanRole, target: EffectiveClanRole) {
-    if (actor === "owner") return target !== "owner";
-    if (actor === "admin") return target === "member" || target === "mod";
-    return false;
-}
-
-function canManageClanRole(
-    actor: EffectiveClanRole,
-    target: EffectiveClanRole,
-    nextRole: ClanMemberRole,
-) {
-    if (target === "owner") return false;
-    if (actor === "owner") return true;
-    return (
-        actor === "admin" &&
-        ((target === "member" && nextRole === "mod") ||
-            (target === "mod" && nextRole === "member"))
-    );
 }
 
 function getClanRoleRank(role: EffectiveClanRole) {
@@ -1625,8 +1609,7 @@ export class ClanUi {
             ? getEffectiveClanRole(currentMember)
             : "member";
         const isOwner = clan.isCurrentSeason && currentRole === "owner";
-        const canManageRequests =
-            clan.isCurrentSeason && (currentRole === "owner" || currentRole === "admin");
+        const canManage = clan.isCurrentSeason && canManageClan(currentRole);
         if (clan.discordInviteUrl) {
             $("#clan-detail-discord-row").css("display", "flex");
         } else {
@@ -1659,7 +1642,7 @@ export class ClanUi {
         membersContainer.empty();
 
         const isMember = !!currentMember;
-        if (isOwner && clan.isCurrentSeason) {
+        if (canManage) {
             $("#btn-clan-edit-icon").show();
             $("#clan-tag-color-input").show();
             const [start, end] = getClanTagColors(clan.tagColor);
@@ -1683,8 +1666,8 @@ export class ClanUi {
                 this.clanPageTab = "details";
             }
         }
-        $("#btn-clan-page-requests-tab").toggle(canManageRequests);
-        if (!canManageRequests && this.clanPageTab === "requests") {
+        $("#btn-clan-page-requests-tab").toggle(canManage);
+        if (!canManage && this.clanPageTab === "requests") {
             this.clanPageTab = "details";
         }
         if (!clan.isCurrentSeason && clan.members.length === 0) {
@@ -1765,7 +1748,7 @@ export class ClanUi {
                 for (const roleButton of roleButtons) {
                     if (
                         member.role === roleButton.role ||
-                        !canManageClanRole(currentRole, memberRole, roleButton.role)
+                        !canSetClanMemberRole(currentRole, memberRole, roleButton.role)
                     ) {
                         continue;
                     }
@@ -3290,7 +3273,8 @@ export class ClanUi {
 
             if (!res?.success) {
                 const errorMessages: Record<string, string> = {
-                    not_owner: "You are not the owner of this clan.",
+                    not_owner:
+                        "Only the clan owner or an admin can change clan settings.",
                     name_taken: "This clan name is already taken.",
                     invalid_name: "Invalid clan name.",
                     invalid_discord_url:
