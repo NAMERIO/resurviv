@@ -5608,7 +5608,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
     outfitUnagi: defineOutfitSkin("outfitBase", {
-        name: "Unagi",
+        name: "Usagi",
         noDropOnDeath: true,
 
         rarity: 4,
@@ -5692,6 +5692,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xeec4a4,
             baseSprite: "player-base-01.img",
+            aboveHand: true,
             handTint: 0xeec4a4,
             handSprite: "player-hands-01.img",
             footTint: 0xffffff,
@@ -5700,6 +5701,31 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-01.img",
             frontSpritePos: { x: -2, y: -1.8 },
             frontSprite: "player-accessory-lifetroll.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+    outfitLifeTroll2: defineOutfitSkin("outfitBase", {
+        name: "Life Troll 2",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "Life's Troll Skin.",
+
+        skinImg: {
+            baseTint: 0xeec4a4,
+            baseSprite: "player-base-01.img",
+            aboveHand: true,
+            handTint: 0xeec4a4,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xeec4a4,
+            backpackSprite: "player-circle-base-01.img",
+            frontSpritePos: { x: -2, y: -1.8 },
+            frontSprite: "player-accessory-lifetroll2.img",
         },
         lootImg: {
             skinLootImg: true,
@@ -6142,7 +6168,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     }),
     outfitCosmicCollide: defineOutfitSkin("outfitBase", {
         name: "Cosmic Collide",
-        noDropOnDeath: false,
+        noDropOnDeath: true,
         moveEmitter: "cosmicParticle",
         rarity: 5,
         lore: "Zcore Had A Stupid Idea",

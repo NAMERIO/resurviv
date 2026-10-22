@@ -3023,6 +3023,18 @@ const SkinDefs: Record<string, MeleeDef> = {
             sprite: "loot-melee-bayonet-m9-pink-crystal.img",
         },
     }),
+    dagger_kris: defineMeleeSkin("bayonet", {
+        name: "Kris Dagger",
+        rarity: Rarity.Epic,
+        noPotatoSwap: false,
+        lore: "Every curve has an edge.",
+        lootImg: {
+            sprite: "loot-melee-kris-dagger.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-kris-dagger.img",
+        },
+    }),
     m9bayonet_autotronic: defineMeleeSkin("bayonet", {
         name: "M9 Bayonet Autotronic",
         rarity: Rarity.Mythic,
