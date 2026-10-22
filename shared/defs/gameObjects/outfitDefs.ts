@@ -5581,7 +5581,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
-     outfitGoldenPotatoDude: defineOutfitSkin("outfitBase", {
+    outfitGoldenPotatoDude: defineOutfitSkin("outfitBase", {
         name: "Golden Potato Dude",
         noDropOnDeath: true,
         moveEmitter: "gpParticle",

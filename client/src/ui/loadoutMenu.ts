@@ -20,6 +20,7 @@ import type { ItemStatus } from "../../../shared/utils/loadout";
 import { type Crosshair, type Loadout, loadout } from "../../../shared/utils/loadout";
 import { util } from "../../../shared/utils/util";
 import type { Account } from "../account";
+import { getVersionedImageUrl } from "../assetUrls";
 import type { ConfigManager } from "../config";
 import {
     crosshair,
@@ -1474,10 +1475,9 @@ export class LoadoutMenu {
             const image = $("<div/>", {
                 class: "weapon-skin-option-image",
                 css: {
-                    "background-image": `url(img/guns/${worldSprite.replace(
-                        /\.img$/,
-                        "",
-                    )}.svg)`,
+                    "background-image": `url(${getVersionedImageUrl(
+                        `img/guns/${worldSprite.replace(/\.img$/, "")}.svg`,
+                    )})`,
                     filter: getWeaponSkinTintFilter(tint),
                 },
             });
@@ -1580,7 +1580,7 @@ export class LoadoutMenu {
                 const svgName = sprite.replace(/\.img$/, "");
                 $("#weapon-stats-image-inner").css(
                     "background-image",
-                    `url(img/loot/${svgName}.svg)`,
+                    `url(${getVersionedImageUrl(`img/loot/${svgName}.svg`)})`,
                 );
             }
             const clampPct = (val: number, max: number) =>
