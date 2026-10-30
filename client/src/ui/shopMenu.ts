@@ -817,98 +817,244 @@ export class ShopMenu {
         }
         this.setDisplayedGpBalance(this.gpBalance);
     }
-
     renderFeatured() {
-        const bundles = this.account.featuredBundles || [];
-        const pageCount = Math.max(1, ...bundles.map((bundle) => bundle.page + 1));
-        if (this.featuredBundlePage >= pageCount) {
-            this.featuredBundlePage = 0;
-        }
-        const visibleBundles = bundles.filter(
-            (bundle) => bundle.page === this.featuredBundlePage,
-        );
-        const refreshTimes = bundles
-            .map((bundle) => bundle.refreshesAt || 0)
-            .filter((refreshesAt) => refreshesAt > 0);
-        const nextRefreshAt = refreshTimes.length ? Math.min(...refreshTimes) : 0;
-        $("#iap-lto-time-left-number").text(
-            nextRefreshAt > 0
-                ? this.formatBundleCountdown(nextRefreshAt - Date.now())
-                : "00:00:00",
-        );
-        $("#index-offer-time-left").text(
-            nextRefreshAt > 0
-                ? ` ${this.formatBundleCountdown(nextRefreshAt - Date.now())}`
-                : " 00:00:00",
-        );
+    const bundles = this.account.featuredBundles || [];
+    const pageCount = Math.max(1, ...bundles.map((bundle) => bundle.page + 1));
 
-        const packMappings: Array<[string, FeaturedBundleOffer | undefined]> = [
-            ["#iap-lto-pack-1", visibleBundles.find((bundle) => bundle.size === "small")],
-            ["#iap-lto-pack-2", visibleBundles.find((bundle) => bundle.size === "large")],
-        ];
-
-        for (const [selector, bundle] of packMappings) {
-            const pack = $(selector);
-            const itemsContainer = pack.find(".iap-loadout-items");
-            const rarityClasses =
-                "iap-bundle-rarity-uncommon iap-bundle-rarity-rare iap-bundle-rarity-epic iap-bundle-rarity-legendary iap-bundle-rarity-mythic iap-bundle-rarity-divine iap-bundle-rarity-exclusive";
-            itemsContainer.empty();
-            pack.removeClass(rarityClasses);
-
-            if (!bundle) {
-                pack.off("click").addClass("market-refresh-disabled");
-                pack.removeClass("iap-pack-purchased");
-                pack.find(".iap-bundle-name-text").text("");
-                pack.find(".iap-bundle-time").text("");
-                pack.find(".iap-currency-text").text("0");
-                continue;
-            }
-
-            pack.addClass(`iap-bundle-rarity-${bundle.rarity}`);
-            pack.toggleClass("iap-pack-purchased", bundle.purchased);
-            pack.find(".iap-bundle-name-text").text(bundle.name);
-            pack.find(".iap-bundle-time").text(
-                this.formatBundleCountdown(bundle.refreshesAt - Date.now()),
-            );
-            pack.find(".iap-currency-text").text(String(bundle.price));
-            const itemRow = $("<div/>");
-
-            for (const itemType of bundle.itemTypes) {
-                itemRow.append(this.buildFeaturedBundleItem(itemType));
-            }
-            itemsContainer.append(itemRow);
-
-            if (bundle.purchased) {
-                pack.off("click").addClass("market-refresh-disabled");
-                continue;
-            }
-
-            pack.removeClass("market-refresh-disabled");
-            pack.off("click").on("click", () => this.handleFeaturedAction(bundle));
-        }
-
-        const navigationDisabled = pageCount <= 1;
-        $("#iap-bundle-prev, #iap-bundle-next")
-            .prop("disabled", navigationDisabled)
-            .toggleClass("is-disabled", navigationDisabled);
-
-        const pages = $("#iap-bundle-pages").empty();
-        for (let page = 0; page < pageCount; page++) {
-            const button = $("<button/>", {
-                class: `iap-bundle-page${page === this.featuredBundlePage ? " is-active" : ""}`,
-                type: "button",
-                title: `Featured bundles ${page + 1} of ${pageCount}`,
-                "aria-label": `Show featured bundles ${page + 1} of ${pageCount}`,
-                "aria-current": page === this.featuredBundlePage ? "page" : undefined,
-            });
-            button.on("click", (event) => {
-                event.preventDefault();
-                this.setFeaturedBundlePage(page);
-            });
-            pages.append(button);
-        }
+    if (this.featuredBundlePage >= pageCount) {
+        this.featuredBundlePage = 0;
     }
 
+    const visibleBundles = bundles.filter(
+        (bundle) => bundle.page === this.featuredBundlePage,
+    );
+
+    const refreshTimes = bundles
+        .map((bundle) => bundle.refreshesAt || 0)
+        .filter((refreshesAt) => refreshesAt > 0);
+
+    const nextRefreshAt = refreshTimes.length
+        ? Math.min(...refreshTimes)
+        : 0;
+
+    $("#iap-lto-time-left-number").text(
+        nextRefreshAt > 0
+            ? this.formatBundleCountdown(nextRefreshAt - Date.now())
+            : "00:00:00",
+    );
+
+    $("#index-offer-time-left").text(
+        nextRefreshAt > 0
+            ? ` ${this.formatBundleCountdown(nextRefreshAt - Date.now())}`
+            : " 00:00:00",
+    );
+
+    const packMappings: Array<[string, FeaturedBundleOffer | undefined]> = [
+        [
+            "#iap-lto-pack-1",
+            visibleBundles.find((bundle) => bundle.size === "small"),
+        ],
+        [
+            "#iap-lto-pack-2",
+            visibleBundles.find((bundle) => bundle.size === "large"),
+        ],
+    ];
+
+    for (const [selector, bundle] of packMappings) {
+        const pack = $(selector);
+        const itemsContainer = pack.find(".iap-loadout-items");
+
+        const rarityClasses =
+            "iap-bundle-rarity-uncommon " +
+            "iap-bundle-rarity-rare " +
+            "iap-bundle-rarity-epic " +
+            "iap-bundle-rarity-legendary " +
+            "iap-bundle-rarity-mythic " +
+            "iap-bundle-rarity-divine " +
+            "iap-bundle-rarity-exclusive";
+
+        /*
+         * Create the discount ribbon automatically.
+         *
+         * This means we DO NOT need to edit index.html.
+         */
+        let discountRibbon = pack.find(
+            ".iap-bundle-discount-ribbon",
+        );
+
+        if (!discountRibbon.length) {
+            discountRibbon = $("<div/>", {
+                class: "iap-bundle-discount-ribbon",
+            }).appendTo(pack);
+        }
+
+        itemsContainer.empty();
+        pack.removeClass(rarityClasses);
+
+        /*
+         * No bundle available in this slot.
+         */
+        if (!bundle) {
+            pack.off("click").addClass(
+                "market-refresh-disabled",
+            );
+
+            pack.removeClass("iap-pack-purchased");
+
+            pack.find(".iap-bundle-name-text").text("");
+            pack.find(".iap-bundle-time").text("");
+            pack.find(".iap-currency-text").text("0");
+
+            discountRibbon
+                .text("")
+                .removeClass("is-visible");
+
+            continue;
+        }
+
+        /*
+         * Apply rarity styling.
+         */
+        pack.addClass(
+            `iap-bundle-rarity-${bundle.rarity}`,
+        );
+
+        /*
+         * Purchased state.
+         */
+        pack.toggleClass(
+            "iap-pack-purchased",
+            bundle.purchased,
+        );
+
+        /*
+         * Bundle name.
+         */
+        pack.find(".iap-bundle-name-text").text(
+            bundle.name,
+        );
+
+        /*
+         * Countdown.
+         */
+        pack.find(".iap-bundle-time").text(
+            this.formatBundleCountdown(
+                bundle.refreshesAt - Date.now(),
+            ),
+        );
+
+        /*
+         * bundle.price is already the final
+         * discounted price calculated in
+         * featuredBundles.ts.
+         */
+        pack.find(".iap-currency-text").text(
+            String(bundle.price),
+        );
+
+        /*
+         * Show the yellow sale ribbon only
+         * when the bundle actually has a discount.
+         *
+         * Examples:
+         * 10% OFF
+         * 15% OFF
+         * 20% OFF
+         * 25% OFF
+         *
+         * 0% = no ribbon.
+         */
+        if (bundle.discountPercent > 0) {
+            discountRibbon
+                .text(`${bundle.discountPercent}% OFF`)
+                .addClass("is-visible");
+        } else {
+            discountRibbon
+                .text("")
+                .removeClass("is-visible");
+        }
+
+        /*
+         * Build the bundle's cosmetic cards.
+         */
+        const itemRow = $("<div/>");
+
+        for (const itemType of bundle.itemTypes) {
+            itemRow.append(
+                this.buildFeaturedBundleItem(itemType),
+            );
+        }
+
+        itemsContainer.append(itemRow);
+
+        /*
+         * Purchased bundles cannot be clicked again.
+         */
+        if (bundle.purchased) {
+            pack.off("click").addClass(
+                "market-refresh-disabled",
+            );
+
+            continue;
+        }
+
+        /*
+         * Available bundle.
+         */
+        pack.removeClass(
+            "market-refresh-disabled",
+        );
+
+        pack.off("click").on(
+            "click",
+            () => this.handleFeaturedAction(bundle),
+        );
+    }
+
+    /*
+     * Page navigation.
+     */
+    const navigationDisabled = pageCount <= 1;
+
+    $("#iap-bundle-prev, #iap-bundle-next")
+        .prop("disabled", navigationDisabled)
+        .toggleClass(
+            "is-disabled",
+            navigationDisabled,
+        );
+
+    /*
+     * Page dots.
+     */
+    const pages = $("#iap-bundle-pages").empty();
+
+    for (let page = 0; page < pageCount; page++) {
+        const button = $("<button/>", {
+            class:
+                `iap-bundle-page${
+                    page === this.featuredBundlePage
+                        ? " is-active"
+                        : ""
+                }`,
+            type: "button",
+            title: `Featured bundles ${page + 1} of ${pageCount}`,
+            "aria-label": `Show featured bundles ${page + 1} of ${pageCount}`,
+            "aria-current":
+                page === this.featuredBundlePage
+                    ? "page"
+                    : undefined,
+        });
+
+        button.on("click", (event) => {
+            event.preventDefault();
+
+            this.setFeaturedBundlePage(page);
+        });
+
+        pages.append(button);
+    }
+}
+    
     changeFeaturedBundlePage(direction: -1 | 1) {
         const bundles = this.account.featuredBundles || [];
         const pageCount = Math.max(1, ...bundles.map((bundle) => bundle.page + 1));
