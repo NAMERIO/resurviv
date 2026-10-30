@@ -26,7 +26,7 @@ export type FeaturedBundleOffer = {
     page: number;
     itemTypes: string[];
 
-    // Price before the weekly discount.
+    // Price before the bundle's current discount.
     originalPrice: number;
 
     // Actual price the player pays.
@@ -51,13 +51,19 @@ const FEATURED_BUNDLE_ANCHOR_MS = Date.UTC(
 );
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const RANDOM_BUNDLE_DURATION_DAYS = 7;
 
 /*
- * Possible weekly discounts.
+ * Page 1 = 7 days.
+ * Pages 2 + 3 = 1 day.
+ */
+const RANDOM_BUNDLE_DURATION_DAYS = 7;
+const GENERATED_BUNDLE_DURATION_DAYS = 1;
+
+/*
+ * Possible featured-bundle discounts.
  *
- * Each of the six bundle slots rolls one of these.
- * Because the roll is seeded by the weekly cycle,
+ * Each bundle slot rolls one of these.
+ * Because the roll is seeded by the current rotation cycle,
  * everyone sees the same discount for that slot.
  */
 const FEATURED_BUNDLE_DISCOUNTS = [
@@ -319,10 +325,10 @@ export function getFeaturedBundleRarity(
 
 /*
  * Generates a deterministic discount for
- * one specific weekly bundle slot.
+ * one specific bundle slot.
  *
  * The slot is determined by:
- * - weekly cycle
+ * - current rotation cycle
  * - page
  * - small/large
  *
@@ -330,6 +336,9 @@ export function getFeaturedBundleRarity(
  * - refreshing cannot reroll it
  * - every player gets the same discount
  * - every slot can have a different discount
+ *
+ * Page 1 passes the weekly cycle.
+ * Pages 2 + 3 pass the daily cycle.
  */
 function getFeaturedBundleDiscount(
     cycle: number,
@@ -391,7 +400,7 @@ function buildBundleOffer(
     );
 
     /*
-     * Roll this slot's weekly discount.
+     * Roll this slot's deterministic discount.
      */
     const discountPercent =
         getFeaturedBundleDiscount(
@@ -577,8 +586,15 @@ function createGeneratedBundle(
                 items,
             ),
 
+        /*
+         * Generated bundles are daily.
+         *
+         * This field is kept correct even though
+         * getFeaturedBundleOffers() controls the
+         * actual offer window.
+         */
         durationDays:
-            RANDOM_BUNDLE_DURATION_DAYS,
+            GENERATED_BUNDLE_DURATION_DAYS,
     };
 }
 
@@ -593,37 +609,62 @@ export function getFeaturedBundleOffers(
     resetAt?: number,
 ) {
     /*
-     * All six bundle slots share
-     * the exact same seven-day rotation.
+     * ========================================
+     * TWO DIFFERENT ROTATION WINDOWS
+     * ========================================
+     *
+     * PAGE 1:
+     * 7-day weekly rotation.
+     *
+     * PAGES 2 + 3:
+     * 24-hour daily rotation.
+     *
+     * Both are deterministic.
+     *
+     * That means restarting the server,
+     * refreshing the page, or reconnecting
+     * does NOT reroll anything.
      */
-    const window = getBundleWindow(
+
+    const weeklyWindow = getBundleWindow(
         RANDOM_BUNDLE_DURATION_DAYS,
         now,
         resetAt,
     );
 
     /*
+     * The daily generated pages use the fixed
+     * UTC day boundary.
+     *
+     * We intentionally do not pass the weekly
+     * resetAt here because Pages 2 + 3 have
+     * their own 24-hour schedule.
+     */
+    const dailyWindow = getBundleWindow(
+        GENERATED_BUNDLE_DURATION_DAYS,
+        now,
+    );
+
+    /*
      * =========================
-     * PAGE 1
+     * PAGE 1 — WEEKLY
      * =========================
      *
      * One random premade small bundle.
      * One random premade large bundle.
      *
-     * Same choices for everyone
-     * during this weekly cycle.
+     * These stay the same for seven days.
      */
-
     const pageOneSmall =
         selectPremadeBundle(
             "small",
-            window.cycle,
+            weeklyWindow.cycle,
         );
 
     const pageOneLarge =
         selectPremadeBundle(
             "large",
-            window.cycle,
+            weeklyWindow.cycle,
         );
 
     /*
@@ -644,7 +685,7 @@ export function getFeaturedBundleOffers(
 
     /*
      * =========================
-     * PAGES 2 + 3
+     * PAGES 2 + 3 — DAILY
      * =========================
      *
      * Automatically generated
@@ -656,17 +697,15 @@ export function getFeaturedBundleOffers(
      * LARGE:
      * Randomly 3 or 4 outfits.
      *
-     * The pool is shuffled once
-     * and consumed in order.
+     * The DAILY cycle is used as
+     * the random seed.
      *
-     * Therefore no generated outfit
-     * can appear twice during the
-     * same weekly rotation.
+     * Therefore these generated
+     * bundles change every 24 hours.
      */
-
     const generatedRandom =
         createSeededRandom(
-            window.cycle ^
+            dailyWindow.cycle ^
                 0x5f3759df,
         );
 
@@ -688,6 +727,10 @@ export function getFeaturedBundleOffers(
     /*
      * Large bundles:
      * randomly 3 or 4.
+     *
+     * These counts also reroll daily
+     * because generatedRandom uses
+     * dailyWindow.cycle.
      */
     const pageTwoLargeCount =
         3 +
@@ -716,6 +759,12 @@ export function getFeaturedBundleOffers(
         );
     }
 
+    /*
+     * Consume the shuffled pool in order.
+     *
+     * This prevents duplicate generated
+     * outfits across Pages 2 and 3.
+     */
     let poolIndex = 0;
 
     const takeOutfits = (
@@ -733,9 +782,10 @@ export function getFeaturedBundleOffers(
     };
 
     /*
-     * PAGE 2
+     * =========================
+     * PAGE 2 — DAILY
+     * =========================
      */
-
     const pageTwoSmall =
         createGeneratedBundle(
             "generated-page-2-small",
@@ -757,9 +807,10 @@ export function getFeaturedBundleOffers(
         );
 
     /*
-     * PAGE 3
+     * =========================
+     * PAGE 3 — DAILY
+     * =========================
      */
-
     const pageThreeSmall =
         createGeneratedBundle(
             "generated-page-3-small",
@@ -781,65 +832,82 @@ export function getFeaturedBundleOffers(
         );
 
     /*
-     * Build all six offers.
+     * ========================================
+     * BUILD OFFERS
+     * ========================================
      *
-     * buildBundleOffer() also applies
-     * each slot's deterministic
-     * weekly discount.
+     * IMPORTANT:
+     *
+     * Page 1 gets weeklyWindow.
+     *
+     * Pages 2 + 3 get dailyWindow.
+     *
+     * buildBundleOffer() uses that window for:
+     * - bundle ID
+     * - discount seed
+     * - refreshesAt
+     *
+     * So Page 1 changes weekly while
+     * Pages 2 + 3 change daily.
      */
-
     const offers = [
         // =====================
-        // PAGE 1
+        // PAGE 1 — WEEKLY
         // =====================
 
         buildBundleOffer(
             pageOneSmall,
-            window,
+            weeklyWindow,
             0,
         ),
 
         buildBundleOffer(
             pageOneLarge,
-            window,
+            weeklyWindow,
             0,
         ),
 
         // =====================
-        // PAGE 2
+        // PAGE 2 — DAILY
         // =====================
 
         buildBundleOffer(
             pageTwoSmall,
-            window,
+            dailyWindow,
             1,
         ),
 
         buildBundleOffer(
             pageTwoLarge,
-            window,
+            dailyWindow,
             1,
         ),
 
         // =====================
-        // PAGE 3
+        // PAGE 3 — DAILY
         // =====================
 
         buildBundleOffer(
             pageThreeSmall,
-            window,
+            dailyWindow,
             2,
         ),
 
         buildBundleOffer(
             pageThreeLarge,
-            window,
+            dailyWindow,
             2,
         ),
     ];
 
+    /*
+     * Keep the existing return shape.
+     *
+     * Individual offers carry their own
+     * correct refreshesAt value.
+     */
     return {
-        window,
+        window: weeklyWindow,
         offers,
     };
 }
