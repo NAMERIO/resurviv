@@ -13,41 +13,6 @@ export interface FeaturedBundleDef {
 }
 
 export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
-    bundle_srandom1: {
-        name: "Random Mini",
-        size: "small",
-        items: ["outfitSunset", "outfitMilitary"],
-        price: 750,
-        durationDays: 7,
-    },
-    bundle_srandom3: {
-        name: "Random Mini",
-        size: "small",
-        items: ["outfitVikingHelm", "outfitChromaticCTR"],
-        price: 800,
-        durationDays: 7,
-    },
-    bundle_srandom9: {
-        name: "Random Mini",
-        size: "small",
-        items: ["outfitPhoebonachi", "outfitPeru"],
-        price: 850,
-        durationDays: 7,
-    },
-    bundle_lrandom3: {
-        name: "Random Large",
-        size: "large",
-        items: ["outfitUrbanCamo", "outfitCow", "outfitDiamondy"],
-        price: 1700,
-        durationDays: 7,
-    },
-    bundle_lrandom9: {
-        name: "Random Large",
-        size: "large",
-        items: ["outfitBraaains", "outfitPanda", "outfitPolice"],
-        price: 2500,
-        durationDays: 7,
-    },
     bundle_galaxy: {
         name: "Living Galaxy Set",
         size: "small",
@@ -55,6 +20,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 5000,
         durationDays: 7,
     },
+
     bundle_bitplosion: {
         name: "Bitplosion Set",
         size: "small",
@@ -62,6 +28,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1250,
         durationDays: 7,
     },
+
     bundle_eventhorizon: {
         name: "Event Horizon Set",
         size: "small",
@@ -69,6 +36,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 2000,
         durationDays: 7,
     },
+
     bundle_snowman: {
         name: "Snowman Set",
         size: "large",
@@ -76,6 +44,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 2000,
         durationDays: 7,
     },
+
     bundle_vitaminD: {
         name: "Vitamin D Set",
         size: "small",
@@ -83,6 +52,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 850,
         durationDays: 7,
     },
+
     bundle_dino: {
         name: "Dino Set",
         size: "small",
@@ -90,6 +60,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1500,
         durationDays: 7,
     },
+
     bundle_dinos: {
         name: "Dino Set",
         size: "small",
@@ -97,6 +68,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 2350,
         durationDays: 7,
     },
+
     bundle_neondisk: {
         name: "Neon Disk Set",
         size: "small",
@@ -104,6 +76,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 900,
         durationDays: 7,
     },
+
     bundle_checkmate: {
         name: "Checkmate Set",
         size: "small",
@@ -111,6 +84,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1350,
         durationDays: 7,
     },
+
     bundle_yinyang: {
         name: "Yin-Yang Set",
         size: "small",
@@ -118,6 +92,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1350,
         durationDays: 7,
     },
+
     bundle_yinyangs: {
         name: "Yin-Yangs Set",
         size: "small",
@@ -125,6 +100,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 950,
         durationDays: 7,
     },
+
     bundle_wolf: {
         name: "Wolf Set",
         size: "small",
@@ -132,6 +108,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1350,
         durationDays: 7,
     },
+
     bundle_dragon: {
         name: "Dragon Set",
         size: "small",
@@ -139,6 +116,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1350,
         durationDays: 7,
     },
+
     bundle_grunge: {
         name: "Grunge Set",
         size: "small",
@@ -146,6 +124,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1550,
         durationDays: 7,
     },
+
     bundle_sirloin: {
         name: "Sir Loin Set",
         size: "small",
@@ -153,6 +132,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1225,
         durationDays: 7,
     },
+
     bundle_juleverny: {
         name: "Jule Verny Set",
         size: "small",
@@ -160,6 +140,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1350,
         durationDays: 7,
     },
+
     bundle_prince: {
         name: "Prince Set",
         size: "small",
@@ -167,6 +148,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1250,
         durationDays: 7,
     },
+
     bundle_pixel: {
         name: "Pixel Attack Set",
         size: "large",
@@ -174,6 +156,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 2850,
         durationDays: 7,
     },
+
     bundle_mask: {
         name: "Mask Set",
         size: "large",
@@ -181,6 +164,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 2000,
         durationDays: 7,
     },
+
     bundle_bugcat: {
         name: "Bugcat Set",
         size: "large",
@@ -188,6 +172,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 2250,
         durationDays: 7,
     },
+
     bundle_dinner: {
         name: "Dinner Set",
         size: "large",
@@ -195,6 +180,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 2450,
         durationDays: 7,
     },
+
     bundle_ninja: {
         name: "Ninja Set",
         size: "large",
@@ -207,6 +193,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 3250,
         durationDays: 7,
     },
+
     bundle_love: {
         name: "Love Set",
         size: "small",
@@ -214,6 +201,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1750,
         durationDays: 7,
     },
+
     bundle_void: {
         name: "Vast Void Set",
         size: "large",
@@ -221,6 +209,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1800,
         durationDays: 7,
     },
+
     bundle_jjk: {
         name: "JJK Set",
         size: "large",
@@ -228,6 +217,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 2850,
         durationDays: 7,
     },
+
     bundle_lightning: {
         name: "Lightning Set",
         size: "large",
@@ -235,6 +225,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1750,
         durationDays: 7,
     },
+
     bundle_flame: {
         name: "Flame Enthuasist Set",
         size: "large",
@@ -242,6 +233,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 3000,
         durationDays: 7,
     },
+
     bundle_turtle: {
         name: "Turtle Set",
         size: "small",
@@ -249,6 +241,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 950,
         durationDays: 7,
     },
+
     bundle_gridflag: {
         name: "Grid Flag Set",
         size: "small",
@@ -256,6 +249,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 750,
         durationDays: 7,
     },
+
     bundle_camo: {
         name: "Camo Set",
         size: "large",
@@ -263,6 +257,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1800,
         durationDays: 7,
     },
+
     bundle_gpdude: {
         name: "GP Dude Set",
         size: "large",
@@ -270,6 +265,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 3000,
         durationDays: 7,
     },
+
     bundle_pastel: {
         name: "Pastel Set",
         size: "large",
@@ -277,6 +273,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1100,
         durationDays: 7,
     },
+
     bundle_floral: {
         name: "Floral Set",
         size: "small",
@@ -284,6 +281,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 950,
         durationDays: 7,
     },
+
     bundle_donut: {
         name: "Donut Set",
         size: "small",
@@ -291,13 +289,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 950,
         durationDays: 7,
     },
-    bundle_lrandom4: {
-        name: "Random Large",
-        size: "large",
-        items: ["outfitHowPitaful", "outfitSnow", "outfitChewieCheese", "outfitSoapPods"],
-        price: 2500,
-        durationDays: 7,
-    },
+
     bundle_bullseye: {
         name: "Bullseye Set",
         size: "small",
@@ -305,13 +297,15 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 700,
         durationDays: 7,
     },
+
     bundle_sakura: {
-        name: "Sakura  Set",
+        name: "Sakura Set",
         size: "large",
         items: ["outfitHopelessRamentic", "outfitCrimsonHibiscus", "kunai_shadow"],
         price: 2150,
         durationDays: 7,
     },
+
     bundle_farmer: {
         name: "Farmers Set",
         size: "small",
@@ -319,6 +313,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 700,
         durationDays: 7,
     },
+
     bundle_jester: {
         name: "Jester Set",
         size: "small",
@@ -326,6 +321,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1700,
         durationDays: 7,
     },
+
     bundle_rainbow: {
         name: "Rainbow Set",
         size: "small",
@@ -333,6 +329,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 750,
         durationDays: 7,
     },
+
     bundle_spooky: {
         name: "Spooky Set",
         size: "large",
@@ -340,6 +337,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 950,
         durationDays: 7,
     },
+
     bundle_kinggalaxy: {
         name: "King Galaxy Set",
         size: "small",
@@ -347,6 +345,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1250,
         durationDays: 7,
     },
+
     bundle_desert: {
         name: "Desert Set",
         size: "large",
@@ -354,6 +353,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 950,
         durationDays: 7,
     },
+
     bundle_solarsytem: {
         name: "Solar System Set",
         size: "large",
@@ -361,6 +361,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1750,
         durationDays: 7,
     },
+
     bundle_geometry: {
         name: "Geometry Set",
         size: "small",
@@ -368,6 +369,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 950,
         durationDays: 7,
     },
+
     bundle_coffee: {
         name: "Coffee Break Set",
         size: "small",
@@ -375,6 +377,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1250,
         durationDays: 7,
     },
+
     bundle_art: {
         name: "Artistic Set",
         size: "small",
@@ -382,6 +385,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 850,
         durationDays: 7,
     },
+
     bundle_watermelon: {
         name: "Watermelon Set",
         size: "small",
@@ -389,6 +393,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1000,
         durationDays: 7,
     },
+
     bundle_poinsetee: {
         name: "Poinsetee Set",
         size: "small",
@@ -396,6 +401,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1050,
         durationDays: 7,
     },
+
     bundle_iceage: {
         name: "Stone Age Set",
         size: "small",
@@ -403,6 +409,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1000,
         durationDays: 7,
     },
+
     bundle_chiikawa: {
         name: "Chiikawa Set",
         size: "small",
@@ -410,6 +417,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1750,
         durationDays: 7,
     },
+
     bundle_ref: {
         name: "Referee Set",
         size: "small",
@@ -417,6 +425,7 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         price: 1250,
         durationDays: 7,
     },
+
     bundle_custom: {
         name: "Custom Set",
         size: "large",
@@ -425,20 +434,3 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         durationDays: 7,
     },
 };
-
-export const FeaturedBundlePages = [
-    {
-        small: "bundle_iceage",
-        large: "bundle_gpdude",
-    },
-    {
-        small: "bundle_chiikawa",
-        large: "bundle_flame",
-    },
-    {
-        small: "bundle_ref",
-        large: "bundle_lightning",
-    },
-] as const satisfies ReadonlyArray<
-    Record<FeaturedBundleSize, keyof typeof FeaturedBundleDefs>
->;

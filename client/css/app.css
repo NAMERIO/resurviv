@@ -24151,3 +24151,38 @@ div.roulette {
     height: 42px;
   }
 }
+
+
+/* Featured bundle weekly discount ribbon */
+.iap-bundle-discount-ribbon {
+  position: absolute;
+  top: 17px;
+  right: -43px;
+  z-index: 10;
+  width: 150px;
+  height: 28px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #ffe95b 0%, #f4cc21 100%);
+  border-top: 2px solid #fff08b;
+  border-bottom: 2px solid #b88b00;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.45),
+    inset 0 1px rgba(255, 255, 255, 0.35);
+  color: #4a3500;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 24px;
+  text-align: center;
+  text-shadow: 0 1px rgba(255, 255, 255, 0.45);
+  transform: rotate(45deg);
+  transform-origin: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.iap-bundle-discount-ribbon.is-visible {
+  display: flex;
+}

@@ -6100,7 +6100,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
     outfitCandyCorn: defineOutfitSkin("outfitBase", {
-        name: "Peru",
+        name: "Candy Corn",
         noDropOnDeath: true,
 
         rarity: 2,
