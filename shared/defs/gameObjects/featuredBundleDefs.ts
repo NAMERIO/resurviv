@@ -29,6 +29,14 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         durationDays: 7,
     },
 
+    bundle_amethyst: {
+        name: "Amethyst Set",
+        size: "small",
+        items: ["outfitAmethystDisk", "karambit_amethyst"],
+        price: 1250,
+        durationDays: 7,
+    },
+
     bundle_eventhorizon: {
         name: "Event Horizon Set",
         size: "small",

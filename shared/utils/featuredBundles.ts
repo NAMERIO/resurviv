@@ -78,6 +78,33 @@ const FEATURED_BUNDLE_DISCOUNTS = [
  * These outfits can NEVER appear in generated bundles.
  */
 const RANDOM_BUNDLE_EXCLUDED_OUTFITS = new Set([
+    // Stock / default outfits
+    "outfitBase",
+    "outfitNoir",
+    "outfitRedLeaderAged",
+    "outfitBlueLeaderAged",
+    "outfitWoodsCloak",
+    "outfitElf",
+    "outfitImperial",
+    "outfitVerde",
+    "outfitPineapple",
+    "outfitTarkhany",
+    "outfitWaterElem",
+    "outfitHeaven",
+    "outfitMeteor",
+    "outfitIslander",
+    "outfitAqua",
+    "outfitCoral",
+    "outfitCasanova",
+    "outfitPrisoner",
+    "outfitJester",
+    "outfitRoyalFortune",
+    "outfitRed",
+    "outfitCarbonFiber",
+    "outfitParmaPrestige",
+    "outfitViper",
+    "outfitKxrLogo",
+    
     // Staff / private / special
     "outfitReTag",
     "outfitDev",

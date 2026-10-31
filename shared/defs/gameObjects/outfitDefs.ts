@@ -1906,6 +1906,26 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+    outfitAmethystDisk: defineOutfitSkin("outfitBase", {
+        name: "Amethyst Disk",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-amethyst-disk.img",
+            handTint: 0x77727D,
+            handSprite: "player-hands-01.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x101010,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
     outfitBeachCamo: defineOutfitSkin("outfitBase", {
         name: "Beach Camo",
         noDropOnDeath: true,
@@ -5279,6 +5299,76 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+
+    outfitPsychadelia: defineOutfitSkin("outfitBase", {
+        name: "Psychadelia",
+        noDropOnDeath: true,
+
+        rarity: 3,
+        lore: "For those who fight high.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-psychedelia.img",
+            handTint: 0xFFAA00,
+            handSprite: "player-hands-02.img",
+            footTint: 0xFF9A00,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x0F286D,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitLucky8: defineOutfitSkin("outfitBase", {
+        name: "Lucky 8",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "Made by Friend.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-lucky-8.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-lucky-8.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xc1282d,
+            backpackSprite: "player-back-lucky-8.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitStainedGlass: defineOutfitSkin("outfitBase", {
+        name: "Stained Glass",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "Made by Friend.",
+
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-stained-glass.img",
+            handTint: 0xffffff,
+            handSprite: "player-hands-stained-glass.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xc1282d,
+            backpackSprite: "player-back-stained-glass.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
     outfitUnoReverse: defineOutfitSkin("outfitBase", {
         name: "Uno Reverse",
         noDropOnDeath: true,
