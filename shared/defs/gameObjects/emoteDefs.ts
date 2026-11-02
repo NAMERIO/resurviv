@@ -2743,5 +2743,5 @@ export const EmotesDefs: Record<string, EmoteDef> = {
         channel: "ui",
         teamOnly: false,
         category: EmoteCategory.Faces,
-    }
+    },
 };
