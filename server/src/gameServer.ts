@@ -91,6 +91,7 @@ class GameServer {
             ),
             disableAirstrikes: !!data.disableAirstrikes,
             movingZone: !!data.movingZone,
+            zoneMode: data.zoneMode || "classic",
             disablePerks: !!data.disablePerks,
             disableLooting: !!data.disableLooting,
             showEnemiesOnMap: data.showEnemiesOnMap !== false,

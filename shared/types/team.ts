@@ -56,6 +56,7 @@ export interface RoomData {
     amongUsImpostorCount: AmongUsImpostorCount;
     disableAirstrikes: boolean;
     movingZone: boolean;
+    zoneMode: "classic" | "rapid" | "blitz";
     disablePerks: boolean;
     disableLooting: boolean;
     showEnemiesOnMap: boolean;
@@ -156,6 +157,7 @@ export const zClientRoomData = z.object({
     amongUsImpostorCount: z.number().int().min(1).max(3).optional(),
     disableAirstrikes: z.boolean().optional(),
     movingZone: z.boolean().optional(),
+    zoneMode: z.enum(["classic", "rapid", "blitz"]).optional(),
     disablePerks: z.boolean().optional(),
     disableLooting: z.boolean().optional(),
     showEnemiesOnMap: z.boolean().optional(),
