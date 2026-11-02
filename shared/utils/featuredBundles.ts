@@ -60,34 +60,8 @@ const GENERATED_BUNDLE_DURATION_HOURS = 6;
  * everyone sees the same discount for that slot.
  */
 const FEATURED_BUNDLE_DISCOUNTS = [
-    7,
-    6.7,
-    8,
-    9,
-    10,
-    11,
-    12,
-    13,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    14,
-    15,
-    15,
-    17,
-    17,
-    19,
-    20,
-    20,
-    20,
+    7, 6.7, 8, 9, 10, 11, 12, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 15, 15,
+    17, 17, 19, 20, 20, 20,
 ] as const;
 
 /*
@@ -487,8 +461,7 @@ function createGeneratedBundle(
          * getFeaturedBundleOffers() controls the
          * actual offer window.
          */
-        durationDays:
-            GENERATED_BUNDLE_DURATION_HOURS / 24,
+        durationDays: GENERATED_BUNDLE_DURATION_HOURS / 24,
     };
 }
 
@@ -525,10 +498,7 @@ export function getFeaturedBundleOffers(now = Date.now(), resetAt?: number) {
      * resetAt here because Pages 2 + 3 have
      * their own 24-hour schedule.
      */
-    const dailyWindow = getBundleWindow(
-        GENERATED_BUNDLE_DURATION_HOURS / 24,
-        now,
-    );
+    const dailyWindow = getBundleWindow(GENERATED_BUNDLE_DURATION_HOURS / 24, now);
 
     /*
      * =========================
