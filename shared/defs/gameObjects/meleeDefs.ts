@@ -2696,7 +2696,7 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
         handSprites: {
             spriteL: "player-fists-checkmate-l.img",
-            spriteR: "player-hands-checkmate-r.img",
+            spriteR: "player-fists-checkmate-r.img",
         },
     }),
     fist_paws: defineMeleeSkin("fists", {

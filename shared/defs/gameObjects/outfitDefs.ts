@@ -1914,7 +1914,7 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-amethyst-disk.img",
-            handTint: 0x77727D,
+            handTint: 0x77727d,
             handSprite: "player-hands-01.img",
             footTint: 0xffffff,
             footSprite: "player-feet-01.img",
@@ -5129,7 +5129,6 @@ const SkinDefs: Record<string, OutfitDef> = {
         moveEmitter: "silverParticle",
 
         skinImg: {
-        
             baseTint: 0xffffff,
             baseSprite: "player-base-diamond.img",
             handTint: 0xffffff,
@@ -5310,11 +5309,11 @@ const SkinDefs: Record<string, OutfitDef> = {
         skinImg: {
             baseTint: 0xffffff,
             baseSprite: "player-base-psychedelia.img",
-            handTint: 0xFFAA00,
+            handTint: 0xffaa00,
             handSprite: "player-hands-02.img",
-            footTint: 0xFF9A00,
+            footTint: 0xff9a00,
             footSprite: "player-feet-01.img",
-            backpackTint: 0x0F286D,
+            backpackTint: 0x0f286d,
             backpackSprite: "player-circle-base-01.img",
         },
         lootImg: {
@@ -5689,7 +5688,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-gp-dude.img",
-            frontSpritePos: { x: -3, y: -.2 },
+            frontSpritePos: { x: -3, y: -0.2 },
             frontSprite: "player-accessory-gp-dude.img",
         },
         lootImg: {
@@ -5739,7 +5738,7 @@ const SkinDefs: Record<string, OutfitDef> = {
             footSprite: "player-feet-01.img",
             backpackTint: 0xffffff,
             backpackSprite: "player-back-hachiware.img",
-            frontSpritePos: { x: -2, y: -.25 },
+            frontSpritePos: { x: -2, y: -0.25 },
             frontSprite: "player-accessory-hachiware.img",
         },
         lootImg: {

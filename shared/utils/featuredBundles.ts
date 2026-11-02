@@ -1,10 +1,10 @@
 import { GameObjectDefs } from "../defs/gameObjectDefs";
-import { PassDefs } from "../defs/gameObjects/passDefs";
 import {
     type FeaturedBundleDef,
     FeaturedBundleDefs,
     type FeaturedBundleSize,
 } from "../defs/gameObjects/featuredBundleDefs";
+import { PassDefs } from "../defs/gameObjects/passDefs";
 import { Rarity } from "../gameConfig";
 import { getMarketItemRarity } from "./marketPricing";
 
@@ -40,15 +40,7 @@ export type FeaturedBundleOffer = {
     purchased: boolean;
 };
 
-const FEATURED_BUNDLE_ANCHOR_MS = Date.UTC(
-    2026,
-    0,
-    1,
-    0,
-    0,
-    0,
-    0,
-);
+const FEATURED_BUNDLE_ANCHOR_MS = Date.UTC(2026, 0, 1, 0, 0, 0, 0);
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const HOUR_MS = 60 * 60 * 1000;
@@ -128,7 +120,7 @@ const RANDOM_BUNDLE_EXCLUDED_OUTFITS = new Set([
     "outfitParmaPrestige",
     "outfitViper",
     "outfitKxrLogo",
-    
+
     // Staff / private / special
     "outfitReTag",
     "outfitDev",
@@ -185,17 +177,10 @@ const RANDOM_BUNDLE_EXCLUDED_OUTFITS = new Set([
  */
 const BATTLE_PASS_OUTFITS = new Set(
     Object.values(PassDefs)
-        .flatMap((pass) => [
-            ...pass.items,
-            ...(pass.premiumItems ?? []),
-        ])
-        .flatMap((reward) =>
-            "item" in reward ? [reward.item] : [],
-        )
+        .flatMap((pass) => [...pass.items, ...(pass.premiumItems ?? [])])
+        .flatMap((reward) => ("item" in reward ? [reward.item] : []))
         .filter((itemType) => {
-            const itemDef = GameObjectDefs[itemType] as
-                | { type?: string }
-                | undefined;
+            const itemDef = GameObjectDefs[itemType] as { type?: string } | undefined;
 
             return itemDef?.type === "outfit";
         }),
@@ -225,13 +210,8 @@ function getBundleWindow(
     now = Date.now(),
     resetAt?: number,
 ): BundleWindow {
-    if (
-        !Number.isFinite(durationDays) ||
-        durationDays <= 0
-    ) {
-        throw new Error(
-            "Featured bundle durationDays must be greater than zero",
-        );
+    if (!Number.isFinite(durationDays) || durationDays <= 0) {
+        throw new Error("Featured bundle durationDays must be greater than zero");
     }
 
     const durationMs = durationDays * DAY_MS;
@@ -244,10 +224,7 @@ function getBundleWindow(
     ) {
         const cycle = Math.max(
             0,
-            Math.floor(
-                (resetAt - FEATURED_BUNDLE_ANCHOR_MS) /
-                    durationMs,
-            ),
+            Math.floor((resetAt - FEATURED_BUNDLE_ANCHOR_MS) / durationMs),
         );
 
         return {
@@ -257,17 +234,9 @@ function getBundleWindow(
         };
     }
 
-    const cycle = Math.max(
-        0,
-        Math.floor(
-            (now - FEATURED_BUNDLE_ANCHOR_MS) /
-                durationMs,
-        ),
-    );
+    const cycle = Math.max(0, Math.floor((now - FEATURED_BUNDLE_ANCHOR_MS) / durationMs));
 
-    const startsAt =
-        FEATURED_BUNDLE_ANCHOR_MS +
-        cycle * durationMs;
+    const startsAt = FEATURED_BUNDLE_ANCHOR_MS + cycle * durationMs;
 
     return {
         cycle,
@@ -284,44 +253,21 @@ function createSeededRandom(seed: number) {
 
         let value = state;
 
-        value = Math.imul(
-            value ^ (value >>> 15),
-            value | 1,
-        );
+        value = Math.imul(value ^ (value >>> 15), value | 1);
 
-        value ^=
-            value +
-            Math.imul(
-                value ^ (value >>> 7),
-                value | 61,
-            );
+        value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
 
-        return (
-            ((value ^ (value >>> 14)) >>> 0) /
-            4294967296
-        );
+        return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
     };
 }
 
-function shuffleWithRandom<T>(
-    items: readonly T[],
-    random: () => number,
-) {
+function shuffleWithRandom<T>(items: readonly T[], random: () => number) {
     const shuffled = [...items];
 
-    for (
-        let i = shuffled.length - 1;
-        i > 0;
-        i--
-    ) {
-        const j = Math.floor(
-            random() * (i + 1),
-        );
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1));
 
-        [shuffled[i], shuffled[j]] = [
-            shuffled[j],
-            shuffled[i],
-        ];
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
 
     return shuffled;
@@ -337,34 +283,20 @@ function getBundleBasePrice(itemType: string) {
     return bundleMinPrice[rarity];
 }
 
-function getGeneratedBundlePrice(
-    items: string[],
-) {
+function getGeneratedBundlePrice(items: string[]) {
     return Math.max(
         1,
-        items.reduce(
-            (total, itemType) => {
-                return (
-                    total +
-                    (getBundleBasePrice(
-                        itemType,
-                    ) ?? 0)
-                );
-            },
-            0,
-        ),
+        items.reduce((total, itemType) => {
+            return total + (getBundleBasePrice(itemType) ?? 0);
+        }, 0),
     );
 }
 
-export function getBundleMinPrice(
-    itemType: string,
-) {
+export function getBundleMinPrice(itemType: string) {
     return getBundleBasePrice(itemType);
 }
 
-export function getFeaturedBundleRarity(
-    price: number,
-): FeaturedBundleRarity {
+export function getFeaturedBundleRarity(price: number): FeaturedBundleRarity {
     if (price < 1200) return "uncommon";
     if (price < 1600) return "rare";
     if (price < 2000) return "epic";
@@ -397,30 +329,15 @@ function getFeaturedBundleDiscount(
     page: number,
     size: FeaturedBundleSize,
 ) {
-    const sizeSeed =
-        size === "small"
-            ? 0x13572468
-            : 0x24681357;
+    const sizeSeed = size === "small" ? 0x13572468 : 0x24681357;
 
-    const seed =
-        cycle ^
-        Math.imul(
-            page + 1,
-            0x45d9f3b,
-        ) ^
-        sizeSeed;
+    const seed = cycle ^ Math.imul(page + 1, 0x45d9f3b) ^ sizeSeed;
 
-    const random =
-        createSeededRandom(seed);
+    const random = createSeededRandom(seed);
 
-    const index = Math.floor(
-        random() *
-            FEATURED_BUNDLE_DISCOUNTS.length,
-    );
+    const index = Math.floor(random() * FEATURED_BUNDLE_DISCOUNTS.length);
 
-    return FEATURED_BUNDLE_DISCOUNTS[
-        index
-    ]!;
+    return FEATURED_BUNDLE_DISCOUNTS[index]!;
 }
 
 function buildBundleOffer(
@@ -428,13 +345,10 @@ function buildBundleOffer(
     window: BundleWindow,
     page: number,
 ): FeaturedBundleOffer {
-    const itemTypes = [
-        ...new Set(definition.items),
-    ];
+    const itemTypes = [...new Set(definition.items)];
 
     for (const itemType of itemTypes) {
-        const itemDef =
-            GameObjectDefs[itemType];
+        const itemDef = GameObjectDefs[itemType];
 
         if (!itemDef) {
             throw new Error(
@@ -446,20 +360,16 @@ function buildBundleOffer(
     /*
      * Keep the bundle's normal price.
      */
-    const originalPrice = Math.max(
-        1,
-        Math.round(definition.price),
-    );
+    const originalPrice = Math.max(1, Math.round(definition.price));
 
     /*
      * Roll this slot's deterministic discount.
      */
-    const discountPercent =
-        getFeaturedBundleDiscount(
-            window.cycle,
-            page,
-            definition.size,
-        );
+    const discountPercent = getFeaturedBundleDiscount(
+        window.cycle,
+        page,
+        definition.size,
+    );
 
     /*
      * Calculate the ACTUAL price charged.
@@ -468,15 +378,7 @@ function buildBundleOffer(
      * 2000 GP with 20% OFF
      * = 1600 GP.
      */
-    const price = Math.max(
-        1,
-        Math.round(
-            originalPrice *
-                (1 -
-                    discountPercent /
-                        100),
-        ),
-    );
+    const price = Math.max(1, Math.round(originalPrice * (1 - discountPercent / 100)));
 
     return {
         id: `${window.cycle}-${definition.id}`,
@@ -496,128 +398,71 @@ function buildBundleOffer(
          * A discount should not downgrade
          * the visual rarity of the bundle.
          */
-        rarity:
-            getFeaturedBundleRarity(
-                originalPrice,
-            ),
+        rarity: getFeaturedBundleRarity(originalPrice),
 
-        refreshesAt:
-            window.refreshesAt,
+        refreshesAt: window.refreshesAt,
 
         purchased: false,
     };
 }
 
-function getPremadeBundlePool(
-    size: FeaturedBundleSize,
-): BundleDefinitionWithId[] {
-    return Object.entries(
-        FeaturedBundleDefs,
-    )
-        .filter(
-            ([, definition]) => {
-                return (
-                    definition.size ===
-                    size
-                );
-            },
-        )
-        .map(
-            ([id, definition]) => ({
-                id,
-                ...definition,
-            }),
-        )
-        .sort((a, b) =>
-            a.id.localeCompare(b.id),
-        );
+function getPremadeBundlePool(size: FeaturedBundleSize): BundleDefinitionWithId[] {
+    return Object.entries(FeaturedBundleDefs)
+        .filter(([, definition]) => {
+            return definition.size === size;
+        })
+        .map(([id, definition]) => ({
+            id,
+            ...definition,
+        }))
+        .sort((a, b) => a.id.localeCompare(b.id));
 }
 
 function selectPremadeBundle(
     size: FeaturedBundleSize,
     cycle: number,
 ): BundleDefinitionWithId {
-    const pool =
-        getPremadeBundlePool(size);
+    const pool = getPremadeBundlePool(size);
 
     if (pool.length === 0) {
-        throw new Error(
-            `No ${size} featured bundle definitions are available`,
-        );
+        throw new Error(`No ${size} featured bundle definitions are available`);
     }
 
-    const seed =
-        size === "small"
-            ? cycle ^ 0x13579bdf
-            : cycle ^ 0x2468ace0;
+    const seed = size === "small" ? cycle ^ 0x13579bdf : cycle ^ 0x2468ace0;
 
-    const random =
-        createSeededRandom(seed);
+    const random = createSeededRandom(seed);
 
-    return pool[
-        Math.floor(
-            random() * pool.length,
-        )
-    ];
+    return pool[Math.floor(random() * pool.length)];
 }
 
-function getOutfitsFromBundle(
-    bundle: BundleDefinitionWithId,
-) {
-    return bundle.items.filter(
-        (itemType) => {
-            const itemDef =
-                GameObjectDefs[
-                    itemType
-                ] as
-                    | {
-                          type?: string;
-                      }
-                    | undefined;
+function getOutfitsFromBundle(bundle: BundleDefinitionWithId) {
+    return bundle.items.filter((itemType) => {
+        const itemDef = GameObjectDefs[itemType] as
+            | {
+                  type?: string;
+              }
+            | undefined;
+
+        return itemDef?.type === "outfit";
+    });
+}
+
+function getRandomBundleOutfitPool(excludedOutfits: ReadonlySet<string>) {
+    return Object.entries(GameObjectDefs)
+        .filter(([itemType, itemDef]) => {
+            const def = itemDef as {
+                type?: string;
+            };
 
             return (
-                itemDef?.type ===
-                "outfit"
+                def.type === "outfit" &&
+                getMarketItemRarity(itemType) !== null &&
+                !RANDOM_BUNDLE_EXCLUDED_OUTFITS.has(itemType) &&
+                !BATTLE_PASS_OUTFITS.has(itemType) &&
+                !excludedOutfits.has(itemType)
             );
-        },
-    );
-}
-
-function getRandomBundleOutfitPool(
-    excludedOutfits: ReadonlySet<string>,
-) {
-    return Object.entries(
-        GameObjectDefs,
-    )
-        .filter(
-            ([itemType, itemDef]) => {
-                const def =
-                    itemDef as {
-                        type?: string;
-                    };
-
-                return (
-                    def.type ===
-                        "outfit" &&
-                    getMarketItemRarity(
-                        itemType,
-                    ) !== null &&
-                    !RANDOM_BUNDLE_EXCLUDED_OUTFITS.has(
-                        itemType,
-                    ) &&
-                    !BATTLE_PASS_OUTFITS.has(
-                        itemType,
-                    ) &&
-                    !excludedOutfits.has(
-                        itemType,
-                    )
-                );
-            },
-        )
-        .map(
-            ([itemType]) =>
-                itemType,
-        )
+        })
+        .map(([itemType]) => itemType)
         .sort();
 }
 
@@ -633,10 +478,7 @@ function createGeneratedBundle(
         size,
         items,
 
-        price:
-            getGeneratedBundlePrice(
-                items,
-            ),
+        price: getGeneratedBundlePrice(items),
 
         /*
          * Generated bundles are daily.
@@ -650,16 +492,11 @@ function createGeneratedBundle(
     };
 }
 
-export function getFeaturedBundleSource(
-    bundleId: string,
-) {
+export function getFeaturedBundleSource(bundleId: string) {
     return `featured_bundle:${bundleId}`;
 }
 
-export function getFeaturedBundleOffers(
-    now = Date.now(),
-    resetAt?: number,
-) {
+export function getFeaturedBundleOffers(now = Date.now(), resetAt?: number) {
     /*
      * ========================================
      * TWO DIFFERENT ROTATION WINDOWS
@@ -678,11 +515,7 @@ export function getFeaturedBundleOffers(
      * does NOT reroll anything.
      */
 
-    const weeklyWindow = getBundleWindow(
-        RANDOM_BUNDLE_DURATION_DAYS,
-        now,
-        resetAt,
-    );
+    const weeklyWindow = getBundleWindow(RANDOM_BUNDLE_DURATION_DAYS, now, resetAt);
 
     /*
      * The daily generated pages use the fixed
@@ -707,33 +540,20 @@ export function getFeaturedBundleOffers(
      *
      * These stay the same for seven days.
      */
-    const pageOneSmall =
-        selectPremadeBundle(
-            "small",
-            weeklyWindow.cycle,
-        );
+    const pageOneSmall = selectPremadeBundle("small", weeklyWindow.cycle);
 
-    const pageOneLarge =
-        selectPremadeBundle(
-            "large",
-            weeklyWindow.cycle,
-        );
+    const pageOneLarge = selectPremadeBundle("large", weeklyWindow.cycle);
 
     /*
      * Any outfits used by Page 1
      * cannot appear in generated
      * Pages 2 or 3.
      */
-    const pageOneOutfits =
-        new Set([
-            ...getOutfitsFromBundle(
-                pageOneSmall,
-            ),
+    const pageOneOutfits = new Set([
+        ...getOutfitsFromBundle(pageOneSmall),
 
-            ...getOutfitsFromBundle(
-                pageOneLarge,
-            ),
-        ]);
+        ...getOutfitsFromBundle(pageOneLarge),
+    ]);
 
     /*
      * =========================
@@ -755,19 +575,12 @@ export function getFeaturedBundleOffers(
      * Therefore these generated
      * bundles change every 24 hours.
      */
-    const generatedRandom =
-        createSeededRandom(
-            dailyWindow.cycle ^
-                0x5f3759df,
-        );
+    const generatedRandom = createSeededRandom(dailyWindow.cycle ^ 0x5f3759df);
 
-    const outfitPool =
-        shuffleWithRandom(
-            getRandomBundleOutfitPool(
-                pageOneOutfits,
-            ),
-            generatedRandom,
-        );
+    const outfitPool = shuffleWithRandom(
+        getRandomBundleOutfitPool(pageOneOutfits),
+        generatedRandom,
+    );
 
     /*
      * Small bundles:
@@ -784,28 +597,14 @@ export function getFeaturedBundleOffers(
      * because generatedRandom uses
      * dailyWindow.cycle.
      */
-    const pageTwoLargeCount =
-        3 +
-        Math.floor(
-            generatedRandom() * 2,
-        );
+    const pageTwoLargeCount = 3 + Math.floor(generatedRandom() * 2);
 
-    const pageThreeLargeCount =
-        3 +
-        Math.floor(
-            generatedRandom() * 2,
-        );
+    const pageThreeLargeCount = 3 + Math.floor(generatedRandom() * 2);
 
     const totalGeneratedOutfits =
-        pageTwoSmallCount +
-        pageTwoLargeCount +
-        pageThreeSmallCount +
-        pageThreeLargeCount;
+        pageTwoSmallCount + pageTwoLargeCount + pageThreeSmallCount + pageThreeLargeCount;
 
-    if (
-        outfitPool.length <
-        totalGeneratedOutfits
-    ) {
+    if (outfitPool.length < totalGeneratedOutfits) {
         throw new Error(
             `Not enough eligible outfits for generated featured bundles. Need ${totalGeneratedOutfits}, found ${outfitPool.length}.`,
         );
@@ -819,14 +618,8 @@ export function getFeaturedBundleOffers(
      */
     let poolIndex = 0;
 
-    const takeOutfits = (
-        count: number,
-    ) => {
-        const items =
-            outfitPool.slice(
-                poolIndex,
-                poolIndex + count,
-            );
+    const takeOutfits = (count: number) => {
+        const items = outfitPool.slice(poolIndex, poolIndex + count);
 
         poolIndex += count;
 
@@ -838,50 +631,38 @@ export function getFeaturedBundleOffers(
      * PAGE 2 — DAILY
      * =========================
      */
-    const pageTwoSmall =
-        createGeneratedBundle(
-            "generated-page-2-small",
-            "Random Mini",
-            "small",
-            takeOutfits(
-                pageTwoSmallCount,
-            ),
-        );
+    const pageTwoSmall = createGeneratedBundle(
+        "generated-page-2-small",
+        "Random Mini",
+        "small",
+        takeOutfits(pageTwoSmallCount),
+    );
 
-    const pageTwoLarge =
-        createGeneratedBundle(
-            "generated-page-2-large",
-            "Random Large",
-            "large",
-            takeOutfits(
-                pageTwoLargeCount,
-            ),
-        );
+    const pageTwoLarge = createGeneratedBundle(
+        "generated-page-2-large",
+        "Random Large",
+        "large",
+        takeOutfits(pageTwoLargeCount),
+    );
 
     /*
      * =========================
      * PAGE 3 — DAILY
      * =========================
      */
-    const pageThreeSmall =
-        createGeneratedBundle(
-            "generated-page-3-small",
-            "Random Mini",
-            "small",
-            takeOutfits(
-                pageThreeSmallCount,
-            ),
-        );
+    const pageThreeSmall = createGeneratedBundle(
+        "generated-page-3-small",
+        "Random Mini",
+        "small",
+        takeOutfits(pageThreeSmallCount),
+    );
 
-    const pageThreeLarge =
-        createGeneratedBundle(
-            "generated-page-3-large",
-            "Random Large",
-            "large",
-            takeOutfits(
-                pageThreeLargeCount,
-            ),
-        );
+    const pageThreeLarge = createGeneratedBundle(
+        "generated-page-3-large",
+        "Random Large",
+        "large",
+        takeOutfits(pageThreeLargeCount),
+    );
 
     /*
      * ========================================
@@ -907,49 +688,25 @@ export function getFeaturedBundleOffers(
         // PAGE 1 — WEEKLY
         // =====================
 
-        buildBundleOffer(
-            pageOneSmall,
-            weeklyWindow,
-            0,
-        ),
+        buildBundleOffer(pageOneSmall, weeklyWindow, 0),
 
-        buildBundleOffer(
-            pageOneLarge,
-            weeklyWindow,
-            0,
-        ),
+        buildBundleOffer(pageOneLarge, weeklyWindow, 0),
 
         // =====================
         // PAGE 2 — DAILY
         // =====================
 
-        buildBundleOffer(
-            pageTwoSmall,
-            dailyWindow,
-            1,
-        ),
+        buildBundleOffer(pageTwoSmall, dailyWindow, 1),
 
-        buildBundleOffer(
-            pageTwoLarge,
-            dailyWindow,
-            1,
-        ),
+        buildBundleOffer(pageTwoLarge, dailyWindow, 1),
 
         // =====================
         // PAGE 3 — DAILY
         // =====================
 
-        buildBundleOffer(
-            pageThreeSmall,
-            dailyWindow,
-            2,
-        ),
+        buildBundleOffer(pageThreeSmall, dailyWindow, 2),
 
-        buildBundleOffer(
-            pageThreeLarge,
-            dailyWindow,
-            2,
-        ),
+        buildBundleOffer(pageThreeLarge, dailyWindow, 2),
     ];
 
     /*
