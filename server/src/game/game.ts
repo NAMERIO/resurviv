@@ -106,6 +106,7 @@ export class Game {
     amongUsImpostorCount: AmongUsImpostorCount;
     disableAirstrikes: boolean;
     movingZone: boolean;
+    zoneMode: "classic" | "rapid" | "blitz";
     disablePerks: boolean;
     disableLooting: boolean;
     showEnemiesOnMap: boolean;
@@ -218,6 +219,7 @@ export class Game {
                 : DefaultAmongUsImpostorCount;
         this.disableAirstrikes = !!config.disableAirstrikes;
         this.movingZone = !!config.movingZone;
+        this.zoneMode = config.zoneMode || "classic";
         this.disablePerks = this.miniGame === "gun_game" || !!config.disablePerks;
         this.disableLooting = this.miniGame === "gun_game" || !!config.disableLooting;
         this.showEnemiesOnMap = config.showEnemiesOnMap !== false;
@@ -1003,6 +1005,7 @@ export class Game {
             amongUsImpostorCount: this.amongUsImpostorCount,
             disableAirstrikes: this.disableAirstrikes,
             movingZone: this.movingZone,
+            zoneMode: this.zoneMode,
             disablePerks: this.disablePerks,
             disableLooting: this.disableLooting,
             showEnemiesOnMap: this.showEnemiesOnMap,

@@ -234,6 +234,14 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         durationDays: 7,
     },
 
+    bundle_psychadelic: {
+        name: "Psychadelic Set",
+        size: "large",
+        items: ["outfitPsychadelia", "karambit_blazing"],
+        price: 1250,
+        durationDays: 7,
+    },
+
     bundle_flame: {
         name: "Flame Enthuasist Set",
         size: "large",

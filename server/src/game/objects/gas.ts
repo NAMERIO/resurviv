@@ -53,7 +53,84 @@ const GasStages: StageData[] = [
     },
 ];
 
+const RapidGasStages: StageData[] = [
+    {
+        mode: GasMode.Inactive,
+        duration: 0,
+        rad: 0.7425,
+        damage: 0,
+    },
+    {
+        // 0:00 -> 1:15
+        mode: GasMode.Waiting,
+        duration: 75,
+        rad: 0.7425,
+        damage: 20,
+    },
+    {
+        // 1:15 -> 2:30
+        mode: GasMode.Moving,
+        duration: 75,
+        rad: 0.5,
+        damage: 55,
+    },
+    {
+        // 2:30 -> 3:50
+        mode: GasMode.Moving,
+        duration: 80,
+        rad: 0.25,
+        damage: 55,
+    },
+    {
+        // 3:50 -> 5:00
+        mode: GasMode.Moving,
+        duration: 70,
+        rad: 0,
+        damage: 55,
+        moveCenter: true,
+        timerDuration: 0,
+    },
+];
+const BlitzGasStages: StageData[] = [
+    {
+        mode: GasMode.Inactive,
+        duration: 0,
+        rad: 0.7425,
+        damage: 0,
+    },
+    {
+        // 0:00 -> 0:45
+        mode: GasMode.Waiting,
+        duration: 45,
+        rad: 0.7425,
+        damage: 20,
+    },
+    {
+        // 0:45 -> 1:30
+        mode: GasMode.Moving,
+        duration: 45,
+        rad: 0.5,
+        damage: 55,
+    },
+    {
+        // 1:30 -> 2:20
+        mode: GasMode.Moving,
+        duration: 50,
+        rad: 0.25,
+        damage: 55,
+    },
+    {
+        // 2:20 -> 3:00
+        mode: GasMode.Moving,
+        duration: 40,
+        rad: 0,
+        damage: 55,
+        moveCenter: true,
+        timerDuration: 0,
+    },
+];
 const MovingZoneGasStages: StageData[] = [
+    
     {
         mode: GasMode.Inactive,
         duration: 0,
@@ -318,7 +395,11 @@ export class Gas {
 
         const circleIdxOld = this.circleIdx;
 
-        if (this._usesMovingZoneStages()) {
+        if (
+    this._usesMovingZoneStages() ||
+    (this.game.arenaPrivate &&
+        (this.game.zoneMode === "rapid" || this.game.zoneMode === "blitz"))
+) {
             this.posOld = v2.copy(this.currentPos);
             this.posNew = v2.copy(this.currentPos);
 
@@ -432,8 +513,16 @@ export class Gas {
     }
 
     private _getStages(): readonly StageData[] {
-        if (isBattleRoyaleMapName(this.game.mapName)) return BattleRoyaleGasStages;
-        return this._usesMovingZoneStages() ? MovingZoneGasStages : GasStages;
+    if (isBattleRoyaleMapName(this.game.mapName)) return BattleRoyaleGasStages;
+
+    if (this.game.arenaPrivate && this.game.zoneMode === "rapid") {
+    return RapidGasStages;
+}
+    if (this.game.arenaPrivate && this.game.zoneMode === "blitz") {
+        return BlitzGasStages;
+    }
+
+    return this._usesMovingZoneStages() ? MovingZoneGasStages : GasStages;
     }
 
     get finalCloseStarted() {

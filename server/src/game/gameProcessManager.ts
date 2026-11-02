@@ -55,6 +55,7 @@ class GameProcess implements GameData {
     amongUsImpostorCount: AmongUsImpostorCount = DefaultAmongUsImpostorCount;
     disableAirstrikes = false;
     movingZone = false;
+    zoneMode: "classic" | "rapid" | "blitz" = "classic";
     disablePerks = false;
     disableLooting = false;
     showEnemiesOnMap = true;
@@ -143,6 +144,7 @@ class GameProcess implements GameData {
                     );
                     this.disableAirstrikes = !!msg.disableAirstrikes;
                     this.movingZone = !!msg.movingZone;
+                    this.zoneMode = msg.zoneMode || "classic";
                     this.disablePerks = !!msg.disablePerks;
                     this.disableLooting = !!msg.disableLooting;
                     this.showEnemiesOnMap = msg.showEnemiesOnMap !== false;
@@ -234,6 +236,7 @@ class GameProcess implements GameData {
         );
         this.disableAirstrikes = !!config.disableAirstrikes;
         this.movingZone = !!config.movingZone;
+        this.zoneMode = config.zoneMode || "classic";
         this.disablePerks = !!config.disablePerks;
         this.disableLooting = !!config.disableLooting;
         this.showEnemiesOnMap = config.showEnemiesOnMap !== false;
@@ -607,6 +610,7 @@ export class GameProcessManager implements GameManager {
                     normalizeAmongUsImpostorCount(body.amongUsImpostorCount) &&
                 proc.disableAirstrikes === !!body.disableAirstrikes &&
                 proc.movingZone === !!body.movingZone &&
+                (proc.zoneMode || "classic") === (body.zoneMode || "classic") &&
                 proc.disablePerks === !!body.disablePerks &&
                 proc.disableLooting === !!body.disableLooting &&
                 proc.showEnemiesOnMap === (body.showEnemiesOnMap !== false) &&
@@ -673,6 +677,7 @@ export class GameProcessManager implements GameManager {
                 ),
                 disableAirstrikes: !!body.disableAirstrikes,
                 movingZone: !!body.movingZone,
+                zoneMode: body.zoneMode || "classic",
                 disablePerks: !!body.disablePerks,
                 disableLooting: !!body.disableLooting,
                 showEnemiesOnMap: body.showEnemiesOnMap !== false,
