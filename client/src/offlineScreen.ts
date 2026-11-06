@@ -1,7 +1,3 @@
-// "Game offline" / server upgrade screen.
-// Shown by boot.ts when `gameOffline` is enabled in the server config (or the API is down).
-// Styled after the start menu (menu-block, btn-green, #btn-help) so it matches the game.
-
 const ALT_GAME_URL = "https://traprush.io";
 const RECHECK_INTERVAL_S = 30;
 
