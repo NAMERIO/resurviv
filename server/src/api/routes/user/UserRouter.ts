@@ -2416,6 +2416,10 @@ UserRouter.post("/open_loot_box", validateParams(zOpenLootBoxRequest), async (c)
             }
 
             if (payment === "ads") {
+                if (buyer.gpBalance < 0) {
+                    return { ok: false as const, error: "not_enough_gp" as const };
+                }
+
                 if (!Config.h5GamesAds.enabled) {
                     return { ok: false as const, error: "ads_disabled" as const };
                 }
