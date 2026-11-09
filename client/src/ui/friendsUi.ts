@@ -658,6 +658,7 @@ export class FriendsUi {
                 const def = GameObjectDefs[item.type];
                 return (
                     item.id &&
+                    !item.ticketLocked &&
                     def?.type === this.activeGiftCategory &&
                     getMarketPriceBounds(item.type) !== null
                 );

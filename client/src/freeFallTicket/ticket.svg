@@ -1,0 +1,55 @@
+<svg class="ff-ticket-art" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 260" role="img" aria-label="Free Fall Ticket">
+  <defs>
+    <mask id="ff-ticket-notches">
+      <rect width="640" height="260" rx="14" fill="#fff"/>
+      <circle cx="462" cy="0" r="15" fill="#000"/>
+      <circle cx="462" cy="260" r="15" fill="#000"/>
+    </mask>
+  </defs>
+
+  <g mask="url(#ff-ticket-notches)">
+    <rect width="640" height="260" fill="#f2e7cf"/>
+    <rect width="462" height="50" fill="#d8431b"/>
+    <rect x="462" width="178" height="260" fill="#1b2733"/>
+  </g>
+
+  <line x1="462" y1="20" x2="462" y2="240" stroke="#c9b98f" stroke-width="2.5" stroke-dasharray="3 8" stroke-linecap="round"/>
+
+  <g font-family="'Roboto Condensed', 'Arial Narrow', sans-serif" font-weight="700">
+    <text x="28" y="34" fill="#fbf1dc" font-size="21" letter-spacing="3.2">WHOLE SHOP ON THE HOUSE</text>
+
+    <text x="26" y="139" fill="#d8431b" font-size="96" letter-spacing="-1" opacity="0.9">FREE FALL</text>
+    <text x="23" y="136" fill="#1b2733" font-size="96" letter-spacing="-1">FREE FALL</text>
+
+    <g font-size="12.5" letter-spacing="2" fill="#7a6c4f">
+      <text x="28" y="182">FROM</text>
+      <text x="116" y="182">TO</text>
+      <text x="252" y="182">VALID THRU</text>
+    </g>
+    <g font-size="23" fill="#1b2733">
+      <text x="28" y="212">THE SKY</text>
+      <text x="116" y="212">YOUR LOCKER</text>
+      <text x="252" y="212">01 JAN 2027</text>
+    </g>
+
+    <g class="ff-ticket-stamp" transform="rotate(-11 408 192)">
+      <rect x="368" y="172" width="80" height="41" rx="4" fill="none" stroke="#d8431b" stroke-width="3.5"/>
+      <text x="408" y="203" text-anchor="middle" fill="#d8431b" font-size="29" letter-spacing="1">PAID</text>
+    </g>
+  </g>
+
+  <g transform="translate(551 68)">
+    <path d="M-50 2 C-50 -34 -24 -50 0 -50 C24 -50 50 -34 50 2 C42 -7 34 -7 25 2 C17 -7 8 -7 0 2 C-8 -7 -17 -7 -25 2 C-34 -7 -42 -7 -50 2 Z" fill="#d8431b"/>
+    <path d="M-25 2 C-25 -28 -12 -50 0 -50 C12 -50 25 -28 25 2 C17 -7 8 -7 0 2 C-8 -7 -17 -7 -25 2 Z" fill="#f2e7cf"/>
+    <path d="M-50 2 L-13 58 M-25 2 L-6 58 M25 2 L6 58 M50 2 L13 58" stroke="#f2e7cf" stroke-width="2"/>
+    <rect x="-17" y="58" width="34" height="26" rx="2" fill="#f2e7cf"/>
+    <path d="M-17 71 H17 M0 58 V84" stroke="#1b2733" stroke-width="2.5"/>
+  </g>
+
+  <g font-family="'Roboto Condensed', 'Arial Narrow', sans-serif" font-weight="700" text-anchor="middle">
+    <text x="551" y="186" fill="#f2e7cf" font-size="24" letter-spacing="3.5">ADMIT ONE</text>
+    <text x="551" y="208" fill="#e8a33d" font-size="14.5" letter-spacing="2.5">1 IN 10,000 CRATES</text>
+  </g>
+
+  <path fill="#f2e7cf" d="M490 222h3v20h-3zm6 0h1.5v20H496zm4 0h4v20h-4zm7 0h1.5v20H507zm4 0h3v20h-3zm6 0h1.5v20H517zm4 0h4v20h-4zm7 0h3v20h-3zm5 0h1.5v20H533zm4 0h4v20h-4zm7 0h1.5v20H544zm4 0h3v20h-3zm6 0h4v20h-4zm7 0h1.5v20H561zm4 0h3v20h-3zm6 0h1.5v20H571zm4 0h4v20h-4zm7 0h3v20h-3zm6 0h1.5v20H588zm4 0h4v20h-4zm7 0h3v20h-3zm6 0h1.5v20H605z"/>
+</svg>

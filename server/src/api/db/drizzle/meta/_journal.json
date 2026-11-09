@@ -78,6 +78,13 @@
       "when": 1790190000000,
       "tag": "0042_native_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1794200000000,
+      "tag": "0043_free_fall_ticket",
+      "breakpoints": true
     }
   ]
 }

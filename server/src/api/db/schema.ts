@@ -495,8 +495,50 @@ export const itemsTable = pgTable(
         wins: integer("wins").notNull().default(0),
         holders: integer("holders").notNull().default(1),
         status: integer("status").notNull().default(ItemStatus.New),
+        ticketLocked: boolean("ticket_locked").notNull().default(false),
     },
     (table) => [index("idx_items_user_type").on(table.userId, table.type)],
+);
+
+export const freeFallTicketsTable = pgTable("free_fall_tickets", {
+    userId: text("user_id")
+        .primaryKey()
+        .references(() => usersTable.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        }),
+    finderUserId: text("finder_user_id").notNull(),
+    gameId: text("game_id").notNull(),
+    grantedAt: timestamp("granted_at", { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+});
+
+export const freeFallTicketRedemptionsTable = pgTable(
+    "free_fall_ticket_redemptions",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        userId: text("user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        kind: text("kind").$type<"market" | "bundle" | "crate">().notNull(),
+        sellerUserId: text("seller_user_id").references(() => usersTable.id, {
+            onDelete: "set null",
+            onUpdate: "cascade",
+        }),
+        referenceId: text("reference_id").notNull(),
+        gpPaidToSeller: integer("gp_paid_to_seller").notNull().default(0),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        index("idx_free_fall_redemptions_user_created").on(table.userId, table.createdAt),
+        index("idx_free_fall_redemptions_user_seller").on(
+            table.userId,
+            table.sellerUserId,
+        ),
+    ],
 );
 
 export const rewardClaimsTable = pgTable(
@@ -586,6 +628,7 @@ export const marketListingTable = pgTable(
         itemHolders: integer("item_holders").notNull().default(1),
         price: integer("price").notNull(),
         status: text("status").notNull().default("active"),
+        sellerIpHash: text("seller_ip_hash").notNull().default(""),
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
         soldAt: timestamp("sold_at", { withTimezone: true }),
         sellerNotifiedAt: timestamp("seller_notified_at", { withTimezone: true }),
@@ -758,7 +801,10 @@ export const ipLogsTable = pgTable(
         findGameIp: text("find_game_ip").notNull(),
         findGameEncodedIp: text("find_game_encoded_ip").notNull(),
     },
-    (table) => [index("name_created_at_idx").on(table.username, table.createdAt)],
+    (table) => [
+        index("name_created_at_idx").on(table.username, table.createdAt),
+        index("idx_ip_logs_user_id").on(table.userId),
+    ],
 );
 
 export type IpLogsTable = typeof ipLogsTable.$inferSelect;

@@ -97,6 +97,7 @@ import { getGlobalRankLeaderboard } from "../stats/global_rank";
 import { MOCK_USER_ID } from "../user/auth/mock";
 import { passType, premiumPassUnlockType } from "../user/PassRouter";
 import { competitivePrivateRouter } from "./competitive";
+import { FreeFallTicketRouter } from "./FreeFallTicketRouter";
 import { isBanned, logPlayerIPs, ModerationRouter } from "./ModerationRouter";
 
 function getSurvivalKillCgpMultiplier(timeAlive: number) {
@@ -732,6 +733,7 @@ export const PrivateRouter = new Hono<Context>()
     .use(privateMiddleware)
     .route("/competitive", competitivePrivateRouter)
     .route("/moderation", ModerationRouter)
+    .route("/free_fall_ticket", FreeFallTicketRouter)
     .post("/update_region", validateParams(zUpdateRegionBody), (c) => {
         const { regionId, data } = c.req.valid("json");
 

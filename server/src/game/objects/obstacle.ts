@@ -430,6 +430,7 @@ export class Obstacle extends BaseGameObject {
             this.interactedBy.questManager.trackEvent("item_used", {
                 itemType: "airdrop_crate",
             });
+            this.game.freeFallTicketDrop.rollForCrate(this.type, this.interactedBy);
         }
 
         this.scale = this.minScale;

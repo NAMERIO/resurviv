@@ -33,6 +33,7 @@ import { BedWarManager } from "./bedWarManager";
 import { CaptureTheFlagManager } from "./captureTheFlagManager";
 import { DeathmatchRoundManager } from "./deathmatchRoundManager";
 import { DominationManager } from "./dominationManager";
+import { FreeFallTicketDrop } from "./freeFallTicketDrop";
 import { GameModeManager } from "./gameModeManager";
 import { Grid } from "./grid";
 import { GunGameManager } from "./gunGameManager";
@@ -100,6 +101,7 @@ export class Game {
     isTeamMode: boolean;
     config: ServerGameConfig;
     arenaPrivate: boolean;
+    freeFallTicketDrop = new FreeFallTicketDrop(this);
     miniGame: ServerGameConfig["miniGame"];
     amongUsImpostorCount: AmongUsImpostorCount;
     disableAirstrikes: boolean;

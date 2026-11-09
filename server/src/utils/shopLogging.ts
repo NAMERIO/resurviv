@@ -80,6 +80,22 @@ export function logMarketPurchaseToDiscord({
     return sendShopLog(message, "Failed to log market purchase to discord:");
 }
 
+export function logFreeFallTicketToDiscord({
+    finderSlug,
+    recipientSlugs,
+}: {
+    finderSlug: string;
+    recipientSlugs: string[];
+}) {
+    const finder = sanitizeDiscordText(finderSlug);
+    const recipients = recipientSlugs.map(sanitizeDiscordText).join(", ");
+    const message =
+        `${finder} found the Free Fall Ticket. Granted to: ${recipients} | ` +
+        formatEasternTime();
+
+    return sendShopLog(message, "Failed to log Free Fall Ticket to discord:");
+}
+
 export function logGpGiftToDiscord({
     senderSlug,
     recipientSlug,

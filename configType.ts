@@ -218,6 +218,11 @@ export interface ConfigType {
      */
     featuredBundleResetAt?: number;
 
+    freeFallTicket?: {
+        dropOneIn?: number;
+        minDistinctIps?: number;
+    };
+
     /**
      * The client theme, changes the splash screen background and for some the menu music.
      *

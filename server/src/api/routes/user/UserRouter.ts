@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { and, eq, gte, ilike, inArray, ne, or, sql } from "drizzle-orm";
 import { Hono } from "hono";
+import { FreeFallTicket } from "../../../../../shared/defs/gameObjects/freeFallTicketDefs";
 import {
     type AckSoldMarketListingsResponse,
     type AddFriendResponse,
@@ -95,8 +96,17 @@ import {
     userFriendsTable,
     usersTable,
 } from "../../db/schema";
+import { checkMarketRedemption } from "../../freeFallTicket/altGuard";
+import {
+    countFreeCratesLast24h,
+    getActiveTicket,
+    getFreeFallTicketState,
+    lockTicketSpending,
+    recordRedemption,
+} from "../../freeFallTicket/ticketService";
 import type { Context } from "../../index";
 import { expireAuctionListings, expireMarketListings } from "../../marketListings";
+import { hashIp } from "../private/ModerationRouter";
 import { ArenaReplayRouter } from "./ArenaReplayRouter";
 import {
     ensureUserAuthIdentities,
@@ -557,6 +567,7 @@ async function getUserItems(userId: string) {
             wins: itemsTable.wins,
             holders: itemsTable.holders,
             status: itemsTable.status,
+            ticketLocked: itemsTable.ticketLocked,
         })
         .from(itemsTable)
         .where(eq(itemsTable.userId, userId));
@@ -1238,6 +1249,7 @@ UserRouter.post(
                     .select({
                         id: itemsTable.id,
                         type: itemsTable.type,
+                        ticketLocked: itemsTable.ticketLocked,
                     })
                     .from(itemsTable)
                     .where(
@@ -1249,6 +1261,10 @@ UserRouter.post(
 
                 if (ownedItems.length !== uniqueItemIds.length) {
                     return { ok: false as const, error: "item_not_owned" as const };
+                }
+
+                if (ownedItems.some((item) => item.ticketLocked)) {
+                    return { ok: false as const, error: "item_ticket_locked" as const };
                 }
 
                 if (ownedItems.some((item) => !isSupportedMarketItem(item.type))) {
@@ -1518,6 +1534,7 @@ UserRouter.post("/get_market", async (c) => {
             lootBoxes: getShopLootBoxes(),
             lootBoxAdStates: await getLootBoxAdStates(user.id),
             socialGpRewardClaims,
+            freeFallTicket: await getFreeFallTicketState(user.id),
         },
         200,
     );
@@ -1838,6 +1855,8 @@ UserRouter.post(
                 200,
             );
         }
+        const listingIp = getHonoIp(c, Config.apiServer.proxyIPHeader);
+        const sellerIpHash = listingIp ? hashIp(listingIp) : "";
         try {
             const result = await db.transaction(async (tx) => {
                 await expireMarketListings(tx, user.id);
@@ -1848,6 +1867,10 @@ UserRouter.post(
 
                 if (!ownedItem) {
                     return { ok: false as const, error: "item_not_owned" as const };
+                }
+
+                if (ownedItem.ticketLocked) {
+                    return { ok: false as const, error: "item_ticket_locked" as const };
                 }
 
                 const itemType = ownedItem.type;
@@ -1913,6 +1936,7 @@ UserRouter.post(
                     itemHolders: holderCounts.get(itemType) ?? 0,
                     price,
                     status: "active",
+                    sellerIpHash,
                 });
 
                 return { ok: true as const };
@@ -1944,7 +1968,9 @@ UserRouter.post(
     validateParams(zBuyMarketListingRequest),
     async (c) => {
         const user = c.get("user")!;
-        const { listingId } = c.req.valid("json");
+        const { listingId, payWithGp } = c.req.valid("json");
+        const buyerIp = getHonoIp(c, Config.apiServer.proxyIPHeader);
+        const buyerIpHash = buyerIp ? hashIp(buyerIp) : "";
 
         try {
             const result = await db.transaction(async (tx) => {
@@ -1970,9 +1996,25 @@ UserRouter.post(
                 const buyer = await tx.query.usersTable.findFirst({
                     where: eq(usersTable.id, user.id),
                 });
-                if (!buyer || buyer.gpBalance < listing.price) {
+                if (!buyer) {
+                    return { ok: false as const, error: "server_error" as const };
+                }
+
+                const ticket = payWithGp ? undefined : await getActiveTicket(tx, user.id);
+                if (ticket) {
+                    await lockTicketSpending(tx, user.id);
+                    const refusal = await checkMarketRedemption(tx, {
+                        buyerUserId: user.id,
+                        buyerIpHash,
+                        listing,
+                    });
+                    if (refusal) {
+                        return { ok: false as const, error: refusal };
+                    }
+                } else if (buyer.gpBalance < listing.price) {
                     return { ok: false as const, error: "not_enough_gp" as const };
                 }
+                const buyerCost = ticket ? 0 : listing.price;
 
                 const claimedListing = await tx
                     .update(marketListingTable)
@@ -2004,12 +2046,13 @@ UserRouter.post(
                     holders: listing.itemHolders,
                     source: "market_buy",
                     timeAcquired: Date.now(),
+                    ticketLocked: !!ticket,
                 });
 
                 await tx
                     .update(usersTable)
                     .set({
-                        gpBalance: buyer.gpBalance - listing.price,
+                        gpBalance: buyer.gpBalance - buyerCost,
                     })
                     .where(eq(usersTable.id, user.id));
 
@@ -2020,9 +2063,19 @@ UserRouter.post(
                     })
                     .where(eq(usersTable.id, listing.sellerUserId));
 
+                if (ticket) {
+                    await recordRedemption(tx, {
+                        userId: user.id,
+                        kind: "market",
+                        referenceId: listing.id,
+                        sellerUserId: listing.sellerUserId,
+                        gpPaidToSeller: listing.price,
+                    });
+                }
+
                 return {
                     ok: true as const,
-                    gpBalance: buyer.gpBalance - listing.price,
+                    gpBalance: buyer.gpBalance - buyerCost,
                     price: listing.price,
                     itemType: listing.itemType,
                     sellerUserId: listing.sellerUserId,
@@ -2095,6 +2148,10 @@ UserRouter.post(
                 });
                 if (!ownedItem) {
                     return { ok: false as const, error: "item_not_owned" as const };
+                }
+
+                if (ownedItem.ticketLocked) {
+                    return { ok: false as const, error: "item_ticket_locked" as const };
                 }
 
                 const priceBounds = getAuctionPriceBounds(ownedItem.type);
@@ -2339,7 +2396,10 @@ UserRouter.post(
                     return { ok: false as const, error: "already_purchased" as const };
                 }
 
-                if (buyer.gpBalance < offer.price) {
+                const ticket = await getActiveTicket(tx, user.id);
+                const bundleCost = ticket ? 0 : offer.price;
+
+                if (buyer.gpBalance < bundleCost) {
                     return { ok: false as const, error: "not_enough_gp" as const };
                 }
 
@@ -2350,19 +2410,28 @@ UserRouter.post(
                         maker: getItemMakerName(user),
                         source: bundleSource,
                         timeAcquired: Date.now(),
+                        ticketLocked: !!ticket,
                     })),
                 );
 
                 await tx
                     .update(usersTable)
                     .set({
-                        gpBalance: buyer.gpBalance - offer.price,
+                        gpBalance: buyer.gpBalance - bundleCost,
                     })
                     .where(eq(usersTable.id, user.id));
 
+                if (ticket) {
+                    await recordRedemption(tx, {
+                        userId: user.id,
+                        kind: "bundle",
+                        referenceId: offer.id,
+                    });
+                }
+
                 return {
                     ok: true as const,
-                    gpBalance: buyer.gpBalance - offer.price,
+                    gpBalance: buyer.gpBalance - bundleCost,
                 };
             });
 
@@ -2389,7 +2458,7 @@ UserRouter.post(
 
 UserRouter.post("/open_loot_box", validateParams(zOpenLootBoxRequest), async (c) => {
     const user = c.get("user")!;
-    const { boxId, payment } = c.req.valid("json");
+    const { boxId, payment, payWithGp } = c.req.valid("json");
 
     try {
         const result = await db.transaction(async (tx) => {
@@ -2462,7 +2531,20 @@ UserRouter.post("/open_loot_box", validateParams(zOpenLootBoxRequest), async (c)
                     userId: user.id,
                     encodedIp: "",
                 });
-            } else if (buyer.gpBalance < box.price) {
+            }
+
+            const ticket =
+                payment === "gp" && !payWithGp
+                    ? await getActiveTicket(tx, user.id)
+                    : undefined;
+            if (
+                ticket &&
+                (await countFreeCratesLast24h(tx, user.id)) >=
+                    FreeFallTicket.maxFreeCratesPer24h
+            ) {
+                return { ok: false as const, error: "daily_limit" as const };
+            }
+            if (payment === "gp" && !ticket && buyer.gpBalance < box.price) {
                 return { ok: false as const, error: "not_enough_gp" as const };
             }
 
@@ -2477,12 +2559,23 @@ UserRouter.post("/open_loot_box", validateParams(zOpenLootBoxRequest), async (c)
                 source: box.source,
                 maker: getItemMakerName(user),
                 timeAcquired: Date.now(),
+                ticketLocked: !!ticket,
             });
 
-            const gpBalance =
-                payment === "ads" ? buyer.gpBalance : buyer.gpBalance - box.price;
+            if (ticket) {
+                await recordRedemption(tx, {
+                    userId: user.id,
+                    kind: "crate",
+                    referenceId: boxId,
+                });
+            }
 
-            if (payment !== "ads") {
+            const gpBalance =
+                payment === "ads" || ticket
+                    ? buyer.gpBalance
+                    : buyer.gpBalance - box.price;
+
+            if (payment !== "ads" && !ticket) {
                 await tx
                     .update(usersTable)
                     .set({

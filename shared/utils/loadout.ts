@@ -20,6 +20,7 @@ export type Item = {
     holders: number;
     status?: ItemStatus;
     ackd?: ItemStatus.Ackd;
+    ticketLocked?: boolean;
 };
 
 export const loadoutSchema = z.object({

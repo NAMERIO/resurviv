@@ -180,6 +180,7 @@ export interface Item {
     holders: number;
     status?: ItemStatus;
     ackd?: ItemStatus.Ackd;
+    ticketLocked?: boolean;
 }
 interface ItemInfo {
     itemKey: string;
