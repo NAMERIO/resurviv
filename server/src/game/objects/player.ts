@@ -2179,7 +2179,13 @@ export class Player extends BaseGameObject {
         if (isBattleRoyaleMapName(this.game.mapName)) return;
         if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
         // If already ready or active, nothing to check
-        if (this.streakReady || this.streakActive || this.streakCooldownTimer > 0) return;
+        if (this.streakReady || this.streakActive) return;
+        if (this.debug.infiniteStreak) {
+            this.streakReady = true;
+            this.streakDirty = true;
+            return;
+        }
+        if (this.streakCooldownTimer > 0) return;
         const threshold = this.streakNextThreshold;
         if (this.damageDealt >= threshold) {
             this.streakReady = true;
@@ -2211,7 +2217,9 @@ export class Player extends BaseGameObject {
         this.streakReady = false;
         this.streakActive = true;
         this.streakActiveTimer = streakDef.duration;
-        this.streakActivationCount++;
+        if (!this.debug.infiniteStreak) {
+            this.streakActivationCount++;
+        }
         this.streakDirty = true;
         this.questManager.trackEvent("streak_activated", {});
 
@@ -2375,6 +2383,11 @@ export class Player extends BaseGameObject {
     }
 
     updateStreaks(dt: number): void {
+        if (this.debug.infiniteStreak) {
+            this.streakCooldownTimer = 0;
+            this.checkDamageStreaks();
+        }
+
         if (this.streakCooldownTimer > 0) {
             this.streakCooldownTimer -= dt;
             if (this.streakCooldownTimer <= 0) {
@@ -3201,6 +3214,7 @@ export class Player extends BaseGameObject {
         invisible: false,
         godMode: false,
         infiniteThrowables: false,
+        infiniteStreak: false,
         throwFast: false,
         shootFast: false,
         reloadFast: false,
@@ -8263,6 +8277,7 @@ export class Player extends BaseGameObject {
         this.debug.invisible = msg.invisible;
         this.debug.godMode = msg.godMode;
         this.debug.infiniteThrowables = msg.infiniteThrowables;
+        this.debug.infiniteStreak = msg.infiniteStreak;
         this.debug.throwFast = msg.throwFast;
         this.debug.shootFast = msg.shootFast;
         this.debug.reloadFast = msg.reloadFast;

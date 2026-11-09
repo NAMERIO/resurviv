@@ -99,6 +99,7 @@ test("specter uses its own damage requirement and walks through obstacles", asyn
     expect(player.hasPerk("streak_specter_effect")).toBe(true);
 
     const pos = v2.create(100, 100);
+    for (const obstacle of game.map.obstacles) obstacle.collidable = false;
     game.map.genObstacle("crate_01", pos, player.layer, 0, 1);
     player.pos = v2.copy(pos);
     game.grid.updateObject(player);
@@ -116,6 +117,7 @@ test("specter uses its own damage requirement and walks through obstacles", asyn
 describe("specter phasing", () => {
     async function walkInto(type: string) {
         const { game, player } = await setup();
+        for (const obstacle of game.map.obstacles) obstacle.collidable = false;
         game.map.genObstacle(type, v2.create(300, 300), 0, 0, 1);
         player.pos = v2.create(292, 300);
         player.layer = 0;
@@ -127,7 +129,10 @@ describe("specter phasing", () => {
         const input = new InputMsg();
         input.moveRight = true;
         player.handleInput(input);
-        for (let i = 0; i < 60; i++) player.update(1 / 30);
+        for (let i = 0; i < 60; i++) {
+            player.layer = 0;
+            player.update(1 / 30);
+        }
         return player.pos.x;
     }
 
@@ -154,6 +159,27 @@ describe("specter phasing", () => {
             expect(player.specterCanPhase(obstacle), type).toBe(false);
         }
     });
+});
+
+test("infinite streak fills with no damage and skips the cooldown", async () => {
+    const { game, player } = await setup();
+    player.chosenStreakType = "streak_vanish";
+    player.damageDealt = 0;
+    player.updateStreaks(0.016);
+    expect(player.streakReady).toBe(false);
+
+    player.debug.infiniteStreak = true;
+    player.updateStreaks(0.016);
+    expect(player.streakReady).toBe(true);
+
+    player.activateStreak();
+    expect(player.streakActive).toBe(true);
+    fire(game, player);
+    expect(player.streakActive).toBe(false);
+
+    player.updateStreaks(0.016);
+    expect(player.streakReady).toBe(true);
+    expect(player.streakActivationCount).toBe(0);
 });
 
 test("vanish hides from enemies and shooting ends it into a cooldown", async () => {

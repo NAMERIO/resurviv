@@ -24,6 +24,7 @@ export class EditMsg implements AbstractMsg {
     invisible = false;
     godMode = false;
     infiniteThrowables = false;
+    infiniteStreak = false;
     throwFast = false;
     shootFast = false;
     reloadFast = false;
@@ -64,6 +65,7 @@ export class EditMsg implements AbstractMsg {
         s.writeBoolean(this.invisible);
         s.writeBoolean(this.godMode);
         s.writeBoolean(this.infiniteThrowables);
+        s.writeBoolean(this.infiniteStreak);
         s.writeBoolean(this.throwFast);
         s.writeBoolean(this.shootFast);
         s.writeBoolean(this.reloadFast);
@@ -110,6 +112,7 @@ export class EditMsg implements AbstractMsg {
         this.invisible = s.readBoolean();
         this.godMode = s.readBoolean();
         this.infiniteThrowables = s.readBoolean();
+        this.infiniteStreak = s.readBoolean();
         this.throwFast = s.readBoolean();
         this.shootFast = s.readBoolean();
         this.reloadFast = s.readBoolean();
