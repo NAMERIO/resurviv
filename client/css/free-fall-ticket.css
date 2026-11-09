@@ -105,6 +105,36 @@
   }
 }
 
+.ff-menu-event {
+  position: relative;
+  margin-top: -10px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.ff-menu-event + .index-offer-time-left-text {
+  margin-top: 3px;
+}
+
+.ff-menu-event__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px 3px 6px;
+  background-color: #1f1e1e;
+  color: #f4db7c;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 14px;
+  white-space: nowrap;
+}
+
+.ff-menu-event__icon {
+  width: 16px;
+  height: 16px;
+  margin: -1px 0;
+}
+
 .ff-shop-event {
   display: flex;
   align-items: center;

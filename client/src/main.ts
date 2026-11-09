@@ -1,6 +1,7 @@
 import $ from "jquery";
 import * as PIXI from "pixi.js-legacy";
 import { normalizeDeathmatchFirstTo } from "../../shared/deathmatch/rounds";
+import { isFreeFallTicketLive } from "../../shared/defs/gameObjects/freeFallTicketDefs";
 import {
     AmongUsImpostorCounts,
     type ArenaTeam,
@@ -1512,6 +1513,8 @@ export class Application {
     }
 
     setDOMFromConfig() {
+        $("#ff-menu-event").toggle(isFreeFallTicketLive());
+
         if (SDK.isAnySDK && !this.config.get("playerName")) {
             SDK.getPlayerName().then((username) => {
                 if (!username) return;
