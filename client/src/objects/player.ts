@@ -13,6 +13,7 @@ import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
 import type { GunSkinDef } from "../../../shared/defs/gameObjects/gunSkinDefs";
 import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
 import type { OutfitDef } from "../../../shared/defs/gameObjects/outfitDefs";
+import { DamageStreakDefs } from "../../../shared/defs/gameObjects/damageStreakDefs";
 import type { RoleDef } from "../../../shared/defs/gameObjects/roleDefs";
 import type { ThrowableDef } from "../../../shared/defs/gameObjects/throwableDefs";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
@@ -399,6 +400,7 @@ export class Player implements AbstractObject {
     developerVitalsGfx = new PIXI.Graphics();
     auraContainer = new PIXI.Container();
     auraCircle = createSprite();
+    streakRingTicker = 0;
     pulseEffectGfx = new PIXI.Graphics();
     pulseEffectTicker = 0;
     pulseEffectActive = false;
@@ -537,6 +539,7 @@ export class Player implements AbstractObject {
         m_infectedEffect: boolean;
         m_playerTransparent: boolean;
         m_biteEffect: boolean;
+        m_activeStreak: string;
         m_frozen: boolean;
         m_frozenOri: number;
         m_hasteType: Exclude<HasteType, HasteType.Count>;
@@ -739,6 +742,7 @@ export class Player implements AbstractObject {
             m_infectedEffect: false,
             m_playerTransparent: false,
             m_biteEffect: false,
+            m_activeStreak: "",
             m_frozen: false,
             m_frozenOri: 0,
             m_hasteType: HasteType.None,
@@ -879,6 +883,7 @@ export class Player implements AbstractObject {
             this.m_netData.m_infectedEffect = data.infectedEffect;
             this.m_netData.m_playerTransparent = data.playerTransparent;
             this.m_netData.m_biteEffect = data.biteEffect;
+            this.m_netData.m_activeStreak = data.activeStreak;
             this.m_netData.m_frozen = data.frozen;
             this.m_netData.m_frozenOri = data.frozenOri;
             this.m_netData.m_hasteType = data.hasteType;
@@ -2778,6 +2783,21 @@ export class Player implements AbstractObject {
             this.pulseEffectGfx.drawCircle(0, 0, radius);
         }
 
+        const activeStreakDef = DamageStreakDefs[this.m_netData.m_activeStreak];
+        if (activeStreakDef && !this.m_netData.m_dead) {
+            this.streakRingTicker += dt;
+            const pulse = 0.5 + 0.5 * Math.sin(this.streakRingTicker * 7);
+            this.pulseEffectGfx.visible = true;
+            this.pulseEffectGfx.lineStyle(
+                0.22,
+                activeStreakDef.lootImg.borderTint,
+                (0.6 + pulse * 0.4) * this.auraViewFade,
+            );
+            this.pulseEffectGfx.drawCircle(0, 0, 1.75 + pulse * 0.12);
+        } else {
+            this.streakRingTicker = 0;
+        }
+
         // Pulse healing circle
         if (this.auraCircle.visible) {
             this.auraPulseTicker = math.clamp(
@@ -3712,7 +3732,10 @@ export class PlayerBarn {
             const p = players[i];
             if (p.active) {
                 p.localInvisiblePreview =
-                    Boolean(localInvisible) && !isSpectating && p.__id === activeId;
+                    (Boolean(localInvisible) ||
+                        p.m_netData.m_activeStreak === "streak_vanish") &&
+                    !isSpectating &&
+                    p.__id === activeId;
                 p.propDisguiseActive = propDisguisePlayerIds.has(p.__id);
                 p.m_update(
                     dt,

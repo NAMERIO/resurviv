@@ -6,6 +6,12 @@ import { RoleDefs } from "../../shared/defs/gameObjects/roleDefs";
 import { MapObjectDefs } from "../../shared/defs/mapObjectDefs";
 import { GameConfig, TeamMode } from "../../shared/gameConfig";
 import { InputMsg } from "../../shared/net/inputMsg";
+import { BitStream } from "../../shared/net/net";
+import {
+    ObjectSerializeFns,
+    type ObjectsFullData,
+    ObjectType,
+} from "../../shared/net/objectSerializeFns";
 import { v2 } from "../../shared/utils/v2";
 import { createGame } from "./gameTestHelpers";
 
@@ -159,6 +165,28 @@ describe("specter phasing", () => {
             expect(player.specterCanPhase(obstacle), type).toBe(false);
         }
     });
+});
+
+test("active streak is sent to other players", async () => {
+    const { player } = await setup();
+    const serializer = ObjectSerializeFns[ObjectType.Player];
+    const read = () => {
+        const stream = new BitStream(new ArrayBuffer(1024));
+        serializer.serializeFull(stream, player);
+        stream.index = 0;
+        const data = {} as ObjectsFullData[ObjectType.Player];
+        serializer.deserializeFull(stream, data);
+        return data.activeStreak;
+    };
+
+    expect(read()).toBe("");
+    player.chosenStreakType = "streak_specter";
+    player.damageDealt = 400;
+    player.checkDamageStreaks();
+    player.activateStreak();
+    expect(read()).toBe("streak_specter");
+    player.deactivateStreak();
+    expect(read()).toBe("");
 });
 
 test("infinite streak fills with no damage and skips the cooldown", async () => {

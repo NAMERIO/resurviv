@@ -2216,6 +2216,7 @@ export class Player extends BaseGameObject {
 
         this.streakReady = false;
         this.streakActive = true;
+        this.setDirty();
         this.streakActiveTimer = streakDef.duration;
         if (!this.debug.infiniteStreak) {
             this.streakActivationCount++;
@@ -2329,6 +2330,7 @@ export class Player extends BaseGameObject {
         this.streakActiveTimer = 0;
         this.streakCooldownTimer = streakDef?.cooldown ?? 0;
         this.streakDirty = true;
+        this.setDirty();
     }
 
     breakVanish(): void {
@@ -3351,6 +3353,10 @@ export class Player extends BaseGameObject {
         }
         return math.max(0, 1 - this.amongUsEmergencyCallsUsed);
     }
+    get activeStreak(): string {
+        return this.streakActive ? this.chosenStreakType : "";
+    }
+
     get streakNextThreshold(): number {
         const requirement = DamageStreakDefs[this.chosenStreakType]?.damageRequirement;
         return requirement
