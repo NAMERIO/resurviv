@@ -14,7 +14,6 @@ import { Config } from "./config";
 import { GameProcessManager } from "./game/gameProcessManager";
 import { GIT_VERSION } from "./utils/gitRevision";
 import { ServerLogger } from "./utils/logger";
-import { RateLimitedLog, ReasonCounter } from "./utils/metrics";
 import {
     apiPrivateRouter,
     cors,
@@ -337,23 +336,9 @@ app.post("/api/find_game", (res, req) => {
 const gameHTTPRateLimit = new HTTPRateLimit(5, 1000);
 const gameWsRateLimit = new WebSocketRateLimit(500, 1000, 5);
 
-const upgradeRejects = new ReasonCounter();
-const upgradeRejectLog = new RateLimitedLog(10_000);
-function rejectUpgrade(reason: string) {
-    upgradeRejects.inc(reason);
-    const suppressed = upgradeRejectLog.shouldLog(reason);
-    if (suppressed >= 0) {
-        server.logger.warn(
-            `Rejected /play upgrade: ${reason}${suppressed ? ` (+${suppressed} not logged)` : ""}`,
-        );
-    }
-}
-
 app.ws<GameSocketData>("/play", {
     idleTimeout: 30,
     maxPayloadLength: 1024,
-    maxBackpressure: Config.gameNetwork.maxBackpressureBytes,
-    closeOnBackpressureLimit: false,
 
     async upgrade(res, req, context): Promise<void> {
         res.onAborted((): void => {
@@ -366,13 +351,12 @@ app.ws<GameSocketData>("/play", {
         const ip = getIp(res, req, Config.gameServer.proxyIPHeader);
 
         if (!ip) {
-            rejectUpgrade("invalid_ip");
+            server.logger.warn(`Invalid IP Found`);
             res.end();
             return;
         }
 
         if (gameHTTPRateLimit.isRateLimited(ip) || gameWsRateLimit.isIpRateLimited(ip)) {
-            rejectUpgrade("rate_limited");
             res.cork(() => {
                 res.writeStatus("429 Too Many Requests");
                 res.write("429 Too Many Requests");
@@ -385,23 +369,22 @@ app.ws<GameSocketData>("/play", {
         const gameId = searchParams.get("gameId");
 
         if (!gameId) {
-            rejectUpgrade("game_id_missing");
+            server.logger.warn("game_id_missing");
             forbidden(res);
             return;
         }
         const gameData = server.manager.getById(gameId);
 
         if (!gameData) {
-            rejectUpgrade("invalid_game_id");
+            server.logger.warn("invalid_game_id");
             forbidden(res);
             return;
         }
 
         const canJoinClosedBattleRoyalePrivateGame =
             gameData.arenaPrivate && isBattleRoyaleMapName(gameData.mapName);
-        const reconnecting = searchParams.get("reconnect") === "1";
-        if (!gameData.canJoin && !canJoinClosedBattleRoyalePrivateGame && !reconnecting) {
-            rejectUpgrade("game_started");
+        if (!gameData.canJoin && !canJoinClosedBattleRoyalePrivateGame) {
+            server.logger.warn("game_started");
             forbidden(res);
             return;
         }
@@ -420,15 +403,6 @@ app.ws<GameSocketData>("/play", {
         }
 
         if (res.aborted) return;
-        if (!server.manager.getById(gameId)) {
-            gameWsRateLimit.ipDisconnected(ip);
-            rejectUpgrade("game_ended_during_upgrade");
-            res.cork(() => {
-                if (res.aborted) return;
-                forbidden(res);
-            });
-            return;
-        }
         res.cork(() => {
             if (res.aborted) return;
             res.upgrade(
@@ -452,7 +426,6 @@ app.ws<GameSocketData>("/play", {
         const data = socket.getUserData();
 
         if (data.disconnectReason) {
-            data.closeReason = data.disconnectReason;
             const disconnectMsg = new net.DisconnectMsg();
             disconnectMsg.reason = data.disconnectReason;
             const stream = new net.MsgStream(new ArrayBuffer(128));
@@ -468,22 +441,15 @@ app.ws<GameSocketData>("/play", {
     message(socket: WebSocket<GameSocketData>, message) {
         if (gameWsRateLimit.isRateLimited(socket.getUserData().rateLimit)) {
             server.logger.warn("Game websocket rate limited, closing socket.");
-            server.manager.closeSocket(socket, "ws_msg_rate_limited");
+            socket.close();
             return;
         }
         server.manager.onMsg(socket.getUserData().id, message);
     },
 
-    close(socket: WebSocket<GameSocketData>, code: number) {
+    close(socket: WebSocket<GameSocketData>) {
         const data = socket.getUserData();
         data.closed = true;
-        if (data.closeReason) {
-            server.logger.info(
-                `Closed game socket ${data.id.substring(0, 8)} (game #${data.gameId.substring(0, 4)}): ${data.closeReason}`,
-            );
-        } else {
-            data.closeReason = `client_closed_${code}`;
-        }
         server.manager.onClose(data.id);
         gameWsRateLimit.ipDisconnected(data.ip);
     },
@@ -551,38 +517,6 @@ server.sendData();
 setInterval(() => {
     server.sendData();
 }, 20 * 1000);
-
-app.get("/api/game_metrics", (res, req) => {
-    res.onAborted(() => {
-        res.aborted = true;
-    });
-    if (req.getHeader("survev-api-key") !== Config.secrets.SURVEV_API_KEY) {
-        forbidden(res);
-        return;
-    }
-    returnJson(res, {
-        ...server.manager.getMetrics(false),
-        upgradeRejects: upgradeRejects.toJSON(),
-    });
-});
-
-if (Config.gameNetwork.metricsLogIntervalMs > 0) {
-    setInterval(() => {
-        const m = server.manager.getMetrics();
-        const workerSummary = m.games
-            .map((g) => {
-                const s = g.stats;
-                const perf = s
-                    ? ` upd p99=${s.update.p99} max=${s.update.max} sync p99=${s.netSync.p99} max=${s.netSync.max} late max=${s.updateLateness.max} eld max=${s.eventLoopDelay.max} gc max=${s.gc.maxMs} rss=${s.rssMb}MB`
-                    : "";
-                return `#${g.id.substring(0, 4)} ${g.state} ${g.map}${g.private ? "(p)" : ""} sock=${g.sockets} pl=${g.players} spec=${g.spectators} bodies=${g.disconnectedBodies} empty=${g.emptyForS}s${perf}`;
-            })
-            .join("\n  ");
-        server.logger.info(
-            `metrics workers=${m.workers.total} ${JSON.stringify(m.workers.byState)} terminating=${m.workers.terminating} sockets=${m.sockets.open} maxBuffered=${m.sockets.maxBufferedBytes} bpDrops=${m.sockets.backpressureDrops} ipcBacklogged=${m.ipcBacklogged} eld=${JSON.stringify(m.eventLoopDelay)} rss=${m.rssMb}MB\n  counters=${JSON.stringify({ ...m.counters, upgradeRejects: upgradeRejects.toJSON() })}${workerSummary ? `\n  ${workerSummary}` : ""}`,
-        );
-    }, Config.gameNetwork.metricsLogIntervalMs);
-}
 
 app.listen(Config.gameServer.host, Config.gameServer.port, () => {
     server.logger.info(`Survev Game Server v${version} - GIT ${GIT_VERSION}`);

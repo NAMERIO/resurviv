@@ -122,7 +122,6 @@
   "index-rate-limited": "Rate limited.",
   "index-lost-connection": "Lost connection to team.",
   "index-host-closed": "Host closed the connection.",
-  "index-reconnecting": "Connection lost, reconnecting...",
   "index-invalid-protocol": "Old client version.",
   "index-ip-banned": "Your IP has been banned.",
   "index-behind-proxy": "Proxies and VPNs are not allowed, please disable them.",

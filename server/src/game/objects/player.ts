@@ -60,13 +60,13 @@ import { math } from "../../../../shared/utils/math";
 import { assert, util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import type { IpLogsTableInsert } from "../../api/db/schema";
+import { hashIp } from "../../api/routes/private/ModerationRouter";
 import {
     BattleRoyaleDefaultItems,
     isBattleRoyaleMapName,
 } from "../../battleroyale/helpers";
 import { Config } from "../../config";
 import { isItemInLoadout, onPlayerJoin, onPlayerKill } from "../../plugins/deathmatch";
-import { hashIp } from "../../utils/hashIp";
 import { IDAllocator } from "../../utils/IDAllocator";
 import { apiPrivateRouter, validateUserName } from "../../utils/serverHelpers";
 import type { Game, JoinTokenData } from "../game";
@@ -244,70 +244,13 @@ export class PlayerBarn {
         );
     }
 
-    reconnectTokens = new Map<string, Player>();
-
-    revokeReconnect(player: Player) {
-        if (
-            player.reconnectToken &&
-            this.reconnectTokens.get(player.reconnectToken) === player
-        ) {
-            this.reconnectTokens.delete(player.reconnectToken);
-        }
-    }
-
-    tryReconnect(socketId: string, token: string): Player | undefined {
-        const player = this.reconnectTokens.get(token);
-        if (!player) return undefined;
-
-        const graceMs = Config.gameLifecycle.reconnectGraceMs;
-        const expired =
-            player.disconnected && Date.now() - player.disconnectedAt > graceMs;
-        if (
-            graceMs <= 0 ||
-            player.destroyed ||
-            !this.players.includes(player) ||
-            (player.disconnected && player.dead) ||
-            expired ||
-            this.game.over
-        ) {
-            this.revokeReconnect(player);
-            return undefined;
-        }
-
-        const oldSocketId = player.socketId;
-        if (this.socketIdToPlayer.get(oldSocketId) === player) {
-            this.socketIdToPlayer.delete(oldSocketId);
-            if (!player.disconnected) {
-                this.game.closeSocket(oldSocketId, undefined, "replaced_by_reconnect");
-            }
-        }
-
-        player.socketId = socketId;
-        this.socketIdToPlayer.set(socketId, player);
-        player.disconnected = false;
-        player.disconnectTime = -1;
-        player.resetClientState();
-        player.setPartDirty();
-        this.aliveCountDirty = true;
-        player.group?.checkPlayers();
-
-        this.game.logger.info(
-            `"${player.name}" reconnected (offline ${player.disconnectedAt ? Date.now() - player.disconnectedAt : 0}ms)`,
-        );
-        this.game.updateData();
-        return player;
-    }
-
     addPlayer(socketId: string, joinMsg: net.JoinMsg, ip: string) {
         const joinData = this.game.joinTokens.get(joinMsg.matchPriv);
 
         if (!joinData || joinData.expiresAt < Date.now()) {
             this.game.joinTokens.delete(joinMsg.matchPriv);
-            if (joinMsg.matchPriv && this.tryReconnect(socketId, joinMsg.matchPriv)) {
-                return;
-            }
             this.game.logger.info(`Missing or expired join data.`);
-            this.game.closeSocket(socketId, "index-host-closed", "join_token_invalid");
+            this.game.closeSocket(socketId);
             return;
         }
         this.game.joinTokens.delete(joinMsg.matchPriv);
@@ -323,7 +266,7 @@ export class PlayerBarn {
                 if (this.game.joinSpamRateLimit.isRateLimited(ip)) {
                     void this.game.autoBanIpForJoinSpam(ip);
                 }
-                this.game.closeSocket(socketId, "rate_limited", "join_rate_limited");
+                this.game.closeSocket(socketId, "rate_limited");
                 return;
             }
         }
@@ -390,10 +333,6 @@ export class PlayerBarn {
         );
 
         this.socketIdToPlayer.set(socketId, player);
-        if (Config.gameLifecycle.reconnectGraceMs > 0 && joinMsg.matchPriv) {
-            player.reconnectToken = joinMsg.matchPriv;
-            this.reconnectTokens.set(joinMsg.matchPriv, player);
-        }
 
         this.activatePlayer(player, group, team);
         if (joinData.spectator) {
@@ -998,7 +937,6 @@ export class PlayerBarn {
     }
 
     removePlayer(player: Player) {
-        this.revokeReconnect(player);
         util.removeFrom(this.players, player);
         if (!this.game.started) {
             util.removeFrom(this.matchPlayers, player);
@@ -1546,25 +1484,10 @@ export class Player extends BaseGameObject {
         this.setGroupStatuses();
     }
 
-    disconnect(reason?: string, logReason = reason ?? "server_disconnect") {
+    disconnect(reason?: string) {
         this.vehicle?.dismount(this, false);
         this.disconnected = true;
-        this.disconnectedAt = Date.now();
-        this.game.playerBarn.revokeReconnect(this);
-        this.game.closeSocket(this.socketId, reason, logReason);
-    }
-
-    reconnectToken = "";
-    disconnectedAt = 0;
-
-    resetClientState() {
-        this._firstUpdate = true;
-        this.visibleObjects = new Set();
-        this.visibleMapIndicators = new Set();
-        this.msgsToSend.length = 0;
-        this.startedSpectating = true;
-        if (this.group) this.groupStatusDirty = true;
-        this.ack = 0;
+        this.game.closeSocket(this.socketId, reason);
     }
 
     private _spectatorCount = 0;
@@ -5391,7 +5314,7 @@ export class Player extends BaseGameObject {
             this.spectateCooldownCount++;
 
             if (this.spectateCooldownCount > 10) {
-                this.disconnect(undefined, "spectate_spam");
+                this.disconnect();
                 this.game.logger.error(
                     `Game ${this.game.id} - Player ${this.name} disconnected for spamming SpectateMsg (cooldown)`,
                 );
@@ -5403,7 +5326,7 @@ export class Player extends BaseGameObject {
         this.spectateMsgCount++;
 
         if (this.spectateMsgCount > 50) {
-            this.disconnect(undefined, "spectate_spam");
+            this.disconnect();
             this.game.logger.error(
                 `Game ${this.game.id} - Player ${this.name} Player ${this.name} disconnected for spamming SpectateMsg (count)`,
             );

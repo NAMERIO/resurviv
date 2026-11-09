@@ -222,13 +222,6 @@ export class Application {
     errorMessage = "";
     quickPlayPendingModeIdx = -1;
     findGameAttempts = 0;
-    currentMatch: {
-        matchData: FindGameMatchData;
-        attempts: number;
-        lostAt: number;
-        timeout?: ReturnType<typeof setTimeout>;
-    } | null = null;
-    reconnectOverlay: HTMLElement | null = null;
     lobbyReturnAdCounter = 0;
     lobbyReturnAdShowing = false;
     findGameTime = 0;
@@ -1058,11 +1051,6 @@ export class Application {
                 this.game!.init();
                 this.onResize();
                 this.findGameAttempts = 0;
-                if (this.currentMatch) {
-                    this.currentMatch.attempts = 0;
-                    this.currentMatch.lostAt = 0;
-                }
-                this.setReconnectOverlay(false);
                 this.ambience.onGameStart();
                 const currentLoadout = this.config.get("loadout");
                 if (currentLoadout?.crosshair) {
@@ -1070,7 +1058,6 @@ export class Application {
                 }
             };
             const onQuit = (errMsg?: string) => {
-                this.clearCurrentMatch();
                 this.replay?.free();
                 this.replay = undefined;
                 if (this.account.loggedIn) {
@@ -1131,7 +1118,6 @@ export class Application {
                 onJoin,
                 onQuit,
             );
-            this.game.onConnectionLost = () => this.tryReconnectGame();
             this.loadoutDisplay = new LoadoutDisplay(
                 this.pixi,
                 this.audioManager,
@@ -4456,56 +4442,7 @@ export class Application {
         );
     }
 
-    clearCurrentMatch() {
-        if (this.currentMatch?.timeout) clearTimeout(this.currentMatch.timeout);
-        this.currentMatch = null;
-        this.setReconnectOverlay(false);
-    }
-
-    setReconnectOverlay(visible: boolean) {
-        if (!visible) {
-            this.reconnectOverlay?.remove();
-            this.reconnectOverlay = null;
-            return;
-        }
-        if (this.reconnectOverlay) return;
-        const el = document.createElement("div");
-        el.textContent =
-            this.localization.translate("index-reconnecting") || "Reconnecting...";
-        el.style.cssText =
-            "position:fixed;inset:0;display:flex;align-items:center;justify-content:center;" +
-            "background:rgba(0,0,0,0.6);color:#fff;font-size:24px;z-index:10000;pointer-events:none;";
-        document.body.appendChild(el);
-        this.reconnectOverlay = el;
-    }
-
-    tryReconnectGame(): boolean {
-        const match = this.currentMatch;
-        const maxAttempts = 5;
-        if (!match || match.attempts >= maxAttempts) {
-            return false;
-        }
-        if (!match.lostAt) match.lostAt = Date.now();
-        if (Date.now() - match.lostAt > 25_000) return false;
-
-        match.attempts++;
-        const delay =
-            Math.min(500 * 2 ** (match.attempts - 1), 4000) + Math.random() * 250;
-        this.game?.free();
-        this.setReconnectOverlay(true);
-        match.timeout = setTimeout(() => {
-            match.timeout = undefined;
-            if (this.currentMatch !== match) return;
-            this.joinGame(match.matchData, true);
-        }, delay);
-        return true;
-    }
-
-    joinGame(matchData: FindGameMatchData, reconnect = false) {
-        if (!reconnect) {
-            this.clearCurrentMatch();
-            this.currentMatch = { matchData, attempts: 0, lostAt: 0 };
-        }
+    joinGame(matchData: FindGameMatchData) {
         if (isNativeMobile() && !matchData.useHttps) {
             this.onJoinGameError("join_game_failed");
             return;
@@ -4517,7 +4454,7 @@ export class Application {
 
         if (!this.game) {
             setTimeout(() => {
-                this.joinGame(matchData, reconnect);
+                this.joinGame(matchData);
             }, 250);
             return;
         }
@@ -4535,19 +4472,12 @@ export class Application {
             urls.push(
                 `ws${matchData.useHttps ? "s" : ""}://${hosts[i]}/play?gameId=${
                     matchData.gameId
-                }${reconnect ? "&reconnect=1" : ""}`,
+                }`,
             );
         }
         const joinGameImpl = (urls: string[], matchData: FindGameMatchData) => {
             const url = urls.shift();
             if (!url) {
-                if (reconnect) {
-                    if (!this.tryReconnectGame()) {
-                        this.game?.onQuit("index-host-closed");
-                    }
-                    return;
-                }
-                this.clearCurrentMatch();
                 this.onJoinGameError("join_game_failed");
                 return;
             }
@@ -4560,7 +4490,6 @@ export class Application {
                 this.account.questPriv,
                 onFailure,
                 !this.canUseCombatLoadoutCategories(),
-                reconnect,
             );
         };
         joinGameImpl(urls, matchData);

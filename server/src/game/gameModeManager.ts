@@ -389,19 +389,19 @@ export class GameModeManager {
         switch (this.mode) {
             case GameMode.Solo: {
                 const winner = this.game.playerBarn.livingPlayers[0];
-                winner?.addGameOverMsg(winner.teamId);
+                winner.addGameOverMsg(winner.teamId);
                 return true;
             }
             case GameMode.Team: {
                 const winner = this.game.playerBarn.getAliveGroups()[0];
-                for (const player of winner?.getAlivePlayers() ?? []) {
+                for (const player of winner.getAlivePlayers()) {
                     player.addGameOverMsg(winner.id);
                 }
                 return true;
             }
             case GameMode.Faction: {
                 const winner = this.game.playerBarn.getAliveTeams()[0];
-                for (const player of winner?.livingPlayers ?? []) {
+                for (const player of winner.livingPlayers) {
                     player.addGameOverMsg(winner.id);
                 }
                 return true;
