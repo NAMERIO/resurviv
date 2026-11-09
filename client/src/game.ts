@@ -34,6 +34,10 @@ import { Editor } from "./debug/editor";
 import { device } from "./device";
 import { discordPresence } from "./discordPresence";
 import { EmoteBarn } from "./emote";
+import {
+    burstFreeFallTicket,
+    showFreeFallTicketReveal,
+} from "./freeFallTicket/ticketReveal";
 import { Gas } from "./gas";
 import { helpers } from "./helpers";
 import { GamepadButton, type InputHandler, Key, MouseWheel } from "./input";
@@ -59,10 +63,6 @@ import { SmokeBarn } from "./objects/smoke";
 import { Renderer } from "./renderer";
 import type { ResourceManager } from "./resources";
 import { SDK } from "./sdk/sdk";
-import {
-    burstFreeFallTicket,
-    showFreeFallTicketReveal,
-} from "./freeFallTicket/ticketReveal";
 import type { Localization } from "./ui/localization";
 import { Touch } from "./ui/touch";
 import { UiManager } from "./ui/ui";

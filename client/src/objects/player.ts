@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js-legacy";
 import { AmongUsRoleDefs } from "../../../shared/defs/amongUsRoleDefs";
 import { GameObjectDefs, type LootDef } from "../../../shared/defs/gameObjectDefs";
+import { DamageStreakDefs } from "../../../shared/defs/gameObjects/damageStreakDefs";
 import type { DeathEffectDef } from "../../../shared/defs/gameObjects/deathEffectDefs";
 import type {
     BackpackDef,
@@ -13,7 +14,6 @@ import type { GunDef } from "../../../shared/defs/gameObjects/gunDefs";
 import type { GunSkinDef } from "../../../shared/defs/gameObjects/gunSkinDefs";
 import type { MeleeDef } from "../../../shared/defs/gameObjects/meleeDefs";
 import type { OutfitDef } from "../../../shared/defs/gameObjects/outfitDefs";
-import { DamageStreakDefs } from "../../../shared/defs/gameObjects/damageStreakDefs";
 import type { RoleDef } from "../../../shared/defs/gameObjects/roleDefs";
 import type { ThrowableDef } from "../../../shared/defs/gameObjects/throwableDefs";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
