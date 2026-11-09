@@ -157,6 +157,19 @@ export interface ConfigType {
      */
     lockClanJoins: boolean;
 
+    /**
+     * Takes the whole game offline (server upgrades / maintenance).
+     *
+     * When enabled:
+     * - the client never loads the game, it only shows the "game offline" screen
+     * - every public API route (login, accounts, find game, clans...) returns 503
+     * - team menu and game websockets are rejected
+     *
+     * Private routes (Discord bot / game server <-> API, protected by the API key) keep working.
+     * Requires restarting the API server (and game servers) after changing it.
+     */
+    gameOffline: boolean;
+
     /** Blocks new tournament bets while preserving existing bets and settlement. */
     lockTournamentBetting: boolean;
 

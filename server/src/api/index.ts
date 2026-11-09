@@ -2,7 +2,7 @@ import { serve } from "@hono/node-server";
 import { createNodeWebSocket } from "@hono/node-ws";
 import { Cron } from "croner";
 import { randomUUID } from "crypto";
-import { Hono } from "hono";
+import { Hono, type Context as HonoContext, type Next } from "hono";
 import { getCookie } from "hono/cookie";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
@@ -75,6 +75,20 @@ app.use(
         maxAge: 3600,
     }),
 );
+
+app.get("/api/server_status", (c) => {
+    c.header("Cache-Control", "no-store");
+    return c.json({ offline: Config.gameOffline });
+});
+const gameOfflineMiddleware = async (c: HonoContext, next: Next) => {
+    if (Config.gameOffline) {
+        c.header("Cache-Control", "no-store");
+        return c.json({ error: "game_offline", offline: true }, 503);
+    }
+    await next();
+};
+app.use("/api/*", gameOfflineMiddleware);
+app.use("/team_v2", gameOfflineMiddleware);
 
 // @TODO: figure out the origins for this..
 // app.use(csrf())

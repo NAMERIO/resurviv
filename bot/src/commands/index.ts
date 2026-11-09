@@ -20,6 +20,7 @@ import {
 import {
     zBanAccountParams,
     zBanIpParams,
+    zDebitParams,
     zFindDiscordUserSlugParams,
     zGetGpParams,
     zGiveGpParams,
@@ -289,6 +290,28 @@ const commands = {
             {
                 name: "value",
                 description: "The amount of GP to remove",
+                required: true,
+                type: ApplicationCommandOptionType.Integer,
+            },
+        ],
+    }),
+    [Command.Debit]: createCommand({
+        name: Command.Debit,
+        description:
+            "Take GP from a user, putting them in debt if they don't have enough",
+        optionValidator: zDebitParams,
+        isPrivateRoute: true,
+        ownerOnly: true,
+        options: [
+            {
+                name: "slug",
+                description: "The account slug to debit",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "value",
+                description: "The amount of GP to take",
                 required: true,
                 type: ApplicationCommandOptionType.Integer,
             },

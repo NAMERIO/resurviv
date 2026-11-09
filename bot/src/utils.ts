@@ -37,6 +37,7 @@ export const enum Command {
     RemoveItem = "remove_item",
     GiveGp = "give_gp",
     RemoveGp = "remove_gp",
+    Debit = "debit",
     GetGp = "get_gp",
     AddCgp = "addcgp",
     RemoveCgp = "removecgp",

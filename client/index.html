@@ -1,6 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="boot-pending">
   <head>
+  <!-- Hidden until src/boot.ts confirms the game is online (see gameOffline in config) -->
+  <style>html.boot-pending body { visibility: hidden; }</style>
   <!-- ADIN_PLAY_SCRIPT_PLACEHOLDER -->
   %VITE_TURNSTILE_SCRIPT%
     <script>
@@ -3339,6 +3341,6 @@
           bg.style.backgroundImage = `url(${bgImg})`;
       }
     </script>
-    <script type="module" src="src/main.ts"></script>
+    <script type="module" src="src/boot.ts"></script>
   </body>
 </html>

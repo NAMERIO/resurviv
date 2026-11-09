@@ -356,6 +356,16 @@ app.ws<GameSocketData>("/play", {
             return;
         }
 
+        if (Config.gameOffline) {
+            rejectUpgrade("game_offline");
+            res.cork(() => {
+                res.writeStatus("503 Service Unavailable");
+                res.write("503 Service Unavailable");
+                res.end();
+            });
+            return;
+        }
+
         if (gameHTTPRateLimit.isRateLimited(ip) || gameWsRateLimit.isIpRateLimited(ip)) {
             res.cork(() => {
                 res.writeStatus("429 Too Many Requests");

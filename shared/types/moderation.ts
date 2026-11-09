@@ -88,6 +88,11 @@ export const zRemoveGpParams = z.object({
     value: z.number().int().positive(),
 });
 
+export const zDebitParams = z.object({
+    slug: z.string(),
+    value: z.number().int().positive(),
+});
+
 export const zGetGpParams = z.object({
     slug: z.string(),
 });
