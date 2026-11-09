@@ -108,6 +108,7 @@ export class Obstacle extends BaseGameObject {
 
     killTicker = 0;
     regrowTicker = 0;
+    fromAirdrop = false;
 
     constructor(
         game: Game,
@@ -430,7 +431,14 @@ export class Obstacle extends BaseGameObject {
             this.interactedBy.questManager.trackEvent("item_used", {
                 itemType: "airdrop_crate",
             });
-            this.game.freeFallTicketDrop.rollForCrate(this.type, this.interactedBy);
+        }
+
+        if (this.fromAirdrop && params.source?.__type === ObjectType.Player) {
+            this.game.freeFallTicketDrop.rollForCrate(
+                params.source,
+                this.pos,
+                this.layer,
+            );
         }
 
         this.scale = this.minScale;
@@ -450,7 +458,18 @@ export class Obstacle extends BaseGameObject {
             } else {
                 destroyType = def.destroyType;
             }
-            this.game.map.genAuto(destroyType, this.pos, this.layer, this.ori);
+            const spawned = this.game.map.genAuto(
+                destroyType,
+                this.pos,
+                this.layer,
+                this.ori,
+            );
+            if (
+                this.type.startsWith("airdrop_crate") &&
+                spawned?.__type === ObjectType.Obstacle
+            ) {
+                spawned.fromAirdrop = true;
+            }
         }
 
         // potatos in potato mode

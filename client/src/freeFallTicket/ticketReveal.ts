@@ -1,39 +1,43 @@
-import ticketArt from "./ticket.svg?raw";
+import { type Vec2, v2 } from "../../../shared/utils/v2";
+import type { ParticleBarn } from "../objects/particles";
 
-const REVEAL_MS = 7200;
-
-const chuteArt = `
-<svg viewBox="-56 -56 112 130" aria-hidden="true">
-  <path d="M-50 2C-50-34-24-50 0-50S50-34 50 2C42-7 34-7 25 2 17-7 8-7 0 2-8-7-17-7-25 2-34-7-42-7-50 2Z" fill="#d8431b"/>
-  <path d="M-25 2C-25-28-12-50 0-50S25-28 25 2C17-7 8-7 0 2-8-7-17-7-25 2Z" fill="#f2e7cf"/>
-  <path d="M-50 2-6 70M-25 2-3 70M25 2 3 70M50 2 6 70" stroke="#f2e7cf" stroke-width="1.6" fill="none"/>
-</svg>`;
+const REVEAL_MS = 5000;
+const SPARK_COUNT = 18;
 
 let activeReveal: HTMLElement | null = null;
 
-export function playFreeFallTicketReveal(finderName?: string) {
+export function burstFreeFallTicket(
+    particleBarn: ParticleBarn,
+    pos: Vec2,
+    layer: number,
+) {
+    particleBarn.addParticle("freeFallGlow", layer, pos, v2.create(0, 3));
+    particleBarn.addParticle("freeFallTicket", layer, pos, v2.create(0, 6), 1, 0);
+    for (let i = 0; i < SPARK_COUNT; i++) {
+        const speed = 7 + Math.random() * 9;
+        particleBarn.addParticle(
+            "freeFallSpark",
+            layer,
+            pos,
+            v2.mul(v2.randomUnit(), speed),
+        );
+    }
+}
+
+export function showFreeFallTicketReveal() {
     activeReveal?.remove();
 
     const root = document.createElement("div");
     root.className = "ff-reveal";
     root.setAttribute("role", "status");
     root.innerHTML = `
-        <div class="ff-reveal__rays"></div>
-        <div class="ff-reveal__drop">
-            <div class="ff-reveal__chute">${chuteArt}</div>
-            <div class="ff-reveal__ticket">
-                ${ticketArt}
-                <div class="ff-reveal__sheen"></div>
-            </div>
+        <div class="ff-reveal__title">YOU GOT</div>
+        <div class="ff-reveal__name">Free Fall Ticket</div>
+        <div class="ff-reveal__item">
+            <div class="ff-reveal__spinner"></div>
+            <img class="ff-reveal__ticket" src="/img/loot/loot-free-fall-ticket.svg" alt="" />
         </div>
-        <div class="ff-reveal__caption">
-            <div class="ff-reveal__title"></div>
-            <div class="ff-reveal__sub">Everything in the shop is free until Jan 1, 2027</div>
-        </div>`;
-
-    root.querySelector(".ff-reveal__title")!.textContent = finderName
-        ? `${finderName} pulled it for the squad`
-        : "You pulled the Free Fall Ticket";
+        <div class="ff-reveal__sub">Free shop until Jan 1, 2027</div>`;
 
     document.body.appendChild(root);
     activeReveal = root;

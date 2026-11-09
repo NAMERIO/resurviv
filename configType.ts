@@ -218,9 +218,9 @@ export interface ConfigType {
      */
     featuredBundleResetAt?: number;
 
-    freeFallTicket?: {
-        dropOneIn?: number;
-        minDistinctIps?: number;
+    freeFallTicket: {
+        dropOneIn: number;
+        minDistinctIps: number;
     };
 
     /**

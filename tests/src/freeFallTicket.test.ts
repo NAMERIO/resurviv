@@ -60,6 +60,8 @@ test("FreeFallTicketMsg survives serialization", () => {
     const sent = new FreeFallTicketMsg();
     sent.finderId = 512;
     sent.recipientIds = [512, 7, 65000];
+    sent.pos = { x: 512, y: 256 };
+    sent.layer = 1;
     sent.serialize(stream);
 
     stream.index = 0;
@@ -67,4 +69,7 @@ test("FreeFallTicketMsg survives serialization", () => {
     received.deserialize(stream);
     expect(received.finderId).toBe(512);
     expect(received.recipientIds).toEqual([512, 7, 65000]);
+    expect(received.pos.x).toBeCloseTo(512, 0);
+    expect(received.pos.y).toBeCloseTo(256, 0);
+    expect(received.layer).toBe(1);
 });

@@ -1,8 +1,7 @@
 import $ from "jquery";
 import type { FreeFallTicketState } from "../../../shared/types/user";
-import ticketArt from "./ticket.svg?raw";
 
-const CARD_ID = "ff-shop-card";
+const BADGE_ID = "ff-shop-badge";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function daysLeftText(expiresAt: number) {
@@ -11,23 +10,24 @@ function daysLeftText(expiresAt: number) {
 }
 
 export function renderFreeFallShopCard(ticket: FreeFallTicketState | null) {
-    let card = $(`#${CARD_ID}`);
+    let badge = $(`#${BADGE_ID}`);
     if (!ticket) {
-        card.remove();
+        badge.remove();
         return;
     }
 
-    if (!card.length) {
-        card = $("<div/>", { id: CARD_ID, class: "ff-shop-card" }).html(`
-            <div class="ff-shop-card__art">${ticketArt}</div>
-            <div class="ff-shop-card__row">
-                <span class="ff-shop-card__status">Your shop is free</span>
-                <span class="ff-shop-card__days"></span>
-            </div>
-            <div class="ff-shop-card__rule">Sellers still get paid. Anything you get free stays yours and can't be sold or gifted.</div>
+    if (!badge.length) {
+        badge = $("<div/>", {
+            id: BADGE_ID,
+            class: "ff-shop-badge",
+            title: "Bundles, market items and crates are free. Sellers still get paid, but free items can't be sold or gifted.",
+        }).html(`
+            <img class="ff-shop-badge__icon" src="/img/loot/loot-free-fall-ticket.svg" alt="" />
+            <span class="ff-shop-badge__name">Free Fall Ticket</span>
+            <span class="ff-shop-badge__days"></span>
         `);
-        $(".iap-gp").prepend(card);
+        $("#shop-balance-bar").append(badge);
     }
 
-    card.find(".ff-shop-card__days").text(daysLeftText(ticket.expiresAt));
+    badge.find(".ff-shop-badge__days").text(daysLeftText(ticket.expiresAt));
 }

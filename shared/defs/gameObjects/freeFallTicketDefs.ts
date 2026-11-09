@@ -4,8 +4,6 @@ const DAY_MS = 24 * HOUR_MS;
 export const FreeFallTicket = {
     name: "Free Fall Ticket",
     expiresAt: Date.UTC(2027, 0, 1),
-    dropOneIn: 10_000,
-    minDistinctIpsInMatch: 4,
     maxFreeCratesPer24h: 5,
 } as const;
 

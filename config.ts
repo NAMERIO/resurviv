@@ -62,6 +62,10 @@ export function getConfig(isProduction: boolean, dir: string) {
             warnLogs: true,
             errorLogs: true,
         },
+        freeFallTicket: {
+            dropOneIn: 10_000,
+            minDistinctIps: 4,
+        },
         database: {
             enabled: true,
             host: "127.0.0.1",

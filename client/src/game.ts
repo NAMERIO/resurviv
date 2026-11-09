@@ -59,7 +59,10 @@ import { SmokeBarn } from "./objects/smoke";
 import { Renderer } from "./renderer";
 import type { ResourceManager } from "./resources";
 import { SDK } from "./sdk/sdk";
-import { playFreeFallTicketReveal } from "./freeFallTicket/ticketReveal";
+import {
+    burstFreeFallTicket,
+    showFreeFallTicketReveal,
+} from "./freeFallTicket/ticketReveal";
 import type { Localization } from "./ui/localization";
 import { Touch } from "./ui/touch";
 import { UiManager } from "./ui/ui";
@@ -4360,15 +4363,19 @@ export class Game {
                     this.m_activeId,
                     true,
                 );
+                const foundText = `${finderName} ${this.m_localization.translate("game-free-fall-found")}`;
                 this.m_ui2Manager.addKillFeedMessage(
-                    `${helpers.htmlEscape(finderName)} ${this.m_localization.translate("game-free-fall-found")}`,
-                    "#ffc56b",
+                    helpers.htmlEscape(foundText),
+                    "#f4db7c",
                 );
+                burstFreeFallTicket(this.m_particleBarn, msg.pos, msg.layer);
                 if (msg.recipientIds.includes(this.m_localId)) {
-                    playFreeFallTicketReveal(
-                        msg.finderId === this.m_localId ? undefined : finderName,
-                    );
+                    showFreeFallTicketReveal();
                     this.m_audioManager.playSound("ping_unlock_01", { channel: "ui" });
+                } else {
+                    this.m_uiManager.displayAnnouncement(
+                        helpers.htmlEscape(foundText.toUpperCase()),
+                    );
                 }
                 break;
             }

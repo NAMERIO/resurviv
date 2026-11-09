@@ -1,246 +1,111 @@
-.ff-ticket-art {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
 .ff-reveal {
   position: fixed;
-  inset: 0;
+  top: 96px;
+  left: 50%;
   z-index: 9000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding-top: 19vh;
-  overflow: hidden;
+  width: 340px;
+  margin-left: -170px;
+  text-align: center;
+  color: #fff;
+  text-shadow: 1.67px 1.67px 2px rgba(0, 0, 0, 0.75);
   pointer-events: none;
-  font-family: "Roboto Condensed", "Arial Narrow", sans-serif;
-  background: radial-gradient(ellipse 62% 54% at 50% 36%, rgba(16, 10, 3, 0.74), rgba(16, 10, 3, 0) 100%);
-  animation: ff-fade-out 700ms ease-in 6500ms forwards;
+  animation: ff-fade-out 500ms ease-in 4500ms forwards;
 }
 
-.ff-reveal__rays {
-  position: absolute;
-  top: 36%;
-  left: 50%;
-  width: 170vmax;
-  height: 170vmax;
-  margin: -85vmax 0 0 -85vmax;
-  background: repeating-conic-gradient(rgba(255, 176, 46, 0.34) 0deg 9deg, rgba(255, 176, 46, 0) 9deg 24deg);
-  -webkit-mask-image: radial-gradient(circle, #000 0, rgba(0, 0, 0, 0.75) 14%, transparent 30%);
-  mask-image: radial-gradient(circle, #000 0, rgba(0, 0, 0, 0.75) 14%, transparent 30%);
-  opacity: 0;
-  mix-blend-mode: screen;
-  animation:
-    ff-rays-in 500ms ease-out 1000ms forwards,
-    ff-rays-spin 24s linear 1000ms infinite;
-}
-
-.ff-reveal__drop {
+.ff-reveal__title {
   position: relative;
-  width: min(500px, 84vw);
-  animation: ff-drop 1000ms cubic-bezier(0.24, 0.62, 0.42, 1) both;
+  font-size: 22px;
+  line-height: 26px;
 }
 
-.ff-reveal__chute {
+.ff-reveal__name {
+  position: relative;
+  font-size: 40px;
+  font-weight: bold;
+  line-height: 46px;
+}
+
+.ff-reveal__item {
+  position: relative;
+  height: 120px;
+  margin-top: 6px;
+}
+
+.ff-reveal__spinner {
   position: absolute;
-  bottom: 100%;
+  top: 50%;
   left: 50%;
-  width: 22%;
-  margin-left: -11%;
-  margin-bottom: -6px;
-  transform-origin: 50% 100%;
-  animation: ff-chute-away 620ms ease-in 1000ms forwards;
+  width: 280px;
+  height: 280px;
+  margin: -140px 0 0 -140px;
+  background: url(../img/gui/loot-spinner-01.svg) center / 114% no-repeat;
+  animation: spin 4s linear infinite;
 }
 
 .ff-reveal__ticket {
   position: relative;
-  border-radius: 12px;
-  transform-origin: 50% 0;
-  animation:
-    ff-swing 1000ms ease-out both,
-    ff-land 420ms cubic-bezier(0.3, 1.5, 0.5, 1) 1000ms both,
-    ff-glow 2200ms ease-in-out 1300ms infinite;
-}
-
-.ff-reveal__sheen {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  border-radius: 12px;
-}
-
-.ff-reveal__sheen::after {
-  content: "";
-  position: absolute;
-  top: -30%;
-  bottom: -30%;
-  left: -45%;
-  width: 34%;
-  transform: skewX(-20deg);
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 250, 235, 0.72), rgba(255, 255, 255, 0));
-  animation: ff-sheen 1050ms ease-in-out 1700ms both;
-}
-
-.ff-reveal .ff-ticket-stamp {
-  opacity: 0;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: ff-stamp 300ms cubic-bezier(0.3, 0, 0.3, 1) 1500ms forwards;
-}
-
-.ff-reveal__caption {
-  position: relative;
-  margin-top: 22px;
-  padding: 0 16px;
-  text-align: center;
-  color: #fbf1dc;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75);
-  opacity: 0;
-  animation: ff-caption 460ms ease-out 1350ms forwards;
-}
-
-.ff-reveal__title {
-  font-size: clamp(24px, 4.2vmin, 40px);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  display: block;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+  animation: ff-pop 340ms cubic-bezier(0.3, 1.6, 0.5, 1) both;
 }
 
 .ff-reveal__sub {
+  position: relative;
   margin-top: 4px;
-  font-size: clamp(15px, 2.3vmin, 21px);
-  color: #ffc56b;
+  font-size: 18px;
+  font-weight: bold;
+  color: #f4db7c;
 }
 
-@keyframes ff-drop {
-  from { transform: translateY(-82vh); }
-  to { transform: translateY(0); }
-}
-
-@keyframes ff-swing {
-  0% { transform: rotate(-7deg); }
-  32% { transform: rotate(5deg); }
-  62% { transform: rotate(-3deg); }
-  100% { transform: rotate(0); }
-}
-
-@keyframes ff-chute-away {
-  to { transform: translateY(-46vh) rotate(16deg); opacity: 0; }
-}
-
-@keyframes ff-land {
-  0% { transform: scale(1, 1); }
-  35% { transform: scale(1.07, 0.93); }
-  100% { transform: scale(1, 1); }
-}
-
-@keyframes ff-glow {
-  0%, 100% { filter: drop-shadow(0 0 16px rgba(255, 168, 46, 0.65)); }
-  50% { filter: drop-shadow(0 0 40px rgba(255, 190, 80, 0.95)); }
-}
-
-@keyframes ff-rays-in {
-  to { opacity: 1; }
-}
-
-@keyframes ff-rays-spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes ff-sheen {
-  to { left: 118%; }
-}
-
-@keyframes ff-stamp {
-  0% { opacity: 0; transform: scale(2.4) rotate(-11deg); }
-  100% { opacity: 1; transform: scale(1) rotate(-11deg); }
-}
-
-@keyframes ff-caption {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes ff-pop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
 }
 
 @keyframes ff-fade-out {
   to { opacity: 0; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ff-reveal__drop,
-  .ff-reveal__ticket,
-  .ff-reveal__chute,
-  .ff-reveal__sheen::after,
-  .ff-reveal__rays {
-    animation: none;
-  }
-
-  .ff-reveal__chute {
-    display: none;
-  }
-
-  .ff-reveal__rays {
-    opacity: 0.6;
-  }
-
-  .ff-reveal .ff-ticket-stamp {
-    opacity: 1;
-    animation: none;
-  }
-}
-
 @media (max-height: 480px) {
   .ff-reveal {
-    padding-top: 5vh;
-  }
-
-  .ff-reveal__drop {
-    width: min(380px, 62vw);
-  }
-
-  .ff-reveal__caption {
-    margin-top: 10px;
+    top: 40px;
+    transform: scale(0.72);
+    transform-origin: top center;
   }
 }
 
-.ff-shop-card {
-  margin-bottom: 14px;
-}
-
-.ff-shop-card__art {
-  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45));
-}
-
-.ff-shop-card__row {
+.ff-shop-badge {
+  position: absolute;
+  top: 0;
+  right: calc(100% + 8px);
+  bottom: 0;
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 8px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px 0 6px;
+  border-radius: 5px;
+  background: #252525;
+  white-space: nowrap;
 }
 
-.ff-shop-card__status {
-  font-size: 20px;
-  font-weight: 700;
-  color: #ffc56b;
+.ff-shop-badge__icon {
+  width: 28px;
+  height: 28px;
 }
 
-.ff-shop-card__days {
-  flex-shrink: 0;
-  font-size: 15px;
-  font-weight: 700;
-  color: #fbf1dc;
+.ff-shop-badge__name {
+  color: #fff;
 }
 
-.ff-shop-card__rule {
-  margin-top: 2px;
-  font-size: 13px;
-  line-height: 16px;
-  color: rgba(255, 255, 255, 0.72);
+@media (max-width: 720px) {
+  .ff-shop-badge__name {
+    display: none;
+  }
 }
 
 .ff-free-price {
-  color: #ffc56b !important;
-  font-weight: 700;
+  color: #f4db7c !important;
+  font-weight: bold;
 }

@@ -1,9 +1,7 @@
 import { randomInt } from "node:crypto";
-import {
-    FreeFallTicket,
-    isFreeFallTicketLive,
-} from "../../../shared/defs/gameObjects/freeFallTicketDefs";
+import { isFreeFallTicketLive } from "../../../shared/defs/gameObjects/freeFallTicketDefs";
 import * as net from "../../../shared/net/net";
+import type { Vec2 } from "../../../shared/utils/v2";
 import { Config } from "../config";
 import { apiPrivateRouter } from "../utils/serverHelpers";
 import type { Game } from "./game";
@@ -14,24 +12,22 @@ export class FreeFallTicketDrop {
 
     constructor(readonly game: Game) {}
 
-    rollForCrate(crateType: string, opener: Player) {
+    rollForCrate(opener: Player, pos: Vec2, layer: number) {
         const game = this.game;
-        if (!crateType.startsWith("airdrop_crate")) return;
         if (this.foundThisMatch || game.arenaPrivate) return;
         if (!opener.userId || !isFreeFallTicketLive()) return;
 
-        const overrides = Config.freeFallTicket;
-        const minIps = overrides?.minDistinctIps ?? FreeFallTicket.minDistinctIpsInMatch;
+        const { dropOneIn, minDistinctIps } = Config.freeFallTicket;
         const ips = new Set(game.playerBarn.players.map((p) => p.encodedIp));
-        if (ips.size < minIps) return;
+        if (ips.size < minDistinctIps) return;
 
-        if (randomInt(overrides?.dropOneIn ?? FreeFallTicket.dropOneIn) !== 0) return;
+        if (randomInt(dropOneIn) !== 0) return;
 
         this.foundThisMatch = true;
-        void this.grant(opener);
+        void this.grant(opener, pos, layer);
     }
 
-    private async grant(opener: Player) {
+    private async grant(opener: Player, pos: Vec2, layer: number) {
         const game = this.game;
         const squad = opener.group ? opener.group.players : [opener];
         const recipients = squad.filter((p) => p.userId);
@@ -57,6 +53,8 @@ export class FreeFallTicketDrop {
             const msg = new net.FreeFallTicketMsg();
             msg.finderId = opener.__id;
             msg.recipientIds = receivers.map((p) => p.__id);
+            msg.pos = pos;
+            msg.layer = layer;
             game.broadcastMsg(net.MsgType.FreeFallTicket, msg);
         } catch (err) {
             game.logger.error("Failed to grant Free Fall Ticket:", err);
