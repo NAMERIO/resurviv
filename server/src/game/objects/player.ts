@@ -2179,7 +2179,7 @@ export class Player extends BaseGameObject {
         if (isBattleRoyaleMapName(this.game.mapName)) return;
         if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
         // If already ready or active, nothing to check
-        if (this.streakReady || this.streakActive) return;
+        if (this.streakReady || this.streakActive || this.streakCooldownTimer > 0) return;
         const threshold = this.streakNextThreshold;
         if (this.damageDealt >= threshold) {
             this.streakReady = true;
@@ -2217,6 +2217,10 @@ export class Player extends BaseGameObject {
 
         if (streakDef.rewardType === "perk") {
             this.addPerk(streakDef.rewardItem, false);
+            this.playerStatusDirty = true;
+            if (streakDef.rewardItem === "streak_vanish_effect") {
+                this.game.smokeBarn.addEmitter(v2.copy(this.pos), this.layer);
+            }
         } else if (streakDef.rewardType === "gun") {
             const slot = this.curWeapIdx <= 1 ? this.curWeapIdx : 0;
             this.streakGunSlot = slot;
@@ -2289,6 +2293,7 @@ export class Player extends BaseGameObject {
                 if (this.hasPerk(streakDef.rewardItem)) {
                     this.removePerk(streakDef.rewardItem);
                 }
+                this.playerStatusDirty = true;
             } else if (streakDef.rewardType === "gun") {
                 if (this.streakSavedWeapons.length > 0) {
                     this.restoreStreakWeapons();
@@ -2314,10 +2319,70 @@ export class Player extends BaseGameObject {
 
         this.streakActive = false;
         this.streakActiveTimer = 0;
+        this.streakCooldownTimer = streakDef?.cooldown ?? 0;
         this.streakDirty = true;
     }
 
+    breakVanish(): void {
+        if (this.hasPerk("streak_vanish_effect")) {
+            this.deactivateStreak();
+        }
+    }
+
+    updateCamper(dt: number): void {
+        if (!this.hasPerk("camper")) {
+            this.camperActive = false;
+            return;
+        }
+
+        const props = PerkProperties.camper;
+        const onCooldown = this.camperCooldown > 0;
+        this.camperCooldown = math.max(0, this.camperCooldown - dt);
+
+        if (v2.length(v2.sub(this.pos, this.posOld)) > 0.01) {
+            if (this.camperActive) {
+                this.camperCooldown = props.moveCooldown;
+            }
+            this.camperActive = false;
+            this.camperStillTime = 0;
+            return;
+        }
+
+        if (onCooldown) {
+            this.camperStillTime = 0;
+            return;
+        }
+
+        this.camperStillTime += dt;
+        if (this.camperStillTime >= props.stillTime) {
+            this.camperActive = true;
+        }
+    }
+
+    specterCanPhase(obstacle: Obstacle): boolean {
+        return !obstacle.isWall && !obstacle.isWindow && !obstacle.isDoor;
+    }
+
+    isPhasingThroughSolid(objs: GameObject[], rad: number): boolean {
+        for (const obj of objs) {
+            if (obj.__type !== ObjectType.Obstacle) continue;
+            if (!obj.collidable || obj.dead || obj.isSkin) continue;
+            if (!util.sameLayer(obj.layer, this.layer)) continue;
+            if (!this.specterCanPhase(obj)) continue;
+            if (collider.intersectCircle(obj.collider, this.pos, rad)) return true;
+        }
+        return false;
+    }
+
     updateStreaks(dt: number): void {
+        if (this.streakCooldownTimer > 0) {
+            this.streakCooldownTimer -= dt;
+            if (this.streakCooldownTimer <= 0) {
+                this.streakCooldownTimer = 0;
+                this.checkDamageStreaks();
+            }
+        }
+
         if (this.streakActive) {
             this.streakActiveTimer -= dt;
             this.streakDirty = true;
@@ -2569,6 +2634,7 @@ export class Player extends BaseGameObject {
         }
 
         this.streakReady = false;
+        this.streakCooldownTimer = 0;
         this.streakActive = false;
         this.dashSpeed = 0;
         this.dashTimeLeft = 0;
@@ -3003,6 +3069,7 @@ export class Player extends BaseGameObject {
         }
         this.hasRoleHelmet = false;
         this.streakReady = false;
+        this.streakCooldownTimer = 0;
         this.streakActive = false;
         this.dashSpeed = 0;
         this.dashTimeLeft = 0;
@@ -3182,6 +3249,10 @@ export class Player extends BaseGameObject {
     streakReady = false;
     streakActive = false;
     streakActiveTimer = 0;
+    streakCooldownTimer = 0;
+    camperActive = false;
+    camperStillTime = 0;
+    camperCooldown = 0;
     dashSpeed = 0;
     dashTimeLeft = 0;
     dashDir = v2.create(1, 0);
@@ -3267,7 +3338,10 @@ export class Player extends BaseGameObject {
         return math.max(0, 1 - this.amongUsEmergencyCallsUsed);
     }
     get streakNextThreshold(): number {
-        return StreakThresholds.get(this.streakActivationCount);
+        const requirement = DamageStreakDefs[this.chosenStreakType]?.damageRequirement;
+        return requirement
+            ? requirement * (this.streakActivationCount + 1)
+            : StreakThresholds.get(this.streakActivationCount);
     }
     get streakDamageDealt(): number {
         return this.damageDealt;
@@ -3575,6 +3649,7 @@ export class Player extends BaseGameObject {
         }
 
         this.updateStreaks(dt);
+        this.updateCamper(dt);
         this.updateHideAndSeek(dt);
         this.updateInfected(dt);
 
@@ -4205,6 +4280,7 @@ export class Player extends BaseGameObject {
         );
 
         const objs = this.game.grid.intersectCollider(circle);
+        const specterPhasing = this.hasPerk("streak_specter_effect") && !this.vehicle;
         const syncSkinObstacles = () => {
             this.vehicle?.syncDrivenCollider(this.pos);
             if (this.obstacleOutfit) {
@@ -4237,6 +4313,7 @@ export class Player extends BaseGameObject {
                     if (!util.sameLayer(obj.layer, this.layer)) continue;
                     if (obj.isTree && hasTreeClimbing) continue;
                     if (obj.isSkin) continue;
+                    if (specterPhasing && this.specterCanPhase(obj)) continue;
 
                     collision = this.vehicle
                         ? collider.intersect(obj.collider, this.vehicle.collider)
@@ -4352,6 +4429,14 @@ export class Player extends BaseGameObject {
         }
 
         if (
+            specterPhasing &&
+            this.actionType !== GameConfig.Action.Revive &&
+            this.isPhasingThroughSolid(objs, movementCollisionRad)
+        ) {
+            this.cancelAction();
+        }
+
+        if (
             this.obstacleContactDamageTicker <= 0 &&
             !this.debug.noClip &&
             !airborneVehicle
@@ -4361,7 +4446,8 @@ export class Player extends BaseGameObject {
                     obj.__type !== ObjectType.Obstacle ||
                     obj.dead ||
                     !obj.collidable ||
-                    !util.sameLayer(obj.layer, this.layer)
+                    !util.sameLayer(obj.layer, this.layer) ||
+                    (specterPhasing && this.specterCanPhase(obj))
                 ) {
                     continue;
                 }
@@ -4687,6 +4773,9 @@ export class Player extends BaseGameObject {
             this.contactSmokeTicker = 0;
         }
 
+        if (this.camperActive) {
+            finalZoom = math.min(finalZoom * PerkProperties.camper.zoomMult, 255);
+        }
         if (this.insideZoomRegion) {
             finalZoom = zoomRegionZoom;
         }
@@ -4871,7 +4960,12 @@ export class Player extends BaseGameObject {
     visibleMapIndicators = new Set<MapIndicator>();
 
     isInvisibleTo(viewer: Player) {
-        return this.perkSelectionPending || (this !== viewer && this.debug.invisible);
+        if (this.perkSelectionPending) return true;
+        if (this === viewer) return false;
+        return (
+            this.debug.invisible ||
+            (this.hasPerk("streak_vanish_effect") && viewer.teamId !== this.teamId)
+        );
     }
 
     msgStream = new net.MsgStream(new ArrayBuffer(65536));
@@ -8577,6 +8671,14 @@ export class Player extends BaseGameObject {
         if (this.lowHpSurgeTicker > 0 && this.hasPerk("low_hp_surge")) {
             const mult = (PerkProperties.low_hp_surge as any)?.speedMult ?? 1.3;
             if (mult && mult > 0) this.speed *= mult;
+        }
+
+        if (this.hasPerk("streak_specter_effect")) {
+            this.speed *= DamageStreakProperties.streak_specter_effect.speedMult;
+        }
+
+        if (this.hasPerk("streak_vanish_effect")) {
+            this.speed *= DamageStreakProperties.streak_vanish_effect.speedMult;
         }
 
         const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);

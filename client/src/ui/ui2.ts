@@ -1325,7 +1325,8 @@ export class UiManager2 {
                         // We need the previous threshold to compute progress range
                         const prevThreshold =
                             nextThreshold > 0
-                                ? nextThreshold - (dmgDealt < 300 ? 300 : 400)
+                                ? nextThreshold -
+                                  (def?.damageRequirement ?? (dmgDealt < 300 ? 300 : 400))
                                 : 0;
                         const range = nextThreshold - prevThreshold;
                         const progress = Math.max(0, dmgDealt - prevThreshold);

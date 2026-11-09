@@ -6,6 +6,8 @@ export interface DamageStreakDef {
     readonly rewardItem: string;
     readonly duration: number;
     readonly dashDistance?: number;
+    readonly damageRequirement?: number;
+    readonly cooldown?: number;
     readonly lootImg: {
         sprite: string;
         tint: number;
@@ -95,6 +97,41 @@ export const DamageStreakDefs: Record<string, DamageStreakDef> = {
         },
         sound: { activate: "perk_pickup_01" },
     },
+    streak_specter: {
+        type: "streak",
+        name: "Specter",
+        lore: "+15% speed and phase through objects for 10 seconds, but not walls. Phasing cancels healing and reloading.",
+        rewardType: "perk",
+        rewardItem: "streak_specter_effect",
+        duration: 10,
+        damageRequirement: 400,
+        lootImg: {
+            sprite: "loot-perk-specter.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0x55ccff,
+            scale: 0.275,
+        },
+        sound: { activate: "perk_pickup_01" },
+    },
+    streak_vanish: {
+        type: "streak",
+        name: "Vanish",
+        lore: "Pop smoke and go invisible with +20% speed for 1.5 seconds, or until you shoot.",
+        rewardType: "perk",
+        rewardItem: "streak_vanish_effect",
+        duration: 1.5,
+        damageRequirement: 200,
+        cooldown: 5,
+        lootImg: {
+            sprite: "loot-perk-vanish.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0x8899aa,
+            scale: 0.275,
+        },
+        sound: { activate: "perk_pickup_01" },
+    },
     streak_samurai: {
         type: "streak",
         name: "Samurai",
@@ -122,5 +159,11 @@ export const DamageStreakProperties = {
     streak_juggernaut_effect: {
         damageReduction: 0.5,
         healthRegen: 3,
+    },
+    streak_specter_effect: {
+        speedMult: 1.15,
+    },
+    streak_vanish_effect: {
+        speedMult: 1.2,
     },
 };

@@ -39,6 +39,8 @@ const _allowedStreaks = [
     "streak_juggernaut",
     "streak_dash",
     "streak_samurai",
+    "streak_specter",
+    "streak_vanish",
 ];
 // const _allowedGunSkins = [
 //     "mosin_gilded",

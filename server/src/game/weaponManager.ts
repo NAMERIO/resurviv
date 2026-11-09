@@ -1039,6 +1039,7 @@ export class WeaponManager {
         //
         // Perks
         //
+        this.player.breakVanish();
         const hasExplosive = this.player.hasPerk("explosive");
         const hasSplinter = this.player.hasPerk("splinter");
         const hasApRounds = this.player.hasPerk("ap_rounds");
@@ -1100,6 +1101,28 @@ export class WeaponManager {
             distanceMult *= PerkProperties.high_velocity.distanceMult;
         }
 
+        if (this.player.camperActive) {
+            spread *= PerkProperties.camper.spreadMult;
+            damageMult *= PerkProperties.camper.damageMult;
+            speedMult *= PerkProperties.camper.speedMult;
+        }
+
+        if (this.player.hasPerk("overpressure")) {
+            spread *= PerkProperties.overpressure.spreadMult;
+            damageMult *= PerkProperties.overpressure.damageMult;
+            speedMult *= PerkProperties.overpressure.speedMult;
+            distanceMult *= PerkProperties.overpressure.distanceMult;
+        }
+
+        const hasHeavyDuty = this.player.hasPerk("heavy_duty");
+        if (hasHeavyDuty) {
+            spread *= PerkProperties.heavy_duty.spreadMult;
+            speedMult *= PerkProperties.heavy_duty.speedMult;
+        }
+
+        speedMult = math.min(speedMult, 2);
+        distanceMult = math.min(distanceMult, 2);
+
         const bulletCount = itemDef.bulletCount;
         const jitter = itemDef.jitter ?? 0.25;
 
@@ -1158,7 +1181,7 @@ export class WeaponManager {
                 shotOffhand: offHand,
                 trailSaturated: shouldApplyChambered || saturated,
                 trailSmall: false,
-                trailThick: shouldApplyChambered,
+                trailThick: shouldApplyChambered || hasHeavyDuty,
                 reflectCount: 0,
                 splinter: hasSplinter,
                 apRounds: hasApRounds,
