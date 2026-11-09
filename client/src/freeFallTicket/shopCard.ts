@@ -1,4 +1,5 @@
 import $ from "jquery";
+import { isFreeFallTicketLive } from "../../../shared/defs/gameObjects/freeFallTicketDefs";
 import type { FreeFallTicketState } from "../../../shared/types/user";
 
 const BADGE_ID = "ff-shop-badge";
@@ -10,6 +11,8 @@ function daysLeftText(expiresAt: number) {
 }
 
 export function renderFreeFallShopCard(ticket: FreeFallTicketState | null) {
+    $("#ff-shop-event").toggle(isFreeFallTicketLive());
+
     let badge = $(`#${BADGE_ID}`);
     if (!ticket) {
         badge.remove();

@@ -105,6 +105,33 @@
   }
 }
 
+.ff-shop-event {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.ff-shop-event__icon {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+}
+
+.ff-shop-event__title {
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 21px;
+  color: #f4db7c;
+}
+
+.ff-shop-event__body {
+  font-size: 14px;
+  line-height: 17px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
 .ff-free-price {
   color: #f4db7c !important;
   font-weight: bold;
