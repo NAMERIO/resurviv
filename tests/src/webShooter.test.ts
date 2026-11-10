@@ -41,7 +41,9 @@ function tick(player: any, seconds: number, shoot = false) {
         player.layer = 0;
         player.update(1 / 30);
         if (shoot) {
-            player.handleInput(Object.assign(new InputMsg(), { toMouseDir: v2.create(1, 0) }));
+            player.handleInput(
+                Object.assign(new InputMsg(), { toMouseDir: v2.create(1, 0) }),
+            );
             shoot = false;
         }
     }
