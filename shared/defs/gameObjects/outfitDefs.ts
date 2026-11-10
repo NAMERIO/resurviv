@@ -4712,6 +4712,110 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
 
+    outfitChrollo: defineOutfitSkin("outfitBase", {
+        name: "Chrollo Lucilfer",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "The leader of the Phantom Troupe.",
+
+        skinImg: {
+            baseTint: 0x1c1c1c,
+            baseSprite: "player-base-01.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-chrollo.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-chrollo.img",
+            frontSpritePos: { x: -1.95, y: -0.3702 },
+            frontSprite: "player-accessory-chrollo.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitBlueEnforcer: defineOutfitSkin("outfitBase", {
+        name: "Blue Enforcer",
+        noDropOnDeath: true,
+
+        rarity: 4,
+        lore: "A formidable enforcer clad in blue.",
+
+        skinImg: {
+            baseTint: 0x1c1c1c,
+            baseSprite: "player-base-01.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-blue-enforcer.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-blue-enforcer.img",
+            frontSpritePos: { x: -1.95, y: -0.3702 },
+            frontSprite: "player-accessory-blue-enforcer.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitMeruem: defineOutfitSkin("outfitBase", {
+        name: "Meruem",
+        noDropOnDeath: true,
+        moveEmitter: "meruemParticle",
+        rarity: 5,
+        lore: "The king of the Chimera Ants.",
+
+        skinImg: {
+            baseTint: 0x1c1c1c,
+            baseSprite: "player-base-01.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-meruem.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-meruem.img",
+            frontSpritePos: { x: -1.95, y: -0.3702 },
+            frontSprite: "player-accessory-meruem.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
+    outfitGon: defineOutfitSkin("outfitBase", {
+        name: "Gon Freecss",
+        noDropOnDeath: true,
+        moveEmitter: "gonParticle",
+        rarity: 5,
+        lore: "A determined and brave young hunter.",
+
+        skinImg: {
+            baseTint: 0x1c1c1c,
+            baseSprite: "player-base-01.img",
+            aboveHand: true,
+            handTint: 0xffffff,
+            handSprite: "player-hands-gon.img",
+            footTint: 0xffffff,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xffffff,
+            backpackSprite: "player-back-gon.img",
+            frontSpritePos: { x: -1.95, y: -0.3702 },
+            frontSprite: "player-accessory-gon.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0xffffff,
+        },
+    }),
+
     outfitJinglyJester: defineOutfitSkin("outfitBase", {
         name: "Jingly Jester",
         noDropOnDeath: true,

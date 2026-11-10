@@ -2900,6 +2900,18 @@ const SkinDefs: Record<string, MeleeDef> = {
             sprite: "loot-melee-knuckles-rusted.img",
         },
     }),
+    chainfist: defineMeleeSkin("knuckles", {
+        name: "Chainfist",
+        rarity: Rarity.Mythic,
+        lore: "Chain your enemies down.",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-chainfist.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-chainfist.img",
+        },
+    }),
     knuckles_heroic: defineMeleeSkin("knuckles", {
         name: "Knuckles Heroic",
         rarity: Rarity.Epic,
@@ -2973,6 +2985,19 @@ const SkinDefs: Record<string, MeleeDef> = {
         },
         worldImg: {
             sprite: "loot-melee-karambit-amethyst.img",
+        },
+    }),
+    karambit_bubblegum: defineMeleeSkin("karambit", {
+        name: "Karambit Bubblegum",
+        rarity: Rarity.Mythic,
+        lore: "Created by Life.",
+
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-karambit-bubblegum.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-karambit-bubblegum.img",
         },
     }),
     karambit_gilded: defineMeleeSkin("karambit", {
