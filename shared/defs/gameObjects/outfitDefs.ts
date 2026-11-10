@@ -6276,6 +6276,26 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffffff,
         },
     }),
+    outfitContributor: defineOutfitSkin("outfitBase", {
+        name: "Contributr",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0xffffff,
+            baseSprite: "player-base-outfitContributor.img",
+            handTint: 0x5f5fd4,
+            handSprite: "player-hands-02.img",
+            footTint: 0x5f5fd4,
+            footSprite: "player-feet-02.img",
+            backpackTint: 0x5f5fd4,
+            backpackSprite: "player-circle-base-02.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0x5f5fd4,
+        },
+        rarity: Rarity.Mythic,
+        lore: "",
+    }),
 };
 
 export const OutfitDefs = { ...BaseDefs, ...SkinDefs };
