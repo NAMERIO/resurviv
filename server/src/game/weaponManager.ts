@@ -557,6 +557,9 @@ export class WeaponManager {
                 this.player.playAnim(GameConfig.Anim.Melee, 0.05);
                 weapon.cooldown = 0.02;
                 this.meleeAttacks = [0];
+                if (itemDef.webShooter) {
+                    this.shootWeb(itemDef.webShooter);
+                }
             }
         } else if (
             player.animType !== GameConfig.Anim.Melee &&
@@ -568,6 +571,9 @@ export class WeaponManager {
             this.player.playAnim(GameConfig.Anim.Melee, attack.cooldownTime);
             weapon.cooldown = attack.cooldownTime;
             this.meleeAttacks = [...attack.damageTimes];
+            if (itemDef.webShooter) {
+                this.shootWeb(itemDef.webShooter);
+            }
         }
 
         for (let i = 0; i < this.meleeAttacks.length; i++) {
@@ -1341,6 +1347,34 @@ export class WeaponManager {
         this.player.setPropDisguise(bestProp.type, bestProp.ori, bestProp.scale);
         this.player.consumeHideAndSeekPropSwitch();
         return true;
+    }
+
+    shootWeb(web: NonNullable<MeleeDef["webShooter"]>): void {
+        const player = this.player;
+        if (player.webCooldown > 0 || player.downed || player.vehicle) return;
+        player.webCooldown = web.cooldown;
+
+        const dir = v2.normalizeSafe(player.dir, v2.create(1, 0));
+        const end = v2.add(player.pos, v2.mul(dir, web.range));
+        const obstacles = player.game.grid
+            .intersectLineSegment(player.pos, end)
+            .filter(
+                (obj): obj is Obstacle =>
+                    obj.__type === ObjectType.Obstacle && !obj.isSkin,
+            );
+        const hit = collisionHelpers.intersectSegment(
+            obstacles,
+            player.pos,
+            dir,
+            web.range,
+            0,
+            player.layer,
+            false,
+        );
+
+        const anchor = hit ? v2.add(player.pos, v2.mul(dir, hit.dist)) : end;
+        const pullDist = hit ? hit.dist - player.rad - 0.25 : 0;
+        player.attachWeb(anchor, dir, pullDist, web.pullSpeed);
     }
 
     getMeleeCollider() {

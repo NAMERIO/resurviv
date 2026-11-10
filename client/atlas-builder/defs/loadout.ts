@@ -470,6 +470,7 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/loot-melee-cutlass-gold.svg",
         "loot/loot-melee-fireaxe.svg",
         "loot/loot-melee-hook-silver.svg",
+        "loot/loot-melee-web-shooter.svg",
         "loot/loot-melee-huntsman-burnished.svg",
         "loot/loot-melee-huntsman-blackwater.svg",
         "loot/loot-melee-huntsman-bloodmoon.svg",
@@ -1546,6 +1547,8 @@ export const LoadoutAtlas: AtlasDef = {
         // fist skin world images
         "player/player-fists-gloves-l.svg",
         "player/player-fists-gloves-r.svg",
+        "player/player-fists-web-l.svg",
+        "player/player-fists-web-r.svg",
         "player/player-fists-feral-claws.svg",
         "player/player-fists-crab-tongs-l.svg",
         "player/player-fists-crab-tongs-r.svg",

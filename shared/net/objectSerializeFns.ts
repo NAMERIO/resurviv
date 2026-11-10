@@ -127,6 +127,7 @@ export interface ObjectsFullData {
 
         role: string;
         activeStreak: string;
+        webAnchor: Vec2 | null;
 
         wearingLasrSwrd: boolean;
         gunLoaded: boolean;
@@ -326,6 +327,11 @@ export const ObjectSerializeFns: {
                 s.writeGameType(data.activeStreak);
             }
 
+            s.writeBoolean(!!data.webAnchor);
+            if (data.webAnchor) {
+                s.writeMapPos(data.webAnchor);
+            }
+
             s.writeBoolean(!!data.wearingLasrSwrd);
             s.writeBoolean(!!data.gunLoaded);
 
@@ -406,6 +412,8 @@ export const ObjectSerializeFns: {
 
             const hasActiveStreak = s.readBoolean();
             data.activeStreak = hasActiveStreak ? s.readGameType() : "";
+
+            data.webAnchor = s.readBoolean() ? s.readMapPos() : null;
 
             // read laser sword wearing flag
             data.wearingLasrSwrd = s.readBoolean();

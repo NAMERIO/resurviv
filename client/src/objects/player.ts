@@ -402,6 +402,10 @@ export class Player implements AbstractObject {
     auraCircle = createSprite();
     streakRingTicker = 0;
     pulseEffectGfx = new PIXI.Graphics();
+    webGfx = new PIXI.Graphics();
+    webLineEnd: Vec2 | null = null;
+    webLineFade = 0;
+    webShootTicker = 0;
     pulseEffectTicker = 0;
     pulseEffectActive = false;
 
@@ -540,6 +544,7 @@ export class Player implements AbstractObject {
         m_playerTransparent: boolean;
         m_biteEffect: boolean;
         m_activeStreak: string;
+        m_webAnchor: Vec2 | null;
         m_frozen: boolean;
         m_frozenOri: number;
         m_hasteType: Exclude<HasteType, HasteType.Count>;
@@ -665,6 +670,7 @@ export class Player implements AbstractObject {
         this.container.addChild(this.nameText);
         this.container.addChild(this.developerVitalsGfx);
 
+        this.auraContainer.addChild(this.webGfx);
         this.auraContainer.addChild(this.pulseEffectGfx);
         this.auraContainer.addChild(this.auraCircle);
 
@@ -743,6 +749,7 @@ export class Player implements AbstractObject {
             m_playerTransparent: false,
             m_biteEffect: false,
             m_activeStreak: "",
+            m_webAnchor: null,
             m_frozen: false,
             m_frozenOri: 0,
             m_hasteType: HasteType.None,
@@ -797,6 +804,9 @@ export class Player implements AbstractObject {
         this.auraContainer.visible = false;
         this.pulseEffectGfx.clear();
         this.pulseEffectGfx.visible = false;
+        this.webGfx.clear();
+        this.webLineEnd = null;
+        this.webLineFade = 0;
         this.pulseEffectTicker = 0;
         this.pulseEffectActive = false;
         if (this.useItemEmitter) {
@@ -884,6 +894,7 @@ export class Player implements AbstractObject {
             this.m_netData.m_playerTransparent = data.playerTransparent;
             this.m_netData.m_biteEffect = data.biteEffect;
             this.m_netData.m_activeStreak = data.activeStreak;
+            this.m_netData.m_webAnchor = data.webAnchor;
             this.m_netData.m_frozen = data.frozen;
             this.m_netData.m_frozenOri = data.frozenOri;
             this.m_netData.m_hasteType = data.hasteType;
@@ -1957,7 +1968,7 @@ export class Player implements AbstractObject {
         }
         this.visualsDirty = false;
 
-        this.updateAura(dt, isActivePlayer, activePlayer);
+        this.updateAura(dt, isActivePlayer, activePlayer, camera.m_ppu);
 
         this.updateRotation(
             inputBinds.input,
@@ -2313,9 +2324,15 @@ export class Player implements AbstractObject {
 
         // Use meleeSkin for hand sprites (fist skins)
         const meleeSkinType = this.m_netData.m_meleeSkin;
-        const meleeSkinDef = meleeSkinType
-            ? (GameObjectDefs[meleeSkinType] as MeleeDef)
-            : undefined;
+        const activeMeleeDef = GameObjectDefs[this.m_netData.m_activeWeapon] as
+            | MeleeDef
+            | undefined;
+        const meleeSkinDef =
+            activeMeleeDef?.type === "melee" && activeMeleeDef.webShooter
+                ? activeMeleeDef
+                : meleeSkinType
+                  ? (GameObjectDefs[meleeSkinType] as MeleeDef)
+                  : undefined;
         const meleeHandSprites = meleeSkinDef?.handSprites;
 
         if (meleeHandSprites && !outfitDef.ghillie) {
@@ -2748,7 +2765,7 @@ export class Player implements AbstractObject {
         this.bodyContainer.scale.set(bodyScale, bodyScale);
     }
 
-    updateAura(dt: number, isActivePlayer: boolean, activePlayer: Player) {
+    updateAura(dt: number, isActivePlayer: boolean, activePlayer: Player, ppu: number) {
         // Fade in/out when entering/exiting the screen edge of the active player.
         // This fixes popping caused by the player being culled before the aura
         // is off screen.
@@ -2789,13 +2806,65 @@ export class Player implements AbstractObject {
             const pulse = 0.5 + 0.5 * Math.sin(this.streakRingTicker * 7);
             this.pulseEffectGfx.visible = true;
             this.pulseEffectGfx.lineStyle(
-                0.22,
+                0.22 * ppu,
                 activeStreakDef.lootImg.borderTint,
                 (0.6 + pulse * 0.4) * this.auraViewFade,
             );
-            this.pulseEffectGfx.drawCircle(0, 0, 1.75 + pulse * 0.12);
+            this.pulseEffectGfx.drawCircle(0, 0, (1.75 + pulse * 0.12) * ppu);
         } else {
             this.streakRingTicker = 0;
+        }
+
+        const webAnchor = this.m_netData.m_webAnchor;
+        if (webAnchor) {
+            if (
+                !this.webLineEnd ||
+                this.webLineFade < 1 ||
+                !v2.eq(webAnchor, this.webLineEnd)
+            ) {
+                this.webShootTicker = 0;
+            }
+            this.webLineEnd = v2.copy(webAnchor);
+            this.webLineFade = 1;
+        } else {
+            this.webLineFade = math.max(0, this.webLineFade - dt / 0.15);
+        }
+        this.webShootTicker += dt;
+        this.webGfx.clear();
+        if (this.webLineEnd && this.webLineFade > 0 && !this.m_netData.m_dead) {
+            const handPoint = this.auraContainer.toLocal(
+                new PIXI.Point(0, 0),
+                this.handRContainer,
+            );
+            const hand = v2.create(handPoint.x, handPoint.y);
+            const anchor = v2.mul(
+                v2.create(
+                    this.webLineEnd.x - this.m_visualPos.x,
+                    this.m_visualPos.y - this.webLineEnd.y,
+                ),
+                ppu,
+            );
+            const shot = math.min(1, this.webShootTicker / 0.08);
+            const end = v2.lerp(shot, hand, anchor);
+            const alpha = this.webLineFade * this.auraViewFade;
+            const rope = (width: number, color: number, a: number) => {
+                this.webGfx.lineStyle({
+                    width: width * ppu,
+                    color,
+                    alpha: a,
+                    cap: PIXI.LINE_CAP.ROUND,
+                });
+                this.webGfx.moveTo(hand.x, hand.y);
+                this.webGfx.lineTo(end.x, end.y);
+            };
+            rope(0.46, 0x1b1b1b, 0.5 * alpha);
+            rope(0.28, 0xffffff, alpha);
+            if (shot >= 1) {
+                this.webGfx.lineStyle(0);
+                this.webGfx.beginFill(0xffffff, alpha);
+                this.webGfx.drawCircle(end.x, end.y, 0.34 * ppu);
+                this.webGfx.endFill();
+            }
         }
 
         // Pulse healing circle

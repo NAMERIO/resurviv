@@ -2653,6 +2653,7 @@ export class Player extends BaseGameObject {
         this.streakActive = false;
         this.dashSpeed = 0;
         this.dashTimeLeft = 0;
+        this.webAnchor = null;
         this.streakDirty = true;
         this.weaponManager.setCurWeapIndex(GameConfig.WeaponSlot.Melee);
         this.weaponManager.showNextThrowable();
@@ -3088,6 +3089,7 @@ export class Player extends BaseGameObject {
         this.streakActive = false;
         this.dashSpeed = 0;
         this.dashTimeLeft = 0;
+        this.webAnchor = null;
         this.streakDirty = true;
 
         for (let i = 0; i < GameConfig.WeaponSlot.Count; i++) {
@@ -3272,6 +3274,9 @@ export class Player extends BaseGameObject {
     dashSpeed = 0;
     dashTimeLeft = 0;
     dashDir = v2.create(1, 0);
+    webAnchor: Vec2 | null = null;
+    webAnchorTicker = 0;
+    webCooldown = 0;
     streakSavedWeapons: { slot: number; type: string; ammo: number }[] = [];
     streakGunSlot: number = -1;
     streakSavedOutfit = "";
@@ -3371,6 +3376,31 @@ export class Player extends BaseGameObject {
     }
     get activeStreakTimeLeft(): number {
         return this.streakActiveTimer;
+    }
+
+    attachWeb(anchor: Vec2, dir: Vec2, pullDist: number, pullSpeed: number): void {
+        this.webAnchor = anchor;
+        if (pullDist > 0.5) {
+            this.dashDir = v2.copy(dir);
+            this.dashSpeed = pullSpeed;
+            this.dashTimeLeft = pullDist / pullSpeed;
+            this.webAnchorTicker = this.dashTimeLeft;
+        } else {
+            this.webAnchorTicker = 0.15;
+        }
+        this.setDirty();
+    }
+
+    updateWeb(dt: number): void {
+        if (this.webCooldown > 0) {
+            this.webCooldown -= dt;
+        }
+        if (!this.webAnchor) return;
+        this.webAnchorTicker -= dt;
+        if (this.webAnchorTicker <= 0) {
+            this.webAnchor = null;
+            this.setDirty();
+        }
     }
 
     resetAmongUsKillCooldown() {
@@ -4186,6 +4216,8 @@ export class Player extends BaseGameObject {
                 this.recalculateScale();
             }
         }
+
+        this.updateWeb(dt);
 
         if (this.pullToSourcePos && this.pullToSourceTicker > 0) {
             this.pullToSourceTicker -= dt;

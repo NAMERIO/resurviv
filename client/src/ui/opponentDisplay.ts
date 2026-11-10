@@ -405,6 +405,7 @@ export class LoadoutDisplay {
             playerTransparent: false,
             biteEffect: false,
             activeStreak: "",
+            webAnchor: null,
             frozen: false,
             frozenOri: 0,
             hasteType: 0,
