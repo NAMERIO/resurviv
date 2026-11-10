@@ -244,6 +244,40 @@ export const Animations: Record<
             effect(def.fists.attack.damageTimes[0], "animMeleeCollision", {}),
         ],
     },
+    clawLunge: {
+        keyframes: (() => {
+            const dash = def.steel_claws.clawDash!.duration;
+            const hit = def.steel_claws.attack.damageTimes[0];
+            const end = def.steel_claws.attack.cooldownTime;
+            const hands = (
+                lx: number,
+                ly: number,
+                lr: number,
+                rx: number,
+                ry: number,
+                rr: number,
+            ) => ({
+                [Bones.HandL]: new Pose(v2.create(0, 0), lr, v2.create(lx, ly)),
+                [Bones.HandR]: new Pose(v2.create(0, 0), rr, v2.create(rx, ry)),
+            });
+            return [
+                frame(0, hands(14, -12.25, 0, 14, 12.25, 0)),
+                frame(dash * 0.25, hands(3, -17, -0.55, 3, 17, 0.55)),
+                frame(dash * 0.85, hands(32, -6, 0.1, 32, 6, -0.1)),
+                frame(dash, hands(30, -14, -0.5, 30, 14, 0.5)),
+                frame(hit, hands(26, 11, 0.9, 26, -11, -0.9)),
+                frame(hit + 0.1, hands(22, 12, 1.0, 22, -12, -1.0)),
+                frame(end * 0.9, hands(14, -12.25, 0, 14, 12.25, 0)),
+                frame(end, hands(14, -12.25, 0, 14, 12.25, 0)),
+            ];
+        })(),
+        effects: [
+            effect(0, "animPlaySound", { sound: "swing" }),
+            effect(def.steel_claws.clawDash!.duration, "animPlaySound", {
+                sound: "swing",
+            }),
+        ],
+    },
     cut: {
         keyframes: [
             frame(0, { [Bones.HandR]: new Pose(v2.create(14, 12.25)) }),

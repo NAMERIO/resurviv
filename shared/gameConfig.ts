@@ -136,7 +136,7 @@ export const GameConfig = {
     // the protocol we originated from was 78
     // remember to bump this every time a serialization function is changed
     // or a definition item added, removed or moved
-    protocolVersion: 1043,
+    protocolVersion: 1044,
     replayVersion: 3,
     replayMinVersion: 2,
     Input,

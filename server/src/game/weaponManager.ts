@@ -56,6 +56,8 @@ export class WeaponManager {
 
     loadingBlasterCharge = 0;
     lastWeaponIdx = 0;
+    clawSwingTime = -1;
+    clawHitIds = new Set<number>();
 
     get curWeapIdx(): number {
         return this._curWeapIdx;
@@ -147,6 +149,7 @@ export class WeaponManager {
         }
         this.bursts.length = 0;
         this.meleeAttacks.length = 0;
+        this.clawSwingTime = -1;
         this.scheduledReload = false;
 
         this.player.recoilTicker = 0;
@@ -560,6 +563,9 @@ export class WeaponManager {
                 if (itemDef.webShooter) {
                     this.shootWeb(itemDef.webShooter);
                 }
+                if (itemDef.clawDash) {
+                    this.clawLunge(itemDef, 0.02);
+                }
             }
         } else if (
             player.animType !== GameConfig.Anim.Melee &&
@@ -573,6 +579,22 @@ export class WeaponManager {
             this.meleeAttacks = [...attack.damageTimes];
             if (itemDef.webShooter) {
                 this.shootWeb(itemDef.webShooter);
+            }
+            if (itemDef.clawDash) {
+                this.meleeAttacks = [];
+                this.clawSwingTime = 0;
+                this.clawHitIds.clear();
+                this.clawLunge(itemDef, itemDef.clawDash.duration);
+            }
+        }
+
+        if (this.clawSwingTime >= 0) {
+            if (itemDef.clawDash) {
+                this.meleeDamage(this.clawHitIds);
+            }
+            this.clawSwingTime += dt;
+            if (!itemDef.clawDash || this.clawSwingTime > attack.damageTimes[0]) {
+                this.clawSwingTime = -1;
             }
         }
 
@@ -1377,6 +1399,20 @@ export class WeaponManager {
         player.attachWeb(anchor, dir, pullDist, web.pullSpeed);
     }
 
+    clawLunge(def: MeleeDef, duration: number): void {
+        const player = this.player;
+        if (!def.clawDash || player.downed || player.vehicle || player.webAnchor) return;
+        const dist = math.clamp(
+            player.toMouseLen - def.attack.offset.x,
+            0,
+            def.clawDash.distance,
+        );
+        if (dist < 0.5 || duration <= 0) return;
+        player.dashDir = v2.normalizeSafe(player.dir, v2.create(1, 0));
+        player.dashSpeed = dist / duration;
+        player.dashTimeLeft = duration;
+    }
+
     getMeleeCollider() {
         const meleeDef = GameObjectDefs[this.player.activeWeapon] as MeleeDef;
         const rot = Math.atan2(this.player.dir.y, this.player.dir.x);
@@ -1390,7 +1426,8 @@ export class WeaponManager {
         return collider.createCircle(rotated, rad);
     }
 
-    meleeDamage(): void {
+    /** @param alreadyHit skip these object ids, and record the ids this call hits */
+    meleeDamage(alreadyHit?: Set<number>): void {
         const meleeDef = GameObjectDefs[this.activeWeapon] as MeleeDef;
 
         const coll = this.getMeleeCollider();
@@ -1539,6 +1576,12 @@ export class WeaponManager {
             }
         }
 
+        if (alreadyHit) {
+            for (let i = hits.length - 1; i >= 0; i--) {
+                if (alreadyHit.has(hits[i].obj.__id)) hits.splice(i, 1);
+            }
+        }
+
         hits.sort((a, b) => {
             return a.prio === b.prio ? b.pen - a.pen : a.prio - b.prio;
         });
@@ -1549,6 +1592,7 @@ export class WeaponManager {
         for (let i = 0; i < maxHits; i++) {
             const hit = hits[i];
             const obj = hit.obj;
+            alreadyHit?.add(obj.__id);
 
             if (obj.__type === ObjectType.Obstacle) {
                 this.player.punishHideAndSeekWrongPropHit();

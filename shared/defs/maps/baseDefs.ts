@@ -616,6 +616,7 @@ export const Main: MapDef = {
             { name: "", count: 1, weight: 19 },
             { name: "pan", count: 1, weight: 1 },
             { name: "web_shooter", count: 1, weight: 2 },
+            { name: "steel_claws", count: 1, weight: 2 },
         ],
         tier_airdrop_armor: [
             { name: "helmet03", count: 1, weight: 1 },
