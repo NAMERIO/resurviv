@@ -389,6 +389,7 @@ export class Replay {
             miniGameWinCountdownTime: 0,
             miniGameWinCountdownProps: false,
             amongUsKillCooldownTime: 0,
+            webCooldownTime: 0,
             amongUsEmergencyCallCooldownTime: 0,
             amongUsEmergencyCallsRemaining: 0,
             amongUsEmergencyMeetingSeq: 0,

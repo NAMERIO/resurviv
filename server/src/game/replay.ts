@@ -230,6 +230,7 @@ export class Recorder {
                 miniGameWinCountdownTime: p.miniGameWinCountdownTime,
                 miniGameWinCountdownProps: p.miniGameWinCountdownProps,
                 amongUsKillCooldownTime: p.amongUsKillCooldownTime,
+                webCooldownTime: p.webCooldownTime,
                 amongUsEmergencyCallCooldownTime: p.amongUsEmergencyCallCooldownTime,
                 amongUsEmergencyCallsRemaining: p.amongUsEmergencyCallsRemaining,
                 amongUsEmergencyMeetingSeq: p.amongUsEmergencyMeetingSeq,

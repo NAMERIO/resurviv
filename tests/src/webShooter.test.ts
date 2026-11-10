@@ -120,6 +120,26 @@ describe("web shooter", () => {
         expect(player.pos.x).toBeGreaterThan(304);
     });
 
+    test("has no pull-out delay", async () => {
+        const { player } = await setup("stone_01");
+        player.weaponManager.setCurWeapIndex(GameConfig.WeaponSlot.Primary, true, true);
+        player.weaponManager.setCurWeapIndex(GameConfig.WeaponSlot.Melee, true, true);
+        expect(
+            player.weaponManager.weapons[GameConfig.WeaponSlot.Melee].cooldown,
+        ).toBeLessThanOrEqual(0);
+        tick(player, 1 / 30, true);
+        expect(player.webAnchor).not.toBeNull();
+    });
+
+    test("reports the web recharge time for the HUD", async () => {
+        const { player } = await setup("stone_01");
+        expect(player.webCooldownTime).toBe(0);
+        tick(player, 1 / 30, true);
+        expect(player.webCooldownTime).toBeGreaterThan(web.cooldown - 0.1);
+        tick(player, web.cooldown);
+        expect(player.webCooldownTime).toBe(0);
+    });
+
     test("anchor is synced to clients", async () => {
         const { player } = await setup("stone_01");
         const read = () => {

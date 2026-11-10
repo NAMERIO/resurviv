@@ -589,6 +589,7 @@ export class Player implements AbstractObject {
         m_miniGameWinCountdownTime: number;
         m_miniGameWinCountdownProps: boolean;
         m_amongUsKillCooldownTime: number;
+        m_webCooldownTime: number;
         m_amongUsEmergencyCallCooldownTime: number;
         m_amongUsEmergencyCallsRemaining: number;
         m_amongUsEmergencyMeetingSeq: number;
@@ -788,6 +789,7 @@ export class Player implements AbstractObject {
             m_miniGameWinCountdownTime: 0,
             m_miniGameWinCountdownProps: false,
             m_amongUsKillCooldownTime: 0,
+            m_webCooldownTime: 0,
             m_amongUsEmergencyCallCooldownTime: 0,
             m_amongUsEmergencyCallsRemaining: 1,
             m_amongUsEmergencyMeetingSeq: 0,
@@ -1021,6 +1023,7 @@ export class Player implements AbstractObject {
         this.m_localData.m_miniGameWinCountdownProps =
             data.miniGameWinCountdownProps ?? false;
         this.m_localData.m_amongUsKillCooldownTime = data.amongUsKillCooldownTime ?? 0;
+        this.m_localData.m_webCooldownTime = data.webCooldownTime ?? 0;
         this.m_localData.m_amongUsEmergencyCallCooldownTime =
             data.amongUsEmergencyCallCooldownTime ?? 0;
         this.m_localData.m_amongUsEmergencyCallsRemaining =

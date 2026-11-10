@@ -3332,6 +3332,9 @@ export class Player extends BaseGameObject {
     get miniGameWinCountdownProps(): boolean {
         return !!getHideAndSeekSettings(this.game.miniGame);
     }
+    get webCooldownTime(): number {
+        return math.clamp(this.webCooldown, 0, 10);
+    }
     get amongUsKillCooldownTime(): number {
         if (
             !this.game.map.amongUsMode ||
@@ -5202,6 +5205,7 @@ export class Player extends BaseGameObject {
                 miniGameWinCountdownTime: player.miniGameWinCountdownTime,
                 miniGameWinCountdownProps: player.miniGameWinCountdownProps,
                 amongUsKillCooldownTime: player.amongUsKillCooldownTime,
+                webCooldownTime: player.webCooldownTime,
                 amongUsEmergencyCallCooldownTime: player.amongUsEmergencyCallCooldownTime,
                 amongUsEmergencyCallsRemaining: player.amongUsEmergencyCallsRemaining,
                 amongUsEmergencyMeetingSeq: player.amongUsEmergencyMeetingSeq,

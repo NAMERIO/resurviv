@@ -8000,3 +8000,16 @@ span.ui-stats-header-value {
     margin-top: 2px;
   }
 }
+
+/* Web shooter recharge: red fill over the melee slot that drains to empty when ready */
+.ui-weapon-cooldown {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 0%;
+  z-index: 0;
+  border-radius: 3px;
+  background-color: rgba(220, 30, 30, 0.6);
+  pointer-events: none;
+}
