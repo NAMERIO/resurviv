@@ -24,6 +24,7 @@ import type {
     CreateAuctionListingResponse,
     CreateMarketListingRequest,
     CreateMarketListingResponse,
+    FreeFallTicketState,
     FriendRequestActionRequest,
     FriendRequestActionResponse,
     FriendSearchRequest,
@@ -145,6 +146,7 @@ export class Account {
     loggingIn = false;
     loggedIn = false;
     gpBalance = 0;
+    freeFallTicket: FreeFallTicketState | null = null;
     rewardedAdGp: RewardedAdGpState | null = null;
     socialGpRewardClaims: Partial<Record<SocialGpRewardKey, boolean>> = {};
     socialGpRewardClaimsLoaded = false;
@@ -338,6 +340,7 @@ export class Account {
             }
             if (!this.loggedIn) {
                 this.config.set("sessionCookie", null);
+                this.freeFallTicket = null;
             }
             if (a && this.loggedIn) {
                 this.emit("login", this);
@@ -802,6 +805,7 @@ export class Account {
             this.auctionListings = res.auctions || [];
             this.userAuctionListings = res.userAuctions || [];
             this.soldMarketListings = res.soldListings || [];
+            this.freeFallTicket = res.freeFallTicket || null;
             this.emit("gpBalance", this.gpBalance);
             this.emit("socialGpRewardClaims", this.socialGpRewardClaims);
             this.emit("market", this.marketListings, this.userMarketListings);
@@ -935,9 +939,10 @@ export class Account {
     openLootBox(
         boxId: string,
         payment: OpenLootBoxRequest["payment"],
+        payWithGp: boolean,
         callback?: (error?: string, reward?: { itemType: string }) => void,
     ) {
-        const args: OpenLootBoxRequest = { boxId, payment };
+        const args: OpenLootBoxRequest = { boxId, payment, payWithGp };
         this.ajaxRequest(
             "/api/user/open_loot_box",
             args,
@@ -1025,8 +1030,12 @@ export class Account {
         );
     }
 
-    buyMarketListing(listingId: string, callback?: (error?: string) => void) {
-        const args: BuyMarketListingRequest = { listingId };
+    buyMarketListing(
+        listingId: string,
+        payWithGp: boolean,
+        callback?: (error?: string) => void,
+    ) {
+        const args: BuyMarketListingRequest = { listingId, payWithGp };
         this.ajaxRequest(
             "/api/user/buy_market_listing",
             args,

@@ -18,6 +18,7 @@ import {
 } from "../../../shared/utils/marketPricing";
 import type { Account } from "../account";
 import { googleH5Ads } from "../ads/googleH5Ads";
+import { renderFreeFallShopCard } from "../freeFallTicket/shopCard";
 import { createLootPreview, helpers } from "../helpers";
 import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
@@ -142,6 +143,7 @@ export class ShopMenu {
     pendingLootBoxRewardConfirmation = false;
     featuredBundlePage = 0;
     featuredBundleSliding = false;
+    ticketRefusedListingIds = new Set<string>();
 
     constructor(
         public account: Account,
@@ -343,9 +345,15 @@ export class ShopMenu {
             if (action === "buy") {
                 if (!item) return false;
                 this.confirmSellModal.hide();
-                if (!item.id) return false;
-                this.account.buyMarketListing(item.id, (error) => {
+                const listingId = item.id;
+                if (!listingId) return false;
+                const payWithGp = !this.isListingTicketFree(item);
+                this.account.buyMarketListing(listingId, payWithGp, (error) => {
                     if (error) {
+                        if (error.startsWith("ticket_")) {
+                            this.ticketRefusedListingIds.add(listingId);
+                            this.renderMarket();
+                        }
                         this.showMarketError(error);
                     } else {
                         this.setStatus("shop-market-buy-success");
@@ -710,7 +718,9 @@ export class ShopMenu {
             .filter((item): item is Listing => item !== null);
 
         const sellableItems = this.account.items
-            .filter((item) => getMarketPriceBounds(item.type) !== null)
+            .filter(
+                (item) => !item.ticketLocked && getMarketPriceBounds(item.type) !== null,
+            )
             .map((item) => {
                 const def = GameObjectDefs[item.type] as any;
                 if (!def || !supportedMarketTypes.has(def.type)) return null;
@@ -805,8 +815,31 @@ export class ShopMenu {
         this.renderFeatured();
         this.renderLootBoxes();
         this.renderBalance();
+        renderFreeFallShopCard(this.getActiveTicket());
         this.syncFilterLabels();
         this.setTab(this.activeTab);
+    }
+
+    getActiveTicket() {
+        const ticket = this.account.freeFallTicket;
+        return ticket && Date.now() < ticket.expiresAt ? ticket : null;
+    }
+
+    isListingTicketFree(item: Listing) {
+        return (
+            !!this.getActiveTicket() &&
+            !!item.id &&
+            !this.ticketRefusedListingIds.has(item.id)
+        );
+    }
+
+    isLootBoxTicketFree(lootBox: ShopLootBox) {
+        const ticket = this.getActiveTicket();
+        return !!ticket && ticket.freeCratesLeft > 0 && !lootBox.adRequirement;
+    }
+
+    getTicketFreeText() {
+        return this.localization.translate("shop-ticket-free") || "FREE";
     }
 
     renderBalance() {
@@ -925,7 +958,13 @@ export class ShopMenu {
              * discounted price calculated in
              * featuredBundles.ts.
              */
-            pack.find(".iap-currency-text").text(String(bundle.price));
+            pack.find(".iap-currency-text")
+                .text(
+                    this.getActiveTicket()
+                        ? this.getTicketFreeText()
+                        : String(bundle.price),
+                )
+                .toggleClass("ff-free-price", !!this.getActiveTicket());
 
             /*
              * Show the yellow sale ribbon only
@@ -1086,8 +1125,13 @@ export class ShopMenu {
             const showAds =
                 this.account.loggedIn && googleH5Ads.enabled() && required > 0;
 
-            $(`#open-crate-${selectorSuffix}`).find(".crate-text").text("Buy for");
-            $(`#crate-price-${selectorSuffix}`).text(String(lootBox.price));
+            const freeWithTicket = this.isLootBoxTicketFree(lootBox);
+            $(`#open-crate-${selectorSuffix}`)
+                .find(".crate-text")
+                .text(freeWithTicket ? "Open for" : "Buy for");
+            $(`#crate-price-${selectorSuffix}`)
+                .text(freeWithTicket ? this.getTicketFreeText() : String(lootBox.price))
+                .toggleClass("ff-free-price", freeWithTicket);
             adButton.toggle(showAds);
             adButton.toggleClass("disable", adState?.opened === true);
             $(`#crate-ad-count-${selectorSuffix}`).text(
@@ -1510,11 +1554,14 @@ export class ShopMenu {
                             : "market-item-action-btn market-item-action-btn-sell",
                 }).append($("<span/>", { text: actionLabel }));
                 if (item.action === "buy") {
+                    const freeWithTicket = this.isListingTicketFree(item);
                     button.append(
                         $("<div/>", { class: "market-btn-price-container" }).append(
                             $("<div/>", {
-                                class: "market-btn-price-text",
-                                text: this.formatMarketPrice(item.price),
+                                class: `market-btn-price-text${freeWithTicket ? " ff-free-price" : ""}`,
+                                text: freeWithTicket
+                                    ? this.getTicketFreeText()
+                                    : this.formatMarketPrice(item.price),
                             }),
                         ),
                     );
@@ -1672,8 +1719,10 @@ export class ShopMenu {
                 this.localization.translate("confirm-buy-modal-title") || "Confirm Buy",
             );
             $("#modal-confirm-sell-desc").text(
-                this.localization.translate("confirm-buy-modal-desc") ||
-                    "Are you sure you want to buy this item?",
+                this.isListingTicketFree(item)
+                    ? this.localization.translate("shop-ticket-confirm-market")
+                    : this.localization.translate("confirm-buy-modal-desc") ||
+                          "Are you sure you want to buy this item?",
             );
             $("#confirm-sell-no span").text(
                 this.localization.translate("confirm-buy-modal-no") || "No, cancel.",
@@ -1930,8 +1979,10 @@ export class ShopMenu {
                 "Buy bundle",
         );
         $("#modal-confirm-sell-desc").text(
-            this.localization.translate("shop-featured-bundle-confirm-desc") ||
-                "Spend GP to unlock every item in this bundle?",
+            this.getActiveTicket()
+                ? this.localization.translate("shop-ticket-confirm-bundle")
+                : this.localization.translate("shop-featured-bundle-confirm-desc") ||
+                      "Spend GP to unlock every item in this bundle?",
         );
         $("#confirm-sell-no span").text(
             this.localization.translate("confirm-buy-modal-no") || "No, cancel.",
@@ -1955,10 +2006,12 @@ export class ShopMenu {
             this.localization.translate("shop-lootbox-confirm-title") || "Open loot box",
         );
         $("#modal-confirm-sell-desc").text(
-            (
-                this.localization.translate("shop-lootbox-confirm-desc") ||
-                "Spend {gp} GP to open this loot box?"
-            ).replace("{gp}", String(lootBox.price)),
+            this.isLootBoxTicketFree(lootBox)
+                ? this.localization.translate("shop-ticket-confirm-crate")
+                : (
+                      this.localization.translate("shop-lootbox-confirm-desc") ||
+                      "Spend {gp} GP to open this loot box?"
+                  ).replace("{gp}", String(lootBox.price)),
         );
         $("#confirm-sell-no span").text(
             this.localization.translate("confirm-buy-modal-no") || "No, cancel.",
@@ -2005,7 +2058,8 @@ export class ShopMenu {
     }
 
     openLootBox(lootBox: ShopLootBox, payment: "gp" | "ads") {
-        this.account.openLootBox(lootBox.id, payment, (error, reward) => {
+        const payWithGp = !this.isLootBoxTicketFree(lootBox);
+        this.account.openLootBox(lootBox.id, payment, payWithGp, (error, reward) => {
             this.openingLootBox = false;
             if (error) {
                 this.showMarketError(error);

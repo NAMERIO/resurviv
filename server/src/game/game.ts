@@ -20,11 +20,9 @@ import { v2 } from "../../../shared/utils/v2";
 import { isBattleRoyaleMapName } from "../battleroyale/helpers";
 import { Config } from "../config";
 import { ServerLogger } from "../utils/logger";
-import { DurationStats, RateLimitedLog } from "../utils/metrics";
 import { apiPrivateRouter, HTTPRateLimit } from "../utils/serverHelpers";
 import {
     type FindGamePrivateBody,
-    type GameOccupancy,
     ProcessMsgType,
     type SaveArenaReplayBody,
     type SaveGameBody,
@@ -35,6 +33,7 @@ import { BedWarManager } from "./bedWarManager";
 import { CaptureTheFlagManager } from "./captureTheFlagManager";
 import { DeathmatchRoundManager } from "./deathmatchRoundManager";
 import { DominationManager } from "./dominationManager";
+import { FreeFallTicketDrop } from "./freeFallTicketDrop";
 import { GameModeManager } from "./gameModeManager";
 import { Grid } from "./grid";
 import { GunGameManager } from "./gunGameManager";
@@ -102,6 +101,7 @@ export class Game {
     isTeamMode: boolean;
     config: ServerGameConfig;
     arenaPrivate: boolean;
+    freeFallTicketDrop = new FreeFallTicketDrop(this);
     miniGame: ServerGameConfig["miniGame"];
     amongUsImpostorCount: AmongUsImpostorCount;
     disableAirstrikes: boolean;
@@ -137,14 +137,11 @@ export class Game {
     sortedLeaderboardPlayers: Array<{ name: string; kills: number }> = [];
     leaderboardDirty = false;
 
-    readonly tickTimeWarnThreshold = (1000 / Config.gameTps) * 4;
-    readonly netSyncWarnThreshold = (1000 / Config.netSyncTps) * 4;
-    updateStats = new DurationStats(1024);
-    netSyncStats = new DurationStats(512);
-    slowTickLog = new RateLimitedLog(Config.gameNetwork.slowTickLogIntervalMs);
-    slowUpdateTicks = 0;
-    slowNetSyncTicks = 0;
-    tokenSeq = 0;
+    tickTimeWarnThreshold = (1000 / Config.gameTps) * 4;
+    gameTickWarnings = 0;
+
+    netSyncWarnThreshold = (1000 / Config.netSyncTps) * 4;
+    netSyncWarnings = 0;
 
     grid: Grid<GameObject>;
     objectRegister: ObjectRegister;
@@ -202,7 +199,7 @@ export class Game {
         id: string,
         config: ServerGameConfig,
         readonly sendSocketMsg: (id: string, data: Uint8Array) => void,
-        readonly closeSocket: (id: string, reason?: string, logReason?: string) => void,
+        readonly closeSocket: (id: string, reason?: string) => void,
         readonly sendData?: (data: UpdateDataMsg) => void,
     ) {
         this.id = id;
@@ -363,7 +360,7 @@ export class Game {
         if (this.over) {
             this.stopTicker -= dt;
             if (this.stopTicker <= 0) {
-                this.stop("game_over");
+                this.stop();
                 return;
             }
         }
@@ -456,20 +453,26 @@ export class Game {
         this.profiler.endSample();
 
         const tickTime = performance.now() - this.now;
-        this.updateStats.add(tickTime);
 
         if (tickTime > 1000) {
-            let errString = `Update tick took over 1 second! ${tickTime.toFixed(2)}ms\n`;
+            let errString = `Tick took over 1 second! ${tickTime.toFixed(2)}ms\n`;
             errString += "Profiler stats:\n";
             errString += this.profiler.getStats();
             this.logger.error(errString);
         } else if (tickTime > this.tickTimeWarnThreshold) {
-            this.slowUpdateTicks++;
-            const suppressed = this.slowTickLog.shouldLog("update");
-            if (suppressed >= 0) {
-                this.logger.warn(
-                    `Update tick took ${tickTime.toFixed(2)}ms (threshold ${this.tickTimeWarnThreshold}ms, ${suppressed} more slow ticks not logged, players ${this.playerBarn.players.length})\n${this.profiler.getStats().split("\n").slice(0, 5).join("\n")}`,
-                );
+            this.logger.warn(
+                `Tick took over ${this.tickTimeWarnThreshold}ms! ${tickTime.toFixed(2)}ms`,
+            );
+            this.gameTickWarnings++;
+
+            if (this.gameTickWarnings > 20) {
+                let errString = `Server is overloaded! Increasing tickTimeWarnThreshold.\n`;
+                errString += "Profiler stats:\n";
+                errString += this.profiler.getStats();
+                this.logger.warn(errString);
+
+                this.gameTickWarnings = 0;
+                this.tickTimeWarnThreshold *= 2;
             }
         }
 
@@ -518,16 +521,21 @@ export class Game {
         this.msgsToSend.stream.index = 0;
 
         const syncTime = performance.now() - start;
-        this.netSyncStats.add(syncTime);
         if (syncTime > 1000) {
-            this.logger.error(`Net sync took over 1 second! ${syncTime.toFixed(2)}ms`);
+            this.logger.error(`Tick took over 1 second! ${syncTime.toFixed(2)}ms`);
         } else if (syncTime > this.netSyncWarnThreshold) {
-            this.slowNetSyncTicks++;
-            const suppressed = this.slowTickLog.shouldLog("netSync");
-            if (suppressed >= 0) {
+            this.logger.warn(
+                `Tick took over ${this.netSyncWarnThreshold}ms! ${syncTime.toFixed(2)}ms`,
+            );
+            this.netSyncWarnings++;
+
+            if (this.netSyncWarnings > 20) {
                 this.logger.warn(
-                    `Net sync took ${syncTime.toFixed(2)}ms (threshold ${this.netSyncWarnThreshold}ms, ${suppressed} more slow syncs not logged, players ${this.playerBarn.players.length})`,
+                    `Server is overloaded! Increasing netSyncWarnThreshold.`,
                 );
+
+                this.netSyncWarnings = 0;
+                this.netSyncWarnThreshold *= 2;
             }
         }
     }
@@ -661,18 +669,18 @@ export class Game {
                 JSON.stringify([...new Uint8Array(buff.slice(0, 255))]),
             );
             if (player) {
-                player.disconnect(undefined, "msg_deserialize_error");
+                player.disconnect();
             } else {
-                this.closeSocket(socketId, undefined, "msg_deserialize_error");
+                this.closeSocket(socketId);
             }
             return;
         }
 
         if (error) {
             if (player) {
-                player.disconnect(error, error);
+                player.disconnect();
             } else {
-                this.closeSocket(socketId, error, error);
+                this.closeSocket(socketId);
             }
             return;
         }
@@ -685,7 +693,7 @@ export class Game {
         }
 
         if (!player) {
-            this.closeSocket(socketId, undefined, "msg_before_join");
+            this.closeSocket(socketId);
             return;
         }
 
@@ -745,7 +753,6 @@ export class Game {
         this.playerBarn.socketIdToPlayer.delete(socketId);
         this.logger.info(`"${player.name}" left`);
         player.questManager.flushProgress();
-        if (!player.disconnected) player.disconnectedAt = Date.now();
         player.disconnected = true;
         player.group?.checkPlayers();
         player.spectating = undefined;
@@ -769,7 +776,7 @@ export class Game {
             }
 
             if (this.playerBarn.players.every((p) => p.disconnected)) {
-                this.stop("all_players_left");
+                this.stop();
             }
             return;
         }
@@ -806,7 +813,7 @@ export class Game {
         }
 
         if (this.arenaPrivate && this.playerBarn.players.length === 0) {
-            this.stop("all_players_left");
+            this.stop();
         }
     }
 
@@ -850,12 +857,7 @@ export class Game {
         }
     }
 
-    addJoinTokens(
-        tokens: FindGamePrivateBody["playerData"],
-        autoFill: boolean,
-        seq?: number,
-    ) {
-        if (seq !== undefined) this.tokenSeq = seq;
+    addJoinTokens(tokens: FindGamePrivateBody["playerData"], autoFill: boolean) {
         const now = Date.now();
         for (const [token, data] of this.joinTokens) {
             if (data.expiresAt < now) {
@@ -894,8 +896,7 @@ export class Game {
     kickPlayerByIP(encodedIp: string) {
         for (const player of this.playerBarn.livingPlayers) {
             if (player.encodedIp == encodedIp) {
-                this.playerBarn.revokeReconnect(player);
-                this.closeSocket(player.socketId, "banned", "kicked_by_ip");
+                this.closeSocket(player.socketId, "banned");
             }
         }
     }
@@ -903,8 +904,7 @@ export class Game {
     kickPlayersByRawIp(ip: string) {
         for (const player of this.playerBarn.livingPlayers) {
             if (player.ip === ip) {
-                this.playerBarn.revokeReconnect(player);
-                this.closeSocket(player.socketId, "banned", "auto_banned_join_spam");
+                this.closeSocket(player.socketId, "banned");
             }
         }
     }
@@ -939,61 +939,6 @@ export class Game {
         }
     }
 
-    getOccupancy(): GameOccupancy {
-        let connectedPlayers = 0;
-        let connectedSpectators = 0;
-        let disconnectedBodies = 0;
-        let playerSlots = 0;
-        for (const player of this.playerBarn.players) {
-            if (!player.spectatorOnly) playerSlots++;
-            if (player.disconnected) {
-                if (!player.dead) disconnectedBodies++;
-            } else if (player.spectatorOnly) {
-                connectedSpectators++;
-            } else {
-                connectedPlayers++;
-            }
-        }
-
-        const now = Date.now();
-        let pendingJoinTokens = 0;
-        let pendingPlayerTokens = 0;
-        for (const [token, data] of this.joinTokens) {
-            if (data.expiresAt < now) {
-                this.joinTokens.delete(token);
-                continue;
-            }
-            pendingJoinTokens++;
-            if (!data.spectator) pendingPlayerTokens++;
-        }
-
-        return {
-            connectedPlayers,
-            connectedSpectators,
-            disconnectedBodies,
-            pendingJoinTokens,
-            reservedSlots: playerSlots + pendingPlayerTokens,
-            tokenSeq: this.tokenSeq,
-            started: this.started,
-            over: this.over,
-        };
-    }
-
-    requestStop(reason: string): boolean {
-        if (this.stopped) return true;
-        if (!this.allowJoin) return false;
-        const occ = this.getOccupancy();
-        if (
-            occ.connectedPlayers > 0 ||
-            occ.connectedSpectators > 0 ||
-            occ.pendingJoinTokens > 0
-        ) {
-            return false;
-        }
-        this.stop(reason);
-        return true;
-    }
-
     updateData() {
         this.sendData?.({
             type: ProcessMsgType.UpdateData,
@@ -1014,22 +959,20 @@ export class Game {
             aliveCount: this.aliveCount,
             startedTime: this.startedTime,
             stopped: this.stopped,
-            occupancy: this.getOccupancy(),
         });
     }
 
-    stop(reason = "game_over") {
+    stop() {
         if (this.stopped) return;
         this.stopped = true;
         this.allowJoin = false;
         for (const player of this.playerBarn.players) {
             if (!player.disconnected) {
-                player.disconnect(undefined, "game_ended");
+                player.disconnect();
             }
         }
-        this.playerBarn.reconnectTokens.clear();
         this.recorder?.stop();
-        this.logger.info(`Game Ended (${reason})`);
+        this.logger.info("Game Ended");
         this.joinTokens.clear();
         this.joinSpamRateLimit.dispose();
         this.updateData();

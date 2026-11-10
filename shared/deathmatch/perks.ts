@@ -9,6 +9,8 @@ export const selectablePerks: readonly string[] = [
     "low_hp_surge",
     "chambered",
     "mine_master",
+    "camper",
+    "overpressure",
 ];
 
 export function getSelectedPerk(savedPerk: string | undefined): string {

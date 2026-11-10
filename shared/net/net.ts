@@ -392,6 +392,7 @@ export enum MsgType {
     PlantTheBomb,
     Replay,
     DeathmatchRound,
+    FreeFallTicket,
 }
 
 export enum PickupMsgType {
@@ -434,6 +435,7 @@ export { DominationMsg, type DominationPointNetState } from "./dominationMsg";
 export { DropItemMsg } from "./dropItemMsg";
 export { EditMsg } from "./editMsg";
 export { EmoteMsg } from "./emoteMsg";
+export { FreeFallTicketMsg } from "./freeFallTicketMsg";
 export { GameOverMsg } from "./gameOverMsg";
 export { InputMsg } from "./inputMsg";
 export { JoinedMsg } from "./joinedMsg";

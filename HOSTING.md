@@ -188,31 +188,7 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "Upgrade";
 
-        proxy_read_timeout 120s;
-        proxy_send_timeout 120s;
-
         proxy_pass "http://127.0.0.1:8000";
-        proxy_redirect off;
-    }
-
-    # Game WebSocket server, only if players reach the game server through this nginx
-    # (also set gameServer.proxyIPHeader: "X-Real-IP" in survev-config.hjson)
-    location ~ ^/(play|ptc)$ {
-        proxy_http_version 1.1;
-
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header Host $http_host;
-
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "Upgrade";
-
-        proxy_read_timeout 120s;
-        proxy_send_timeout 120s;
-        proxy_buffering off;
-        tcp_nodelay on;
-
-        proxy_pass "http://127.0.0.1:8001";
         proxy_redirect off;
     }
 }

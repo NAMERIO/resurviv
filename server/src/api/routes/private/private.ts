@@ -20,6 +20,7 @@ import {
     zCoinFlipCheckParams,
     zCoinFlipHistoryParams,
     zCoinFlipResolveParams,
+    zDebitParams,
     zDiscordBalanceParams,
     zGetGpParams,
     zGiveGpParams,
@@ -96,6 +97,7 @@ import { getGlobalRankLeaderboard } from "../stats/global_rank";
 import { MOCK_USER_ID } from "../user/auth/mock";
 import { passType, premiumPassUnlockType } from "../user/PassRouter";
 import { competitivePrivateRouter } from "./competitive";
+import { FreeFallTicketRouter } from "./FreeFallTicketRouter";
 import { isBanned, logPlayerIPs, ModerationRouter } from "./ModerationRouter";
 
 function getSurvivalKillCgpMultiplier(timeAlive: number) {
@@ -731,6 +733,7 @@ export const PrivateRouter = new Hono<Context>()
     .use(privateMiddleware)
     .route("/competitive", competitivePrivateRouter)
     .route("/moderation", ModerationRouter)
+    .route("/free_fall_ticket", FreeFallTicketRouter)
     .post("/update_region", validateParams(zUpdateRegionBody), (c) => {
         const { regionId, data } = c.req.valid("json");
 
@@ -1400,7 +1403,8 @@ export const PrivateRouter = new Hono<Context>()
             const [updatedUser] = await db
                 .update(usersTable)
                 .set({
-                    gpBalance: sql`GREATEST(${usersTable.gpBalance} - ${value}, 0)`,
+                    // stops at 0, but must not raise a balance that is already in debt
+                    gpBalance: sql`GREATEST(${usersTable.gpBalance} - ${value}, LEAST(${usersTable.gpBalance}, 0))`,
                 })
                 .where(eq(usersTable.slug, slug))
                 .returning({
@@ -1409,7 +1413,35 @@ export const PrivateRouter = new Hono<Context>()
 
             return c.json(
                 {
-                    message: `Removed ${value} GP from ${slug}. New balance: ${updatedUser?.gpBalance ?? Math.max(0, user.gpBalance - value)}`,
+                    message: `Removed ${value} GP from ${slug}. New balance: ${updatedUser?.gpBalance ?? Math.max(Math.min(user.gpBalance, 0), user.gpBalance - value)}`,
+                },
+                200,
+            );
+        },
+    )
+    .post(
+        "/debit",
+        databaseEnabledMiddleware,
+        validateParams(zDebitParams),
+        async (c) => {
+            const { slug, value } = c.req.valid("json");
+            const [updatedUser] = await db
+                .update(usersTable)
+                .set({
+                    gpBalance: sql`${usersTable.gpBalance} - ${value}`,
+                })
+                .where(eq(usersTable.slug, slug))
+                .returning({
+                    gpBalance: usersTable.gpBalance,
+                });
+
+            if (!updatedUser) {
+                return c.json({ message: "User not found" }, 200);
+            }
+
+            return c.json(
+                {
+                    message: `Debited ${value} GP from ${slug}. New balance: ${updatedUser.gpBalance}`,
                 },
                 200,
             );

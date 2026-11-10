@@ -16,8 +16,6 @@
     "db:studio": "drizzle-kit studio --config=src/api/drizzle.config.ts",
     "db:wipe": "rm -rf src/api/db/drizzle && tsx src/api/db/wipe.ts",
     "stressTest": "tsx src/stressTest.ts",
-    "bench:tick": "tsx src/bench/tickBench.ts",
-    "bench:lifecycle": "tsx src/bench/lifecycleLoadTest.ts",
     "lint": "cd .. && pnpm lint"
   },
   "dependencies": {

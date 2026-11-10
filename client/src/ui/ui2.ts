@@ -242,6 +242,8 @@ export class UiManager2 {
     oldState = new UiState();
     newState = new UiState();
     frameCount = 0;
+    meleeCooldownOverlay: HTMLElement | null = null;
+    meleeCooldownPct = -1;
 
     streakActivateRequested = false;
     streakClickedIdx = -1;
@@ -412,6 +414,12 @@ export class UiManager2 {
                 )[0] as HTMLImageElement,
             };
             this.dom.weapons.push(weaponData);
+            if (i === GameConfig.WeaponSlot.Melee) {
+                const cooldown = document.createElement("div");
+                cooldown.className = "ui-weapon-cooldown";
+                weapon.insertBefore(cooldown, weapon.firstChild);
+                this.meleeCooldownOverlay = cooldown;
+            }
         }
 
         for (let i = 0; i < SCOPE_LEVELS.length; i++) {
@@ -1126,6 +1134,7 @@ export class UiManager2 {
         state.ammo.displayRemaining = fe > 0 || ge.type === "prop_o_matic";
         state.ammo.nitroLaceActive = activePlayer.m_localData.m_nitroLaceActive;
         state.ammo.nitroLacePercentage = activePlayer.m_localData.m_nitroLacePercentage;
+        this.updateMeleeCooldownOverlay(activePlayer);
         const curWeapIdx = activePlayer.m_localData.m_curWeapIdx;
         const weaponSlotDom = this.dom.weapons[curWeapIdx];
         if (weaponSlotDom?.loading) {
@@ -1325,7 +1334,8 @@ export class UiManager2 {
                         // We need the previous threshold to compute progress range
                         const prevThreshold =
                             nextThreshold > 0
-                                ? nextThreshold - (dmgDealt < 300 ? 300 : 400)
+                                ? nextThreshold -
+                                  (def?.damageRequirement ?? (dmgDealt < 300 ? 300 : 400))
                                 : 0;
                         const range = nextThreshold - prevThreshold;
                         const progress = Math.max(0, dmgDealt - prevThreshold);
@@ -2043,6 +2053,26 @@ export class UiManager2 {
         };
         const key = typeMap[type] || typeMap[PickupMsgType.Full];
         return this.localization.translate(key);
+    }
+
+    /** Red fill over the melee slot that drains while the web shooter recharges. */
+    updateMeleeCooldownOverlay(activePlayer: Player) {
+        const overlay = this.meleeCooldownOverlay;
+        if (!overlay) return;
+        const ld = activePlayer.m_localData;
+        const meleeDef = GameObjectDefs[
+            ld.m_weapons[GameConfig.WeaponSlot.Melee]?.type
+        ] as MeleeDef | undefined;
+        const maxCooldown = meleeDef?.webShooter?.cooldown ?? 0;
+        const pct =
+            maxCooldown > 0
+                ? Math.round(
+                      math.clamp(ld.m_webCooldownTime / maxCooldown, 0, 1) * 1000,
+                  ) / 10
+                : 0;
+        if (pct === this.meleeCooldownPct) return;
+        this.meleeCooldownPct = pct;
+        overlay.style.width = `${pct}%`;
     }
 
     getInteractionText(

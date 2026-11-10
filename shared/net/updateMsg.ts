@@ -89,6 +89,7 @@ export function serializeActivePlayer(s: BitStream, data: LocalDataWithDirty) {
     s.writeFloat(data.miniGameWinCountdownTime, 0, 5, 8);
     s.writeBoolean(data.miniGameWinCountdownProps);
     s.writeFloat(data.amongUsKillCooldownTime, 0, 20, 8);
+    s.writeFloat(data.webCooldownTime, 0, 10, 8);
     s.writeFloat(data.amongUsEmergencyCallCooldownTime, 0, 15, 8);
     s.writeUint8(data.amongUsEmergencyCallsRemaining);
     s.writeUint8(data.amongUsEmergencyMeetingSeq);
@@ -181,6 +182,7 @@ export function deserializeActivePlayer(s: BitStream, data: LocalDataWithDirty) 
     data.miniGameWinCountdownTime = s.readFloat(0, 5, 8);
     data.miniGameWinCountdownProps = s.readBoolean();
     data.amongUsKillCooldownTime = s.readFloat(0, 20, 8);
+    data.webCooldownTime = s.readFloat(0, 10, 8);
     data.amongUsEmergencyCallCooldownTime = s.readFloat(0, 15, 8);
     data.amongUsEmergencyCallsRemaining = s.readUint8();
     data.amongUsEmergencyMeetingSeq = s.readUint8();
@@ -1008,6 +1010,7 @@ export interface LocalDataWithDirty extends LocalData {
     miniGameWinCountdownTime: number;
     miniGameWinCountdownProps: boolean;
     amongUsKillCooldownTime: number;
+    webCooldownTime: number;
     amongUsEmergencyCallCooldownTime: number;
     amongUsEmergencyCallsRemaining: number;
     amongUsEmergencyMeetingSeq: number;

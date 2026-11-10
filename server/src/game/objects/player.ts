@@ -60,13 +60,13 @@ import { math } from "../../../../shared/utils/math";
 import { assert, util } from "../../../../shared/utils/util";
 import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import type { IpLogsTableInsert } from "../../api/db/schema";
+import { hashIp } from "../../api/routes/private/ModerationRouter";
 import {
     BattleRoyaleDefaultItems,
     isBattleRoyaleMapName,
 } from "../../battleroyale/helpers";
 import { Config } from "../../config";
 import { isItemInLoadout, onPlayerJoin, onPlayerKill } from "../../plugins/deathmatch";
-import { hashIp } from "../../utils/hashIp";
 import { IDAllocator } from "../../utils/IDAllocator";
 import { apiPrivateRouter, validateUserName } from "../../utils/serverHelpers";
 import type { Game, JoinTokenData } from "../game";
@@ -244,70 +244,13 @@ export class PlayerBarn {
         );
     }
 
-    reconnectTokens = new Map<string, Player>();
-
-    revokeReconnect(player: Player) {
-        if (
-            player.reconnectToken &&
-            this.reconnectTokens.get(player.reconnectToken) === player
-        ) {
-            this.reconnectTokens.delete(player.reconnectToken);
-        }
-    }
-
-    tryReconnect(socketId: string, token: string): Player | undefined {
-        const player = this.reconnectTokens.get(token);
-        if (!player) return undefined;
-
-        const graceMs = Config.gameLifecycle.reconnectGraceMs;
-        const expired =
-            player.disconnected && Date.now() - player.disconnectedAt > graceMs;
-        if (
-            graceMs <= 0 ||
-            player.destroyed ||
-            !this.players.includes(player) ||
-            (player.disconnected && player.dead) ||
-            expired ||
-            this.game.over
-        ) {
-            this.revokeReconnect(player);
-            return undefined;
-        }
-
-        const oldSocketId = player.socketId;
-        if (this.socketIdToPlayer.get(oldSocketId) === player) {
-            this.socketIdToPlayer.delete(oldSocketId);
-            if (!player.disconnected) {
-                this.game.closeSocket(oldSocketId, undefined, "replaced_by_reconnect");
-            }
-        }
-
-        player.socketId = socketId;
-        this.socketIdToPlayer.set(socketId, player);
-        player.disconnected = false;
-        player.disconnectTime = -1;
-        player.resetClientState();
-        player.setPartDirty();
-        this.aliveCountDirty = true;
-        player.group?.checkPlayers();
-
-        this.game.logger.info(
-            `"${player.name}" reconnected (offline ${player.disconnectedAt ? Date.now() - player.disconnectedAt : 0}ms)`,
-        );
-        this.game.updateData();
-        return player;
-    }
-
     addPlayer(socketId: string, joinMsg: net.JoinMsg, ip: string) {
         const joinData = this.game.joinTokens.get(joinMsg.matchPriv);
 
         if (!joinData || joinData.expiresAt < Date.now()) {
             this.game.joinTokens.delete(joinMsg.matchPriv);
-            if (joinMsg.matchPriv && this.tryReconnect(socketId, joinMsg.matchPriv)) {
-                return;
-            }
             this.game.logger.info(`Missing or expired join data.`);
-            this.game.closeSocket(socketId, "index-host-closed", "join_token_invalid");
+            this.game.closeSocket(socketId);
             return;
         }
         this.game.joinTokens.delete(joinMsg.matchPriv);
@@ -323,7 +266,7 @@ export class PlayerBarn {
                 if (this.game.joinSpamRateLimit.isRateLimited(ip)) {
                     void this.game.autoBanIpForJoinSpam(ip);
                 }
-                this.game.closeSocket(socketId, "rate_limited", "join_rate_limited");
+                this.game.closeSocket(socketId, "rate_limited");
                 return;
             }
         }
@@ -390,10 +333,6 @@ export class PlayerBarn {
         );
 
         this.socketIdToPlayer.set(socketId, player);
-        if (Config.gameLifecycle.reconnectGraceMs > 0 && joinMsg.matchPriv) {
-            player.reconnectToken = joinMsg.matchPriv;
-            this.reconnectTokens.set(joinMsg.matchPriv, player);
-        }
 
         this.activatePlayer(player, group, team);
         if (joinData.spectator) {
@@ -998,7 +937,6 @@ export class PlayerBarn {
     }
 
     removePlayer(player: Player) {
-        this.revokeReconnect(player);
         util.removeFrom(this.players, player);
         if (!this.game.started) {
             util.removeFrom(this.matchPlayers, player);
@@ -1546,25 +1484,10 @@ export class Player extends BaseGameObject {
         this.setGroupStatuses();
     }
 
-    disconnect(reason?: string, logReason = reason ?? "server_disconnect") {
+    disconnect(reason?: string) {
         this.vehicle?.dismount(this, false);
         this.disconnected = true;
-        this.disconnectedAt = Date.now();
-        this.game.playerBarn.revokeReconnect(this);
-        this.game.closeSocket(this.socketId, reason, logReason);
-    }
-
-    reconnectToken = "";
-    disconnectedAt = 0;
-
-    resetClientState() {
-        this._firstUpdate = true;
-        this.visibleObjects = new Set();
-        this.visibleMapIndicators = new Set();
-        this.msgsToSend.length = 0;
-        this.startedSpectating = true;
-        if (this.group) this.groupStatusDirty = true;
-        this.ack = 0;
+        this.game.closeSocket(this.socketId, reason);
     }
 
     private _spectatorCount = 0;
@@ -2257,6 +2180,12 @@ export class Player extends BaseGameObject {
         if (isHideAndSeekHider(this.game.miniGame, this.arenaTeam)) return;
         // If already ready or active, nothing to check
         if (this.streakReady || this.streakActive) return;
+        if (this.debug.infiniteStreak) {
+            this.streakReady = true;
+            this.streakDirty = true;
+            return;
+        }
+        if (this.streakCooldownTimer > 0) return;
         const threshold = this.streakNextThreshold;
         if (this.damageDealt >= threshold) {
             this.streakReady = true;
@@ -2287,13 +2216,20 @@ export class Player extends BaseGameObject {
 
         this.streakReady = false;
         this.streakActive = true;
+        this.setDirty();
         this.streakActiveTimer = streakDef.duration;
-        this.streakActivationCount++;
+        if (!this.debug.infiniteStreak) {
+            this.streakActivationCount++;
+        }
         this.streakDirty = true;
         this.questManager.trackEvent("streak_activated", {});
 
         if (streakDef.rewardType === "perk") {
             this.addPerk(streakDef.rewardItem, false);
+            this.playerStatusDirty = true;
+            if (streakDef.rewardItem === "streak_vanish_effect") {
+                this.game.smokeBarn.addEmitter(v2.copy(this.pos), this.layer);
+            }
         } else if (streakDef.rewardType === "gun") {
             const slot = this.curWeapIdx <= 1 ? this.curWeapIdx : 0;
             this.streakGunSlot = slot;
@@ -2366,6 +2302,7 @@ export class Player extends BaseGameObject {
                 if (this.hasPerk(streakDef.rewardItem)) {
                     this.removePerk(streakDef.rewardItem);
                 }
+                this.playerStatusDirty = true;
             } else if (streakDef.rewardType === "gun") {
                 if (this.streakSavedWeapons.length > 0) {
                     this.restoreStreakWeapons();
@@ -2391,10 +2328,76 @@ export class Player extends BaseGameObject {
 
         this.streakActive = false;
         this.streakActiveTimer = 0;
+        this.streakCooldownTimer = streakDef?.cooldown ?? 0;
         this.streakDirty = true;
+        this.setDirty();
+    }
+
+    breakVanish(): void {
+        if (this.hasPerk("streak_vanish_effect")) {
+            this.deactivateStreak();
+        }
+    }
+
+    updateCamper(dt: number): void {
+        if (!this.hasPerk("camper")) {
+            this.camperActive = false;
+            return;
+        }
+
+        const props = PerkProperties.camper;
+        const onCooldown = this.camperCooldown > 0;
+        this.camperCooldown = math.max(0, this.camperCooldown - dt);
+
+        if (v2.length(v2.sub(this.pos, this.posOld)) > 0.01) {
+            if (this.camperActive) {
+                this.camperCooldown = props.moveCooldown;
+            }
+            this.camperActive = false;
+            this.camperStillTime = 0;
+            return;
+        }
+
+        if (onCooldown) {
+            this.camperStillTime = 0;
+            return;
+        }
+
+        this.camperStillTime += dt;
+        if (this.camperStillTime >= props.stillTime) {
+            this.camperActive = true;
+        }
+    }
+
+    specterCanPhase(obstacle: Obstacle): boolean {
+        return !obstacle.isWall && !obstacle.isWindow && !obstacle.isDoor;
+    }
+
+    isPhasingThroughSolid(objs: GameObject[], rad: number): boolean {
+        for (const obj of objs) {
+            if (obj.__type !== ObjectType.Obstacle) continue;
+            if (!obj.collidable || obj.dead || obj.isSkin) continue;
+            if (!util.sameLayer(obj.layer, this.layer)) continue;
+            if (!this.specterCanPhase(obj)) continue;
+            if (collider.intersectCircle(obj.collider, this.pos, rad)) return true;
+        }
+        return false;
     }
 
     updateStreaks(dt: number): void {
+        if (this.debug.infiniteStreak) {
+            this.streakCooldownTimer = 0;
+            this.checkDamageStreaks();
+        }
+
+        if (this.streakCooldownTimer > 0) {
+            this.streakCooldownTimer -= dt;
+            if (this.streakCooldownTimer <= 0) {
+                this.streakCooldownTimer = 0;
+                this.checkDamageStreaks();
+            }
+        }
+
         if (this.streakActive) {
             this.streakActiveTimer -= dt;
             this.streakDirty = true;
@@ -2646,9 +2649,11 @@ export class Player extends BaseGameObject {
         }
 
         this.streakReady = false;
+        this.streakCooldownTimer = 0;
         this.streakActive = false;
         this.dashSpeed = 0;
         this.dashTimeLeft = 0;
+        this.webAnchor = null;
         this.streakDirty = true;
         this.weaponManager.setCurWeapIndex(GameConfig.WeaponSlot.Melee);
         this.weaponManager.showNextThrowable();
@@ -3080,9 +3085,11 @@ export class Player extends BaseGameObject {
         }
         this.hasRoleHelmet = false;
         this.streakReady = false;
+        this.streakCooldownTimer = 0;
         this.streakActive = false;
         this.dashSpeed = 0;
         this.dashTimeLeft = 0;
+        this.webAnchor = null;
         this.streakDirty = true;
 
         for (let i = 0; i < GameConfig.WeaponSlot.Count; i++) {
@@ -3211,6 +3218,7 @@ export class Player extends BaseGameObject {
         invisible: false,
         godMode: false,
         infiniteThrowables: false,
+        infiniteStreak: false,
         throwFast: false,
         shootFast: false,
         reloadFast: false,
@@ -3259,9 +3267,16 @@ export class Player extends BaseGameObject {
     streakReady = false;
     streakActive = false;
     streakActiveTimer = 0;
+    streakCooldownTimer = 0;
+    camperActive = false;
+    camperStillTime = 0;
+    camperCooldown = 0;
     dashSpeed = 0;
     dashTimeLeft = 0;
     dashDir = v2.create(1, 0);
+    webAnchor: Vec2 | null = null;
+    webAnchorTicker = 0;
+    webCooldown = 0;
     streakSavedWeapons: { slot: number; type: string; ammo: number }[] = [];
     streakGunSlot: number = -1;
     streakSavedOutfit = "";
@@ -3317,6 +3332,9 @@ export class Player extends BaseGameObject {
     get miniGameWinCountdownProps(): boolean {
         return !!getHideAndSeekSettings(this.game.miniGame);
     }
+    get webCooldownTime(): number {
+        return math.clamp(this.webCooldown, 0, 10);
+    }
     get amongUsKillCooldownTime(): number {
         if (
             !this.game.map.amongUsMode ||
@@ -3343,8 +3361,15 @@ export class Player extends BaseGameObject {
         }
         return math.max(0, 1 - this.amongUsEmergencyCallsUsed);
     }
+    get activeStreak(): string {
+        return this.streakActive ? this.chosenStreakType : "";
+    }
+
     get streakNextThreshold(): number {
-        return StreakThresholds.get(this.streakActivationCount);
+        const requirement = DamageStreakDefs[this.chosenStreakType]?.damageRequirement;
+        return requirement
+            ? requirement * (this.streakActivationCount + 1)
+            : StreakThresholds.get(this.streakActivationCount);
     }
     get streakDamageDealt(): number {
         return this.damageDealt;
@@ -3354,6 +3379,31 @@ export class Player extends BaseGameObject {
     }
     get activeStreakTimeLeft(): number {
         return this.streakActiveTimer;
+    }
+
+    attachWeb(anchor: Vec2, dir: Vec2, pullDist: number, pullSpeed: number): void {
+        this.webAnchor = anchor;
+        if (pullDist > 0.5) {
+            this.dashDir = v2.copy(dir);
+            this.dashSpeed = pullSpeed;
+            this.dashTimeLeft = pullDist / pullSpeed;
+            this.webAnchorTicker = this.dashTimeLeft;
+        } else {
+            this.webAnchorTicker = 0.15;
+        }
+        this.setDirty();
+    }
+
+    updateWeb(dt: number): void {
+        if (this.webCooldown > 0) {
+            this.webCooldown -= dt;
+        }
+        if (!this.webAnchor) return;
+        this.webAnchorTicker -= dt;
+        if (this.webAnchorTicker <= 0) {
+            this.webAnchor = null;
+            this.setDirty();
+        }
     }
 
     resetAmongUsKillCooldown() {
@@ -3652,6 +3702,7 @@ export class Player extends BaseGameObject {
         }
 
         this.updateStreaks(dt);
+        this.updateCamper(dt);
         this.updateHideAndSeek(dt);
         this.updateInfected(dt);
 
@@ -4169,6 +4220,8 @@ export class Player extends BaseGameObject {
             }
         }
 
+        this.updateWeb(dt);
+
         if (this.pullToSourcePos && this.pullToSourceTicker > 0) {
             this.pullToSourceTicker -= dt;
             const dir = v2.sub(this.pullToSourcePos, this.pos);
@@ -4282,6 +4335,7 @@ export class Player extends BaseGameObject {
         );
 
         const objs = this.game.grid.intersectCollider(circle);
+        const specterPhasing = this.hasPerk("streak_specter_effect") && !this.vehicle;
         const syncSkinObstacles = () => {
             this.vehicle?.syncDrivenCollider(this.pos);
             if (this.obstacleOutfit) {
@@ -4314,6 +4368,7 @@ export class Player extends BaseGameObject {
                     if (!util.sameLayer(obj.layer, this.layer)) continue;
                     if (obj.isTree && hasTreeClimbing) continue;
                     if (obj.isSkin) continue;
+                    if (specterPhasing && this.specterCanPhase(obj)) continue;
 
                     collision = this.vehicle
                         ? collider.intersect(obj.collider, this.vehicle.collider)
@@ -4429,6 +4484,14 @@ export class Player extends BaseGameObject {
         }
 
         if (
+            specterPhasing &&
+            this.actionType !== GameConfig.Action.Revive &&
+            this.isPhasingThroughSolid(objs, movementCollisionRad)
+        ) {
+            this.cancelAction();
+        }
+
+        if (
             this.obstacleContactDamageTicker <= 0 &&
             !this.debug.noClip &&
             !airborneVehicle
@@ -4438,7 +4501,8 @@ export class Player extends BaseGameObject {
                     obj.__type !== ObjectType.Obstacle ||
                     obj.dead ||
                     !obj.collidable ||
-                    !util.sameLayer(obj.layer, this.layer)
+                    !util.sameLayer(obj.layer, this.layer) ||
+                    (specterPhasing && this.specterCanPhase(obj))
                 ) {
                     continue;
                 }
@@ -4764,6 +4828,9 @@ export class Player extends BaseGameObject {
             this.contactSmokeTicker = 0;
         }
 
+        if (this.camperActive) {
+            finalZoom = math.min(finalZoom * PerkProperties.camper.zoomMult, 255);
+        }
         if (this.insideZoomRegion) {
             finalZoom = zoomRegionZoom;
         }
@@ -4948,7 +5015,12 @@ export class Player extends BaseGameObject {
     visibleMapIndicators = new Set<MapIndicator>();
 
     isInvisibleTo(viewer: Player) {
-        return this.perkSelectionPending || (this !== viewer && this.debug.invisible);
+        if (this.perkSelectionPending) return true;
+        if (this === viewer) return false;
+        return (
+            this.debug.invisible ||
+            (this.hasPerk("streak_vanish_effect") && viewer.teamId !== this.teamId)
+        );
     }
 
     msgStream = new net.MsgStream(new ArrayBuffer(65536));
@@ -5133,6 +5205,7 @@ export class Player extends BaseGameObject {
                 miniGameWinCountdownTime: player.miniGameWinCountdownTime,
                 miniGameWinCountdownProps: player.miniGameWinCountdownProps,
                 amongUsKillCooldownTime: player.amongUsKillCooldownTime,
+                webCooldownTime: player.webCooldownTime,
                 amongUsEmergencyCallCooldownTime: player.amongUsEmergencyCallCooldownTime,
                 amongUsEmergencyCallsRemaining: player.amongUsEmergencyCallsRemaining,
                 amongUsEmergencyMeetingSeq: player.amongUsEmergencyMeetingSeq,
@@ -5391,7 +5464,7 @@ export class Player extends BaseGameObject {
             this.spectateCooldownCount++;
 
             if (this.spectateCooldownCount > 10) {
-                this.disconnect(undefined, "spectate_spam");
+                this.disconnect();
                 this.game.logger.error(
                     `Game ${this.game.id} - Player ${this.name} disconnected for spamming SpectateMsg (cooldown)`,
                 );
@@ -5403,7 +5476,7 @@ export class Player extends BaseGameObject {
         this.spectateMsgCount++;
 
         if (this.spectateMsgCount > 50) {
-            this.disconnect(undefined, "spectate_spam");
+            this.disconnect();
             this.game.logger.error(
                 `Game ${this.game.id} - Player ${this.name} Player ${this.name} disconnected for spamming SpectateMsg (count)`,
             );
@@ -8246,6 +8319,7 @@ export class Player extends BaseGameObject {
         this.debug.invisible = msg.invisible;
         this.debug.godMode = msg.godMode;
         this.debug.infiniteThrowables = msg.infiniteThrowables;
+        this.debug.infiniteStreak = msg.infiniteStreak;
         this.debug.throwFast = msg.throwFast;
         this.debug.shootFast = msg.shootFast;
         this.debug.reloadFast = msg.reloadFast;
@@ -8654,6 +8728,14 @@ export class Player extends BaseGameObject {
         if (this.lowHpSurgeTicker > 0 && this.hasPerk("low_hp_surge")) {
             const mult = (PerkProperties.low_hp_surge as any)?.speedMult ?? 1.3;
             if (mult && mult > 0) this.speed *= mult;
+        }
+
+        if (this.hasPerk("streak_specter_effect")) {
+            this.speed *= DamageStreakProperties.streak_specter_effect.speedMult;
+        }
+
+        if (this.hasPerk("streak_vanish_effect")) {
+            this.speed *= DamageStreakProperties.streak_vanish_effect.speedMult;
         }
 
         const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);

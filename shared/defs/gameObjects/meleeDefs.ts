@@ -85,6 +85,21 @@ export interface MeleeDef {
     };
     /** Fill the equipped melee silhouette with the shared moving galaxy material. */
     galaxyEffect?: boolean;
+    webShooter?: {
+        range: number;
+        cooldown: number;
+        pullSpeed: number;
+    };
+    /**
+     * Each swing lunges the player toward the cursor, then the claws X-slash.
+     * The hit lands at `attack.damageTimes[0]`, when the X slash completes.
+     */
+    clawDash?: {
+        /** Max lunge distance. */
+        distance: number;
+        /** How long the lunge takes; the X slash runs from here to the hit. */
+        duration: number;
+    };
 }
 
 export interface Img {
@@ -1242,6 +1257,99 @@ const BaseDefs: Record<string, MeleeDef> = {
                 y: 0.325,
             },
             tint: 0xffffff,
+        },
+    },
+    web_shooter: {
+        name: "Web Shooter",
+        type: "melee",
+        quality: 1,
+        autoAttack: false,
+        switchDelay: 0,
+        damage: 24,
+        obstacleDamage: 1,
+        attack: {
+            offset: {
+                x: 1.35,
+                y: 0,
+            },
+            rad: 0.9,
+            damageTimes: [0.1],
+            cooldownTime: 0.25,
+        },
+        speed: {
+            equip: 1,
+        },
+        anim: {
+            idlePose: "fists",
+            attackAnims: ["fists"],
+        },
+        sound: {
+            pickup: "frag_pickup_01",
+            swing: "punch_swing_01",
+            deploy: "stow_weapon_01",
+            playerHit: "punch_hit_01",
+        },
+        lootImg: {
+            sprite: "loot-melee-web-shooter.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-02.img",
+            borderTint: 0xffffff,
+            scale: 0.3,
+        },
+        handSprites: {
+            spriteL: "player-fists-web-l.img",
+            spriteR: "player-fists-web-r.img",
+        },
+        webShooter: {
+            range: 34,
+            cooldown: 2,
+            pullSpeed: 42,
+        },
+    },
+    steel_claws: {
+        name: "Steel Claws",
+        type: "melee",
+        quality: 1,
+        autoAttack: false,
+        switchDelay: 0,
+        damage: 40,
+        obstacleDamage: 1.5,
+        attack: {
+            offset: {
+                x: 1.5,
+                y: 0,
+            },
+            rad: 1.25,
+            damageTimes: [0.34],
+            cooldownTime: 0.7,
+        },
+        speed: {
+            equip: 1,
+        },
+        anim: {
+            idlePose: "fists",
+            attackAnims: ["clawLunge"],
+        },
+        sound: {
+            pickup: "frag_pickup_01",
+            swing: "knife_swing_01",
+            deploy: "knife_deploy_01",
+            playerHit: "knife_hit_01",
+        },
+        lootImg: {
+            sprite: "loot-melee-steel-claws.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-02.img",
+            borderTint: 0xffffff,
+            scale: 0.3,
+        },
+        handSprites: {
+            spriteL: "player-fists-steel-claws.img",
+            spriteR: "player-fists-steel-claws.img",
+        },
+        clawDash: {
+            distance: 10,
+            duration: 0.2,
         },
     },
 };

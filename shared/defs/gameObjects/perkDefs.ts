@@ -95,6 +95,24 @@ export const PerkProperties = {
         speedMult: 1.4,
         distanceMult: 1.3,
     },
+    camper: {
+        stillTime: 1,
+        moveCooldown: 5,
+        zoomMult: 1.75,
+        speedMult: 1.5,
+        damageMult: 1.12,
+        spreadMult: 0.5,
+    },
+    overpressure: {
+        spreadMult: 1.15,
+        damageMult: 1.1,
+        speedMult: 1.1,
+        distanceMult: 1.1,
+    },
+    heavy_duty: {
+        spreadMult: 0.5,
+        speedMult: 1.2,
+    },
     // map of ammo type to perk that boosts that ammo
     ammoBonuses: {
         "9mm": ["treat_9mm", "bonus_9mm"],
@@ -980,6 +998,81 @@ export const PerkDefs: Record<string, PerkDef> = {
             tint: 0xffffff,
             border: "loot-circle-outer-03.img",
             borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    camper: {
+        name: "Camper",
+        type: "perk",
+        lore: "Stand still for 1 second to gain scope zoom, bullet speed, damage and accuracy. Moving breaks it for 5 seconds.",
+        lootImg: {
+            sprite: "loot-perk-camper.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    overpressure: {
+        name: "Overpressure",
+        type: "perk",
+        lore: "More bullet damage, speed and range, but more spread.",
+        lootImg: {
+            sprite: "loot-perk-overpressure.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    heavy_duty: {
+        name: "Heavy Duty Attachments",
+        type: "perk",
+        lore: "Half the spread, faster bullets and thicker tracers.",
+        lootImg: {
+            sprite: "loot-perk-heavy-duty.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0xffffff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    streak_specter_effect: {
+        name: "Specter",
+        type: "perk",
+        lore: "Move faster and phase through objects, but not walls. Phasing cancels healing and reloading.",
+        lootImg: {
+            sprite: "loot-perk-specter.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0x55ccff,
+            scale: 0.275,
+        },
+        sound: {
+            pickup: "perk_pickup_01",
+        },
+    },
+    streak_vanish_effect: {
+        name: "Vanish",
+        type: "perk",
+        lore: "Invisible and faster until the effect ends or you shoot.",
+        lootImg: {
+            sprite: "loot-perk-vanish.img",
+            tint: 0xffffff,
+            border: "loot-circle-outer-03.img",
+            borderTint: 0x8899aa,
             scale: 0.275,
         },
         sound: {

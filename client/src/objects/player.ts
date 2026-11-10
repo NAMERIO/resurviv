@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js-legacy";
 import { AmongUsRoleDefs } from "../../../shared/defs/amongUsRoleDefs";
 import { GameObjectDefs, type LootDef } from "../../../shared/defs/gameObjectDefs";
+import { DamageStreakDefs } from "../../../shared/defs/gameObjects/damageStreakDefs";
 import type { DeathEffectDef } from "../../../shared/defs/gameObjects/deathEffectDefs";
 import type {
     BackpackDef,
@@ -399,7 +400,17 @@ export class Player implements AbstractObject {
     developerVitalsGfx = new PIXI.Graphics();
     auraContainer = new PIXI.Container();
     auraCircle = createSprite();
+    streakRingTicker = 0;
     pulseEffectGfx = new PIXI.Graphics();
+    webGfx = new PIXI.Graphics();
+    webLineEnd: Vec2 | null = null;
+    webLineFade = 0;
+    webShootTicker = 0;
+    clawAnimSeq = -1;
+    clawTrailStart: Vec2 | null = null;
+    clawTrailFade = 0;
+    /** Things the current claw swing already showed a hit on. */
+    clawHitKeys = new Set<object>();
     pulseEffectTicker = 0;
     pulseEffectActive = false;
 
@@ -537,6 +548,8 @@ export class Player implements AbstractObject {
         m_infectedEffect: boolean;
         m_playerTransparent: boolean;
         m_biteEffect: boolean;
+        m_activeStreak: string;
+        m_webAnchor: Vec2 | null;
         m_frozen: boolean;
         m_frozenOri: number;
         m_hasteType: Exclude<HasteType, HasteType.Count>;
@@ -581,6 +594,7 @@ export class Player implements AbstractObject {
         m_miniGameWinCountdownTime: number;
         m_miniGameWinCountdownProps: boolean;
         m_amongUsKillCooldownTime: number;
+        m_webCooldownTime: number;
         m_amongUsEmergencyCallCooldownTime: number;
         m_amongUsEmergencyCallsRemaining: number;
         m_amongUsEmergencyMeetingSeq: number;
@@ -662,6 +676,7 @@ export class Player implements AbstractObject {
         this.container.addChild(this.nameText);
         this.container.addChild(this.developerVitalsGfx);
 
+        this.auraContainer.addChild(this.webGfx);
         this.auraContainer.addChild(this.pulseEffectGfx);
         this.auraContainer.addChild(this.auraCircle);
 
@@ -739,6 +754,8 @@ export class Player implements AbstractObject {
             m_infectedEffect: false,
             m_playerTransparent: false,
             m_biteEffect: false,
+            m_activeStreak: "",
+            m_webAnchor: null,
             m_frozen: false,
             m_frozenOri: 0,
             m_hasteType: HasteType.None,
@@ -777,6 +794,7 @@ export class Player implements AbstractObject {
             m_miniGameWinCountdownTime: 0,
             m_miniGameWinCountdownProps: false,
             m_amongUsKillCooldownTime: 0,
+            m_webCooldownTime: 0,
             m_amongUsEmergencyCallCooldownTime: 0,
             m_amongUsEmergencyCallsRemaining: 1,
             m_amongUsEmergencyMeetingSeq: 0,
@@ -793,6 +811,12 @@ export class Player implements AbstractObject {
         this.auraContainer.visible = false;
         this.pulseEffectGfx.clear();
         this.pulseEffectGfx.visible = false;
+        this.webGfx.clear();
+        this.webLineEnd = null;
+        this.webLineFade = 0;
+        this.clawAnimSeq = -1;
+        this.clawTrailStart = null;
+        this.clawTrailFade = 0;
         this.pulseEffectTicker = 0;
         this.pulseEffectActive = false;
         if (this.useItemEmitter) {
@@ -879,6 +903,8 @@ export class Player implements AbstractObject {
             this.m_netData.m_infectedEffect = data.infectedEffect;
             this.m_netData.m_playerTransparent = data.playerTransparent;
             this.m_netData.m_biteEffect = data.biteEffect;
+            this.m_netData.m_activeStreak = data.activeStreak;
+            this.m_netData.m_webAnchor = data.webAnchor;
             this.m_netData.m_frozen = data.frozen;
             this.m_netData.m_frozenOri = data.frozenOri;
             this.m_netData.m_hasteType = data.hasteType;
@@ -1005,6 +1031,7 @@ export class Player implements AbstractObject {
         this.m_localData.m_miniGameWinCountdownProps =
             data.miniGameWinCountdownProps ?? false;
         this.m_localData.m_amongUsKillCooldownTime = data.amongUsKillCooldownTime ?? 0;
+        this.m_localData.m_webCooldownTime = data.webCooldownTime ?? 0;
         this.m_localData.m_amongUsEmergencyCallCooldownTime =
             data.amongUsEmergencyCallCooldownTime ?? 0;
         this.m_localData.m_amongUsEmergencyCallsRemaining =
@@ -1952,7 +1979,7 @@ export class Player implements AbstractObject {
         }
         this.visualsDirty = false;
 
-        this.updateAura(dt, isActivePlayer, activePlayer);
+        this.updateAura(dt, isActivePlayer, activePlayer, camera.m_ppu);
 
         this.updateRotation(
             inputBinds.input,
@@ -2308,9 +2335,16 @@ export class Player implements AbstractObject {
 
         // Use meleeSkin for hand sprites (fist skins)
         const meleeSkinType = this.m_netData.m_meleeSkin;
-        const meleeSkinDef = meleeSkinType
-            ? (GameObjectDefs[meleeSkinType] as MeleeDef)
-            : undefined;
+        const activeMeleeDef = GameObjectDefs[this.m_netData.m_activeWeapon] as
+            | MeleeDef
+            | undefined;
+        const meleeSkinDef =
+            activeMeleeDef?.type === "melee" &&
+            (activeMeleeDef.webShooter || activeMeleeDef.clawDash)
+                ? activeMeleeDef
+                : meleeSkinType
+                  ? (GameObjectDefs[meleeSkinType] as MeleeDef)
+                  : undefined;
         const meleeHandSprites = meleeSkinDef?.handSprites;
 
         if (meleeHandSprites && !outfitDef.ghillie) {
@@ -2743,7 +2777,7 @@ export class Player implements AbstractObject {
         this.bodyContainer.scale.set(bodyScale, bodyScale);
     }
 
-    updateAura(dt: number, isActivePlayer: boolean, activePlayer: Player) {
+    updateAura(dt: number, isActivePlayer: boolean, activePlayer: Player, ppu: number) {
         // Fade in/out when entering/exiting the screen edge of the active player.
         // This fixes popping caused by the player being culled before the aura
         // is off screen.
@@ -2777,6 +2811,75 @@ export class Player implements AbstractObject {
             this.pulseEffectGfx.lineStyle(0.3, color, fade * this.auraViewFade);
             this.pulseEffectGfx.drawCircle(0, 0, radius);
         }
+
+        const activeStreakDef = DamageStreakDefs[this.m_netData.m_activeStreak];
+        if (activeStreakDef && !this.m_netData.m_dead) {
+            this.streakRingTicker += dt;
+            const pulse = 0.5 + 0.5 * Math.sin(this.streakRingTicker * 7);
+            this.pulseEffectGfx.visible = true;
+            this.pulseEffectGfx.lineStyle(
+                0.22 * ppu,
+                activeStreakDef.lootImg.borderTint,
+                (0.6 + pulse * 0.4) * this.auraViewFade,
+            );
+            this.pulseEffectGfx.drawCircle(0, 0, (1.75 + pulse * 0.12) * ppu);
+        } else {
+            this.streakRingTicker = 0;
+        }
+
+        const webAnchor = this.m_netData.m_webAnchor;
+        if (webAnchor) {
+            if (
+                !this.webLineEnd ||
+                this.webLineFade < 1 ||
+                !v2.eq(webAnchor, this.webLineEnd)
+            ) {
+                this.webShootTicker = 0;
+            }
+            this.webLineEnd = v2.copy(webAnchor);
+            this.webLineFade = 1;
+        } else {
+            this.webLineFade = math.max(0, this.webLineFade - dt / 0.15);
+        }
+        this.webShootTicker += dt;
+        this.webGfx.clear();
+        if (this.webLineEnd && this.webLineFade > 0 && !this.m_netData.m_dead) {
+            const handPoint = this.auraContainer.toLocal(
+                new PIXI.Point(0, 0),
+                this.handRContainer,
+            );
+            const hand = v2.create(handPoint.x, handPoint.y);
+            const anchor = v2.mul(
+                v2.create(
+                    this.webLineEnd.x - this.m_visualPos.x,
+                    this.m_visualPos.y - this.webLineEnd.y,
+                ),
+                ppu,
+            );
+            const shot = math.min(1, this.webShootTicker / 0.08);
+            const end = v2.lerp(shot, hand, anchor);
+            const alpha = this.webLineFade * this.auraViewFade;
+            const rope = (width: number, color: number, a: number) => {
+                this.webGfx.lineStyle({
+                    width: width * ppu,
+                    color,
+                    alpha: a,
+                    cap: PIXI.LINE_CAP.ROUND,
+                });
+                this.webGfx.moveTo(hand.x, hand.y);
+                this.webGfx.lineTo(end.x, end.y);
+            };
+            rope(0.46, 0x1b1b1b, 0.5 * alpha);
+            rope(0.28, 0xffffff, alpha);
+            if (shot >= 1) {
+                this.webGfx.lineStyle(0);
+                this.webGfx.beginFill(0xffffff, alpha);
+                this.webGfx.drawCircle(end.x, end.y, 0.34 * ppu);
+                this.webGfx.endFill();
+            }
+        }
+
+        this.drawClawLunge(dt, ppu);
 
         // Pulse healing circle
         if (this.auraCircle.visible) {
@@ -3105,6 +3208,127 @@ export class Player implements AbstractObject {
         return this.anim.type;
     }
 
+    drawClawLunge(dt: number, ppu: number) {
+        const meleeDef = GameObjectDefs[this.m_netData.m_activeWeapon] as
+            | MeleeDef
+            | undefined;
+        const claw = meleeDef?.type === "melee" ? meleeDef.clawDash : undefined;
+        const lunging =
+            !!claw &&
+            this.anim.type === Anim.Melee &&
+            this.anim.data.type === "clawLunge";
+        const ticker = this.anim.ticker;
+        const dashTime = claw?.duration ?? 0;
+        const hitTime = meleeDef?.type === "melee" ? meleeDef.attack.damageTimes[0] : 0;
+
+        if (lunging) {
+            if (this.clawAnimSeq !== this.anim.seq) {
+                this.clawAnimSeq = this.anim.seq;
+                this.clawTrailStart = v2.copy(this.m_visualPos);
+            }
+            if (ticker <= dashTime + 0.03) {
+                this.clawTrailFade = 1;
+            }
+        } else {
+            this.clawAnimSeq = -1;
+        }
+        if (!lunging || ticker > dashTime + 0.03) {
+            this.clawTrailFade = math.max(0, this.clawTrailFade - dt / 0.18);
+        }
+        if (this.m_netData.m_dead) {
+            this.clawTrailFade = 0;
+        }
+
+        const alpha = this.auraViewFade;
+        const toLocal = (p: Vec2) =>
+            v2.mul(v2.create(p.x - this.m_visualPos.x, this.m_visualPos.y - p.y), ppu);
+        if (this.clawTrailStart && this.clawTrailFade > 0) {
+            const start = toLocal(this.clawTrailStart);
+            const len = v2.length(start);
+            if (len > 0.6 * ppu) {
+                const back = v2.div(start, len);
+                const end = v2.mul(back, 0.9 * ppu);
+                const side = v2.create(-back.y, back.x);
+                const f = this.clawTrailFade * alpha;
+                const line = (width: number, color: number, a: number, off: number) => {
+                    const o = v2.mul(side, off * ppu);
+                    this.webGfx.lineStyle({
+                        width: width * ppu,
+                        color,
+                        alpha: a,
+                        cap: PIXI.LINE_CAP.ROUND,
+                    });
+                    this.webGfx.moveTo(start.x + o.x, start.y + o.y);
+                    this.webGfx.lineTo(end.x + o.x, end.y + o.y);
+                };
+                line(1.9, 0xffffff, 0.12 * f, 0);
+                line(0.16, 0xdfe7ec, 0.85 * f, -0.6);
+                line(0.2, 0xffffff, 0.95 * f, 0);
+                line(0.16, 0xdfe7ec, 0.85 * f, 0.6);
+                this.webGfx.lineStyle(0);
+                for (let i = 1; i <= 3; i++) {
+                    const t = i / 4;
+                    const p = v2.lerp(t, start, end);
+                    this.webGfx.beginFill(0xc9d3d9, 0.22 * f * (1 - t * 0.5));
+                    this.webGfx.drawCircle(p.x, p.y, 1.0 * ppu);
+                    this.webGfx.endFill();
+                }
+            } else if (!lunging) {
+                this.clawTrailStart = null;
+            }
+        }
+        const fadeTime = 0.12;
+        if (
+            lunging &&
+            meleeDef?.type === "melee" &&
+            !this.m_netData.m_dead &&
+            ticker >= dashTime &&
+            ticker < hitTime + fadeTime
+        ) {
+            const draw = math.clamp(
+                (ticker - dashTime) / math.max(hitTime - dashTime, 0.001),
+                0,
+                1,
+            );
+            const fade = ticker <= hitTime ? 1 : 1 - (ticker - hitTime) / fadeTime;
+            const flash = ticker >= hitTime ? 1 + (1 - fade) * 0.25 : 1;
+            const dir = v2.normalizeSafe(
+                v2.create(this.m_visualDir.x, -this.m_visualDir.y),
+                v2.create(1, 0),
+            );
+            const reach = (meleeDef.attack.offset.x + 0.4) * ppu;
+            const c = v2.mul(dir, reach);
+            const side = v2.create(-dir.y, dir.x);
+            const size = 1.05 * flash * ppu;
+            const a = fade * alpha;
+            const slash = (sx: number) => {
+                const p0 = v2.add(
+                    c,
+                    v2.add(v2.mul(side, sx * size), v2.mul(dir, size * 0.7)),
+                );
+                const p1 = v2.add(
+                    c,
+                    v2.add(v2.mul(side, -sx * size), v2.mul(dir, -size * 0.7)),
+                );
+                const tip = v2.lerp(draw, p0, p1);
+                const stroke = (width: number, color: number, la: number) => {
+                    this.webGfx.lineStyle({
+                        width: width * ppu,
+                        color,
+                        alpha: la,
+                        cap: PIXI.LINE_CAP.ROUND,
+                    });
+                    this.webGfx.moveTo(p0.x, p0.y);
+                    this.webGfx.lineTo(tip.x, tip.y);
+                };
+                stroke(0.38, 0x1b1f22, 0.45 * a);
+                stroke(ticker >= hitTime ? 0.24 : 0.18, 0xffffff, a);
+            };
+            slash(-1);
+            slash(1);
+        }
+    }
+
     clearAnimImages() {
         for (const image of this.animImageSprites) {
             image.sprite.destroy();
@@ -3157,6 +3381,7 @@ export class Player implements AbstractObject {
             : this.selectAnim(type);
         this.anim.seq = seq;
         this.anim.ticker = 0;
+        this.clawHitKeys.clear();
         this.setupAnimImages();
         for (let i = 0; i < this.bones.length; i++) {
             const a = this.anim.bones[i];
@@ -3245,6 +3470,17 @@ export class Player implements AbstractObject {
                     );
                 }
             }
+            // Claws hurt from the start of the lunge until the X slash finishes
+            if (this.anim.data.type === "clawLunge" && !w) {
+                const clawDef = GameObjectDefs[this.m_netData.m_activeWeapon] as MeleeDef;
+                if (
+                    clawDef?.type === "melee" &&
+                    clawDef.clawDash &&
+                    this.anim.ticker <= clawDef.attack.damageTimes[0] + dt
+                ) {
+                    this.animMeleeCollision(AnimCtx, { hitKeys: this.clawHitKeys });
+                }
+            }
             if (w) {
                 this.playAnim(Anim.None, this.anim.seq);
             }
@@ -3310,7 +3546,10 @@ export class Player implements AbstractObject {
         }
     }
 
-    animMeleeCollision(animCtx: Partial<AnimCtx>, args: { playerHit?: string }) {
+    animMeleeCollision(
+        animCtx: Partial<AnimCtx>,
+        args: { playerHit?: string; hitKeys?: Set<object> },
+    ) {
         const meleeDef = GameObjectDefs[this.m_netData.m_activeWeapon] as MeleeDef;
         if (meleeDef && meleeDef.type == "melee") {
             const meleeCol = this.getMeleeCollider();
@@ -3366,6 +3605,7 @@ export class Player implements AbstractObject {
                             ((Math.random() - 0.5) * Math.PI) / 3,
                         );
                         hits.push({
+                            key: obstacle as object,
                             pen: res.pen,
                             prio: 1,
                             pos: closestPt,
@@ -3405,6 +3645,7 @@ export class Player implements AbstractObject {
                             ((Math.random() - 0.5) * Math.PI) / 3,
                         );
                         hits.push({
+                            key: npc as object,
                             pen: res.pen,
                             prio: 1,
                             pos: closestPt,
@@ -3463,6 +3704,7 @@ export class Player implements AbstractObject {
                         const hitSound =
                             meleeDef.sound[args.playerHit!] || meleeDef.sound.playerHit;
                         hits.push({
+                            key: playerCol as object,
                             pen: col.pen,
                             prio: teamId == ourTeamId ? 2 : 0,
                             pos: v2.copy(playerCol.m_pos),
@@ -3474,6 +3716,13 @@ export class Player implements AbstractObject {
                             soundFn: "playSound",
                         });
                     }
+                }
+            }
+
+            const hitKeys = args?.hitKeys;
+            if (hitKeys) {
+                for (let i = hits.length - 1; i >= 0; i--) {
+                    if (hitKeys.has(hits[i].key)) hits.splice(i, 1);
                 }
             }
 
@@ -3491,6 +3740,7 @@ export class Player implements AbstractObject {
 
             for (let i = 0; i < hitCount; i++) {
                 const hit = hits[i];
+                hitKeys?.add(hit.key);
                 animCtx.particleBarn?.addParticle(
                     hit.particle,
                     hit.layer,
@@ -3712,7 +3962,10 @@ export class PlayerBarn {
             const p = players[i];
             if (p.active) {
                 p.localInvisiblePreview =
-                    Boolean(localInvisible) && !isSpectating && p.__id === activeId;
+                    (Boolean(localInvisible) ||
+                        p.m_netData.m_activeStreak === "streak_vanish") &&
+                    !isSpectating &&
+                    p.__id === activeId;
                 p.propDisguiseActive = propDisguisePlayerIds.has(p.__id);
                 p.m_update(
                     dt,

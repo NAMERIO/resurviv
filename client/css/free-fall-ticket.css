@@ -1,0 +1,174 @@
+.ff-reveal {
+  position: fixed;
+  top: 96px;
+  left: 50%;
+  z-index: 9000;
+  width: 340px;
+  margin-left: -170px;
+  text-align: center;
+  color: #fff;
+  text-shadow: 1.67px 1.67px 2px rgba(0, 0, 0, 0.75);
+  pointer-events: none;
+  animation: ff-fade-out 500ms ease-in 4500ms forwards;
+}
+
+.ff-reveal__title {
+  position: relative;
+  font-size: 22px;
+  line-height: 26px;
+}
+
+.ff-reveal__name {
+  position: relative;
+  font-size: 40px;
+  font-weight: bold;
+  line-height: 46px;
+}
+
+.ff-reveal__item {
+  position: relative;
+  height: 120px;
+  margin-top: 6px;
+}
+
+.ff-reveal__spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 280px;
+  height: 280px;
+  margin: -140px 0 0 -140px;
+  background: url(../img/gui/loot-spinner-01.svg) center / 114% no-repeat;
+  animation: spin 4s linear infinite;
+}
+
+.ff-reveal__ticket {
+  position: relative;
+  display: block;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+  animation: ff-pop 340ms cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+.ff-reveal__sub {
+  position: relative;
+  margin-top: 4px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #f4db7c;
+}
+
+@keyframes ff-pop {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes ff-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (max-height: 480px) {
+  .ff-reveal {
+    top: 40px;
+    transform: scale(0.72);
+    transform-origin: top center;
+  }
+}
+
+.ff-shop-badge {
+  position: absolute;
+  top: 0;
+  right: calc(100% + 8px);
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px 0 6px;
+  border-radius: 5px;
+  background: #252525;
+  white-space: nowrap;
+}
+
+.ff-shop-badge__icon {
+  width: 28px;
+  height: 28px;
+}
+
+.ff-shop-badge__name {
+  color: #fff;
+}
+
+@media (max-width: 720px) {
+  .ff-shop-badge__name {
+    display: none;
+  }
+}
+
+.ff-menu-event {
+  position: relative;
+  margin-top: -10px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.ff-menu-event + .index-offer-time-left-text {
+  margin-top: 3px;
+}
+
+.ff-menu-event__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px 3px 6px;
+  background-color: #1f1e1e;
+  color: #f4db7c;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 14px;
+  white-space: nowrap;
+}
+
+.ff-menu-event__icon {
+  width: 16px;
+  height: 16px;
+  margin: -1px 0;
+}
+
+.ff-shop-event {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.ff-shop-event__icon {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+}
+
+.ff-shop-event__title {
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 21px;
+  color: #f4db7c;
+}
+
+.ff-shop-event__body {
+  font-size: 14px;
+  line-height: 17px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.ff-free-price {
+  color: #f4db7c !important;
+  font-weight: bold;
+}

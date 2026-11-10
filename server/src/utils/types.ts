@@ -18,7 +18,6 @@ export interface GameSocketData {
     rateLimit: Record<symbol, number>;
     ip: string;
     disconnectReason: string;
-    closeReason?: string;
 }
 
 export const zUpdateRegionBody = z.object({
@@ -214,43 +213,6 @@ export enum ProcessMsgType {
     SocketMsg,
     SocketClose,
     KickPlayerByIP,
-    Stop,
-    StopResult,
-}
-
-export interface GameOccupancy {
-    connectedPlayers: number;
-    connectedSpectators: number;
-    disconnectedBodies: number;
-    pendingJoinTokens: number;
-    reservedSlots: number;
-    tokenSeq: number;
-    started: boolean;
-    over: boolean;
-}
-
-export interface WorkerStats {
-    windowMs: number;
-    update: DurationSnapshotData;
-    netSync: DurationSnapshotData;
-    updateLateness: DurationSnapshotData;
-    eventLoopDelay: { mean: number; p99: number; max: number };
-    gc: { count: number; totalMs: number; maxMs: number };
-    slowestSections: Array<{ name: string; maxMs: number }>;
-    ipcSendBacklogged: number;
-    socketMsgsSent: number;
-    socketBytesSent: number;
-    rssMb: number;
-    heapUsedMb: number;
-}
-
-export interface DurationSnapshotData {
-    count: number;
-    mean: number;
-    p50: number;
-    p95: number;
-    p99: number;
-    max: number;
 }
 
 export interface CreateGameMsg {
@@ -265,32 +227,16 @@ export interface GameCreatedMsg {
 
 export interface KeepAliveMsg {
     type: ProcessMsgType.KeepAlive;
-    stats?: WorkerStats;
 }
 
 export interface UpdateDataMsg extends GameData {
     type: ProcessMsgType.UpdateData;
-    occupancy?: GameOccupancy;
-    stats?: WorkerStats;
 }
 
 export interface AddJoinTokenMsg {
     type: ProcessMsgType.AddJoinToken;
     autoFill: boolean;
     tokens: FindGamePrivateBody["playerData"];
-    seq?: number;
-}
-
-export interface StopGameMsg {
-    type: ProcessMsgType.Stop;
-    seq: number;
-    reason: string;
-}
-
-export interface StopResultMsg {
-    type: ProcessMsgType.StopResult;
-    seq: number;
-    stopped: boolean;
 }
 
 export interface KickPlayerByIPMsg {
@@ -321,7 +267,6 @@ export interface SocketCloseMsg {
     type: ProcessMsgType.SocketClose;
     socketId: string;
     reason?: string;
-    logReason?: string;
 }
 
 export type ProcessMsg =
@@ -332,6 +277,4 @@ export type ProcessMsg =
     | AddJoinTokenMsg
     | KickPlayerByIPMsg
     | SocketMsgsMsg
-    | SocketCloseMsg
-    | StopGameMsg
-    | StopResultMsg;
+    | SocketCloseMsg;

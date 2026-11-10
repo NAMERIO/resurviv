@@ -357,6 +357,9 @@ export class Editor {
             folder.addBinding(this.toolParams, "infiniteThrowables", {
                 label: "Infinite Throwables",
             });
+            folder.addBinding(this.toolParams, "infiniteStreak", {
+                label: "Infinite Streak",
+            });
             folder.addBinding(this.toolParams, "throwFast", {
                 label: "Throw Fast",
             });
@@ -635,6 +638,7 @@ export class Editor {
         msg.invisible = this.toolParams.invisible;
         msg.godMode = this.toolParams.godMode;
         msg.infiniteThrowables = this.toolParams.infiniteThrowables;
+        msg.infiniteStreak = this.toolParams.infiniteStreak;
         msg.throwFast = this.toolParams.throwFast;
         msg.shootFast = this.toolParams.shootFast;
         msg.reloadFast = this.toolParams.reloadFast;

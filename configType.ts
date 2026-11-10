@@ -218,6 +218,11 @@ export interface ConfigType {
      */
     featuredBundleResetAt?: number;
 
+    freeFallTicket: {
+        dropOneIn: number;
+        minDistinctIps: number;
+    };
+
     /**
      * The client theme, changes the splash screen background and for some the menu music.
      *
@@ -237,22 +242,6 @@ export interface ConfigType {
      * Updates done in the game tick will accumulate to be sent on the next net sync tick.
      */
     netSyncTps: number;
-
-    gameLifecycle: {
-        abandonedRoomTimeoutMs: number;
-        emptyRoomTimeoutMs: number;
-        idlePublicRoomTimeoutMs: number;
-        joinTokenGraceMs: number;
-        stoppedWorkerTtlMs: number;
-        maxIdleWorkers: number;
-        reconnectGraceMs: number;
-    };
-
-    gameNetwork: {
-        maxBackpressureBytes: number;
-        metricsLogIntervalMs: number;
-        slowTickLogIntervalMs: number;
-    };
 
     /**
      * If games should all run in the same process.

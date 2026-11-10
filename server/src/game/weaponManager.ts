@@ -56,6 +56,8 @@ export class WeaponManager {
 
     loadingBlasterCharge = 0;
     lastWeaponIdx = 0;
+    clawSwingTime = -1;
+    clawHitIds = new Set<number>();
 
     get curWeapIdx(): number {
         return this._curWeapIdx;
@@ -147,6 +149,7 @@ export class WeaponManager {
         }
         this.bursts.length = 0;
         this.meleeAttacks.length = 0;
+        this.clawSwingTime = -1;
         this.scheduledReload = false;
 
         this.player.recoilTicker = 0;
@@ -557,6 +560,12 @@ export class WeaponManager {
                 this.player.playAnim(GameConfig.Anim.Melee, 0.05);
                 weapon.cooldown = 0.02;
                 this.meleeAttacks = [0];
+                if (itemDef.webShooter) {
+                    this.shootWeb(itemDef.webShooter);
+                }
+                if (itemDef.clawDash) {
+                    this.clawLunge(itemDef, 0.02);
+                }
             }
         } else if (
             player.animType !== GameConfig.Anim.Melee &&
@@ -568,6 +577,25 @@ export class WeaponManager {
             this.player.playAnim(GameConfig.Anim.Melee, attack.cooldownTime);
             weapon.cooldown = attack.cooldownTime;
             this.meleeAttacks = [...attack.damageTimes];
+            if (itemDef.webShooter) {
+                this.shootWeb(itemDef.webShooter);
+            }
+            if (itemDef.clawDash) {
+                this.meleeAttacks = [];
+                this.clawSwingTime = 0;
+                this.clawHitIds.clear();
+                this.clawLunge(itemDef, itemDef.clawDash.duration);
+            }
+        }
+
+        if (this.clawSwingTime >= 0) {
+            if (itemDef.clawDash) {
+                this.meleeDamage(this.clawHitIds);
+            }
+            this.clawSwingTime += dt;
+            if (!itemDef.clawDash || this.clawSwingTime > attack.damageTimes[0]) {
+                this.clawSwingTime = -1;
+            }
         }
 
         for (let i = 0; i < this.meleeAttacks.length; i++) {
@@ -1039,6 +1067,7 @@ export class WeaponManager {
         //
         // Perks
         //
+        this.player.breakVanish();
         const hasExplosive = this.player.hasPerk("explosive");
         const hasSplinter = this.player.hasPerk("splinter");
         const hasApRounds = this.player.hasPerk("ap_rounds");
@@ -1100,6 +1129,28 @@ export class WeaponManager {
             distanceMult *= PerkProperties.high_velocity.distanceMult;
         }
 
+        if (this.player.camperActive) {
+            spread *= PerkProperties.camper.spreadMult;
+            damageMult *= PerkProperties.camper.damageMult;
+            speedMult *= PerkProperties.camper.speedMult;
+        }
+
+        if (this.player.hasPerk("overpressure")) {
+            spread *= PerkProperties.overpressure.spreadMult;
+            damageMult *= PerkProperties.overpressure.damageMult;
+            speedMult *= PerkProperties.overpressure.speedMult;
+            distanceMult *= PerkProperties.overpressure.distanceMult;
+        }
+
+        const hasHeavyDuty = this.player.hasPerk("heavy_duty");
+        if (hasHeavyDuty) {
+            spread *= PerkProperties.heavy_duty.spreadMult;
+            speedMult *= PerkProperties.heavy_duty.speedMult;
+        }
+
+        speedMult = math.min(speedMult, 2);
+        distanceMult = math.min(distanceMult, 2);
+
         const bulletCount = itemDef.bulletCount;
         const jitter = itemDef.jitter ?? 0.25;
 
@@ -1158,7 +1209,7 @@ export class WeaponManager {
                 shotOffhand: offHand,
                 trailSaturated: shouldApplyChambered || saturated,
                 trailSmall: false,
-                trailThick: shouldApplyChambered,
+                trailThick: shouldApplyChambered || hasHeavyDuty,
                 reflectCount: 0,
                 splinter: hasSplinter,
                 apRounds: hasApRounds,
@@ -1320,6 +1371,48 @@ export class WeaponManager {
         return true;
     }
 
+    shootWeb(web: NonNullable<MeleeDef["webShooter"]>): void {
+        const player = this.player;
+        if (player.webCooldown > 0 || player.downed || player.vehicle) return;
+        player.webCooldown = web.cooldown;
+
+        const dir = v2.normalizeSafe(player.dir, v2.create(1, 0));
+        const end = v2.add(player.pos, v2.mul(dir, web.range));
+        const obstacles = player.game.grid
+            .intersectLineSegment(player.pos, end)
+            .filter(
+                (obj): obj is Obstacle =>
+                    obj.__type === ObjectType.Obstacle && !obj.isSkin,
+            );
+        const hit = collisionHelpers.intersectSegment(
+            obstacles,
+            player.pos,
+            dir,
+            web.range,
+            0,
+            player.layer,
+            false,
+        );
+
+        const anchor = hit ? v2.add(player.pos, v2.mul(dir, hit.dist)) : end;
+        const pullDist = hit ? hit.dist - player.rad - 0.25 : 0;
+        player.attachWeb(anchor, dir, pullDist, web.pullSpeed);
+    }
+
+    clawLunge(def: MeleeDef, duration: number): void {
+        const player = this.player;
+        if (!def.clawDash || player.downed || player.vehicle || player.webAnchor) return;
+        const dist = math.clamp(
+            player.toMouseLen - def.attack.offset.x,
+            0,
+            def.clawDash.distance,
+        );
+        if (dist < 0.5 || duration <= 0) return;
+        player.dashDir = v2.normalizeSafe(player.dir, v2.create(1, 0));
+        player.dashSpeed = dist / duration;
+        player.dashTimeLeft = duration;
+    }
+
     getMeleeCollider() {
         const meleeDef = GameObjectDefs[this.player.activeWeapon] as MeleeDef;
         const rot = Math.atan2(this.player.dir.y, this.player.dir.x);
@@ -1333,7 +1426,8 @@ export class WeaponManager {
         return collider.createCircle(rotated, rad);
     }
 
-    meleeDamage(): void {
+    /** @param alreadyHit skip these object ids, and record the ids this call hits */
+    meleeDamage(alreadyHit?: Set<number>): void {
         const meleeDef = GameObjectDefs[this.activeWeapon] as MeleeDef;
 
         const coll = this.getMeleeCollider();
@@ -1482,6 +1576,12 @@ export class WeaponManager {
             }
         }
 
+        if (alreadyHit) {
+            for (let i = hits.length - 1; i >= 0; i--) {
+                if (alreadyHit.has(hits[i].obj.__id)) hits.splice(i, 1);
+            }
+        }
+
         hits.sort((a, b) => {
             return a.prio === b.prio ? b.pen - a.pen : a.prio - b.prio;
         });
@@ -1492,6 +1592,7 @@ export class WeaponManager {
         for (let i = 0; i < maxHits; i++) {
             const hit = hits[i];
             const obj = hit.obj;
+            alreadyHit?.add(obj.__id);
 
             if (obj.__type === ObjectType.Obstacle) {
                 this.player.punishHideAndSeekWrongPropHit();

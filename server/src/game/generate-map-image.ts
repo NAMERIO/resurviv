@@ -1,4 +1,4 @@
-import type { CanvasRenderingContext2D } from "canvas";
+import { type CanvasRenderingContext2D, createCanvas } from "canvas";
 import { type MapDef, MapDefs } from "../../../shared/defs/mapDefs";
 import { MapObjectDefs } from "../../../shared/defs/mapObjectDefs";
 import type { BuildingDef, ObstacleDef } from "../../../shared/defs/mapObjectsTyping";
@@ -93,9 +93,8 @@ function getMinimapRender(obj: MapMsg["objects"][number]) {
     };
 }
 
-export async function renderMap(mapMsg: MapMsg) {
+export function renderMap(mapMsg: MapMsg) {
     if (!Config.webhooks?.mapGeneration) return;
-    const { createCanvas } = await import("canvas");
     const terrain = generateTerrain(
         mapMsg.width,
         mapMsg.height,

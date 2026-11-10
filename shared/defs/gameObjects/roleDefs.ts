@@ -532,7 +532,7 @@ export const RoleDefs: Record<string, RoleDef> = {
         }),
         announce: false,
         sound: { assign: "spawn_01" },
-        perks: ["steelskin", "endless_ammo"],
+        perks: ["steelskin", "endless_ammo", "heavy_duty"],
         visorImg: {
             baseSprite: "player-visor-tank.img",
             spriteScale: 0.3,

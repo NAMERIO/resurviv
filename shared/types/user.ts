@@ -184,6 +184,7 @@ export type SendFriendSkinGiftResponse = {
         | "not_friend"
         | "not_found"
         | "item_not_owned"
+        | "item_ticket_locked"
         | "invalid_item"
         | "server_error";
     items?: Item[];
@@ -281,6 +282,7 @@ export type GetPassResponse = {
 export const zOpenLootBoxRequest = z.object({
     boxId: z.string().trim().min(1),
     payment: z.enum(["gp", "ads"]).optional().default("gp"),
+    payWithGp: z.boolean().optional(),
 });
 
 export type OpenLootBoxRequest = z.infer<typeof zOpenLootBoxRequest>;
@@ -327,7 +329,20 @@ export type GetMarketResponse = {
     lootBoxes: ShopLootBox[];
     lootBoxAdStates: Record<string, LootBoxAdState>;
     socialGpRewardClaims: Partial<Record<SocialGpRewardKey, boolean>>;
+    freeFallTicket: FreeFallTicketState | null;
 };
+
+export type FreeFallTicketState = {
+    expiresAt: number;
+    freeCratesLeft: number;
+};
+
+export type FreeFallTicketRefusal =
+    | "ticket_listing_too_new"
+    | "ticket_seller_new"
+    | "ticket_seller_linked"
+    | "ticket_seller_limit"
+    | "ticket_daily_limit";
 
 export const socialGpRewardKeys = ["github_star", "discord_join"] as const;
 export type SocialGpRewardKey = (typeof socialGpRewardKeys)[number];
@@ -391,6 +406,7 @@ export type CreateMarketListingResponse = {
     success: boolean;
     error?:
         | "item_not_owned"
+        | "item_ticket_locked"
         | "invalid_item"
         | "already_listed"
         | "invalid_price"
@@ -412,6 +428,7 @@ export type CreateAuctionListingResponse = {
     success: boolean;
     error?:
         | "item_not_owned"
+        | "item_ticket_locked"
         | "invalid_item"
         | "already_listed"
         | "invalid_price"
@@ -439,6 +456,7 @@ export type PlaceAuctionBidResponse = {
 
 export const zBuyMarketListingRequest = z.object({
     listingId: z.string().uuid(),
+    payWithGp: z.boolean().optional(),
 });
 export type BuyMarketListingRequest = z.infer<typeof zBuyMarketListingRequest>;
 export type BuyMarketListingResponse = {
@@ -448,7 +466,8 @@ export type BuyMarketListingResponse = {
         | "cannot_buy_own_listing"
         | "already_owned"
         | "not_enough_gp"
-        | "server_error";
+        | "server_error"
+        | FreeFallTicketRefusal;
     gpBalance?: number;
 };
 

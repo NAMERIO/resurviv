@@ -54,20 +54,6 @@ export function getConfig(isProduction: boolean, dir: string) {
         clientTheme: "main",
         gameTps: 100,
         netSyncTps: 33,
-        gameLifecycle: {
-            abandonedRoomTimeoutMs: 60_000,
-            emptyRoomTimeoutMs: 60_000,
-            idlePublicRoomTimeoutMs: 120_000,
-            joinTokenGraceMs: 20_000,
-            stoppedWorkerTtlMs: 60_000,
-            maxIdleWorkers: 2,
-            reconnectGraceMs: 30_000,
-        },
-        gameNetwork: {
-            maxBackpressureBytes: 1024 * 1024,
-            metricsLogIntervalMs: 60_000,
-            slowTickLogIntervalMs: 10_000,
-        },
         processMode: isDev ? "single" : "multi",
         logging: {
             logDate: true,
@@ -75,6 +61,10 @@ export function getConfig(isProduction: boolean, dir: string) {
             debugLogs: isDev,
             warnLogs: true,
             errorLogs: true,
+        },
+        freeFallTicket: {
+            dropOneIn: 10_000,
+            minDistinctIps: 4,
         },
         database: {
             enabled: true,

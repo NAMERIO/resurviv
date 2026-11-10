@@ -34,6 +34,10 @@ import { Editor } from "./debug/editor";
 import { device } from "./device";
 import { discordPresence } from "./discordPresence";
 import { EmoteBarn } from "./emote";
+import {
+    burstFreeFallTicket,
+    showFreeFallTicketReveal,
+} from "./freeFallTicket/ticketReveal";
 import { Gas } from "./gas";
 import { helpers } from "./helpers";
 import { GamepadButton, type InputHandler, Key, MouseWheel } from "./input";
@@ -335,15 +339,12 @@ export class Game {
         return Boolean(this.m_config.get("profile")?.canUseDeveloper);
     }
 
-    onConnectionLost?: () => boolean;
-
     tryJoinGame(
         url: string,
         matchPriv: string,
         questPriv: string,
         onConnectFail: () => void,
         battleRoyaleMode = false,
-        reconnecting = false,
     ) {
         if (!this.connecting && !this.connected && !this.initialized) {
             if (this.m_ws) {
@@ -356,8 +357,6 @@ export class Game {
             }
             this.connecting = true;
             this.connected = false;
-            this.m_disconnectMsg = "";
-            this.m_gameOver = false;
             try {
                 this.m_ws = new WebSocket(url);
                 this.m_ws.binaryType = "arraybuffer";
@@ -409,7 +408,7 @@ export class Game {
                         msgStream.stream.buffer.byteLength,
                     );
                 };
-                this.m_ws.onclose = (e) => {
+                this.m_ws.onclose = () => {
                     const displayingStats = this.m_uiManager?.displayingStats;
                     const connecting = this.connecting;
                     const connected = this.connected;
@@ -418,14 +417,6 @@ export class Game {
                     if (connecting) {
                         onConnectFail();
                     } else if (connected && !this.m_gameOver && !displayingStats) {
-                        const lostConnection =
-                            !this.m_disconnectMsg && (this.initialized || reconnecting);
-                        if (lostConnection && this.onConnectionLost?.()) {
-                            console.warn(
-                                `Game connection lost (code ${e.code}), reconnecting`,
-                            );
-                            return;
-                        }
                         const errMsg = this.m_disconnectMsg || "index-host-closed";
                         this.onQuit(errMsg);
                     }
@@ -4362,6 +4353,30 @@ export class Game {
                     );
                 }
 
+                break;
+            }
+            case net.MsgType.FreeFallTicket: {
+                const msg = new net.FreeFallTicketMsg();
+                msg.deserialize(stream);
+                const finderName = this.m_playerBarn.getPlayerName(
+                    msg.finderId,
+                    this.m_activeId,
+                    true,
+                );
+                const foundText = `${finderName} ${this.m_localization.translate("game-free-fall-found")}`;
+                this.m_ui2Manager.addKillFeedMessage(
+                    helpers.htmlEscape(foundText),
+                    "#f4db7c",
+                );
+                burstFreeFallTicket(this.m_particleBarn, msg.pos, msg.layer);
+                if (msg.recipientIds.includes(this.m_localId)) {
+                    showFreeFallTicketReveal();
+                    this.m_audioManager.playSound("ping_unlock_01", { channel: "ui" });
+                } else {
+                    this.m_uiManager.displayAnnouncement(
+                        helpers.htmlEscape(foundText.toUpperCase()),
+                    );
+                }
                 break;
             }
             case net.MsgType.RoleAnnouncement: {
