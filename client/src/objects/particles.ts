@@ -2367,6 +2367,12 @@ const ParticleDefs: Record<string, ParticleDef> = {
     jesterParticle: createSkinTrail({
         image: ["part-armor-jester-01.img", "part-armor-jester-02.img"],
     }),
+    gonParticle: createSkinTrail({
+        image: ["part-armor-gon-01.img", "part-armor-gon-02.img"],
+    }),
+    meruemParticle: createSkinTrail({
+        image: ["part-armor-meruem-01.img", "part-armor-meruem-02.img"],
+    }),
     gpParticle: createSkinTrail({
         image: ["part-armor-gp-dude-01.img", "part-armor-gp-dude-02.img"],
     }),
@@ -2627,6 +2633,12 @@ const EmitterDefs: Record<string, EmitterDef> = {
     }),
     hachiwareParticle: createSkinTrailEmitter({
         particle: "hachiwareParticle",
+    }),
+    gonParticle: createSkinTrailEmitter({
+        particle: "gonParticle",
+    }),
+    meruemParticle: createSkinTrailEmitter({
+        particle: "meruemParticle",
     }),
     jesterParticle: createSkinTrailEmitter({
         particle: "jesterParticle",
