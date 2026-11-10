@@ -2633,7 +2633,6 @@ const EmitterDefs: Record<string, EmitterDef> = {
     }),
     hachiwareParticle: createSkinTrailEmitter({
         particle: "hachiwareParticle",
-        
     }),
     gonParticle: createSkinTrailEmitter({
         particle: "gonParticle",
