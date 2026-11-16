@@ -207,6 +207,10 @@ export class Smoke extends BaseGameObject {
     dir = v2.randomUnit();
     speed: number;
 
+    // last state sent to clients, used to throttle network updates
+    lastClientPos = v2.create(0, 0);
+    lastClientRad = 0;
+
     constructor(
         game: Game,
         pos: Vec2,
@@ -238,25 +242,33 @@ export class Smoke extends BaseGameObject {
     update(dt: number) {
         this.life -= dt;
 
-        const radOld = this.rad;
         this.rad += RAD_SPEED * dt;
         this.rad = math.clamp(this.rad, 0, this.maxSize);
 
-        const posOld = v2.copy(this.pos);
         if (!this.isPoison) {
             this.speed -= SPEED_DRAG * dt;
             this.speed = math.max(this.speed, SPEED_MIN);
             v2.set(this.pos, v2.add(this.pos, v2.mul(this.dir, this.speed * dt)));
         }
 
-        if (!v2.eq(posOld, this.pos) || !math.eqAbs(radOld, this.rad)) {
-            this.game.map.clampToMapBounds(this.pos, this.rad);
+        this.game.map.clampToMapBounds(this.pos, this.rad);
+
+        // only send an update once the smoke grew or drifted noticeably,
+        // instead of re-sending every smoke particle every tick
+        // perf ported from survev/survev 415aacc1
+        if (
+            !math.eqAbs(this.lastClientRad, this.rad, 0.05) ||
+            !v2.eq(this.lastClientPos, this.pos, 0.2)
+        ) {
             this.bounds = collider.createAabbExtents(
                 v2.create(0, 0),
                 v2.create(this.rad, this.rad),
             );
             this.setPartDirty();
             this.game.grid.updateObject(this);
+
+            v2.set(this.lastClientPos, this.pos);
+            this.lastClientRad = this.rad;
         }
 
         if (this.life <= 0) {
