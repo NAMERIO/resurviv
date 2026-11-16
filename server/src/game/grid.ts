@@ -150,15 +150,10 @@ export class Grid<T extends GameObject = GameObject> {
     }
 
     /**
-     * Get all objects near this collider
-     * This transforms the collider into a rectangle
-     * and gets all objects intersecting it after rounding it to grid cells
-     * @param coll The collider
-     * @return A set with the objects near this collider
+     * Get all objects in the grid cells this AABB touches, as a set
+     * (perf ported from survev/survev b240defa: skips the collider -> AABB conversion)
      */
-    intersectColliderSet(coll: Collider): Set<T> {
-        const aabb = collider.toAabb(coll);
-
+    intersectAABBSet(aabb: AABB): Set<T> {
         const min = this._roundToCells(aabb.min);
         const max = this._roundToCells(aabb.max);
 

@@ -5130,7 +5130,7 @@ export class Player extends BaseGameObject {
         }
         const rect = collider.createAabbExtents(viewPos, v2.create(width, height));
 
-        const newVisibleObjects = game.grid.intersectColliderSet(rect);
+        const newVisibleObjects = game.grid.intersectAABBSet(rect);
         for (const obj of newVisibleObjects) {
             if (obj.__type === ObjectType.Player && (obj as Player).isInvisibleTo(this)) {
                 newVisibleObjects.delete(obj);
