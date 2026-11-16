@@ -669,18 +669,21 @@ export class Game {
                 JSON.stringify([...new Uint8Array(buff.slice(0, 255))]),
             );
             if (player) {
-                player.disconnect();
+                player.disconnect("index-kicked-bad-msg");
             } else {
-                this.closeSocket(socketId);
+                this.closeSocket(socketId, "index-kicked-bad-msg");
             }
             return;
         }
 
         if (error) {
+            this.logger.warn(
+                `Closing socket ${socketId.substring(0, 8)} (player: ${player?.name ?? "none"}): msg error ${error}`,
+            );
             if (player) {
-                player.disconnect();
+                player.disconnect(error);
             } else {
-                this.closeSocket(socketId);
+                this.closeSocket(socketId, error);
             }
             return;
         }

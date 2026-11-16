@@ -30,6 +30,26 @@ if (process.env.NODE_ENV === "production") {
     path = "src/game/gameProcess.ts";
 }
 
+/**
+ * Gracefully end a game socket, sending a DisconnectMsg with the reason first.
+ * socket.end() flushes queued data and sends a close frame; socket.close() is an
+ * abrupt close that drops the DisconnectMsg, which made the client fall back to
+ * the misleading "Host closed the connection" message.
+ */
+function endSocket(socket: WebSocket<GameSocketData>, reason?: string) {
+    if (reason) {
+        const disconnectMsg = new net.DisconnectMsg();
+        disconnectMsg.reason = reason;
+        const stream = new net.MsgStream(new ArrayBuffer(128));
+        stream.serializeMsg(net.MsgType.Disconnect, disconnectMsg);
+        socket.send(stream.getBuffer(), true, false);
+    }
+    socket.end();
+    // Stop relaying game messages to a socket that is shutting down. The uWS
+    // close handler still runs once the close handshake finishes.
+    socket.getUserData().closed = true;
+}
+
 class GameProcess implements GameData {
     process: ChildProcess;
 
@@ -129,15 +149,7 @@ class GameProcess implements GameData {
                 case ProcessMsgType.SocketClose:
                     const socket = this.manager.sockets.get(msg.socketId);
                     if (socket && !socket.getUserData().closed) {
-                        if (msg.reason) {
-                            const disconnectMsg = new net.DisconnectMsg();
-                            disconnectMsg.reason = msg.reason;
-                            const stream = new net.MsgStream(new ArrayBuffer(128));
-                            stream.serializeMsg(net.MsgType.Disconnect, disconnectMsg);
-                            socket.send(stream.getBuffer(), true, false);
-                        }
-
-                        socket.close();
+                        endSocket(socket, msg.reason);
                     }
                     break;
             }
@@ -364,7 +376,7 @@ export class GameProcessManager implements GameManager {
             if (data.closed) continue;
             if (data.gameId !== gameProc.id) continue;
             this.logger.warn(`Closing socket for ${gameProc.id}`);
-            socket.close();
+            endSocket(socket, "index-game-server-closed");
         }
 
         // send SIGTERM, if still hasn't terminated after 5 seconds, send SIGKILL >:3
@@ -519,7 +531,7 @@ export class GameProcessManager implements GameManager {
         const proc = this.processById.get(data.gameId);
         if (proc === undefined) {
             this.logger.warn("prcoess not found, closing socket.");
-            socket.close();
+            endSocket(socket, "index-game-server-closed");
             return;
         }
         this.sockets.set(socketId, socket);

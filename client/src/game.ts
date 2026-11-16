@@ -408,7 +408,7 @@ export class Game {
                         msgStream.stream.buffer.byteLength,
                     );
                 };
-                this.m_ws.onclose = () => {
+                this.m_ws.onclose = (e) => {
                     const displayingStats = this.m_uiManager?.displayingStats;
                     const connecting = this.connecting;
                     const connected = this.connected;
@@ -417,7 +417,17 @@ export class Game {
                     if (connecting) {
                         onConnectFail();
                     } else if (connected && !this.m_gameOver && !displayingStats) {
-                        const errMsg = this.m_disconnectMsg || "index-host-closed";
+                        console.warn(
+                            `Game socket closed mid-game: code=${e.code} reason=${this.m_disconnectMsg || e.reason || "none"} clean=${e.wasClean}`,
+                        );
+                        // 1006 = connection dropped without a close frame
+                        // (network loss, PC/tab freeze, or idle timeout).
+                        // Anything else means the server ended it on purpose.
+                        const fallback =
+                            e.code === 1006
+                                ? "index-lost-connection-server"
+                                : "index-host-closed";
+                        const errMsg = this.m_disconnectMsg || fallback;
                         this.onQuit(errMsg);
                     }
                 };

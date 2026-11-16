@@ -449,9 +449,12 @@ app.ws<GameSocketData>("/play", {
     },
 
     message(socket: WebSocket<GameSocketData>, message) {
+        // Socket is already shutting down (see endSocket in gameProcessManager)
+        if (socket.getUserData().closed) return;
         if (gameWsRateLimit.isRateLimited(socket.getUserData().rateLimit)) {
             server.logger.warn("Game websocket rate limited, closing socket.");
-            socket.close();
+            socket.end();
+            socket.getUserData().closed = true;
             return;
         }
         server.manager.onMsg(socket.getUserData().id, message);
