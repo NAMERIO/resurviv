@@ -130,6 +130,11 @@ export class Grid<T extends GameObject = GameObject> {
     intersectGameObject(obj: GameObject): T[] {
         const objects: T[] = [];
 
+        // Objects removed from the grid (destroyed / exploded earlier this tick) have
+        // __gridBounds set to -1, which would index _grid[-1] and crash the whole
+        // game process. Before __gridBounds this just returned no objects.
+        if (!obj.__onGrid) return objects;
+
         const queryId = this.nextQueryId++;
 
         const { min, max } = obj.__gridBounds;
@@ -140,6 +145,7 @@ export class Grid<T extends GameObject = GameObject> {
                 const cell = xRow[y];
                 for (const object of cell) {
                     if (object.__gridQueryId === queryId) continue;
+                    if (object === obj) continue;
                     object.__gridQueryId = queryId;
                     objects.push(object);
                 }
