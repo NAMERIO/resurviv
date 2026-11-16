@@ -1450,7 +1450,7 @@ export class TeamMenu {
 
                 // Ask for a reply as well as relying on the client's timer. Browser
                 // timers can be heavily throttled while the lobby UI is hidden.
-                for (const player of room.players) {
+                for (const player of [...room.players]) {
                     if (player.lastServerKeepAliveTime < Date.now() - 15 * 1000) {
                         player.send("keepAlive", { request: true });
                         player.lastServerKeepAliveTime = Date.now();
@@ -1464,6 +1464,20 @@ export class TeamMenu {
                         player.lastMsgTime < Date.now() - 8 * 60 * 1000
                     ) {
                         player.send("error", { type: "lost_conn" });
+                        room.removePlayer(player);
+                        continue;
+                    }
+                    // A client in a match still answers the keepAlive request above
+                    // (sent every 15s) right away, so 5 minutes of silence means its lobby
+                    // socket died without a close (network drop). Without this the
+                    // player stayed in the room forever as an "in game" ghost.
+                    if (
+                        player.inGame &&
+                        player.lastMsgTime < Date.now() - 5 * 60 * 1000
+                    ) {
+                        this.logger.info(
+                            `Removing in-game lobby player ${player.name} (no keepAlive reply in 5 minutes)`,
+                        );
                         room.removePlayer(player);
                     }
                 }
