@@ -210,7 +210,9 @@ export enum ProcessMsgType {
     KeepAlive,
     UpdateData,
     AddJoinToken,
-    SocketMsg,
+    SocketOpen,
+    ClientSocketMsg,
+    ServerSocketMsg,
     SocketClose,
     KickPlayerByIP,
 }
@@ -245,16 +247,33 @@ export interface KickPlayerByIPMsg {
 }
 
 /**
- * Used for server to send websocket msgs to game
- * And game to send websocket msgs to clients
+ * Sent by the server to the game when a client socket opens.
+ * The ip is only sent once here instead of with every client msg.
+ */
+export interface SocketOpenMsg {
+    type: ProcessMsgType.SocketOpen;
+    socketId: string;
+    ip: string;
+}
+
+/**
+ * Used for server to send a single client websocket msg to the game
+ */
+export interface SocketClientMsg {
+    type: ProcessMsgType.ClientSocketMsg;
+    socketId: string;
+    data: ArrayBuffer | Uint8Array;
+}
+
+/**
+ * Used for the game to send websocket msgs to clients
  * msgs is an array to batch all msgs created in the same game net tick
  * into the same send call
  */
-export interface SocketMsgsMsg {
-    type: ProcessMsgType.SocketMsg;
+export interface SocketServerMsg {
+    type: ProcessMsgType.ServerSocketMsg;
     msgs: Array<{
         socketId: string;
-        ip: string;
         data: ArrayBuffer | Uint8Array;
     }>;
 }
@@ -276,5 +295,7 @@ export type ProcessMsg =
     | UpdateDataMsg
     | AddJoinTokenMsg
     | KickPlayerByIPMsg
-    | SocketMsgsMsg
+    | SocketOpenMsg
+    | SocketClientMsg
+    | SocketServerMsg
     | SocketCloseMsg;

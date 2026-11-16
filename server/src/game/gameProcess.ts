@@ -18,8 +18,20 @@ process.on("disconnect", () => {
 const socketMsgs: Array<{
     socketId: string;
     data: Uint8Array;
-    ip: string;
 }> = [];
+
+// ip of each open socket, sent once on SocketOpen instead of with every msg
+const socketIps = new Map<string, string>();
+
+function flushSocketMsgs() {
+    // don't send empty IPC msgs every net tick (e.g. idle / empty games)
+    if (!socketMsgs.length) return;
+    sendMsg({
+        type: ProcessMsgType.ServerSocketMsg,
+        msgs: socketMsgs,
+    });
+    socketMsgs.length = 0;
+}
 
 let lastMsgTime = Date.now();
 
@@ -36,7 +48,6 @@ process.on("message", async (msg: ProcessMsg) => {
                 socketMsgs.push({
                     socketId: id,
                     data,
-                    ip: "",
                 });
             },
             (id, reason) => {
@@ -60,6 +71,15 @@ process.on("message", async (msg: ProcessMsg) => {
         });
     }
 
+    // track socket ips even while no game is running so the map can't leak
+    if (msg.type === ProcessMsgType.SocketOpen) {
+        socketIps.set(msg.socketId, msg.ip);
+        return;
+    }
+    if (msg.type === ProcessMsgType.SocketClose) {
+        socketIps.delete(msg.socketId);
+    }
+
     if (!game) return;
 
     switch (msg.type) {
@@ -69,9 +89,12 @@ process.on("message", async (msg: ProcessMsg) => {
         case ProcessMsgType.KickPlayerByIP:
             game.kickPlayerByIP(msg.encodedIp);
             break;
-        case ProcessMsgType.SocketMsg:
-            const sMsg = msg.msgs[0];
-            game.handleMsg(sMsg.data as ArrayBuffer, sMsg.socketId, sMsg.ip);
+        case ProcessMsgType.ClientSocketMsg:
+            game.handleMsg(
+                msg.data as ArrayBuffer,
+                msg.socketId,
+                socketIps.get(msg.socketId) ?? "",
+            );
             break;
         case ProcessMsgType.SocketClose:
             game.handleSocketClose(msg.socketId);
@@ -108,11 +131,7 @@ if (platform() === "win32") {
     new NanoTimer().setInterval(
         () => {
             game?.netSync();
-            sendMsg({
-                type: ProcessMsgType.SocketMsg,
-                msgs: socketMsgs,
-            });
-            socketMsgs.length = 0;
+            flushSocketMsgs();
         },
         "",
         `${1000 / Config.netSyncTps}m`,
@@ -124,11 +143,7 @@ if (platform() === "win32") {
 
     setInterval(() => {
         game?.netSync();
-        sendMsg({
-            type: ProcessMsgType.SocketMsg,
-            msgs: socketMsgs,
-        });
-        socketMsgs.length = 0;
+        flushSocketMsgs();
     }, 1000 / Config.netSyncTps);
 }
 
