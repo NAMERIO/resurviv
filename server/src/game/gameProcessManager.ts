@@ -81,6 +81,8 @@ class GameProcess implements GameData {
 
     stoppedTime = Date.now();
 
+    createdTime = Date.now();
+
     avaliableSlots = 0;
     groupHash?: string;
 
@@ -249,6 +251,11 @@ export class GameProcessManager implements GameManager {
             }
         });
 
+        // always keep some idle processes running even if there are no games on them;
+        // forking a new process is much slower than reusing one, so matches start faster
+        // (ported from survev/survev 407eb2a3)
+        const minIdleProcs = 3;
+
         setInterval(() => {
             for (const gameProc of [...this.processes]) {
                 gameProc.send({
@@ -262,14 +269,28 @@ export class GameProcessManager implements GameManager {
                     // sigquit can dump a core of the process
                     // useful for debugging infinite loops
                     this.killProcess(gameProc, "SIGQUIT");
-                } else if (
-                    gameProc.stopped &&
-                    Date.now() - gameProc.stoppedTime > 60000
-                ) {
-                    this.logger.warn(
-                        `Process ${gameProc.process.pid} - #${gameProc.id.substring(0, 4)} stopped more than a minute ago, killing`,
+                }
+            }
+
+            const idleProcs = this.processes.filter((p) => {
+                return (
+                    p.stopped &&
+                    !this.terminatingProcesses.has(p) &&
+                    Date.now() - p.stoppedTime > 60000
+                );
+            });
+
+            // kill stale processes if there's too many, oldest first
+            if (idleProcs.length > minIdleProcs) {
+                idleProcs.sort((a, b) => a.createdTime - b.createdTime);
+
+                const procsToKill = idleProcs.length - minIdleProcs;
+                for (let i = 0; i < procsToKill; i++) {
+                    const proc = idleProcs[i];
+                    this.logger.info(
+                        `Process ${proc.process.pid} - #${proc.id.substring(0, 4)} killed: too many idle processes`,
                     );
-                    this.killProcess(gameProc);
+                    this.killProcess(proc);
                 }
             }
         }, 5000);
