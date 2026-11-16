@@ -10,7 +10,9 @@ import { type Vec2, v2 } from "../../../../shared/utils/v2";
 import type { Game } from "../game";
 import { isHideAndSeekHider, isHideAndSeekSeeker } from "../privateLobbyMiniGames";
 import type { DamageParams, GameObject } from "./gameObject";
-import { EXPLOSION_LOOT_PUSH_FORCE } from "./loot";
+import { EXPLOSION_LOOT_PUSH_FORCE, type Loot } from "./loot";
+import type { Npc } from "./npc";
+import type { Obstacle } from "./obstacle";
 import type { Player } from "./player";
 
 interface LineCollision {
@@ -92,7 +94,33 @@ export class ExplosionBarn {
         };
 
         // List of all near objects
-        const objects = this.game.grid.intersectCollider(coll);
+        // filter it once up front: we iterate over this list for each of the ~63 rays,
+        // so filtering first means way fewer iterations when doing the raycasts
+        // (especially for airstrikes, so it doesn't iterate over all the explosion decals)
+        // perf ported from survev/survev 4c5486fb
+        const objects = this.game.grid
+            .intersectCollider(coll)
+            .filter((obj): obj is Player | Obstacle | Npc | Loot => {
+                const sameExplosionLayer = isMineExplosion
+                    ? mineCanAffectLayer(obj.layer)
+                    : util.sameLayer(obj.layer, explosion.layer);
+                if (!sameExplosionLayer) return false;
+                if (
+                    explosion.type === "explosion_motherShip" &&
+                    obj.__type === ObjectType.Player &&
+                    obj.indoors
+                ) {
+                    return false;
+                }
+                if (obj.__type === ObjectType.Obstacle && obj.height <= 0.25)
+                    return false;
+                return (
+                    obj.__type === ObjectType.Player ||
+                    obj.__type === ObjectType.Obstacle ||
+                    obj.__type === ObjectType.Npc ||
+                    obj.__type === ObjectType.Loot
+                );
+            });
         const damagedObjects = new Map<number, boolean>();
 
         for (let angle = -Math.PI; angle < Math.PI; angle += 0.1) {
@@ -104,40 +132,23 @@ export class ExplosionBarn {
                 v2.rotate(v2.create(explosion.rad, 0), angle),
             );
 
-            for (const obj of objects) {
-                const sameExplosionLayer = isMineExplosion
-                    ? mineCanAffectLayer(obj.layer)
-                    : util.sameLayer(obj.layer, explosion.layer);
-                if (!sameExplosionLayer) continue;
+            for (let i = 0; i < objects.length; i++) {
+                const obj = objects[i];
+                // checked per ray: objects destroyed by an earlier ray stop blocking
                 if ((obj as { dead?: boolean }).dead) continue;
-                if (
-                    explosion.type === "explosion_motherShip" &&
-                    obj.__type === ObjectType.Player &&
-                    obj.indoors
-                ) {
-                    continue;
-                }
-                if (obj.__type === ObjectType.Obstacle && obj.height <= 0.25) continue;
-                if (
-                    obj.__type === ObjectType.Player ||
-                    obj.__type === ObjectType.Obstacle ||
-                    obj.__type === ObjectType.Npc ||
-                    obj.__type === ObjectType.Loot
-                ) {
-                    // check if the object hitbox collides with a line from the explosion center to the explosion max distance
-                    const intersection = collider.intersectSegment(
-                        obj.collider,
-                        explosion.pos,
-                        lineEnd,
-                    );
-                    if (intersection) {
-                        lineCollisions.push({
-                            pos: intersection.point,
-                            obj,
-                            distance: v2.distance(explosion.pos, intersection.point),
-                            dir: v2.neg(v2.normalize(v2.sub(explosion.pos, obj.pos))),
-                        });
-                    }
+                // check if the object hitbox collides with a line from the explosion center to the explosion max distance
+                const intersection = collider.intersectSegment(
+                    obj.collider,
+                    explosion.pos,
+                    lineEnd,
+                );
+                if (intersection) {
+                    lineCollisions.push({
+                        pos: intersection.point,
+                        obj,
+                        distance: v2.distance(explosion.pos, intersection.point),
+                        dir: v2.neg(v2.normalize(v2.sub(explosion.pos, obj.pos))),
+                    });
                 }
             }
 
