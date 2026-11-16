@@ -2,7 +2,12 @@ import { GameObjectDefs, type LootDef } from "../../../../shared/defs/gameObject
 import type { MapDef } from "../../../../shared/defs/mapDefs";
 import { GameConfig } from "../../../../shared/gameConfig";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
-import { type AABB, type Circle, coldet } from "../../../../shared/utils/coldet";
+import {
+    type AABB,
+    type Circle,
+    type Collider,
+    coldet,
+} from "../../../../shared/utils/coldet";
 import { collider } from "../../../../shared/utils/collider";
 import { math } from "../../../../shared/utils/math";
 import type { River } from "../../../../shared/utils/river";
@@ -21,6 +26,8 @@ const LOOT_DRAG = 4;
 const LOOT_PUSH_FORCE = 4;
 // cant go faster than this
 const MAX_LOOT_VELOCITY = 40;
+// how long sleeping loot waits before re-checking collisions on its own
+const LOOT_SLEEP_FALLBACK_TIME = 1;
 // explosion push force multiplier
 export const EXPLOSION_LOOT_PUSH_FORCE = 4;
 
@@ -188,6 +195,21 @@ export class LootBarn {
         }
     }
 
+    /**
+     * Wake up sleeping loot touching `collider`.
+     * Call this when an obstacle spawns, regrows, grows or rotates so loot
+     * underneath it gets pushed out. Be careful to not call it too often.
+     */
+    forceLootUpdates(collider: Collider, layer: number) {
+        const objs = this.game.grid.intersectCollider(collider);
+        for (let i = 0; i < objs.length; i++) {
+            const obj = objs[i];
+            if (obj.__type === ObjectType.Loot && util.sameLayer(obj.layer, layer)) {
+                obj.forceUpdate = true;
+            }
+        }
+    }
+
     private _addLoot(loot: Loot) {
         this.game.objectRegister.register(loot);
         this.loots.push(loot);
@@ -251,7 +273,11 @@ export class Loot extends BaseGameObject {
     ownerId = 0;
     isOld = false;
 
-    forceUpdateTicker = 1;
+    // set when obstacles around the loot change their colliders, see LootBarn.forceLootUpdates
+    forceUpdate = true;
+    // fallback wake-up for collider changes nothing calls forceLootUpdates for
+    // (e.g. prop disguises, CTF flags, npcs)
+    sleepTicker = 0;
 
     layer: number;
     type: string;
@@ -266,7 +292,8 @@ export class Loot extends BaseGameObject {
     isPropDisguise = false;
 
     vel = v2.create(0, 0);
-    oldPos = v2.create(0, 0);
+    // last position sent to clients, used to check when to set the loot to dirty
+    lastClientPos = v2.create(0, 0);
 
     collider: Circle;
     rad: number;
@@ -332,25 +359,23 @@ export class Loot extends BaseGameObject {
     }
 
     update(dt: number): void {
-        const shouldUpdate =
-            this.forceUpdateTicker > 0.3 ||
-            Math.abs(this.vel.x) > 0.001 ||
-            Math.abs(this.vel.y) > 0.001 ||
-            !v2.eq(this.oldPos, this.pos);
-
         if (this.isSkin) {
             return;
         }
 
+        // make loot "sleep" while it isn't moving
+        const shouldUpdate =
+            this.forceUpdate ||
+            this.sleepTicker > LOOT_SLEEP_FALLBACK_TIME ||
+            !v2.eq(this.vel, v2.create(0, 0), 0.01) ||
+            !v2.eq(this.lastClientPos, this.pos, 0.01);
+
         if (!shouldUpdate) {
-            // force a loot update few ms to make sure if e.g an obstacle spawned on top of the loot (airdrop, potato respawning etc)
-            // it will still resolve collision instead of sleeping forever
-            this.forceUpdateTicker += dt;
+            this.sleepTicker += dt;
             return;
         }
-        this.forceUpdateTicker = 0;
-
-        this.oldPos = v2.copy(this.pos);
+        this.forceUpdate = false;
+        this.sleepTicker = 0;
 
         v2.set(this.pos, v2.add(this.pos, v2.mul(this.vel, dt)));
         this.vel = v2.mul(this.vel, 1 / (1 + dt * LOOT_DRAG));
@@ -490,10 +515,11 @@ export class Loot extends BaseGameObject {
             this.setDirty();
         }
 
-        if (!v2.eq(this.oldPos, this.pos)) {
+        if (!v2.eq(this.lastClientPos, this.pos, 0.01)) {
             this.setPartDirty();
             this.game.grid.updateObject(this);
             this.mapIndicator?.updatePosition(this.pos);
+            v2.set(this.lastClientPos, this.pos);
         }
 
         this.game.map.clampToMapBounds(this.pos, this.rad);
