@@ -244,6 +244,10 @@ export class LocalPrediction {
         return this.state.layer;
     }
 
+    get shownPos(): Vec2 | null {
+        return this.active ? this.lastOutput : null;
+    }
+
     reset() {
         this.active = false;
         this.state = LocalPrediction.emptyState();

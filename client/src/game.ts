@@ -767,7 +767,7 @@ export class Game {
             this.m_spectating,
             Boolean(this.m_config.get("debugTools")?.invisible),
         );
-        this.applyPrediction(dt);
+        this.holdPredictedPosition();
         this.updateAmbience();
 
         const freeCameraEnabled = privateSpectator && this.m_uiManager.specFreeCamera;
@@ -1328,6 +1328,14 @@ export class Game {
             );
             this.m_inputMsgTimeout = 1;
             this.m_prevInputMsg = inputMsg;
+        }
+
+        const shownPos = v2.copy(this.m_activePlayer.m_visualPos);
+        this.applyPrediction(dt);
+        if (!this.m_freeCameraActive) {
+            const shift = v2.sub(this.m_activePlayer.m_visualPos, shownPos);
+            this.m_camera.m_pos = v2.add(this.m_camera.m_pos, shift);
+            this.m_audioManager.cameraPos = v2.copy(this.m_camera.m_pos);
         }
 
         // Clear cached data
@@ -3850,6 +3858,13 @@ export class Game {
         if (this.m_map.getMapDef().gameMode.amongUsMode) return false;
         return this.m_map.getGroundSurface(pos, layer).type === "water";
     };
+
+    holdPredictedPosition() {
+        const pos = this.m_prediction.shownPos;
+        if (!pos || !this.getPredictionTarget()) return;
+        this.m_activePlayer.m_pos = v2.copy(pos);
+        this.m_activePlayer.m_visualPos = v2.copy(pos);
+    }
 
     applyPrediction(dt: number) {
         const predicted = this.m_prediction.update(
