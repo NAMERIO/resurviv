@@ -1039,7 +1039,7 @@ export class Game {
                     participants: [...byUserId.values()],
                     replay: {
                         version: GameConfig.replayVersion,
-                        protocolVersion: GameConfig.protocolVersion,
+                        protocolVersion: GameConfig.replayProtocolVersion,
                         data: Buffer.from(replay).toString("base64"),
                     },
                 },

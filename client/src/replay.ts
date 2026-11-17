@@ -189,9 +189,9 @@ export class Replay {
         index += 4;
 
         const protocolVersion = this.view.getUint32(index);
-        if (protocolVersion != GameConfig.protocolVersion) {
+        if (protocolVersion != GameConfig.replayProtocolVersion) {
             throw new Error(
-                `Replay protocol mismatch: expected ${GameConfig.protocolVersion} got ${protocolVersion}`,
+                `Replay protocol mismatch: expected ${GameConfig.replayProtocolVersion} got ${protocolVersion}`,
             );
         }
         index += 4;

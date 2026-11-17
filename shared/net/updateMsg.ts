@@ -372,6 +372,19 @@ export const UpdateExtFlags = {
     MapIndicators: 1 << 14,
     KillLeader: 1 << 15,
     DeveloperPlayerVitals: 1 << 16,
+    Prediction: 1 << 17,
+};
+
+export interface PredictionData {
+    inputId: number;
+    moveAge: number;
+    speed: number;
+    treeClimbing: boolean;
+}
+
+export const PredictionLimits = {
+    minMoveAge: -0.25,
+    maxSpeed: 64,
 };
 
 export interface DeveloperPlayerVitals {
@@ -430,6 +443,7 @@ export class UpdateMsg implements AbstractMsg {
     killLeaderId = 0;
     killLeaderKills = 0;
     killLeaderDirty = false;
+    prediction: PredictionData | null = null;
     ack = 0;
     started = false;
 
@@ -633,6 +647,15 @@ export class UpdateMsg implements AbstractMsg {
             s.writeUint16(this.killLeaderId);
             s.writeUint8(this.killLeaderKills);
             flags |= UpdateExtFlags.KillLeader;
+        }
+
+        if (this.prediction) {
+            s.writeUint16(this.prediction.inputId);
+            s.writeFloat32(this.prediction.moveAge);
+            s.writeFloat(this.prediction.speed, 0, PredictionLimits.maxSpeed, 14);
+            s.writeBoolean(this.prediction.treeClimbing);
+            s.writeAlignToNextByte();
+            flags |= UpdateExtFlags.Prediction;
         }
 
         s.writeUint8(this.ack);
@@ -870,6 +893,17 @@ export class UpdateMsg implements AbstractMsg {
             this.killLeaderKills = s.readUint8();
             this.killLeaderDirty = true;
         }
+
+        if ((flags & UpdateExtFlags.Prediction) != 0) {
+            this.prediction = {
+                inputId: s.readUint16(),
+                moveAge: s.readFloat32(),
+                speed: s.readFloat(0, PredictionLimits.maxSpeed, 14),
+                treeClimbing: s.readBoolean(),
+            };
+            s.readAlignToNextByte();
+        }
+
         this.ack = s.readUint8();
         this.started = s.readBoolean();
     }

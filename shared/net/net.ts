@@ -439,7 +439,7 @@ export { EditMsg } from "./editMsg";
 export { EmoteMsg } from "./emoteMsg";
 export { FreeFallTicketMsg } from "./freeFallTicketMsg";
 export { GameOverMsg } from "./gameOverMsg";
-export { InputMsg } from "./inputMsg";
+export { getInputMoveDir, InputMsg } from "./inputMsg";
 export { JoinedMsg } from "./joinedMsg";
 export { JoinMsg } from "./joinMsg";
 export { KillMsg } from "./killMsg";

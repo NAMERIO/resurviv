@@ -138,6 +138,14 @@ export class DebugHUD {
             );
         }
 
+        if (this.config.get("movementPrediction")) {
+            const prediction = game.m_prediction;
+            const stats = prediction.stats;
+            this.addLine(
+                `Predict: ${prediction.active ? "on " : "off"}  Ahead: ${Math.round(stats.pendingMs)}ms  Fix/s: ${stats.correctionsPerSec.toFixed(1)}  Avg: ${stats.avgCorrection.toFixed(2)}  Max: ${stats.maxCorrection.toFixed(2)}  Snap/s: ${stats.snapsPerSec.toFixed(1)}`,
+            );
+        }
+
         if (cfg.objectPools) {
             this.addLine("-- Objects     (Active / Allocated)");
             const addCount = (name: string, active: number, allocated: number) => {

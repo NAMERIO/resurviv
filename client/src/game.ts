@@ -62,6 +62,12 @@ import { ShotBarn } from "./objects/shot";
 import { SmokeBarn } from "./objects/smoke";
 import { Renderer } from "./renderer";
 import type { ResourceManager } from "./resources";
+import {
+    getPredictionRadius,
+    LocalPrediction,
+    type PredictionTarget,
+    type PredictionWorld,
+} from "./prediction";
 import { SDK } from "./sdk/sdk";
 import type { Localization } from "./ui/localization";
 import { Touch } from "./ui/touch";
@@ -293,6 +299,7 @@ export class Game {
 
     seq!: number;
     seqInFlight!: boolean;
+    m_prediction = new LocalPrediction();
     seqSendTime!: number;
     pings!: number[];
     m_arenaPrivate = false;
@@ -593,6 +600,7 @@ export class Game {
         this.seq = 0;
         this.seqInFlight = false;
         this.seqSendTime = 0;
+        this.m_prediction.reset();
         this.pings = [];
         this.updateIntervals = [];
         this.lastUpdateTime = 0;
@@ -744,6 +752,7 @@ export class Game {
             this.m_spectating,
             Boolean(this.m_config.get("debugTools")?.invisible),
         );
+        this.applyPrediction(dt);
         this.updateAmbience();
 
         const freeCameraEnabled = privateSpectator && this.m_uiManager.specFreeCamera;
@@ -1296,7 +1305,9 @@ export class Game {
                 this.seqInFlight = true;
                 inputMsg.seq = this.seq;
             }
+            inputMsg.inputId = this.m_prediction.nextInputId();
             this.m_sendMessage(net.MsgType.Input, inputMsg, 128);
+            this.m_prediction.onInputSent(inputMsg);
             this.m_inputMsgTimeout = 1;
             this.m_prevInputMsg = inputMsg;
         }
@@ -3768,6 +3779,47 @@ export class Game {
         this.m_renderer.resize(this.m_map, this.m_camera);
     }
 
+    getPredictionTarget(): PredictionTarget | null {
+        const player = this.m_activePlayer;
+        if (
+            !player ||
+            this.m_spectating ||
+            this.m_gameOver ||
+            this.m_activeId !== this.m_localId ||
+            player.m_netData.m_dead
+        ) {
+            return null;
+        }
+        return {
+            serverPos: player.m_netData.m_pos,
+            serverLayer: player.m_netData.m_layer,
+            rad: getPredictionRadius(player.m_netData.m_scale),
+            visualPos: player.m_visualPos,
+        };
+    }
+
+    getPredictionWorld(): PredictionWorld {
+        return {
+            obstacles: this.m_map.m_obstaclePool.m_getPool(),
+            npcs: this.m_map.m_npcPool.m_getPool(),
+            structures: this.m_map.m_structurePool.m_getPool(),
+            mapWidth: this.m_map.width,
+            mapHeight: this.m_map.height,
+        };
+    }
+
+    applyPrediction(dt: number) {
+        const predicted = this.m_prediction.update(
+            dt,
+            !!this.m_config.get("movementPrediction"),
+            this.getPredictionTarget(),
+            this.getPredictionWorld(),
+        );
+        if (!predicted) return;
+        this.m_activePlayer.m_pos = v2.copy(predicted);
+        this.m_activePlayer.m_visualPos = v2.copy(predicted);
+    }
+
     m_processGameUpdate(msg: net.UpdateMsg) {
         const ctx: Ctx = {
             audioManager: this.m_audioManager,
@@ -3868,6 +3920,11 @@ export class Game {
         // The server can keep sending updates briefly after the match ends. Do not
         // let those updates reopen spectator mode over the final results screen.
         this.m_spectating = this.m_activeId != this.m_localId && !this.m_gameOver;
+        this.m_prediction.onServerUpdate(
+            msg.prediction,
+            this.getPredictionTarget(),
+            this.getPredictionWorld(),
+        );
         if (this.m_spectating) {
             this.m_uiManager.setSpectateTarget(
                 this.m_activeId,
@@ -3895,8 +3952,18 @@ export class Game {
         }
 
         // Create bullets
+        const localBulletShift =
+            this.m_prediction.active && this.m_activeId === this.m_localId
+                ? v2.sub(
+                      this.m_activePlayer.m_visualPos,
+                      this.m_activePlayer.m_netData.m_pos,
+                  )
+                : null;
         for (let i = 0; i < msg.bullets.length; i++) {
             const b = msg.bullets[i];
+            if (localBulletShift && b.playerId === this.m_localId) {
+                b.pos = v2.add(b.pos, localBulletShift);
+            }
             createBullet(
                 b,
                 this.m_bulletBarn,
