@@ -409,7 +409,7 @@ export class TeamMenu {
                 roomUrl,
                 region: this.config.get("region")!,
                 gameModeIdx: this.config.get("gameModeIdx")!,
-                autoFill: arena ? false : this.config.get("teamAutoFill")!,
+                autoFill: false,
                 arena,
                 teamsLocked: false,
                 teamCount: this.roomData.teamCount || DefaultArenaTeamCount,
@@ -1235,7 +1235,7 @@ export class TeamMenu {
         if (val === undefined) {
             return;
         }
-        if (this.arena && prop === "autoFill") {
+        if (prop === "autoFill") {
             return;
         }
         if (this.isLeader && this.roomData[prop] != val) {
@@ -1521,12 +1521,10 @@ export class TeamMenu {
             );
 
             // Fill mode
-            if (this.arena) {
-                this.roomData.autoFill = false;
-            }
-            setButtonState(this.fillAuto, this.roomData.autoFill, this.isLeader);
-            setButtonState(this.fillNone, !this.roomData.autoFill, this.isLeader);
-            const fillVisible = !this.arena;
+            this.roomData.autoFill = false;
+            setButtonState(this.fillAuto, false, this.isLeader);
+            setButtonState(this.fillNone, true, this.isLeader);
+            const fillVisible = false;
             this.fillAuto.css("display", fillVisible ? "block" : "none");
             this.fillNone.css("display", fillVisible ? "block" : "none");
             $("#team-fill-summary, #team-fill-note").css(

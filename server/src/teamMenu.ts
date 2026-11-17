@@ -68,6 +68,7 @@ class Player {
 
     inGame = false;
     inactive = false;
+    gameId = "";
 
     get isLeader() {
         // first player is always leader
@@ -160,7 +161,7 @@ class Room {
         findingGame: false,
         lastError: "",
         region: "",
-        autoFill: true,
+        autoFill: false,
         enabledGameModeIdxs: [],
         gameModeIdx: 1,
         maxPlayers: 4,
@@ -541,7 +542,7 @@ class Room {
                 ? 80
                 : this.getArenaTeamCapacity() * this.getArenaTeamCountLimit()
             : modes[gameModeIdx].teamMode;
-        this.data.autoFill = this.data.arena ? false : props.autoFill;
+        this.data.autoFill = false;
         this.data.teamsLocked = this.data.arena ? !!props.teamsLocked : false;
         this.data.disableAirstrikes = this.data.arena ? !!props.disableAirstrikes : false;
         this.data.movingZone = this.data.arena ? !!props.movingZone : false;
@@ -1199,10 +1200,21 @@ class Room {
                 ? (getPrivateLobbyMiniGameMapName(this.data.miniGame) ?? mode.mapName)
                 : mode.mapName;
 
+        const teammateGameId =
+            !this.data.arena && !isBattleRoyaleMode
+                ? this.players.find(
+                      (p) =>
+                          p !== player &&
+                          p.inGame &&
+                          p.gameId &&
+                          p.gameId !== player.gameId,
+                  )?.gameId
+                : undefined;
+
         const res = await this.teamMenu.server.findGame({
             mapName,
             teamMode: this.data.miniGame === "gun_game" ? 1 : mode.teamMode,
-            autoFill: this.data.arena ? false : this.data.autoFill,
+            autoFill: false,
             region: region,
             version: data.version,
             arenaPrivate: this.data.arena,
@@ -1218,6 +1230,7 @@ class Room {
             showEnemiesOnMap: this.data.arena ? this.data.showEnemiesOnMap : true,
             deathmatchFirstTo: this.data.deathmatchFirstTo,
             groupHash: this.data.arena ? this.id : undefined,
+            targetGameId: teammateGameId,
             playerData,
         });
 
@@ -1258,6 +1271,7 @@ class Room {
 
         for (const roomPlayer of queuedPlayers) {
             roomPlayer.inGame = true;
+            roomPlayer.gameId = res.gameId;
             if (this.isBattleRoyaleArena()) {
                 this.arenaSpectators.delete(roomPlayer);
             }

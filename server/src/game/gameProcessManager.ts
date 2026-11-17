@@ -414,9 +414,20 @@ export class GameProcessManager implements GameManager {
         body: FindGamePrivateBody,
     ): Promise<{ gameId: string; forcedSpectator?: boolean }> {
         const requestedGroupHash = body.groupHash;
-        const targetGame = body.targetGameId
+        let targetGame = body.targetGameId
             ? this.processById.get(body.targetGameId)
             : undefined;
+        if (
+            targetGame &&
+            !body.arenaPrivate &&
+            (targetGame.arenaPrivate ||
+                targetGame.mapName !== body.mapName ||
+                targetGame.teamMode !== body.teamMode ||
+                !targetGame.canJoin ||
+                targetGame.avaliableSlots <= 0)
+        ) {
+            targetGame = undefined;
+        }
         const spectatorOnly =
             !!body.arenaPrivate &&
             body.playerData.length > 0 &&
