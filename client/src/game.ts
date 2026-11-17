@@ -63,6 +63,7 @@ import { SmokeBarn } from "./objects/smoke";
 import { Renderer } from "./renderer";
 import type { ResourceManager } from "./resources";
 import {
+    getPredictionGun,
     getPredictionRadius,
     LocalPrediction,
     type PredictionTarget,
@@ -3790,11 +3791,17 @@ export class Game {
         ) {
             return null;
         }
+        const weapon = player.m_localData.m_weapons[player.m_localData.m_curWeapIdx];
         return {
             serverPos: player.m_netData.m_pos,
             serverLayer: player.m_netData.m_layer,
             rad: getPredictionRadius(player.m_netData.m_scale),
             visualPos: player.m_visualPos,
+            gun: getPredictionGun(
+                weapon?.type,
+                weapon?.ammo ?? 0,
+                player.m_netData.m_actionType,
+            ),
         };
     }
 

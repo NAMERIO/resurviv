@@ -1,7 +1,9 @@
 import { MapObjectDefs } from "../../shared/defs/mapObjectDefs";
 import type { ObstacleDef } from "../../shared/defs/mapObjectsTyping";
 import { NpcDefs } from "../../shared/defs/npcDefs";
-import { GameConfig } from "../../shared/gameConfig";
+import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
+import type { GunDef } from "../../shared/defs/gameObjects/gunDefs";
+import { Action, GameConfig } from "../../shared/gameConfig";
 import { getInputMoveDir, type InputMsg } from "../../shared/net/inputMsg";
 import { type PredictionData, PredictionLimits } from "../../shared/net/updateMsg";
 import { type AABB, type Collider, coldet } from "../../shared/utils/coldet";
@@ -27,12 +29,15 @@ interface SentInput {
     id: number;
     move: Vec2;
     moveTime: number;
+    shootStart: boolean;
+    shootHold: boolean;
 }
 
 interface Frame {
     seq: number;
     time: number;
     dt: number;
+    shooting: boolean;
 }
 
 interface SimState {
@@ -57,11 +62,17 @@ export interface PredictionWorld {
     mapHeight: number;
 }
 
+export interface PredictionGun {
+    fireDelay: number;
+    auto: boolean;
+}
+
 export interface PredictionTarget {
     serverPos: Vec2;
     serverLayer: number;
     rad: number;
     visualPos: Vec2;
+    gun: PredictionGun | null;
 }
 
 export interface PredictionStats {
@@ -76,6 +87,18 @@ export function getPredictionRadius(scale: number) {
     return scale * GameConfig.player.radius;
 }
 
+export function getPredictionGun(
+    weaponType: string | undefined,
+    ammo: number,
+    actionType: number,
+): PredictionGun | null {
+    if (!weaponType || ammo <= 0) return null;
+    if (actionType === Action.Reload || actionType === Action.ReloadAlt) return null;
+    const def = GameObjectDefs[weaponType] as GunDef | undefined;
+    if (def?.type !== "gun" || def.fireMode === "blaster") return null;
+    return { fireDelay: def.fireDelay, auto: def.fireMode === "auto" };
+}
+
 export class LocalPrediction {
     active = false;
     pos = v2.create(0, 0);
@@ -84,6 +107,12 @@ export class LocalPrediction {
 
     private clock = 0;
     private serverData: PredictionData | null = null;
+    private serverSlowdownEnd = 0;
+    private gunCooldown = 0;
+    private shotTimer = 0;
+    private lastFrameSeq = -1;
+    private lastOutput: Vec2 | null = null;
+    private releaseOffset = v2.create(0, 0);
     private inputs: SentInput[] = [];
     private frames: Frame[] = [];
     private nextSeq = 0;
@@ -106,9 +135,15 @@ export class LocalPrediction {
     reset() {
         this.active = false;
         this.serverData = null;
+        this.serverSlowdownEnd = 0;
+        this.gunCooldown = 0;
+        this.shotTimer = 0;
+        this.lastFrameSeq = -1;
+        this.lastOutput = null;
         this.inputs.length = 0;
         this.frames.length = 0;
         this.offset = v2.create(0, 0);
+        this.releaseOffset = v2.create(0, 0);
     }
 
     nextInputId() {
@@ -125,6 +160,8 @@ export class LocalPrediction {
             id: msg.inputId,
             move,
             moveTime: sameMove ? prev.moveTime : this.clock,
+            shootStart: msg.shootStart,
+            shootHold: msg.shootHold,
         });
         if (this.inputs.length > MAX_INPUTS) {
             this.inputs.splice(0, this.inputs.length - MAX_INPUTS);
@@ -146,8 +183,7 @@ export class LocalPrediction {
 
         const data = this.serverData;
         if (!enabled || !target || !data || !this.inputs.length || world.mapWidth <= 0) {
-            this.active = false;
-            return null;
+            return this.release(dt, target);
         }
 
         if (!this.active) {
@@ -155,27 +191,39 @@ export class LocalPrediction {
             this.frames.length = 0;
             this.pos = v2.copy(target.serverPos);
             this.layer = target.serverLayer;
-            const offset = v2.sub(target.visualPos, this.pos);
+            const shown = v2.add(target.visualPos, this.releaseOffset);
+            const offset = v2.sub(shown, this.pos);
             this.offset = v2.length(offset) < SNAP_DIST ? offset : v2.create(0, 0);
+            this.releaseOffset = v2.create(0, 0);
         }
 
         const input = this.inputs[this.inputs.length - 1];
-        this.frames.push({ seq: input.seq, time: this.clock - dt, dt });
+        const shooting = this.updateShooting(dt, input, target.gun);
+        this.frames.push({ seq: input.seq, time: this.clock - dt, dt, shooting });
 
         if (this.clock - this.frames[0].time > MAX_PENDING_TIME) {
             this.frames.length = 0;
             this.pos = v2.copy(target.serverPos);
             this.layer = target.serverLayer;
         } else {
+            const frame = this.frames[this.frames.length - 1];
             const env = this.buildEnv(
                 world,
                 this.pos,
                 target.rad,
-                data.speed * dt,
+                Math.max(data.speed, data.shootSpeed) * dt,
                 data.treeClimbing,
             );
             const state: SimState = { pos: this.pos, layer: this.layer };
-            this.simulate(state, input.move, dt, data.speed, env);
+            this.simulateSegment(
+                state,
+                input.move,
+                frame,
+                frame.time,
+                frame.time + dt,
+                data,
+                env,
+            );
             this.layer = state.layer;
         }
 
@@ -184,7 +232,72 @@ export class LocalPrediction {
             this.offset = v2.create(0, 0);
         }
 
-        return v2.add(this.pos, this.offset);
+        const output = v2.add(this.pos, this.offset);
+        this.lastOutput = v2.copy(output);
+        return output;
+    }
+
+    private release(dt: number, target: PredictionTarget | null): Vec2 | null {
+        if (this.active && target && this.lastOutput) {
+            const offset = v2.sub(this.lastOutput, target.visualPos);
+            this.releaseOffset = v2.length(offset) < SNAP_DIST ? offset : v2.create(0, 0);
+        }
+        this.active = false;
+        this.lastOutput = null;
+        this.lastFrameSeq = -1;
+        this.shotTimer = 0;
+
+        if (!target) {
+            this.releaseOffset = v2.create(0, 0);
+            return null;
+        }
+        this.releaseOffset = v2.mul(this.releaseOffset, Math.exp(-dt / SMOOTH_TIME));
+        if (v2.lengthSqr(this.releaseOffset) < 1e-8) {
+            this.releaseOffset = v2.create(0, 0);
+            return null;
+        }
+        return v2.add(target.visualPos, this.releaseOffset);
+    }
+
+    private updateShooting(dt: number, input: SentInput, gun: PredictionGun | null) {
+        const firstFrame = input.seq !== this.lastFrameSeq;
+        this.lastFrameSeq = input.seq;
+        this.gunCooldown = Math.max(0, this.gunCooldown - dt);
+
+        if (gun) {
+            const trigger =
+                (input.shootStart && firstFrame) || (input.shootHold && gun.auto);
+            if (trigger && this.gunCooldown <= 0) {
+                this.gunCooldown = gun.fireDelay;
+                this.shotTimer = gun.fireDelay;
+            }
+        }
+
+        const shooting = this.shotTimer > 0;
+        this.shotTimer = Math.max(0, this.shotTimer - dt);
+        return shooting;
+    }
+
+    private simulateSegment(
+        state: SimState,
+        move: Vec2,
+        frame: Frame,
+        start: number,
+        end: number,
+        data: PredictionData,
+        env: SimEnv,
+    ) {
+        if (frame.shooting) {
+            this.simulate(state, move, end - start, data.shootSpeed, env);
+            return;
+        }
+        const slowEnd = math.clamp(this.serverSlowdownEnd, start, end);
+        if (slowEnd > start) {
+            this.simulate(state, move, slowEnd - start, data.shootSpeed, env);
+        }
+        if (end > slowEnd) {
+            this.simulate(state, move, end - slowEnd, data.speed, env);
+        }
     }
 
     onServerUpdate(
@@ -208,6 +321,7 @@ export class LocalPrediction {
             const ack = this.inputs[ackIdx];
             const cut =
                 ack.moveTime + Math.max(data.moveAge, PredictionLimits.minMoveAge);
+            this.serverSlowdownEnd = cut + data.slowdownLeft;
 
             let drop = 0;
             while (
@@ -243,7 +357,7 @@ export class LocalPrediction {
                     world,
                     state.pos,
                     target.rad,
-                    data.speed * replayTime,
+                    Math.max(data.speed, data.shootSpeed) * replayTime,
                     data.treeClimbing,
                 );
                 const firstSeq = this.inputs[0].seq;
@@ -254,7 +368,7 @@ export class LocalPrediction {
                     if (end <= start) continue;
                     const input = this.inputs[frame.seq - firstSeq];
                     if (!input) continue;
-                    this.simulate(state, input.move, end - start, data.speed, env);
+                    this.simulateSegment(state, input.move, frame, start, end, data, env);
                 }
             }
             this.stats.pendingMs = replayTime * 1000;

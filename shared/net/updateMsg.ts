@@ -379,12 +379,15 @@ export interface PredictionData {
     inputId: number;
     moveAge: number;
     speed: number;
+    shootSpeed: number;
+    slowdownLeft: number;
     treeClimbing: boolean;
 }
 
 export const PredictionLimits = {
     minMoveAge: -0.25,
     maxSpeed: 64,
+    maxSlowdown: 4,
 };
 
 export interface DeveloperPlayerVitals {
@@ -653,6 +656,13 @@ export class UpdateMsg implements AbstractMsg {
             s.writeUint16(this.prediction.inputId);
             s.writeFloat32(this.prediction.moveAge);
             s.writeFloat(this.prediction.speed, 0, PredictionLimits.maxSpeed, 14);
+            s.writeFloat(this.prediction.shootSpeed, 0, PredictionLimits.maxSpeed, 14);
+            s.writeFloat(
+                this.prediction.slowdownLeft,
+                0,
+                PredictionLimits.maxSlowdown,
+                12,
+            );
             s.writeBoolean(this.prediction.treeClimbing);
             s.writeAlignToNextByte();
             flags |= UpdateExtFlags.Prediction;
@@ -899,6 +909,8 @@ export class UpdateMsg implements AbstractMsg {
                 inputId: s.readUint16(),
                 moveAge: s.readFloat32(),
                 speed: s.readFloat(0, PredictionLimits.maxSpeed, 14),
+                shootSpeed: s.readFloat(0, PredictionLimits.maxSpeed, 14),
+                slowdownLeft: s.readFloat(0, PredictionLimits.maxSlowdown, 12),
                 treeClimbing: s.readBoolean(),
             };
             s.readAlignToNextByte();

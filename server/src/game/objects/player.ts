@@ -8690,8 +8690,11 @@ export class Player extends BaseGameObject {
         }
 
         const treeClimbing = this.hasPerk("tree_climbing");
-        const speed = this.getMoveSpeed(treeClimbing);
-        if (speed > PredictionLimits.maxSpeed) return null;
+        const speed = this.getMoveSpeed(treeClimbing, false);
+        const shootSpeed = this.getMoveSpeed(treeClimbing, true);
+        if (speed > PredictionLimits.maxSpeed || shootSpeed > PredictionLimits.maxSpeed) {
+            return null;
+        }
 
         return {
             inputId: this.predictInputId,
@@ -8700,11 +8703,20 @@ export class Player extends BaseGameObject {
                 PredictionLimits.minMoveAge,
             ),
             speed,
+            shootSpeed,
+            slowdownLeft: math.clamp(
+                this.shotSlowdownTimer,
+                0,
+                PredictionLimits.maxSlowdown,
+            ),
             treeClimbing,
         };
     }
 
-    getMoveSpeed(hasTreeClimbing: boolean): number {
+    getMoveSpeed(
+        hasTreeClimbing: boolean,
+        shotSlowdown = this.shotSlowdownTimer > 0,
+    ): number {
         let speed: number;
         if (this.debug.speedEnabled) {
             speed = this.debug.speed;
@@ -8737,7 +8749,7 @@ export class Player extends BaseGameObject {
             speed += equipSpeed;
         }
 
-        if (this.shotSlowdownTimer > 0 && weaponDef.speed.attack !== undefined) {
+        if (shotSlowdown && weaponDef.speed.attack !== undefined) {
             speed += weaponDef.speed.attack;
         }
 
@@ -8773,7 +8785,7 @@ export class Player extends BaseGameObject {
         // decrease speed if shooting or popping adren or heals
         // field_medic perk doesn't slow you down while you heal
         if (
-            this.shotSlowdownTimer > 0 ||
+            shotSlowdown ||
             (!hasFieldMedic && this.actionType == GameConfig.Action.UseItem)
         ) {
             speed *= 0.5;
