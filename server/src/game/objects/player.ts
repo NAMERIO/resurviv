@@ -56,6 +56,8 @@ import {
     type GroupStatus,
     type PlayerInfo,
     type PredictionData,
+    PredictionFireMode,
+    type PredictionGunData,
     PredictionLimits,
 } from "../../../../shared/net/updateMsg";
 import { type Circle, coldet } from "../../../../shared/utils/coldet";
@@ -5228,6 +5230,9 @@ export class Player extends BaseGameObject {
             updateMsg.activePlayerData = player;
         }
         updateMsg.prediction = player === this ? this.getPredictionData() : null;
+        updateMsg.serverTime = this.game.now
+            ? Math.floor(this.game.now) % 0x100000000
+            : -1;
 
         updateMsg.playerInfos = (
             this._firstUpdate
@@ -8690,9 +8695,14 @@ export class Player extends BaseGameObject {
         }
 
         const treeClimbing = this.hasPerk("tree_climbing");
-        const speed = this.getMoveSpeed(treeClimbing, false);
-        const shootSpeed = this.getMoveSpeed(treeClimbing, true);
-        if (speed > PredictionLimits.maxSpeed || shootSpeed > PredictionLimits.maxSpeed) {
+        const speed = this.getMoveSpeed(treeClimbing, false, false);
+        const shootSpeed = this.getMoveSpeed(treeClimbing, true, false);
+        const waterSpeed = this.getMoveSpeed(treeClimbing, false, true);
+        const waterShootSpeed = this.getMoveSpeed(treeClimbing, true, true);
+        if (
+            Math.max(speed, shootSpeed, waterSpeed, waterShootSpeed) >
+            PredictionLimits.maxSpeed
+        ) {
             return null;
         }
 
@@ -8704,18 +8714,73 @@ export class Player extends BaseGameObject {
             ),
             speed,
             shootSpeed,
+            waterSpeed,
+            waterShootSpeed,
             slowdownLeft: math.clamp(
                 this.shotSlowdownTimer,
                 0,
                 PredictionLimits.maxSlowdown,
             ),
+            tickInterval: this.game.tickInterval,
             treeClimbing,
+            gun: this.getPredictionGunData(),
+        };
+    }
+
+    getPredictionGunData(): PredictionGunData | null {
+        const weaponManager = this.weaponManager;
+        const itemDef = GameObjectDefs[weaponManager.activeWeapon] as GunDef | undefined;
+        if (itemDef?.type !== "gun") return null;
+        const weapon = weaponManager.weapons[weaponManager.curWeapIdx];
+        if (!weapon) return null;
+
+        let mode = PredictionFireMode.None;
+        if (itemDef.fireMode === "auto") mode = PredictionFireMode.Auto;
+        else if (itemDef.fireMode === "single") mode = PredictionFireMode.Single;
+        else if (itemDef.fireMode === "burst") mode = PredictionFireMode.Burst;
+
+        if (
+            this.downed ||
+            this.shootDisabledTimer > 0 ||
+            this.debug.shootFast ||
+            weaponManager.activeWeapon === "prop_o_matic" ||
+            (itemDef.outsideOnly && this.indoors) ||
+            weaponManager.bursts.length > PredictionLimits.maxBursts
+        ) {
+            mode = PredictionFireMode.None;
+        }
+        if (mode === PredictionFireMode.None) return null;
+
+        let fireCooldown = itemDef.fireDelay;
+        if (this.hasPerk("streak_rapid_fire_effect")) {
+            fireCooldown *= DamageStreakProperties.streak_rapid_fire_effect.fireDelayMult;
+        }
+
+        return {
+            mode,
+            cooldown: math.clamp(
+                weapon.cooldown,
+                PredictionLimits.minCooldown,
+                PredictionLimits.maxCooldown,
+            ),
+            fireCooldown,
+            slowdownTime: itemDef.fireDelay,
+            burstCount: math.clamp(
+                itemDef.burstCount ?? 0,
+                0,
+                PredictionLimits.maxBursts,
+            ),
+            burstDelay: itemDef.burstDelay ?? 0,
+            bursts: weaponManager.bursts.slice(),
+            ammo: math.clamp(weapon.ammo, 0, PredictionLimits.maxAmmo),
+            buffered: this.shootStart,
         };
     }
 
     getMoveSpeed(
         hasTreeClimbing: boolean,
         shotSlowdown = this.shotSlowdownTimer > 0,
+        onWater = this.game.map.isOnWater(this.pos, this.layer),
     ): number {
         let speed: number;
         if (this.debug.speedEnabled) {
@@ -8754,8 +8819,7 @@ export class Player extends BaseGameObject {
         }
 
         // if player is on water decrease speed
-        const isOnWater = this.game.map.isOnWater(this.pos, this.layer);
-        if (isOnWater) {
+        if (onWater) {
             speed -= hasTreeClimbing
                 ? -PerkProperties.tree_climbing.waterSpeedBoost
                 : GameConfig.player.waterSpeedPenalty;

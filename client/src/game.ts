@@ -42,6 +42,7 @@ import { Gas } from "./gas";
 import { helpers } from "./helpers";
 import { GamepadButton, type InputHandler, Key, MouseWheel } from "./input";
 import type { InputBinds, InputBindUi } from "./inputBinds";
+import { interpClock } from "./interpClock";
 import type { SoundHandle } from "./lib/createJS";
 import { Map } from "./map";
 import { AirdropBarn } from "./objects/airdrop";
@@ -60,15 +61,14 @@ import { type Player, PlayerBarn } from "./objects/player";
 import { ProjectileBarn } from "./objects/projectile";
 import { ShotBarn } from "./objects/shot";
 import { SmokeBarn } from "./objects/smoke";
-import { Renderer } from "./renderer";
-import type { ResourceManager } from "./resources";
 import {
-    getPredictionGun,
     getPredictionRadius,
     LocalPrediction,
     type PredictionTarget,
     type PredictionWorld,
 } from "./prediction";
+import { Renderer } from "./renderer";
+import type { ResourceManager } from "./resources";
 import { SDK } from "./sdk/sdk";
 import type { Localization } from "./ui/localization";
 import { Touch } from "./ui/touch";
@@ -602,6 +602,7 @@ export class Game {
         this.seqInFlight = false;
         this.seqSendTime = 0;
         this.m_prediction.reset();
+        interpClock.reset();
         this.pings = [];
         this.updateIntervals = [];
         this.lastUpdateTime = 0;
@@ -735,6 +736,7 @@ export class Game {
             spectatorVitals ||
             ((IS_DEV || this.canUseDeveloper()) &&
                 Boolean(this.m_config.get("debugTools")?.showPlayerHealth));
+        interpClock.tick(performance.now());
         this.m_playerBarn.m_update(
             dt,
             this.m_activeId,
@@ -3791,17 +3793,11 @@ export class Game {
         ) {
             return null;
         }
-        const weapon = player.m_localData.m_weapons[player.m_localData.m_curWeapIdx];
         return {
             serverPos: player.m_netData.m_pos,
             serverLayer: player.m_netData.m_layer,
             rad: getPredictionRadius(player.m_netData.m_scale),
             visualPos: player.m_visualPos,
-            gun: getPredictionGun(
-                weapon?.type,
-                weapon?.ammo ?? 0,
-                player.m_netData.m_actionType,
-            ),
         };
     }
 
@@ -3812,8 +3808,14 @@ export class Game {
             structures: this.m_map.m_structurePool.m_getPool(),
             mapWidth: this.m_map.width,
             mapHeight: this.m_map.height,
+            isOnWater: this.isPredictionOnWater,
         };
     }
+
+    isPredictionOnWater = (pos: Vec2, layer: number) => {
+        if (this.m_map.getMapDef().gameMode.amongUsMode) return false;
+        return this.m_map.getGroundSurface(pos, layer).type === "water";
+    };
 
     applyPrediction(dt: number) {
         const predicted = this.m_prediction.update(
@@ -3828,6 +3830,7 @@ export class Game {
     }
 
     m_processGameUpdate(msg: net.UpdateMsg) {
+        interpClock.onSnapshot(msg.serverTime, performance.now());
         const ctx: Ctx = {
             audioManager: this.m_audioManager,
             renderer: this.m_renderer,
@@ -4047,7 +4050,12 @@ export class Game {
         }
         if (this.lastUpdateTime > 0) {
             const interval = now - this.lastUpdateTime;
-            this.m_camera.m_interpInterval = interval / 1000;
+            const prevInterval = this.m_camera.m_interpInterval;
+            this.m_camera.m_interpInterval =
+                prevInterval > 0
+                    ? prevInterval +
+                      (math.clamp(interval, 1, 250) / 1000 - prevInterval) * 0.1
+                    : interval / 1000;
             this.updateIntervals.push(interval);
         }
         this.lastUpdateTime = now;

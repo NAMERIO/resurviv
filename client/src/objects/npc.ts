@@ -10,6 +10,7 @@ import { type Vec2, v2 } from "../../../shared/utils/v2";
 import type { AudioManager } from "../audioManager";
 import type { Camera } from "../camera";
 import type { Ctx } from "../game";
+import { SnapshotBuffer } from "../interpClock";
 import type { SoundHandle } from "../lib/createJS";
 import type { Map } from "../map";
 import type { Renderer } from "../renderer";
@@ -132,6 +133,7 @@ export class Npc implements AbstractObject {
     vehicleVisualRot = 0;
     vehicleVisualRotOld = 0;
     vehicleInterpTicker = 0;
+    vehicleSnapshots = new SnapshotBuffer();
     scale = 1;
     speed = 0;
     gear = 0;
@@ -201,6 +203,7 @@ export class Npc implements AbstractObject {
             tire.visible = false;
         }
         this.vehicleInterpTicker = 0;
+        this.vehicleSnapshots.clear();
     }
 
     m_free() {
@@ -258,6 +261,9 @@ export class Npc implements AbstractObject {
         }
         this.posOld = isNew ? v2.copy(data.pos) : v2.copy(this.pos);
         this.pos = v2.copy(data.pos);
+        if (isVehicle) {
+            this.vehicleSnapshots.push(data.pos, v2.create(1, 0), isNew);
+        }
         this.rot = data.ori;
         this.scale = data.scale;
         const previousSpeed = this.speed;
@@ -461,12 +467,18 @@ export class Npc implements AbstractObject {
             if (locallyDriven) {
                 this.visualPos = v2.copy(activePlayer.m_visualPos);
             } else if (camera.m_interpEnabled) {
-                const interpolationT = math.clamp(
-                    this.vehicleInterpTicker / Math.max(camera.m_interpInterval, 0.001),
-                    0,
-                    1,
-                );
-                this.visualPos = v2.lerp(interpolationT, this.visualPosOld, this.pos);
+                const bufferedPos = v2.create(0, 0);
+                if (this.vehicleSnapshots.sample(bufferedPos, null)) {
+                    this.visualPos = bufferedPos;
+                } else {
+                    const interpolationT = math.clamp(
+                        this.vehicleInterpTicker /
+                            Math.max(camera.m_interpInterval, 0.001),
+                        0,
+                        1,
+                    );
+                    this.visualPos = v2.lerp(interpolationT, this.visualPosOld, this.pos);
+                }
             } else {
                 this.visualPos = v2.copy(this.pos);
             }

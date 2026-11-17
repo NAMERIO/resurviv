@@ -1,11 +1,14 @@
 import { MapObjectDefs } from "../../shared/defs/mapObjectDefs";
 import type { ObstacleDef } from "../../shared/defs/mapObjectsTyping";
 import { NpcDefs } from "../../shared/defs/npcDefs";
-import { GameObjectDefs } from "../../shared/defs/gameObjectDefs";
-import type { GunDef } from "../../shared/defs/gameObjects/gunDefs";
-import { Action, GameConfig } from "../../shared/gameConfig";
+import { GameConfig, Input } from "../../shared/gameConfig";
 import { getInputMoveDir, type InputMsg } from "../../shared/net/inputMsg";
-import { type PredictionData, PredictionLimits } from "../../shared/net/updateMsg";
+import {
+    type PredictionData,
+    PredictionFireMode,
+    type PredictionGunData,
+    PredictionLimits,
+} from "../../shared/net/updateMsg";
 import { type AABB, type Collider, coldet } from "../../shared/utils/coldet";
 import { collider } from "../../shared/utils/collider";
 import { math } from "../../shared/utils/math";
@@ -23,6 +26,37 @@ const FRAME_KEEP_TIME = 0.5;
 const MAX_INPUTS = 4096;
 const BROADPHASE_MARGIN = 2;
 const CORRECTION_EPSILON = 0.05;
+const SINGLE_BUFFER_TIME = 0.1;
+const MAX_CATCHUP_TICKS = 10;
+const MIN_TICK = 1 / 250;
+const MAX_TICK = 1 / 20;
+
+const GUN_BLOCKING_INPUTS = new Set<Input>([
+    Input.Reload,
+    Input.Cancel,
+    Input.Interact,
+    Input.Revive,
+    Input.Use,
+    Input.Loot,
+    Input.EquipPrimary,
+    Input.EquipSecondary,
+    Input.EquipMelee,
+    Input.EquipThrowable,
+    Input.EquipFragGrenade,
+    Input.EquipSmokeGrenade,
+    Input.EquipNextWeap,
+    Input.EquipPrevWeap,
+    Input.EquipLastWeap,
+    Input.EquipOtherGun,
+    Input.UseBandage,
+    Input.UseHealthKit,
+    Input.UseSoda,
+    Input.UsePainkiller,
+    Input.UseNitroLace,
+    Input.StowWeapons,
+    Input.SwapWeapSlots,
+    Input.ActivateStreak,
+]);
 
 interface SentInput {
     seq: number;
@@ -31,27 +65,48 @@ interface SentInput {
     moveTime: number;
     shootStart: boolean;
     shootHold: boolean;
+    gunBlock: boolean;
 }
 
 interface Frame {
     seq: number;
     time: number;
     dt: number;
-    shooting: boolean;
+}
+
+interface GunSim {
+    mode: PredictionFireMode;
+    cooldown: number;
+    fireCooldown: number;
+    slowdownTime: number;
+    burstCount: number;
+    burstDelay: number;
+    bursts: number[];
+    ammo: number;
+    pendingStart: boolean;
 }
 
 interface SimState {
     pos: Vec2;
     layer: number;
+    slowdown: number;
+    gun: GunSim | null;
+    lastSeq: number;
+    nextTick: number;
+    tickDt: number;
+    openedDoors: Set<Obstacle>;
 }
 
 interface SimEnv {
     obstacles: Obstacle[];
+    autoDoors: Obstacle[];
     npcs: Npc[];
     structures: Structure[];
     rad: number;
     mapWidth: number;
     mapHeight: number;
+    checkWater: boolean;
+    isOnWater: (pos: Vec2, layer: number) => boolean;
 }
 
 export interface PredictionWorld {
@@ -60,11 +115,7 @@ export interface PredictionWorld {
     structures: Structure[];
     mapWidth: number;
     mapHeight: number;
-}
-
-export interface PredictionGun {
-    fireDelay: number;
-    auto: boolean;
+    isOnWater: (pos: Vec2, layer: number) => boolean;
 }
 
 export interface PredictionTarget {
@@ -72,7 +123,6 @@ export interface PredictionTarget {
     serverLayer: number;
     rad: number;
     visualPos: Vec2;
-    gun: PredictionGun | null;
 }
 
 export interface PredictionStats {
@@ -87,30 +137,53 @@ export function getPredictionRadius(scale: number) {
     return scale * GameConfig.player.radius;
 }
 
-export function getPredictionGun(
-    weaponType: string | undefined,
-    ammo: number,
-    actionType: number,
-): PredictionGun | null {
-    if (!weaponType || ammo <= 0) return null;
-    if (actionType === Action.Reload || actionType === Action.ReloadAlt) return null;
-    const def = GameObjectDefs[weaponType] as GunDef | undefined;
-    if (def?.type !== "gun" || def.fireMode === "blaster") return null;
-    return { fireDelay: def.fireDelay, auto: def.fireMode === "auto" };
+function cloneGun(gun: PredictionGunData | null): GunSim | null {
+    if (!gun || gun.mode === PredictionFireMode.None) return null;
+    return {
+        mode: gun.mode,
+        cooldown: gun.cooldown,
+        fireCooldown: gun.fireCooldown,
+        slowdownTime: gun.slowdownTime,
+        burstCount: gun.burstCount,
+        burstDelay: gun.burstDelay,
+        bursts: gun.bursts.slice(),
+        ammo: gun.ammo,
+        pendingStart: gun.buffered,
+    };
+}
+
+function isGunBlocking(msg: InputMsg) {
+    if (msg.useItem || msg.streakIdx >= 0) return true;
+    for (let i = 0; i < msg.inputs.length; i++) {
+        if (GUN_BLOCKING_INPUTS.has(msg.inputs[i])) return true;
+    }
+    return false;
+}
+
+function doorOpensFor(obstacle: Obstacle, pos: Vec2) {
+    const door = obstacle.door;
+    if (!obstacle.isDoor || !door) return false;
+    if (!door.autoOpen || door.open || door.locked || door.canUse === false) return false;
+    const def = MapObjectDefs[obstacle.type] as ObstacleDef;
+    if ((def.door?.openDelay ?? 0) > 0) return false;
+    const openOneWay = Number(door.openOneWay) || 0;
+    if (openOneWay) {
+        const toDoor = v2.sub(obstacle.pos, pos);
+        const doorDir = v2.rotate(v2.create(1, 0), obstacle.rot);
+        const side = v2.dot(toDoor, doorDir) < 0 ? -1 : 1;
+        if (side !== openOneWay) return false;
+    }
+    return true;
 }
 
 export class LocalPrediction {
     active = false;
-    pos = v2.create(0, 0);
-    layer = 0;
     offset = v2.create(0, 0);
 
+    private state: SimState = LocalPrediction.emptyState();
     private clock = 0;
     private serverData: PredictionData | null = null;
-    private serverSlowdownEnd = 0;
-    private gunCooldown = 0;
-    private shotTimer = 0;
-    private lastFrameSeq = -1;
+    private ackSeq = -1;
     private lastOutput: Vec2 | null = null;
     private releaseOffset = v2.create(0, 0);
     private inputs: SentInput[] = [];
@@ -132,13 +205,32 @@ export class LocalPrediction {
         pendingMs: 0,
     };
 
+    private static emptyState(): SimState {
+        return {
+            pos: v2.create(0, 0),
+            layer: 0,
+            slowdown: 0,
+            gun: null,
+            lastSeq: -1,
+            nextTick: 0,
+            tickDt: SERVER_TICK,
+            openedDoors: new Set(),
+        };
+    }
+
+    get pos() {
+        return this.state.pos;
+    }
+
+    get layer() {
+        return this.state.layer;
+    }
+
     reset() {
         this.active = false;
+        this.state = LocalPrediction.emptyState();
         this.serverData = null;
-        this.serverSlowdownEnd = 0;
-        this.gunCooldown = 0;
-        this.shotTimer = 0;
-        this.lastFrameSeq = -1;
+        this.ackSeq = -1;
         this.lastOutput = null;
         this.inputs.length = 0;
         this.frames.length = 0;
@@ -162,6 +254,7 @@ export class LocalPrediction {
             moveTime: sameMove ? prev.moveTime : this.clock,
             shootStart: msg.shootStart,
             shootHold: msg.shootHold,
+            gunBlock: isGunBlocking(msg),
         });
         if (this.inputs.length > MAX_INPUTS) {
             this.inputs.splice(0, this.inputs.length - MAX_INPUTS);
@@ -186,45 +279,33 @@ export class LocalPrediction {
             return this.release(dt, target);
         }
 
+        const input = this.inputs[this.inputs.length - 1];
+
         if (!this.active) {
             this.active = true;
             this.frames.length = 0;
-            this.pos = v2.copy(target.serverPos);
-            this.layer = target.serverLayer;
+            this.state = this.serverState(target, data, input.seq, this.clock - dt);
             const shown = v2.add(target.visualPos, this.releaseOffset);
-            const offset = v2.sub(shown, this.pos);
+            const offset = v2.sub(shown, this.state.pos);
             this.offset = v2.length(offset) < SNAP_DIST ? offset : v2.create(0, 0);
             this.releaseOffset = v2.create(0, 0);
         }
 
-        const input = this.inputs[this.inputs.length - 1];
-        const shooting = this.updateShooting(dt, input, target.gun);
-        this.frames.push({ seq: input.seq, time: this.clock - dt, dt, shooting });
+        const frame: Frame = { seq: input.seq, time: this.clock - dt, dt };
+        this.frames.push(frame);
 
         if (this.clock - this.frames[0].time > MAX_PENDING_TIME) {
             this.frames.length = 0;
-            this.pos = v2.copy(target.serverPos);
-            this.layer = target.serverLayer;
+            this.state = this.serverState(target, data, input.seq, this.clock - dt);
         } else {
-            const frame = this.frames[this.frames.length - 1];
             const env = this.buildEnv(
                 world,
-                this.pos,
+                this.state.pos,
                 target.rad,
-                Math.max(data.speed, data.shootSpeed) * dt,
-                data.treeClimbing,
-            );
-            const state: SimState = { pos: this.pos, layer: this.layer };
-            this.simulateSegment(
-                state,
-                input.move,
-                frame,
-                frame.time,
-                frame.time + dt,
+                this.maxSpeed(data) * dt,
                 data,
-                env,
             );
-            this.layer = state.layer;
+            this.runFrame(this.state, input, frame.time, frame.time + dt, data, env);
         }
 
         this.offset = v2.mul(this.offset, Math.exp(-dt / SMOOTH_TIME));
@@ -232,72 +313,9 @@ export class LocalPrediction {
             this.offset = v2.create(0, 0);
         }
 
-        const output = v2.add(this.pos, this.offset);
+        const output = v2.add(this.state.pos, this.offset);
         this.lastOutput = v2.copy(output);
         return output;
-    }
-
-    private release(dt: number, target: PredictionTarget | null): Vec2 | null {
-        if (this.active && target && this.lastOutput) {
-            const offset = v2.sub(this.lastOutput, target.visualPos);
-            this.releaseOffset = v2.length(offset) < SNAP_DIST ? offset : v2.create(0, 0);
-        }
-        this.active = false;
-        this.lastOutput = null;
-        this.lastFrameSeq = -1;
-        this.shotTimer = 0;
-
-        if (!target) {
-            this.releaseOffset = v2.create(0, 0);
-            return null;
-        }
-        this.releaseOffset = v2.mul(this.releaseOffset, Math.exp(-dt / SMOOTH_TIME));
-        if (v2.lengthSqr(this.releaseOffset) < 1e-8) {
-            this.releaseOffset = v2.create(0, 0);
-            return null;
-        }
-        return v2.add(target.visualPos, this.releaseOffset);
-    }
-
-    private updateShooting(dt: number, input: SentInput, gun: PredictionGun | null) {
-        const firstFrame = input.seq !== this.lastFrameSeq;
-        this.lastFrameSeq = input.seq;
-        this.gunCooldown = Math.max(0, this.gunCooldown - dt);
-
-        if (gun) {
-            const trigger =
-                (input.shootStart && firstFrame) || (input.shootHold && gun.auto);
-            if (trigger && this.gunCooldown <= 0) {
-                this.gunCooldown = gun.fireDelay;
-                this.shotTimer = gun.fireDelay;
-            }
-        }
-
-        const shooting = this.shotTimer > 0;
-        this.shotTimer = Math.max(0, this.shotTimer - dt);
-        return shooting;
-    }
-
-    private simulateSegment(
-        state: SimState,
-        move: Vec2,
-        frame: Frame,
-        start: number,
-        end: number,
-        data: PredictionData,
-        env: SimEnv,
-    ) {
-        if (frame.shooting) {
-            this.simulate(state, move, end - start, data.shootSpeed, env);
-            return;
-        }
-        const slowEnd = math.clamp(this.serverSlowdownEnd, start, end);
-        if (slowEnd > start) {
-            this.simulate(state, move, slowEnd - start, data.shootSpeed, env);
-        }
-        if (end > slowEnd) {
-            this.simulate(state, move, end - slowEnd, data.speed, env);
-        }
     }
 
     onServerUpdate(
@@ -306,22 +324,24 @@ export class LocalPrediction {
         world: PredictionWorld,
     ) {
         this.serverData = data ?? null;
-        if (!this.active || !data || !target) return;
-
-        const state: SimState = {
-            pos: v2.copy(target.serverPos),
-            layer: target.serverLayer,
-        };
+        if (!data) return;
 
         const ackIdx = this.findInputIdx(data.inputId);
+        if (ackIdx >= 0) this.ackSeq = this.inputs[ackIdx].seq;
+        if (!this.active || !target) return;
+
+        const lastSeq = this.inputs.length ? this.inputs[this.inputs.length - 1].seq : -1;
+        let state: SimState;
+
         if (ackIdx < 0) {
+            state = this.serverState(target, data, lastSeq, this.clock);
             this.frames.length = 0;
             this.stats.pendingMs = 0;
         } else {
             const ack = this.inputs[ackIdx];
             const cut =
                 ack.moveTime + Math.max(data.moveAge, PredictionLimits.minMoveAge);
-            this.serverSlowdownEnd = cut + data.slowdownLeft;
+            state = this.serverState(target, data, ack.seq, cut);
 
             let drop = 0;
             while (
@@ -357,8 +377,8 @@ export class LocalPrediction {
                     world,
                     state.pos,
                     target.rad,
-                    Math.max(data.speed, data.shootSpeed) * replayTime,
-                    data.treeClimbing,
+                    this.maxSpeed(data) * replayTime,
+                    data,
                 );
                 const firstSeq = this.inputs[0].seq;
                 for (let i = 0; i < this.frames.length; i++) {
@@ -368,13 +388,13 @@ export class LocalPrediction {
                     if (end <= start) continue;
                     const input = this.inputs[frame.seq - firstSeq];
                     if (!input) continue;
-                    this.simulateSegment(state, input.move, frame, start, end, data, env);
+                    this.runFrame(state, input, start, end, data, env);
                 }
             }
             this.stats.pendingMs = replayTime * 1000;
         }
 
-        const delta = v2.sub(this.pos, state.pos);
+        const delta = v2.sub(this.state.pos, state.pos);
         const error = v2.length(delta);
         if (error > SNAP_DIST) {
             this.offset = v2.create(0, 0);
@@ -391,8 +411,170 @@ export class LocalPrediction {
             this.statCorrectionMax = Math.max(this.statCorrectionMax, error);
         }
 
-        this.pos = state.pos;
-        this.layer = state.layer;
+        this.state = state;
+    }
+
+    private serverState(
+        target: PredictionTarget,
+        data: PredictionData,
+        lastSeq: number,
+        tickTime: number,
+    ): SimState {
+        const tickDt = math.clamp(data.tickInterval || SERVER_TICK, MIN_TICK, MAX_TICK);
+        return {
+            pos: v2.copy(target.serverPos),
+            layer: target.serverLayer,
+            slowdown: data.slowdownLeft,
+            gun: cloneGun(data.gun),
+            lastSeq,
+            nextTick: tickTime + tickDt,
+            tickDt,
+            openedDoors: new Set(),
+        };
+    }
+
+    private maxSpeed(data: PredictionData) {
+        return Math.max(
+            data.speed,
+            data.shootSpeed,
+            data.waterSpeed,
+            data.waterShootSpeed,
+        );
+    }
+
+    private release(dt: number, target: PredictionTarget | null): Vec2 | null {
+        if (this.active && target && this.lastOutput) {
+            const offset = v2.sub(this.lastOutput, target.visualPos);
+            this.releaseOffset = v2.length(offset) < SNAP_DIST ? offset : v2.create(0, 0);
+        }
+        this.active = false;
+        this.lastOutput = null;
+
+        if (!target) {
+            this.releaseOffset = v2.create(0, 0);
+            return null;
+        }
+        this.releaseOffset = v2.mul(this.releaseOffset, Math.exp(-dt / SMOOTH_TIME));
+        if (v2.lengthSqr(this.releaseOffset) < 1e-8) {
+            this.releaseOffset = v2.create(0, 0);
+            return null;
+        }
+        return v2.add(target.visualPos, this.releaseOffset);
+    }
+
+    private runFrame(
+        state: SimState,
+        input: SentInput,
+        start: number,
+        end: number,
+        data: PredictionData,
+        env: SimEnv,
+    ) {
+        if (input.seq !== state.lastSeq) {
+            if (input.seq > this.ackSeq) {
+                if (input.gunBlock) {
+                    state.gun = null;
+                } else if (input.shootStart && state.gun) {
+                    state.gun.pendingStart = true;
+                }
+            }
+            state.lastSeq = input.seq;
+        }
+
+        if (state.nextTick <= start - MAX_CATCHUP_TICKS * state.tickDt) {
+            state.nextTick = start + state.tickDt;
+        }
+        while (state.nextTick <= start) {
+            this.tick(state, input.shootHold);
+        }
+
+        let time = start;
+        while (time < end) {
+            const pieceEnd = Math.min(end, state.nextTick);
+            if (pieceEnd > time) {
+                this.movePiece(state, input.move, pieceEnd - time, data, env);
+                time = pieceEnd;
+            }
+            if (time >= state.nextTick) {
+                this.tick(state, input.shootHold);
+            }
+        }
+    }
+
+    private tick(state: SimState, hold: boolean) {
+        this.updateGun(state, hold, state.tickDt);
+        state.slowdown = Math.max(0, state.slowdown - state.tickDt);
+        state.nextTick += state.tickDt;
+    }
+
+    private movePiece(
+        state: SimState,
+        move: Vec2,
+        dt: number,
+        data: PredictionData,
+        env: SimEnv,
+    ) {
+        const slowed = state.slowdown > 0;
+        const onWater = env.checkWater && env.isOnWater(state.pos, state.layer);
+        const speed = onWater
+            ? slowed
+                ? data.waterShootSpeed
+                : data.waterSpeed
+            : slowed
+              ? data.shootSpeed
+              : data.speed;
+
+        this.move(state, move, dt, speed, env);
+    }
+
+    private updateGun(state: SimState, hold: boolean, dt: number) {
+        const gun = state.gun;
+        if (!gun) return;
+
+        gun.cooldown -= dt;
+
+        switch (gun.mode) {
+            case PredictionFireMode.Auto:
+                gun.pendingStart = false;
+                if (hold && gun.cooldown <= 0) this.fire(state, gun);
+                break;
+            case PredictionFireMode.Single:
+                if (gun.pendingStart) {
+                    if (gun.cooldown < 0) {
+                        this.fire(state, gun);
+                        gun.pendingStart = false;
+                    } else if (gun.cooldown >= SINGLE_BUFFER_TIME) {
+                        gun.pendingStart = false;
+                    }
+                }
+                break;
+            case PredictionFireMode.Burst:
+                gun.pendingStart = false;
+                if (hold && gun.cooldown < 0) {
+                    gun.cooldown = 0;
+                    for (let i = 0; i < gun.burstCount; i++) {
+                        gun.bursts.push(gun.cooldown);
+                        gun.cooldown += gun.burstDelay;
+                    }
+                    gun.cooldown += gun.slowdownTime;
+                }
+                for (let i = 0; i < gun.bursts.length; i++) {
+                    gun.bursts[i] -= dt;
+                    if (gun.bursts[i] <= 0) {
+                        this.fire(state, gun);
+                        gun.bursts.splice(i, 1);
+                        i--;
+                    }
+                }
+                break;
+        }
+    }
+
+    private fire(state: SimState, gun: GunSim) {
+        if (gun.ammo <= 0) return;
+        gun.cooldown = gun.fireCooldown;
+        gun.ammo--;
+        state.slowdown = gun.slowdownTime;
     }
 
     private findInputIdx(id: number) {
@@ -416,21 +598,28 @@ export class LocalPrediction {
         center: Vec2,
         rad: number,
         travel: number,
-        treeClimbing: boolean,
+        data: PredictionData,
     ): SimEnv {
         const range = rad + travel + BROADPHASE_MARGIN;
 
         const obstacles: Obstacle[] = [];
+        const autoDoors: Obstacle[] = [];
         for (let i = 0; i < world.obstacles.length; i++) {
             const obstacle = world.obstacles[i];
             if (!obstacle.active || obstacle.dead || !obstacle.collidable) continue;
             if (!obstacle.collider) continue;
-            if (treeClimbing && (MapObjectDefs[obstacle.type] as ObstacleDef).isTree) {
+            if (
+                data.treeClimbing &&
+                (MapObjectDefs[obstacle.type] as ObstacleDef).isTree
+            ) {
                 continue;
             }
             const aabb = this.getAabb(obstacle.collider);
             if (!coldet.testCircleAabb(center, range, aabb.min, aabb.max)) continue;
             obstacles.push(obstacle);
+            if (obstacle.isDoor && obstacle.door?.autoOpen && !obstacle.door.open) {
+                autoDoors.push(obstacle);
+            }
         }
 
         const npcs: Npc[] = [];
@@ -453,29 +642,20 @@ export class LocalPrediction {
 
         return {
             obstacles,
+            autoDoors,
             npcs,
             structures,
             rad,
             mapWidth: world.mapWidth,
             mapHeight: world.mapHeight,
+            checkWater:
+                data.waterSpeed !== data.speed ||
+                data.waterShootSpeed !== data.shootSpeed,
+            isOnWater: world.isOnWater,
         };
     }
 
-    private simulate(
-        state: SimState,
-        move: Vec2,
-        dt: number,
-        speed: number,
-        env: SimEnv,
-    ) {
-        const substeps = Math.max(1, Math.ceil(dt / SERVER_TICK - 0.0001));
-        const subDt = dt / substeps;
-        for (let i = 0; i < substeps; i++) {
-            this.step(state, move, subDt, speed, env);
-        }
-    }
-
-    private step(state: SimState, move: Vec2, dt: number, speed: number, env: SimEnv) {
+    private move(state: SimState, move: Vec2, dt: number, speed: number, env: SimEnv) {
         const moving = move.x !== 0 || move.y !== 0;
         const moveSpeed = moving ? speed : 0;
         const steps = moving ? Math.round(Math.max(moveSpeed * dt + 5, 5)) : 1;
@@ -489,6 +669,7 @@ export class LocalPrediction {
             for (let j = 0; j < env.obstacles.length; j++) {
                 const obstacle = env.obstacles[j];
                 if (!util.sameLayer(obstacle.layer, state.layer)) continue;
+                if (state.openedDoors.has(obstacle)) continue;
                 const res = collider.intersectCircle(obstacle.collider, pos, env.rad);
                 if (res) {
                     pos.x += res.dir.x * (res.pen + 0.001);
@@ -511,6 +692,23 @@ export class LocalPrediction {
 
         pos.x = math.clamp(pos.x, env.rad, env.mapWidth - env.rad);
         pos.y = math.clamp(pos.y, env.rad, env.mapHeight - env.rad);
+
+        this.updateAutoDoors(state, env);
+    }
+
+    private updateAutoDoors(state: SimState, env: SimEnv) {
+        for (let i = 0; i < env.autoDoors.length; i++) {
+            const door = env.autoDoors[i];
+            if (state.openedDoors.has(door)) continue;
+            if (!util.sameLayer(door.layer, state.layer)) continue;
+            if (!doorOpensFor(door, state.pos)) continue;
+            const res = collider.intersectCircle(
+                door.collider,
+                state.pos,
+                env.rad + door.door.interactionRad,
+            );
+            if (res) state.openedDoors.add(door);
+        }
     }
 
     private updateStairs(state: SimState, env: SimEnv) {

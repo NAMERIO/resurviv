@@ -373,21 +373,49 @@ export const UpdateExtFlags = {
     KillLeader: 1 << 15,
     DeveloperPlayerVitals: 1 << 16,
     Prediction: 1 << 17,
+    ServerTime: 1 << 18,
 };
+
+export enum PredictionFireMode {
+    None,
+    Auto,
+    Single,
+    Burst,
+}
+
+export interface PredictionGunData {
+    mode: PredictionFireMode;
+    cooldown: number;
+    fireCooldown: number;
+    slowdownTime: number;
+    burstCount: number;
+    burstDelay: number;
+    bursts: number[];
+    ammo: number;
+    buffered: boolean;
+}
 
 export interface PredictionData {
     inputId: number;
     moveAge: number;
     speed: number;
     shootSpeed: number;
+    waterSpeed: number;
+    waterShootSpeed: number;
     slowdownLeft: number;
+    tickInterval: number;
     treeClimbing: boolean;
+    gun: PredictionGunData | null;
 }
 
 export const PredictionLimits = {
     minMoveAge: -0.25,
     maxSpeed: 64,
     maxSlowdown: 4,
+    minCooldown: -1,
+    maxCooldown: 16,
+    maxBursts: 15,
+    maxAmmo: 0xffff,
 };
 
 export interface DeveloperPlayerVitals {
@@ -447,6 +475,7 @@ export class UpdateMsg implements AbstractMsg {
     killLeaderKills = 0;
     killLeaderDirty = false;
     prediction: PredictionData | null = null;
+    serverTime = -1;
     ack = 0;
     started = false;
 
@@ -653,19 +682,38 @@ export class UpdateMsg implements AbstractMsg {
         }
 
         if (this.prediction) {
-            s.writeUint16(this.prediction.inputId);
-            s.writeFloat32(this.prediction.moveAge);
-            s.writeFloat(this.prediction.speed, 0, PredictionLimits.maxSpeed, 14);
-            s.writeFloat(this.prediction.shootSpeed, 0, PredictionLimits.maxSpeed, 14);
-            s.writeFloat(
-                this.prediction.slowdownLeft,
-                0,
-                PredictionLimits.maxSlowdown,
-                12,
-            );
-            s.writeBoolean(this.prediction.treeClimbing);
+            const p = this.prediction;
+            s.writeUint16(p.inputId);
+            s.writeFloat32(p.moveAge);
+            s.writeFloat32(p.speed);
+            s.writeFloat32(p.shootSpeed);
+            s.writeFloat32(p.waterSpeed);
+            s.writeFloat32(p.waterShootSpeed);
+            s.writeFloat32(p.slowdownLeft);
+            s.writeFloat32(p.tickInterval);
+            s.writeBoolean(p.treeClimbing);
+            s.writeBoolean(!!p.gun);
+            if (p.gun) {
+                const gun = p.gun;
+                s.writeBits(gun.mode, 2);
+                s.writeBoolean(gun.buffered);
+                s.writeFloat32(gun.cooldown);
+                s.writeFloat32(gun.fireCooldown);
+                s.writeFloat32(gun.slowdownTime);
+                s.writeUint16(gun.ammo);
+                s.writeUint8(gun.burstCount);
+                s.writeFloat32(gun.burstDelay);
+                s.writeArray(gun.bursts, 4, (t) => {
+                    s.writeFloat32(t);
+                });
+            }
             s.writeAlignToNextByte();
             flags |= UpdateExtFlags.Prediction;
+        }
+
+        if (this.serverTime >= 0) {
+            s.writeUint32(this.serverTime);
+            flags |= UpdateExtFlags.ServerTime;
         }
 
         s.writeUint8(this.ack);
@@ -905,15 +953,55 @@ export class UpdateMsg implements AbstractMsg {
         }
 
         if ((flags & UpdateExtFlags.Prediction) != 0) {
+            const inputId = s.readUint16();
+            const moveAge = s.readFloat32();
+            const speed = s.readFloat32();
+            const shootSpeed = s.readFloat32();
+            const waterSpeed = s.readFloat32();
+            const waterShootSpeed = s.readFloat32();
+            const slowdownLeft = s.readFloat32();
+            const tickInterval = s.readFloat32();
+            const treeClimbing = s.readBoolean();
+            let gun: PredictionGunData | null = null;
+            if (s.readBoolean()) {
+                const mode = s.readBits(2) as PredictionFireMode;
+                const buffered = s.readBoolean();
+                const cooldown = s.readFloat32();
+                const fireCooldown = s.readFloat32();
+                const slowdownTime = s.readFloat32();
+                const ammo = s.readUint16();
+                const burstCount = s.readUint8();
+                const burstDelay = s.readFloat32();
+                const bursts = s.readArray(4, () => s.readFloat32());
+                gun = {
+                    mode,
+                    buffered,
+                    cooldown,
+                    fireCooldown,
+                    slowdownTime,
+                    ammo,
+                    burstCount,
+                    burstDelay,
+                    bursts,
+                };
+            }
             this.prediction = {
-                inputId: s.readUint16(),
-                moveAge: s.readFloat32(),
-                speed: s.readFloat(0, PredictionLimits.maxSpeed, 14),
-                shootSpeed: s.readFloat(0, PredictionLimits.maxSpeed, 14),
-                slowdownLeft: s.readFloat(0, PredictionLimits.maxSlowdown, 12),
-                treeClimbing: s.readBoolean(),
+                inputId,
+                moveAge,
+                speed,
+                shootSpeed,
+                waterSpeed,
+                waterShootSpeed,
+                slowdownLeft,
+                tickInterval,
+                treeClimbing,
+                gun,
             };
             s.readAlignToNextByte();
+        }
+
+        if ((flags & UpdateExtFlags.ServerTime) != 0) {
+            this.serverTime = s.readUint32();
         }
 
         this.ack = s.readUint8();

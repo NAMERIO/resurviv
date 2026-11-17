@@ -183,6 +183,7 @@ export class Game {
     gas: Gas;
 
     now!: number;
+    tickInterval = 1 / Config.gameTps;
 
     perfTicker = 0;
     tickTimes: number[] = [];
@@ -336,6 +337,7 @@ export class Game {
         const now = performance.now();
         if (!this.now) this.now = now;
         dt ??= math.clamp((now - this.now) / 1000, 0.001, 1 / 8);
+        this.tickInterval += (dt - this.tickInterval) * 0.05;
 
         this.now = now;
 

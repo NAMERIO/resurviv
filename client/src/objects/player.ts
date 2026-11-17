@@ -55,6 +55,7 @@ import { GameMod } from "../gameMod";
 import { helpers } from "../helpers";
 import type { InputHandler } from "../input";
 import type { InputBinds } from "./../inputBinds";
+import { SnapshotBuffer } from "../interpClock";
 import type { SoundHandle } from "../lib/createJS";
 import type { Map } from "../map";
 import type { Renderer } from "../renderer";
@@ -615,6 +616,7 @@ export class Player implements AbstractObject {
     m_visualDir = v2.create(0, 0);
     m_visualDirOld = v2.create(0, 0);
     posInterpTicker = 0;
+    m_snapshots = new SnapshotBuffer();
     dirInterpolationTicker = 0;
     layer = 0;
     isLoadoutAvatar = false;
@@ -700,6 +702,7 @@ export class Player implements AbstractObject {
         this.m_visualDirOld = v2.create(0, 0);
         this.posInterpTicker = 0;
         this.dirInterpolationTicker = 0;
+        this.m_snapshots.clear();
     }
 
     m_init() {
@@ -870,6 +873,7 @@ export class Player implements AbstractObject {
 
         this.m_netData.m_pos = v2.copy(data.pos);
         this.m_netData.m_dir = v2.copy(data.dir);
+        this.m_snapshots.push(data.pos, data.dir, isNew);
         this.m_netData.m_vehicleId = data.vehicleId;
 
         if (fullUpdate) {
@@ -1359,8 +1363,19 @@ export class Player implements AbstractObject {
         // interpolation
         if (camera.m_interpEnabled) {
             this.posInterpTicker += dt;
-            const posT = math.clamp(this.posInterpTicker / camera.m_interpInterval, 0, 1);
-            this.m_visualPos = v2.lerp(posT, this.m_visualPosOld, this.m_pos);
+            const bufferedPos = v2.create(0, 0);
+            const bufferedDir = v2.create(1, 0);
+            const buffered = this.m_snapshots.sample(bufferedPos, bufferedDir);
+            if (buffered) {
+                this.m_visualPos = bufferedPos;
+            } else {
+                const posT = math.clamp(
+                    this.posInterpTicker / camera.m_interpInterval,
+                    0,
+                    1,
+                );
+                this.m_visualPos = v2.lerp(posT, this.m_visualPosOld, this.m_pos);
+            }
             if (
                 !camera.m_localRotationEnabled ||
                 !isActivePlayer ||
@@ -1368,12 +1383,16 @@ export class Player implements AbstractObject {
                 displayingStats
             ) {
                 this.dirInterpolationTicker += dt;
-                const dirT = math.clamp(
-                    this.dirInterpolationTicker / camera.m_interpInterval,
-                    0,
-                    1,
-                );
-                this.m_visualDir = v2.lerp(dirT, this.m_visualDirOld, this.m_dir);
+                if (buffered) {
+                    this.m_visualDir = bufferedDir;
+                } else {
+                    const dirT = math.clamp(
+                        this.dirInterpolationTicker / camera.m_interpInterval,
+                        0,
+                        1,
+                    );
+                    this.m_visualDir = v2.lerp(dirT, this.m_visualDirOld, this.m_dir);
+                }
             }
         } else {
             this.m_visualPos = v2.copy(this.m_pos);
