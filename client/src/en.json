@@ -125,6 +125,7 @@
   "index-host-closed": "Disconnected by the server.",
   "index-lost-connection-server": "Lost connection to the server. Check your internet connection.",
   "index-game-server-closed": "The match server stopped unexpectedly.",
+  "index-server-updating": "Don't crash out, I'm updating it",
   "index-kicked-bad-msg": "Disconnected: the server received invalid data from your game. Try refreshing the page.",
   "index-kicked-spam": "Disconnected for sending too many requests.",
   "index-invalid-protocol": "Old client version.",

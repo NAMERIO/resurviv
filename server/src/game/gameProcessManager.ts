@@ -291,7 +291,10 @@ export class GameProcessManager implements GameManager {
         });
     }
 
+    private shuttingDown = false;
+
     private shutdown(): void {
+        this.shuttingDown = true;
         const childProcesses = this.processes
             .map((gameProc) => gameProc.process)
             .filter((child) => child.exitCode === null && child.signalCode === null);
@@ -380,6 +383,9 @@ export class GameProcessManager implements GameManager {
     }
 
     killProcess(gameProc: GameProcess, signal: NodeJS.Signals = "SIGTERM"): void {
+        const reason = this.shuttingDown
+            ? "index-server-updating"
+            : "index-game-server-closed";
         if (this.terminatingProcesses.has(gameProc)) return;
         this.terminatingProcesses.add(gameProc);
 
@@ -388,7 +394,7 @@ export class GameProcessManager implements GameManager {
             if (data.closed) continue;
             if (data.gameId !== gameProc.id) continue;
             this.logger.warn(`Closing socket for ${gameProc.id}`);
-            endSocket(socket, "index-game-server-closed");
+            endSocket(socket, reason);
         }
 
         // send SIGTERM, if still hasn't terminated after 5 seconds, send SIGKILL >:3
