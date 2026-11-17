@@ -163,7 +163,6 @@ export class Obstacle extends BaseGameObject {
         this.minScale = def.scale.destroy;
 
         this.updateCollider();
-        // wake up loot this obstacle spawned on top of (airdrops, respawns, etc)
         this.game.lootBarn.forceLootUpdates(this.collider, this.layer);
 
         this.mapObstacleBounds = [this.collider];

@@ -63,14 +63,29 @@ function setupInteractionHandlers() {
                 flags: MessageFlags.Ephemeral,
             };
 
-            if (interaction.replied || interaction.deferred) {
-                await interaction.followUp(errorMessage);
-            } else {
-                await interaction.reply(errorMessage);
+            try {
+                if (interaction.replied || interaction.deferred) {
+                    await interaction.followUp(errorMessage);
+                } else {
+                    await interaction.reply(errorMessage);
+                }
+            } catch (replyError) {
+                botLogger.warn(
+                    `Could not send error reply for "${commandName}":`,
+                    replyError,
+                );
             }
         }
     });
 }
+
+client.on(Events.Error, (error) => {
+    botLogger.error("Discord client error:", error);
+});
+
+process.on("unhandledRejection", (reason) => {
+    botLogger.error("Unhandled promise rejection:", reason);
+});
 
 try {
     client.once(Events.ClientReady, (readyClient) => {

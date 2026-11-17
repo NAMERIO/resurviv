@@ -6,11 +6,6 @@ if (fs.existsSync("./dist")) {
     fs.rmSync("./dist", { recursive: true });
 }
 
-/**
- * Removes code between STRIP_FROM_PROD_SERVER:START / END comments in prod builds,
- * e.g. hot-path asserts in shared/net/net.ts writeFloat (survev/survev caf32db6).
- * Without this the markers are just comments and the asserts still run.
- */
 const stripFromProdServer: Plugin = {
     name: "strip-from-prod-server",
     setup(build) {
@@ -45,7 +40,6 @@ const esbuildConfig: BuildOptions = {
     plugins: [stripFromProdServer],
 };
 
-// async build: esbuild plugins don't run with buildSync
 async function main() {
     await esbuild.build({
         ...esbuildConfig,

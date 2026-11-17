@@ -26,7 +26,6 @@ const LOOT_DRAG = 4;
 const LOOT_PUSH_FORCE = 4;
 // cant go faster than this
 const MAX_LOOT_VELOCITY = 40;
-// how long sleeping loot waits before re-checking collisions on its own
 const LOOT_SLEEP_FALLBACK_TIME = 1;
 // explosion push force multiplier
 export const EXPLOSION_LOOT_PUSH_FORCE = 4;
@@ -195,11 +194,6 @@ export class LootBarn {
         }
     }
 
-    /**
-     * Wake up sleeping loot touching `collider`.
-     * Call this when an obstacle spawns, regrows, grows or rotates so loot
-     * underneath it gets pushed out. Be careful to not call it too often.
-     */
     forceLootUpdates(collider: Collider, layer: number) {
         const objs = this.game.grid.intersectCollider(collider);
         for (let i = 0; i < objs.length; i++) {
@@ -273,10 +267,7 @@ export class Loot extends BaseGameObject {
     ownerId = 0;
     isOld = false;
 
-    // set when obstacles around the loot change their colliders, see LootBarn.forceLootUpdates
     forceUpdate = true;
-    // fallback wake-up for collider changes nothing calls forceLootUpdates for
-    // (e.g. prop disguises, CTF flags, npcs)
     sleepTicker = 0;
 
     layer: number;
@@ -292,7 +283,6 @@ export class Loot extends BaseGameObject {
     isPropDisguise = false;
 
     vel = v2.create(0, 0);
-    // last position sent to clients, used to check when to set the loot to dirty
     lastClientPos = v2.create(0, 0);
 
     collider: Circle;
@@ -363,7 +353,6 @@ export class Loot extends BaseGameObject {
             return;
         }
 
-        // make loot "sleep" while it isn't moving
         const shouldUpdate =
             this.forceUpdate ||
             this.sleepTicker > LOOT_SLEEP_FALLBACK_TIME ||

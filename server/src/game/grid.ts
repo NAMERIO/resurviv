@@ -130,9 +130,6 @@ export class Grid<T extends GameObject = GameObject> {
     intersectGameObject(obj: GameObject): T[] {
         const objects: T[] = [];
 
-        // Objects removed from the grid (destroyed / exploded earlier this tick) have
-        // __gridBounds set to -1, which would index _grid[-1] and crash the whole
-        // game process. Before __gridBounds this just returned no objects.
         if (!obj.__onGrid) return objects;
 
         const queryId = this.nextQueryId++;
@@ -155,10 +152,6 @@ export class Grid<T extends GameObject = GameObject> {
         return objects;
     }
 
-    /**
-     * Get all objects in the grid cells this AABB touches, as a set
-     * (perf ported from survev/survev b240defa: skips the collider -> AABB conversion)
-     */
     intersectAABBSet(aabb: AABB): Set<T> {
         const min = this._roundToCells(aabb.min);
         const max = this._roundToCells(aabb.max);

@@ -20,11 +20,9 @@ const socketMsgs: Array<{
     data: Uint8Array;
 }> = [];
 
-// ip of each open socket, sent once on SocketOpen instead of with every msg
 const socketIps = new Map<string, string>();
 
 function flushSocketMsgs() {
-    // don't send empty IPC msgs every net tick (e.g. idle / empty games)
     if (!socketMsgs.length) return;
     sendMsg({
         type: ProcessMsgType.ServerSocketMsg,
@@ -71,7 +69,6 @@ process.on("message", async (msg: ProcessMsg) => {
         });
     }
 
-    // track socket ips even while no game is running so the map can't leak
     if (msg.type === ProcessMsgType.SocketOpen) {
         socketIps.set(msg.socketId, msg.ip);
         return;

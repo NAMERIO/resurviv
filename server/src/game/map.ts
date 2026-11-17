@@ -2564,8 +2564,6 @@ export class GameMap {
         let zIdx = 0;
         const onStairs = layer & 0x2;
 
-        // single pass over nearby objects (perf ported from survev/survev ab127242)
-        // decal surfaces return immediately so they still take priority over buildings
         for (let i = 0; i < objs.length; i++) {
             const obj = objs[i];
 

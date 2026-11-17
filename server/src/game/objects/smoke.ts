@@ -207,7 +207,6 @@ export class Smoke extends BaseGameObject {
     dir = v2.randomUnit();
     speed: number;
 
-    // last state sent to clients, used to throttle network updates
     lastClientPos = v2.create(0, 0);
     lastClientRad = 0;
 
@@ -253,9 +252,6 @@ export class Smoke extends BaseGameObject {
 
         this.game.map.clampToMapBounds(this.pos, this.rad);
 
-        // only send an update once the smoke grew or drifted noticeably,
-        // instead of re-sending every smoke particle every tick
-        // perf ported from survev/survev 415aacc1
         if (
             !math.eqAbs(this.lastClientRad, this.rad, 0.05) ||
             !v2.eq(this.lastClientPos, this.pos, 0.2)

@@ -243,10 +243,6 @@ export class Projectile extends BaseGameObject {
         //
         // Collision and changing layers on stair
         //
-        // only do line (swept) collision for projectiles that move more than their
-        // radius in a single tick; slower ones are fully covered by the circle check.
-        // This also stops slow rolling grenades from snapping/jittering against walls.
-        // fix+perf ported from survev/survev 4c840ecf
         const shouldDoLineCheck = v2.distance(posOld, this.pos) > this.rad;
 
         const objs = [

@@ -95,6 +95,7 @@ export class Game {
     over = false;
     startedTime = 0;
     stopTicker = 0;
+    emptyTicker = 0;
     id: string;
     teamMode: TeamMode;
     mapName: keyof typeof MapDefs;
@@ -363,6 +364,17 @@ export class Game {
                 this.stop();
                 return;
             }
+        }
+
+        if (this.playerBarn.players.length === 0) {
+            this.emptyTicker += dt;
+            if (this.emptyTicker >= 60) {
+                this.logger.info("No players for 60 seconds, stopping");
+                this.stop();
+                return;
+            }
+        } else {
+            this.emptyTicker = 0;
         }
 
         if (!this.started) {
@@ -861,6 +873,7 @@ export class Game {
     }
 
     addJoinTokens(tokens: FindGamePrivateBody["playerData"], autoFill: boolean) {
+        this.emptyTicker = 0;
         const now = Date.now();
         for (const [token, data] of this.joinTokens) {
             if (data.expiresAt < now) {

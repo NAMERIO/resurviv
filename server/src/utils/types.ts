@@ -246,19 +246,12 @@ export interface KickPlayerByIPMsg {
     encodedIp: string;
 }
 
-/**
- * Sent by the server to the game when a client socket opens.
- * The ip is only sent once here instead of with every client msg.
- */
 export interface SocketOpenMsg {
     type: ProcessMsgType.SocketOpen;
     socketId: string;
     ip: string;
 }
 
-/**
- * Used for server to send a single client websocket msg to the game
- */
 export interface SocketClientMsg {
     type: ProcessMsgType.ClientSocketMsg;
     socketId: string;

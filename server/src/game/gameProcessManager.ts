@@ -30,12 +30,6 @@ if (process.env.NODE_ENV === "production") {
     path = "src/game/gameProcess.ts";
 }
 
-/**
- * Gracefully end a game socket, sending a DisconnectMsg with the reason first.
- * socket.end() flushes queued data and sends a close frame; socket.close() is an
- * abrupt close that drops the DisconnectMsg, which made the client fall back to
- * the misleading "Host closed the connection" message.
- */
 function endSocket(socket: WebSocket<GameSocketData>, reason?: string) {
     if (reason) {
         const disconnectMsg = new net.DisconnectMsg();
@@ -45,8 +39,6 @@ function endSocket(socket: WebSocket<GameSocketData>, reason?: string) {
         socket.send(stream.getBuffer(), true, false);
     }
     socket.end();
-    // Stop relaying game messages to a socket that is shutting down. The uWS
-    // close handler still runs once the close handshake finishes.
     socket.getUserData().closed = true;
 }
 
@@ -251,9 +243,6 @@ export class GameProcessManager implements GameManager {
             }
         });
 
-        // always keep some idle processes running even if there are no games on them;
-        // forking a new process is much slower than reusing one, so matches start faster
-        // (ported from survev/survev 407eb2a3)
         const minIdleProcs = 3;
 
         setInterval(() => {
@@ -280,7 +269,6 @@ export class GameProcessManager implements GameManager {
                 );
             });
 
-            // kill stale processes if there's too many, oldest first
             if (idleProcs.length > minIdleProcs) {
                 idleProcs.sort((a, b) => a.createdTime - b.createdTime);
 

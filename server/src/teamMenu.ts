@@ -1467,10 +1467,6 @@ export class TeamMenu {
                         room.removePlayer(player);
                         continue;
                     }
-                    // A client in a match still answers the keepAlive request above
-                    // (sent every 15s) right away, so 5 minutes of silence means its lobby
-                    // socket died without a close (network drop). Without this the
-                    // player stayed in the room forever as an "in game" ghost.
                     if (
                         player.inGame &&
                         player.lastMsgTime < Date.now() - 5 * 60 * 1000

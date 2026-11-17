@@ -94,10 +94,6 @@ export class ExplosionBarn {
         };
 
         // List of all near objects
-        // filter it once up front: we iterate over this list for each of the ~63 rays,
-        // so filtering first means way fewer iterations when doing the raycasts
-        // (especially for airstrikes, so it doesn't iterate over all the explosion decals)
-        // perf ported from survev/survev 4c5486fb
         const objects = this.game.grid
             .intersectCollider(coll)
             .filter((obj): obj is Player | Obstacle | Npc | Loot => {
@@ -134,7 +130,6 @@ export class ExplosionBarn {
 
             for (let i = 0; i < objects.length; i++) {
                 const obj = objects[i];
-                // checked per ray: objects destroyed by an earlier ray stop blocking
                 if ((obj as { dead?: boolean }).dead) continue;
                 // check if the object hitbox collides with a line from the explosion center to the explosion max distance
                 const intersection = collider.intersectSegment(

@@ -174,7 +174,6 @@ export class TeamMenu {
     battleRoyaleTeamError: TeamMenuErrorType | "" = "";
     battleRoyaleTeamErrorTimeout: ReturnType<typeof setTimeout> | null = null;
     lastJoinGameData: FindGameMatchData | null = null;
-    // set when the lobby socket dropped mid-match; rejoined in onGameComplete
     rejoinAfterGame: {
         roomUrl: string;
         arena: boolean;
@@ -382,7 +381,6 @@ export class TeamMenu {
             this.ws.readyState === WebSocket.CLOSING ||
             this.ws.readyState === WebSocket.CLOSED;
 
-        // any explicit join/create replaces a pending post-match rejoin
         this.rejoinAfterGame = null;
 
         if (shouldReconnect) {
@@ -446,10 +444,6 @@ export class TeamMenu {
                     this.ws?.close();
                 };
                 this.ws.onclose = (e) => {
-                    // The lobby socket can drop during a (long) match. Previously this
-                    // silently left the lobby: the URL kept the room code but the lobby
-                    // UI was gone after the match. Remember the room and rejoin it in
-                    // onGameComplete instead.
                     if (this.joiningGame && this.joined && this.active) {
                         console.warn(
                             `Team lobby socket closed during a match (code=${e.code}), will rejoin after the match`,

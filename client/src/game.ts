@@ -420,9 +420,6 @@ export class Game {
                         console.warn(
                             `Game socket closed mid-game: code=${e.code} reason=${this.m_disconnectMsg || e.reason || "none"} clean=${e.wasClean}`,
                         );
-                        // 1006 = connection dropped without a close frame
-                        // (network loss, PC/tab freeze, or idle timeout).
-                        // Anything else means the server ended it on purpose.
                         const fallback =
                             e.code === 1006
                                 ? "index-lost-connection-server"
