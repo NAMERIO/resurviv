@@ -27,6 +27,9 @@ const MAX_INPUTS = 4096;
 const BROADPHASE_MARGIN = 2;
 const CORRECTION_EPSILON = 0.05;
 const SINGLE_BUFFER_TIME = 0.1;
+const CORRECTION_SPEED = 4;
+const CORRECTION_SOFT_DIST = 1;
+const CORRECTION_GAIN = 8;
 const MAX_CATCHUP_TICKS = 10;
 const MIN_TICK = 1 / 250;
 const MAX_TICK = 1 / 20;
@@ -66,6 +69,7 @@ interface SentInput {
     shootStart: boolean;
     shootHold: boolean;
     gunBlock: boolean;
+    itemUseTime: number;
 }
 
 interface Frame {
@@ -94,6 +98,9 @@ interface SimState {
     lastSeq: number;
     nextTick: number;
     tickDt: number;
+    usingItem: boolean;
+    itemLeft: number;
+    actionBusy: boolean;
     openedDoors: Set<Obstacle>;
 }
 
@@ -123,6 +130,10 @@ export interface PredictionTarget {
     serverLayer: number;
     rad: number;
     visualPos: Vec2;
+}
+
+export interface PredictedShot {
+    lastShot: boolean;
 }
 
 export interface PredictionStats {
@@ -190,6 +201,10 @@ export class LocalPrediction {
     private frames: Frame[] = [];
     private nextSeq = 0;
     private lastInputId = 0;
+    private live = false;
+    private lastEmitAmmo = Number.POSITIVE_INFINITY;
+    private lastServerAmmo = -1;
+    private shotEvents: PredictedShot[] = [];
     private aabbCache = new WeakMap<Collider, AABB>();
 
     private statTicker = 0;
@@ -214,6 +229,9 @@ export class LocalPrediction {
             lastSeq: -1,
             nextTick: 0,
             tickDt: SERVER_TICK,
+            usingItem: false,
+            itemLeft: 0,
+            actionBusy: false,
             openedDoors: new Set(),
         };
     }
@@ -236,6 +254,17 @@ export class LocalPrediction {
         this.frames.length = 0;
         this.offset = v2.create(0, 0);
         this.releaseOffset = v2.create(0, 0);
+        this.live = false;
+        this.lastEmitAmmo = Number.POSITIVE_INFINITY;
+        this.lastServerAmmo = -1;
+        this.shotEvents.length = 0;
+    }
+
+    takeShots(): PredictedShot[] {
+        if (!this.shotEvents.length) return this.shotEvents;
+        const shots = this.shotEvents;
+        this.shotEvents = [];
+        return shots;
     }
 
     nextInputId() {
@@ -243,7 +272,7 @@ export class LocalPrediction {
         return this.lastInputId;
     }
 
-    onInputSent(msg: InputMsg) {
+    onInputSent(msg: InputMsg, itemUseTime = 0) {
         const move = getInputMoveDir(msg);
         const prev = this.inputs[this.inputs.length - 1];
         const sameMove = prev && prev.move.x === move.x && prev.move.y === move.y;
@@ -255,6 +284,7 @@ export class LocalPrediction {
             shootStart: msg.shootStart,
             shootHold: msg.shootHold,
             gunBlock: isGunBlocking(msg),
+            itemUseTime,
         });
         if (this.inputs.length > MAX_INPUTS) {
             this.inputs.splice(0, this.inputs.length - MAX_INPUTS);
@@ -305,13 +335,12 @@ export class LocalPrediction {
                 this.maxSpeed(data) * dt,
                 data,
             );
+            this.live = true;
             this.runFrame(this.state, input, frame.time, frame.time + dt, data, env);
+            this.live = false;
         }
 
-        this.offset = v2.mul(this.offset, Math.exp(-dt / SMOOTH_TIME));
-        if (v2.lengthSqr(this.offset) < 1e-8) {
-            this.offset = v2.create(0, 0);
-        }
+        this.offset = this.decayOffset(this.offset, dt);
 
         const output = v2.add(this.state.pos, this.offset);
         this.lastOutput = v2.copy(output);
@@ -325,6 +354,12 @@ export class LocalPrediction {
     ) {
         this.serverData = data ?? null;
         if (!data) return;
+
+        const serverAmmo = data.gun ? data.gun.ammo : -1;
+        if (serverAmmo > this.lastServerAmmo) {
+            this.lastEmitAmmo = Number.POSITIVE_INFINITY;
+        }
+        this.lastServerAmmo = serverAmmo;
 
         const ackIdx = this.findInputIdx(data.inputId);
         if (ackIdx >= 0) this.ackSeq = this.inputs[ackIdx].seq;
@@ -429,6 +464,9 @@ export class LocalPrediction {
             lastSeq,
             nextTick: tickTime + tickDt,
             tickDt,
+            usingItem: data.usingItem && data.itemTimeLeft > tickDt,
+            itemLeft: data.itemTimeLeft - tickDt,
+            actionBusy: data.actionBusy,
             openedDoors: new Set(),
         };
     }
@@ -439,7 +477,21 @@ export class LocalPrediction {
             data.shootSpeed,
             data.waterSpeed,
             data.waterShootSpeed,
+            data.itemSpeed,
+            data.waterItemSpeed,
         );
+    }
+
+    private decayOffset(offset: Vec2, dt: number): Vec2 {
+        const len = v2.length(offset);
+        if (len < 1e-4) return v2.create(0, 0);
+        const smoothRemove = len * (1 - Math.exp(-dt / SMOOTH_TIME));
+        const maxRemove =
+            (CORRECTION_SPEED +
+                Math.max(0, len - CORRECTION_SOFT_DIST) * CORRECTION_GAIN) *
+            dt;
+        const remove = Math.min(smoothRemove, maxRemove);
+        return v2.mul(offset, (len - remove) / len);
     }
 
     private release(dt: number, target: PredictionTarget | null): Vec2 | null {
@@ -472,6 +524,11 @@ export class LocalPrediction {
     ) {
         if (input.seq !== state.lastSeq) {
             if (input.seq > this.ackSeq) {
+                if (input.itemUseTime > 0 && !state.actionBusy) {
+                    state.usingItem = true;
+                    state.actionBusy = true;
+                    state.itemLeft = input.itemUseTime - state.tickDt;
+                }
                 if (input.gunBlock) {
                     state.gun = null;
                 } else if (input.shootStart && state.gun) {
@@ -505,6 +562,13 @@ export class LocalPrediction {
         this.updateGun(state, hold, state.tickDt);
         state.slowdown = Math.max(0, state.slowdown - state.tickDt);
         state.nextTick += state.tickDt;
+        if (state.usingItem) {
+            state.itemLeft -= state.tickDt;
+            if (state.itemLeft <= 0) {
+                state.usingItem = false;
+                state.actionBusy = false;
+            }
+        }
     }
 
     private movePiece(
@@ -514,15 +578,15 @@ export class LocalPrediction {
         data: PredictionData,
         env: SimEnv,
     ) {
-        const slowed = state.slowdown > 0;
         const onWater = env.checkWater && env.isOnWater(state.pos, state.layer);
-        const speed = onWater
-            ? slowed
-                ? data.waterShootSpeed
-                : data.waterSpeed
-            : slowed
-              ? data.shootSpeed
-              : data.speed;
+        let speed: number;
+        if (state.slowdown > 0) {
+            speed = onWater ? data.waterShootSpeed : data.shootSpeed;
+        } else if (state.usingItem) {
+            speed = onWater ? data.waterItemSpeed : data.itemSpeed;
+        } else {
+            speed = onWater ? data.waterSpeed : data.speed;
+        }
 
         this.move(state, move, dt, speed, env);
     }
@@ -575,6 +639,14 @@ export class LocalPrediction {
         gun.cooldown = gun.fireCooldown;
         gun.ammo--;
         state.slowdown = gun.slowdownTime;
+        if (this.live && gun.ammo < this.lastEmitAmmo) {
+            this.lastEmitAmmo = gun.ammo;
+            this.shotEvents.push({ lastShot: gun.ammo === 0 });
+        }
+        if (state.usingItem) {
+            state.usingItem = false;
+            state.actionBusy = false;
+        }
     }
 
     private findInputIdx(id: number) {
@@ -650,7 +722,8 @@ export class LocalPrediction {
             mapHeight: world.mapHeight,
             checkWater:
                 data.waterSpeed !== data.speed ||
-                data.waterShootSpeed !== data.shootSpeed,
+                data.waterShootSpeed !== data.shootSpeed ||
+                data.waterItemSpeed !== data.itemSpeed,
             isOnWater: world.isOnWater,
         };
     }

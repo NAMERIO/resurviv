@@ -8695,16 +8695,25 @@ export class Player extends BaseGameObject {
         }
 
         const treeClimbing = this.hasPerk("tree_climbing");
-        const speed = this.getMoveSpeed(treeClimbing, false, false);
-        const shootSpeed = this.getMoveSpeed(treeClimbing, true, false);
-        const waterSpeed = this.getMoveSpeed(treeClimbing, false, true);
-        const waterShootSpeed = this.getMoveSpeed(treeClimbing, true, true);
+        const speed = this.getMoveSpeed(treeClimbing, false, false, false);
+        const shootSpeed = this.getMoveSpeed(treeClimbing, true, false, false);
+        const waterSpeed = this.getMoveSpeed(treeClimbing, false, true, false);
+        const waterShootSpeed = this.getMoveSpeed(treeClimbing, true, true, false);
+        const itemSpeed = this.getMoveSpeed(treeClimbing, false, false, true);
+        const waterItemSpeed = this.getMoveSpeed(treeClimbing, false, true, true);
         if (
-            Math.max(speed, shootSpeed, waterSpeed, waterShootSpeed) >
-            PredictionLimits.maxSpeed
+            Math.max(
+                speed,
+                shootSpeed,
+                waterSpeed,
+                waterShootSpeed,
+                itemSpeed,
+                waterItemSpeed,
+            ) > PredictionLimits.maxSpeed
         ) {
             return null;
         }
+        const usingItem = this.actionType === GameConfig.Action.UseItem;
 
         return {
             inputId: this.predictInputId,
@@ -8716,6 +8725,16 @@ export class Player extends BaseGameObject {
             shootSpeed,
             waterSpeed,
             waterShootSpeed,
+            itemSpeed,
+            waterItemSpeed,
+            usingItem,
+            itemTimeLeft: usingItem
+                ? math.max(this.action.duration - this.action.time, 0)
+                : 0,
+            actionBusy:
+                usingItem ||
+                this.actionType === GameConfig.Action.Revive ||
+                this.weaponManager.cookingThrowable,
             slowdownLeft: math.clamp(
                 this.shotSlowdownTimer,
                 0,
@@ -8781,6 +8800,7 @@ export class Player extends BaseGameObject {
         hasTreeClimbing: boolean,
         shotSlowdown = this.shotSlowdownTimer > 0,
         onWater = this.game.map.isOnWater(this.pos, this.layer),
+        usingItem = this.actionType == GameConfig.Action.UseItem,
     ): number {
         let speed: number;
         if (this.debug.speedEnabled) {
@@ -8848,14 +8868,11 @@ export class Player extends BaseGameObject {
         const hasFieldMedic = this.hasPerk("field_medic");
         // decrease speed if shooting or popping adren or heals
         // field_medic perk doesn't slow you down while you heal
-        if (
-            shotSlowdown ||
-            (!hasFieldMedic && this.actionType == GameConfig.Action.UseItem)
-        ) {
+        if (shotSlowdown || (!hasFieldMedic && usingItem)) {
             speed *= 0.5;
         }
 
-        if (hasFieldMedic && this.actionType == GameConfig.Action.UseItem) {
+        if (hasFieldMedic && usingItem) {
             speed += PerkProperties.field_medic.speedBoost;
         }
 

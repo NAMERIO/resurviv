@@ -402,6 +402,11 @@ export interface PredictionData {
     shootSpeed: number;
     waterSpeed: number;
     waterShootSpeed: number;
+    itemSpeed: number;
+    waterItemSpeed: number;
+    usingItem: boolean;
+    itemTimeLeft: number;
+    actionBusy: boolean;
     slowdownLeft: number;
     tickInterval: number;
     treeClimbing: boolean;
@@ -689,6 +694,11 @@ export class UpdateMsg implements AbstractMsg {
             s.writeFloat32(p.shootSpeed);
             s.writeFloat32(p.waterSpeed);
             s.writeFloat32(p.waterShootSpeed);
+            s.writeFloat32(p.itemSpeed);
+            s.writeFloat32(p.waterItemSpeed);
+            s.writeFloat32(p.itemTimeLeft);
+            s.writeBoolean(p.usingItem);
+            s.writeBoolean(p.actionBusy);
             s.writeFloat32(p.slowdownLeft);
             s.writeFloat32(p.tickInterval);
             s.writeBoolean(p.treeClimbing);
@@ -959,6 +969,11 @@ export class UpdateMsg implements AbstractMsg {
             const shootSpeed = s.readFloat32();
             const waterSpeed = s.readFloat32();
             const waterShootSpeed = s.readFloat32();
+            const itemSpeed = s.readFloat32();
+            const waterItemSpeed = s.readFloat32();
+            const itemTimeLeft = s.readFloat32();
+            const usingItem = s.readBoolean();
+            const actionBusy = s.readBoolean();
             const slowdownLeft = s.readFloat32();
             const tickInterval = s.readFloat32();
             const treeClimbing = s.readBoolean();
@@ -992,6 +1007,11 @@ export class UpdateMsg implements AbstractMsg {
                 shootSpeed,
                 waterSpeed,
                 waterShootSpeed,
+                itemSpeed,
+                waterItemSpeed,
+                usingItem,
+                itemTimeLeft,
+                actionBusy,
                 slowdownLeft,
                 tickInterval,
                 treeClimbing,

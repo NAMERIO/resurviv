@@ -18,6 +18,7 @@ import type {
 import { GameConfig, Input, TeamMode, WeaponSlot } from "../../shared/gameConfig";
 import * as net from "../../shared/net/net";
 import { ObjectType } from "../../shared/net/objectSerializeFns";
+import type { Bullet } from "../../shared/net/updateMsg";
 import { collider } from "../../shared/utils/collider";
 import { math } from "../../shared/utils/math";
 import { util } from "../../shared/utils/util";
@@ -28,9 +29,7 @@ import { Camera } from "./camera";
 import type { ConfigManager, DebugRenderOpts } from "./config";
 import { DebugHUD } from "./debug/debugHUD";
 import { debugLines } from "./debug/debugLines";
-
 import { Editor } from "./debug/editor";
-
 import { device } from "./device";
 import { discordPresence } from "./discordPresence";
 import { EmoteBarn } from "./emote";
@@ -301,6 +300,17 @@ export class Game {
     seq!: number;
     seqInFlight!: boolean;
     m_prediction = new LocalPrediction();
+    m_predictedShotTimes: number[] = [];
+    m_predictedShotOffhand = false;
+    m_lastLocalShotFx: Pick<
+        Bullet,
+        | "shotSourceType"
+        | "shotAlt"
+        | "splinter"
+        | "trailSaturated"
+        | "apRounds"
+        | "highVelocity"
+    > | null = null;
     seqSendTime!: number;
     pings!: number[];
     m_arenaPrivate = false;
@@ -602,6 +612,8 @@ export class Game {
         this.seqInFlight = false;
         this.seqSendTime = 0;
         this.m_prediction.reset();
+        this.m_predictedShotTimes = [];
+        this.m_lastLocalShotFx = null;
         interpClock.reset();
         this.pings = [];
         this.updateIntervals = [];
@@ -1310,7 +1322,10 @@ export class Game {
             }
             inputMsg.inputId = this.m_prediction.nextInputId();
             this.m_sendMessage(net.MsgType.Input, inputMsg, 128);
-            this.m_prediction.onInputSent(inputMsg);
+            this.m_prediction.onInputSent(
+                inputMsg,
+                this.getPredictedItemUseTime(inputMsg),
+            );
             this.m_inputMsgTimeout = 1;
             this.m_prevInputMsg = inputMsg;
         }
@@ -3801,6 +3816,25 @@ export class Game {
         };
     }
 
+    getPredictedItemUseTime(msg: net.InputMsg) {
+        if (!msg.useItem) return 0;
+        const player = this.m_activePlayer;
+        if (!player || player.m_netData.m_dead || player.m_netData.m_downed) return 0;
+        const def = GameObjectDefs[msg.useItem];
+        if (!def || (def.type !== "heal" && def.type !== "boost")) return 0;
+        if (msg.useItem === "nitroLace") return 0;
+        if (!(player.m_localData.m_inventory[msg.useItem] > 0)) return 0;
+        const hasAoeHeal = player.m_netData.m_perks.some((p) => p.type === "aoe_heal");
+        if (
+            def.type === "heal" &&
+            !hasAoeHeal &&
+            Math.abs(player.m_localData.m_health - def.maxHeal) < 0.5
+        ) {
+            return 0;
+        }
+        return (hasAoeHeal ? 0.75 : 1) * def.useTime;
+    }
+
     getPredictionWorld(): PredictionWorld {
         return {
             obstacles: this.m_map.m_obstaclePool.m_getPool(),
@@ -3824,9 +3858,52 @@ export class Game {
             this.getPredictionTarget(),
             this.getPredictionWorld(),
         );
+        const shots = this.m_prediction.takeShots();
         if (!predicted) return;
         this.m_activePlayer.m_pos = v2.copy(predicted);
         this.m_activePlayer.m_visualPos = v2.copy(predicted);
+        for (let i = 0; i < shots.length; i++) {
+            this.playPredictedShot(shots[i].lastShot);
+        }
+    }
+
+    playPredictedShot(lastShot: boolean) {
+        const player = this.m_activePlayer;
+        const weaponType = player.m_netData.m_activeWeapon;
+        const def = GameObjectDefs[weaponType];
+        if (def?.type !== "gun") return;
+        const fx =
+            this.m_lastLocalShotFx?.shotSourceType === weaponType
+                ? this.m_lastLocalShotFx
+                : null;
+        if (def.isDual) this.m_predictedShotOffhand = !this.m_predictedShotOffhand;
+        this.m_shotBarn.addShot({
+            pos: v2.copy(player.m_visualPos),
+            layer: player.layer,
+            playerId: this.m_localId,
+            shotSourceType: weaponType,
+            shotOffhand: this.m_predictedShotOffhand,
+            lastShot,
+            shotAlt: fx?.shotAlt ?? false,
+            splinter: fx?.splinter ?? false,
+            trailSaturated: fx?.trailSaturated ?? false,
+            apRounds: fx?.apRounds ?? false,
+            highVelocity: fx?.highVelocity ?? false,
+        } as Bullet);
+        this.m_predictedShotTimes.push(performance.now());
+    }
+
+    consumePredictedShot() {
+        const expire = performance.now() - 1000;
+        while (
+            this.m_predictedShotTimes.length &&
+            this.m_predictedShotTimes[0] < expire
+        ) {
+            this.m_predictedShotTimes.shift();
+        }
+        if (!this.m_predictedShotTimes.length) return false;
+        this.m_predictedShotTimes.shift();
+        return true;
     }
 
     m_processGameUpdate(msg: net.UpdateMsg) {
@@ -3982,7 +4059,19 @@ export class Game {
                 this.m_renderer,
             );
             if (b.shotFx) {
-                this.m_shotBarn.addShot(b);
+                let predictedFx = false;
+                if (b.playerId === this.m_localId) {
+                    this.m_lastLocalShotFx = {
+                        shotSourceType: b.shotSourceType,
+                        shotAlt: b.shotAlt,
+                        splinter: b.splinter,
+                        trailSaturated: b.trailSaturated,
+                        apRounds: b.apRounds,
+                        highVelocity: b.highVelocity,
+                    };
+                    predictedFx = this.consumePredictedShot();
+                }
+                if (!predictedFx) this.m_shotBarn.addShot(b);
             }
         }
         // Create explosions
