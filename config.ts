@@ -63,8 +63,8 @@ export function getConfig(isProduction: boolean, dir: string) {
             errorLogs: true,
         },
         freeFallTicket: {
-            dropOneIn: 2_500,
-            minDistinctIps: 4,
+            dropOneIn: 10_000,
+            minDistinctIps: 2,
         },
         database: {
             enabled: true,
