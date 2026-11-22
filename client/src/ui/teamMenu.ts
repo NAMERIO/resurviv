@@ -5,6 +5,7 @@ import {
     DefaultArenaTeamCount,
     DefaultPrivateLobbyMiniGame,
 } from "../../../shared/defs/miniGame";
+import { normalizeStartingGuns } from "../../../shared/defs/startingGuns";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import type { FindGameMatchData } from "../../../shared/types/api";
@@ -433,6 +434,7 @@ export class TeamMenu {
             disablePerks: !!this.roomData.disablePerks,
             disableLooting: !!this.roomData.disableLooting,
             showEnemiesOnMap: this.roomData.showEnemiesOnMap !== false,
+            startingGuns: normalizeStartingGuns(this.roomData.startingGuns),
             findingGame: false,
             lastError: "",
         } as RoomData;
@@ -677,6 +679,7 @@ export class TeamMenu {
                     this.roomData.disablePerks = ourRoomData.disablePerks;
                     this.roomData.disableLooting = ourRoomData.disableLooting;
                     this.roomData.showEnemiesOnMap = ourRoomData.showEnemiesOnMap;
+                    this.roomData.startingGuns = ourRoomData.startingGuns;
                 }
                 this.refreshUi();
                 this.onStateUpdated?.();

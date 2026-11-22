@@ -5342,7 +5342,7 @@ a:active {
 }
 
 #modal-prestige-arena.is-open #modal-prestige-wrapper.arena-joined-shell {
-  height: min(760px, calc(100vh - 18px));
+  height: min(800px, calc((100vh - 18px) / var(--arena-modal-scale, 1)));
   top: calc(50% - 24px);
   width: min(1680px, calc(100vw - 18px));
 }
@@ -6554,6 +6554,12 @@ a:active {
 #modal-prestige-arena #create-hide-enemies::before,
 #modal-prestige-arena #battle-hide-enemies::before {
   background-image: url(/img/gui/mag-glass.svg);
+}
+
+#modal-prestige-arena #create-starting-guns::before,
+#modal-prestige-arena #battle-starting-guns::before {
+  background-image: url(/img/loot/loot-weapon-ak.svg);
+  background-size: 22px;
 }
 
 #modal-prestige-arena .private-option-toggle:not(:disabled):hover {
@@ -24199,4 +24205,402 @@ div.roulette {
 
 .iap-bundle-discount-ribbon.is-visible {
   display: flex;
+}
+
+.starting-guns-overlay {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.6);
+  box-sizing: border-box;
+  display: none;
+  inset: 0;
+  justify-content: center;
+  padding: 16px;
+  position: fixed;
+  z-index: 1400;
+}
+
+.starting-guns-overlay.open {
+  animation-duration: 0.2s;
+  animation-name: fadeIn;
+  display: flex;
+}
+
+.starting-guns-overlay *,
+.starting-guns-overlay *::before,
+.starting-guns-overlay *::after {
+  box-sizing: border-box;
+}
+
+.starting-guns-panel {
+  display: flex;
+  flex-direction: column;
+  font-family: Roboto Condensed;
+  max-height: calc(100vh - 32px);
+  width: min(700px, 100%);
+}
+
+.starting-guns-header > h2 {
+  margin: 16px 0;
+}
+
+.starting-guns-header > .close-corner {
+  margin-top: 13px;
+}
+
+.starting-guns-body {
+  background: #141414;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.starting-guns-trays {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.starting-guns-tray {
+  background: #444;
+  border: 1px solid #292929;
+  border-bottom: 5px solid #292929;
+  border-radius: 5px;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.25);
+  min-width: 0;
+}
+
+.starting-guns-tray[data-slot="primary"],
+.starting-guns-tile-tag[data-slot="primary"] {
+  --slot-color: #3b7fd4;
+  --slot-color-dark: #2a5b99;
+}
+
+.starting-guns-tray[data-slot="secondary"],
+.starting-guns-tile-tag[data-slot="secondary"] {
+  --slot-color: #d45656;
+  --slot-color-dark: #943c3c;
+}
+
+.starting-guns-tray.drop-target {
+  background: #4f4f4f;
+  border-color: var(--slot-color);
+}
+
+.starting-guns-tray-label {
+  align-items: center;
+  background: var(--slot-color, #333);
+  border-bottom: 2px solid var(--slot-color-dark, #292929);
+  border-radius: 4px 4px 0 0;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08);
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  padding: 8px 12px;
+}
+
+.starting-guns-tray-name {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0.9;
+  text-shadow: 0 2px 2px rgba(0, 0, 0, 0.65);
+  text-transform: uppercase;
+}
+
+.starting-guns-tray-status {
+  color: gold;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.starting-guns-tray-items {
+  align-content: start;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+  display: grid;
+  gap: 6px;
+  grid-auto-rows: 52px;
+  grid-template-columns: repeat(5, 52px);
+  height: 184px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.starting-guns-chip {
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-bottom: 3px solid var(--slot-color, transparent);
+  display: flex;
+  flex: 0 0 auto;
+  height: 52px;
+  justify-content: center;
+  position: relative;
+  width: 52px;
+}
+
+.starting-guns-chip img {
+  height: 40px;
+  pointer-events: none;
+  width: 40px;
+}
+
+.starting-guns-chip-name {
+  display: none;
+}
+
+.starting-guns-chip-remove {
+  background: rgba(0, 0, 0, 0.6) url(/img/gui/close.svg) center / 10px no-repeat;
+  border: 0;
+  cursor: pointer;
+  height: 16px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 16px;
+}
+
+.starting-guns-chip-remove:hover {
+  background-color: #d45656;
+}
+
+.starting-guns-tray-empty {
+  align-self: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  grid-column: 1 / -1;
+  padding: 0 4px;
+}
+
+.starting-guns-picker {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.starting-guns-picker[hidden],
+.starting-guns-locked[hidden],
+.starting-guns-clear[hidden] {
+  display: none;
+}
+
+.starting-guns-tabs {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.starting-guns-tab {
+  background: rgba(255, 255, 255, 0.05);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-family: Roboto Condensed;
+  font-size: 14px;
+  font-weight: 700;
+  height: 36px;
+  padding: 0 14px;
+  text-transform: uppercase;
+  transition: background 0.15s;
+}
+
+.starting-guns-tab:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.starting-guns-tab.active {
+  background: rgba(130, 173, 81, 0.5);
+  border-bottom-color: #a0d450;
+  color: #fff;
+}
+
+.starting-guns-grid {
+  background: rgba(255, 255, 255, 0.03);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  align-content: start;
+  height: 240px;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.starting-guns-tile {
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  height: 84px;
+  justify-content: center;
+  opacity: 0.8;
+  padding: 4px;
+  position: relative;
+}
+
+.starting-guns-tile:hover {
+  opacity: 1;
+  transition: all 0.1s ease;
+}
+
+.starting-guns-tile.picked {
+  opacity: 1;
+}
+
+.starting-guns-tile-tags {
+  display: flex;
+  gap: 2px;
+  left: 0;
+  position: absolute;
+  top: 0;
+}
+
+.starting-guns-tile-tag {
+  background: var(--slot-color);
+  border-bottom: 2px solid var(--slot-color-dark);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 12px;
+  padding: 1px 4px 0;
+}
+
+.starting-guns-tile img {
+  height: 52px;
+  pointer-events: none;
+  width: 52px;
+}
+
+.starting-guns-tile-name {
+  font-size: 12px;
+  line-height: 14px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.starting-guns-tile,
+.starting-guns-panel:not(.read-only) .starting-guns-chip {
+  cursor: grab;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.starting-guns-panel.dragging,
+.starting-guns-panel.dragging * {
+  cursor: grabbing;
+}
+
+.starting-guns-ghost {
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  height: 52px;
+  justify-content: center;
+  left: -26px;
+  pointer-events: none;
+  position: fixed;
+  top: -26px;
+  width: 52px;
+  z-index: 1401;
+}
+
+.starting-guns-ghost img {
+  height: 40px;
+  width: 40px;
+}
+
+.starting-guns-locked {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  text-align: center;
+}
+
+.starting-guns-footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 10px 16px;
+}
+
+.starting-guns-clear,
+.starting-guns-done {
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: Roboto Condensed;
+  font-size: 16px;
+  font-weight: 700;
+  height: 36px;
+  padding: 0 20px;
+}
+
+.starting-guns-clear {
+  background: #555;
+  border-bottom: 2px solid #333;
+  box-shadow: inset 0 -2px #333;
+  color: #fff;
+  margin-right: auto;
+}
+
+.starting-guns-clear:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.starting-guns-done {
+  border-bottom: 2px solid #5b7a38;
+  min-width: 110px;
+}
+
+@media (max-width: 640px), (max-height: 600px) {
+  .starting-guns-body {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .starting-guns-trays {
+    gap: 8px;
+    grid-template-columns: 1fr;
+  }
+
+  .starting-guns-tray-items {
+    gap: 6px;
+    grid-auto-rows: 48px;
+    grid-template-columns: repeat(5, 48px);
+    height: 114px;
+    padding: 6px;
+  }
+
+  .starting-guns-chip {
+    height: 48px;
+    width: 48px;
+  }
+
+  .starting-guns-chip img {
+    height: 36px;
+    width: 36px;
+  }
+
+  .starting-guns-tab {
+    font-size: 12px;
+    height: 30px;
+    padding: 0 8px;
+  }
+
+  .starting-guns-grid {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    height: 200px;
+  }
+
+  .starting-guns-tile {
+    height: 70px;
+  }
+
+  .starting-guns-tile img {
+    height: 42px;
+    width: 42px;
+  }
 }

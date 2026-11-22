@@ -20,6 +20,11 @@ import {
     PrivateLobbyZoneModes,
     privateLobbyMiniGameUsesZone,
 } from "../../shared/defs/miniGame";
+import {
+    hasStartingGuns,
+    type PrivateLobbyStartingGuns,
+    privateLobbyMiniGameUsesStartingGuns,
+} from "../../shared/defs/startingGuns";
 import { GameConfig } from "../../shared/gameConfig";
 import * as net from "../../shared/net/net";
 import type {
@@ -66,6 +71,7 @@ import { LoadoutDisplay } from "./ui/opponentDisplay";
 import { Pass } from "./ui/pass";
 import { ProfileUi } from "./ui/profileUi";
 import type { ShopMenu } from "./ui/shopMenu";
+import { describeStartingGuns, StartingGunsPicker } from "./ui/startingGunsPicker";
 import { TeamMenu } from "./ui/teamMenu";
 import { loadStaticDomImages } from "./ui/ui2";
 
@@ -154,6 +160,9 @@ export class Application {
     prestigeArenaMiniGameSelection = $("#create-minigame-selection");
     prestigeArenaZoneModeBtn = $<HTMLButtonElement>("#create-zone-mode");
     prestigeArenaBattleZoneModeBtn = $<HTMLButtonElement>("#battle-zone-mode");
+    prestigeArenaStartingGunsBtn = $<HTMLButtonElement>("#create-starting-guns");
+    prestigeArenaBattleStartingGunsBtn = $<HTMLButtonElement>("#battle-starting-guns");
+    startingGunsPicker?: StartingGunsPicker;
     prestigeArenaImpostorCountDropdown = $("#create-impostors");
     prestigeArenaImpostorCountGroup = $("#create-impostors-group");
     prestigeArenaImpostorCountSelection = $("#create-impostors-selection");
@@ -755,6 +764,16 @@ export class Application {
                         this.teamMenu.roomData.zoneMode || "classic",
                     );
                     this.setPrestigeArenaZoneMode(zones[(current + 1) % zones.length]);
+                });
+            this.prestigeArenaStartingGunsBtn
+                .add(this.prestigeArenaBattleStartingGunsBtn)
+                .on("click", () => {
+                    this.startingGunsPicker ??= new StartingGunsPicker({
+                        getGuns: () => this.teamMenu.roomData.startingGuns,
+                        canEdit: () => this.canEditPrestigeArenaOptions(),
+                        onChange: (guns) => this.setPrestigeArenaStartingGuns(guns),
+                    });
+                    this.startingGunsPicker.open();
                 });
             this.prestigeArenaImpostorCountDropdown.on("click", () => {
                 if (
@@ -2135,6 +2154,40 @@ export class Application {
             .toggleClass("active", zoneMode !== "classic")
             .attr("aria-pressed", String(zoneMode !== "classic"))
             .prop("disabled", !canEdit || !usesZone);
+
+        const startingGuns = this.teamMenu.roomData.startingGuns;
+        const gunsSet = hasStartingGuns(startingGuns);
+        this.prestigeArenaStartingGunsBtn
+            .add(this.prestigeArenaBattleStartingGunsBtn)
+            .text(describeStartingGuns(startingGuns))
+            .toggleClass("active", gunsSet)
+            .attr("aria-pressed", String(gunsSet))
+            .prop(
+                "disabled",
+                !privateLobbyMiniGameUsesStartingGuns(selectedMiniGame) ||
+                    (!canEdit && !gunsSet),
+            );
+        this.startingGunsPicker?.refresh();
+    }
+
+    canEditPrestigeArenaOptions() {
+        return (
+            !this.teamMenu.active ||
+            !this.teamMenu.arena ||
+            !this.teamMenu.joined ||
+            this.teamMenu.isLeader
+        );
+    }
+
+    setPrestigeArenaStartingGuns(guns: PrivateLobbyStartingGuns) {
+        if (!this.canEditPrestigeArenaOptions()) return;
+
+        if (this.teamMenu.active && this.teamMenu.arena && this.teamMenu.isLeader) {
+            this.teamMenu.setRoomProperty("startingGuns", guns);
+        } else {
+            this.teamMenu.roomData.startingGuns = guns;
+        }
+        this.syncPrestigeArenaCreateOptions();
     }
 
     setPrestigeArenaZoneMode(zoneMode: PrivateLobbyZoneMode) {
@@ -3847,7 +3900,7 @@ export class Application {
         const wrapper = this.prestigeArenaWrapper.get(0);
         if (!wrapper) return;
 
-        if (window.innerWidth > 1080 && window.innerHeight > 760) {
+        if (window.innerWidth > 1080 && window.innerHeight > 820) {
             wrapper.style.removeProperty("--arena-modal-scale");
             return;
         }
@@ -3856,7 +3909,7 @@ export class Application {
         const isBattleRoyale =
             this.prestigeArenaBattlePane.hasClass("arena-battle-royale");
         const naturalWidth = isJoined ? (isBattleRoyale ? 1210 : 1680) : 1040;
-        const naturalHeight = isJoined ? (isBattleRoyale ? 570 : 760) : 475;
+        const naturalHeight = isJoined ? (isBattleRoyale ? 570 : 800) : 475;
         const availableWidth = Math.max(1, window.innerWidth - 8);
         const availableHeight = Math.max(1, window.innerHeight - 24);
         const scale = Math.min(

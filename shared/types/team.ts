@@ -10,7 +10,16 @@ import {
     type PrivateLobbyMiniGame,
     PrivateLobbyMiniGameIds,
 } from "../defs/miniGame";
+import {
+    type PrivateLobbyStartingGuns,
+    StartingGunMaxPerSlot,
+} from "../defs/startingGuns";
 import type { FindGameMatchData } from "./api";
+
+export const zStartingGuns = z.object({
+    primary: z.array(z.string().max(32)).max(StartingGunMaxPerSlot),
+    secondary: z.array(z.string().max(32)).max(StartingGunMaxPerSlot),
+});
 
 export type TeamMenuErrorType =
     | "join_full"
@@ -60,6 +69,7 @@ export interface RoomData {
     disablePerks: boolean;
     disableLooting: boolean;
     showEnemiesOnMap: boolean;
+    startingGuns: PrivateLobbyStartingGuns;
 }
 
 //
@@ -162,6 +172,7 @@ export const zClientRoomData = z.object({
     disablePerks: z.boolean().optional(),
     disableLooting: z.boolean().optional(),
     showEnemiesOnMap: z.boolean().optional(),
+    startingGuns: zStartingGuns.optional(),
 });
 
 export type ClientRoomData = z.infer<typeof zClientRoomData>;

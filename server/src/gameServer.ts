@@ -7,6 +7,7 @@ import { randomUUID } from "crypto";
 import z from "zod";
 import { version } from "../../package.json";
 import { normalizeAmongUsImpostorCount } from "../../shared/defs/miniGame";
+import { normalizeStartingGuns } from "../../shared/defs/startingGuns";
 import { GameConfig } from "../../shared/gameConfig";
 import * as net from "../../shared/net/net";
 import { isBattleRoyaleMapName } from "./battleroyale/helpers";
@@ -100,6 +101,7 @@ class GameServer {
             disableLooting: !!data.disableLooting,
             showEnemiesOnMap: data.showEnemiesOnMap !== false,
             deathmatchFirstTo: data.deathmatchFirstTo,
+            startingGuns: normalizeStartingGuns(data.startingGuns),
             playerData: data.playerData,
             groupHash: data.groupHash,
             targetGameId: data.targetGameId,

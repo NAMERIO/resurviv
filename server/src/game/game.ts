@@ -10,6 +10,13 @@ import {
     DefaultPrivateLobbyMiniGame,
     normalizeAmongUsImpostorCount,
 } from "../../../shared/defs/miniGame";
+import {
+    hasStartingGuns,
+    normalizeStartingGuns,
+    type PrivateLobbyStartingGuns,
+    privateLobbyMiniGameUsesStartingGuns,
+    type StartingGunSlot,
+} from "../../../shared/defs/startingGuns";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import { GameModeStatus } from "../../../shared/types/stats";
@@ -115,6 +122,10 @@ export class Game {
     disablePerks: boolean;
     disableLooting: boolean;
     showEnemiesOnMap: boolean;
+    startingGuns: PrivateLobbyStartingGuns;
+    startingGunsEnabled: boolean;
+    startingGunBags: Record<StartingGunSlot, string[]> = { primary: [], secondary: [] };
+    startingGunPicks: Record<StartingGunSlot, string[]> = { primary: [], secondary: [] };
     infectedHumansWon = false;
     hideAndSeekHidersWon = false;
     amongUsWinningRole?: AmongUsRole;
@@ -226,6 +237,11 @@ export class Game {
         this.disablePerks = this.miniGame === "gun_game" || !!config.disablePerks;
         this.disableLooting = this.miniGame === "gun_game" || !!config.disableLooting;
         this.showEnemiesOnMap = config.showEnemiesOnMap !== false;
+        this.startingGuns = normalizeStartingGuns(config.startingGuns);
+        this.startingGunsEnabled =
+            this.arenaPrivate &&
+            privateLobbyMiniGameUsesStartingGuns(this.miniGame) &&
+            hasStartingGuns(this.startingGuns);
 
         if (this.arenaPrivate && Config.replays.enabled) {
             this.recorder = new Recorder(this);
@@ -332,6 +348,29 @@ export class Game {
         this.logger.info(`Created in ${Date.now() - this.start} ms`);
 
         this.updateData();
+    }
+
+    getStartingGun(slot: StartingGunSlot, teamSlot: number): string | undefined {
+        const pool = this.startingGuns[slot];
+        if (!this.startingGunsEnabled || pool.length === 0) return undefined;
+        if (pool.length === 1) return pool[0];
+
+        const drawFromBag = () => {
+            const bag = this.startingGunBags[slot];
+            if (bag.length === 0) {
+                bag.push(...pool);
+                util.shuffleArray(bag);
+            }
+            return bag.pop()!;
+        };
+
+        if (teamSlot < 0) return drawFromBag();
+
+        const picks = this.startingGunPicks[slot];
+        while (picks.length <= teamSlot) {
+            picks.push(drawFromBag());
+        }
+        return picks[teamSlot];
     }
 
     updateEnemyReveal(dt: number) {
@@ -1013,6 +1052,7 @@ export class Game {
             disableLooting: this.disableLooting,
             showEnemiesOnMap: this.showEnemiesOnMap,
             deathmatchFirstTo: this.deathmatchRoundManager.firstTo,
+            startingGuns: this.startingGuns,
             canJoin: this.canJoin,
             aliveCount: this.aliveCount,
             startedTime: this.startedTime,

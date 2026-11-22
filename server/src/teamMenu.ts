@@ -15,6 +15,11 @@ import {
     normalizeAmongUsImpostorCount,
     normalizeArenaTeamCount,
 } from "../../shared/defs/miniGame";
+import {
+    emptyStartingGuns,
+    normalizeStartingGuns,
+    startingGunsKey,
+} from "../../shared/defs/startingGuns";
 import { GameConfig, TeamMode } from "../../shared/gameConfig";
 import type { FindGameError } from "../../shared/types/api";
 import {
@@ -200,6 +205,7 @@ class Room {
         disablePerks: false,
         disableLooting: false,
         showEnemiesOnMap: true,
+        startingGuns: emptyStartingGuns(),
     };
 
     arenaOwnerKey?: string;
@@ -592,6 +598,9 @@ class Room {
         this.data.showEnemiesOnMap = this.data.arena
             ? props.showEnemiesOnMap !== false
             : true;
+        this.data.startingGuns = this.data.arena
+            ? normalizeStartingGuns(props.startingGuns)
+            : emptyStartingGuns();
 
         if (this.data.arena && !this.isBattleRoyaleArena()) {
             this.moveInactiveArenaTeamsToSpectators();
@@ -656,7 +665,7 @@ class Room {
         if (!mode) return;
         const mapName =
             getPrivateLobbyMiniGameMapName(this.data.miniGame) ?? mode.mapName;
-        const warmupKey = `${this.data.region}:${mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.amongUsImpostorCount}:${this.data.disableAirstrikes}:${this.data.movingZone}:${this.data.zoneMode}:${this.data.disablePerks}:${this.data.disableLooting}:${this.data.showEnemiesOnMap}:${this.data.deathmatchFirstTo}`;
+        const warmupKey = `${this.data.region}:${mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.amongUsImpostorCount}:${this.data.disableAirstrikes}:${this.data.movingZone}:${this.data.zoneMode}:${this.data.disablePerks}:${this.data.disableLooting}:${this.data.showEnemiesOnMap}:${this.data.deathmatchFirstTo}:${startingGunsKey(this.data.startingGuns)}`;
         if (this.arenaWarmupKey === warmupKey) return;
         this.arenaWarmupKey = warmupKey;
         void this.teamMenu.server
@@ -679,6 +688,7 @@ class Room {
                 disableLooting: this.data.disableLooting,
                 showEnemiesOnMap: this.data.showEnemiesOnMap,
                 deathmatchFirstTo: this.data.deathmatchFirstTo,
+                startingGuns: this.data.startingGuns,
                 groupHash: this.id,
                 playerData: [],
             } satisfies FindGamePrivateBody)
@@ -1380,6 +1390,7 @@ class Room {
             disableLooting: this.data.arena ? this.data.disableLooting : false,
             showEnemiesOnMap: this.data.arena ? this.data.showEnemiesOnMap : true,
             deathmatchFirstTo: this.data.deathmatchFirstTo,
+            startingGuns: this.data.startingGuns,
             groupHash: this.data.arena ? this.id : undefined,
             targetGameId: teammateGameId,
             playerData,
@@ -1493,6 +1504,7 @@ class Room {
             disableLooting: this.data.disableLooting,
             showEnemiesOnMap: this.data.showEnemiesOnMap,
             deathmatchFirstTo: this.data.deathmatchFirstTo,
+            startingGuns: this.data.startingGuns,
             groupHash: this.id,
             targetGameId: this.currentArenaGameId,
             playerData,

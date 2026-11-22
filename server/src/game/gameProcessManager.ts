@@ -9,6 +9,12 @@ import {
     DefaultPrivateLobbyMiniGame,
     normalizeAmongUsImpostorCount,
 } from "../../../shared/defs/miniGame";
+import {
+    emptyStartingGuns,
+    normalizeStartingGuns,
+    type PrivateLobbyStartingGuns,
+    startingGunsKey,
+} from "../../../shared/defs/startingGuns";
 import type { TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import { util } from "../../../shared/utils/util";
@@ -61,6 +67,7 @@ class GameProcess implements GameData {
     disableLooting = false;
     showEnemiesOnMap = true;
     deathmatchFirstTo = 1;
+    startingGuns: PrivateLobbyStartingGuns = emptyStartingGuns();
     id = "";
     aliveCount = 0;
     startedTime = 0;
@@ -122,6 +129,7 @@ class GameProcess implements GameData {
                     this.deathmatchFirstTo = normalizeDeathmatchFirstTo(
                         msg.deathmatchFirstTo,
                     );
+                    this.startingGuns = normalizeStartingGuns(msg.startingGuns);
                     if (this.id !== msg.id) {
                         this.manager.processById.delete(this.id);
                         this.id = msg.id;
@@ -183,6 +191,7 @@ class GameProcess implements GameData {
         this.disableLooting = !!config.disableLooting;
         this.showEnemiesOnMap = config.showEnemiesOnMap !== false;
         this.deathmatchFirstTo = normalizeDeathmatchFirstTo(config.deathmatchFirstTo);
+        this.startingGuns = normalizeStartingGuns(config.startingGuns);
         this.stopped = false;
         this.creating = true;
         this.createStartedTime = Date.now();
@@ -488,6 +497,8 @@ export class GameProcessManager implements GameManager {
                 proc.showEnemiesOnMap === (body.showEnemiesOnMap !== false) &&
                 proc.deathmatchFirstTo ===
                     normalizeDeathmatchFirstTo(body.deathmatchFirstTo) &&
+                startingGunsKey(proc.startingGuns) ===
+                    startingGunsKey(normalizeStartingGuns(body.startingGuns)) &&
                 (requestedGroupHash
                     ? proc.groupHash === requestedGroupHash
                     : !proc.groupHash)
@@ -555,6 +566,7 @@ export class GameProcessManager implements GameManager {
                 disableLooting: !!body.disableLooting,
                 showEnemiesOnMap: body.showEnemiesOnMap !== false,
                 deathmatchFirstTo: normalizeDeathmatchFirstTo(body.deathmatchFirstTo),
+                startingGuns: normalizeStartingGuns(body.startingGuns),
             });
         }
 
