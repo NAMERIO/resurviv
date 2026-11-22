@@ -510,6 +510,26 @@ const SkinDefs: Record<string, OutfitDef> = {
             tint: 0xffc600,
         },
     }),
+        outfitNightmare: defineOutfitSkin("outfitBase", {
+        name: "Nightmare",
+        noDropOnDeath: true,
+        skinImg: {
+            baseTint: 0x0039FF,
+            baseSprite: "player-base-01.img",
+            handTint: 0xFDB9FF,
+            handSprite: "player-hands-01.img",
+            footTint: 0xFDB9FF,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0xBB68FF,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            skinLootImg: true,
+            tint: 0x0039FF,
+        },
+        rarity: Rarity.Rare,
+        lore: "Kongy kong Genghis KONG..",
+    }),
     outfitAqua: defineOutfitSkin("outfitBase", {
         name: "Aquatic Avenger",
         skinImg: {
