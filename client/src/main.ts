@@ -233,6 +233,7 @@ export class Application {
     wasPlayingVideo = false;
     checkedPingTest = false;
     hasFocus = true;
+    lowFpsTime = 0;
     newsDisplayed = false;
     latestNewsTimestamp = 0;
     newsManager: NewsManager;
@@ -996,7 +997,9 @@ export class Application {
             this.setAppActive(true);
             const domCanvas = document.querySelector<HTMLCanvasElement>("#cvs")!;
 
-            const rendererRes = window.devicePixelRatio > 1 ? 2 : 1;
+            const rendererRes = this.config.get("highResTex")
+                ? math.clamp(window.devicePixelRatio || 1, 1, 2)
+                : 1;
 
             if (device.os == "ios") {
                 PIXI.settings.PRECISION_FRAGMENT = PIXI.PRECISION.HIGH;
@@ -1009,6 +1012,7 @@ export class Application {
                     view: domCanvas,
                     antialias: false,
                     resolution: rendererRes,
+                    powerPreference: "high-performance",
                     hello: true,
                     forceCanvas,
                 });
@@ -4567,6 +4571,25 @@ export class Application {
         }
     }
 
+    updateAutoResolution(frameMs: number, dt: number) {
+        const renderer = this.pixi?.renderer;
+        if (!renderer || renderer.resolution <= 1) return;
+
+        if (frameMs > 1000 / 40) {
+            this.lowFpsTime += dt;
+        } else {
+            this.lowFpsTime = Math.max(0, this.lowFpsTime - dt * 2);
+        }
+        if (this.lowFpsTime < 5) return;
+
+        this.lowFpsTime = 0;
+        renderer.resolution = 1;
+        renderer.resize(device.screenWidth, device.screenHeight);
+        if (this.game?.initialized) {
+            this.game.resize();
+        }
+    }
+
     update() {
         const dt = math.clamp(this.pixi!.ticker.elapsedMS / 1000, 0.001, 1 / 8);
         this.pingTest.update(dt);
@@ -4608,6 +4631,7 @@ export class Application {
             } else {
                 this.game.update(dt);
             }
+            this.updateAutoResolution(this.pixi!.ticker.elapsedMS, dt);
         }
 
         // LoadoutDisplay update
