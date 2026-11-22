@@ -10,6 +10,10 @@ export interface FeaturedBundleDef {
     price: number;
     /** Days before this bundle starts a new purchase cycle. */
     durationDays: number;
+    seasonal?: {
+        start: string;
+        end: string;
+    };
 }
 
 export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
@@ -51,6 +55,10 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         items: ["outfitSnowman", "fist_frostpunch", "fist_lolitaPop"],
         price: 2000,
         durationDays: 7,
+        seasonal: {
+            start: "12-01",
+            end: "01-31",
+        },
     },
 
     bundle_vitaminD: {
@@ -208,6 +216,10 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         items: ["outfitILavaYou", "fist_rafflesia"],
         price: 1750,
         durationDays: 7,
+        seasonal: {
+            start: "02-01",
+            end: "02-14",
+        },
     },
 
     bundle_void: {
@@ -306,6 +318,15 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         durationDays: 7,
     },
 
+    bundle_pink: {
+        name: "Pink Set",
+        size: "small",
+        items: ["outfitCrimsonHibiscus", "karambit_bubblegum"],
+        price: 1200,
+        durationDays: 7,
+    },
+
+
     bundle_donut: {
         name: "Donut Set",
         size: "small",
@@ -358,8 +379,12 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         name: "Spooky Set",
         size: "large",
         items: ["outfitFrankenMonster", "outfitSpider", "fist_caughtYou"],
-        price: 950,
+        price: 2250,
         durationDays: 7,
+        seasonal: {
+            start: "10-01",
+            end: "10-31",
+        },
     },
 
     bundle_kinggalaxy: {
