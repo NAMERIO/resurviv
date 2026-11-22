@@ -33,6 +33,11 @@ import {
     zFindGamePrivateBody,
 } from "./utils/types";
 
+process.on("unhandledRejection", (err) => {
+    console.error("Unhandled rejection:", err);
+    void logErrorToWebhook("server", "Game server unhandled rejection:", err);
+});
+
 process.on("uncaughtException", async (err) => {
     console.error(err);
 
@@ -323,6 +328,7 @@ app.post("/api/find_game", (res, req) => {
                 returnJson(res, await server.findGame(parsed.data));
             } catch (error) {
                 server.logger.warn("API find_game error: ", error);
+                returnJson(res, { error: "find_game_failed" });
             }
         },
         () => {
@@ -357,7 +363,6 @@ app.ws<GameSocketData>("/play", {
         }
 
         if (Config.gameOffline) {
-            rejectUpgrade("game_offline");
             res.cork(() => {
                 res.writeStatus("503 Service Unavailable");
                 res.write("503 Service Unavailable");
@@ -399,8 +404,6 @@ app.ws<GameSocketData>("/play", {
             return;
         }
 
-        gameWsRateLimit.ipConnected(ip);
-
         const socketId = randomUUID();
         let disconnectReason = "";
 
@@ -434,6 +437,7 @@ app.ws<GameSocketData>("/play", {
 
     open(socket: WebSocket<GameSocketData>) {
         const data = socket.getUserData();
+        gameWsRateLimit.ipConnected(data.ip);
 
         if (data.disconnectReason) {
             const disconnectMsg = new net.DisconnectMsg();

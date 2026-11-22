@@ -32,7 +32,7 @@ class Region {
         this.data = Config.regions[this.id];
     }
 
-    async fetch<Data extends object>(endPoint: string, body: object) {
+    async fetch<Data extends object>(endPoint: string, body: object, timeoutMs = 20000) {
         const url = `http${this.data.https ? "s" : ""}://${this.data.address}/${endPoint}`;
 
         try {
@@ -43,11 +43,13 @@ class Region {
                     "survev-api-key": Config.secrets.SURVEV_API_KEY,
                 },
                 body: JSON.stringify(body),
+                signal: AbortSignal.timeout(timeoutMs),
             });
 
             if (res.ok) {
                 return (await res.json()) as Data;
             }
+            defaultLogger.warn(`Region ${this.id} ${endPoint} responded ${res.status}`);
         } catch (err) {
             defaultLogger.error(`Error fetching region ${this.id}`, err);
             return undefined;

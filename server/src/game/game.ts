@@ -896,7 +896,7 @@ export class Game {
             };
 
             this.joinTokens.set(token.token, {
-                expiresAt: now + 10000,
+                expiresAt: now + 30000,
                 userId: token.userId,
                 clanName: token.clanName,
                 clanTagColor: token.clanTagColor,

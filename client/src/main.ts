@@ -4500,7 +4500,9 @@ export class Application {
 
     onJoinGameError(err: FindGameError) {
         const isPrivateLobbyJoinFailure =
-            err === "join_game_failed" && this.teamMenu.active && this.teamMenu.joined;
+            (err === "join_game_failed" || err === "rate_limited") &&
+            this.teamMenu.active &&
+            this.teamMenu.joined;
         if (isPrivateLobbyJoinFailure) {
             this.teamMenu.onGameComplete();
             this.setAppActive(true);

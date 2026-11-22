@@ -98,6 +98,7 @@ export interface TeamStateMsg {
         localPlayerId: number; // always -1 by default since it can only be set when the socket is actually sending state to each individual client
         room: RoomData;
         players: TeamMenuPlayer[];
+        rejoinToken?: string;
     };
 }
 
@@ -184,6 +185,7 @@ export const zTeamJoinMsg = z.object({
         preferredTeam: z.enum(ArenaTeamIds).optional(),
         spectator: z.boolean().optional(),
         teamCode: z.string().trim().max(12).optional(),
+        rejoinToken: z.string().max(64).optional(),
         playerData: z.object({
             name: z.string(),
             outfit: z.string().optional(),
