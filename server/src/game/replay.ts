@@ -328,7 +328,7 @@ export class Recorder {
         this.index = headerIndex;
 
         this.writeUint32(GameConfig.replayVersion);
-        this.writeUint32(GameConfig.protocolVersion);
+        this.writeUint32(GameConfig.replayProtocolVersion);
         this.writeUint32(this.elapsedUs);
         this.writeUint8(this.game.teamMode);
 

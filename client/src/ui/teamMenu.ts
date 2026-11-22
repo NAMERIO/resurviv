@@ -174,6 +174,11 @@ export class TeamMenu {
     battleRoyaleTeamError: TeamMenuErrorType | "" = "";
     battleRoyaleTeamErrorTimeout: ReturnType<typeof setTimeout> | null = null;
     lastJoinGameData: FindGameMatchData | null = null;
+    rejoinAfterGame: {
+        roomUrl: string;
+        arena: boolean;
+        joinPrefs: TeamMenu["joinPrefs"];
+    } | null = null;
 
     hideUrl!: boolean;
 
@@ -376,6 +381,8 @@ export class TeamMenu {
             this.ws.readyState === WebSocket.CLOSING ||
             this.ws.readyState === WebSocket.CLOSED;
 
+        this.rejoinAfterGame = null;
+
         if (shouldReconnect) {
             const roomHost = api.resolveRoomHost();
             const url = `w${
@@ -402,7 +409,7 @@ export class TeamMenu {
                 roomUrl,
                 region: this.config.get("region")!,
                 gameModeIdx: this.config.get("gameModeIdx")!,
-                autoFill: arena ? false : this.config.get("teamAutoFill")!,
+                autoFill: false,
                 arena,
                 teamsLocked: false,
                 teamCount: this.roomData.teamCount || DefaultArenaTeamCount,
@@ -436,7 +443,17 @@ export class TeamMenu {
                 this.ws.onerror = (_e) => {
                     this.ws?.close();
                 };
-                this.ws.onclose = () => {
+                this.ws.onclose = (e) => {
+                    if (this.joiningGame && this.joined && this.active) {
+                        console.warn(
+                            `Team lobby socket closed during a match (code=${e.code}), will rejoin after the match`,
+                        );
+                        this.rejoinAfterGame = {
+                            roomUrl: this.roomData.roomUrl,
+                            arena: this.arena,
+                            joinPrefs: { ...this.joinPrefs },
+                        };
+                    }
                     let errMsg = "";
                     if (!this.joiningGame) {
                         errMsg = this.joined
@@ -524,6 +541,12 @@ export class TeamMenu {
     }
 
     onGameComplete() {
+        if (!this.active && this.rejoinAfterGame) {
+            const rejoin = this.rejoinAfterGame;
+            this.rejoinAfterGame = null;
+            this.connect(false, rejoin.roomUrl, rejoin.arena, rejoin.joinPrefs);
+            return;
+        }
         if (this.active) {
             this.joiningGame = false;
             this.roomData.findingGame = false;
@@ -1212,7 +1235,7 @@ export class TeamMenu {
         if (val === undefined) {
             return;
         }
-        if (this.arena && prop === "autoFill") {
+        if (prop === "autoFill") {
             return;
         }
         if (this.isLeader && this.roomData[prop] != val) {
@@ -1498,12 +1521,10 @@ export class TeamMenu {
             );
 
             // Fill mode
-            if (this.arena) {
-                this.roomData.autoFill = false;
-            }
-            setButtonState(this.fillAuto, this.roomData.autoFill, this.isLeader);
-            setButtonState(this.fillNone, !this.roomData.autoFill, this.isLeader);
-            const fillVisible = !this.arena;
+            this.roomData.autoFill = false;
+            setButtonState(this.fillAuto, false, this.isLeader);
+            setButtonState(this.fillNone, true, this.isLeader);
+            const fillVisible = false;
             this.fillAuto.css("display", fillVisible ? "block" : "none");
             this.fillNone.css("display", fillVisible ? "block" : "none");
             $("#team-fill-summary, #team-fill-note").css(

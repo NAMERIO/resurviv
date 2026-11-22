@@ -59,7 +59,6 @@ export class Decal extends BaseGameObject {
     layer: number;
     type: string;
     scale: number;
-    goreKills = 0;
     ori: number;
     rot: number;
     collider!: Circle;
@@ -73,6 +72,9 @@ export class Decal extends BaseGameObject {
     isPropDisguise: boolean;
 
     lifeTime = Infinity;
+
+    hasGore: boolean;
+    goreKills = 0;
 
     constructor(
         game: Game,
@@ -122,6 +124,8 @@ export class Decal extends BaseGameObject {
                     ? def.lifetime
                     : util.random(def.lifetime.min, def.lifetime.max);
         }
+
+        this.hasGore = !!def.gore;
     }
 
     updateCollider() {

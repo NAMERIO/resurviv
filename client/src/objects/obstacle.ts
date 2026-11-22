@@ -13,6 +13,7 @@ import type { Camera } from "../camera";
 import type { DebugRenderOpts } from "../config";
 import { debugLines } from "../debug/debugLines";
 import type { Ctx } from "../game";
+import { SnapshotBuffer } from "../interpClock";
 import type { Map } from "../map";
 import type { Renderer } from "../renderer";
 import type { Emitter, ParticleBarn } from "./particles";
@@ -144,6 +145,7 @@ export class Obstacle implements AbstractObject {
 
     // for skin interpolation
     visualPosOld!: Vec2;
+    skinSnapshots = new SnapshotBuffer();
     posInterpTicker!: number;
 
     collider!: Collider;
@@ -174,6 +176,7 @@ export class Obstacle implements AbstractObject {
         this.amongUsTaskGlowEnabled = false;
         this.img = "";
         this.visualPosOld = v2.create(0, 0);
+        this.skinSnapshots.clear();
     }
 
     m_free() {
@@ -224,6 +227,9 @@ export class Obstacle implements AbstractObject {
         this.pos = v2.copy(data.pos);
         this.rot = math.oriToRad(data.ori);
         this.scale = data.scale;
+        if (this.isSkin) {
+            this.skinSnapshots.push(data.pos, v2.create(1, 0), isNew);
+        }
 
         this.imgScale = def.img.scale!;
         this.imgMirrorY = def.img.mirrorY!;
@@ -298,6 +304,7 @@ export class Obstacle implements AbstractObject {
         if (this.isDoor && fullUpdate) {
             this.door.canUse = data.door?.canUse;
             this.door.open = data.door?.open!;
+            this.door.locked = data.door?.locked!;
             this.door.seq = data.door?.seq!;
             const u = v2.rotate(
                 v2.create(def.door?.slideOffset!, 0),
@@ -573,8 +580,17 @@ export class Obstacle implements AbstractObject {
 
         if (this.isSkin && camera.m_interpEnabled) {
             this.posInterpTicker += dt;
-            const posT = math.clamp(this.posInterpTicker / camera.m_interpInterval, 0, 1);
-            pos = v2.lerp(posT, this.visualPosOld, this.pos);
+            const bufferedPos = v2.create(0, 0);
+            if (this.skinSnapshots.sample(bufferedPos, null)) {
+                pos = bufferedPos;
+            } else {
+                const posT = math.clamp(
+                    this.posInterpTicker / camera.m_interpInterval,
+                    0,
+                    1,
+                );
+                pos = v2.lerp(posT, this.visualPosOld, this.pos);
+            }
         }
 
         const rot = this.isDoor && !this.isPropDisguise ? this.door.interpRot : this.rot;

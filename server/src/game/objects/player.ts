@@ -52,7 +52,14 @@ import {
 } from "../../../../shared/gameConfig";
 import * as net from "../../../../shared/net/net";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
-import type { GroupStatus, PlayerInfo } from "../../../../shared/net/updateMsg";
+import {
+    type GroupStatus,
+    type PlayerInfo,
+    type PredictionData,
+    PredictionFireMode,
+    type PredictionGunData,
+    PredictionLimits,
+} from "../../../../shared/net/updateMsg";
 import { type Circle, coldet } from "../../../../shared/utils/coldet";
 import { collider } from "../../../../shared/utils/collider";
 import type { Loadout } from "../../../../shared/utils/loadout";
@@ -154,7 +161,7 @@ export class PlayerBarn {
     dirtyPlayerInfos: Player[] = [];
     deletedPlayers: number[] = [];
     killedPlayers: Player[] = [];
-    groupIdAllocator = new IDAllocator(8);
+    groupIdAllocator = new IDAllocator(255);
     aliveCountDirty = false;
 
     socketIdToPlayer = new Map<string, Player>();
@@ -3200,6 +3207,10 @@ export class Player extends BaseGameObject {
     socketId: string;
 
     ack = 0;
+    predictInputId = 0;
+    predictMove: Vec2 | null = null;
+    predictMoveTime = 0;
+    predictTickTime = 0;
 
     name: string;
     isMobile: boolean;
@@ -4288,6 +4299,7 @@ export class Player extends BaseGameObject {
         }
 
         this.posOld = v2.copy(this.pos);
+        this.predictTickTime = this.game.now;
 
         const hasTreeClimbing = this.hasPerk("tree_climbing");
         const movementCollisionRad = this.vehicle
@@ -5130,7 +5142,7 @@ export class Player extends BaseGameObject {
         }
         const rect = collider.createAabbExtents(viewPos, v2.create(width, height));
 
-        const newVisibleObjects = game.grid.intersectColliderSet(rect);
+        const newVisibleObjects = game.grid.intersectAABBSet(rect);
         for (const obj of newVisibleObjects) {
             if (obj.__type === ObjectType.Player && (obj as Player).isInvisibleTo(this)) {
                 newVisibleObjects.delete(obj);
@@ -5217,6 +5229,10 @@ export class Player extends BaseGameObject {
             updateMsg.activePlayerIdDirty = player.activeIdDirty;
             updateMsg.activePlayerData = player;
         }
+        updateMsg.prediction = player === this ? this.getPredictionData() : null;
+        updateMsg.serverTime = this.game.now
+            ? Math.floor(this.game.now) % 0x100000000
+            : -1;
 
         updateMsg.playerInfos = (
             this._firstUpdate
@@ -5464,7 +5480,7 @@ export class Player extends BaseGameObject {
             this.spectateCooldownCount++;
 
             if (this.spectateCooldownCount > 10) {
-                this.disconnect();
+                this.disconnect("index-kicked-spam");
                 this.game.logger.error(
                     `Game ${this.game.id} - Player ${this.name} disconnected for spamming SpectateMsg (cooldown)`,
                 );
@@ -5476,7 +5492,7 @@ export class Player extends BaseGameObject {
         this.spectateMsgCount++;
 
         if (this.spectateMsgCount > 50) {
-            this.disconnect();
+            this.disconnect("index-kicked-spam");
             this.game.logger.error(
                 `Game ${this.game.id} - Player ${this.name} Player ${this.name} disconnected for spamming SpectateMsg (count)`,
             );
@@ -6760,6 +6776,16 @@ export class Player extends BaseGameObject {
 
     handleInput(msg: net.InputMsg): void {
         this.ack = msg.seq;
+        this.predictInputId = msg.inputId;
+        const predictMove = net.getInputMoveDir(msg);
+        if (
+            !this.predictMove ||
+            predictMove.x !== this.predictMove.x ||
+            predictMove.y !== this.predictMove.y
+        ) {
+            this.predictMove = predictMove;
+            this.predictMoveTime = performance.now();
+        }
         this.amongUsCamerasOpen =
             this.game.map.amongUsMode && Boolean(msg.amongUsCamerasOpen);
 
@@ -8641,21 +8667,157 @@ export class Player extends BaseGameObject {
     }
 
     recalculateSpeed(hasTreeClimbing: boolean): void {
+        this.speed = this.getMoveSpeed(hasTreeClimbing);
+    }
+
+    getPredictionData(): PredictionData | null {
+        const game = this.game;
+        if (
+            this.dead ||
+            this.spectatorOnly ||
+            this.awaitingSelection ||
+            this.perkSelectionPending ||
+            this.vehicle ||
+            this.propDisguise ||
+            this.pullToSourcePos ||
+            this.pushBackTime > 0 ||
+            (this.dashSpeed > 0 && this.dashTimeLeft > 0) ||
+            this.debug.noClip ||
+            this.hideAndSeekHunterReleaseLocked ||
+            this.hasPerk("streak_specter_effect") ||
+            game.playerBarn.isAmongUsMeetingLocked ||
+            (game.arenaPrivate &&
+                (game.arenaStartLockTimer > 0 ||
+                    (game.deathmatchRoundManager.enabled &&
+                        game.deathmatchRoundManager.roundOver)))
+        ) {
+            return null;
+        }
+
+        const treeClimbing = this.hasPerk("tree_climbing");
+        const speed = this.getMoveSpeed(treeClimbing, false, false, false);
+        const shootSpeed = this.getMoveSpeed(treeClimbing, true, false, false);
+        const waterSpeed = this.getMoveSpeed(treeClimbing, false, true, false);
+        const waterShootSpeed = this.getMoveSpeed(treeClimbing, true, true, false);
+        const itemSpeed = this.getMoveSpeed(treeClimbing, false, false, true);
+        const waterItemSpeed = this.getMoveSpeed(treeClimbing, false, true, true);
+        if (
+            Math.max(
+                speed,
+                shootSpeed,
+                waterSpeed,
+                waterShootSpeed,
+                itemSpeed,
+                waterItemSpeed,
+            ) > PredictionLimits.maxSpeed
+        ) {
+            return null;
+        }
+        const usingItem = this.actionType === GameConfig.Action.UseItem;
+
+        return {
+            inputId: this.predictInputId,
+            moveAge: math.max(
+                (this.predictTickTime - this.predictMoveTime) / 1000,
+                PredictionLimits.minMoveAge,
+            ),
+            speed,
+            shootSpeed,
+            waterSpeed,
+            waterShootSpeed,
+            itemSpeed,
+            waterItemSpeed,
+            usingItem,
+            itemTimeLeft: usingItem
+                ? math.max(this.action.duration - this.action.time, 0)
+                : 0,
+            actionBusy:
+                usingItem ||
+                this.actionType === GameConfig.Action.Revive ||
+                this.weaponManager.cookingThrowable,
+            slowdownLeft: math.clamp(
+                this.shotSlowdownTimer,
+                0,
+                PredictionLimits.maxSlowdown,
+            ),
+            tickInterval: this.game.tickInterval,
+            treeClimbing,
+            gun: this.getPredictionGunData(),
+        };
+    }
+
+    getPredictionGunData(): PredictionGunData | null {
+        const weaponManager = this.weaponManager;
+        const itemDef = GameObjectDefs[weaponManager.activeWeapon] as GunDef | undefined;
+        if (itemDef?.type !== "gun") return null;
+        const weapon = weaponManager.weapons[weaponManager.curWeapIdx];
+        if (!weapon) return null;
+
+        let mode = PredictionFireMode.None;
+        if (itemDef.fireMode === "auto") mode = PredictionFireMode.Auto;
+        else if (itemDef.fireMode === "single") mode = PredictionFireMode.Single;
+        else if (itemDef.fireMode === "burst") mode = PredictionFireMode.Burst;
+
+        if (
+            this.downed ||
+            this.shootDisabledTimer > 0 ||
+            this.debug.shootFast ||
+            weaponManager.activeWeapon === "prop_o_matic" ||
+            (itemDef.outsideOnly && this.indoors) ||
+            weaponManager.bursts.length > PredictionLimits.maxBursts
+        ) {
+            mode = PredictionFireMode.None;
+        }
+        if (mode === PredictionFireMode.None) return null;
+
+        let fireCooldown = itemDef.fireDelay;
+        if (this.hasPerk("streak_rapid_fire_effect")) {
+            fireCooldown *= DamageStreakProperties.streak_rapid_fire_effect.fireDelayMult;
+        }
+
+        return {
+            mode,
+            cooldown: math.clamp(
+                weapon.cooldown,
+                PredictionLimits.minCooldown,
+                PredictionLimits.maxCooldown,
+            ),
+            fireCooldown,
+            slowdownTime: itemDef.fireDelay,
+            burstCount: math.clamp(
+                itemDef.burstCount ?? 0,
+                0,
+                PredictionLimits.maxBursts,
+            ),
+            burstDelay: itemDef.burstDelay ?? 0,
+            bursts: weaponManager.bursts.slice(),
+            ammo: math.clamp(weapon.ammo, 0, PredictionLimits.maxAmmo),
+            buffered: this.shootStart,
+        };
+    }
+
+    getMoveSpeed(
+        hasTreeClimbing: boolean,
+        shotSlowdown = this.shotSlowdownTimer > 0,
+        onWater = this.game.map.isOnWater(this.pos, this.layer),
+        usingItem = this.actionType == GameConfig.Action.UseItem,
+    ): number {
+        let speed: number;
         if (this.debug.speedEnabled) {
-            this.speed = this.debug.speed;
+            speed = this.debug.speed;
         } else if (this.actionType == GameConfig.Action.Revive) {
             // prevents self reviving players from getting an unnecessary speed boost
             if (this.action.targetId && !(this.downed && this.hasPerk("self_revive"))) {
                 // player reviving
-                this.speed = GameConfig.player.downedMoveSpeed + 2; // not specified in game config so i just estimated
+                speed = GameConfig.player.downedMoveSpeed + 2; // not specified in game config so i just estimated
             } else {
                 // player being revived
-                this.speed = GameConfig.player.downedRezMoveSpeed;
+                speed = GameConfig.player.downedRezMoveSpeed;
             }
         } else if (this.downed) {
-            this.speed = GameConfig.player.downedMoveSpeed;
+            speed = GameConfig.player.downedMoveSpeed;
         } else {
-            this.speed = GameConfig.player.moveSpeed;
+            speed = GameConfig.player.moveSpeed;
         }
 
         // if melee is selected increase speed
@@ -8669,90 +8831,86 @@ export class Player extends BaseGameObject {
                 equipSpeed = 1;
             }
 
-            this.speed += equipSpeed;
+            speed += equipSpeed;
         }
 
-        if (this.shotSlowdownTimer > 0 && weaponDef.speed.attack !== undefined) {
-            this.speed += weaponDef.speed.attack;
+        if (shotSlowdown && weaponDef.speed.attack !== undefined) {
+            speed += weaponDef.speed.attack;
         }
 
         // if player is on water decrease speed
-        const isOnWater = this.game.map.isOnWater(this.pos, this.layer);
-        if (isOnWater) {
-            this.speed -= hasTreeClimbing
+        if (onWater) {
+            speed -= hasTreeClimbing
                 ? -PerkProperties.tree_climbing.waterSpeedBoost
                 : GameConfig.player.waterSpeedPenalty;
         }
 
         // increase speed when adrenaline is above 50%
         if (this.boost >= 50) {
-            this.speed += GameConfig.player.boostMoveSpeed;
+            speed += GameConfig.player.boostMoveSpeed;
         }
 
         if (this.animType === GameConfig.Anim.Cook) {
-            this.speed -= GameConfig.player.cookSpeedPenalty;
+            speed -= GameConfig.player.cookSpeedPenalty;
         }
 
         if (
             this.hasteType != GameConfig.HasteType.None &&
             this.hasteType != GameConfig.HasteType.Dash
         ) {
-            this.speed += GameConfig.player.hasteSpeedBonus;
+            speed += GameConfig.player.hasteSpeedBonus;
         }
 
         if (this.frozen) {
-            this.speed -= GameConfig.player.frozenSpeedPenalty;
+            speed -= GameConfig.player.frozenSpeedPenalty;
         }
 
         const hasFieldMedic = this.hasPerk("field_medic");
         // decrease speed if shooting or popping adren or heals
         // field_medic perk doesn't slow you down while you heal
-        if (
-            this.shotSlowdownTimer > 0 ||
-            (!hasFieldMedic && this.actionType == GameConfig.Action.UseItem)
-        ) {
-            this.speed *= 0.5;
+        if (shotSlowdown || (!hasFieldMedic && usingItem)) {
+            speed *= 0.5;
         }
 
-        if (hasFieldMedic && this.actionType == GameConfig.Action.UseItem) {
-            this.speed += PerkProperties.field_medic.speedBoost;
+        if (hasFieldMedic && usingItem) {
+            speed += PerkProperties.field_medic.speedBoost;
         }
 
         // melee_runner perk: increase movement speed by multiplier while holding a melee weapon
         if ((weaponDef as any).type === "melee" && this.hasPerk("melee_runner")) {
             const mult = PerkProperties.melee_runner.meleeSpeedMult as number;
-            if (mult && mult > 0) this.speed *= mult;
+            if (mult && mult > 0) speed *= mult;
         }
 
         // low HP surge perk
         if (this.lowHpSurgeTicker > 0 && this.hasPerk("low_hp_surge")) {
             const mult = (PerkProperties.low_hp_surge as any)?.speedMult ?? 1.3;
-            if (mult && mult > 0) this.speed *= mult;
+            if (mult && mult > 0) speed *= mult;
         }
 
         if (this.hasPerk("streak_specter_effect")) {
-            this.speed *= DamageStreakProperties.streak_specter_effect.speedMult;
+            speed *= DamageStreakProperties.streak_specter_effect.speedMult;
         }
 
         if (this.hasPerk("streak_vanish_effect")) {
-            this.speed *= DamageStreakProperties.streak_vanish_effect.speedMult;
+            speed *= DamageStreakProperties.streak_vanish_effect.speedMult;
         }
 
         const hideAndSeekSettings = getHideAndSeekSettings(this.game.miniGame);
         if (hideAndSeekSettings && this.arenaTeam === hideAndSeekSettings.seekerTeam) {
-            this.speed *= hideAndSeekSettings.seekerSpeedMultiplier;
+            speed *= hideAndSeekSettings.seekerSpeedMultiplier;
         }
 
         const infectedSettings = getInfectedSettings(this.game.miniGame);
         if (infectedSettings && this.arenaTeam === infectedSettings.zombieTeam) {
-            this.speed *= infectedSettings.zombieSpeedMultiplier;
+            speed *= infectedSettings.zombieSpeedMultiplier;
         }
 
         if (this.infectedEffect) {
-            this.speed *= 1.2;
+            speed *= 1.2;
         }
 
-        this.speed = math.clamp(this.speed, 1, 10000);
+        return math.clamp(speed, 1, 10000);
     }
 
     logPlayerIp() {

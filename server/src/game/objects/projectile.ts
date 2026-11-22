@@ -243,6 +243,8 @@ export class Projectile extends BaseGameObject {
         //
         // Collision and changing layers on stair
         //
+        const shouldDoLineCheck = v2.distance(posOld, this.pos) > this.rad;
+
         const objs = [
             ...new Set([
                 ...this.game.grid.intersectGameObject(this),
@@ -262,11 +264,9 @@ export class Projectile extends BaseGameObject {
                     this.pos,
                     this.rad,
                 );
-                const lineIntersection = collider.intersectSegment(
-                    obj.collider,
-                    posOld,
-                    this.pos,
-                );
+                const lineIntersection = shouldDoLineCheck
+                    ? collider.intersectSegment(obj.collider, posOld, this.pos)
+                    : null;
 
                 if (intersection || lineIntersection) {
                     if (obj.height >= height && obj.__id !== this.obstacleBellowId) {
@@ -334,11 +334,9 @@ export class Projectile extends BaseGameObject {
                     this.pos,
                     this.rad,
                 );
-                const lineIntersection = collider.intersectSegment(
-                    obj.collider,
-                    posOld,
-                    this.pos,
-                );
+                const lineIntersection = shouldDoLineCheck
+                    ? collider.intersectSegment(obj.collider, posOld, this.pos)
+                    : null;
 
                 if (intersection || lineIntersection) {
                     if (lineIntersection) {

@@ -95,6 +95,7 @@ export class Game {
     over = false;
     startedTime = 0;
     stopTicker = 0;
+    emptyTicker = 0;
     id: string;
     teamMode: TeamMode;
     mapName: keyof typeof MapDefs;
@@ -182,6 +183,7 @@ export class Game {
     gas: Gas;
 
     now!: number;
+    tickInterval = 1 / Config.gameTps;
 
     perfTicker = 0;
     tickTimes: number[] = [];
@@ -335,6 +337,7 @@ export class Game {
         const now = performance.now();
         if (!this.now) this.now = now;
         dt ??= math.clamp((now - this.now) / 1000, 0.001, 1 / 8);
+        this.tickInterval += (dt - this.tickInterval) * 0.05;
 
         this.now = now;
 
@@ -363,6 +366,17 @@ export class Game {
                 this.stop();
                 return;
             }
+        }
+
+        if (this.playerBarn.players.length === 0) {
+            this.emptyTicker += dt;
+            if (this.emptyTicker >= 60) {
+                this.logger.info("No players for 60 seconds, stopping");
+                this.stop();
+                return;
+            }
+        } else {
+            this.emptyTicker = 0;
         }
 
         if (!this.started) {
@@ -669,18 +683,21 @@ export class Game {
                 JSON.stringify([...new Uint8Array(buff.slice(0, 255))]),
             );
             if (player) {
-                player.disconnect();
+                player.disconnect("index-kicked-bad-msg");
             } else {
-                this.closeSocket(socketId);
+                this.closeSocket(socketId, "index-kicked-bad-msg");
             }
             return;
         }
 
         if (error) {
+            this.logger.warn(
+                `Closing socket ${socketId.substring(0, 8)} (player: ${player?.name ?? "none"}): msg error ${error}`,
+            );
             if (player) {
-                player.disconnect();
+                player.disconnect(error);
             } else {
-                this.closeSocket(socketId);
+                this.closeSocket(socketId, error);
             }
             return;
         }
@@ -858,6 +875,7 @@ export class Game {
     }
 
     addJoinTokens(tokens: FindGamePrivateBody["playerData"], autoFill: boolean) {
+        this.emptyTicker = 0;
         const now = Date.now();
         for (const [token, data] of this.joinTokens) {
             if (data.expiresAt < now) {
@@ -1023,7 +1041,7 @@ export class Game {
                     participants: [...byUserId.values()],
                     replay: {
                         version: GameConfig.replayVersion,
-                        protocolVersion: GameConfig.protocolVersion,
+                        protocolVersion: GameConfig.replayProtocolVersion,
                         data: Buffer.from(replay).toString("base64"),
                     },
                 },

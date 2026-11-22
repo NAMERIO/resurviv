@@ -45,7 +45,7 @@ ArenaReplayRouter.get("/", async (c) => {
                 gt(arenaReplaysTable.expiresAt, now),
                 gte(arenaReplaysTable.replayVersion, GameConfig.replayMinVersion),
                 lte(arenaReplaysTable.replayVersion, GameConfig.replayVersion),
-                eq(arenaReplaysTable.protocolVersion, GameConfig.protocolVersion),
+                eq(arenaReplaysTable.protocolVersion, GameConfig.replayProtocolVersion),
             ),
         )
         .orderBy(desc(arenaReplaysTable.createdAt))
@@ -82,7 +82,7 @@ ArenaReplayRouter.get("/:gameId/file", async (c) => {
                 gt(arenaReplaysTable.expiresAt, new Date()),
                 gte(arenaReplaysTable.replayVersion, GameConfig.replayMinVersion),
                 lte(arenaReplaysTable.replayVersion, GameConfig.replayVersion),
-                eq(arenaReplaysTable.protocolVersion, GameConfig.protocolVersion),
+                eq(arenaReplaysTable.protocolVersion, GameConfig.replayProtocolVersion),
             ),
         )
         .limit(1);

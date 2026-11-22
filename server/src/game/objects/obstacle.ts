@@ -108,7 +108,6 @@ export class Obstacle extends BaseGameObject {
 
     killTicker = 0;
     regrowTicker = 0;
-    fromAirdrop = false;
 
     constructor(
         game: Game,
@@ -164,6 +163,7 @@ export class Obstacle extends BaseGameObject {
         this.minScale = def.scale.destroy;
 
         this.updateCollider();
+        this.game.lootBarn.forceLootUpdates(this.collider, this.layer);
 
         this.mapObstacleBounds = [this.collider];
 
@@ -336,6 +336,7 @@ export class Obstacle extends BaseGameObject {
         this.healthT = 1;
 
         this.updateCollider();
+        this.game.lootBarn.forceLootUpdates(this.collider, this.layer);
 
         this.setDirty();
     }
@@ -402,6 +403,7 @@ export class Obstacle extends BaseGameObject {
         if (this.minScale < 1) {
             this.scale = math.lerp(this.healthT, this.minScale, this.maxScale);
             this.updateCollider();
+            this.game.lootBarn.forceLootUpdates(this.collider, this.layer);
         }
 
         // need to send full object for obstacles with explosions
@@ -433,7 +435,11 @@ export class Obstacle extends BaseGameObject {
             });
         }
 
-        if (this.fromAirdrop && params.source?.__type === ObjectType.Player) {
+        if (
+            this.type.includes("crate") &&
+            def.loot.length > 0 &&
+            params.source?.__type === ObjectType.Player
+        ) {
             this.game.freeFallTicketDrop.rollForCrate(
                 params.source,
                 this.pos,
@@ -458,18 +464,7 @@ export class Obstacle extends BaseGameObject {
             } else {
                 destroyType = def.destroyType;
             }
-            const spawned = this.game.map.genAuto(
-                destroyType,
-                this.pos,
-                this.layer,
-                this.ori,
-            );
-            if (
-                this.type.startsWith("airdrop_crate") &&
-                spawned?.__type === ObjectType.Obstacle
-            ) {
-                spawned.fromAirdrop = true;
-            }
+            this.game.map.genAuto(destroyType, this.pos, this.layer, this.ori);
         }
 
         // potatos in potato mode
@@ -733,6 +728,7 @@ export class Obstacle extends BaseGameObject {
         this.rot = math.oriToRad(this.ori);
 
         this.updateCollider();
+        this.game.lootBarn.forceLootUpdates(this.collider, this.layer);
 
         this.checkLayer();
         this.setDirty();

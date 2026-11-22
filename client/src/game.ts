@@ -18,6 +18,7 @@ import type {
 import { GameConfig, Input, TeamMode, WeaponSlot } from "../../shared/gameConfig";
 import * as net from "../../shared/net/net";
 import { ObjectType } from "../../shared/net/objectSerializeFns";
+import type { Bullet } from "../../shared/net/updateMsg";
 import { collider } from "../../shared/utils/collider";
 import { math } from "../../shared/utils/math";
 import { util } from "../../shared/utils/util";
@@ -28,9 +29,7 @@ import { Camera } from "./camera";
 import type { ConfigManager, DebugRenderOpts } from "./config";
 import { DebugHUD } from "./debug/debugHUD";
 import { debugLines } from "./debug/debugLines";
-
 import { Editor } from "./debug/editor";
-
 import { device } from "./device";
 import { discordPresence } from "./discordPresence";
 import { EmoteBarn } from "./emote";
@@ -42,6 +41,7 @@ import { Gas } from "./gas";
 import { helpers } from "./helpers";
 import { GamepadButton, type InputHandler, Key, MouseWheel } from "./input";
 import type { InputBinds, InputBindUi } from "./inputBinds";
+import { interpClock } from "./interpClock";
 import type { SoundHandle } from "./lib/createJS";
 import { Map } from "./map";
 import { AirdropBarn } from "./objects/airdrop";
@@ -60,6 +60,12 @@ import { type Player, PlayerBarn } from "./objects/player";
 import { ProjectileBarn } from "./objects/projectile";
 import { ShotBarn } from "./objects/shot";
 import { SmokeBarn } from "./objects/smoke";
+import {
+    getPredictionRadius,
+    LocalPrediction,
+    type PredictionTarget,
+    type PredictionWorld,
+} from "./prediction";
 import { Renderer } from "./renderer";
 import type { ResourceManager } from "./resources";
 import { SDK } from "./sdk/sdk";
@@ -293,6 +299,18 @@ export class Game {
 
     seq!: number;
     seqInFlight!: boolean;
+    m_prediction = new LocalPrediction();
+    m_predictedShotTimes: number[] = [];
+    m_predictedShotOffhand = false;
+    m_lastLocalShotFx: Pick<
+        Bullet,
+        | "shotSourceType"
+        | "shotAlt"
+        | "splinter"
+        | "trailSaturated"
+        | "apRounds"
+        | "highVelocity"
+    > | null = null;
     seqSendTime!: number;
     pings!: number[];
     m_arenaPrivate = false;
@@ -408,7 +426,7 @@ export class Game {
                         msgStream.stream.buffer.byteLength,
                     );
                 };
-                this.m_ws.onclose = () => {
+                this.m_ws.onclose = (e) => {
                     const displayingStats = this.m_uiManager?.displayingStats;
                     const connecting = this.connecting;
                     const connected = this.connected;
@@ -417,7 +435,14 @@ export class Game {
                     if (connecting) {
                         onConnectFail();
                     } else if (connected && !this.m_gameOver && !displayingStats) {
-                        const errMsg = this.m_disconnectMsg || "index-host-closed";
+                        console.warn(
+                            `Game socket closed mid-game: code=${e.code} reason=${this.m_disconnectMsg || e.reason || "none"} clean=${e.wasClean}`,
+                        );
+                        const fallback =
+                            e.code === 1006
+                                ? "index-lost-connection-server"
+                                : "index-host-closed";
+                        const errMsg = this.m_disconnectMsg || fallback;
                         this.onQuit(errMsg);
                     }
                 };
@@ -586,6 +611,10 @@ export class Game {
         this.seq = 0;
         this.seqInFlight = false;
         this.seqSendTime = 0;
+        this.m_prediction.reset();
+        this.m_predictedShotTimes = [];
+        this.m_lastLocalShotFx = null;
+        interpClock.reset();
         this.pings = [];
         this.updateIntervals = [];
         this.lastUpdateTime = 0;
@@ -719,6 +748,7 @@ export class Game {
             spectatorVitals ||
             ((IS_DEV || this.canUseDeveloper()) &&
                 Boolean(this.m_config.get("debugTools")?.showPlayerHealth));
+        interpClock.tick(performance.now());
         this.m_playerBarn.m_update(
             dt,
             this.m_activeId,
@@ -737,6 +767,7 @@ export class Game {
             this.m_spectating,
             Boolean(this.m_config.get("debugTools")?.invisible),
         );
+        this.holdPredictedPosition();
         this.updateAmbience();
 
         const freeCameraEnabled = privateSpectator && this.m_uiManager.specFreeCamera;
@@ -1289,9 +1320,22 @@ export class Game {
                 this.seqInFlight = true;
                 inputMsg.seq = this.seq;
             }
+            inputMsg.inputId = this.m_prediction.nextInputId();
             this.m_sendMessage(net.MsgType.Input, inputMsg, 128);
+            this.m_prediction.onInputSent(
+                inputMsg,
+                this.getPredictedItemUseTime(inputMsg),
+            );
             this.m_inputMsgTimeout = 1;
             this.m_prevInputMsg = inputMsg;
+        }
+
+        const shownPos = v2.copy(this.m_activePlayer.m_visualPos);
+        this.applyPrediction(dt);
+        if (!this.m_freeCameraActive) {
+            const shift = v2.sub(this.m_activePlayer.m_visualPos, shownPos);
+            this.m_camera.m_pos = v2.add(this.m_camera.m_pos, shift);
+            this.m_audioManager.cameraPos = v2.copy(this.m_camera.m_pos);
         }
 
         // Clear cached data
@@ -3761,7 +3805,124 @@ export class Game {
         this.m_renderer.resize(this.m_map, this.m_camera);
     }
 
+    getPredictionTarget(): PredictionTarget | null {
+        const player = this.m_activePlayer;
+        if (
+            !player ||
+            this.m_spectating ||
+            this.m_gameOver ||
+            this.m_activeId !== this.m_localId ||
+            player.m_netData.m_dead
+        ) {
+            return null;
+        }
+        return {
+            serverPos: player.m_netData.m_pos,
+            serverLayer: player.m_netData.m_layer,
+            rad: getPredictionRadius(player.m_netData.m_scale),
+            visualPos: player.m_visualPos,
+        };
+    }
+
+    getPredictedItemUseTime(msg: net.InputMsg) {
+        if (!msg.useItem) return 0;
+        const player = this.m_activePlayer;
+        if (!player || player.m_netData.m_dead || player.m_netData.m_downed) return 0;
+        const def = GameObjectDefs[msg.useItem];
+        if (!def || (def.type !== "heal" && def.type !== "boost")) return 0;
+        if (msg.useItem === "nitroLace") return 0;
+        if (!(player.m_localData.m_inventory[msg.useItem] > 0)) return 0;
+        const hasAoeHeal = player.m_netData.m_perks.some((p) => p.type === "aoe_heal");
+        if (
+            def.type === "heal" &&
+            !hasAoeHeal &&
+            Math.abs(player.m_localData.m_health - def.maxHeal) < 0.5
+        ) {
+            return 0;
+        }
+        return (hasAoeHeal ? 0.75 : 1) * def.useTime;
+    }
+
+    getPredictionWorld(): PredictionWorld {
+        return {
+            obstacles: this.m_map.m_obstaclePool.m_getPool(),
+            npcs: this.m_map.m_npcPool.m_getPool(),
+            structures: this.m_map.m_structurePool.m_getPool(),
+            mapWidth: this.m_map.width,
+            mapHeight: this.m_map.height,
+            isOnWater: this.isPredictionOnWater,
+        };
+    }
+
+    isPredictionOnWater = (pos: Vec2, layer: number) => {
+        if (this.m_map.getMapDef().gameMode.amongUsMode) return false;
+        return this.m_map.getGroundSurface(pos, layer).type === "water";
+    };
+
+    holdPredictedPosition() {
+        const pos = this.m_prediction.shownPos;
+        if (!pos || !this.getPredictionTarget()) return;
+        this.m_activePlayer.m_pos = v2.copy(pos);
+        this.m_activePlayer.m_visualPos = v2.copy(pos);
+    }
+
+    applyPrediction(dt: number) {
+        const predicted = this.m_prediction.update(
+            dt,
+            !!this.m_config.get("movementPrediction"),
+            this.getPredictionTarget(),
+            this.getPredictionWorld(),
+        );
+        const shots = this.m_prediction.takeShots();
+        if (!predicted) return;
+        this.m_activePlayer.m_pos = v2.copy(predicted);
+        this.m_activePlayer.m_visualPos = v2.copy(predicted);
+        for (let i = 0; i < shots.length; i++) {
+            this.playPredictedShot(shots[i].lastShot);
+        }
+    }
+
+    playPredictedShot(lastShot: boolean) {
+        const player = this.m_activePlayer;
+        const weaponType = player.m_netData.m_activeWeapon;
+        const def = GameObjectDefs[weaponType];
+        if (def?.type !== "gun") return;
+        const fx =
+            this.m_lastLocalShotFx?.shotSourceType === weaponType
+                ? this.m_lastLocalShotFx
+                : null;
+        if (def.isDual) this.m_predictedShotOffhand = !this.m_predictedShotOffhand;
+        this.m_shotBarn.addShot({
+            pos: v2.copy(player.m_visualPos),
+            layer: player.layer,
+            playerId: this.m_localId,
+            shotSourceType: weaponType,
+            shotOffhand: this.m_predictedShotOffhand,
+            lastShot,
+            shotAlt: fx?.shotAlt ?? false,
+            splinter: fx?.splinter ?? false,
+            trailSaturated: fx?.trailSaturated ?? false,
+            apRounds: fx?.apRounds ?? false,
+            highVelocity: fx?.highVelocity ?? false,
+        } as Bullet);
+        this.m_predictedShotTimes.push(performance.now());
+    }
+
+    consumePredictedShot() {
+        const expire = performance.now() - 1000;
+        while (
+            this.m_predictedShotTimes.length &&
+            this.m_predictedShotTimes[0] < expire
+        ) {
+            this.m_predictedShotTimes.shift();
+        }
+        if (!this.m_predictedShotTimes.length) return false;
+        this.m_predictedShotTimes.shift();
+        return true;
+    }
+
     m_processGameUpdate(msg: net.UpdateMsg) {
+        interpClock.onSnapshot(msg.serverTime, performance.now());
         const ctx: Ctx = {
             audioManager: this.m_audioManager,
             renderer: this.m_renderer,
@@ -3861,6 +4022,11 @@ export class Game {
         // The server can keep sending updates briefly after the match ends. Do not
         // let those updates reopen spectator mode over the final results screen.
         this.m_spectating = this.m_activeId != this.m_localId && !this.m_gameOver;
+        this.m_prediction.onServerUpdate(
+            msg.prediction,
+            this.getPredictionTarget(),
+            this.getPredictionWorld(),
+        );
         if (this.m_spectating) {
             this.m_uiManager.setSpectateTarget(
                 this.m_activeId,
@@ -3888,8 +4054,18 @@ export class Game {
         }
 
         // Create bullets
+        const localBulletShift =
+            this.m_prediction.active && this.m_activeId === this.m_localId
+                ? v2.sub(
+                      this.m_activePlayer.m_visualPos,
+                      this.m_activePlayer.m_netData.m_pos,
+                  )
+                : null;
         for (let i = 0; i < msg.bullets.length; i++) {
             const b = msg.bullets[i];
+            if (localBulletShift && b.playerId === this.m_localId) {
+                b.pos = v2.add(b.pos, localBulletShift);
+            }
             createBullet(
                 b,
                 this.m_bulletBarn,
@@ -3898,7 +4074,19 @@ export class Game {
                 this.m_renderer,
             );
             if (b.shotFx) {
-                this.m_shotBarn.addShot(b);
+                let predictedFx = false;
+                if (b.playerId === this.m_localId) {
+                    this.m_lastLocalShotFx = {
+                        shotSourceType: b.shotSourceType,
+                        shotAlt: b.shotAlt,
+                        splinter: b.splinter,
+                        trailSaturated: b.trailSaturated,
+                        apRounds: b.apRounds,
+                        highVelocity: b.highVelocity,
+                    };
+                    predictedFx = this.consumePredictedShot();
+                }
+                if (!predictedFx) this.m_shotBarn.addShot(b);
             }
         }
         // Create explosions
@@ -3966,7 +4154,12 @@ export class Game {
         }
         if (this.lastUpdateTime > 0) {
             const interval = now - this.lastUpdateTime;
-            this.m_camera.m_interpInterval = interval / 1000;
+            const prevInterval = this.m_camera.m_interpInterval;
+            this.m_camera.m_interpInterval =
+                prevInterval > 0
+                    ? prevInterval +
+                      (math.clamp(interval, 1, 250) / 1000 - prevInterval) * 0.1
+                    : interval / 1000;
             this.updateIntervals.push(interval);
         }
         this.lastUpdateTime = now;

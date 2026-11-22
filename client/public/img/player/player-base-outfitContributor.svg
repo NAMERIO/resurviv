@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg    width="140"
+   height="140" id="svg4" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 140 140">
+  <!-- Generator: Adobe Illustrator 29.8.2, SVG Export Plug-In . SVG Version: 2.1.1 Build 3)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: none;
+      }
+
+      .st1 {
+        fill-opacity: .56;
+      }
+
+      .st2 {
+        fill: url(#linear-gradient);
+      }
+
+      .st3 {
+        clip-path: url(#clippath);
+      }
+    </style>
+    <linearGradient id="linear-gradient" x1="117.03" y1="117.03" x2="22.97" y2="22.97" gradientTransform="translate(56.82 -28.11) rotate(37.35)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8080ff"/>
+      <stop offset="1" stop-color="#231f20"/>
+    </linearGradient>
+    <clipPath id="clippath">
+      <circle class="st0" cx="70" cy="70" r="66.5" transform="translate(-27.7 54.05) rotate(-35.73)"/>
+    </clipPath>
+  </defs>
+  <sodipodi:namedview id="namedview6" bordercolor="#666666" borderopacity="1" fit-margin-bottom="3.5" fit-margin-left="3.5" fit-margin-right="3.5" fit-margin-top="3.5" gridtolerance="10" guidetolerance="10" inkscape:current-layer="svg4" inkscape:cx="47.358316" inkscape:cy="85.928226" inkscape:pageopacity="0" inkscape:pageshadow="2" inkscape:window-height="1017" inkscape:window-maximized="1" inkscape:window-width="1920" inkscape:window-x="1912" inkscape:window-y="-8" inkscape:zoom="3.2328766" objecttolerance="10" pagecolor="#ffffff" showgrid="false"/>
+  <circle id="ellipse2" class="st2" cx="70" cy="70" r="66.5" transform="translate(-28.11 56.82) rotate(-37.35)"/>
+  <g class="st3">
+    <path id="path9" class="st1" d="M108.88,2.66C71.69-18.82,24.13-6.07,2.66,31.12c-21.47,37.19-8.73,84.75,28.46,106.22,37.19,21.47,84.75,8.73,106.22-28.46,21.47-37.19,8.73-84.75-28.46-106.22ZM128.82,36.34c12.6,22.1,11.24,48.34-1.14,68.66l-41.12-26.77c2.68-5.3,2.8-11.78-.25-17.32l42.51-24.57ZM70.58.66v50.68c-3.41-.1-6.79.75-9.75,2.46-2.54,1.46-4.69,3.51-6.27,5.97L10.85,37.55c5.74-10.58,14.22-19.89,25.41-26.35C45.94,5.61,59.41.97,70.58.66h0ZM76.2,59.3c1.84,1.07,3.36,2.61,4.42,4.45,3.39,5.82,1.38,13.28-4.46,16.62-5.81,3.39-13.27,1.39-16.61-4.45-3.39-5.82-1.39-13.28,4.45-16.62,3.77-2.2,8.43-2.19,12.2,0h0ZM70.51,88.34l-.02,49.1c-11.71-.39-25.79-3.94-35.81-10.07-9.19-5.63-17.06-13.47-22.88-23.42l42.49-24.49c3.53,5.8,9.82,9.01,16.22,8.88Z" inkscape:connector-curvature="0" sodipodi:nodetypes="ssssscccccccccccccccccccccccccc"/>
+  </g>
+</svg>

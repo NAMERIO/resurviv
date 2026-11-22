@@ -12,6 +12,7 @@ import type { DebugRenderOpts } from "./config";
 import type { Ctx, Game } from "./game";
 import { helpers } from "./helpers";
 import { Key, MouseWheel } from "./input";
+import { interpClock } from "./interpClock";
 import { createBullet } from "./objects/bullet";
 import type { Player } from "./objects/player";
 import type { EventMarker } from "./ui/ui";
@@ -189,9 +190,9 @@ export class Replay {
         index += 4;
 
         const protocolVersion = this.view.getUint32(index);
-        if (protocolVersion != GameConfig.protocolVersion) {
+        if (protocolVersion != GameConfig.replayProtocolVersion) {
             throw new Error(
-                `Replay protocol mismatch: expected ${GameConfig.protocolVersion} got ${protocolVersion}`,
+                `Replay protocol mismatch: expected ${GameConfig.replayProtocolVersion} got ${protocolVersion}`,
             );
         }
         index += 4;
@@ -654,6 +655,7 @@ export class Replay {
     }
 
     nextTick(msg: net.ReplayMsg) {
+        interpClock.reset();
         if (msg.teamAliveCounts.length == 1) {
             this.game.m_uiManager.updatePlayersAlive(msg.teamAliveCounts[0]);
         } else if (msg.teamAliveCounts.length >= 2) {

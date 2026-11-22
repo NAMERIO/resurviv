@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js-legacy";
 import type { ConfigManager } from "../config";
 import type { Game } from "../game";
+import { interpClock } from "../interpClock";
 import type { Pool } from "../objects/objectPool";
 import type { AbstractObject } from "../objects/player";
 import {
@@ -135,6 +136,20 @@ export class DebugHUD {
             const activePlayer = game.m_activePlayer;
             this.addLine(
                 `Pos:     X: ${activePlayer.m_pos.x.toFixed(2)}   Y: ${activePlayer.m_pos.y.toFixed(2)}`,
+            );
+        }
+
+        if (this.config.get("movementPrediction")) {
+            const prediction = game.m_prediction;
+            const stats = prediction.stats;
+            this.addLine(
+                `Predict: ${prediction.active ? "on " : "off"}  Ahead: ${Math.round(stats.pendingMs)}ms  Fix/s: ${stats.correctionsPerSec.toFixed(1)}  Avg: ${stats.avgCorrection.toFixed(2)}  Max: ${stats.maxCorrection.toFixed(2)}  Snap/s: ${stats.snapsPerSec.toFixed(1)}`,
+            );
+        }
+
+        if (interpClock.active) {
+            this.addLine(
+                `Interp:  Delay: ${Math.round(interpClock.delayMs)}ms  Jitter: ${Math.round(interpClock.jitterMs)}ms`,
             );
         }
 

@@ -140,11 +140,13 @@ export class BitStream extends bb.BitStream {
     }
 
     writeFloat(f: number, min: number, max: number, bits: number) {
+        /* STRIP_FROM_PROD_SERVER:START */
         assert(bits > 0 && bits < 31);
         assert(
             f >= min && f <= max,
             `writeFloat: value out of range: ${f}, range: [${min}, ${max}]`,
         );
+        /* STRIP_FROM_PROD_SERVER:END */
         const range = (1 << bits) - 1;
         const x = math.clamp(f, min, max);
         const t = (x - min) / (max - min);
@@ -437,7 +439,7 @@ export { EditMsg } from "./editMsg";
 export { EmoteMsg } from "./emoteMsg";
 export { FreeFallTicketMsg } from "./freeFallTicketMsg";
 export { GameOverMsg } from "./gameOverMsg";
-export { InputMsg } from "./inputMsg";
+export { getInputMoveDir, InputMsg } from "./inputMsg";
 export { JoinedMsg } from "./joinedMsg";
 export { JoinMsg } from "./joinMsg";
 export { KillMsg } from "./killMsg";

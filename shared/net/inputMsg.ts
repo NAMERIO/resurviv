@@ -1,6 +1,36 @@
 import type { Input } from "../gameConfig";
-import { v2 } from "../utils/v2";
+import { math } from "../utils/math";
+import { type Vec2, v2 } from "../utils/v2";
 import { type AbstractMsg, type BitStream, Constants } from "./net";
+
+function quantizeUnitComponent(f: number, bits: number) {
+    const min = -1.0001;
+    const max = 1.0001;
+    const range = (1 << bits) - 1;
+    const t = (math.clamp(f, min, max) - min) / (max - min);
+    return min + (Math.floor(t * range + 0.5) / range) * (max - min);
+}
+
+export function getInputMoveDir(msg: InputMsg): Vec2 {
+    if (msg.touchMoveActive && (msg.touchMoveLen & 0xff) !== 0) {
+        return v2.normalizeSafe(
+            v2.create(
+                quantizeUnitComponent(msg.touchMoveDir.x, 8),
+                quantizeUnitComponent(msg.touchMoveDir.y, 8),
+            ),
+        );
+    }
+    const move = v2.create(0, 0);
+    if (msg.moveUp) move.y++;
+    if (msg.moveDown) move.y--;
+    if (msg.moveLeft) move.x--;
+    if (msg.moveRight) move.x++;
+    if (move.x * move.y !== 0) {
+        move.x *= Math.SQRT1_2;
+        move.y *= Math.SQRT1_2;
+    }
+    return move;
+}
 
 export class InputMsg implements AbstractMsg {
     seq = 0;
@@ -23,6 +53,7 @@ export class InputMsg implements AbstractMsg {
     amongUsCamerasOpen = false;
     spectatorFreeCam = false;
     spectatorFreeCamZoom = 32;
+    inputId = 0;
 
     addInput(input: Input) {
         if (this.inputs.length < 7 && !this.inputs.includes(input)) {
@@ -61,6 +92,7 @@ export class InputMsg implements AbstractMsg {
         if (this.spectatorFreeCam) {
             s.writeUint8(this.spectatorFreeCamZoom);
         }
+        s.writeUint16(this.inputId);
     }
 
     deserialize(s: BitStream) {
@@ -94,5 +126,6 @@ export class InputMsg implements AbstractMsg {
         if (this.spectatorFreeCam) {
             this.spectatorFreeCamZoom = s.readUint8();
         }
+        this.inputId = s.readUint16();
     }
 }

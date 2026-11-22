@@ -30,6 +30,18 @@ if (process.env.NODE_ENV === "production") {
     path = "src/game/gameProcess.ts";
 }
 
+function endSocket(socket: WebSocket<GameSocketData>, reason?: string) {
+    if (reason) {
+        const disconnectMsg = new net.DisconnectMsg();
+        disconnectMsg.reason = reason;
+        const stream = new net.MsgStream(new ArrayBuffer(128));
+        stream.serializeMsg(net.MsgType.Disconnect, disconnectMsg);
+        socket.send(stream.getBuffer(), true, false);
+    }
+    socket.end();
+    socket.getUserData().closed = true;
+}
+
 class GameProcess implements GameData {
     process: ChildProcess;
 
@@ -60,6 +72,8 @@ class GameProcess implements GameData {
     lastMsgTime = Date.now();
 
     stoppedTime = Date.now();
+
+    createdTime = Date.now();
 
     avaliableSlots = 0;
     groupHash?: string;
@@ -116,7 +130,7 @@ class GameProcess implements GameData {
                         this.created = false;
                     }
                     break;
-                case ProcessMsgType.SocketMsg:
+                case ProcessMsgType.ServerSocketMsg:
                     for (let i = 0; i < msg.msgs.length; i++) {
                         const socketMsg = msg.msgs[i];
                         const socket = this.manager.sockets.get(socketMsg.socketId);
@@ -129,15 +143,7 @@ class GameProcess implements GameData {
                 case ProcessMsgType.SocketClose:
                     const socket = this.manager.sockets.get(msg.socketId);
                     if (socket && !socket.getUserData().closed) {
-                        if (msg.reason) {
-                            const disconnectMsg = new net.DisconnectMsg();
-                            disconnectMsg.reason = msg.reason;
-                            const stream = new net.MsgStream(new ArrayBuffer(128));
-                            stream.serializeMsg(net.MsgType.Disconnect, disconnectMsg);
-                            socket.send(stream.getBuffer(), true, false);
-                        }
-
-                        socket.close();
+                        endSocket(socket, msg.reason);
                     }
                     break;
             }
@@ -197,16 +203,19 @@ class GameProcess implements GameData {
         this.avaliableSlots = Math.max(0, this.avaliableSlots - playerTokenCount);
     }
 
-    handleMsg(data: ArrayBuffer, socketId: string, ip: string) {
+    handleSocketOpen(socketId: string, ip: string) {
         this.send({
-            type: ProcessMsgType.SocketMsg,
-            msgs: [
-                {
-                    socketId,
-                    data,
-                    ip,
-                },
-            ],
+            type: ProcessMsgType.SocketOpen,
+            socketId,
+            ip,
+        });
+    }
+
+    handleMsg(data: ArrayBuffer, socketId: string) {
+        this.send({
+            type: ProcessMsgType.ClientSocketMsg,
+            socketId,
+            data,
         });
     }
 
@@ -234,6 +243,8 @@ export class GameProcessManager implements GameManager {
             }
         });
 
+        const minIdleProcs = 3;
+
         setInterval(() => {
             for (const gameProc of [...this.processes]) {
                 gameProc.send({
@@ -247,14 +258,27 @@ export class GameProcessManager implements GameManager {
                     // sigquit can dump a core of the process
                     // useful for debugging infinite loops
                     this.killProcess(gameProc, "SIGQUIT");
-                } else if (
-                    gameProc.stopped &&
-                    Date.now() - gameProc.stoppedTime > 60000
-                ) {
-                    this.logger.warn(
-                        `Process ${gameProc.process.pid} - #${gameProc.id.substring(0, 4)} stopped more than a minute ago, killing`,
+                }
+            }
+
+            const idleProcs = this.processes.filter((p) => {
+                return (
+                    p.stopped &&
+                    !this.terminatingProcesses.has(p) &&
+                    Date.now() - p.stoppedTime > 60000
+                );
+            });
+
+            if (idleProcs.length > minIdleProcs) {
+                idleProcs.sort((a, b) => a.createdTime - b.createdTime);
+
+                const procsToKill = idleProcs.length - minIdleProcs;
+                for (let i = 0; i < procsToKill; i++) {
+                    const proc = idleProcs[i];
+                    this.logger.info(
+                        `Process ${proc.process.pid} - #${proc.id.substring(0, 4)} killed: too many idle processes`,
                     );
-                    this.killProcess(gameProc);
+                    this.killProcess(proc);
                 }
             }
         }, 5000);
@@ -267,7 +291,10 @@ export class GameProcessManager implements GameManager {
         });
     }
 
+    private shuttingDown = false;
+
     private shutdown(): void {
+        this.shuttingDown = true;
         const childProcesses = this.processes
             .map((gameProc) => gameProc.process)
             .filter((child) => child.exitCode === null && child.signalCode === null);
@@ -356,6 +383,9 @@ export class GameProcessManager implements GameManager {
     }
 
     killProcess(gameProc: GameProcess, signal: NodeJS.Signals = "SIGTERM"): void {
+        const reason = this.shuttingDown
+            ? "index-server-updating"
+            : "index-game-server-closed";
         if (this.terminatingProcesses.has(gameProc)) return;
         this.terminatingProcesses.add(gameProc);
 
@@ -364,7 +394,7 @@ export class GameProcessManager implements GameManager {
             if (data.closed) continue;
             if (data.gameId !== gameProc.id) continue;
             this.logger.warn(`Closing socket for ${gameProc.id}`);
-            socket.close();
+            endSocket(socket, reason);
         }
 
         // send SIGTERM, if still hasn't terminated after 5 seconds, send SIGKILL >:3
@@ -390,9 +420,20 @@ export class GameProcessManager implements GameManager {
         body: FindGamePrivateBody,
     ): Promise<{ gameId: string; forcedSpectator?: boolean }> {
         const requestedGroupHash = body.groupHash;
-        const targetGame = body.targetGameId
+        let targetGame = body.targetGameId
             ? this.processById.get(body.targetGameId)
             : undefined;
+        if (
+            targetGame &&
+            !body.arenaPrivate &&
+            (targetGame.arenaPrivate ||
+                targetGame.mapName !== body.mapName ||
+                targetGame.teamMode !== body.teamMode ||
+                !targetGame.canJoin ||
+                targetGame.avaliableSlots <= 0)
+        ) {
+            targetGame = undefined;
+        }
         const spectatorOnly =
             !!body.arenaPrivate &&
             body.playerData.length > 0 &&
@@ -519,16 +560,17 @@ export class GameProcessManager implements GameManager {
         const proc = this.processById.get(data.gameId);
         if (proc === undefined) {
             this.logger.warn("prcoess not found, closing socket.");
-            socket.close();
+            endSocket(socket, "index-game-server-closed");
             return;
         }
         this.sockets.set(socketId, socket);
+        proc.handleSocketOpen(socketId, data.ip);
     }
 
     onMsg(socketId: string, msg: ArrayBuffer): void {
         const data = this.sockets.get(socketId)?.getUserData();
         if (!data) return;
-        this.processById.get(data.gameId)?.handleMsg(msg, socketId, data.ip);
+        this.processById.get(data.gameId)?.handleMsg(msg, socketId);
     }
 
     onClose(socketId: string) {
