@@ -6519,6 +6519,21 @@ a:active {
   background-image: url(/img/gui/gas.svg);
 }
 
+#modal-prestige-arena #create-zone-mode::before,
+#modal-prestige-arena #battle-zone-mode::before {
+  background-image: url(/img/gui/zone-classic.svg);
+}
+
+#modal-prestige-arena #create-zone-mode[data-zone-mode="rapid"]::before,
+#modal-prestige-arena #battle-zone-mode[data-zone-mode="rapid"]::before {
+  background-image: url(/img/gui/zone-rapid.svg);
+}
+
+#modal-prestige-arena #create-zone-mode[data-zone-mode="blitz"]::before,
+#modal-prestige-arena #battle-zone-mode[data-zone-mode="blitz"]::before {
+  background-image: url(/img/gui/zone-blitz.svg);
+}
+
 #modal-prestige-arena #create-disable-perks::before,
 #modal-prestige-arena #battle-disable-perks::before {
   background-image: url(/img/loot/loot-perk-firepower.svg);

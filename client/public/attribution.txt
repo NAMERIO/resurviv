@@ -51,3 +51,6 @@ Fence hit sounds credited by Suroi
 "Heavy bullets icon" by Delapouite is licensed under CC BY 3.0
 "Spectre icon" by Lorc is licensed under CC BY 3.0
 "Disintegrate icon" by Lorc is licensed under CC BY 3.0
+"Hourglass icon" by Lorc is licensed under CC BY 3.0
+"Sprint icon" by Lorc is licensed under CC BY 3.0
+"Power lightning icon" by Lorc is licensed under CC BY 3.0
