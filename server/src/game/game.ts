@@ -87,6 +87,10 @@ export interface JoinTokenData {
     };
 }
 
+const EnemyRevealInterval = 30;
+const EnemyRevealFirstDelay = 1;
+const EnemyRevealExcludedMiniGames = ["hide_and_seek", "infected", "among_us"];
+
 export class Game {
     started = false;
     stopped = false;
@@ -330,6 +334,41 @@ export class Game {
         this.updateData();
     }
 
+    updateEnemyReveal(dt: number) {
+        if (
+            !this.arenaPrivate ||
+            this.showEnemiesOnMap ||
+            !this.started ||
+            this.over ||
+            this.arenaStartLockTimer > 0 ||
+            this.map.amongUsMode ||
+            EnemyRevealExcludedMiniGames.includes(this.miniGame ?? "")
+        ) {
+            for (const player of this.playerBarn.players) {
+                player.enemyRevealTicker = EnemyRevealFirstDelay;
+            }
+            return;
+        }
+
+        const livingPlayers = this.playerBarn.livingPlayers;
+        for (const player of this.playerBarn.players) {
+            if (player.dead || player.spectatorOnly) continue;
+            if (player.disconnected || player.awaitingSelection) {
+                player.enemyRevealTicker = EnemyRevealFirstDelay;
+                continue;
+            }
+
+            player.enemyRevealTicker -= dt;
+            if (player.enemyRevealTicker > 0) continue;
+            player.enemyRevealTicker = EnemyRevealInterval;
+
+            for (const enemy of livingPlayers) {
+                if (enemy.teamId === player.teamId || enemy.spectatorOnly) continue;
+                this.playerBarn.addEnemyRevealPing(enemy.pos, player.__id);
+            }
+        }
+    }
+
     update(dt?: number) {
         if (!this.allowJoin) return;
         this.profiler.flush();
@@ -399,6 +438,7 @@ export class Game {
 
         this.profiler.addSample("players");
         this.playerBarn.update(dt);
+        this.updateEnemyReveal(dt);
         this.profiler.endSample();
 
         this.profiler.addSample("npcs");

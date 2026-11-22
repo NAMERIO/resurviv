@@ -186,6 +186,7 @@ export class EmoteBarn {
     pingFadeIn = 0.5;
     pingLife = 4.25;
     pingFadeOut = 0.1;
+    lastEnemyRevealSound = 0;
     wedgeOpacityReset = device.touch ? 1 : 0.75;
     teamEmoteOpacityReset = 0.2;
     emotes: Array<{
@@ -651,7 +652,13 @@ export class EmoteBarn {
             }
         }
 
-        if (factionMode || ping.type != "ping_airstrike") {
+        if (ping.type == "ping_enemy_reveal") {
+            const now = Date.now();
+            if (now - this.lastEnemyRevealSound > 1000) {
+                this.lastEnemyRevealSound = now;
+                this.audioManager.playSound(pingSound, { channel: "ui" });
+            }
+        } else if (factionMode || ping.type != "ping_airstrike") {
             // Pings always play at full volume
             this.audioManager.playSound(pingSound, {
                 channel: ping.type === "ping_hide_and_seek_noise" ? "otherPlayers" : "ui",

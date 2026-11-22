@@ -125,6 +125,7 @@ interface Emote {
     broadcastToAll?: boolean;
     targetArenaTeam?: ArenaTeam;
     targetArenaTeams?: ArenaTeam[];
+    targetPlayerId?: number;
     /**
      * if type is "emote_loot", typestring of item goes here
      * "m870", "mosin", "1xscope", "762mm", etc
@@ -1225,6 +1226,17 @@ export class PlayerBarn {
             targetArenaTeams,
         });
     }
+
+    addEnemyRevealPing(pos: Vec2, targetPlayerId: number) {
+        this.emotes.push({
+            isPing: true,
+            type: "ping_enemy_reveal",
+            pos: v2.copy(pos),
+            playerId: 0,
+            itemType: "",
+            targetPlayerId,
+        });
+    }
 }
 
 export class Player extends BaseGameObject {
@@ -1751,6 +1763,7 @@ export class Player extends BaseGameObject {
     roleMenuTicker = 0;
     perkSelectionPending = false;
     perkMenuTicker = 0;
+    enemyRevealTicker = 1;
 
     get awaitingSelection(): boolean {
         return this.perkSelectionPending || (this.game.map.perkMode && !this.role);
@@ -5293,6 +5306,10 @@ export class Player extends BaseGameObject {
                 | undefined;
 
             const emoteDef = GameObjectDefs[emote.type];
+
+            if (emote.targetPlayerId !== undefined) {
+                return player.__id === emote.targetPlayerId;
+            }
 
             if (
                 game.map.amongUsMode &&
