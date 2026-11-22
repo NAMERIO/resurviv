@@ -194,8 +194,21 @@ function buildOffer(
         }
     }
 
-    const originalPrice = Math.max(1, Math.round(bundle.price));
+    const itemPrices = itemTypes.map((itemType) => getBundleMinPrice(itemType));
 
+    const originalPrice =
+        bundle.id === "bundle_galaxy" ||
+        itemPrices.some((price) => price === null || price === undefined)
+            ? Math.max(1, Math.round(bundle.price))
+            : Math.max(
+                  1,
+                  Math.round(
+                      itemPrices.reduce<number>(
+                          (total, price) => total + (price ?? 0),
+                          0,
+                      ),
+                  ),
+              );
     const discountPercent = rollDiscount(window.cycle, page, bundle.size);
 
     return {
@@ -233,7 +246,7 @@ function addItemsToSet(target: Set<string>, bundles: readonly Bundle[]): void {
 
 function getPremadePool(size: FeaturedBundleSize): Bundle[] {
     return Object.entries(FeaturedBundleDefs)
-        .filter(([, def]) => def.size === size)
+        .filter(([, def]) => def.size === size && !def.seasonal)
         .map(([id, def]) => ({
             id,
             ...def,
@@ -244,15 +257,68 @@ function getPremadePool(size: FeaturedBundleSize): Bundle[] {
 function hasOverlappingItems(bundle: Bundle, excluded: ReadonlySet<string>): boolean {
     return bundle.items.some((item) => excluded.has(item));
 }
+function getSeasonalBundle(size: FeaturedBundleSize, cycle: number): Bundle | undefined {
+    const timestamp = ROTATION_ANCHOR_MS + cycle * PREMADE_ROTATION_MS;
 
+    const currentYear = new Date(timestamp).getUTCFullYear();
+
+    for (const [id, def] of Object.entries(FeaturedBundleDefs)) {
+        if (def.size !== size || !def.seasonal) continue;
+
+        const [startMonth, startDay] = def.seasonal.start.split("-").map(Number);
+
+        const [endMonth, endDay] = def.seasonal.end.split("-").map(Number);
+
+        const crossesYear =
+            endMonth < startMonth || (endMonth === startMonth && endDay < startDay);
+
+        for (const year of [currentYear - 1, currentYear]) {
+            const start = Date.UTC(year, startMonth - 1, startDay);
+
+            const end = Date.UTC(year + (crossesYear ? 1 : 0), endMonth - 1, endDay + 1);
+
+            const firstCycle = Math.max(
+                0,
+                Math.ceil((start - ROTATION_ANCHOR_MS) / PREMADE_ROTATION_MS),
+            );
+
+            const lastCycle = Math.floor(
+                (end - ROTATION_ANCHOR_MS - PREMADE_ROTATION_MS) / PREMADE_ROTATION_MS,
+            );
+
+            if (lastCycle < firstCycle) continue;
+
+            const random = createSeededRandom(
+                year ^ (size === "small" ? 0x12345678 : 0x87654321),
+            );
+
+            const selectedCycle =
+                firstCycle + Math.floor(random() * (lastCycle - firstCycle + 1));
+
+            if (cycle === selectedCycle) {
+                return {
+                    id,
+                    ...def,
+                };
+            }
+        }
+    }
+
+    return undefined;
+}
 function choosePremadeBundle(
     size: FeaturedBundleSize,
     cycle: number,
     excluded: ReadonlySet<string>,
     usedIds: ReadonlySet<string>,
 ): Bundle {
-    const pool = getPremadePool(size);
+    const seasonalBundle = getSeasonalBundle(size, cycle);
 
+    if (seasonalBundle) {
+        return seasonalBundle;
+    }
+
+    const pool = getPremadePool(size);
     if (pool.length === 0) {
         throw new Error(`No ${size} featured bundle definitions are available`);
     }
