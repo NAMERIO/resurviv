@@ -52,8 +52,10 @@ export class Grid<T extends GameObject = GameObject> {
         const max = this._roundToCells(v2.add(aabb.max, obj.pos));
 
         if (
-            objBounds.min.x === min.x && objBounds.min.y === min.y && objBounds.max.x === max.x
-            && objBounds.max.y === max.y
+            objBounds.min.x === min.x &&
+            objBounds.min.y === min.y &&
+            objBounds.max.x === max.x &&
+            objBounds.max.y === max.y
         ) {
             return;
         }

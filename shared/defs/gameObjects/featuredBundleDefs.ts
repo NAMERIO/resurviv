@@ -326,7 +326,6 @@ export const FeaturedBundleDefs: Record<string, FeaturedBundleDef> = {
         durationDays: 7,
     },
 
-
     bundle_donut: {
         name: "Donut Set",
         size: "small",

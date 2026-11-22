@@ -214,7 +214,7 @@ const _featuredBundleUnlocks = [
     "outfitPreyDinner",
     "outfitCandyCorn",
     "outfitVitaminD",
-        "outfitWhiteDay",
+    "outfitWhiteDay",
     "outfitSpeedo",
     "outfitBuckTeeth",
     "outfitPoinsetee",
