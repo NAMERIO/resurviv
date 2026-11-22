@@ -5287,10 +5287,14 @@ export class Player extends BaseGameObject {
         const developerVitals =
             this.canUseDeveloper || Config.gameServer.thisRegion === "local";
         if (developerVitals || spectatorVitals) {
+            const teamVitalsOnly = game.arenaPrivate && !this.spectatorOnly;
             const visibleVitalsPlayers =
                 spectatorVitals && !developerVitals
                     ? playerBarn.players.filter(
-                          (p) => !p.spectatorOnly && this.visibleObjects.has(p),
+                          (p) =>
+                              !p.spectatorOnly &&
+                              this.visibleObjects.has(p) &&
+                              (!teamVitalsOnly || p.teamId === this.teamId),
                       )
                     : playerBarn.players;
             updateMsg.developerPlayerVitals = visibleVitalsPlayers.map((p) => ({
