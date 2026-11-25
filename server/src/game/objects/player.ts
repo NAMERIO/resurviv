@@ -49,6 +49,7 @@ import {
     type HasteType,
     type Input,
     type InventoryItem,
+    TeamMode,
 } from "../../../../shared/gameConfig";
 import * as net from "../../../../shared/net/net";
 import { ObjectType } from "../../../../shared/net/objectSerializeFns";
@@ -125,6 +126,7 @@ interface Emote {
     broadcastToAll?: boolean;
     targetArenaTeam?: ArenaTeam;
     targetArenaTeams?: ArenaTeam[];
+    targetPlayerId?: number;
     /**
      * if type is "emote_loot", typestring of item goes here
      * "m870", "mosin", "1xscope", "762mm", etc
@@ -397,6 +399,7 @@ export class PlayerBarn {
             // Keep the network identity, but no hitbox or world visibility while choosing.
             this.game.grid.remove(player);
         }
+        player.startingGunTeamSlot = this.getStartingGunTeamSlot(player);
         this.players.push(player);
         this.matchPlayers.push(player);
         this.livingPlayers.push(player);
@@ -416,6 +419,7 @@ export class PlayerBarn {
         // this.game.pluginManager.emit("playerJoin", player);
         onPlayerJoin(player);
         player.applyGunGameLoadout();
+        player.applyStartingGuns();
         player.saveDeathmatchSpawnLoadout();
 
         // update leaderboard entry
@@ -1225,6 +1229,30 @@ export class PlayerBarn {
             targetArenaTeams,
         });
     }
+
+    getStartingGunTeamSlot(player: Player) {
+        if (!this.game.startingGunsEnabled || player.spectatorOnly) return -1;
+        if (player.arenaTeam) {
+            return this.players.filter(
+                (p) => !p.spectatorOnly && p.arenaTeam === player.arenaTeam,
+            ).length;
+        }
+        if (this.game.teamMode === TeamMode.Solo) return -1;
+        return this.players.filter(
+            (p) => !p.spectatorOnly && !p.arenaTeam && p.teamId === player.teamId,
+        ).length;
+    }
+
+    addEnemyRevealPing(pos: Vec2, targetPlayerId: number) {
+        this.emotes.push({
+            isPing: true,
+            type: "ping_enemy_reveal",
+            pos: v2.copy(pos),
+            playerId: 0,
+            itemType: "",
+            targetPlayerId,
+        });
+    }
 }
 
 export class Player extends BaseGameObject {
@@ -1751,6 +1779,8 @@ export class Player extends BaseGameObject {
     roleMenuTicker = 0;
     perkSelectionPending = false;
     perkMenuTicker = 0;
+    enemyRevealTicker = 1;
+    startingGunTeamSlot = -1;
 
     get awaitingSelection(): boolean {
         return this.perkSelectionPending || (this.game.map.perkMode && !this.role);
@@ -2955,6 +2985,39 @@ export class Player extends BaseGameObject {
         this.setDirty();
     }
 
+    applyStartingGuns(): void {
+        if (!this.game.startingGunsEnabled || this.spectatorOnly) return;
+
+        const slots = [
+            [GameConfig.WeaponSlot.Primary, "primary"],
+            [GameConfig.WeaponSlot.Secondary, "secondary"],
+        ] as const;
+        let equipSlot: number | undefined;
+        for (const [weaponSlot, slot] of slots) {
+            const gun = this.game.getStartingGun(slot, this.startingGunTeamSlot);
+            const def = gun ? (GameObjectDefs[gun] as GunDef | undefined) : undefined;
+            if (!gun || def?.type !== "gun") continue;
+
+            this.weaponManager.setWeapon(weaponSlot, gun, def.maxClip);
+            equipSlot ??= weaponSlot;
+            if (this.invManager.isValid(def.ammo)) {
+                this.invManager.set(
+                    def.ammo,
+                    Math.max(
+                        this.invManager.get(def.ammo),
+                        this.invManager.getMaxCapacity(def.ammo),
+                    ),
+                );
+            }
+        }
+        if (equipSlot === undefined) return;
+
+        this.weaponManager.setCurWeapIndex(equipSlot);
+        this.inventoryDirty = true;
+        this.weapsDirty = true;
+        this.setDirty();
+    }
+
     respawnCaptureTheFlagPlayer(): void {
         if (this.game.over || this.disconnected) return;
         if (
@@ -2999,6 +3062,7 @@ export class Player extends BaseGameObject {
         this.removeRole();
         this.applyCaptureTheFlagRespawnLoadout();
         this.applyGunGameLoadout();
+        if (!this.game.deathmatchRoundManager.enabled) this.applyStartingGuns();
 
         this.game.playerBarn.livingPlayers.push(this);
         if (this.group && !this.group.livingPlayers.includes(this)) {
@@ -5274,10 +5338,14 @@ export class Player extends BaseGameObject {
         const developerVitals =
             this.canUseDeveloper || Config.gameServer.thisRegion === "local";
         if (developerVitals || spectatorVitals) {
+            const teamVitalsOnly = game.arenaPrivate && !this.spectatorOnly;
             const visibleVitalsPlayers =
                 spectatorVitals && !developerVitals
                     ? playerBarn.players.filter(
-                          (p) => !p.spectatorOnly && this.visibleObjects.has(p),
+                          (p) =>
+                              !p.spectatorOnly &&
+                              this.visibleObjects.has(p) &&
+                              (!teamVitalsOnly || p.teamId === this.teamId),
                       )
                     : playerBarn.players;
             updateMsg.developerPlayerVitals = visibleVitalsPlayers.map((p) => ({
@@ -5293,6 +5361,10 @@ export class Player extends BaseGameObject {
                 | undefined;
 
             const emoteDef = GameObjectDefs[emote.type];
+
+            if (emote.targetPlayerId !== undefined) {
+                return player.__id === emote.targetPlayerId;
+            }
 
             if (
                 game.map.amongUsMode &&

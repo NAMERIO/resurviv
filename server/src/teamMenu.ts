@@ -15,6 +15,11 @@ import {
     normalizeAmongUsImpostorCount,
     normalizeArenaTeamCount,
 } from "../../shared/defs/miniGame";
+import {
+    emptyStartingGuns,
+    normalizeStartingGuns,
+    startingGunsKey,
+} from "../../shared/defs/startingGuns";
 import { GameConfig, TeamMode } from "../../shared/gameConfig";
 import type { FindGameError } from "../../shared/types/api";
 import {
@@ -53,12 +58,29 @@ import type { FindGamePrivateBody } from "./utils/types";
 
 interface SocketData {
     rateLimit: Record<symbol, number>;
-    player: Player;
+    player?: Player;
     ip: string;
+    ipCounted?: boolean;
+}
+
+const LobbyRejoinGraceMs = 60 * 1000;
+const InGameRejoinGraceMs = 30 * 60 * 1000;
+const FindGameTimeoutMs = 75 * 1000;
+const SocketCloseRemoved = 4000;
+const SocketCloseReplaced = 4001;
+const SocketCloseKeepAliveTimeout = 4002;
+
+function isIntentionalClose(code: number | undefined) {
+    return code === 1000 || code === 1001 || code === 1005;
 }
 
 class Player {
     room?: Room;
+
+    readonly rejoinToken = randomUUID();
+    connected = true;
+    disconnectedAt = 0;
+    rejoinTimeout?: ReturnType<typeof setTimeout>;
 
     name = "Player";
     outfit = "outfitBase";
@@ -138,12 +160,17 @@ class Player {
         type: T,
         data: (ServerToClientTeamMsg & { type: T })["data"],
     ) {
-        this.socket.send(
-            JSON.stringify({
-                type,
-                data,
-            }),
-        );
+        if (!this.connected) return;
+        try {
+            this.socket.send(
+                JSON.stringify({
+                    type,
+                    data,
+                }),
+            );
+        } catch (err) {
+            this.teamMenu.logger.warn(`Failed to send ${type} to ${this.name}:`, err);
+        }
     }
 }
 
@@ -174,10 +201,11 @@ class Room {
         amongUsImpostorCount: DefaultAmongUsImpostorCount,
         disableAirstrikes: false,
         movingZone: false,
+        zoneMode: "classic",
         disablePerks: false,
         disableLooting: false,
         showEnemiesOnMap: true,
-        zoneMode: "classic",
+        startingGuns: emptyStartingGuns(),
     };
 
     arenaOwnerKey?: string;
@@ -314,6 +342,10 @@ class Room {
                 break;
             }
             case "gameComplete": {
+                if (!player.inGame) {
+                    this.sendState();
+                    break;
+                }
                 player.inGame = false;
                 this.data.findingGame = false;
                 this.data.lastError = "";
@@ -322,7 +354,7 @@ class Room {
                         this.endBattleRoyaleArenaRoundForOwner();
                         break;
                     }
-                    if (this.players.some((p) => p.inGame)) {
+                    if (this.hasConnectedPlayersInGame()) {
                         this.sendState();
                         break;
                     }
@@ -349,7 +381,7 @@ class Room {
             }
             case "swapTeam": {
                 if (!this.data.arena) break;
-                if (this.data.findingGame || this.players.some((p) => p.inGame)) break;
+                if (this.data.findingGame || this.hasConnectedPlayersInGame()) break;
 
                 const targetPlayer = this.players[msg.data.playerId];
                 if (!targetPlayer) break;
@@ -450,10 +482,15 @@ class Room {
                 ) {
                     break;
                 }
-                void this.joinArenaPlayersToCurrentGame(
+                this.joinArenaPlayersToCurrentGame(
                     [player],
                     this.isArenaSpectator(player),
-                );
+                ).catch((err) => {
+                    this.teamMenu.logger.error(
+                        `joinCurrentArenaGame failed for room ${this.id}:`,
+                        err,
+                    );
+                });
                 break;
             }
             case "playGame": {
@@ -465,7 +502,15 @@ class Room {
                 ) {
                     break;
                 }
-                this.findGame(msg.data, player);
+                this.findGame(msg.data, player).catch((err) => {
+                    this.teamMenu.logger.error(
+                        `findGame failed for room ${this.id}:`,
+                        err,
+                    );
+                    this.findGameGeneration++;
+                    this.findGamePendingSince = 0;
+                    this.failFindGame("find_game_error", undefined);
+                });
                 break;
             }
         }
@@ -547,11 +592,15 @@ class Room {
         this.data.teamsLocked = this.data.arena ? !!props.teamsLocked : false;
         this.data.disableAirstrikes = this.data.arena ? !!props.disableAirstrikes : false;
         this.data.movingZone = this.data.arena ? !!props.movingZone : false;
+        this.data.zoneMode = (this.data.arena && props.zoneMode) || "classic";
         this.data.disablePerks = this.data.arena ? !!props.disablePerks : false;
         this.data.disableLooting = this.data.arena ? !!props.disableLooting : false;
         this.data.showEnemiesOnMap = this.data.arena
             ? props.showEnemiesOnMap !== false
             : true;
+        this.data.startingGuns = this.data.arena
+            ? normalizeStartingGuns(props.startingGuns)
+            : emptyStartingGuns();
 
         if (this.data.arena && !this.isBattleRoyaleArena()) {
             this.moveInactiveArenaTeamsToSpectators();
@@ -616,7 +665,7 @@ class Room {
         if (!mode) return;
         const mapName =
             getPrivateLobbyMiniGameMapName(this.data.miniGame) ?? mode.mapName;
-        const warmupKey = `${this.data.region}:${mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.amongUsImpostorCount}:${this.data.disableAirstrikes}:${this.data.movingZone}:${this.data.disablePerks}:${this.data.disableLooting}:${this.data.showEnemiesOnMap}:${this.data.deathmatchFirstTo}`;
+        const warmupKey = `${this.data.region}:${mapName}:${mode.teamMode}:${this.data.miniGame}:${this.data.amongUsImpostorCount}:${this.data.disableAirstrikes}:${this.data.movingZone}:${this.data.zoneMode}:${this.data.disablePerks}:${this.data.disableLooting}:${this.data.showEnemiesOnMap}:${this.data.deathmatchFirstTo}:${startingGunsKey(this.data.startingGuns)}`;
         if (this.arenaWarmupKey === warmupKey) return;
         this.arenaWarmupKey = warmupKey;
         void this.teamMenu.server
@@ -634,10 +683,12 @@ class Room {
                         : undefined,
                 disableAirstrikes: this.data.disableAirstrikes,
                 movingZone: this.data.movingZone,
+                zoneMode: this.data.zoneMode,
                 disablePerks: this.data.disablePerks,
                 disableLooting: this.data.disableLooting,
                 showEnemiesOnMap: this.data.showEnemiesOnMap,
                 deathmatchFirstTo: this.data.deathmatchFirstTo,
+                startingGuns: this.data.startingGuns,
                 groupHash: this.id,
                 playerData: [],
             } satisfies FindGamePrivateBody)
@@ -674,9 +725,40 @@ class Room {
         this.sendState();
     }
 
-    removePlayerWithError(player: Player, error: TeamMenuErrorType) {
-        player.send("error", { type: error });
-        this.removePlayer(player);
+    onPlayerSocketLost(player: Player) {
+        if (player.room !== this) return;
+        player.connected = false;
+        player.disconnectedAt = Date.now();
+        clearTimeout(player.rejoinTimeout);
+        const graceMs = player.inGame ? InGameRejoinGraceMs : LobbyRejoinGraceMs;
+        player.rejoinTimeout = setTimeout(() => {
+            if (player.room === this && !player.connected) {
+                this.teamMenu.logger.info(
+                    `Removing ${player.name} from room ${this.id}: did not reconnect in time`,
+                );
+                this.removePlayer(player);
+            }
+        }, graceMs);
+    }
+
+    rejoinPlayer(player: Player, socket: WSContext<SocketData>) {
+        const oldSocket = player.socket;
+        clearTimeout(player.rejoinTimeout);
+        player.rejoinTimeout = undefined;
+        player.socket = socket;
+        player.connected = true;
+        player.lastMsgTime = Date.now();
+        player.lastServerKeepAliveTime = 0;
+        socket.raw!.player = player;
+
+        if (oldSocket !== socket) {
+            if (oldSocket.raw) oldSocket.raw.player = undefined;
+            try {
+                oldSocket.close(SocketCloseReplaced, "replaced");
+            } catch {}
+        }
+
+        this.sendState();
     }
 
     removePlayer(player: Player) {
@@ -686,11 +768,18 @@ class Room {
             return;
         }
 
+        clearTimeout(player.rejoinTimeout);
+        player.rejoinTimeout = undefined;
         this.arenaTeams.delete(player);
         this.arenaSpectators.delete(player);
         this.battleRoyaleTeams.delete(player);
         player.room = undefined;
-        player.socket.close();
+        this.teamMenu.untrackPlayerIp(player);
+        if (player.socket.raw) player.socket.raw.player = undefined;
+        try {
+            player.socket.close(SocketCloseRemoved, "removed");
+        } catch {}
+        player.connected = false;
 
         // Keep arena ownership aligned with current leader after owner leaves.
         if (this.data.arena && wasLeader) {
@@ -703,11 +792,64 @@ class Room {
             }
         }
 
-        this.sendState();
-
         if (!this.players.length) {
             this.teamMenu.removeRoom(this);
+            return;
         }
+
+        if (!this.repairStaleRoundState()) {
+            this.sendState();
+        }
+    }
+
+    hasConnectedPlayersInGame() {
+        return this.players.some((p) => p.inGame && p.connected);
+    }
+
+    handOffLeaderIfAway(now: number) {
+        const leader = this.players[0];
+        if (!leader || leader.connected) return;
+        if (now - leader.disconnectedAt < LobbyRejoinGraceMs) return;
+        const nextLeader = this.players.find((p) => p.connected);
+        if (!nextLeader) return;
+
+        util.removeFrom(this.players, nextLeader);
+        this.players.unshift(nextLeader);
+        if (this.data.arena) {
+            this.arenaOwnerKey = nextLeader.userId || nextLeader.encodedIp;
+        }
+        this.teamMenu.logger.info(
+            `Room ${this.id}: leader ${leader.name} is away, ${nextLeader.name} is now leader`,
+        );
+        this.sendState();
+    }
+
+    repairStaleRoundState() {
+        if (
+            !this.data.findingGame ||
+            this.findGamePendingSince ||
+            this.hasConnectedPlayersInGame()
+        ) {
+            return false;
+        }
+        if (this.data.arena) {
+            this.endArenaRound();
+        } else {
+            this.data.findingGame = false;
+            this.sendState();
+        }
+        return true;
+    }
+
+    checkFindGameTimeout(now: number) {
+        if (!this.findGamePendingSince) return;
+        if (now - this.findGamePendingSince < FindGameTimeoutMs) return;
+        this.teamMenu.logger.warn(`Find game timed out for room ${this.id}`);
+        this.findGameGeneration++;
+        this.findGamePendingSince = 0;
+        this.data.findingGame = false;
+        this.data.lastError = "find_game_error";
+        this.sendState();
     }
 
     endArenaRound() {
@@ -1039,10 +1181,51 @@ class Room {
         }
     }
 
+    findGamePendingSince = 0;
+    findGameGeneration = 0;
+
+    failFindGame(error: TeamMenuErrorType, generation: number | undefined) {
+        if (generation !== undefined && generation !== this.findGameGeneration) return;
+        this.data.findingGame = false;
+        this.data.lastError = error;
+        this.findGameCooldown = Date.now() + 1000;
+        this.sendState();
+    }
+
     async findGame(data: TeamPlayGameMsg["data"], player: Player) {
-        if (this.data.findingGame) return;
+        if (this.data.findingGame || this.findGamePendingSince) {
+            this.sendState();
+            return;
+        }
+        const isBattleRoyaleMode = this.isBattleRoyaleMode();
+        const roomWideFind = this.data.arena || isBattleRoyaleMode;
+        if (!roomWideFind) {
+            await this.findGameInner(data, player, undefined);
+            return;
+        }
+
+        const generation = ++this.findGameGeneration;
+        this.findGamePendingSince = Date.now();
+        try {
+            await this.findGameInner(data, player, generation);
+        } finally {
+            if (generation === this.findGameGeneration) {
+                this.findGamePendingSince = 0;
+            }
+        }
+    }
+
+    async findGameInner(
+        data: TeamPlayGameMsg["data"],
+        player: Player,
+        generation: number | undefined,
+    ) {
         const isBattleRoyaleMode = this.isBattleRoyaleMode();
         const ownerOnlyStart = isBattleRoyaleMode || this.isBattleRoyaleArena();
+        const isStale = () =>
+            this.teamMenu.rooms.get(this.id) !== this ||
+            (generation !== undefined && generation !== this.findGameGeneration);
+
         if (ownerOnlyStart && !player.isLeader) {
             this.sendState();
             return;
@@ -1055,26 +1238,20 @@ class Room {
             }
             const startError = this.validateBattleRoyaleArenaStart();
             if (startError) {
-                this.data.lastError = startError;
-                this.data.findingGame = false;
-                this.sendState();
+                this.failFindGame(startError, generation);
                 return;
             }
         }
-        if (isBattleRoyaleMode && this.players.some((p) => p.inGame)) {
-            this.data.lastError = "waiting_for_players";
-            this.data.findingGame = false;
-            this.sendState();
+        if (isBattleRoyaleMode && this.hasConnectedPlayersInGame()) {
+            this.failFindGame("waiting_for_players", generation);
             return;
         }
         if (
             this.data.arena &&
             !this.isBattleRoyaleArena() &&
-            this.players.some((p) => p.inGame)
+            this.hasConnectedPlayersInGame()
         ) {
-            this.data.lastError = "game_in_progress";
-            this.data.findingGame = false;
-            this.sendState();
+            this.failFindGame("game_in_progress", generation);
             return;
         }
 
@@ -1083,16 +1260,12 @@ class Room {
                 this.data.miniGame === "gun_game" &&
                 this.getArenaTeamPlayerCount("A") < 2
             ) {
-                this.data.lastError = "arena_need_teams";
-                this.data.findingGame = false;
-                this.sendState();
+                this.failFindGame("arena_need_teams", generation);
                 return;
             }
             const activeTeams = this.getActiveArenaTeams();
             if (activeTeams.some((team) => this.getArenaTeamPlayerCount(team) < 1)) {
-                this.data.lastError = "arena_need_teams";
-                this.data.findingGame = false;
-                this.sendState();
+                this.failFindGame("arena_need_teams", generation);
                 return;
             }
 
@@ -1100,9 +1273,7 @@ class Room {
                 this.data.miniGame === "among_us" &&
                 this.getArenaTeamPlayerCount("A") < this.getAmongUsRequiredPlayerCount()
             ) {
-                this.data.lastError = "waiting_for_players";
-                this.data.findingGame = false;
-                this.sendState();
+                this.failFindGame("waiting_for_players", generation);
                 return;
             }
         }
@@ -1119,11 +1290,13 @@ class Room {
         }
         this.data.region = region;
 
-        const queuedPlayers = this.isBattleRoyaleArena()
-            ? this.players.filter((p) => !this.isArenaSpectator(p))
-            : this.data.arena || isBattleRoyaleMode
-              ? this.players
-              : [player];
+        const queuedPlayers = (
+            this.isBattleRoyaleArena()
+                ? this.players.filter((p) => !this.isArenaSpectator(p))
+                : this.data.arena || isBattleRoyaleMode
+                  ? this.players
+                  : [player]
+        ).filter((p) => p.connected);
         const tokenMap = new Map<Player, string>();
         const playerData = await getFindGamePlayerData(
             queuedPlayers.map((player) => {
@@ -1155,45 +1328,31 @@ class Room {
                 } satisfies FindGamePrivateBody["playerData"][0];
             }),
         );
+        if (isStale()) return;
 
         const mode = this.teamMenu.server.modes[this.data.gameModeIdx];
         if (!mode) {
-            if (this.data.arena || isBattleRoyaleMode) {
-                this.data.findingGame = false;
-                this.data.lastError = "find_game_error";
-                this.sendState();
-            }
+            this.failFindGame("find_game_error", generation);
             return;
         }
 
         if (this.data.captchaEnabled) {
             if (!data.turnstileToken) {
-                if (this.data.arena || isBattleRoyaleMode) {
-                    this.data.findingGame = false;
-                    this.data.lastError = "find_game_invalid_captcha";
-                    this.sendState();
-                }
+                this.failFindGame("find_game_invalid_captcha", generation);
                 return;
             }
 
             try {
                 if (!(await verifyTurnsStile(data.turnstileToken, player.ip))) {
-                    if (this.data.arena || isBattleRoyaleMode) {
-                        this.data.findingGame = false;
-                        this.data.lastError = "find_game_invalid_captcha";
-                        this.sendState();
-                    }
+                    this.failFindGame("find_game_invalid_captcha", generation);
                     return;
                 }
             } catch (err) {
                 this.teamMenu.logger.error("Failed verifying turnstile:", err);
-                if (this.data.arena || isBattleRoyaleMode) {
-                    this.data.findingGame = false;
-                    this.data.lastError = "find_game_error";
-                    this.sendState();
-                }
+                this.failFindGame("find_game_error", generation);
                 return;
             }
+            if (isStale()) return;
         }
 
         const mapName =
@@ -1226,61 +1385,49 @@ class Room {
                     : undefined,
             disableAirstrikes: this.data.arena ? this.data.disableAirstrikes : false,
             movingZone: this.data.arena ? this.data.movingZone : false,
+            zoneMode: this.data.arena ? this.data.zoneMode : "classic",
             disablePerks: this.data.arena ? this.data.disablePerks : false,
             disableLooting: this.data.arena ? this.data.disableLooting : false,
             showEnemiesOnMap: this.data.arena ? this.data.showEnemiesOnMap : true,
             deathmatchFirstTo: this.data.deathmatchFirstTo,
+            startingGuns: this.data.startingGuns,
             groupHash: this.data.arena ? this.id : undefined,
             targetGameId: teammateGameId,
             playerData,
         });
+        if (isStale()) return;
 
-        if ("error" in res) {
-            if (this.data.arena || isBattleRoyaleMode) {
-                const errMap: Partial<Record<FindGameError, TeamMenuErrorType>> = {
-                    full: "find_game_full",
-                    invalid_protocol: "find_game_invalid_protocol",
-                };
-
-                this.data.findingGame = false;
-                this.data.lastError = errMap[res.error] || "find_game_error";
-                this.sendState();
-                // 1 second cooldown on error
-                this.findGameCooldown = Date.now() + 1000;
-            }
+        if (!res || "error" in res) {
+            const errMap: Partial<Record<FindGameError, TeamMenuErrorType>> = {
+                full: "find_game_full",
+                invalid_protocol: "find_game_invalid_protocol",
+            };
+            this.failFindGame(
+                (res && errMap[res.error]) || "find_game_error",
+                generation,
+            );
             return;
         }
 
         this.findGameCooldown = 0;
-
-        const joinData = res;
-        if (!joinData) {
-            if (this.data.arena || isBattleRoyaleMode) {
-                this.data.findingGame = false;
-                this.data.lastError = "find_game_error";
-                this.sendState();
-            }
-            return;
-        }
-
-        if (this.data.arena || isBattleRoyaleMode) {
-            this.data.lastError = "";
-            if (this.data.arena) {
-                this.currentArenaGameId = res.gameId;
-            }
+        this.data.lastError = "";
+        if (this.data.arena) {
+            this.currentArenaGameId = res.gameId;
         }
 
         for (const roomPlayer of queuedPlayers) {
-            roomPlayer.inGame = true;
-            roomPlayer.gameId = res.gameId;
-            if (this.isBattleRoyaleArena()) {
-                this.arenaSpectators.delete(roomPlayer);
-            }
+            if (roomPlayer.room !== this) continue;
             const token = tokenMap.get(roomPlayer);
 
             if (!token) {
                 this.teamMenu.logger.warn(`Missing token for player ${roomPlayer.name}`);
                 continue;
+            }
+
+            roomPlayer.inGame = true;
+            roomPlayer.gameId = res.gameId;
+            if (this.isBattleRoyaleArena()) {
+                this.arenaSpectators.delete(roomPlayer);
             }
 
             roomPlayer.send("joinGame", {
@@ -1306,6 +1453,9 @@ class Room {
             this.data.arena && this.data.miniGame
                 ? (getPrivateLobbyMiniGameMapName(this.data.miniGame) ?? mode.mapName)
                 : mode.mapName;
+
+        players = players.filter((p) => p.connected && p.room === this);
+        if (!players.length) return;
 
         const tokenMap = new Map<Player, string>();
         const playerData = await getFindGamePlayerData(
@@ -1349,31 +1499,38 @@ class Room {
                     : undefined,
             disableAirstrikes: this.data.disableAirstrikes,
             movingZone: this.data.movingZone,
+            zoneMode: this.data.zoneMode,
             disablePerks: this.data.disablePerks,
             disableLooting: this.data.disableLooting,
             showEnemiesOnMap: this.data.showEnemiesOnMap,
             deathmatchFirstTo: this.data.deathmatchFirstTo,
+            startingGuns: this.data.startingGuns,
             groupHash: this.id,
             targetGameId: this.currentArenaGameId,
             playerData,
         });
 
-        if ("error" in res) {
+        if (this.teamMenu.rooms.get(this.id) !== this) return;
+
+        if (!res || "error" in res) {
             if (!spectator && this.isBattleRoyaleArena()) {
                 await this.joinArenaPlayersToCurrentGame(players, true);
                 return;
             }
-            for (const roomPlayer of players) {
-                this.removePlayerWithError(roomPlayer, "join_game_failed");
-            }
+            this.teamMenu.logger.warn(
+                `Failed joining ${players.length} player(s) to current game of room ${this.id}`,
+            );
+            this.sendState();
             return;
         }
 
         for (const roomPlayer of players) {
+            if (roomPlayer.room !== this) continue;
             const token = tokenMap.get(roomPlayer);
             if (!token) continue;
 
             roomPlayer.inGame = true;
+            roomPlayer.gameId = res.gameId;
             if (spectator || res.forcedSpectator) {
                 this.arenaSpectators.add(roomPlayer);
             }
@@ -1419,10 +1576,12 @@ class Room {
         this.data.captchaEnabled =
             this.teamMenu.server.captchaEnabled && !this.players.every((p) => !!p.userId);
         for (const player of this.players) {
+            if (!player.connected) continue;
             player.send("state", {
                 localPlayerId: player.playerId,
                 room: this.data,
                 players: getPlayersFor(player),
+                rejoinToken: player.rejoinToken,
             });
         }
     }
@@ -1449,47 +1608,45 @@ export class TeamMenu {
 
     constructor(public server: ApiServer) {
         setInterval(() => {
-            for (const room of this.rooms.values()) {
-                // just making sure ig
+            const now = Date.now();
+            for (const room of [...this.rooms.values()]) {
                 if (!room.players.length) {
                     this.removeRoom(room);
                     continue;
                 }
-                if (room.data.findingGame && room.findGameCooldown < Date.now()) {
-                    if (!room.data.lastError) {
-                        continue;
-                    }
-                    room.data.findingGame = false;
-                    room.sendState();
-                }
 
-                // Ask for a reply as well as relying on the client's timer. Browser
-                // timers can be heavily throttled while the lobby UI is hidden.
+                room.checkFindGameTimeout(now);
+                room.repairStaleRoundState();
+                room.handOffLeaderIfAway(now);
+
                 for (const player of [...room.players]) {
-                    if (player.lastServerKeepAliveTime < Date.now() - 15 * 1000) {
+                    if (!player.connected) continue;
+                    if (player.lastServerKeepAliveTime < now - 15 * 1000) {
                         player.send("keepAlive", { request: true });
-                        player.lastServerKeepAliveTime = Date.now();
+                        player.lastServerKeepAliveTime = now;
                     }
-                    // A player in a match or an unfocused/minimized browser is
-                    // intentionally away from the lobby. Its open socket still owns
-                    // its membership and onClose removes it if the connection ends.
                     if (
                         !player.inGame &&
                         !player.inactive &&
-                        player.lastMsgTime < Date.now() - 8 * 60 * 1000
+                        player.lastMsgTime < now - 8 * 60 * 1000
                     ) {
                         player.send("error", { type: "lost_conn" });
                         room.removePlayer(player);
                         continue;
                     }
                     if (
-                        player.inGame &&
-                        player.lastMsgTime < Date.now() - 5 * 60 * 1000
+                        player.lastMsgTime < now - 5 * 60 * 1000 &&
+                        player.socket.readyState === 1
                     ) {
                         this.logger.info(
-                            `Removing in-game lobby player ${player.name} (no keepAlive reply in 5 minutes)`,
+                            `Closing silent lobby socket of ${player.name} (no keepAlive reply in 5 minutes)`,
                         );
-                        room.removePlayer(player);
+                        try {
+                            player.socket.close(
+                                SocketCloseKeepAliveTimeout,
+                                "keepalive timeout",
+                            );
+                        } catch {}
                     }
                 }
             }
@@ -1567,11 +1724,9 @@ export class TeamMenu {
                     closeReason = "rate_limited";
                 }
 
-                if (await isBanned(ip!)) {
+                if (!closeReason && (await isBanned(ip!))) {
                     closeReason = "banned";
                 }
-
-                wsRateLimit.ipConnected(ip!);
 
                 let userId: string | null = null;
                 let accountSlug = "";
@@ -1604,7 +1759,12 @@ export class TeamMenu {
                             ip,
                             rateLimit: {},
                             player: undefined,
+                            ipCounted: false,
                         };
+
+                        if (!closeReason && wsRateLimit.isIpRateLimited(ip!)) {
+                            closeReason = "rate_limited";
+                        }
 
                         if (closeReason) {
                             ws.send(
@@ -1619,6 +1779,8 @@ export class TeamMenu {
                             ws.close();
                             return;
                         }
+                        wsRateLimit.ipConnected(ip!);
+                        (ws.raw as SocketData).ipCounted = true;
                         teamMenu.onOpen(
                             ws as WSContext<SocketData>,
                             userId,
@@ -1647,11 +1809,18 @@ export class TeamMenu {
                         }
                     },
 
-                    onClose(_event, ws) {
-                        teamMenu.onClose(ws as WSContext<SocketData>);
+                    onClose(event, ws) {
+                        const data = ws.raw as SocketData | undefined;
+                        if (data?.ipCounted) {
+                            data.ipCounted = false;
+                            wsRateLimit.ipDisconnected(data.ip);
+                        }
 
-                        const data = ws.raw! as SocketData;
-                        wsRateLimit.ipDisconnected(data.ip);
+                        try {
+                            teamMenu.onClose(ws as WSContext<SocketData>, event.code);
+                        } catch (err) {
+                            teamMenu.logger.error("Error handling socket close:", err);
+                        }
                     },
                 };
             }),
@@ -1667,36 +1836,80 @@ export class TeamMenu {
         const player = new Player(ws, this, userId, accountSlug, ip);
         ws.raw!.player = player;
 
-        let players = this.playersByIp.get(player.encodedIp);
-        if (!players) {
-            players = new Set();
-            this.playersByIp.set(player.encodedIp, players);
-        }
-        players.add(player);
+        this.trackPlayerIp(player);
 
         if (userId) {
-            void getFindGamePlayerData([
+            getFindGamePlayerData([
                 {
                     roomId: "",
                     token: "",
                     userId,
                     ip,
                 },
-            ]).then(([playerData]) => {
-                player.clanName = playerData?.clanName ?? "";
-                player.clanTagColor = playerData?.clanTagColor ?? "";
-                player.setPlayerIcon(playerData?.loadout?.player_icon);
-                if (player.room) {
-                    player.room.sendState();
-                }
-            });
+            ])
+                .then(([playerData]) => {
+                    player.clanName = playerData?.clanName ?? "";
+                    player.clanTagColor = playerData?.clanTagColor ?? "";
+                    player.setPlayerIcon(playerData?.loadout?.player_icon);
+                    if (player.room) {
+                        player.room.sendState();
+                    }
+                })
+                .catch((err) => {
+                    this.logger.warn("Failed to load lobby player data:", err);
+                });
         }
+    }
+
+    trackPlayerIp(player: Player) {
+        let players = this.playersByIp.get(player.encodedIp);
+        if (!players) {
+            players = new Set();
+            this.playersByIp.set(player.encodedIp, players);
+        }
+        players.add(player);
+    }
+
+    untrackPlayerIp(player: Player) {
+        const players = this.playersByIp.get(player.encodedIp);
+        if (!players) return;
+        players.delete(player);
+        if (players.size === 0) {
+            this.playersByIp.delete(player.encodedIp);
+        }
+    }
+
+    tryRejoin(
+        tempPlayer: Player,
+        ws: WSContext<SocketData>,
+        room: Room,
+        rejoinToken: string | undefined,
+    ) {
+        if (!rejoinToken) return false;
+        const existing = room.players.find((p) => p.rejoinToken === rejoinToken);
+        if (!existing || existing === tempPlayer) return false;
+        if (existing.userId !== tempPlayer.userId) return false;
+
+        clearTimeout(tempPlayer.disconnectTimeout);
+        this.untrackPlayerIp(tempPlayer);
+        tempPlayer.connected = false;
+
+        if (existing.ip !== tempPlayer.ip) {
+            this.untrackPlayerIp(existing);
+            existing.ip = tempPlayer.ip;
+            existing.encodedIp = tempPlayer.encodedIp;
+        }
+        this.trackPlayerIp(existing);
+
+        this.logger.debug(`${existing.name} rejoined room ${room.id}`);
+        room.rejoinPlayer(existing, ws);
+        return true;
     }
 
     onMsg(ws: WSContext<SocketData>, data: string) {
         let msg: ClientToServerTeamMsg;
         try {
-            assert(data.length < 1024);
+            assert(data.length < 4096);
             msg = JSON.parse(data);
             zTeamClientMsg.parse(msg);
         } catch {
@@ -1794,6 +2007,10 @@ export class TeamMenu {
                         break;
                     }
 
+                    if (this.tryRejoin(player, ws, room, msg.data.rejoinToken)) {
+                        return;
+                    }
+
                     const roomParticipantCount =
                         room.data.arena && room.isBattleRoyaleArena()
                             ? room.getBattleRoyaleArenaPlayerCount()
@@ -1876,29 +2093,22 @@ export class TeamMenu {
         player.room.onMsg(player, msg);
     }
 
-    onClose(ws: WSContext<SocketData>) {
+    onClose(ws: WSContext<SocketData>, code?: number) {
         const player = ws.raw?.player;
+        if (!player) return;
 
-        if (!player) {
-            this.logger.debug("Player not found, closing socket.");
-            ws.close();
+        clearTimeout(player.disconnectTimeout);
+
+        const room = player.room;
+        if (room && !isIntentionalClose(code)) {
+            room.onPlayerSocketLost(player);
             return;
         }
 
-        const byIp = this.playersByIp.get(player.encodedIp);
-        if (byIp) {
-            byIp.delete(player);
-            if (byIp.size === 0) {
-                this.playersByIp.delete(player.encodedIp);
-            }
-        }
-
-        // meh just to make sure we dont keep timeouts with references hanging
-        // not like it matters because its 5 seconds...
-        clearTimeout(player.disconnectTimeout);
-
-        if (player.room) {
-            player.room.removePlayer(player);
+        this.untrackPlayerIp(player);
+        player.connected = false;
+        if (room) {
+            room.removePlayer(player);
         }
     }
 
@@ -1922,8 +2132,14 @@ export class TeamMenu {
         const players = this.playersByIp.get(encodedIp);
         if (!players) return;
 
-        for (const player of players) {
-            player.socket.close();
+        for (const player of [...players]) {
+            if (player.room) {
+                player.room.removePlayer(player);
+            } else {
+                try {
+                    player.socket.close();
+                } catch {}
+            }
         }
         players.clear();
         this.playersByIp.delete(encodedIp);

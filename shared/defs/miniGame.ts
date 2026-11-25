@@ -181,3 +181,21 @@ export function normalizeArenaTeamCount(count: unknown): ArenaTeamCount {
         ? (count as ArenaTeamCount)
         : DefaultArenaTeamCount;
 }
+
+export const PrivateLobbyZoneModes = [
+    { id: "classic", name: "Classic" },
+    { id: "rapid", name: "Rapid" },
+    { id: "blitz", name: "Blitz" },
+] as const;
+
+export type PrivateLobbyZoneMode = (typeof PrivateLobbyZoneModes)[number]["id"];
+
+export const PrivateLobbyZoneMiniGames: readonly PrivateLobbyMiniGame[] = [
+    "pvp",
+    "hide_and_seek",
+    "infected",
+];
+
+export function privateLobbyMiniGameUsesZone(miniGame: PrivateLobbyMiniGame | undefined) {
+    return !!miniGame && PrivateLobbyZoneMiniGames.includes(miniGame);
+}

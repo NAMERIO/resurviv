@@ -7,6 +7,7 @@ import { randomUUID } from "crypto";
 import z from "zod";
 import { version } from "../../package.json";
 import { normalizeAmongUsImpostorCount } from "../../shared/defs/miniGame";
+import { normalizeStartingGuns } from "../../shared/defs/startingGuns";
 import { GameConfig } from "../../shared/gameConfig";
 import * as net from "../../shared/net/net";
 import { isBattleRoyaleMapName } from "./battleroyale/helpers";
@@ -32,6 +33,11 @@ import {
     type SaveGameBody,
     zFindGamePrivateBody,
 } from "./utils/types";
+
+process.on("unhandledRejection", (err) => {
+    console.error("Unhandled rejection:", err);
+    void logErrorToWebhook("server", "Game server unhandled rejection:", err);
+});
 
 process.on("uncaughtException", async (err) => {
     console.error(err);
@@ -95,6 +101,7 @@ class GameServer {
             disableLooting: !!data.disableLooting,
             showEnemiesOnMap: data.showEnemiesOnMap !== false,
             deathmatchFirstTo: data.deathmatchFirstTo,
+            startingGuns: normalizeStartingGuns(data.startingGuns),
             playerData: data.playerData,
             groupHash: data.groupHash,
             targetGameId: data.targetGameId,
@@ -323,6 +330,7 @@ app.post("/api/find_game", (res, req) => {
                 returnJson(res, await server.findGame(parsed.data));
             } catch (error) {
                 server.logger.warn("API find_game error: ", error);
+                returnJson(res, { error: "find_game_failed" });
             }
         },
         () => {
@@ -398,8 +406,6 @@ app.ws<GameSocketData>("/play", {
             return;
         }
 
-        gameWsRateLimit.ipConnected(ip);
-
         const socketId = randomUUID();
         let disconnectReason = "";
 
@@ -433,6 +439,7 @@ app.ws<GameSocketData>("/play", {
 
     open(socket: WebSocket<GameSocketData>) {
         const data = socket.getUserData();
+        gameWsRateLimit.ipConnected(data.ip);
 
         if (data.disconnectReason) {
             const disconnectMsg = new net.DisconnectMsg();

@@ -5,6 +5,7 @@ import {
     DefaultArenaTeamCount,
     DefaultPrivateLobbyMiniGame,
 } from "../../../shared/defs/miniGame";
+import { normalizeStartingGuns } from "../../../shared/defs/startingGuns";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import type { FindGameMatchData } from "../../../shared/types/api";
@@ -35,6 +36,10 @@ type LobbyChatGifPreview = Extract<ResolveKlipyGifResponse, { success: true }>["
 type LobbyChatGifPickerItem = KlipyGifPickerItem;
 const blankGifSrc =
     "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+
+function normalizeRoomUrl(roomUrl: string | undefined) {
+    return (roomUrl || "").replace(/^#/, "");
+}
 
 function findKlipyUrl(message: string): string | null {
     const match = message.match(/https?:\/\/(?:[a-z0-9-]+\.)?klipy\.com\/\S+/i);
@@ -174,11 +179,11 @@ export class TeamMenu {
     battleRoyaleTeamError: TeamMenuErrorType | "" = "";
     battleRoyaleTeamErrorTimeout: ReturnType<typeof setTimeout> | null = null;
     lastJoinGameData: FindGameMatchData | null = null;
-    rejoinAfterGame: {
-        roomUrl: string;
-        arena: boolean;
-        joinPrefs: TeamMenu["joinPrefs"];
-    } | null = null;
+    rejoinToken = "";
+    reconnecting = false;
+    reconnectAttempts = 0;
+    reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    gameCompletePending = false;
 
     hideUrl!: boolean;
 
@@ -334,6 +339,13 @@ export class TeamMenu {
         });
         window.addEventListener("focus", () => this.sendKeepAlive());
         window.addEventListener("blur", () => this.sendKeepAlive());
+        window.addEventListener("online", () => {
+            if (this.active && this.reconnecting && this.reconnectTimer) {
+                clearTimeout(this.reconnectTimer);
+                this.reconnectTimer = null;
+                this.openSocket();
+            }
+        });
 
         this.config.addModifiedListener((key) => {
             if (key === "loadout") {
@@ -371,149 +383,204 @@ export class TeamMenu {
             teamCode?: string;
         },
     ) {
-        const shouldReconnect =
-            !this.active ||
-            roomUrl !== this.roomData.roomUrl ||
-            create !== this.create ||
-            arena !== this.arena ||
-            !this.joined ||
-            !this.ws ||
-            this.ws.readyState === WebSocket.CLOSING ||
-            this.ws.readyState === WebSocket.CLOSED;
+        const socketAlive =
+            this.reconnecting ||
+            this.ws?.readyState === WebSocket.OPEN ||
+            this.ws?.readyState === WebSocket.CONNECTING;
+        const alreadyInRoom =
+            !create &&
+            this.active &&
+            socketAlive &&
+            arena === this.arena &&
+            normalizeRoomUrl(roomUrl) === normalizeRoomUrl(this.roomData.roomUrl);
+        if (alreadyInRoom) {
+            return;
+        }
 
-        this.rejoinAfterGame = null;
+        this.active = true;
+        this.joined = false;
+        this.create = create;
+        this.arena = arena;
+        this.joiningGame = false;
+        this.editingName = false;
+        this.joinPrefs = joinPrefs || {};
+        this.syncedOutfit = undefined;
+        this.syncedPlayerIcon = undefined;
+        this.lobbyMessages = [];
+        this.lastJoinGameData = null;
+        this.rejoinToken = "";
+        this.gameCompletePending = false;
+        this.stopReconnecting();
+        this.hideLobbyGifPicker();
 
-        if (shouldReconnect) {
-            const roomHost = api.resolveRoomHost();
-            const url = `w${
-                window.location.protocol === "https:" ? "ss" : "s"
-            }://${roomHost}/team_v2`;
-            this.active = true;
-            this.joined = false;
-            this.create = create;
-            this.arena = arena;
-            this.joiningGame = false;
-            this.editingName = false;
-            this.joinPrefs = joinPrefs || {};
-            this.syncedOutfit = undefined;
-            this.syncedPlayerIcon = undefined;
-            this.lobbyMessages = [];
-            this.lastJoinGameData = null;
-            this.hideLobbyGifPicker();
+        this.playerData = {
+            name: this.config.get("playerName"),
+        };
+        this.roomData = {
+            roomUrl,
+            region: this.config.get("region")!,
+            gameModeIdx: this.config.get("gameModeIdx")!,
+            autoFill: false,
+            arena,
+            teamsLocked: false,
+            teamCount: this.roomData.teamCount || DefaultArenaTeamCount,
+            deathmatchFirstTo: this.roomData.deathmatchFirstTo || 1,
+            miniGame: this.roomData.miniGame || DefaultPrivateLobbyMiniGame,
+            amongUsImpostorCount:
+                this.roomData.amongUsImpostorCount || DefaultAmongUsImpostorCount,
+            disableAirstrikes: !!this.roomData.disableAirstrikes,
+            movingZone: !!this.roomData.movingZone,
+            zoneMode: this.roomData.zoneMode || "classic",
+            disablePerks: !!this.roomData.disablePerks,
+            disableLooting: !!this.roomData.disableLooting,
+            showEnemiesOnMap: this.roomData.showEnemiesOnMap !== false,
+            startingGuns: normalizeStartingGuns(this.roomData.startingGuns),
+            findingGame: false,
+            lastError: "",
+        } as RoomData;
+        this.displayedInvalidProtocolModal = false;
 
-            // Load properties from config
-            this.playerData = {
-                name: this.config.get("playerName"),
+        this.refreshUi();
+        this.onStateUpdated?.();
+
+        this.openSocket();
+    }
+
+    openSocket() {
+        if (this.ws) {
+            const oldWs = this.ws;
+            this.ws = null;
+            oldWs.onclose = null;
+            oldWs.onerror = null;
+            oldWs.onmessage = null;
+            oldWs.close(1000);
+        }
+
+        const roomHost = api.resolveRoomHost();
+        const url = `w${
+            window.location.protocol === "https:" ? "ss" : "s"
+        }://${roomHost}/team_v2`;
+        const loadout = this.config.get("loadout");
+
+        let ws: WebSocket;
+        try {
+            ws = new WebSocket(url);
+        } catch (_e) {
+            this.onSocketClosed(0);
+            return;
+        }
+        this.ws = ws;
+
+        ws.onerror = () => {
+            ws.close();
+        };
+        ws.onclose = (e) => {
+            if (ws !== this.ws) return;
+            this.ws = null;
+            this.onSocketClosed(e.code);
+        };
+        ws.onopen = () => {
+            if (ws !== this.ws) return;
+            this.syncedOutfit = loadout?.outfit;
+            this.syncedPlayerIcon = loadout?.player_icon;
+            const playerData = {
+                ...this.playerData,
+                outfit: loadout?.outfit,
+                playerIcon: loadout?.player_icon,
             };
-            this.roomData = {
-                roomUrl,
-                region: this.config.get("region")!,
-                gameModeIdx: this.config.get("gameModeIdx")!,
-                autoFill: false,
-                arena,
-                teamsLocked: false,
-                teamCount: this.roomData.teamCount || DefaultArenaTeamCount,
-                deathmatchFirstTo: this.roomData.deathmatchFirstTo || 1,
-                miniGame: this.roomData.miniGame || DefaultPrivateLobbyMiniGame,
-                amongUsImpostorCount:
-                    this.roomData.amongUsImpostorCount || DefaultAmongUsImpostorCount,
-                disableAirstrikes: !!this.roomData.disableAirstrikes,
-                movingZone: !!this.roomData.movingZone,
-                zoneMode: this.roomData.zoneMode || "classic",
-                disablePerks: !!this.roomData.disablePerks,
-                disableLooting: !!this.roomData.disableLooting,
-                showEnemiesOnMap: this.roomData.showEnemiesOnMap !== false,
-                findingGame: false,
-                lastError: "",
-            } as RoomData;
-            const loadout = this.config.get("loadout");
-            this.displayedInvalidProtocolModal = false;
-
-            this.refreshUi();
-            this.onStateUpdated?.();
-
-            if (this.ws) {
-                this.ws.onclose = function () {};
-                this.ws.close();
-                this.ws = null;
+            if (this.create && !this.joined) {
+                this.sendMessage("create", {
+                    arena: this.arena,
+                    roomData: this.roomData,
+                    playerData,
+                });
+            } else {
+                this.sendMessage("join", {
+                    roomUrl: normalizeRoomUrl(this.roomData.roomUrl),
+                    arena: this.arena,
+                    preferredTeam: this.joinPrefs.preferredTeam,
+                    spectator: this.joinPrefs.spectator,
+                    teamCode: this.joinPrefs.teamCode,
+                    rejoinToken: this.rejoinToken || undefined,
+                    playerData,
+                });
             }
+        };
+        ws.onmessage = (e) => {
+            if (ws !== this.ws || !this.active) return;
+            const msg = JSON.parse(e.data);
+            this.onMessage(msg.type, msg.data);
+        };
+    }
 
-            try {
-                this.ws = new WebSocket(url);
-                this.ws.onerror = (_e) => {
-                    this.ws?.close();
-                };
-                this.ws.onclose = (e) => {
-                    if (this.joiningGame && this.joined && this.active) {
-                        console.warn(
-                            `Team lobby socket closed during a match (code=${e.code}), will rejoin after the match`,
-                        );
-                        this.rejoinAfterGame = {
-                            roomUrl: this.roomData.roomUrl,
-                            arena: this.arena,
-                            joinPrefs: { ...this.joinPrefs },
-                        };
-                    }
-                    let errMsg = "";
-                    if (!this.joiningGame) {
-                        errMsg = this.joined
-                            ? "lost_conn"
-                            : this.create
-                              ? "create_failed"
-                              : "join_failed";
-                    }
-                    this.leave(errMsg);
-                };
-                this.ws.onopen = () => {
-                    this.syncedOutfit = loadout?.outfit;
-                    this.syncedPlayerIcon = loadout?.player_icon;
-                    if (this.create) {
-                        this.sendMessage("create", {
-                            arena: this.arena,
-                            roomData: this.roomData,
-                            playerData: {
-                                ...this.playerData,
-                                outfit: loadout?.outfit,
-                                playerIcon: loadout?.player_icon,
-                            },
-                        });
-                    } else {
-                        this.sendMessage("join", {
-                            roomUrl: this.roomData.roomUrl,
-                            arena: this.arena,
-                            preferredTeam: this.joinPrefs.preferredTeam,
-                            spectator: this.joinPrefs.spectator,
-                            teamCode: this.joinPrefs.teamCode,
-                            playerData: {
-                                ...this.playerData,
-                                outfit: loadout?.outfit,
-                                playerIcon: loadout?.player_icon,
-                            },
-                        });
-                    }
-                };
-                this.ws.onmessage = (e) => {
-                    if (this.active) {
-                        const msg = JSON.parse(e.data);
-                        this.onMessage(msg.type, msg.data);
-                    }
-                };
-            } catch (_e) {
-                this.leave(this.create ? "create_failed" : "join_failed");
+    onSocketClosed(code: number) {
+        if (!this.active) return;
+
+        const serverRemovedUs = code === 4000 || code === 4001;
+        if (this.joined && this.rejoinToken && !serverRemovedUs) {
+            if (this.scheduleReconnect()) {
+                return;
             }
         }
+
+        let errMsg = "";
+        if (!this.joiningGame) {
+            errMsg = this.joined
+                ? "lost_conn"
+                : this.create
+                  ? "create_failed"
+                  : "join_failed";
+        }
+        this.leave(errMsg);
+    }
+
+    scheduleReconnect() {
+        const maxAttempts = this.joiningGame ? Number.POSITIVE_INFINITY : 8;
+        if (this.reconnectAttempts >= maxAttempts) {
+            return false;
+        }
+        const maxDelay = this.joiningGame ? 15000 : 8000;
+        const delay = Math.min(500 * 2 ** this.reconnectAttempts, maxDelay);
+        this.reconnectAttempts++;
+        this.reconnecting = true;
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+        }
+        console.warn(
+            `Team lobby connection lost, reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`,
+        );
+        this.reconnectTimer = setTimeout(() => {
+            this.reconnectTimer = null;
+            if (this.active && this.reconnecting) {
+                this.openSocket();
+            }
+        }, delay);
+        return true;
+    }
+
+    stopReconnecting() {
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = null;
+        }
+        this.reconnecting = false;
+        this.reconnectAttempts = 0;
     }
 
     leave(errType = "") {
         if (this.active) {
-            this.ws?.close();
+            const ws = this.ws;
             this.ws = null;
+            ws?.close(1000);
+            this.stopReconnecting();
             this.active = false;
             this.joined = false;
             this.joiningGame = false;
             this.arena = false;
             this.joinPrefs = {};
             this.lastJoinGameData = null;
+            this.rejoinToken = "";
+            this.gameCompletePending = false;
             if (this.battleRoyaleTeamErrorTimeout) {
                 clearTimeout(this.battleRoyaleTeamErrorTimeout);
                 this.battleRoyaleTeamErrorTimeout = null;
@@ -541,12 +608,6 @@ export class TeamMenu {
     }
 
     onGameComplete() {
-        if (!this.active && this.rejoinAfterGame) {
-            const rejoin = this.rejoinAfterGame;
-            this.rejoinAfterGame = null;
-            this.connect(false, rejoin.roomUrl, rejoin.arena, rejoin.joinPrefs);
-            return;
-        }
         if (this.active) {
             this.joiningGame = false;
             this.roomData.findingGame = false;
@@ -558,7 +619,9 @@ export class TeamMenu {
             }
             this.refreshUi();
             this.onStateUpdated?.();
-            this.sendMessage("gameComplete");
+            if (!this.sendMessage("gameComplete")) {
+                this.gameCompletePending = true;
+            }
         }
     }
 
@@ -569,13 +632,20 @@ export class TeamMenu {
         switch (type) {
             case "state": {
                 let stateData = data as TeamStateMsg["data"];
-                const wasJoined = this.joined;
+                const wasJoined = this.joined && !this.reconnecting;
                 this.joined = true;
+                if (this.reconnecting) {
+                    console.info("Team lobby reconnected");
+                }
+                this.stopReconnecting();
+                if (stateData.rejoinToken) {
+                    this.rejoinToken = stateData.rejoinToken;
+                }
                 const ourRoomData = this.roomData;
                 this.roomData = stateData.room;
                 this.players = stateData.players;
                 this.localPlayerId = stateData.localPlayerId;
-                this.isLeader = this.getPlayerById(this.localPlayerId)!.isLeader;
+                this.isLeader = !!this.getPlayerById(this.localPlayerId)?.isLeader;
                 if (
                     this.isBattleRoyaleRoom() &&
                     !this.roomData.findingGame &&
@@ -609,6 +679,7 @@ export class TeamMenu {
                     this.roomData.disablePerks = ourRoomData.disablePerks;
                     this.roomData.disableLooting = ourRoomData.disableLooting;
                     this.roomData.showEnemiesOnMap = ourRoomData.showEnemiesOnMap;
+                    this.roomData.startingGuns = ourRoomData.startingGuns;
                 }
                 this.refreshUi();
                 this.onStateUpdated?.();
@@ -619,6 +690,10 @@ export class TeamMenu {
                 SDK.showInviteButton(inviteRoomId);
                 if (!wasJoined) {
                     this.sendKeepAlive();
+                }
+                if (this.gameCompletePending && !this.joiningGame) {
+                    this.gameCompletePending = false;
+                    this.sendMessage("gameComplete");
                 }
                 break;
             }
@@ -639,6 +714,10 @@ export class TeamMenu {
                 this.leave("kicked");
                 break;
             case "error":
+                if (this.reconnecting) {
+                    this.leave(this.joiningGame ? "" : (data as { type: string }).type);
+                    break;
+                }
                 if (
                     this.joined &&
                     this.arena &&
@@ -1190,17 +1269,16 @@ export class TeamMenu {
     }
 
     sendMessage(type: string, data?: unknown) {
-        if (this.ws) {
-            if (this.ws.readyState === this.ws.OPEN) {
-                const msg = JSON.stringify({
-                    type,
-                    data,
-                });
-                this.ws.send(msg);
-            } else {
-                this.ws.close();
-            }
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            return false;
         }
+        this.ws.send(
+            JSON.stringify({
+                type,
+                data,
+            }),
+        );
+        return true;
     }
 
     sendKeepAlive() {

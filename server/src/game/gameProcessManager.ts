@@ -9,6 +9,12 @@ import {
     DefaultPrivateLobbyMiniGame,
     normalizeAmongUsImpostorCount,
 } from "../../../shared/defs/miniGame";
+import {
+    emptyStartingGuns,
+    normalizeStartingGuns,
+    type PrivateLobbyStartingGuns,
+    startingGunsKey,
+} from "../../../shared/defs/startingGuns";
 import type { TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import { util } from "../../../shared/utils/util";
@@ -29,6 +35,8 @@ if (process.env.NODE_ENV === "production") {
 } else {
     path = "src/game/gameProcess.ts";
 }
+
+const GameCreateTimeoutMs = 30000;
 
 function endSocket(socket: WebSocket<GameSocketData>, reason?: string) {
     if (reason) {
@@ -59,6 +67,7 @@ class GameProcess implements GameData {
     disableLooting = false;
     showEnemiesOnMap = true;
     deathmatchFirstTo = 1;
+    startingGuns: PrivateLobbyStartingGuns = emptyStartingGuns();
     id = "";
     aliveCount = 0;
     startedTime = 0;
@@ -68,12 +77,15 @@ class GameProcess implements GameData {
     manager: GameProcessManager;
 
     onCreatedCbs: Array<(_proc: typeof this) => void> = [];
+    onCreateFailedCbs: Array<(err: Error) => void> = [];
 
     lastMsgTime = Date.now();
 
     stoppedTime = Date.now();
 
     createdTime = Date.now();
+
+    createStartedTime = Date.now();
 
     avaliableSlots = 0;
     groupHash?: string;
@@ -94,10 +106,10 @@ class GameProcess implements GameData {
                     this.created = true;
                     this.stopped = false;
                     this.creating = false;
-                    for (const cb of this.onCreatedCbs) {
+                    this.onCreateFailedCbs.length = 0;
+                    for (const cb of this.onCreatedCbs.splice(0)) {
                         cb(this);
                     }
-                    this.onCreatedCbs.length = 0;
                     break;
                 case ProcessMsgType.UpdateData:
                     this.canJoin = msg.canJoin;
@@ -117,6 +129,7 @@ class GameProcess implements GameData {
                     this.deathmatchFirstTo = normalizeDeathmatchFirstTo(
                         msg.deathmatchFirstTo,
                     );
+                    this.startingGuns = normalizeStartingGuns(msg.startingGuns);
                     if (this.id !== msg.id) {
                         this.manager.processById.delete(this.id);
                         this.id = msg.id;
@@ -178,8 +191,10 @@ class GameProcess implements GameData {
         this.disableLooting = !!config.disableLooting;
         this.showEnemiesOnMap = config.showEnemiesOnMap !== false;
         this.deathmatchFirstTo = normalizeDeathmatchFirstTo(config.deathmatchFirstTo);
+        this.startingGuns = normalizeStartingGuns(config.startingGuns);
         this.stopped = false;
         this.creating = true;
+        this.createStartedTime = Date.now();
         this.groupHash = config.groupHash;
 
         const mapDef = MapDefs[this.mapName as keyof typeof MapDefs] as MapDef;
@@ -225,6 +240,14 @@ class GameProcess implements GameData {
             socketId,
         });
     }
+
+    failPendingCreate(reason: string) {
+        this.onCreatedCbs.length = 0;
+        const err = new Error(reason);
+        for (const cb of this.onCreateFailedCbs.splice(0)) {
+            cb(err);
+        }
+    }
 }
 
 export class GameProcessManager implements GameManager {
@@ -258,6 +281,17 @@ export class GameProcessManager implements GameManager {
                     // sigquit can dump a core of the process
                     // useful for debugging infinite loops
                     this.killProcess(gameProc, "SIGQUIT");
+                    continue;
+                }
+
+                if (
+                    gameProc.creating &&
+                    Date.now() - gameProc.createStartedTime > GameCreateTimeoutMs
+                ) {
+                    this.logger.warn(
+                        `Process ${gameProc.process.pid} - #${gameProc.id.substring(0, 4)} did not finish creating a game in time, killing`,
+                    );
+                    this.killProcess(gameProc);
                 }
             }
 
@@ -388,6 +422,7 @@ export class GameProcessManager implements GameManager {
             : "index-game-server-closed";
         if (this.terminatingProcesses.has(gameProc)) return;
         this.terminatingProcesses.add(gameProc);
+        gameProc.failPendingCreate("game process terminated before game was created");
 
         for (const [, socket] of this.sockets) {
             const data = socket.getUserData();
@@ -462,6 +497,8 @@ export class GameProcessManager implements GameManager {
                 proc.showEnemiesOnMap === (body.showEnemiesOnMap !== false) &&
                 proc.deathmatchFirstTo ===
                     normalizeDeathmatchFirstTo(body.deathmatchFirstTo) &&
+                startingGunsKey(proc.startingGuns) ===
+                    startingGunsKey(normalizeStartingGuns(body.startingGuns)) &&
                 (requestedGroupHash
                     ? proc.groupHash === requestedGroupHash
                     : !proc.groupHash)
@@ -529,6 +566,7 @@ export class GameProcessManager implements GameManager {
                 disableLooting: !!body.disableLooting,
                 showEnemiesOnMap: body.showEnemiesOnMap !== false,
                 deathmatchFirstTo: normalizeDeathmatchFirstTo(body.deathmatchFirstTo),
+                startingGuns: normalizeStartingGuns(body.startingGuns),
             });
         }
 
@@ -542,11 +580,12 @@ export class GameProcessManager implements GameManager {
         // if the game has not finished creating
         // wait for it to be created to send the find game response
         if (!game.created) {
-            return await new Promise((resolve) => {
+            return await new Promise((resolve, reject) => {
                 game.onCreatedCbs.push((game) => {
                     game.addJoinTokens(playerData, autoFill, requestedGroupHash);
                     resolve({ gameId: game.id, forcedSpectator: forceSpectator });
                 });
+                game.onCreateFailedCbs.push(reject);
             });
         }
 

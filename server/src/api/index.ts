@@ -46,6 +46,11 @@ export type Context = {
     };
 };
 
+process.on("unhandledRejection", (err) => {
+    console.error("Unhandled rejection:", err);
+    void logErrorToWebhook("server", "API server unhandled rejection:", err);
+});
+
 process.on("uncaughtException", async (err) => {
     console.error(err);
 

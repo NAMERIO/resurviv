@@ -16,7 +16,15 @@ import {
     type PrivateLobbyMiniGame,
     PrivateLobbyMiniGameDefs,
     PrivateLobbyMiniGameIds,
+    type PrivateLobbyZoneMode,
+    PrivateLobbyZoneModes,
+    privateLobbyMiniGameUsesZone,
 } from "../../shared/defs/miniGame";
+import {
+    hasStartingGuns,
+    type PrivateLobbyStartingGuns,
+    privateLobbyMiniGameUsesStartingGuns,
+} from "../../shared/defs/startingGuns";
 import { GameConfig } from "../../shared/gameConfig";
 import * as net from "../../shared/net/net";
 import type {
@@ -63,6 +71,7 @@ import { LoadoutDisplay } from "./ui/opponentDisplay";
 import { Pass } from "./ui/pass";
 import { ProfileUi } from "./ui/profileUi";
 import type { ShopMenu } from "./ui/shopMenu";
+import { describeStartingGuns, StartingGunsPicker } from "./ui/startingGunsPicker";
 import { TeamMenu } from "./ui/teamMenu";
 import { loadStaticDomImages } from "./ui/ui2";
 
@@ -149,8 +158,11 @@ export class Application {
     prestigeArenaTeamCountSelection = $("#create-team-count-selection");
     prestigeArenaMiniGameDropdown = $("#create-minigame");
     prestigeArenaMiniGameSelection = $("#create-minigame-selection");
-    prestigeArenaZoneDropdown = $("#create-zone");
-    prestigeArenaZoneSelection = $("#create-zone-selection");
+    prestigeArenaZoneModeBtn = $<HTMLButtonElement>("#create-zone-mode");
+    prestigeArenaBattleZoneModeBtn = $<HTMLButtonElement>("#battle-zone-mode");
+    prestigeArenaStartingGunsBtn = $<HTMLButtonElement>("#create-starting-guns");
+    prestigeArenaBattleStartingGunsBtn = $<HTMLButtonElement>("#battle-starting-guns");
+    startingGunsPicker?: StartingGunsPicker;
     prestigeArenaImpostorCountDropdown = $("#create-impostors");
     prestigeArenaImpostorCountGroup = $("#create-impostors-group");
     prestigeArenaImpostorCountSelection = $("#create-impostors-selection");
@@ -230,6 +242,7 @@ export class Application {
     wasPlayingVideo = false;
     checkedPingTest = false;
     hasFocus = true;
+    lowFpsTime = 0;
     newsDisplayed = false;
     latestNewsTimestamp = 0;
     newsManager: NewsManager;
@@ -237,7 +250,6 @@ export class Application {
     prestigeArenaSelectedMap = "main";
     prestigeArenaSelectedTeamMode = 2;
     prestigeArenaSelectedMiniGame: PrivateLobbyMiniGame = DefaultPrivateLobbyMiniGame;
-    prestigeArenaSelectedZone: "classic" | "rapid" | "blitz" = "classic";
     prestigeArenaSelectedImpostorCount = DefaultAmongUsImpostorCount;
     prestigeArenaModalRequestedOpen = false;
     prestigeArenaCurrentTab: "battle" | "history" = "battle";
@@ -683,7 +695,6 @@ export class Application {
                 this.prestigeArenaModeSelection.css("display", visible ? "none" : "grid");
                 if (!visible) {
                     this.prestigeArenaTypeSelection.css("display", "none");
-                    this.prestigeArenaZoneSelection.css("display", "none");
                     this.prestigeArenaTeamCountSelection.css("display", "none");
                     this.prestigeArenaMiniGameSelection.css("display", "none");
                     this.prestigeArenaImpostorCountSelection.css("display", "none");
@@ -695,7 +706,6 @@ export class Application {
                 this.prestigeArenaTypeSelection.css("display", visible ? "none" : "grid");
                 if (!visible) {
                     this.prestigeArenaModeSelection.css("display", "none");
-                    this.prestigeArenaZoneSelection.css("display", "none");
                     this.prestigeArenaTeamCountSelection.css("display", "none");
                     this.prestigeArenaMiniGameSelection.css("display", "none");
                     this.prestigeArenaImpostorCountSelection.css("display", "none");
@@ -724,7 +734,6 @@ export class Application {
                 );
                 if (!visible) {
                     this.prestigeArenaModeSelection.css("display", "none");
-                    this.prestigeArenaZoneSelection.css("display", "none");
                     this.prestigeArenaTypeSelection.css("display", "none");
                     this.prestigeArenaMiniGameSelection.css("display", "none");
                     this.prestigeArenaImpostorCountSelection.css("display", "none");
@@ -740,7 +749,6 @@ export class Application {
                 );
                 if (!visible) {
                     this.prestigeArenaModeSelection.css("display", "none");
-                    this.prestigeArenaZoneSelection.css("display", "none");
                     this.prestigeArenaTypeSelection.css("display", "none");
                     this.prestigeArenaTeamCountSelection.css("display", "none");
                     this.prestigeArenaImpostorCountSelection.css("display", "none");
@@ -748,20 +756,25 @@ export class Application {
                 }
             });
 
-            this.prestigeArenaZoneDropdown.on("click", () => {
-                const visible = this.prestigeArenaZoneSelection.css("display") !== "none";
-
-                this.prestigeArenaZoneSelection.css("display", visible ? "none" : "grid");
-
-                if (!visible) {
-                    this.prestigeArenaModeSelection.css("display", "none");
-                    this.prestigeArenaTypeSelection.css("display", "none");
-                    this.prestigeArenaTeamCountSelection.css("display", "none");
-                    this.prestigeArenaMiniGameSelection.css("display", "none");
-                    this.prestigeArenaImpostorCountSelection.css("display", "none");
-                    this.hidePrestigeArenaBattleSelections();
-                }
-            });
+            this.prestigeArenaZoneModeBtn
+                .add(this.prestigeArenaBattleZoneModeBtn)
+                .on("click", () => {
+                    const zones = PrivateLobbyZoneModes.map((zone) => zone.id);
+                    const current = zones.indexOf(
+                        this.teamMenu.roomData.zoneMode || "classic",
+                    );
+                    this.setPrestigeArenaZoneMode(zones[(current + 1) % zones.length]);
+                });
+            this.prestigeArenaStartingGunsBtn
+                .add(this.prestigeArenaBattleStartingGunsBtn)
+                .on("click", () => {
+                    this.startingGunsPicker ??= new StartingGunsPicker({
+                        getGuns: () => this.teamMenu.roomData.startingGuns,
+                        canEdit: () => this.canEditPrestigeArenaOptions(),
+                        onChange: (guns) => this.setPrestigeArenaStartingGuns(guns),
+                    });
+                    this.startingGunsPicker.open();
+                });
             this.prestigeArenaImpostorCountDropdown.on("click", () => {
                 if (
                     this.teamMenu.active &&
@@ -779,7 +792,6 @@ export class Application {
                 );
                 if (!visible) {
                     this.prestigeArenaModeSelection.css("display", "none");
-                    this.prestigeArenaZoneSelection.css("display", "none");
                     this.prestigeArenaTypeSelection.css("display", "none");
                     this.prestigeArenaTeamCountSelection.css("display", "none");
                     this.prestigeArenaMiniGameSelection.css("display", "none");
@@ -832,8 +844,6 @@ export class Application {
                             "#create-team-count",
                             "#create-minigame",
                             "#create-impostors",
-                            "#create-zone",
-                            "#create-zone-selection",
                             "#create-mode-selection",
                             "#create-type-selection",
                             "#create-team-count-selection",
@@ -855,7 +865,6 @@ export class Application {
                     return;
                 }
                 this.prestigeArenaModeSelection.css("display", "none");
-                this.prestigeArenaZoneSelection.css("display", "none");
                 this.prestigeArenaTypeSelection.css("display", "none");
                 this.prestigeArenaTeamCountSelection.css("display", "none");
                 this.prestigeArenaMiniGameSelection.css("display", "none");
@@ -961,7 +970,6 @@ export class Application {
                 this.teamMenu.roomData.miniGame = this.prestigeArenaSelectedMiniGame;
                 this.teamMenu.roomData.amongUsImpostorCount =
                     this.prestigeArenaSelectedImpostorCount;
-                this.teamMenu.roomData.zoneMode = this.prestigeArenaSelectedZone;
                 this.tryJoinTeam(true, undefined, true);
             });
             $("#btn-team-mobile-link-join").on("click", () => {
@@ -1008,7 +1016,9 @@ export class Application {
             this.setAppActive(true);
             const domCanvas = document.querySelector<HTMLCanvasElement>("#cvs")!;
 
-            const rendererRes = window.devicePixelRatio > 1 ? 2 : 1;
+            const rendererRes = this.config.get("highResTex")
+                ? math.clamp(window.devicePixelRatio || 1, 1, 2)
+                : 1;
 
             if (device.os == "ios") {
                 PIXI.settings.PRECISION_FRAGMENT = PIXI.PRECISION.HIGH;
@@ -1021,6 +1031,7 @@ export class Application {
                     view: domCanvas,
                     antialias: false,
                     resolution: rendererRes,
+                    powerPreference: "high-performance",
                     hello: true,
                     forceCanvas,
                 });
@@ -1780,7 +1791,6 @@ export class Application {
         this.syncPrestigeArenaCreatePaneVisibility();
         if (!preserveSelections) {
             this.prestigeArenaModeSelection.css("display", "none");
-            this.prestigeArenaZoneSelection.css("display", "none");
             this.prestigeArenaTypeSelection.css("display", "none");
             this.prestigeArenaTeamCountSelection.css("display", "none");
             this.prestigeArenaMiniGameSelection.css("display", "none");
@@ -2033,9 +2043,10 @@ export class Application {
             !this.teamMenu.arena ||
             !this.teamMenu.joined ||
             this.teamMenu.isLeader;
-        const isBattleRoyale = this.isBattleRoyaleMiniGame(
-            this.teamMenu.roomData.miniGame || this.prestigeArenaSelectedMiniGame,
-        );
+        const selectedMiniGame =
+            this.teamMenu.roomData.miniGame || this.prestigeArenaSelectedMiniGame;
+        const isBattleRoyale = this.isBattleRoyaleMiniGame(selectedMiniGame);
+        const usesZone = privateLobbyMiniGameUsesZone(selectedMiniGame);
         $("#modal-create-window .private-option-buttons").removeClass("hide");
         this.prestigeArenaBattleOptions.removeClass("hide");
         this.prestigeArenaDisableAirstrikesBtn.toggleClass(
@@ -2114,17 +2125,14 @@ export class Application {
             "disabled",
             !canEdit || isBattleRoyale,
         );
-        this.prestigeArenaMovingZoneBtn.prop("disabled", !canEdit || isBattleRoyale);
+        this.prestigeArenaMovingZoneBtn.prop("disabled", !canEdit || !usesZone);
         this.prestigeArenaDisablePerksBtn.prop("disabled", !canEdit || isBattleRoyale);
         this.prestigeArenaDisableLootingBtn.prop("disabled", !canEdit || isBattleRoyale);
         this.prestigeArenaBattleDisableAirstrikesBtn.prop(
             "disabled",
             !canEdit || isBattleRoyale,
         );
-        this.prestigeArenaBattleMovingZoneBtn.prop(
-            "disabled",
-            !canEdit || isBattleRoyale,
-        );
+        this.prestigeArenaBattleMovingZoneBtn.prop("disabled", !canEdit || !usesZone);
         this.prestigeArenaBattleDisablePerksBtn.prop(
             "disabled",
             !canEdit || isBattleRoyale,
@@ -2135,6 +2143,69 @@ export class Application {
         );
         this.prestigeArenaHideEnemiesBtn.prop("disabled", !canEdit);
         this.prestigeArenaBattleHideEnemiesBtn.prop("disabled", !canEdit);
+
+        const zoneMode = this.teamMenu.roomData.zoneMode || "classic";
+        const zoneName =
+            PrivateLobbyZoneModes.find((zone) => zone.id === zoneMode)?.name ?? "Classic";
+        this.prestigeArenaZoneModeBtn
+            .add(this.prestigeArenaBattleZoneModeBtn)
+            .text(`Zone: ${zoneName}`)
+            .attr("data-zone-mode", zoneMode)
+            .toggleClass("active", zoneMode !== "classic")
+            .attr("aria-pressed", String(zoneMode !== "classic"))
+            .prop("disabled", !canEdit || !usesZone);
+
+        const startingGuns = this.teamMenu.roomData.startingGuns;
+        const gunsSet = hasStartingGuns(startingGuns);
+        this.prestigeArenaStartingGunsBtn
+            .add(this.prestigeArenaBattleStartingGunsBtn)
+            .text(describeStartingGuns(startingGuns))
+            .toggleClass("active", gunsSet)
+            .attr("aria-pressed", String(gunsSet))
+            .prop(
+                "disabled",
+                !privateLobbyMiniGameUsesStartingGuns(selectedMiniGame) ||
+                    (!canEdit && !gunsSet),
+            );
+        this.startingGunsPicker?.refresh();
+    }
+
+    canEditPrestigeArenaOptions() {
+        return (
+            !this.teamMenu.active ||
+            !this.teamMenu.arena ||
+            !this.teamMenu.joined ||
+            this.teamMenu.isLeader
+        );
+    }
+
+    setPrestigeArenaStartingGuns(guns: PrivateLobbyStartingGuns) {
+        if (!this.canEditPrestigeArenaOptions()) return;
+
+        if (this.teamMenu.active && this.teamMenu.arena && this.teamMenu.isLeader) {
+            this.teamMenu.setRoomProperty("startingGuns", guns);
+        } else {
+            this.teamMenu.roomData.startingGuns = guns;
+        }
+        this.syncPrestigeArenaCreateOptions();
+    }
+
+    setPrestigeArenaZoneMode(zoneMode: PrivateLobbyZoneMode) {
+        if (
+            this.teamMenu.active &&
+            this.teamMenu.arena &&
+            this.teamMenu.joined &&
+            !this.teamMenu.isLeader
+        ) {
+            return;
+        }
+
+        if (this.teamMenu.active && this.teamMenu.arena && this.teamMenu.isLeader) {
+            this.teamMenu.setRoomProperty("zoneMode", zoneMode);
+        } else {
+            this.teamMenu.roomData.zoneMode = zoneMode;
+        }
+        this.syncPrestigeArenaCreateOptions();
     }
 
     setPrestigeArenaCreateOption(
@@ -2165,7 +2236,6 @@ export class Application {
 
     populatePrestigeArenaModes() {
         this.prestigeArenaModeSelection.empty();
-        this.prestigeArenaZoneSelection.empty();
         this.prestigeArenaTypeSelection.empty();
         this.prestigeArenaTeamCountSelection.empty();
         this.prestigeArenaMiniGameSelection.empty();
@@ -2548,40 +2618,6 @@ export class Application {
                 }
             }
         };
-
-        const zoneOptions: Array<{
-            id: "classic" | "rapid" | "blitz";
-            name: string;
-        }> = [
-            { id: "classic", name: "Classic" },
-            { id: "rapid", name: "Rapid" },
-            { id: "blitz", name: "Blitz" },
-        ];
-
-        for (const zone of zoneOptions) {
-            const btn = $("<div>", {
-                class: "create-zone-option",
-                "data-zone": zone.id,
-                role: "button",
-                "aria-pressed": String(this.prestigeArenaSelectedZone === zone.id),
-                text: zone.name,
-            });
-
-            btn.on("click", () => {
-                this.prestigeArenaSelectedZone = zone.id;
-                $("#create-link-zone").text(zone.name);
-
-                this.prestigeArenaZoneSelection
-                    .find(".create-zone-option")
-                    .removeClass("selected")
-                    .attr("aria-pressed", "false");
-
-                btn.addClass("selected").attr("aria-pressed", "true");
-                this.prestigeArenaZoneSelection.css("display", "none");
-            });
-
-            this.prestigeArenaZoneSelection.append(btn);
-        }
 
         for (const miniGame of PrivateLobbyMiniGameIds) {
             const miniGameDef = PrivateLobbyMiniGameDefs[miniGame];
@@ -3828,7 +3864,6 @@ export class Application {
         this.prestigeArenaModalRequestedOpen = false;
         this.setPrestigeArenaMobilePanel("spectators");
         this.prestigeArenaModeSelection.css("display", "none");
-        this.prestigeArenaZoneSelection.css("display", "none");
         this.prestigeArenaTypeSelection.css("display", "none");
         this.prestigeArenaTeamCountSelection.css("display", "none");
         this.prestigeArenaMiniGameSelection.css("display", "none");
@@ -3865,7 +3900,7 @@ export class Application {
         const wrapper = this.prestigeArenaWrapper.get(0);
         if (!wrapper) return;
 
-        if (window.innerWidth > 1080 && window.innerHeight > 760) {
+        if (window.innerWidth > 1080 && window.innerHeight > 820) {
             wrapper.style.removeProperty("--arena-modal-scale");
             return;
         }
@@ -3874,7 +3909,7 @@ export class Application {
         const isBattleRoyale =
             this.prestigeArenaBattlePane.hasClass("arena-battle-royale");
         const naturalWidth = isJoined ? (isBattleRoyale ? 1210 : 1680) : 1040;
-        const naturalHeight = isJoined ? (isBattleRoyale ? 570 : 760) : 475;
+        const naturalHeight = isJoined ? (isBattleRoyale ? 570 : 800) : 475;
         const availableWidth = Math.max(1, window.innerWidth - 8);
         const availableHeight = Math.max(1, window.innerHeight - 24);
         const scale = Math.min(
@@ -4500,7 +4535,9 @@ export class Application {
 
     onJoinGameError(err: FindGameError) {
         const isPrivateLobbyJoinFailure =
-            err === "join_game_failed" && this.teamMenu.active && this.teamMenu.joined;
+            (err === "join_game_failed" || err === "rate_limited") &&
+            this.teamMenu.active &&
+            this.teamMenu.joined;
         if (isPrivateLobbyJoinFailure) {
             this.teamMenu.onGameComplete();
             this.setAppActive(true);
@@ -4587,6 +4624,25 @@ export class Application {
         }
     }
 
+    updateAutoResolution(frameMs: number, dt: number) {
+        const renderer = this.pixi?.renderer;
+        if (!renderer || renderer.resolution <= 1) return;
+
+        if (frameMs > 1000 / 40) {
+            this.lowFpsTime += dt;
+        } else {
+            this.lowFpsTime = Math.max(0, this.lowFpsTime - dt * 2);
+        }
+        if (this.lowFpsTime < 5) return;
+
+        this.lowFpsTime = 0;
+        renderer.resolution = 1;
+        renderer.resize(device.screenWidth, device.screenHeight);
+        if (this.game?.initialized) {
+            this.game.resize();
+        }
+    }
+
     update() {
         const dt = math.clamp(this.pixi!.ticker.elapsedMS / 1000, 0.001, 1 / 8);
         this.pingTest.update(dt);
@@ -4628,6 +4684,7 @@ export class Application {
             } else {
                 this.game.update(dt);
             }
+            this.updateAutoResolution(this.pixi!.ticker.elapsedMS, dt);
         }
 
         // LoadoutDisplay update

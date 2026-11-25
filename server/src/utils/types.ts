@@ -6,8 +6,10 @@ import {
     type PrivateLobbyMiniGame,
     PrivateLobbyMiniGameIds,
 } from "../../../shared/defs/miniGame";
+import type { PrivateLobbyStartingGuns } from "../../../shared/defs/startingGuns";
 import { TeamMode } from "../../../shared/gameConfig";
 import type { FindGameError } from "../../../shared/types/api";
+import { zStartingGuns } from "../../../shared/types/team";
 import { loadoutSchema } from "../../../shared/utils/loadout";
 import type { MatchDataTable } from "../api/db/schema";
 
@@ -135,6 +137,7 @@ export interface ServerGameConfig {
     readonly disableLooting?: boolean;
     readonly showEnemiesOnMap?: boolean;
     readonly deathmatchFirstTo?: number;
+    readonly startingGuns?: PrivateLobbyStartingGuns;
 }
 
 export interface GameData {
@@ -151,6 +154,7 @@ export interface GameData {
     disableLooting?: boolean;
     showEnemiesOnMap?: boolean;
     deathmatchFirstTo?: number;
+    startingGuns?: PrivateLobbyStartingGuns;
     canJoin: boolean;
     aliveCount: number;
     startedTime: number;
@@ -173,6 +177,7 @@ export const zFindGamePrivateBody = z.object({
     disableLooting: z.boolean().optional(),
     showEnemiesOnMap: z.boolean().optional(),
     deathmatchFirstTo: z.union([z.literal(1), z.literal(3), z.literal(5)]).optional(),
+    startingGuns: zStartingGuns.optional(),
     groupHash: z.string().optional(),
     targetGameId: z.string().optional(),
     playerData: z.array(

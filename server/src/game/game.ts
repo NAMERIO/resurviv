@@ -10,6 +10,13 @@ import {
     DefaultPrivateLobbyMiniGame,
     normalizeAmongUsImpostorCount,
 } from "../../../shared/defs/miniGame";
+import {
+    hasStartingGuns,
+    normalizeStartingGuns,
+    type PrivateLobbyStartingGuns,
+    privateLobbyMiniGameUsesStartingGuns,
+    type StartingGunSlot,
+} from "../../../shared/defs/startingGuns";
 import { GameConfig, TeamMode } from "../../../shared/gameConfig";
 import * as net from "../../../shared/net/net";
 import { GameModeStatus } from "../../../shared/types/stats";
@@ -87,6 +94,10 @@ export interface JoinTokenData {
     };
 }
 
+const EnemyRevealInterval = 30;
+const EnemyRevealFirstDelay = 1;
+const EnemyRevealExcludedMiniGames = ["hide_and_seek", "infected", "among_us"];
+
 export class Game {
     started = false;
     stopped = false;
@@ -111,6 +122,10 @@ export class Game {
     disablePerks: boolean;
     disableLooting: boolean;
     showEnemiesOnMap: boolean;
+    startingGuns: PrivateLobbyStartingGuns;
+    startingGunsEnabled: boolean;
+    startingGunBags: Record<StartingGunSlot, string[]> = { primary: [], secondary: [] };
+    startingGunPicks: Record<StartingGunSlot, string[]> = { primary: [], secondary: [] };
     infectedHumansWon = false;
     hideAndSeekHidersWon = false;
     amongUsWinningRole?: AmongUsRole;
@@ -222,6 +237,11 @@ export class Game {
         this.disablePerks = this.miniGame === "gun_game" || !!config.disablePerks;
         this.disableLooting = this.miniGame === "gun_game" || !!config.disableLooting;
         this.showEnemiesOnMap = config.showEnemiesOnMap !== false;
+        this.startingGuns = normalizeStartingGuns(config.startingGuns);
+        this.startingGunsEnabled =
+            this.arenaPrivate &&
+            privateLobbyMiniGameUsesStartingGuns(this.miniGame) &&
+            hasStartingGuns(this.startingGuns);
 
         if (this.arenaPrivate && Config.replays.enabled) {
             this.recorder = new Recorder(this);
@@ -330,6 +350,64 @@ export class Game {
         this.updateData();
     }
 
+    getStartingGun(slot: StartingGunSlot, teamSlot: number): string | undefined {
+        const pool = this.startingGuns[slot];
+        if (!this.startingGunsEnabled || pool.length === 0) return undefined;
+        if (pool.length === 1) return pool[0];
+
+        const drawFromBag = () => {
+            const bag = this.startingGunBags[slot];
+            if (bag.length === 0) {
+                bag.push(...pool);
+                util.shuffleArray(bag);
+            }
+            return bag.pop()!;
+        };
+
+        if (teamSlot < 0) return drawFromBag();
+
+        const picks = this.startingGunPicks[slot];
+        while (picks.length <= teamSlot) {
+            picks.push(drawFromBag());
+        }
+        return picks[teamSlot];
+    }
+
+    updateEnemyReveal(dt: number) {
+        if (
+            !this.arenaPrivate ||
+            this.showEnemiesOnMap ||
+            !this.started ||
+            this.over ||
+            this.arenaStartLockTimer > 0 ||
+            this.map.amongUsMode ||
+            EnemyRevealExcludedMiniGames.includes(this.miniGame ?? "")
+        ) {
+            for (const player of this.playerBarn.players) {
+                player.enemyRevealTicker = EnemyRevealFirstDelay;
+            }
+            return;
+        }
+
+        const livingPlayers = this.playerBarn.livingPlayers;
+        for (const player of this.playerBarn.players) {
+            if (player.dead || player.spectatorOnly) continue;
+            if (player.disconnected || player.awaitingSelection) {
+                player.enemyRevealTicker = EnemyRevealFirstDelay;
+                continue;
+            }
+
+            player.enemyRevealTicker -= dt;
+            if (player.enemyRevealTicker > 0) continue;
+            player.enemyRevealTicker = EnemyRevealInterval;
+
+            for (const enemy of livingPlayers) {
+                if (enemy.teamId === player.teamId || enemy.spectatorOnly) continue;
+                this.playerBarn.addEnemyRevealPing(enemy.pos, player.__id);
+            }
+        }
+    }
+
     update(dt?: number) {
         if (!this.allowJoin) return;
         this.profiler.flush();
@@ -399,6 +477,7 @@ export class Game {
 
         this.profiler.addSample("players");
         this.playerBarn.update(dt);
+        this.updateEnemyReveal(dt);
         this.profiler.endSample();
 
         this.profiler.addSample("npcs");
@@ -896,7 +975,7 @@ export class Game {
             };
 
             this.joinTokens.set(token.token, {
-                expiresAt: now + 10000,
+                expiresAt: now + 30000,
                 userId: token.userId,
                 clanName: token.clanName,
                 clanTagColor: token.clanTagColor,
@@ -973,6 +1052,7 @@ export class Game {
             disableLooting: this.disableLooting,
             showEnemiesOnMap: this.showEnemiesOnMap,
             deathmatchFirstTo: this.deathmatchRoundManager.firstTo,
+            startingGuns: this.startingGuns,
             canJoin: this.canJoin,
             aliveCount: this.aliveCount,
             startedTime: this.startedTime,
