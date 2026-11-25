@@ -155,10 +155,10 @@ test("Spawn visibility round-trips over the network and on timeout", async () =>
         return data;
     };
     expect(readState().perkSelectionPending).toBe(true);
-    expect(player.__gridCells).toHaveLength(0);
+    expect(player.__onGrid).toBe(false);
     player.update(player.perkMenuTicker + 0.1);
     expect(readState().perkSelectionPending).toBe(false);
-    expect(player.__gridCells.length).toBeGreaterThan(0);
+    expect(player.__onGrid).toBe(true);
 });
 
 test("Disconnecting before selection leaves no body or loot in the world", async () => {
@@ -169,7 +169,7 @@ test("Disconnecting before selection leaves no body or loot in the world", async
     game.playerBarn.socketIdToPlayer.set(player.socketId, player);
     game.handleSocketClose(player.socketId);
     expect(player.dead).toBe(true);
-    expect(player.__gridCells).toHaveLength(0);
+    expect(player.__onGrid).toBe(false);
     expect(game.deadBodyBarn.deadBodies).toHaveLength(bodyCount);
     expect(game.lootBarn.loots).toHaveLength(lootCount);
 });

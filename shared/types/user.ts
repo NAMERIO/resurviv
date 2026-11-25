@@ -4,6 +4,7 @@ import type { LootBoxDef } from "../defs/gameObjects/lootBoxDefs";
 import type { FeaturedBundleOffer } from "../utils/featuredBundles";
 import { type Item, ItemStatus, type Loadout, loadoutSchema } from "../utils/loadout";
 import { marketMaxSellPrice } from "../utils/marketPricing";
+import type { WeeklyMeleeOffer } from "../utils/weeklyVault";
 
 export type ProfileResponse =
     | {
@@ -326,6 +327,8 @@ export type GetMarketResponse = {
     soldListings: SoldMarketListing[];
     expiredItemTypes: string[];
     featuredBundles: FeaturedBundleOffer[];
+    weeklyMelee: WeeklyMeleeState | null;
+    weeklyWheel: WeeklyWheelState;
     lootBoxes: ShopLootBox[];
     lootBoxAdStates: Record<string, LootBoxAdState>;
     socialGpRewardClaims: Partial<Record<SocialGpRewardKey, boolean>>;
@@ -479,6 +482,49 @@ export type BuyFeaturedBundleResponse = {
     success: boolean;
     error?: "bundle_not_found" | "already_purchased" | "not_enough_gp" | "server_error";
     gpBalance?: number;
+};
+
+export type WeeklyWheelState = {
+    rotationId: string;
+    resetAt: number;
+    requiredLevel: number;
+    level: number;
+    eligible: boolean;
+    spun: boolean;
+    reward: string | null;
+};
+
+export type SpinWeeklyWheelResponse =
+    | {
+          success: true;
+          reward: string;
+          resetAt: number;
+      }
+    | {
+          success: false;
+          error: "level_required" | "already_spun" | "server_error";
+      };
+
+export type WeeklyMeleeState = WeeklyMeleeOffer & {
+    remainingStock: number;
+    purchased: boolean;
+};
+
+export const zBuyWeeklyMeleeRequest = z.object({
+    rotationId: z.string().min(1).max(128),
+});
+export type BuyWeeklyMeleeRequest = z.infer<typeof zBuyWeeklyMeleeRequest>;
+
+export type BuyWeeklyMeleeResponse = {
+    success: boolean;
+    error?:
+        | "rotation_expired"
+        | "already_purchased"
+        | "sold_out"
+        | "not_enough_gp"
+        | "server_error";
+    gpBalance?: number;
+    weeklyMelee?: WeeklyMeleeState;
 };
 
 export const zCancelAuctionListingRequest = z.object({

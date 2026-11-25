@@ -11,6 +11,8 @@ import type {
     BuyMarketListingRequest,
     BuyMarketListingResponse,
     BuyPremiumPassResponse,
+    BuyWeeklyMeleeRequest,
+    BuyWeeklyMeleeResponse,
     CancelAuctionListingRequest,
     CancelAuctionListingResponse,
     CancelMarketListingRequest,
@@ -61,10 +63,13 @@ import type {
     SkinGift,
     SocialGpRewardKey,
     SoldMarketListing,
+    SpinWeeklyWheelResponse,
     UnlinkAuthRequest,
     UnlinkAuthResponse,
     UsernameRequest,
     UsernameResponse,
+    WeeklyMeleeState,
+    WeeklyWheelState,
 } from "../../shared/types/user";
 import {
     type FeaturedBundleOffer,
@@ -169,6 +174,8 @@ export class Account {
     loadout = loadouts.defaultLoadout();
     items: Item[] = [];
     featuredBundles: FeaturedBundleOffer[] = getFeaturedBundleOffers().offers;
+    weeklyMelee: WeeklyMeleeState | null = null;
+    weeklyWheel: WeeklyWheelState | null = null;
     lootBoxes: ShopLootBox[] = [];
     marketListings: MarketListing[] = [];
     userMarketListings: MarketListing[] = [];
@@ -798,6 +805,8 @@ export class Account {
             this.socialGpRewardClaims = res.socialGpRewardClaims || {};
             this.socialGpRewardClaimsLoaded = true;
             this.featuredBundles = res.featuredBundles || [];
+            this.weeklyMelee = res.weeklyMelee ?? null;
+            this.weeklyWheel = res.weeklyWheel ?? null;
             this.lootBoxes = res.lootBoxes || [];
             this.lootBoxAdStates = res.lootBoxAdStates || {};
             this.marketListings = res.listings || [];
@@ -907,6 +916,59 @@ export class Account {
 
                 this.lootBoxAdStates = res.lootBoxAdStates || this.lootBoxAdStates;
                 this.emit("market", this.marketListings, this.userMarketListings);
+                callback?.();
+            },
+        );
+    }
+
+    spinWeeklyWheel(callback: (error?: string, reward?: string) => void) {
+        this.ajaxRequest(
+            "/api/user/spin_weekly_wheel",
+            {},
+            (err, res: SpinWeeklyWheelResponse) => {
+                if (err || !res?.success) {
+                    errorLogManager.storeGeneric("account", "spin_weekly_wheel_error");
+                    callback((res && !res.success && res.error) || "server_error");
+                    this.loadMarket();
+                    return;
+                }
+
+                if (this.weeklyWheel) {
+                    this.weeklyWheel = {
+                        ...this.weeklyWheel,
+                        spun: true,
+                        reward: res.reward,
+                        resetAt: res.resetAt,
+                    };
+                }
+                callback(undefined, res.reward);
+                this.loadProfile();
+                this.loadMarket();
+            },
+        );
+    }
+
+    buyWeeklyMelee(rotationId: string, callback?: (error?: string) => void) {
+        const args: BuyWeeklyMeleeRequest = { rotationId };
+        this.ajaxRequest(
+            "/api/user/buy_weekly_melee",
+            args,
+            (err, res: BuyWeeklyMeleeResponse) => {
+                if (err || !res?.success) {
+                    errorLogManager.storeGeneric("account", "buy_weekly_melee_error");
+                    callback?.(res?.error || "server_error");
+                    this.loadMarket();
+                    return;
+                }
+
+                if (typeof res.gpBalance === "number") {
+                    this.gpBalance = res.gpBalance;
+                    this.emit("gpBalance", this.gpBalance);
+                }
+                this.weeklyMelee = res.weeklyMelee ?? null;
+                this.emit("newItemsAwarded");
+                this.loadProfile();
+                this.loadMarket();
                 callback?.();
             },
         );

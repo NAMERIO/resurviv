@@ -22,10 +22,19 @@ import { renderFreeFallShopCard } from "../freeFallTicket/shopCard";
 import { createLootPreview, helpers } from "../helpers";
 import type { Localization } from "./localization";
 import { MenuModal } from "./menuModal";
+import { VaultWheelCarousel } from "./vaultWheelCarousel";
 
-type ShopTab = "shop" | "buy" | "sell" | "auction";
+type ShopTab = "shop" | "vault" | "buy" | "sell" | "auction";
 type MarketSort = "price" | "item" | "rarity";
 type MarketOrder = "lowhigh" | "highlow";
+
+function formatDaysHoursMinutes(ms: number) {
+    const totalMinutes = Math.max(0, Math.floor(ms / 60000));
+    const days = Math.floor(totalMinutes / 1440);
+    const hours = Math.floor((totalMinutes % 1440) / 60);
+    const minutes = totalMinutes % 60;
+    return `${days}d ${hours}h ${minutes}m`;
+}
 
 type Listing = {
     id?: string;
@@ -140,6 +149,13 @@ export class ShopMenu {
     auctionBidRefreshAt = 0;
     lootBoxRevealTimeoutId: number | null = null;
     openingLootBox = false;
+    weeklyWheelSpinning = false;
+    weeklyMeleeBuying = false;
+    vaultRefreshRequestedFor = 0;
+    wheelCarousel = new VaultWheelCarousel(
+        $("#vault-wheel-content"),
+        $("#vault-wheel-carousel"),
+    );
     pendingLootBoxRewardConfirmation = false;
     featuredBundlePage = 0;
     featuredBundleSliding = false;
@@ -423,6 +439,9 @@ export class ShopMenu {
         });
 
         $("#tab-shop").on("click", () => this.setTab("shop"));
+        $("#tab-vault").on("click", () => this.setTab("vault"));
+        $("#vault-wheel-spin").on("click", () => this.handleWeeklyWheelSpin());
+        $("#vault-melee-buy").on("click", () => this.handleWeeklyMeleeBuy());
         $("#tab-market-buy").on("click", () => this.setTab("buy"));
         $("#tab-market-sell").on("click", () => this.setTab("sell"));
         $("#tab-market-auction").on("click", () => this.setTab("auction"));
@@ -581,19 +600,27 @@ export class ShopMenu {
     setTab(tab: ShopTab) {
         this.activeTab = tab;
         $(
-            "#tab-shop, #tab-market-buy, #tab-market-sell, #tab-market-auction",
+            "#tab-shop, #tab-vault, #tab-market-buy, #tab-market-sell, #tab-market-auction",
         ).removeClass("store-tab-selected");
         const tabSelector =
-            tab === "buy"
-                ? "#tab-market-buy"
-                : tab === "sell"
-                  ? "#tab-market-sell"
-                  : tab === "auction"
-                    ? "#tab-market-auction"
-                    : "#tab-shop";
+            tab === "vault"
+                ? "#tab-vault"
+                : tab === "buy"
+                  ? "#tab-market-buy"
+                  : tab === "sell"
+                    ? "#tab-market-sell"
+                    : tab === "auction"
+                      ? "#tab-market-auction"
+                      : "#tab-shop";
         $(tabSelector).addClass("store-tab-selected");
 
         const shopVisible = tab === "shop";
+        const vaultVisible = tab === "vault";
+        const marketVisible = !shopVisible && !vaultVisible;
+        this.modal.selector.toggleClass(
+            "vault-locked",
+            vaultVisible && !this.account.loggedIn,
+        );
         this.modal.selector.toggleClass(
             "shop-bundles-public-preview",
             shopVisible && !this.account.loggedIn,
@@ -607,9 +634,10 @@ export class ShopMenu {
             !this.account.loggedIn,
         );
         $(".iap-container").css("display", shopVisible ? "flex" : "none");
-        $(".market-container").css("display", shopVisible ? "none" : "flex");
+        $(".market-container").css("display", marketVisible ? "flex" : "none");
+        $(".vault-container").css("display", vaultVisible ? "flex" : "none");
         $(".market-locked-container").css("display", "none");
-        if (!shopVisible) {
+        if (marketVisible) {
             if (tab === "auction") {
                 this.renderAuction();
             } else {
@@ -815,6 +843,8 @@ export class ShopMenu {
         this.renderFeatured();
         this.renderLootBoxes();
         this.renderBalance();
+        this.renderWeeklyMelee();
+        this.renderWeeklyWheel();
         renderFreeFallShopCard(this.getActiveTicket());
         this.syncFilterLabels();
         this.setTab(this.activeTab);
@@ -840,6 +870,207 @@ export class ShopMenu {
 
     getTicketFreeText() {
         return this.localization.translate("shop-ticket-free") || "FREE";
+    }
+
+    getItemDisplayName(itemType: string) {
+        return (
+            this.localization.translate(`game-${itemType}`) ||
+            (GameObjectDefs[itemType] as any)?.name ||
+            itemType
+        );
+    }
+
+    handleWeeklyMeleeBuy() {
+        const melee = this.account.weeklyMelee;
+        if (
+            this.weeklyMeleeBuying ||
+            !melee ||
+            !this.account.loggedIn ||
+            melee.purchased ||
+            melee.remainingStock <= 0 ||
+            this.account.gpBalance < melee.price
+        ) {
+            return;
+        }
+
+        this.weeklyMeleeBuying = true;
+        this.renderWeeklyMelee();
+        this.account.buyWeeklyMelee(melee.id, (error) => {
+            this.weeklyMeleeBuying = false;
+            this.renderWeeklyMelee();
+            if (error) this.showMarketError(error);
+        });
+    }
+
+    handleWeeklyWheelSpin() {
+        const wheel = this.account.weeklyWheel;
+        if (
+            !this.account.loggedIn ||
+            !wheel ||
+            !wheel.eligible ||
+            wheel.spun ||
+            this.weeklyWheelSpinning
+        ) {
+            return;
+        }
+
+        this.weeklyWheelSpinning = true;
+        this.renderWeeklyWheel();
+
+        this.account.spinWeeklyWheel((error, reward) => {
+            if (error || !reward) {
+                this.weeklyWheelSpinning = false;
+                this.renderWeeklyWheel();
+                this.showMarketError(error || "server_error");
+                return;
+            }
+
+            $("#vault-wheel-result").removeClass("visible");
+            this.wheelCarousel.spin(() => {
+                this.wheelCarousel.showReward(reward, true);
+                this.weeklyWheelSpinning = false;
+                this.renderWeeklyWheel();
+                this.account.emit("newItemsAwarded");
+            });
+        });
+    }
+
+    renderWeeklyWheel() {
+        const wheel = this.account.weeklyWheel;
+        const button = $("#vault-wheel-spin");
+
+        if (this.weeklyWheelSpinning) {
+            button.prop("disabled", true).text("Shuffling...");
+            return;
+        }
+
+        const result = $("#vault-wheel-result").addClass("visible");
+
+        if (!this.account.loggedIn) {
+            button.prop("disabled", true).text("Login Required");
+            result.text("Log in to claim your weekly cosmetic.");
+            return;
+        }
+
+        if (!wheel) {
+            button.prop("disabled", true).text("Loading...");
+            result.text("");
+            return;
+        }
+
+        const timeLeft = wheel.resetAt - Date.now();
+        if (timeLeft <= 0) {
+            button.prop("disabled", true).text("Refreshing...");
+            result.text("A new weekly rotation is available.");
+            return;
+        }
+
+        if (wheel.spun) {
+            if (wheel.reward) this.wheelCarousel.showReward(wheel.reward, false);
+            const rewardName = wheel.reward
+                ? this.getItemDisplayName(wheel.reward)
+                : "Cosmetic";
+            button.prop("disabled", true).text("Already Claimed");
+            result.text(
+                `Received: ${rewardName} | Next spin in ${formatDaysHoursMinutes(timeLeft)}`,
+            );
+            return;
+        }
+
+        this.wheelCarousel.clearReward();
+
+        if (!wheel.eligible) {
+            button.prop("disabled", true).text(`Requires Level ${wheel.requiredLevel}`);
+            result.text(`Battle Pass Level ${wheel.level}/${wheel.requiredLevel}`);
+            return;
+        }
+
+        button.prop("disabled", false).text("Shuffle Cosmetics");
+        result.text("Your free weekly spin is available!");
+    }
+
+    renderWeeklyMelee() {
+        const melee = this.account.weeklyMelee;
+        const buyButton = $("#vault-melee-buy").empty();
+
+        if (!melee) {
+            $("#vault-melee-preview").empty();
+            $("#vault-melee-name").text("Weekly melee unavailable.");
+            $("#vault-melee-item").css({ background: "", borderColor: "" });
+            $("#vault-melee-stock").empty();
+            $("#vault-melee-stock-fill").css("width", "0%");
+            $("#vault-melee-timer").empty();
+            buyButton.prop("disabled", true).text("Unavailable");
+            return;
+        }
+
+        const rarityVisuals = helpers.getRarityVisuals(melee.rarity);
+        $("#vault-melee-item").css({
+            background: `radial-gradient(ellipse at center, rgba(255, 255, 255, 0.12) 0%, transparent 55%, rgba(0, 0, 0, 0.22) 100%), ${rarityVisuals.backgroundColor}`,
+            borderColor: rarityVisuals.border,
+        });
+        $("#vault-melee-preview")
+            .empty()
+            .append(createLootPreview(melee.itemType, "vault-melee-sprite"));
+        $("#vault-melee-name").text(this.getItemDisplayName(melee.itemType));
+        $("#vault-melee-stock").text(
+            `${melee.remainingStock} / ${melee.totalStock} remaining`,
+        );
+        const stockPercent = Math.max(
+            0,
+            Math.min(100, (melee.remainingStock / melee.totalStock) * 100),
+        );
+        $("#vault-melee-stock-fill").css("width", `${stockPercent}%`);
+        this.updateWeeklyMeleeTimer();
+
+        const soldOut = melee.remainingStock <= 0;
+        buyButton.prop(
+            "disabled",
+            this.weeklyMeleeBuying ||
+                soldOut ||
+                melee.purchased ||
+                !this.account.loggedIn ||
+                this.account.gpBalance < melee.price,
+        );
+
+        if (melee.purchased) {
+            buyButton.text("Already Purchased");
+        } else if (soldOut) {
+            buyButton.text("Sold Out");
+        } else {
+            buyButton.append(
+                $("<span>")
+                    .addClass("iap-currency-text")
+                    .text(melee.price.toLocaleString()),
+            );
+        }
+    }
+
+    updateWeeklyMeleeTimer() {
+        const melee = this.account.weeklyMelee;
+        if (!melee) return;
+        $("#vault-melee-timer").text(
+            `Refreshes in ${formatDaysHoursMinutes(melee.refreshesAt - Date.now())}`,
+        );
+    }
+
+    updateVaultTimers() {
+        this.renderWeeklyWheel();
+        this.updateWeeklyMeleeTimer();
+
+        if (!this.account.loggedIn || this.weeklyWheelSpinning) return;
+
+        const rotationEndsAt = Math.min(
+            this.account.weeklyWheel?.resetAt ?? Infinity,
+            this.account.weeklyMelee?.refreshesAt ?? Infinity,
+        );
+        if (
+            Date.now() >= rotationEndsAt &&
+            this.vaultRefreshRequestedFor !== rotationEndsAt
+        ) {
+            this.vaultRefreshRequestedFor = rotationEndsAt;
+            this.refreshMarket();
+        }
     }
 
     renderBalance() {
@@ -2306,6 +2537,7 @@ export class ShopMenu {
     }
 
     updateMarketTimers() {
+        this.updateVaultTimers();
         this.renderFeatured();
         $(".market-item-timer").each((_, element) => {
             const timer = $(element);

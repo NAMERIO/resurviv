@@ -500,6 +500,54 @@ export const itemsTable = pgTable(
     (table) => [index("idx_items_user_type").on(table.userId, table.type)],
 );
 
+export const weeklyWheelSpinsTable = pgTable(
+    "weekly_wheel_spins",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        rotationId: text("rotation_id").notNull(),
+        userId: text("user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        itemType: text("item_type").notNull(),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        uniqueIndex("weekly_wheel_rotation_user_unique").on(
+            table.rotationId,
+            table.userId,
+        ),
+    ],
+);
+
+export const weeklyMeleePurchasesTable = pgTable(
+    "weekly_melee_purchases",
+    {
+        id: uuid("id").notNull().primaryKey().defaultRandom(),
+        rotationId: text("rotation_id").notNull(),
+        userId: text("user_id")
+            .notNull()
+            .references(() => usersTable.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        itemType: text("item_type").notNull(),
+        price: integer("price").notNull(),
+        slot: integer("slot").notNull(),
+        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    },
+    (table) => [
+        uniqueIndex("weekly_melee_rotation_user_unique").on(
+            table.rotationId,
+            table.userId,
+        ),
+        uniqueIndex("weekly_melee_rotation_slot_unique").on(table.rotationId, table.slot),
+        check("weekly_melee_slot_check", sql`${table.slot} >= 1`),
+    ],
+);
+
 export const freeFallTicketsTable = pgTable("free_fall_tickets", {
     userId: text("user_id")
         .primaryKey()

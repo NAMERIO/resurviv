@@ -24604,3 +24604,387 @@ div.roulette {
     width: 42px;
   }
 }
+
+#iap-modal .store-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#iap-modal .store-tabs > span {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 10px 12px 10px 42px;
+  box-sizing: border-box;
+  white-space: nowrap;
+  text-align: center;
+  font-size: 18px;
+  background-position: 10px center;
+  background-size: 26px;
+}
+
+#iap-modal .store-tabs > #tab-shop {
+  flex: 1;
+}
+
+#iap-modal .store-tabs > #tab-vault {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 16px;
+}
+
+#iap-modal .store-tabs > #tab-market-buy,
+#iap-modal .store-tabs > #tab-market-auction {
+  flex: 1.3;
+}
+
+#iap-modal .store-tabs > #tab-market-sell {
+  flex: 2.2;
+}
+
+.vault-tab-icon {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  transform: scale(1.8);
+  flex-shrink: 0;
+}
+
+.vault-container {
+  display: none;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.vault-cards {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+
+.vault-card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: 15px;
+  box-sizing: border-box;
+  background: #444444;
+  border: 2px solid #555555;
+  border-radius: 10px;
+  color: #ffffff;
+  text-align: center;
+}
+
+.vault-card h3 {
+  margin: 5px 0 14px;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.45);
+}
+
+.vault-display-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 220px;
+  overflow: hidden;
+  background: linear-gradient(145deg, #303b4b 0%, #242c38 55%, #1b222d 100%);
+  border: 2px solid #555555;
+  border-radius: 8px;
+}
+
+.vault-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  width: 100%;
+  height: 48px;
+  margin-top: auto;
+  padding: 12px 20px;
+  box-sizing: border-box;
+  background: #2196f3;
+  border: none;
+  border-radius: 4px;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.vault-btn:hover:not(:disabled) {
+  background: #42a5f5;
+}
+
+.vault-btn:disabled {
+  background: #555555;
+  color: #aaaaaa;
+  cursor: not-allowed;
+}
+
+#vault-melee-item {
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+#vault-melee-preview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+#vault-melee-preview .vault-melee-sprite {
+  width: 100%;
+  height: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain !important;
+  scale: 1.2;
+  filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.45));
+}
+
+#vault-melee-name {
+  margin: 8px 0 0;
+  color: #ffffff;
+  font-size: 19px;
+  font-weight: bold;
+  text-shadow: 0 2px 5px #000000;
+}
+
+#vault-melee-stock {
+  margin-top: 12px;
+  color: #ffd966;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+#vault-melee-stock-bar {
+  width: 65%;
+  height: 7px;
+  margin: 7px auto 2px;
+  overflow: hidden;
+  background: #292929;
+  border: 1px solid #555555;
+  border-radius: 4px;
+}
+
+#vault-melee-stock-fill {
+  width: 0%;
+  height: 100%;
+  background: #83b84d;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+#vault-melee-timer {
+  margin: 6px 0 15px;
+  color: #cccccc;
+  font-size: 14px;
+}
+
+#vault-melee-buy {
+  padding: 8px 12px;
+  background: #40532d;
+  border: 2px solid #718e42;
+}
+
+#vault-melee-buy:hover:not(:disabled) {
+  background: #536b38;
+}
+
+#vault-melee-buy:disabled {
+  background: #40532d;
+  opacity: 0.85;
+}
+
+#vault-melee-buy .iap-currency-text {
+  display: block;
+  background: linear-gradient(
+    180deg,
+    #fff5a3 0%,
+    #e8e65b 35%,
+    #c5bd19 49%,
+    #f4ed70 53%,
+    #e4dc39 75%,
+    #b9ad20 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 26px;
+  font-weight: 900;
+  text-shadow: none;
+}
+
+#vault-melee-buy .iap-currency-text::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translateY(-50%);
+  background: url("../img/gui/currency-golden-potato.svg") center / contain no-repeat;
+}
+
+#vault-wheel-result {
+  min-height: 24px;
+  margin: 10px 0 15px;
+  color: #ffd966;
+  font-size: 17px;
+  font-weight: bold;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#vault-wheel-result.visible {
+  opacity: 1;
+}
+
+.vault-wheel-stage {
+  isolation: isolate;
+  perspective: 800px;
+  transform-style: preserve-3d;
+}
+
+.vault-wheel-carousel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transform-style: preserve-3d;
+}
+
+.vault-mystery-skin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 165px;
+  margin: -82.5px 0 0 -60px;
+  filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.35));
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.vault-mystery-skin.vault-winner {
+  filter: drop-shadow(0 0 15px rgba(255, 215, 80, 0.9))
+    drop-shadow(0 0 30px rgba(255, 180, 40, 0.45));
+  transition: filter 0.4s ease;
+}
+
+.vault-mystery-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.vault-wheel-winner-display {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 165px;
+  scale: 1.4;
+  animation: vaultRewardPop 0.65s ease-out;
+}
+
+.vault-wheel-winner-display.vault-wheel-restored {
+  animation: none;
+}
+
+.vault-wheel-winner-display > .vault-wheel-reward {
+  width: 100%;
+  height: 100%;
+}
+
+.vault-reward-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 500;
+  width: 6px;
+  height: 6px;
+  background: #ffe28a;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #ffc940;
+  pointer-events: none;
+  animation: vaultParticleBurst 0.9s ease-out forwards;
+}
+
+@keyframes vaultRewardPop {
+  0% {
+    opacity: 0;
+    scale: 0.6;
+  }
+
+  70% {
+    opacity: 1;
+    scale: 1.55;
+  }
+
+  100% {
+    scale: 1.4;
+  }
+}
+
+@keyframes vaultParticleBurst {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vault-wheel-winner-display {
+    animation: none;
+  }
+
+  .vault-reward-particle {
+    display: none;
+  }
+}
+
+#iap-modal.vault-locked .vault-card {
+  filter: blur(12px);
+  opacity: 0.65;
+  pointer-events: none;
+  user-select: none;
+}
+
+#iap-modal.vault-locked #lock-shop-container {
+  z-index: 20;
+  pointer-events: none;
+}

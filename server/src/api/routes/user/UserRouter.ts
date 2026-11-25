@@ -1,13 +1,15 @@
-import { createHash } from "node:crypto";
+import { createHash, randomInt } from "node:crypto";
 import { and, eq, gte, ilike, inArray, ne, or, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { FreeFallTicket } from "../../../../../shared/defs/gameObjects/freeFallTicketDefs";
+import { CurrentPassType } from "../../../../../shared/defs/gameObjects/passDefs";
 import {
     type AckSoldMarketListingsResponse,
     type AddFriendResponse,
     type AuctionBidActivity,
     type BuyFeaturedBundleResponse,
     type BuyMarketListingResponse,
+    type BuyWeeklyMeleeResponse,
     type CancelAuctionListingResponse,
     type CancelMarketListingResponse,
     type ClaimLootBoxAdResponse,
@@ -29,11 +31,15 @@ import {
     type SendFriendGpResponse,
     type SendFriendSkinGiftResponse,
     type SkinGift,
+    type SpinWeeklyWheelResponse,
     type UsernameResponse,
+    type WeeklyMeleeState,
+    type WeeklyWheelState,
     zAckSoldMarketListingsRequest,
     zAddFriendRequest,
     zBuyFeaturedBundleRequest,
     zBuyMarketListingRequest,
+    zBuyWeeklyMeleeRequest,
     zCancelAuctionListingRequest,
     zCancelMarketListingRequest,
     zClaimLootBoxAdRequest,
@@ -68,6 +74,13 @@ import {
     getAuctionPriceBounds,
     getMarketPriceBounds,
 } from "../../../../../shared/utils/marketPricing";
+import { passUtil } from "../../../../../shared/utils/passUtil";
+import {
+    getWeeklyMeleeOffer,
+    getWeeklyRotation,
+    WEEKLY_WHEEL_MIN_LEVEL,
+    weeklyWheelPool,
+} from "../../../../../shared/utils/weeklyVault";
 import { Config } from "../../../config";
 import { getHonoIp, validateUserName } from "../../../utils/serverHelpers";
 import {
@@ -94,7 +107,10 @@ import {
     skinGiftTable,
     userAuthIdentityTable,
     userFriendsTable,
+    userPassTable,
     usersTable,
+    weeklyMeleePurchasesTable,
+    weeklyWheelSpinsTable,
 } from "../../db/schema";
 import { checkMarketRedemption } from "../../freeFallTicket/altGuard";
 import {
@@ -124,6 +140,7 @@ const APRIL_THANKS_REWARD_GP = 500;
 const APRIL_THANKS_REWARD_IP_LIMIT = 2;
 const APRIL_THANKS_REWARD_MIN_PLAYTIME_SECONDS = 30;
 const APRIL_THANKS_REWARD_END_AT = new Date("2026-04-26T00:00:00.000Z").getTime();
+const WEEKLY_MELEE_PURCHASE_LOCK_KEY = 78241963;
 const SOCIAL_GP_REWARD_AMOUNT = 75;
 const SOCIAL_GP_REWARDS = {
     github_star: { rewardKey: "social_github_star", gp: SOCIAL_GP_REWARD_AMOUNT },
@@ -630,6 +647,55 @@ async function getCurrentItemHolderCounts(itemTypes: string[], tx: any = db) {
         counts.set(count.type, (counts.get(count.type) ?? 0) + count.holders);
     }
     return counts;
+}
+
+async function getCurrentPassLevel(userId: string, tx: any = db): Promise<number> {
+    const pass = await tx.query.userPassTable.findFirst({
+        where: and(
+            eq(userPassTable.userId, userId),
+            eq(userPassTable.passType, CurrentPassType),
+        ),
+    });
+    return pass ? passUtil.getPassLevelAndXp(pass.passType, pass.totalXp).level : 1;
+}
+
+async function getWeeklyWheelState(userId: string): Promise<WeeklyWheelState> {
+    const rotation = getWeeklyRotation();
+    const [level, existingSpin] = await Promise.all([
+        getCurrentPassLevel(userId),
+        db.query.weeklyWheelSpinsTable.findFirst({
+            where: and(
+                eq(weeklyWheelSpinsTable.userId, userId),
+                eq(weeklyWheelSpinsTable.rotationId, rotation.id),
+            ),
+        }),
+    ]);
+
+    return {
+        rotationId: rotation.id,
+        resetAt: rotation.endsAt,
+        requiredLevel: WEEKLY_WHEEL_MIN_LEVEL,
+        level,
+        eligible: level >= WEEKLY_WHEEL_MIN_LEVEL,
+        spun: !!existingSpin,
+        reward: existingSpin?.itemType ?? null,
+    };
+}
+
+async function getWeeklyMeleeState(userId: string): Promise<WeeklyMeleeState | null> {
+    const offer = getWeeklyMeleeOffer();
+    if (!offer) return null;
+
+    const purchases = await db
+        .select({ userId: weeklyMeleePurchasesTable.userId })
+        .from(weeklyMeleePurchasesTable)
+        .where(eq(weeklyMeleePurchasesTable.rotationId, offer.id));
+
+    return {
+        ...offer,
+        remainingStock: Math.max(0, offer.totalStock - purchases.length),
+        purchased: purchases.some((purchase) => purchase.userId === userId),
+    };
 }
 
 async function buildMarketState(userId: string) {
@@ -1515,10 +1581,68 @@ UserRouter.post("/set_item_status", validateParams(zSetItemStatusRequest), async
     return c.json({}, 200);
 });
 
+UserRouter.post("/spin_weekly_wheel", async (c) => {
+    const user = c.get("user")!;
+    const rotation = getWeeklyRotation();
+
+    try {
+        const result = await db.transaction(
+            async (tx): Promise<SpinWeeklyWheelResponse> => {
+                const level = await getCurrentPassLevel(user.id, tx);
+                if (level < WEEKLY_WHEEL_MIN_LEVEL) {
+                    return { success: false, error: "level_required" };
+                }
+
+                const reward = weeklyWheelPool[randomInt(weeklyWheelPool.length)];
+                const [spin] = await tx
+                    .insert(weeklyWheelSpinsTable)
+                    .values({
+                        rotationId: rotation.id,
+                        userId: user.id,
+                        itemType: reward,
+                    })
+                    .onConflictDoNothing({
+                        target: [
+                            weeklyWheelSpinsTable.rotationId,
+                            weeklyWheelSpinsTable.userId,
+                        ],
+                    })
+                    .returning({ id: weeklyWheelSpinsTable.id });
+                if (!spin) {
+                    return { success: false, error: "already_spun" };
+                }
+
+                await tx.insert(itemsTable).values({
+                    userId: user.id,
+                    type: reward,
+                    source: `weekly_wheel:${rotation.id}`,
+                    timeAcquired: Date.now(),
+                    maker: getItemMakerName(user),
+                    status: ItemStatus.New,
+                });
+
+                return { success: true, reward, resetAt: rotation.endsAt };
+            },
+        );
+
+        return c.json<SpinWeeklyWheelResponse>(result, 200);
+    } catch (err) {
+        server.logger.error("/api/user/spin_weekly_wheel error", err);
+        return c.json<SpinWeeklyWheelResponse>(
+            { success: false, error: "server_error" },
+            500,
+        );
+    }
+});
+
 UserRouter.post("/get_market", async (c) => {
     const user = c.get("user")!;
     const market = await buildMarketState(user.id);
-    const socialGpRewardClaims = await getSocialGpRewardClaims(user.id);
+    const [socialGpRewardClaims, weeklyMelee, weeklyWheel] = await Promise.all([
+        getSocialGpRewardClaims(user.id),
+        getWeeklyMeleeState(user.id),
+        getWeeklyWheelState(user.id),
+    ]);
 
     return c.json<GetMarketResponse>(
         {
@@ -1531,6 +1655,8 @@ UserRouter.post("/get_market", async (c) => {
             soldListings: market.soldListings,
             expiredItemTypes: market.expiredItemTypes,
             featuredBundles: market.featuredBundles,
+            weeklyMelee,
+            weeklyWheel,
             lootBoxes: getShopLootBoxes(),
             lootBoxAdStates: await getLootBoxAdStates(user.id),
             socialGpRewardClaims,
@@ -2349,6 +2475,101 @@ UserRouter.post(
         } catch (err) {
             server.logger.error("/api/user/place_auction_bid error", err);
             return c.json<PlaceAuctionBidResponse>(
+                { success: false, error: "server_error" },
+                500,
+            );
+        }
+    },
+);
+
+UserRouter.post(
+    "/buy_weekly_melee",
+    validateParams(zBuyWeeklyMeleeRequest),
+    async (c) => {
+        const user = c.get("user")!;
+        const { rotationId } = c.req.valid("json");
+
+        try {
+            const result = await db.transaction(
+                async (tx): Promise<BuyWeeklyMeleeResponse> => {
+                    await tx.execute(
+                        sql`SELECT pg_advisory_xact_lock(${WEEKLY_MELEE_PURCHASE_LOCK_KEY})`,
+                    );
+
+                    const offer = getWeeklyMeleeOffer();
+                    if (!offer || offer.id !== rotationId) {
+                        return { success: false, error: "rotation_expired" };
+                    }
+
+                    const purchases = await tx
+                        .select({
+                            userId: weeklyMeleePurchasesTable.userId,
+                            slot: weeklyMeleePurchasesTable.slot,
+                        })
+                        .from(weeklyMeleePurchasesTable)
+                        .where(eq(weeklyMeleePurchasesTable.rotationId, offer.id));
+
+                    if (purchases.some((purchase) => purchase.userId === user.id)) {
+                        return { success: false, error: "already_purchased" };
+                    }
+
+                    const usedSlots = new Set(purchases.map((purchase) => purchase.slot));
+                    let slot = 1;
+                    while (usedSlots.has(slot)) slot++;
+                    if (slot > offer.totalStock) {
+                        return { success: false, error: "sold_out" };
+                    }
+
+                    const [buyer] = await tx
+                        .update(usersTable)
+                        .set({ gpBalance: sql`${usersTable.gpBalance} - ${offer.price}` })
+                        .where(
+                            and(
+                                eq(usersTable.id, user.id),
+                                gte(usersTable.gpBalance, offer.price),
+                            ),
+                        )
+                        .returning({
+                            gpBalance: usersTable.gpBalance,
+                            username: usersTable.username,
+                            slug: usersTable.slug,
+                        });
+                    if (!buyer) {
+                        return { success: false, error: "not_enough_gp" };
+                    }
+
+                    await tx.insert(weeklyMeleePurchasesTable).values({
+                        rotationId: offer.id,
+                        userId: user.id,
+                        itemType: offer.itemType,
+                        price: offer.price,
+                        slot,
+                    });
+                    await tx.insert(itemsTable).values({
+                        userId: user.id,
+                        type: offer.itemType,
+                        timeAcquired: Date.now(),
+                        source: `weekly_melee:${offer.id}`,
+                        maker: getItemMakerName(buyer),
+                        status: ItemStatus.New,
+                    });
+
+                    return {
+                        success: true,
+                        gpBalance: buyer.gpBalance,
+                        weeklyMelee: {
+                            ...offer,
+                            remainingStock: offer.totalStock - purchases.length - 1,
+                            purchased: true,
+                        },
+                    };
+                },
+            );
+
+            return c.json<BuyWeeklyMeleeResponse>(result, 200);
+        } catch (err) {
+            server.logger.error("/api/user/buy_weekly_melee error", err);
+            return c.json<BuyWeeklyMeleeResponse>(
                 { success: false, error: "server_error" },
                 500,
             );

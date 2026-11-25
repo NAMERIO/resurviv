@@ -2046,6 +2046,10 @@
           </div>
           <div class="store-tabs">
             <span id="tab-shop" data-l10n="store-tab-shop">Shop</span>
+            <span id="tab-vault">
+              <img src="img/vault-icon.png" class="vault-tab-icon" alt="">
+              Vault
+            </span>
             <span id="tab-market-buy" data-l10n="market-tab-buy-items">Market Buy</span>
             <span id="tab-market-sell" data-l10n="market-tab-sell-items">Market Sell</span>
             <span id="tab-market-auction" data-l10n="market-tab-auction-items">Auctions</span>
@@ -2054,6 +2058,33 @@
           <div id="shop-balance-bar" class="shop-balance-bar">
             <span data-l10n="shop-balance">GP</span>
             <span id="shop-gp-balance">0</span>
+          </div>
+          <div class="vault-container">
+            <div class="vault-cards">
+              <div id="vault-weekly-melee" class="vault-card">
+                <h3>WEEKLY MELEE</h3>
+                <p>Only 7 available this week. One purchase per player each week.</p>
+                <div id="vault-melee-item" class="vault-display-box">
+                  <div id="vault-melee-preview"></div>
+                </div>
+                <div id="vault-melee-name"></div>
+                <div id="vault-melee-stock"></div>
+                <div id="vault-melee-stock-bar">
+                  <div id="vault-melee-stock-fill"></div>
+                </div>
+                <div id="vault-melee-timer"></div>
+                <button id="vault-melee-buy" class="vault-btn" type="button"></button>
+              </div>
+              <div id="vault-weekly-wheel" class="vault-card">
+                <h3>WEEKLY WHEEL</h3>
+                <p>Unlock at Battle Pass Level 16. One free spin every week!</p>
+                <div id="vault-wheel-content" class="vault-display-box vault-wheel-stage">
+                  <div id="vault-wheel-carousel" class="vault-wheel-carousel"></div>
+                </div>
+                <div id="vault-wheel-result" aria-live="polite"></div>
+                <button id="vault-wheel-spin" class="vault-btn" type="button"></button>
+              </div>
+            </div>
           </div>
           <div class="iap-container">
             <div class="iap-gp">
