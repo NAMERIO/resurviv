@@ -19,7 +19,13 @@ const MAX_SIZES: Record<string, number> = {
 
 const MAX_PATH_LENGTH = 500_000;
 
-const IGNORED_SVGS = ["map-decal-flyer-01.svg"];
+const IGNORED_SVGS = [
+    "map-decal-flyer-01.svg",
+    "part-armor-meruem-01.svg",
+    "part-asteroid-blue-purple.svg",
+    "part-asteroid-red.svg",
+    "face-in-love.svg",
+];
 
 function readDirectory(dir: string, filter?: RegExp): string[] {
     let results: string[] = [];
