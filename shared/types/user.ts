@@ -4,7 +4,7 @@ import type { LootBoxDef } from "../defs/gameObjects/lootBoxDefs";
 import type { FeaturedBundleOffer } from "../utils/featuredBundles";
 import { type Item, ItemStatus, type Loadout, loadoutSchema } from "../utils/loadout";
 import { marketMaxSellPrice } from "../utils/marketPricing";
-import type { WeeklyMeleeOffer } from "../utils/weeklyMelee";
+import type { WeeklyMeleeOffer } from "../utils/weeklyVault";
 
 export type ProfileResponse =
     | {
@@ -483,6 +483,7 @@ export type BuyFeaturedBundleResponse = {
     error?: "bundle_not_found" | "already_purchased" | "not_enough_gp" | "server_error";
     gpBalance?: number;
 };
+
 export type WeeklyWheelState = {
     rotationId: string;
     resetAt: number;
@@ -492,6 +493,7 @@ export type WeeklyWheelState = {
     spun: boolean;
     reward: string | null;
 };
+
 export type SpinWeeklyWheelResponse =
     | {
           success: true;
@@ -500,9 +502,9 @@ export type SpinWeeklyWheelResponse =
       }
     | {
           success: false;
-          error: "level_required" | "no_rewards" | "already_spun" | "server_error";
-          level?: number;
+          error: "level_required" | "already_spun" | "server_error";
       };
+
 export type WeeklyMeleeState = WeeklyMeleeOffer & {
     remainingStock: number;
     purchased: boolean;
@@ -511,7 +513,6 @@ export type WeeklyMeleeState = WeeklyMeleeOffer & {
 export const zBuyWeeklyMeleeRequest = z.object({
     rotationId: z.string().min(1).max(128),
 });
-
 export type BuyWeeklyMeleeRequest = z.infer<typeof zBuyWeeklyMeleeRequest>;
 
 export type BuyWeeklyMeleeResponse = {
@@ -523,8 +524,9 @@ export type BuyWeeklyMeleeResponse = {
         | "not_enough_gp"
         | "server_error";
     gpBalance?: number;
-    weeklyMelee?: WeeklyMeleeState | null;
+    weeklyMelee?: WeeklyMeleeState;
 };
+
 export const zCancelAuctionListingRequest = z.object({
     auctionId: z.string().uuid(),
 });

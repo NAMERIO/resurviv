@@ -920,20 +920,16 @@ export class Account {
             },
         );
     }
+
     spinWeeklyWheel(callback: (error?: string, reward?: string) => void) {
         this.ajaxRequest(
             "/api/user/spin_weekly_wheel",
             {},
             (err, res: SpinWeeklyWheelResponse) => {
-                if (err || !res) {
+                if (err || !res?.success) {
+                    errorLogManager.storeGeneric("account", "spin_weekly_wheel_error");
+                    callback((res && !res.success && res.error) || "server_error");
                     this.loadMarket();
-                    callback("server_error");
-                    return;
-                }
-
-                if (!res.success) {
-                    this.loadMarket();
-                    callback(res.error);
                     return;
                 }
 
@@ -945,40 +941,39 @@ export class Account {
                         resetAt: res.resetAt,
                     };
                 }
-
                 callback(undefined, res.reward);
-
                 this.loadProfile();
                 this.loadMarket();
             },
         );
     }
-    buyWeeklyMelee(rotationId: string, callback?: (error?: string) => void) {
-        const request: BuyWeeklyMeleeRequest = { rotationId };
 
+    buyWeeklyMelee(rotationId: string, callback?: (error?: string) => void) {
+        const args: BuyWeeklyMeleeRequest = { rotationId };
         this.ajaxRequest(
             "/api/user/buy_weekly_melee",
-            request,
+            args,
             (err, res: BuyWeeklyMeleeResponse) => {
                 if (err || !res?.success) {
+                    errorLogManager.storeGeneric("account", "buy_weekly_melee_error");
                     callback?.(res?.error || "server_error");
+                    this.loadMarket();
                     return;
                 }
 
-                if (res.gpBalance !== undefined) {
+                if (typeof res.gpBalance === "number") {
                     this.gpBalance = res.gpBalance;
                     this.emit("gpBalance", this.gpBalance);
                 }
-
                 this.weeklyMelee = res.weeklyMelee ?? null;
-
+                this.emit("newItemsAwarded");
                 this.loadProfile();
                 this.loadMarket();
-
                 callback?.();
             },
         );
     }
+
     buyFeaturedBundle(bundleId: string, callback?: (error?: string) => void) {
         const args: BuyFeaturedBundleRequest = { bundleId };
         this.ajaxRequest(

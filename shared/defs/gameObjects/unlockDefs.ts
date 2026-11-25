@@ -261,28 +261,6 @@ const _featuredBundleUnlocks = [
     "outfitNightshadeStalker",
     "outfitSpartan",
 ];
-// Weekly Wheel cosmetic reward pool
-// Add more outfit IDs here whenever needed.
-export const weeklyWheelSkins: readonly string[] = [
-    "outfitSpeedoSunburn",
-    "outfitMojo",
-    "outfitBlueLava",
-    "outfitCrusader",
-    "outfitLasrDisk",
-    "outfitBeachCamo",
-    "outfitForest",
-    "outfitVenom",
-    "outfitUnderbrush",
-    "outfitMellow",
-    "outfitRosePetals",
-    "outfitBengal",
-    "outfitSortaBlue",
-    "outfitPurpleMecha",
-    "outfitItJustMist",
-    "outfitOneInAMelon",
-    "outfitBoet",
-    "outfitFullCircle",
-];
 const _allowedMeleeSkins = [
     "fists",
     "red_gloves",
