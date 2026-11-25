@@ -357,7 +357,6 @@ app.ws<GameSocketData>("/play", {
         }
 
         if (Config.gameOffline) {
-            rejectUpgrade("game_offline");
             res.cork(() => {
                 res.writeStatus("503 Service Unavailable");
                 res.write("503 Service Unavailable");

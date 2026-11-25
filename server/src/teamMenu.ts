@@ -177,6 +177,7 @@ class Room {
         disablePerks: false,
         disableLooting: false,
         showEnemiesOnMap: true,
+        zoneMode: "classic",
     };
 
     arenaOwnerKey?: string;

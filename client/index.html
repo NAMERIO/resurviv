@@ -35,6 +35,492 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,700" rel="stylesheet">
     <link href="css/app.css" rel="stylesheet">
+    <style>
+      .vault-container {
+        display: none;
+      }
+
+      .vault-header {
+        text-align: center;
+        color: white;
+      }
+
+      .vault-cards>div {
+        flex: 1;
+        min-width: 0;
+        padding: 15px;
+        background: #444444;
+        border: 2px solid #555555;
+        border-radius: 10px;
+        text-align: center;
+        color: white;
+        box-sizing: border-box;
+      }
+
+      .vault-cards h3 {
+        font-size: 22px;
+        font-weight: 700;
+        color: #ffffff;
+        text-align: center;
+        margin: 5px 0 14px;
+        text-shadow: 0 2px 3px rgba(0, 0, 0, 0.45);
+      }
+
+      .vault-display-box {
+        height: 220px;
+        background: linear-gradient(145deg, #303b4b 0%, #242c38 55%, #1b222d 100%);
+        border: 2px solid #555555;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      #vault-melee-item {
+        flex-direction: column;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      #vault-melee-preview {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #vault-melee-preview .vault-melee-sprite {
+        width: 100%;
+        height: 100%;
+        background-size: contain !important;
+        background-position: center;
+        background-repeat: no-repeat;
+        scale: 1.2;
+        filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.45));
+      }
+
+      #vault-melee-name {
+        font-size: 23px;
+        font-weight: bold;
+        color: white;
+        text-shadow: 0 2px 5px #000;
+      }
+
+      #vault-melee-stock {
+        margin-top: 12px;
+        font-size: 17px;
+        font-weight: bold;
+        color: #ffd966;
+      }
+
+      #vault-melee-stock-bar {
+        width: 65%;
+        height: 7px;
+        margin: 7px auto 2px;
+        background: #292929;
+        border: 1px solid #555555;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      #vault-melee-stock-fill {
+        width: 0%;
+        height: 100%;
+        background: #83b84d;
+        border-radius: 3px;
+        transition: width 0.4s ease;
+      }
+
+      #vault-melee-timer {
+        margin-top: 6px;
+        font-size: 14px;
+        color: #cccccc;
+      }
+
+      #vault-melee-buy .iap-currency-text {
+        display: block;
+        font-size: 26px;
+        font-weight: 900;
+        background: linear-gradient(180deg,
+            #fff5a3 0%,
+            #e8e65b 35%,
+            #c5bd19 49%,
+            #f4ed70 53%,
+            #e4dc39 75%,
+            #b9ad20 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: none;
+      }
+
+      #vault-melee-buy .iap-currency-text::before {
+        content: "";
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 24px;
+        height: 24px;
+        background: url("img/gui/currency-golden-potato.svg") center / contain no-repeat;
+      }
+
+      #vault-melee-buy {
+        position: relative;
+      }
+
+
+
+      #vault-melee-buy .iap-currency-container {
+        width: 100%;
+        position: relative;
+        box-sizing: border-box;
+      }
+
+      #vault-weekly-melee #vault-melee-buy {
+        background: #40532d;
+        border: 2px solid #718e42;
+        padding: 8px 12px;
+      }
+
+      #vault-weekly-melee #vault-melee-buy:hover:not(:disabled) {
+        background: #536b38;
+      }
+
+      #vault-weekly-melee #vault-melee-buy:disabled {
+        opacity: 0.85;
+      }
+
+      #vault-weekly-melee #vault-melee-name {
+        margin-top: 8px;
+        font-size: 19px;
+        font-weight: bold;
+      }
+
+      #vault-melee-buy {
+        min-height: 44px;
+      }
+
+      #vault-melee-item {
+        overflow: hidden;
+      }
+
+      #vault-melee-name {
+        margin: 8px 0 0;
+        font-size: 20px;
+        font-weight: bold;
+        text-align: center;
+      }
+
+      #vault-melee-item {
+        overflow: hidden;
+      }
+
+
+      #vault-weekly-melee,
+      #vault-weekly-wheel {
+        display: flex;
+        flex-direction: column;
+      }
+
+      #vault-melee-buy,
+      #vault-wheel-spin {
+        margin-top: auto !important;
+        height: 48px;
+        min-height: 48px;
+        max-height: 48px;
+        box-sizing: border-box;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #iap-modal .store-tabs>#tab-vault {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 10px 16px;
+      }
+
+      .vault-tab-icon {
+        width: 26px;
+        height: 26px;
+        object-fit: contain;
+        transform: scale(1.8);
+        flex-shrink: 0;
+      }
+
+      #iap-modal .store-tabs {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      #iap-modal .store-tabs>span {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 0;
+        margin: 0;
+        padding: 10px 12px 10px 42px;
+        box-sizing: border-box;
+        white-space: nowrap;
+        text-align: center;
+        font-size: 18px;
+        background-position: 10px center;
+        background-size: 26px;
+      }
+
+      #iap-modal .store-tabs>#tab-shop,
+      #iap-modal .store-tabs>#tab-vault {
+        flex: 1;
+      }
+
+      #iap-modal .store-tabs>#tab-market-buy,
+      #iap-modal .store-tabs>#tab-market-auction {
+        flex: 1.3;
+      }
+
+      #iap-modal .store-tabs>#tab-market-sell {
+        flex: 2.2;
+      }
+
+      #vault-melee-timer,
+      #vault-wheel-result {
+        margin-bottom: 15px;
+      }
+
+
+      #vault-wheel-result {
+        min-height: 24px;
+        margin-top: 10px;
+        color: #ffd966;
+        font-size: 17px;
+        font-weight: bold;
+        text-align: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      #vault-wheel-result.visible {
+        opacity: 1;
+      }
+
+      .vault-wheel-stage {
+        perspective: 800px;
+        perspective-origin: 50% 50%;
+        transform-style: preserve-3d;
+        isolation: isolate;
+      }
+
+      .vault-wheel-carousel {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        transform-style: preserve-3d;
+        pointer-events: none;
+      }
+
+      .vault-wheel-carousel .vault-mystery-skin {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-left: -60px;
+        margin-top: -82.5px;
+      }
+
+      .vault-mystery-image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        pointer-events: none;
+      }
+
+      .vault-wheel-carousel .vault-mystery-skin.vault-winner {
+        filter: drop-shadow(0 0 15px rgba(255, 215, 80, 0.9)) drop-shadow(0 0 30px rgba(255, 180, 40, 0.45));
+        transition: filter 0.4s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .vault-wheel-winner-display {
+        position: relative;
+        width: 120px;
+        height: 165px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        scale: 1.4;
+        animation: vaultRewardPop 0.65s ease-out;
+      }
+
+      .vault-wheel-winner-display>.vault-wheel-reward {
+        width: 100%;
+        height: 100%;
+      }
+
+      .vault-reward-particle {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 6px;
+        height: 6px;
+        background: #ffe28a;
+        border-radius: 50%;
+        box-shadow: 0 0 8px #ffc940;
+        pointer-events: none;
+        z-index: 500;
+        animation: vaultParticleBurst 0.9s ease-out forwards;
+      }
+
+      .vault-wheel-winner-display.vault-wheel-restored {
+        animation: none;
+        scale: 1.4;
+        opacity: 1;
+      }
+
+      @keyframes vaultParticleBurst {
+        0% {
+          transform: translate(-50%, -50%) scale(0.4);
+          opacity: 1;
+        }
+
+        100% {
+          transform: translate(var(--dx), var(--dy)) scale(0);
+          opacity: 0;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .vault-wheel-winner-display {
+          animation: none;
+        }
+
+        .vault-reward-particle {
+          display: none;
+        }
+      }
+
+      .vault-wheel-carousel .vault-mystery-skin {
+        width: 120px;
+        height: 165px;
+      }
+
+      .vault-wheel-stage .vault-mystery-skin {
+        transform-style: preserve-3d;
+        backface-visibility: visible;
+        will-change: transform;
+      }
+
+      #vault-melee-buy,
+      #vault-wheel-spin {
+        width: 100%;
+        padding: 12px 20px;
+        margin-top: 15px;
+        background: #2196f3;
+        color: #ffffff;
+        border: none;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
+
+      #vault-melee-buy:hover:not(:disabled),
+      #vault-wheel-spin:hover:not(:disabled) {
+        background: #42a5f5;
+      }
+
+      #vault-melee-buy:disabled,
+      #vault-wheel-spin:disabled {
+        background: #555555;
+        color: #aaaaaa;
+        cursor: not-allowed;
+      }
+
+      .vault-mystery-skin {
+        filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.35));
+      }
+
+      .vault-mystery-head,
+      .vault-mystery-body {
+        border: 5px solid #383838;
+        box-sizing: border-box;
+      }
+
+      .vault-mystery-skin {
+        position: relative;
+        width: 120px;
+        height: 165px;
+      }
+
+      .vault-mystery-head {
+        position: absolute;
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        background: #777b84;
+        left: 27px;
+        top: 0;
+        z-index: 2;
+      }
+
+      .vault-mystery-body {
+        position: absolute;
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: #777b84;
+        left: 5px;
+        bottom: 0;
+      }
+
+      .vault-mystery-hand {
+        position: absolute;
+        width: 32px;
+        height: 32px;
+        background: #777b84;
+        border: 5px solid #383838;
+        border-radius: 50%;
+        box-sizing: border-box;
+        bottom: 8px;
+        z-index: 2;
+      }
+
+      .vault-mystery-hand-left {
+        left: -12px;
+      }
+
+      .vault-mystery-hand-right {
+        right: -12px;
+      }
+
+      .vault-mystery-question {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 110px;
+        font-weight: bold;
+        color: #d0d2d8;
+        text-shadow: 3px 4px 8px #17191e;
+      }
+    </style>
     <link href="css/game.css" rel="stylesheet">
     <link href="css/free-fall-ticket.css" rel="stylesheet">
     %VITE_DEBUG_CSS_LINK%
@@ -2050,6 +2536,10 @@
           </div>
           <div class="store-tabs">
             <span id="tab-shop" data-l10n="store-tab-shop">Shop</span>
+            <span id="tab-vault">
+              <img src="img/vault-icon.png" class="vault-tab-icon" alt="">
+              Vault
+            </span>
             <span id="tab-market-buy" data-l10n="market-tab-buy-items">Market Buy</span>
             <span id="tab-market-sell" data-l10n="market-tab-sell-items">Market Sell</span>
             <span id="tab-market-auction" data-l10n="market-tab-auction-items">Auctions</span>
@@ -2059,6 +2549,41 @@
             <span data-l10n="shop-balance">GP</span>
             <span id="shop-gp-balance">0</span>
           </div>
+          <div class="vault-container"
+            style="flex-direction: column; width: 100%; padding: 20px; box-sizing: border-box; gap: 20px;">
+
+            <div class="vault-cards" style="display: flex; gap: 20px; width: 100%;">
+              <div id="vault-weekly-melee">
+                <h3>WEEKLY MELEE</h3>
+                <p>Only 7 available this week. One purchase per player each week.</p>
+                <div id="vault-melee-item" class="vault-display-box">
+                  <div id="vault-melee-preview"></div>
+                </div>
+                <div id="vault-melee-name"></div>
+                <div id="vault-melee-stock"></div>
+                <div id="vault-melee-stock-bar">
+                  <div id="vault-melee-stock-fill"></div>
+                </div>
+                <div id="vault-melee-timer"></div>
+                <button id="vault-melee-buy" type="button">Purchase Melee</button>
+              </div>
+
+              <div id="vault-weekly-wheel">
+                <h3>WEEKLY WHEEL</h3>
+                <p>Unlock at Battle Pass Level 16. One free spin every week!</p>
+                <div id="vault-wheel-content" class="vault-display-box vault-wheel-stage">
+                  <div id="vault-wheel-carousel" class="vault-wheel-carousel"></div>
+                </div>
+
+                <div id="vault-wheel-result" aria-live="polite"></div>
+
+                <button id="vault-wheel-spin" type="button">
+                  Shuffle Cosmetics
+                </button>
+              </div>
+
+            </div> <!-- Closes vault-cards -->
+          </div> <!-- Closes vault-container -->
           <div class="iap-container">
             <div class="iap-gp">
               <div class="spin-overview">
@@ -3359,5 +3884,159 @@
       }
     </script>
     <script type="module" src="src/boot.ts"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const carousel = document.getElementById("vault-wheel-carousel");
+        if (!carousel) return;
+
+        const cosmeticCount = 5;
+
+        for (let i = 0; i < cosmeticCount; i++) {
+          const cosmetic = document.createElement("div");
+          cosmetic.className = "vault-mystery-skin";
+
+          cosmetic.innerHTML = `
+    <img
+      src="img/mystery-cosmetic.png"
+      alt="Mystery Cosmetic"
+      class="vault-mystery-image"
+    />
+  `;
+
+          carousel.appendChild(cosmetic);
+        }
+
+        const cosmetics = Array.from(carousel.children);
+        let rotation = 0;
+        let spinSpeed = 0;
+        let isSpinning = false;
+        let isSnapping = false;
+        let spinStartTime = 0;
+        let spinDuration = 6000;
+        const cosmeticCountForSnap = cosmetics.length;
+        const anglePerCosmetic = (Math.PI * 2) / cosmeticCountForSnap;
+
+        function getNearestCenteredRotation(currentRotation) {
+          return Math.round(currentRotation / anglePerCosmetic) * anglePerCosmetic;
+        }
+
+        function getCenteredCosmeticIndex() {
+          const fullCircle = Math.PI * 2;
+
+          const normalizedRotation =
+            ((rotation % fullCircle) + fullCircle) % fullCircle;
+
+          return (
+            cosmetics.length -
+            Math.round(normalizedRotation / anglePerCosmetic)
+          ) % cosmetics.length;
+        }
+
+        function animateCarousel() {
+          if (isSpinning && !isSnapping) {
+            const elapsed = performance.now() - spinStartTime;
+            const progress = Math.min(elapsed / spinDuration, 1);
+
+            const slowdown = Math.pow(1 - progress, 2);
+
+            rotation += spinSpeed * slowdown;
+
+            if (progress >= 1) {
+              isSpinning = false;
+              spinSpeed = 0;
+
+              isSnapping = true;
+
+              const startRotation = rotation;
+              const targetRotation = getNearestCenteredRotation(rotation);
+              const snapStart = performance.now();
+              const snapDuration = 500;
+
+              function snapToCenter() {
+                const elapsed = performance.now() - snapStart;
+                const t = Math.min(elapsed / snapDuration, 1);
+                const eased = 1 - Math.pow(1 - t, 3);
+
+                rotation = startRotation + (targetRotation - startRotation) * eased;
+
+                if (t < 1) {
+                  requestAnimationFrame(snapToCenter);
+                } else {
+                  rotation = targetRotation;
+                  isSnapping = false;
+                  const winnerIndex = getCenteredCosmeticIndex();
+                  const winner = cosmetics[winnerIndex];
+
+                  if (winner) {
+                    winner.classList.add("vault-winner");
+                  }
+
+                  const result = document.getElementById("vault-wheel-result");
+
+                  if (result) {
+                    result.textContent = "Mystery Cosmetic Revealed!";
+                    result.classList.add("visible");
+                  }
+
+                  const button = document.getElementById("vault-wheel-spin");
+
+                  if (button) {
+                    button.disabled = true;
+                    button.textContent = "Already Claimed";
+                    button.dispatchEvent(new Event("weekly-wheel-finished"));
+                  }
+                }
+              }
+
+              snapToCenter();
+
+
+            }
+          }
+
+          cosmetics.forEach((cosmetic, i) => {
+            const angle = (i / cosmetics.length) * Math.PI * 2 + rotation;
+
+            const x = Math.sin(angle) * 165;
+            const z = Math.cos(angle) * 110;
+
+            const scale = 0.85 + ((z + 110) / 220) * 0.45;
+
+            cosmetic.style.transform =
+              `translate3d(${x}px, 0, ${z}px) scale(${scale})`;
+
+            cosmetic.style.zIndex = String(Math.round(z + 110));
+          });
+
+          requestAnimationFrame(animateCarousel);
+        }
+        const spinButton = document.getElementById("vault-wheel-spin");
+
+        if (spinButton) {
+          spinButton.addEventListener("weekly-wheel-start", () => {
+            if (isSpinning || isSnapping) return;
+
+            cosmetics.forEach((cosmetic) => {
+              cosmetic.classList.remove("vault-winner");
+            });
+
+            const result = document.getElementById("vault-wheel-result");
+
+            if (result) {
+              result.classList.remove("visible");
+              result.textContent = "";
+            }
+
+            isSpinning = true;
+            spinSpeed = 0.18;
+            spinStartTime = performance.now();
+
+            spinButton.disabled = true;
+            spinButton.textContent = "Shuffling...";
+          });
+        }
+        animateCarousel();
+      });
+    </script>
   </body>
 </html>

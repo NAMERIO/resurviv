@@ -1054,20 +1054,24 @@ a:active {
     height: 28px;
   }
 }
+
 @keyframes woodsSpringPulse {
   from {
     background-color: #17a500;
     box-shadow: 0 0 9px #17a500;
   }
+
   50% {
     background-color: #21e700;
     box-shadow: 0 0 18px #21e700;
   }
+
   to {
     background-color: #17a500;
     box-shadow: 0 0 9px #17a500;
   }
 }
+
 .btn-team-queue-woods-spring-mode {
   background-repeat: no-repeat;
   background-size: 35px;
@@ -3500,10 +3504,12 @@ a:active {
     background-color: #acd5f3;
     -webkit-box-shadow: 0 0 9px #7da2ac;
   }
+
   50% {
     background-color: #7bacd4;
     -webkit-box-shadow: 0 0 18px #668b95;
   }
+
   to {
     background-color: #acd5f3;
     -webkit-box-shadow: 0 0 9px #7da2ac;
@@ -3534,29 +3540,35 @@ a:active {
     border-bottom: 2px solid #563619 !important;
   }
 }
+
 @keyframes potato-pulse {
   from {
     background-color: #8f5827;
     -webkit-box-shadow: 0 0 9px #8f5827;
   }
+
   50% {
     background-color: #bc712e;
     -webkit-box-shadow: 0 0 18px #bc712e;
   }
+
   to {
     background-color: #8f5827;
     -webkit-box-shadow: 0 0 9px #8f5827;
   }
 }
+
 @keyframes twighlight-pulse {
   from {
     background-color: #2a1a3c;
     -webkit-box-shadow: 0 0 9px #2a1a3c;
   }
+
   50% {
     background-color: #3b1d5f;
     -webkit-box-shadow: 0 0 18px #3b1d5f;
   }
+
   to {
     background-color: #2a1a3c;
     -webkit-box-shadow: 0 0 9px #2a1a3c;
@@ -3580,15 +3592,18 @@ a:active {
     background-color: #d45500;
     -webkit-box-shadow: 0 0 9px #d45500;
   }
+
   50% {
     background-color: #ff5c00;
     -webkit-box-shadow: 0 0 18px #ff5c00;
   }
+
   to {
     background-color: #d45500;
     -webkit-box-shadow: 0 0 9px #d45500;
   }
 }
+
 .btn-mode-desert {
   animation-name: desert-pulse;
   border-bottom: 4px solid #853500 !important;
@@ -3612,20 +3627,24 @@ a:active {
     border-bottom: 2px solid #696726 !important;
   }
 }
+
 @keyframes woods-pulse {
   from {
     background-color: #908d2d;
     -webkit-box-shadow: 0 0 9px #908d2d;
   }
+
   50% {
     background-color: #cbc526;
     -webkit-box-shadow: 0 0 18px #cbc526;
   }
+
   to {
     background-color: #908d2d;
     -webkit-box-shadow: 0 0 9px #908d2d;
   }
 }
+
 .btn-mode-faction {
   animation-name: faction-pulse;
   animation-duration: 4s;
@@ -3637,41 +3656,49 @@ a:active {
     border-bottom: 2px solid #00448a;
   }
 }
+
 @keyframes faction-pulse {
   from {
     background-color: #007eff;
     border-bottom-color: #00448a;
     -webkit-box-shadow: 0 0 9px #007eff;
   }
+
   50% {
     background-color: #c00;
     border-bottom-color: #8d0000;
     -webkit-box-shadow: 0 0 18px #c00;
   }
+
   to {
     background-color: #007eff;
     border-bottom-color: #00448a;
     -webkit-box-shadow: 0 0 9px #007eff;
   }
 }
+
 .btn-mode-savannah {
   animation-name: savannah-pulse;
   border-bottom: 4px solid #947c1c;
 }
+
 @keyframes savannah-pulse {
   from {
     background-color: #c7a726;
     -webkit-box-shadow: 0 0 9px #c7a726;
   }
+
   50% {
     background-color: #fbd10b;
     -webkit-box-shadow: 0 0 18px #fbd10b;
   }
+
   to {
     background-color: #c7a726;
     -webkit-box-shadow: 0 0 9px #c7a726;
   }
 }
+
 @media (max-width: 850px), (max-width: 900px) and (min-resolution: 3dppx) {
   .btn-mode-savannah {
     border-bottom: 2px solid #947c1c;
@@ -3688,10 +3715,12 @@ a:active {
     background-color: #b262b4;
     -webkit-box-shadow: 0 0 9px #b262b4;
   }
+
   50% {
     background-color: #e872ec;
     -webkit-box-shadow: 0 0 18px #f066f5;
   }
+
   to {
     background-color: #b262b4;
     -webkit-box-shadow: 0 0 9px #b262b4;
@@ -3714,34 +3743,41 @@ a:active {
     border-bottom: 2px solid #2d0000;
   }
 }
+
 @keyframes bloodPulse {
   from {
     background-color: #500000;
     -webkit-box-shadow: 0 0 9px #500000;
   }
+
   50% {
     background-color: #750000;
     -webkit-box-shadow: 0 0 18px #750000;
   }
+
   to {
     background-color: #500000;
     -webkit-box-shadow: 0 0 9px #500000;
   }
 }
+
 @keyframes cobaltPulse {
   from {
     background-color: #2e3742;
     -webkit-box-shadow: 0 0 9px #2e3742;
   }
+
   50% {
     background-color: #4d5a68;
     -webkit-box-shadow: 0 0 18px #4d5a68;
   }
+
   to {
     background-color: #2e3742;
     -webkit-box-shadow: 0 0 9px #2e3742;
   }
 }
+
 .btn-mode-cobalt {
   animation-name: cobaltPulse;
   border-bottom: 4px solid #1d252e;
@@ -3759,15 +3795,18 @@ a:active {
     background-color: #a1a1cd;
     -webkit-box-shadow: 0 0 9px #c0c0db;
   }
+
   50% {
     background-color: #c0c0db;
     -webkit-box-shadow: 0 0 18px #a1a1cd;
   }
+
   to {
     background-color: #a1a1cd;
     -webkit-box-shadow: 0 0 9px #c0c0db;
   }
 }
+
 .btn-mode-birthday {
   /* for desktop */
   animation-name: birthdayPulse;
@@ -3787,15 +3826,18 @@ a:active {
     background-color: #a7e3ff;
     -webkit-box-shadow: 0 0 9px #b0d1d8;
   }
+
   50% {
     background-color: #a7e3ff;
     -webkit-box-shadow: 0 0 18px #b0d1d8;
   }
+
   to {
     background-color: #a7e3ff;
     -webkit-box-shadow: 0 0 9px #b0d1d8;
   }
 }
+
 .btn-mode-snow {
   /* for desktop */
   animation-name: snowPulse;
@@ -3815,15 +3857,18 @@ a:active {
     background-color: #326881;
     -webkit-box-shadow: 0 0 9px #44afc7;
   }
+
   50% {
     background-color: #326881;
     -webkit-box-shadow: 0 0 18px #44afc7;
   }
+
   to {
     background-color: #326881;
     -webkit-box-shadow: 0 0 9px #44afc7;
   }
 }
+
 .btn-mode-perks {
   /* for desktop */
   animation-name: perksPulse;
@@ -3842,6 +3887,7 @@ a:active {
   box-shadow: inset 0 -2px #c95c18 !important;
   background-color: #fe8438 !important;
 }
+
 @media (max-width: 850px), (max-width: 900px), (max-width: 930px) {
   .btn-mode-inferno {
     border-bottom: 2px solid #bd5515;
@@ -3854,10 +3900,12 @@ a:active {
     background-color: #ffe7ba;
     -webkit-box-shadow: 0 0 9px #f8d594;
   }
+
   50% {
     background-color: #ffe0a7;
     -webkit-box-shadow: 0 0 18px #fcd58b;
   }
+
   to {
     background-color: #ffe7ba;
     -webkit-box-shadow: 0 0 9px #f8d594;
@@ -3903,10 +3951,12 @@ a:active {
     background-color: #8f5827;
     -webkit-box-shadow: 0 0 9px #8f5827;
   }
+
   50% {
     background-color: #b56f31;
     -webkit-box-shadow: 0 0 18px #b56f31;
   }
+
   to {
     background-color: #8f5827;
     -webkit-box-shadow: 0 0 9px #8f5827;
@@ -3930,10 +3980,12 @@ a:active {
     background-color: #6f36a5;
     -webkit-box-shadow: 0 0 9px #6f36a5;
   }
+
   50% {
     background-color: #d58b30;
     -webkit-box-shadow: 0 0 18px #d58b30;
   }
+
   to {
     background-color: #6f36a5;
     -webkit-box-shadow: 0 0 9px #6f36a5;
@@ -3957,10 +4009,12 @@ a:active {
     background-color: #4f9f5a;
     -webkit-box-shadow: 0 0 9px #4f9f5a;
   }
+
   50% {
     background-color: #72c66f;
     -webkit-box-shadow: 0 0 18px #72c66f;
   }
+
   to {
     background-color: #4f9f5a;
     -webkit-box-shadow: 0 0 9px #4f9f5a;
@@ -4759,10 +4813,12 @@ a:active {
     transform: rotate(360deg);
   }
 }
+
 @keyframes pass-text-pulse {
   0% {
     color: #93ad3e;
   }
+
   100% {
     color: #93ad3e;
     font-size: 24px;
@@ -4772,6 +4828,7 @@ a:active {
     top: 22px;
   }
 }
+
 .pass-bg-pulse {
   animation: pass-bg-pulse 3s alternate infinite;
 }
@@ -4787,14 +4844,17 @@ a:active {
 .pass-fade-out {
   animation: pass-fade-out 1s;
 }
+
 @keyframes pass-fade-out {
   0% {
     opacity: 1;
   }
+
   100% {
     opacity: 0;
   }
 }
+
 #pass-unlock-tooltip {
   background-color: rgba(0, 0, 0, 0.95);
   border-radius: 6px;
@@ -8954,6 +9014,7 @@ a:active {
     width: auto;
   }
 }
+
 @media (max-width: 1080px), (max-height: 760px) {
   #modal-prestige-arena #modal-prestige-wrapper {
     --arena-modal-scale: 0.9;
@@ -17407,6 +17468,7 @@ div.roulette {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 #iap-modal
@@ -23705,6 +23767,7 @@ div.roulette {
     grid-column: 1 / -1;
   }
 }
+
 @font-face {
   font-family: "Clan Bungee";
   src: url("../fonts/Bungee-Regular.ttf") format("truetype");
@@ -23729,6 +23792,7 @@ div.roulette {
   src: url("../fonts/PressStart2P-Regular.ttf") format("truetype");
   font-display: swap;
 }
+
 #desktop-downloads {
   box-sizing: border-box;
   margin-top: 12px;
@@ -24184,4 +24248,17 @@ div.roulette {
 
 .iap-bundle-discount-ribbon.is-visible {
   display: flex;
+}
+
+#iap-modal.vault-locked #vault-weekly-melee,
+#iap-modal.vault-locked #vault-weekly-wheel {
+  filter: blur(12px);
+  opacity: 0.65;
+  pointer-events: none;
+  user-select: none;
+}
+
+#iap-modal.vault-locked #lock-shop-container {
+  z-index: 20;
+  pointer-events: none;
 }
