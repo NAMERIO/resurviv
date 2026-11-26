@@ -1,4 +1,4 @@
-import { and, eq, gte, or, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, or, sql } from "drizzle-orm";
 import { FreeFallTicketGuard } from "../../../../shared/defs/gameObjects/freeFallTicketDefs";
 import type { FreeFallTicketRefusal } from "../../../../shared/types/user";
 import {
@@ -79,10 +79,32 @@ async function accountsShareIp(
     buyerIps.delete("");
     sellerIps.delete("");
 
-    for (const ip of buyerIps) {
-        if (sellerIps.has(ip)) return true;
-    }
-    return false;
+    const sharedIps = [...buyerIps].filter((ip) => sellerIps.has(ip));
+    if (sharedIps.length === 0) return false;
+
+    const rows: Array<{ ip: string; users: number }> = await tx
+        .select({
+            ip: sql<string>`t.ip`,
+            users: sql<number>`COUNT(DISTINCT t.user_id)::int`,
+        })
+        .from(
+            sql`(
+                SELECT ${ipLogsTable.encodedIp} AS ip, ${ipLogsTable.userId} AS user_id
+                FROM ${ipLogsTable}
+                WHERE ${inArray(ipLogsTable.encodedIp, sharedIps)}
+                UNION ALL
+                SELECT ${ipLogsTable.findGameEncodedIp} AS ip, ${ipLogsTable.userId} AS user_id
+                FROM ${ipLogsTable}
+                WHERE ${inArray(ipLogsTable.findGameEncodedIp, sharedIps)}
+            ) AS t`,
+        )
+        .where(sql`t.user_id IS NOT NULL AND t.user_id <> ''`)
+        .groupBy(sql`t.ip`);
+
+    const usersByIp = new Map(rows.map((row) => [row.ip, row.users]));
+    return sharedIps.some(
+        (ip) => (usersByIp.get(ip) ?? 0) <= FreeFallTicketGuard.maxAccountsPerLinkingIp,
+    );
 }
 
 function betweenUsers(senderColumn: any, recipientColumn: any, a: string, b: string) {

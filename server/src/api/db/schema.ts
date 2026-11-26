@@ -852,6 +852,8 @@ export const ipLogsTable = pgTable(
     (table) => [
         index("name_created_at_idx").on(table.username, table.createdAt),
         index("idx_ip_logs_user_id").on(table.userId),
+        index("idx_ip_logs_encoded_ip").on(table.encodedIp),
+        index("idx_ip_logs_find_game_encoded_ip").on(table.findGameEncodedIp),
     ],
 );
 

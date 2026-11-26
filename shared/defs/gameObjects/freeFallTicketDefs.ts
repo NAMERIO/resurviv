@@ -13,6 +13,7 @@ export const FreeFallTicketGuard = {
     minSellerMatches: 10,
     maxRedemptionsPerSeller: 2,
     maxSellerPayoutPer24h: 30_000,
+    maxAccountsPerLinkingIp: 4,
 } as const;
 
 export function isFreeFallTicketLive(now = Date.now()) {

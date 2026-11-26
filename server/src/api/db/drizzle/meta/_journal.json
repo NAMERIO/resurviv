@@ -92,6 +92,13 @@
       "when": 1795500000000,
       "tag": "0044_weekly_vault",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1796800000000,
+      "tag": "0045_ip_logs_ip_indexes",
+      "breakpoints": true
     }
   ]
 }
