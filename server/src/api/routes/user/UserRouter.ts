@@ -2095,8 +2095,6 @@ UserRouter.post(
     async (c) => {
         const user = c.get("user")!;
         const { listingId, payWithGp } = c.req.valid("json");
-        const buyerIp = getHonoIp(c, Config.apiServer.proxyIPHeader);
-        const buyerIpHash = buyerIp ? hashIp(buyerIp) : "";
 
         try {
             const result = await db.transaction(async (tx) => {
@@ -2131,7 +2129,6 @@ UserRouter.post(
                     await lockTicketSpending(tx, user.id);
                     const refusal = await checkMarketRedemption(tx, {
                         buyerUserId: user.id,
-                        buyerIpHash,
                         listing,
                     });
                     if (refusal) {

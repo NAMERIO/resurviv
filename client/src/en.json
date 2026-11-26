@@ -243,7 +243,6 @@
   "shop-market-error-item_ticket_locked": "Items from a Free Fall Ticket can't be sold or gifted.",
   "shop-market-error-ticket_listing_too_new": "This listing is under an hour old, so the ticket can't pay for it yet. You can still buy it with GP.",
   "shop-market-error-ticket_seller_new": "This seller's account is too new for the ticket. You can still buy it with GP.",
-  "shop-market-error-ticket_seller_linked": "This seller is linked to your account, so the ticket can't pay for it. You can still buy it with GP.",
   "shop-market-error-ticket_seller_limit": "Your ticket has reached its limit with this seller. You can still buy it with GP.",
   "shop-market-error-ticket_daily_limit": "Your ticket has hit today's limit for market items. You can still buy it with GP.",
   "shop-ticket-free": "FREE",

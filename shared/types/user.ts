@@ -343,7 +343,6 @@ export type FreeFallTicketState = {
 export type FreeFallTicketRefusal =
     | "ticket_listing_too_new"
     | "ticket_seller_new"
-    | "ticket_seller_linked"
     | "ticket_seller_limit"
     | "ticket_daily_limit";
 

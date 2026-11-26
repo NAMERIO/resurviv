@@ -16,9 +16,6 @@ const cleanSale: MarketRedemptionFacts = {
     listingAgeMs: FreeFallTicketGuard.minListingAgeMs,
     sellerAccountAgeMs: FreeFallTicketGuard.minSellerAccountAgeMs,
     sellerMatches: FreeFallTicketGuard.minSellerMatches,
-    sharedIp: false,
-    friends: false,
-    giftHistory: false,
     redemptionsFromSeller: 0,
     gpPaidOutLast24h: 0,
 };
@@ -29,9 +26,6 @@ describe("Free Fall Ticket alt guard", () => {
     });
 
     test.each([
-        [{ sharedIp: true }, "ticket_seller_linked"],
-        [{ friends: true }, "ticket_seller_linked"],
-        [{ giftHistory: true }, "ticket_seller_linked"],
         [{ listingAgeMs: 0 }, "ticket_listing_too_new"],
         [{ sellerAccountAgeMs: 0 }, "ticket_seller_new"],
         [{ sellerMatches: 0 }, "ticket_seller_new"],
