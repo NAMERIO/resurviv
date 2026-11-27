@@ -112,7 +112,7 @@ import {
     weeklyMeleePurchasesTable,
     weeklyWheelSpinsTable,
 } from "../../db/schema";
-import { checkMarketRedemption } from "../../freeFallTicket/altGuard";
+// import { checkMarketRedemption } from "../../freeFallTicket/altGuard";
 import {
     countFreeCratesLast24h,
     getActiveTicket,
@@ -2127,13 +2127,13 @@ UserRouter.post(
                 const ticket = payWithGp ? undefined : await getActiveTicket(tx, user.id);
                 if (ticket) {
                     await lockTicketSpending(tx, user.id);
-                    const refusal = await checkMarketRedemption(tx, {
-                        buyerUserId: user.id,
-                        listing,
-                    });
-                    if (refusal) {
-                        return { ok: false as const, error: refusal };
-                    }
+                    // const refusal = await checkMarketRedemption(tx, {
+                    //     buyerUserId: user.id,
+                    //     listing,
+                    // });
+                    // if (refusal) {
+                    //     return { ok: false as const, error: refusal };
+                    // }
                 } else if (buyer.gpBalance < listing.price) {
                     return { ok: false as const, error: "not_enough_gp" as const };
                 }
