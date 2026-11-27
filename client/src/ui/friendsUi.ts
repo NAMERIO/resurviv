@@ -804,7 +804,11 @@ export class FriendsUi {
                         const message =
                             error === "not_enough_gp"
                                 ? "You do not have enough GP."
-                                : "Could not send GP.";
+                                : error === "shop_banned"
+                                  ? "You are banned from sending GP."
+                                  : error === "recipient_shop_banned"
+                                    ? "This player can't receive GP."
+                                    : "Could not send GP.";
                         $("#friend-action-title").text("Send GP Failed");
                         $("#friend-action-text").text(message);
                         $("#friend-action-confirm").text("Close");
@@ -829,7 +833,11 @@ export class FriendsUi {
                                 ? "You do not own one of those items anymore."
                                 : error === "invalid_item"
                                   ? "Only market-sellable cosmetics can be gifted."
-                                  : "Could not send items.";
+                                  : error === "shop_banned"
+                                    ? "You are banned from sending items."
+                                    : error === "recipient_shop_banned"
+                                      ? "This player can't receive items."
+                                      : "Could not send items.";
                         $("#friend-action-title").text("Gift Failed");
                         $("#friend-action-text").text(message);
                         $("#friend-skin-list").hide();

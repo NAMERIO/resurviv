@@ -30,6 +30,8 @@ export const enum Command {
     SearchPlayer = "search_player",
     SearchIp = "search_ip",
     UnbanAccount = "unban_account",
+    ShopBan = "shop_ban",
+    ShopUnban = "shop_unban",
     UnbanIp = "unban_ip",
     SetMatchDataName = "set_match_data_name",
     SetAccountName = "set_account_name",

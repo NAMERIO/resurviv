@@ -428,6 +428,14 @@ export class Application {
                     $("#start-gp-display-amount").text(String(this.account.gpBalance));
                 }
             });
+            this.account.addEventListener("shopBanned", (shopBanned: boolean) => {
+                $("#open-store-button")
+                    .toggleClass("shop-banned", shopBanned)
+                    .attr("title", shopBanned ? "You are banned from the shop." : null);
+                if (shopBanned) {
+                    this.shopMenu?.modal.hide();
+                }
+            });
             $("#start-gp-display-amount").text(String(this.account.gpBalance));
             this.newsManager.init();
             this.account.init();
@@ -444,6 +452,7 @@ export class Application {
                 (event) => {
                     event.preventDefault();
                     event.stopImmediatePropagation();
+                    if (this.account.shopBanned) return false;
                     void this.openShopMenu();
                     return false;
                 },

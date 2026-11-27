@@ -216,6 +216,7 @@
   "shop-market-buy-success": "Item purchased successfully.",
   "shop-market-sell-success": "Listing created successfully.",
   "shop-market-cancel-success": "Listing canceled successfully.",
+  "shop-market-error-shop_banned": "You are banned from the shop.",
   "shop-market-error-item_not_owned": "You do not own that item.",
   "shop-market-error-invalid_item": "That item cannot be traded.",
   "shop-market-error-already_listed": "That item is already listed.",

@@ -263,6 +263,7 @@ export class ShopMenu {
 
         $("#start-shop-shortcut, #open-store-button").on("click", (e) => {
             e.preventDefault();
+            if (this.account.shopBanned) return false;
             this.modal.show(true);
             return false;
         });

@@ -12,6 +12,8 @@ import {
     zSearchIpParams,
     zSetAccountNameParams,
     zSetMatchDataNameParams,
+    zShopBanAccountParams,
+    zShopUnbanAccountParams,
     zUnbanAccountParams,
     zUnbanIpParams,
 } from "../../../../../shared/types/moderation";
@@ -29,6 +31,7 @@ import {
     userAuthIdentityTable,
     usersTable,
 } from "../../db/schema";
+import { cancelSellerListings } from "../../marketListings";
 import { sanitizeSlug } from "../user/auth/authUtils";
 
 async function disconnectBannedIp(encodedIp: string) {
@@ -208,6 +211,75 @@ export const ModerationRouter = new Hono()
             },
             200,
         );
+    })
+    .post("/shop_ban", validateParams(zShopBanAccountParams), async (c) => {
+        const { slug, ban_reason: banReason, executor_id } = c.req.valid("json");
+
+        const user = await db.query.usersTable.findFirst({
+            where: eq(usersTable.slug, slug),
+            columns: {
+                id: true,
+                shopBanned: true,
+            },
+        });
+
+        if (!user) {
+            return c.json({ message: "No user found with that slug." }, 200);
+        }
+
+        if (user.shopBanned) {
+            return c.json({ message: "User is already shop banned." }, 200);
+        }
+
+        const canceled = await db.transaction(async (tx) => {
+            await tx
+                .update(usersTable)
+                .set({
+                    shopBanned: true,
+                    shopBanReason: banReason,
+                    shopBannedBy: executor_id,
+                })
+                .where(eq(usersTable.id, user.id));
+
+            return cancelSellerListings(tx, user.id);
+        });
+
+        return c.json(
+            {
+                message: `Shop banned ${slug}. Cancelled ${canceled.listings} market listing(s) and ${canceled.auctions} auction(s).`,
+            },
+            200,
+        );
+    })
+    .post("/shop_unban", validateParams(zShopUnbanAccountParams), async (c) => {
+        const { slug } = c.req.valid("json");
+
+        const user = await db.query.usersTable.findFirst({
+            where: eq(usersTable.slug, slug),
+            columns: {
+                id: true,
+                shopBanned: true,
+            },
+        });
+
+        if (!user) {
+            return c.json({ message: "No user found with that slug." }, 200);
+        }
+
+        if (!user.shopBanned) {
+            return c.json({ message: "User is not shop banned." }, 200);
+        }
+
+        await db
+            .update(usersTable)
+            .set({
+                shopBanned: false,
+                shopBanReason: "",
+                shopBannedBy: "",
+            })
+            .where(eq(usersTable.id, user.id));
+
+        return c.json({ message: `Removed shop ban from ${slug}.` }, 200);
     })
     .post("/ban_ip", validateParams(zBanIpParams), async (c) => {
         const {

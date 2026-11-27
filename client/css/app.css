@@ -5167,6 +5167,16 @@ a:active {
   z-index: 5;
 }
 
+#open-store-button.shop-banned {
+  cursor: not-allowed;
+}
+
+#open-store-button.shop-banned #start-shop-shortcut {
+  filter: grayscale(1) brightness(0.7);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 #open-arena-button {
   display: none;
   position: absolute;

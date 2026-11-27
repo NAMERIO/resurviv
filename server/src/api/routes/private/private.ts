@@ -542,6 +542,7 @@ type CoinFlipUser = {
     slug: string;
     username: string;
     gpBalance: number;
+    shopBanned: boolean;
 };
 
 type CoinFlipHistoryPlayer = Pick<CoinFlipUser, "id" | "slug" | "username">;
@@ -556,6 +557,7 @@ async function findDiscordLinkedUser(
             slug: usersTable.slug,
             username: usersTable.username,
             gpBalance: usersTable.gpBalance,
+            shopBanned: usersTable.shopBanned,
         })
         .from(userAuthIdentityTable)
         .innerJoin(usersTable, eq(userAuthIdentityTable.userId, usersTable.id))
@@ -1263,7 +1265,12 @@ export const PrivateRouter = new Hono<Context>()
                         .set({
                             gpBalance: sql`${usersTable.gpBalance} + ${sideQuestGpGain}`,
                         })
-                        .where(eq(usersTable.id, userId));
+                        .where(
+                            and(
+                                eq(usersTable.id, userId),
+                                eq(usersTable.shopBanned, false),
+                            ),
+                        );
                 }
 
                 if (xpGain <= 0) return;
@@ -1339,7 +1346,12 @@ export const PrivateRouter = new Hono<Context>()
                         .set({
                             gpBalance: sql`${usersTable.gpBalance} + ${passGpGain}`,
                         })
-                        .where(eq(usersTable.id, userId));
+                        .where(
+                            and(
+                                eq(usersTable.id, userId),
+                                eq(usersTable.shopBanned, false),
+                            ),
+                        );
                 }
             });
 
@@ -1619,6 +1631,19 @@ export const PrivateRouter = new Hono<Context>()
                 );
             }
 
+            if (challenger.shopBanned || opponent.shopBanned) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "shop_banned",
+                        message: challenger.shopBanned
+                            ? "You are banned from trading GP."
+                            : "That user is banned from trading GP.",
+                    },
+                    200,
+                );
+            }
+
             return c.json(
                 {
                     ok: true,
@@ -1694,6 +1719,19 @@ export const PrivateRouter = new Hono<Context>()
                         ok: false,
                         reason: "opponent_not_enough_gp",
                         message: "User does not have enough GP.",
+                    },
+                    200,
+                );
+            }
+
+            if (challenger.shopBanned || opponent.shopBanned) {
+                return c.json(
+                    {
+                        ok: false,
+                        reason: "shop_banned",
+                        message: challenger.shopBanned
+                            ? "You are banned from trading GP."
+                            : "That user is banned from trading GP.",
                     },
                     200,
                 );

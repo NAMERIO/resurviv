@@ -29,6 +29,8 @@ import {
     zRemoveItemParams,
     zSetAccountNameParams,
     zSetMatchDataNameParams,
+    zShopBanAccountParams,
+    zShopUnbanAccountParams,
     zUnbanAccountParams,
     zUnbanIpParams,
 } from "../../../shared/types/moderation";
@@ -130,6 +132,38 @@ const commands = {
             {
                 name: "slug",
                 description: "The account slug to unban",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+            },
+        ],
+    }),
+    [Command.ShopBan]: createCommand({
+        name: Command.ShopBan,
+        description: "ban an account from the shop, market and GP transfers",
+        optionValidator: zShopBanAccountParams,
+        options: [
+            {
+                name: "slug",
+                description: "The account slug to shop ban",
+                required: true,
+                type: ApplicationCommandOptionType.String,
+            },
+            {
+                name: "ban_reason",
+                description: "The reason for the shop ban",
+                required: false,
+                type: ApplicationCommandOptionType.String,
+            },
+        ],
+    }),
+    [Command.ShopUnban]: createCommand({
+        name: Command.ShopUnban,
+        description: "remove a shop ban from an account",
+        optionValidator: zShopUnbanAccountParams,
+        options: [
+            {
+                name: "slug",
+                description: "The account slug to remove the shop ban from",
                 required: true,
                 type: ApplicationCommandOptionType.String,
             },

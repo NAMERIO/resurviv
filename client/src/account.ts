@@ -151,6 +151,7 @@ export class Account {
     loggingIn = false;
     loggedIn = false;
     gpBalance = 0;
+    shopBanned = false;
     freeFallTicket: FreeFallTicketState | null = null;
     rewardedAdGp: RewardedAdGpState | null = null;
     socialGpRewardClaims: Partial<Record<SocialGpRewardKey, boolean>> = {};
@@ -314,6 +315,7 @@ export class Account {
             this.loggedIn = false;
             this.profile = {} as this["profile"];
             this.gpBalance = 0;
+            this.shopBanned = false;
             this.rewardedAdGp = null;
             this.lootBoxAdStates = {};
             this.pendingThankYouGift = null;
@@ -329,6 +331,7 @@ export class Account {
                 this.loggedIn = true;
                 this.profile = data.profile;
                 this.gpBalance = data.gpBalance;
+                this.shopBanned = !!data.shopBanned;
                 this.rewardedAdGp = data.rewardedAdGp || null;
                 this.pendingThankYouGift = data.thankYouGift || null;
                 this.pendingGpGifts = data.gpGifts || [];
@@ -355,6 +358,7 @@ export class Account {
             this.emit("items", this.items);
             this.emit("loadout", this.loadout);
             this.emit("gpBalance", this.gpBalance);
+            this.emit("shopBanned", this.shopBanned);
             this.emit("rewardedAdGp", this.rewardedAdGp);
             if (this.pendingThankYouGift) {
                 this.emit("thankYouGift", this.pendingThankYouGift);

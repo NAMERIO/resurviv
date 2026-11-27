@@ -148,3 +148,95 @@ export async function expireAuctionListings(tx: any) {
         }
     }
 }
+
+export async function cancelSellerListings(tx: any, sellerUserId: string) {
+    const canceledListings = await tx
+        .update(marketListingTable)
+        .set({
+            status: "cancelled",
+            canceledAt: new Date(),
+        })
+        .where(
+            and(
+                eq(marketListingTable.sellerUserId, sellerUserId),
+                eq(marketListingTable.status, "active"),
+            ),
+        )
+        .returning({
+            itemId: marketListingTable.itemId,
+            itemType: marketListingTable.itemType,
+            itemMaker: marketListingTable.itemMaker,
+            itemKills: marketListingTable.itemKills,
+            itemWins: marketListingTable.itemWins,
+            itemHolders: marketListingTable.itemHolders,
+        });
+
+    const canceledAuctions = await tx
+        .update(auctionListingTable)
+        .set({
+            status: "cancelled",
+            canceledAt: new Date(),
+        })
+        .where(
+            and(
+                eq(auctionListingTable.sellerUserId, sellerUserId),
+                eq(auctionListingTable.status, "active"),
+            ),
+        )
+        .returning({
+            itemId: auctionListingTable.itemId,
+            itemType: auctionListingTable.itemType,
+            itemMaker: auctionListingTable.itemMaker,
+            itemKills: auctionListingTable.itemKills,
+            itemWins: auctionListingTable.itemWins,
+            itemHolders: auctionListingTable.itemHolders,
+            highestBid: auctionListingTable.highestBid,
+            highestBidUserId: auctionListingTable.highestBidUserId,
+        });
+
+    for (const auction of canceledAuctions) {
+        if (auction.highestBidUserId && auction.highestBid > 0) {
+            await tx
+                .update(usersTable)
+                .set({
+                    gpBalance: sql`${usersTable.gpBalance} + ${auction.highestBid}`,
+                })
+                .where(eq(usersTable.id, auction.highestBidUserId));
+        }
+    }
+
+    const returnedItems = [
+        ...canceledListings.map((listing: any) => ({
+            ...listing,
+            source: "market_cancel",
+        })),
+        ...canceledAuctions.map((auction: any) => ({
+            ...auction,
+            source: "auction_cancel",
+        })),
+    ];
+
+    if (returnedItems.length > 0) {
+        await tx
+            .insert(itemsTable)
+            .values(
+                returnedItems.map((item) => ({
+                    id: item.itemId,
+                    userId: sellerUserId,
+                    type: item.itemType,
+                    maker: item.itemMaker,
+                    kills: item.itemKills,
+                    wins: item.itemWins,
+                    holders: item.itemHolders,
+                    source: item.source,
+                    timeAcquired: Date.now(),
+                })),
+            )
+            .onConflictDoNothing();
+    }
+
+    return {
+        listings: canceledListings.length,
+        auctions: canceledAuctions.length,
+    };
+}

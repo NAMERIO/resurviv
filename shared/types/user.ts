@@ -26,6 +26,7 @@ export type ProfileResponse =
               canUseDeveloper: boolean;
               canManageNews: boolean;
           };
+          shopBanned: boolean;
           gpBalance: number;
           thankYouGift?: {
               amount: number;
@@ -163,7 +164,13 @@ export const zSendFriendGpRequest = z.object({
 export type SendFriendGpRequest = z.infer<typeof zSendFriendGpRequest>;
 export type SendFriendGpResponse = {
     success: boolean;
-    error?: "not_friend" | "not_found" | "not_enough_gp" | "server_error";
+    error?:
+        | "not_friend"
+        | "not_found"
+        | "not_enough_gp"
+        | "shop_banned"
+        | "recipient_shop_banned"
+        | "server_error";
     gpBalance?: number;
 };
 
@@ -187,6 +194,8 @@ export type SendFriendSkinGiftResponse = {
         | "item_not_owned"
         | "item_ticket_locked"
         | "invalid_item"
+        | "shop_banned"
+        | "recipient_shop_banned"
         | "server_error";
     items?: Item[];
     loadout?: Loadout;

@@ -99,6 +99,13 @@
       "when": 1796800000000,
       "tag": "0045_ip_logs_ip_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1798100000000,
+      "tag": "0046_shop_ban",
+      "breakpoints": true
     }
   ]
 }

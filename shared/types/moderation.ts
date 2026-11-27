@@ -45,6 +45,16 @@ export const zUnbanAccountParams = z.object({
     slug: z.string(),
 });
 
+export const zShopBanAccountParams = z.object({
+    slug: z.string(),
+    ban_reason: z.string().default("Shop abuse"),
+    executor_id: z.string().default("admin"),
+});
+
+export const zShopUnbanAccountParams = z.object({
+    slug: z.string(),
+});
+
 export const zSetMatchDataNameParams = z.object({
     current_name: z.string(),
     new_name: z.string(),

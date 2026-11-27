@@ -840,6 +840,33 @@ async function buildMarketState(userId: string) {
 UserRouter.use(databaseEnabledMiddleware);
 UserRouter.use(rateLimitMiddleware(40, 60 * 1000));
 UserRouter.use(authMiddleware);
+
+const shopBannedPaths = [
+    "/get_market",
+    "/spin_weekly_wheel",
+    "/claim_social_gp_reward",
+    "/claim_rewarded_ad_gp",
+    "/claim_loot_box_ad",
+    "/create_market_listing",
+    "/buy_market_listing",
+    "/create_auction_listing",
+    "/place_auction_bid",
+    "/buy_weekly_melee",
+    "/buy_featured_bundle",
+    "/open_loot_box",
+    "/friends/send_gp",
+    "/friends/send_skins",
+];
+
+for (const path of shopBannedPaths) {
+    UserRouter.use(path, async (c, next) => {
+        if (c.get("user")?.shopBanned) {
+            return c.json({ success: false, error: "shop_banned" }, 200);
+        }
+        await next();
+    });
+}
+
 UserRouter.route("/", PassRouter);
 UserRouter.route("/arena_replays", ArenaReplayRouter);
 
@@ -872,7 +899,9 @@ UserRouter.post("/profile", async (c) => {
         (identity) => identity.provider === "discord",
     );
     await syncDiscordServerTagReward(user, discordIdentity?.authId);
-    const claimedThanksReward = await tryClaimAprilThanksReward(c, user.id);
+    const claimedThanksReward = user.shopBanned
+        ? null
+        : await tryClaimAprilThanksReward(c, user.id);
     const gpGifts = await claimGpGifts(user.id);
     const skinGifts = await claimSkinGifts(user.id);
 
@@ -893,6 +922,7 @@ UserRouter.post("/profile", async (c) => {
                 canUseDeveloper: canUseDeveloper(slug),
                 canManageNews: canManageNews(slug),
             },
+            shopBanned: user.shopBanned,
             gpBalance: claimedThanksReward?.gpBalance ?? user.gpBalance,
             rewardedAdGp: await getRewardedAdGpState(user.id),
             thankYouGift: claimedThanksReward
@@ -1207,12 +1237,20 @@ UserRouter.post("/friends/send_gp", validateParams(zSendFriendGpRequest), async 
         columns: {
             id: true,
             slug: true,
+            shopBanned: true,
         },
     });
 
     if (!recipient) {
         return c.json<SendFriendGpResponse>(
             { success: false, error: "not_found", gpBalance: user.gpBalance },
+            200,
+        );
+    }
+
+    if (recipient.shopBanned) {
+        return c.json<SendFriendGpResponse>(
+            { success: false, error: "recipient_shop_banned", gpBalance: user.gpBalance },
             200,
         );
     }
@@ -1299,12 +1337,20 @@ UserRouter.post(
             columns: {
                 id: true,
                 slug: true,
+                shopBanned: true,
             },
         });
 
         if (!recipient) {
             return c.json<SendFriendSkinGiftResponse>(
                 { success: false, error: "not_found" },
+                200,
+            );
+        }
+
+        if (recipient.shopBanned) {
+            return c.json<SendFriendSkinGiftResponse>(
+                { success: false, error: "recipient_shop_banned" },
                 200,
             );
         }
