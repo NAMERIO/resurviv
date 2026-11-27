@@ -11,7 +11,7 @@ export const FreeFallTicketGuard = {
     minListingAgeMs: HOUR_MS,
     minSellerAccountAgeMs: 14 * DAY_MS,
     minSellerMatches: 10,
-    maxRedemptionsPerSeller: 2,
+    maxRedemptionsPerSeller: 5,
     maxSellerPayoutPer24h: 30_000,
 } as const;
 
